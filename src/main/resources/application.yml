@@ -1,0 +1,71 @@
+env: "Local" # Used for Google Cloud LOG
+spring:
+  cloud:
+    gcp:
+      logging:
+        enabled: true # Used for Google Cloud LOG to enable the LOGS
+  application:
+    name: access-sphere
+    starter-log: true # Show Started Application
+  r2dbc:
+    url: r2dbc:mysql://localhost:3306/access_sphere
+    username: root
+    password: root
+    initialization: always
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/access_sphere
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    generate-ddl: true
+    show-sql: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
+# Level of LOG
+logging:
+  logback:
+    # Logging on LogTail
+    logTail: # Disabled
+      active: false
+    google-cloud:
+      active: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+
+rest:
+  client:
+    strapi:
+      active: true
+      baseUrl: https://strapi.hostwebserver.site
+      bearer: ${STRAPI_AUTH_TOKEN}
+      path:
+        clientId: /api/Oauthclientids
+        registerUser: /api/auth/local/register
+
+app:
+  version: @project.version@
+  cache:
+    active: false
+  shouldNotFilter: "**/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/**"
+  exception:
+    stacktrace: true # Active StackTrace in Response
+  # Cors status
+  cors: # Disabled
+    enabled: false
+  # Logging on LogTail
+  logTail: # Disabled
+    active: false
+    level: INFO # Keep as INFO and work on logging instead (testa in caso rimuovi)
