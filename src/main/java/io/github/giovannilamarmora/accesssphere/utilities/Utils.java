@@ -1,6 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.utilities;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,6 +11,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.auth.oauth2.TokenResponse;
+import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.web.CookieManager;
@@ -80,10 +87,28 @@ public class Utils {
     return headers;
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
   public static String getCookie(String cookieName, ServerHttpRequest request) {
     LOG.info("Getting Cookie {}", cookieName);
     MultiValueMap<String, HttpCookie> cookies = request.getCookies();
     if (ObjectUtils.isEmpty(cookies) || ObjectUtils.isEmpty(cookies.get(cookieName))) return null;
     return Objects.requireNonNull(cookies.get(cookieName)).getFirst().getValue();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
+  public static Map<String, Object> putClaimsIntoToken(
+          ClientCredential clientCredential, Object data) {
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put(TokenClaims.AUTH_TYPE.claim(), clientCredential.getAuthType());
+    try {
+      attributes.put(
+              TokenClaims.GOOGLE_TOKEN.claim(), mapper.writeValueAsString(data));
+    } catch (JsonProcessingException e) {
+      LOG.error(
+              "An error happen during oAuth Google Login on parsing User, message is {}",
+              e.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+    }
+    return attributes;
   }
 }

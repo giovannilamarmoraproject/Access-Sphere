@@ -51,6 +51,7 @@ rest:
         clientId: /api/Oauthclientids
         registerUser: /api/auth/local/register
         getUserByEmail: /api/users
+        login: /api/auth/local
 
 app:
   version: @project.version@

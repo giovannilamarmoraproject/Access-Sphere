@@ -95,7 +95,7 @@ public class OAuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<?> login(
+  public Mono<ResponseEntity<?>> login(
       String clientId,
       String scope,
       String code,
@@ -110,7 +110,7 @@ public class OAuthService {
           switch (clientCredential.getAuthType()) {
             case BEARER -> {
               OAuthValidator.validateBasic(basic);
-              return Mono.just(ResponseEntity.ok(makeClassicLogin(basic, clientCredential)));
+              return makeClassicLogin(basic, clientCredential);
             }
             case GOOGLE -> {
               LOG.info("Google oAuth 2.0 Login started");
@@ -141,7 +141,7 @@ public class OAuthService {
                   tokenService.generateToken(
                       user,
                       clientCredential,
-                      putClaims(clientCredential, googleModel.getTokenResponse())));
+                      Utils.putClaimsIntoToken(clientCredential, googleModel.getTokenResponse())));
               Response response =
                   new Response(
                       HttpStatus.OK.value(),
@@ -176,7 +176,8 @@ public class OAuthService {
                               tokenService.generateToken(
                                   user1,
                                   clientCredential,
-                                  putClaims(clientCredential, googleModel.getTokenResponse())));
+                                  Utils.putClaimsIntoToken(
+                                      clientCredential, googleModel.getTokenResponse())));
                           Response response =
                               new Response(
                                   HttpStatus.OK.value(),
@@ -190,7 +191,7 @@ public class OAuthService {
             });
   }
 
-  private ResponseEntity<Response> makeClassicLogin(
+  private Mono<ResponseEntity<Response>> makeClassicLogin(
       String basic, ClientCredential clientCredential) {
     LOG.debug("Decoding user using Base64 Decoder");
     String username;
@@ -210,49 +211,17 @@ public class OAuthService {
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
 
-    UserEntity userEntity = userDataService.findUserEntityByUsernameOrEmail(username, email);
+    return dataService
+        .login(username, email, password, clientCredential)
+        .map(
+            user -> {
+              String message = "Login Successfully! Welcome back " + user.getUsername() + "!";
 
-    if (ObjectUtils.isEmpty(userEntity)) {
-      LOG.error("An error happen during findUserEntityByUsernameOrEmail()");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
-    }
-
-    boolean matches = bCryptPasswordEncoder.matches(password, userEntity.getPassword());
-    if (!matches) {
-      LOG.error(
-          "An error happen during findUserEntityByUsernameOrEmail(), the password do not match");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
-    }
-    User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
-    userEntityToUser.setPassword(null);
-    userEntityToUser.setAuthToken(
-        tokenService.generateToken(userEntityToUser, clientCredential, null));
-
-    String message = "Login Successfully! Welcome back " + username + "!";
-
-    Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            message,
-            CorrelationIdUtils.getCorrelationId(),
-            userEntityToUser);
-    LOG.debug("Login process ended for user {}", username);
-    return ResponseEntity.ok(response);
-  }
-
-  private Map<String, Object> putClaims(
-      ClientCredential clientCredential, TokenResponse googleTokenResponse) {
-    Map<String, Object> attributes = new HashMap<>();
-    attributes.put(TokenClaims.AUTH_TYPE.claim(), clientCredential.getAuthType());
-    try {
-      attributes.put(
-          TokenClaims.GOOGLE_TOKEN.claim(), mapper.writeValueAsString(googleTokenResponse));
-    } catch (JsonProcessingException e) {
-      LOG.error(
-          "An error happen during oAuth Google Login on parsing User, message is {}",
-          e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
-    }
-    return attributes;
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), user);
+              LOG.debug("Login process ended for user {}", user.getUsername());
+              return ResponseEntity.ok(response);
+            });
   }
 }

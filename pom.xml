@@ -36,7 +36,17 @@
 		<dependency>
 			<groupId>io.github.giovannilamarmora.utils</groupId>
 			<artifactId>utils-code</artifactId>
-			<version>1.0.0.38</version>
+			<version>1.0.0.39</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+			<version>2.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webflux-api</artifactId>
+			<version>2.5.0</version>
 		</dependency>
 
 		<dependency>

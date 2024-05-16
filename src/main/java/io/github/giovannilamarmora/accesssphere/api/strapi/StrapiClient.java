@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.api.strapi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLogin;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -46,6 +47,9 @@ public class StrapiClient {
   @Value(value = "${rest.client.strapi.path.getUserByEmail}")
   private String getUserByEmailUrl;
 
+  @Value(value = "${rest.client.strapi.path.login}")
+  private String loginUrl;
+
   @Autowired private WebClient.Builder builder;
 
   @PostConstruct
@@ -57,7 +61,7 @@ public class StrapiClient {
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public Mono<ResponseEntity<StrapiResponse>> getClientByClientID(String clientID) {
     Map<String, Object> params = new HashMap<>();
-    params.put("filters[clientId][%24eq]", clientID);
+    params.put("filters[clientId][$eq]", clientID);
 
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -100,5 +104,19 @@ public class StrapiClient {
         UtilsUriBuilder.buildUri(getUserByEmailUrl, params),
         headers,
         StrapiUser.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<StrapiResponse>> login(StrapiLogin login) {
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
+    return webClientRest.perform(
+            HttpMethod.POST,
+            UtilsUriBuilder.buildUri(loginUrl, null),
+            login,
+            headers,
+            StrapiResponse.class);
   }
 }

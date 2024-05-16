@@ -8,10 +8,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +25,7 @@ public class OAuthControllerImpl {
 
   @Autowired private OAuthService oAuthService;
 
-  @GetMapping("/authorize")
+  @GetMapping(value = "/authorize", consumes = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to start OAuth 2.0 authorization",
       summary = "Start OAuth 2.0 Authorization",
@@ -46,13 +46,16 @@ public class OAuthControllerImpl {
         accessType, clientId, redirectUri, scope, registration_token, state);
   }
 
-  @GetMapping("/login/{client_id}")
+  @GetMapping(
+      value = "/login/{client_id}",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to perform OAuth 2.0 login",
       summary = "Perform OAuth 2.0 Login",
       tags = OpenAPI.Tag.OAUTH)
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<?> login(
+  public Mono<ResponseEntity<?>> login(
       @PathVariable(value = "client_id") String clientId,
       @RequestParam(value = "scope", required = false) String scope,
       @RequestParam(value = "code", required = false) String code,
