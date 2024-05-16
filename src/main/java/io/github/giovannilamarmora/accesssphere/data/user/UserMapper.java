@@ -6,6 +6,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 @Component
 public class UserMapper {
@@ -21,6 +22,7 @@ public class UserMapper {
   public static User mapUserEntityToUser(UserEntity userEntity) {
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
+    if (!ObjectUtils.isEmpty(userEntity.getStrapiId())) user.setId(userEntity.getStrapiId());
     return user;
   }
 }

@@ -14,25 +14,25 @@ public class UserDAOAdapter implements UserDataService {
 
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<UserEntity> findUserEntityByUsernameOrEmail(String username, String email) {
-    return Mono.just(userDAO.findUserEntityByUsernameOrEmail(username, email));
+  public UserEntity findUserEntityByUsernameOrEmail(String username, String email) {
+    return userDAO.findUserEntityByUsernameOrEmail(username, email);
   }
 
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<UserEntity> findUserEntityByEmail(String email) {
-    return Mono.just(userDAO.findUserEntityByEmail(email));
+  public UserEntity findUserEntityByEmail(String email) {
+    return userDAO.findUserEntityByEmail(email);
   }
 
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<UserEntity> save(UserEntity user) {
-    return Mono.just(userDAO.save(user));
+  public UserEntity saveAndFlush(UserEntity user) {
+    return userDAO.saveAndFlush(user);
   }
 
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<UserEntity> findUserEntityByTokenReset(String token) {
-    return Mono.just(userDAO.findUserEntityByTokenReset(token));
+  public UserEntity findUserEntityByTokenReset(String token) {
+    return userDAO.findUserEntityByTokenReset(token);
   }
 }

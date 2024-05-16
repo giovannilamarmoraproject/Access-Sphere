@@ -31,7 +31,7 @@ public class ClientCredential extends GenericDTO {
   private String externalClientId;
   private String clientSecret;
   @LowerCase private List<String> scopes;
-  @LowerCase private String redirect_uri;
+  @LowerCase private List<String> redirect_uri;
   private AccessType accessType;
   private OAuthType authType;
   private TokenType tokenType;
@@ -39,4 +39,5 @@ public class ClientCredential extends GenericDTO {
   private Long jwtExpiration;
   private String jweSecret;
   private Long jweExpiration;
+  private String registrationToken;
 }

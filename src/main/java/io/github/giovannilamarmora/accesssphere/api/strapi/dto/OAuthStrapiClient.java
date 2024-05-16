@@ -26,4 +26,5 @@ public class OAuthStrapiClient {
   private String createdAt;
   private String updatedAt;
   private String publishedAt;
+  private String registrationToken;
 }

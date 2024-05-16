@@ -4,8 +4,10 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiClient;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiException;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
+import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import org.slf4j.Logger;
@@ -25,7 +27,6 @@ public class ClientService {
   private Boolean isStrapiEnabled;
 
   @Autowired private StrapiClient strapiClient;
-  // TODO: [CACHE] Valuta se inserire la cache
   @Autowired private IClientDAO iClientDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -55,8 +56,15 @@ public class ClientService {
   }
 
   private Mono<ClientCredential> getClientFromDatabaseByClientID(String clientID) {
-    return Mono.just(iClientDAO
-        .findByClientId(clientID))
+    ClientCredentialEntity clientCredentialEntity = iClientDAO.findByClientId(clientID);
+    if (ObjectUtils.isEmpty(clientCredentialEntity)) {
+      if (ObjectUtils.isEmpty(clientCredentialEntity)) {
+        LOG.error("Client credential ot found on Database");
+        throw new OAuthException(
+            ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
+      }
+    }
+    return Mono.just(clientCredentialEntity)
         .map(ClientMapper::fromClientCredentialEntityToClientCredential);
   }
 }

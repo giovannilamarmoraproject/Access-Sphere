@@ -21,45 +21,46 @@ import java.util.Map;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StrapiUser {
-    @UpperCamelCase
-    private String name;
-    @UpperCamelCase private String surname;
 
-    @NotNull(message = "Email is required")
-    @NotBlank(message = "Email is required")
-    @LowerCase
-    private String email;
-    private Boolean confirmed;
-    private Boolean blocked;
+  private Long id;
 
-    @NotNull(message = "Username is required")
-    @NotBlank(message = "Username is required")
-    @LowerCase
-    private String username;
+  @UpperCamelCase private String name;
+  @UpperCamelCase private String surname;
 
-    private String password;
+  @NotNull(message = "Email is required")
+  @NotBlank(message = "Email is required")
+  @LowerCase
+  private String email;
 
-    private UserRole role = UserRole.USER;
+  private Boolean confirmed;
+  private Boolean blocked;
 
-    private String profilePhoto;
+  @NotNull(message = "Username is required")
+  @NotBlank(message = "Username is required")
+  @LowerCase
+  private String username;
 
-    private String phoneNumber;
+  private String password;
 
-    private LocalDate birthDate;
+  private UserRole role = UserRole.USER;
 
-    @UpperCase
-    private String gender;
+  private String profilePhoto;
 
-    @UpperCamelCase private String occupation;
+  private String phoneNumber;
 
-    @UpperCamelCase private String education;
+  private LocalDate birthDate;
 
-    @UpperCamelCase private String nationality;
+  @UpperCase private String gender;
 
-    private String ssn; // Social Security Number
+  @UpperCamelCase private String occupation;
 
-    private String tokenReset;
+  @UpperCamelCase private String education;
 
-    private Map<String, Object> attributes;
+  @UpperCamelCase private String nationality;
 
+  private String ssn; // Social Security Number
+
+  private String tokenReset;
+
+  private Map<String, Object> attributes;
 }

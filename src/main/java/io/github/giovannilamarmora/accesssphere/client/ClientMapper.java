@@ -9,6 +9,7 @@ import java.util.List;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 @Component
 public class ClientMapper {
@@ -20,14 +21,19 @@ public class ClientMapper {
         clientCredentialEntity.getClientId(),
         clientCredentialEntity.getExternalClientId(),
         clientCredentialEntity.getClientSecret(),
-        List.of(clientCredentialEntity.getScopes().split(" ")),
-        clientCredentialEntity.getRedirect_uri(),
+        ObjectUtils.isEmpty(clientCredentialEntity.getScopes())
+            ? null
+            : List.of(clientCredentialEntity.getScopes().split(" ")),
+        ObjectUtils.isEmpty(clientCredentialEntity.getRedirect_uri())
+            ? null
+            : List.of(clientCredentialEntity.getRedirect_uri().split(" ")),
         clientCredentialEntity.getAccessType(),
         clientCredentialEntity.getAuthType(),
         clientCredentialEntity.getTokenType(),
         clientCredentialEntity.getJwtSecret(),
         clientCredentialEntity.getJwtExpiration(),
         clientCredentialEntity.getJweSecret(),
-        clientCredentialEntity.getJweExpiration());
+        clientCredentialEntity.getJweExpiration(),
+        clientCredentialEntity.getRegistrationToken());
   }
 }

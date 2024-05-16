@@ -29,6 +29,9 @@ public class UserEntity extends GenericEntity {
   @Column(name = "ID", nullable = false)
   private Long id;
 
+  @Column(name = "STRAPI_ID", nullable = false)
+  private Long strapiId;
+
   @Column(name = "NAME")
   private String name;
 
@@ -83,6 +86,6 @@ public class UserEntity extends GenericEntity {
 
   @Lob
   @JsonRawValue
-  @Column(name = "ATTRIBUTES", columnDefinition = "json", nullable = false)
+  @Column(name = "ATTRIBUTES", columnDefinition = "json")
   private String attributes;
 }

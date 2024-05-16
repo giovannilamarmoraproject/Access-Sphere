@@ -6,7 +6,6 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiError;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
@@ -15,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -52,6 +52,31 @@ public class StrapiService {
                       ExceptionMap.ERR_OAUTH_400, response.getError().getMessage());
                 }
               }
+            });
+  }
+
+    /**
+     * Ritorno l'utente filtrato, se non trovo gli utenti torno NOT_FOUND
+     * @param email
+     * @return
+     */
+  public Mono<StrapiUser> getUserByEmail(String email) {
+    return strapiClient
+        .getUserByEmail(email)
+        .flatMap(
+            listResponseEntity -> {
+              if (!listResponseEntity.hasBody()
+                  || ObjectUtils.isEmpty(listResponseEntity.getBody())) {
+                LOG.error("An error happen during get user on strapi, user not found");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              if (listResponseEntity.getBody().isEmpty()) {
+                LOG.error("An error happen during get user on strapi, user not found");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              return Mono.just(listResponseEntity.getBody().getFirst());
             });
   }
 }

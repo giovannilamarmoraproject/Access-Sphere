@@ -5,11 +5,11 @@ import reactor.core.publisher.Mono;
 
 public interface UserDataService {
 
-    Mono<UserEntity> findUserEntityByUsernameOrEmail(String username, String email);
+    UserEntity findUserEntityByUsernameOrEmail(String username, String email);
 
-    Mono<UserEntity> findUserEntityByEmail(String email);
+    UserEntity findUserEntityByEmail(String email);
 
-    Mono<UserEntity> save(UserEntity user);
+    UserEntity saveAndFlush(UserEntity user);
 
-    Mono<UserEntity> findUserEntityByTokenReset(String token);
+    UserEntity findUserEntityByTokenReset(String token);
 }

@@ -63,4 +63,7 @@ public class ClientCredentialEntity extends GenericEntity {
 
   @Column(name = "JWE_EXPIRATION")
   private Long jweExpiration;
+
+  @Column(name = "REGISTRATION_TOKEN")
+  private String registrationToken;
 }

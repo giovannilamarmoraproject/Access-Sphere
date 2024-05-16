@@ -1,9 +1,5 @@
 env: "Local" # Used for Google Cloud LOG
 spring:
-  cloud:
-    gcp:
-      logging:
-        enabled: true # Used for Google Cloud LOG to enable the LOGS
   application:
     name: access-sphere
     starter-log: true # Show Started Application
@@ -54,6 +50,7 @@ rest:
       path:
         clientId: /api/Oauthclientids
         registerUser: /api/auth/local/register
+        getUserByEmail: /api/users
 
 app:
   version: @project.version@

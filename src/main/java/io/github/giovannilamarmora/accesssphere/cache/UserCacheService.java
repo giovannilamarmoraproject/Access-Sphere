@@ -28,10 +28,10 @@ public class UserCacheService implements UserDataService {
   @Override
   @Cacheable(value = USER_CACHE, key = "#email", condition = "#email!=null")
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  //public Mono<UserEntity> findUserEntityByEmail(String email) {
-    public Mono<UserEntity> findUserEntityByEmail(String email) {
+  // public Mono<UserEntity> findUserEntityByEmail(String email) {
+  public UserEntity findUserEntityByEmail(String email) {
     LOG.info("[Caching] Finding User into Database by email {}", email);
-    return Mono.just(userDAO.findUserEntityByEmail(email));
+    return userDAO.findUserEntityByEmail(email);
   }
 
   @Override
@@ -41,9 +41,9 @@ public class UserCacheService implements UserDataService {
         @Cacheable(value = USER_CACHE, key = "#email", condition = "#email!=null")
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
-  public Mono<UserEntity> findUserEntityByUsernameOrEmail(String username, String email) {
+  public UserEntity findUserEntityByUsernameOrEmail(String username, String email) {
     LOG.info("[Caching] Finding User into Database by username {} and email {}", username, email);
-    return Mono.just(userDAO.findUserEntityByUsernameOrEmail(username, email));
+    return userDAO.findUserEntityByUsernameOrEmail(username, email);
   }
 
   @Caching(evict = @CacheEvict(value = USER_CACHE))
@@ -54,13 +54,13 @@ public class UserCacheService implements UserDataService {
   }
 
   @Override
-  public Mono<UserEntity> save(UserEntity user) {
+  public UserEntity saveAndFlush(UserEntity user) {
     deleteUserCache();
-    return Mono.just(userDAO.save(user));
+    return userDAO.saveAndFlush(user);
   }
 
   @Override
-  public Mono<UserEntity> findUserEntityByTokenReset(String token) {
-    return Mono.just(userDAO.findUserEntityByTokenReset(token));
+  public UserEntity findUserEntityByTokenReset(String token) {
+    return userDAO.findUserEntityByTokenReset(token);
   }
 }

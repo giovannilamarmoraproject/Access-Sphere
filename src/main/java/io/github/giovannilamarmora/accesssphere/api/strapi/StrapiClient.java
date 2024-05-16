@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.api.strapi;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
@@ -9,7 +10,9 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.webClient.UtilsUriBuilder;
 import io.github.giovannilamarmora.utils.webClient.WebClientRest;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -40,6 +43,9 @@ public class StrapiClient {
   @Value(value = "${rest.client.strapi.path.registerUser}")
   private String registerUserUrl;
 
+  @Value(value = "${rest.client.strapi.path.getUserByEmail}")
+  private String getUserByEmailUrl;
+
   @Autowired private WebClient.Builder builder;
 
   @PostConstruct
@@ -59,8 +65,7 @@ public class StrapiClient {
 
     return webClientRest.perform(
         HttpMethod.GET,
-        UtilsUriBuilder.toBuild().set(clientIdUrl, params),
-        null,
+        UtilsUriBuilder.buildUri(clientIdUrl, params),
         headers,
         StrapiResponse.class);
   }
@@ -71,13 +76,29 @@ public class StrapiClient {
 
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-    //headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
+    // headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
 
     return webClientRest.perform(
-            HttpMethod.POST,
-            UtilsUriBuilder.toBuild().set(registerUserUrl, params),
-            user,
-            headers,
-            StrapiResponse.class);
+        HttpMethod.POST,
+        UtilsUriBuilder.buildUri(registerUserUrl, params),
+        user,
+        headers,
+        StrapiResponse.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<List<StrapiUser>>> getUserByEmail(String email) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("filters[email][$eq]", email);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
+
+    return webClientRest.performList(
+        HttpMethod.GET,
+        UtilsUriBuilder.buildUri(getUserByEmailUrl, params),
+        headers,
+        StrapiUser.class);
   }
 }

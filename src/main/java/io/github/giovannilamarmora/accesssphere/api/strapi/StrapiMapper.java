@@ -29,7 +29,9 @@ public class StrapiMapper {
         ObjectUtils.isEmpty(strapiClient.getScopes())
             ? null
             : List.of(strapiClient.getScopes().split(" ")),
-        strapiClient.getRedirectUri(),
+        ObjectUtils.isEmpty(strapiClient.getRedirectUri())
+            ? null
+            : List.of(strapiClient.getRedirectUri().split(" ")),
         ObjectUtils.isEmpty(strapiClient.getAccessType())
             ? null
             : AccessType.valueOf(strapiClient.getAccessType()),
@@ -42,12 +44,14 @@ public class StrapiMapper {
         strapiClient.getJwtSecret(),
         strapiClient.getJwtExpiration(),
         strapiClient.getJweSecret(),
-        strapiClient.getJweExpiration());
+        strapiClient.getJweExpiration(),
+        strapiClient.getRegistrationToken());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static StrapiUser mapFromUserToStrapiUser(User user) {
     return new StrapiUser(
+        user.getId(),
         user.getName(),
         user.getSurname(),
         user.getEmail(),
@@ -66,5 +70,28 @@ public class StrapiMapper {
         user.getSsn(),
         user.getTokenReset(),
         user.getAttributes());
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static User mapFromStrapiUserToUser(StrapiUser user) {
+    return new User(
+        user.getName(),
+        user.getSurname(),
+        user.getEmail(),
+        user.getUsername(),
+        null,
+        user.getRole(),
+        user.getProfilePhoto(),
+        null,
+        user.getPhoneNumber(),
+        user.getBirthDate(),
+        user.getGender(),
+        user.getOccupation(),
+        user.getEducation(),
+        user.getNationality(),
+        user.getSsn(),
+        user.getTokenReset(),
+        user.getAttributes(),
+        null);
   }
 }
