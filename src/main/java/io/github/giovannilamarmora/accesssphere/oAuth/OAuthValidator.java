@@ -46,16 +46,52 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateBasic(String basic) {
-    if (ObjectUtils.isEmpty(basic)) {
+    if (ObjectUtils.isEmpty(basic) || !basic.contains("Basic")) {
       LOG.error("No Basic Auth found");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
     }
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateCode(String code) {
+  public static void validateOAuthToken(String client_id, String grant_type) {
+    if (ObjectUtils.isEmpty(client_id)) {
+      LOG.error("No Client ID found");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
+    }
+
+    if (ObjectUtils.isEmpty(grant_type)) {
+      LOG.error("No Grant Type found");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
+    }
+
+    if (!grant_type.equalsIgnoreCase("authorization_code")) {
+      LOG.error("Grant Type must be authorization_code");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
+    }
+  }
+
+  public static void validateOAuthGoogle(
+      ClientCredential clientCredential, String code, String scope, String redirect_uri) {
     if (ObjectUtils.isEmpty(code)) {
       LOG.error("No Code found");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
+    }
+
+    if (ObjectUtils.isEmpty(redirect_uri)) {
+      LOG.error("No Redirect URI found");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
+    }
+
+    if (!clientCredential.getRedirect_uri().contains(redirect_uri)) {
+      LOG.error(
+          "Redirect Uri should be {} instead of {}",
+          clientCredential.getRedirect_uri(),
+          redirect_uri);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
+    }
+
+    List<String> scopes = List.of(scope.split(" "));
+    if (!new HashSet<>(clientCredential.getScopes()).containsAll(scopes)) {
+      LOG.error("Scopes should be {} instead of {}", clientCredential.getScopes(), scope);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
     }
   }

@@ -22,6 +22,7 @@ import java.util.Map;
 public class StrapiUser {
 
   private Long id;
+  private String identifier;
 
   @UpperCamelCase private String name;
   @UpperCamelCase private String surname;
@@ -41,7 +42,7 @@ public class StrapiUser {
 
   private String password;
 
-  private UserRole role = UserRole.USER;
+  private UserRole userRole = UserRole.USER;
 
   private String profilePhoto;
 

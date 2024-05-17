@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
+import java.util.UUID;
+
 @Component
 public class GoogleOAuthMapper {
 
@@ -17,6 +19,7 @@ public class GoogleOAuthMapper {
   public static User generateGoogleUser(GoogleIdToken.Payload userInfo) {
 
     return new User(
+        UUID.randomUUID().toString(),
         getUserInfoValue(userInfo, "given_name"),
         getUserInfoValue(userInfo, "family_name"),
         userInfo.getEmail(),
@@ -33,8 +36,7 @@ public class GoogleOAuthMapper {
         null,
         null,
         null,
-        userInfo,
-        null);
+        userInfo);
   }
 
   private static String getUserInfoValue(GoogleIdToken.Payload userInfo, String value) {

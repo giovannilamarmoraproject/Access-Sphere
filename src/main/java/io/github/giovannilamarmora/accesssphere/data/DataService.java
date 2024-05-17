@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data;
 
+import com.google.api.client.auth.oauth2.TokenResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
@@ -9,7 +10,10 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -21,6 +25,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
+
+import java.util.UUID;
 
 @Service
 public class DataService {
@@ -66,6 +72,9 @@ public class DataService {
     // Se l'utente non ha password?
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
     userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+    String identifier = UUID.randomUUID().toString();
+    user.setIdentifier(identifier);
+    userEntity.setIdentifier(identifier);
 
     if (isStrapiEnabled) {
       return strapiService
@@ -99,7 +108,7 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> login(
+  public Mono<OAuthTokenResponse> login(
       String username, String email, String password, ClientCredential clientCredential) {
     if (isStrapiEnabled) {
       return strapiService
@@ -107,12 +116,13 @@ public class DataService {
           .flatMap(
               strapiResponse -> {
                 User user = StrapiMapper.mapFromStrapiUserToUser(strapiResponse.getUser());
-                user.setAuthToken(
+                AuthToken token =
                     tokenService.generateToken(
                         user,
                         clientCredential,
-                        Utils.putClaimsIntoToken(clientCredential, strapiResponse.getJwt())));
-                return Mono.just(user);
+                        Utils.putGoogleClaimsIntoToken(
+                            clientCredential, TokenClaims.STRAPI_TOKEN, strapiResponse.getJwt()));
+                return Mono.just(new OAuthTokenResponse(token, strapiResponse.getJwt(), user));
               })
           .onErrorResume(
               throwable -> {
@@ -129,7 +139,7 @@ public class DataService {
     return Mono.just(performLoginViaDatabase(username, email, password, clientCredential));
   }
 
-  private User performLoginViaDatabase(
+  private OAuthTokenResponse performLoginViaDatabase(
       String username, String email, String password, ClientCredential clientCredential) {
     UserEntity userEntity = userDataService.findUserEntityByUsernameOrEmail(username, email);
 
@@ -146,8 +156,7 @@ public class DataService {
     }
     User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
     userEntityToUser.setPassword(null);
-    userEntityToUser.setAuthToken(
-        tokenService.generateToken(userEntityToUser, clientCredential, null));
-    return userEntityToUser;
+    AuthToken token = tokenService.generateToken(userEntityToUser, clientCredential, null);
+    return new OAuthTokenResponse(token, userEntityToUser);
   }
 }

@@ -1,11 +1,12 @@
 package io.github.giovannilamarmora.accesssphere.token.dto;
 
 public enum TokenClaims {
-    ID("id"),
+    IDENTIFIER("identifier"),
     EMAIL("email"),
     ROLE("role"),
     AUTH_TYPE("auth_type"),
-    GOOGLE_TOKEN("google_token");
+    GOOGLE_TOKEN("google_token"),
+    STRAPI_TOKEN("strapi_token");
 
     private final String claim;
 

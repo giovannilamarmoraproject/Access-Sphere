@@ -52,6 +52,7 @@ public class StrapiMapper {
   public static StrapiUser mapFromUserToStrapiUser(User user) {
     return new StrapiUser(
         user.getId(),
+        user.getIdentifier(),
         user.getName(),
         user.getSurname(),
         user.getEmail(),
@@ -75,12 +76,13 @@ public class StrapiMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static User mapFromStrapiUserToUser(StrapiUser user) {
     return new User(
+        user.getIdentifier(),
         user.getName(),
         user.getSurname(),
         user.getEmail(),
         user.getUsername(),
         null,
-        user.getRole(),
+        user.getUserRole(),
         user.getProfilePhoto(),
         null,
         user.getPhoneNumber(),
@@ -91,7 +93,6 @@ public class StrapiMapper {
         user.getNationality(),
         user.getSsn(),
         user.getTokenReset(),
-        user.getAttributes(),
-        null);
+        user.getAttributes());
   }
 }

@@ -25,7 +25,7 @@ public class OAuthControllerImpl {
 
   @Autowired private OAuthService oAuthService;
 
-  @GetMapping(value = "/authorize", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/authorize")
   @Operation(
       description = "API to start OAuth 2.0 authorization",
       summary = "Start OAuth 2.0 Authorization",
@@ -46,10 +46,7 @@ public class OAuthControllerImpl {
         accessType, clientId, redirectUri, scope, registration_token, state);
   }
 
-  @GetMapping(
-      value = "/login/{client_id}",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/login/{client_id}", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       description = "API to perform OAuth 2.0 login",
       summary = "Perform OAuth 2.0 Login",
@@ -60,11 +57,37 @@ public class OAuthControllerImpl {
       @RequestParam(value = "scope", required = false) String scope,
       @RequestParam(value = "code", required = false) String code,
       @RequestParam(value = "prompt", required = false) String prompt,
+      @RequestParam(value = "include_user_info", required = false, defaultValue = "true")
+          boolean includeUserInfo,
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
-          @Schema(description = "Authorization Basic")
+          @Schema(description = "Authorization Basic or Bearer")
           String basic,
       ServerHttpRequest request) {
-    return oAuthService.login(clientId, scope, code, prompt, basic, request);
+    return oAuthService.token(clientId, scope, code, prompt, includeUserInfo, basic, request);
+  }
+
+  @GetMapping(value = "/token", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(
+      description = "API to perform OAuth 2.0 login",
+      summary = "Perform OAuth 2.0 Login",
+      tags = OpenAPI.Tag.OAUTH)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<?>> token(
+      @RequestParam(value = "client_id") String clientId,
+      @RequestParam(value = "grant_type") String grant_type,
+      @RequestParam(value = "scope", required = false) String scope,
+      @RequestParam(value = "code", required = false) String code,
+      @RequestParam(value = "redirect_uri", required = false) String redirectUri,
+      @RequestParam(value = "prompt", required = false) String prompt,
+      @RequestParam(value = "include_user_info", required = false, defaultValue = "false")
+          boolean includeUserInfo,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(description = "Authorization Basic or Bearer")
+          String auth,
+      ServerHttpRequest request) {
+    return oAuthService.tokenOAuth(
+        clientId, grant_type, scope, code, prompt, redirectUri, includeUserInfo, auth, request);
   }
 }

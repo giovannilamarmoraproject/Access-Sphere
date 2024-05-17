@@ -26,6 +26,8 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class User extends GenericDTO {
 
+  private String identifier;
+
   @UpperCamelCase private String name;
   @UpperCamelCase private String surname;
 
@@ -66,10 +68,9 @@ public class User extends GenericDTO {
 
   private Map<String, Object> attributes;
 
-  private AuthToken authToken;
-
-  public User(Long id, String username, String email, UserRole role) {
-    super(id, null, null, null);
+  public User(String identifier, String username, String email, UserRole role) {
+    super(null, null, null, null);
+    this.identifier = identifier;
     this.username = username;
     this.email = email;
     this.role = role;

@@ -1,23 +1,19 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.auth.oauth2.TokenResponse;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.database.UserDataService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleOAuthMapper;
-import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleOAuthService;
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -38,14 +34,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.GeneralSecurityException;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @Logged
@@ -95,30 +85,65 @@ public class OAuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<?>> login(
+  public Mono<ResponseEntity<?>> token(
       String clientId,
       String scope,
       String code,
       String prompt,
-      String basic,
+      boolean includeUserInfo,
+      String basicOrBearer,
+      ServerHttpRequest request) {
+    return login(clientId, scope, code, prompt, null, includeUserInfo, basicOrBearer, request);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<?>> tokenOAuth(
+      String clientId,
+      String grant_type,
+      String scope,
+      String code,
+      String prompt,
+      String redirect_uri,
+      boolean includeUserInfo,
+      String basicOrBearer,
+      ServerHttpRequest request) {
+    OAuthValidator.validateOAuthToken(clientId, grant_type);
+    return login(
+        clientId, scope, code, prompt, redirect_uri, includeUserInfo, basicOrBearer, request);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  private Mono<ResponseEntity<?>> login(
+      String clientId,
+      String scope,
+      String code,
+      String prompt,
+      String redirect_uri,
+      boolean includeUserInfo,
+      String basicOrBearer,
       ServerHttpRequest request) {
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
 
     return clientCredentialMono.flatMap(
         clientCredential -> {
+          if (!ObjectUtils.isEmpty(basicOrBearer)
+              && basicOrBearer.contains(OAuthType.BEARER.type())
+              && ObjectUtils.isEmpty(code)) return validateBearer(basicOrBearer, includeUserInfo);
           switch (clientCredential.getAuthType()) {
             case BEARER -> {
-              OAuthValidator.validateBasic(basic);
-              return makeClassicLogin(basic, clientCredential);
+              OAuthValidator.validateBasic(basicOrBearer);
+              return makeClassicLogin(basicOrBearer, clientCredential, includeUserInfo);
             }
             case GOOGLE -> {
               LOG.info("Google oAuth 2.0 Login started");
-              OAuthValidator.validateCode(code);
+              String redirectUri = redirect_uri;
+              if (ObjectUtils.isEmpty(redirectUri))
+                redirectUri = Utils.getCookie(COOKIE_REDIRECT_URI, request);
+              OAuthValidator.validateOAuthGoogle(clientCredential, code, scope, redirectUri);
               GoogleModel googleModel =
-                  grpcService.authenticateOAuth(
-                      code, scope, Utils.getCookie(COOKIE_REDIRECT_URI, request), clientCredential);
-              return performGoogleLogin(googleModel, clientCredential, request)
+                  grpcService.authenticateOAuth(code, scope, redirectUri, clientCredential);
+              return performGoogleLogin(googleModel, clientCredential, includeUserInfo, request)
                   .doOnSuccess(responseResponseEntity -> LOG.info("Google oAuth 2.0 Login ended"));
             }
             default -> {
@@ -131,23 +156,35 @@ public class OAuthService {
         });
   }
 
+  private Mono<ResponseEntity<Response>> validateBearer(String bearer, boolean includeUserInfo) {
+    return Mono.empty();
+  }
+
   private Mono<ResponseEntity<Response>> performGoogleLogin(
-      GoogleModel googleModel, ClientCredential clientCredential, ServerHttpRequest request) {
+      GoogleModel googleModel,
+      ClientCredential clientCredential,
+      boolean includeUserInfo,
+      ServerHttpRequest request) {
     return dataService
         .getUserByEmail(googleModel.getUserInfo().getEmail())
         .map(
             user -> {
-              user.setAuthToken(
+              AuthToken token =
                   tokenService.generateToken(
                       user,
                       clientCredential,
-                      Utils.putClaimsIntoToken(clientCredential, googleModel.getTokenResponse())));
+                      Utils.putGoogleClaimsIntoToken(
+                          clientCredential,
+                          TokenClaims.GOOGLE_TOKEN,
+                          googleModel.getTokenResponse()));
               Response response =
                   new Response(
                       HttpStatus.OK.value(),
                       "Login successfully, welcome " + user.getUsername() + " !",
                       CorrelationIdUtils.getCorrelationId(),
-                      user);
+                      includeUserInfo
+                          ? new OAuthTokenResponse(token, googleModel.getTokenResponse(), user)
+                          : new OAuthTokenResponse(token, googleModel.getTokenResponse()));
               return ResponseEntity.ok(response);
             })
         .onErrorResume(
@@ -172,18 +209,24 @@ public class OAuthService {
                     .registerUser(userGoogle)
                     .map(
                         user1 -> {
-                          user1.setAuthToken(
+                          AuthToken token =
                               tokenService.generateToken(
                                   user1,
                                   clientCredential,
-                                  Utils.putClaimsIntoToken(
-                                      clientCredential, googleModel.getTokenResponse())));
+                                  Utils.putGoogleClaimsIntoToken(
+                                      clientCredential,
+                                      TokenClaims.GOOGLE_TOKEN,
+                                      googleModel.getTokenResponse()));
                           Response response =
                               new Response(
                                   HttpStatus.OK.value(),
                                   "Login successfully, welcome " + user1.getUsername() + " !",
                                   CorrelationIdUtils.getCorrelationId(),
-                                  user1);
+                                  includeUserInfo
+                                      ? new OAuthTokenResponse(
+                                          token, googleModel.getTokenResponse(), user1)
+                                      : new OAuthTokenResponse(
+                                          token, googleModel.getTokenResponse()));
                           return ResponseEntity.ok(response);
                         });
               }
@@ -192,7 +235,7 @@ public class OAuthService {
   }
 
   private Mono<ResponseEntity<Response>> makeClassicLogin(
-      String basic, ClientCredential clientCredential) {
+      String basic, ClientCredential clientCredential, boolean includeUserInfo) {
     LOG.debug("Decoding user using Base64 Decoder");
     String username;
     String password;
@@ -214,13 +257,20 @@ public class OAuthService {
     return dataService
         .login(username, email, password, clientCredential)
         .map(
-            user -> {
-              String message = "Login Successfully! Welcome back " + user.getUsername() + "!";
+            tokenResponse -> {
+              String message =
+                  "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
 
               Response response =
                   new Response(
-                      HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), user);
-              LOG.debug("Login process ended for user {}", user.getUsername());
+                      HttpStatus.OK.value(),
+                      message,
+                      CorrelationIdUtils.getCorrelationId(),
+                      includeUserInfo
+                          ? tokenResponse
+                          : new OAuthTokenResponse(
+                              tokenResponse.getToken(), tokenResponse.getStrapiJwt()));
+              LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
               return ResponseEntity.ok(response);
             });
   }

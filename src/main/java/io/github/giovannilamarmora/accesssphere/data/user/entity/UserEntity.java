@@ -29,8 +29,11 @@ public class UserEntity extends GenericEntity {
   @Column(name = "ID", nullable = false)
   private Long id;
 
-  @Column(name = "STRAPI_ID", nullable = false)
+  @Column(name = "STRAPI_ID")
   private Long strapiId;
+
+  @Column(name = "IDENTIFIER", nullable = false)
+  private String identifier;
 
   @Column(name = "NAME")
   private String name;

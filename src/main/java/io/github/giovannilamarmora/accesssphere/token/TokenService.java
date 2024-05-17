@@ -85,7 +85,7 @@ public class TokenService {
   private AuthToken generateJWTToken(
       User user, ClientCredential clientCredential, Map<String, Object> attributes) {
     ClaimsBuilder claims = Jwts.claims().subject(user.getUsername());
-    claims.add(TokenClaims.ID.claim(), user.getId());
+    claims.add(TokenClaims.IDENTIFIER.claim(), user.getIdentifier());
     claims.add(TokenClaims.ROLE.claim(), user.getRole());
     claims.add(TokenClaims.EMAIL.claim(), user.getEmail());
     if (!ObjectUtils.isEmpty(attributes)) claims.add(attributes);
@@ -113,7 +113,7 @@ public class TokenService {
     }
 
     return new User(
-        (@NotNull Long) body.get(TokenClaims.ID.claim()),
+        (@NotNull String) body.get(TokenClaims.IDENTIFIER.claim()),
         body.getSubject(),
         (@NotNull String) body.get(TokenClaims.EMAIL.claim()),
         UserRole.valueOf((String) body.get(TokenClaims.ROLE.claim())));
@@ -126,7 +126,7 @@ public class TokenService {
     JWTClaimsSet claimsSet =
         new JWTClaimsSet.Builder()
             .subject(user.getUsername())
-            .claim(TokenClaims.ID.claim(), user.getId())
+            .claim(TokenClaims.IDENTIFIER.claim(), user.getIdentifier())
             .claim(TokenClaims.EMAIL.claim(), user.getEmail())
             .claim(TokenClaims.ROLE.claim(), user.getRole())
             .expirationTime(
@@ -166,7 +166,7 @@ public class TokenService {
       JWTClaimsSet claimsSet = jwtProcessor.process(tokenSplit, null);
 
       return new User(
-          (Long) claimsSet.getClaim(TokenClaims.ID.claim()),
+          (String) claimsSet.getClaim(TokenClaims.IDENTIFIER.claim()),
           claimsSet.getSubject(),
           (String) claimsSet.getClaim(TokenClaims.EMAIL.claim()),
           UserRole.valueOf((String) claimsSet.getClaim(TokenClaims.ROLE.claim())));
