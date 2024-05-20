@@ -3,7 +3,6 @@ package io.github.giovannilamarmora.accesssphere.data.user.entity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import io.github.giovannilamarmora.accesssphere.data.address.entity.AddressEntity;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.UserRole;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,7 +12,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -50,9 +48,8 @@ public class UserEntity extends GenericEntity {
   @Column(name = "PASSWORD")
   private String password;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "ROLE", nullable = false)
-  private UserRole role;
+  @Column(name = "ROLES", nullable = false)
+  private String roles;
 
   @Lob
   @Column(name = "PROFILE_PHOTO")

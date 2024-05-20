@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
@@ -11,16 +12,16 @@ import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleOAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
-import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
-import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import java.net.URI;
+import java.util.Base64;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +34,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
-
-import java.net.URI;
-import java.util.Base64;
 
 @Service
 @Logged
@@ -91,9 +89,11 @@ public class OAuthService {
       String code,
       String prompt,
       boolean includeUserInfo,
-      String basicOrBearer,
+      boolean includeUserData,
+      String basic,
       ServerHttpRequest request) {
-    return login(clientId, scope, code, prompt, null, includeUserInfo, basicOrBearer, request);
+    return login(
+        clientId, scope, code, prompt, null, includeUserInfo, includeUserData, basic, request);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -105,11 +105,20 @@ public class OAuthService {
       String prompt,
       String redirect_uri,
       boolean includeUserInfo,
-      String basicOrBearer,
+      boolean includeUserData,
+      String basic,
       ServerHttpRequest request) {
     OAuthValidator.validateOAuthToken(clientId, grant_type);
     return login(
-        clientId, scope, code, prompt, redirect_uri, includeUserInfo, basicOrBearer, request);
+        clientId,
+        scope,
+        code,
+        prompt,
+        redirect_uri,
+        includeUserInfo,
+        includeUserData,
+        basic,
+        request);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -120,20 +129,19 @@ public class OAuthService {
       String prompt,
       String redirect_uri,
       boolean includeUserInfo,
-      String basicOrBearer,
+      boolean includeUserData,
+      String basic,
       ServerHttpRequest request) {
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
 
     return clientCredentialMono.flatMap(
         clientCredential -> {
-          if (!ObjectUtils.isEmpty(basicOrBearer)
-              && basicOrBearer.contains(OAuthType.BEARER.type())
-              && ObjectUtils.isEmpty(code)) return validateBearer(basicOrBearer, includeUserInfo);
           switch (clientCredential.getAuthType()) {
             case BEARER -> {
-              OAuthValidator.validateBasic(basicOrBearer);
-              return makeClassicLogin(basicOrBearer, clientCredential, includeUserInfo);
+              OAuthValidator.validateBasic(basic);
+              return makeClassicLogin(
+                  basic, clientCredential, includeUserInfo, includeUserData, request);
             }
             case GOOGLE -> {
               LOG.info("Google oAuth 2.0 Login started");
@@ -143,7 +151,8 @@ public class OAuthService {
               OAuthValidator.validateOAuthGoogle(clientCredential, code, scope, redirectUri);
               GoogleModel googleModel =
                   grpcService.authenticateOAuth(code, scope, redirectUri, clientCredential);
-              return performGoogleLogin(googleModel, clientCredential, includeUserInfo, request)
+              return performGoogleLogin(
+                      googleModel, clientCredential, includeUserInfo, includeUserData, request)
                   .doOnSuccess(responseResponseEntity -> LOG.info("Google oAuth 2.0 Login ended"));
             }
             default -> {
@@ -156,35 +165,30 @@ public class OAuthService {
         });
   }
 
-  private Mono<ResponseEntity<Response>> validateBearer(String bearer, boolean includeUserInfo) {
-    return Mono.empty();
-  }
-
   private Mono<ResponseEntity<Response>> performGoogleLogin(
       GoogleModel googleModel,
       ClientCredential clientCredential,
       boolean includeUserInfo,
+      boolean includeUserData,
       ServerHttpRequest request) {
     return dataService
-        .getUserByEmail(googleModel.getUserInfo().getEmail())
+        .getUserByEmail(googleModel.getJwtData().getEmail())
         .map(
             user -> {
+              googleModel.getJwtData().setIdentifier(user.getIdentifier());
+              googleModel.getJwtData().setRoles(user.getRoles());
+              googleModel.getJwtData().setSub(user.getUsername());
               AuthToken token =
                   tokenService.generateToken(
-                      user,
-                      clientCredential,
-                      Utils.putGoogleClaimsIntoToken(
-                          clientCredential,
-                          TokenClaims.GOOGLE_TOKEN,
-                          googleModel.getTokenResponse()));
+                      googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
               Response response =
                   new Response(
                       HttpStatus.OK.value(),
                       "Login successfully, welcome " + user.getUsername() + " !",
                       CorrelationIdUtils.getCorrelationId(),
                       includeUserInfo
-                          ? new OAuthTokenResponse(token, googleModel.getTokenResponse(), user)
-                          : new OAuthTokenResponse(token, googleModel.getTokenResponse()));
+                          ? new OAuthTokenResponse(token, googleModel.getJwtData())
+                          : token);
               return ResponseEntity.ok(response);
             })
         .onErrorResume(
@@ -203,30 +207,44 @@ public class OAuthService {
                   throw new OAuthException(
                       ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
                 }
-                User userGoogle = GoogleOAuthMapper.generateGoogleUser(googleModel.getUserInfo());
+                User userGoogle = GoogleOAuthMapper.generateGoogleUser(googleModel);
                 userGoogle.setPassword(Utils.getCookie(COOKIE_TOKEN, request));
                 return dataService
-                    .registerUser(userGoogle)
+                    .registerUser(userGoogle, clientCredential)
                     .map(
                         user1 -> {
+                          googleModel
+                              .getJwtData()
+                              .setRoles(
+                                  ObjectUtils.isEmpty(clientCredential.getDefaultRoles())
+                                      ? null
+                                      : clientCredential.getDefaultRoles().stream()
+                                          .map(AppRole::getRole)
+                                          .toList());
+                          user1.setRoles(
+                              ObjectUtils.isEmpty(clientCredential.getDefaultRoles())
+                                  ? null
+                                  : clientCredential.getDefaultRoles().stream()
+                                      .map(AppRole::getRole)
+                                      .toList());
                           AuthToken token =
                               tokenService.generateToken(
-                                  user1,
+                                  googleModel.getJwtData(),
                                   clientCredential,
-                                  Utils.putGoogleClaimsIntoToken(
-                                      clientCredential,
-                                      TokenClaims.GOOGLE_TOKEN,
-                                      googleModel.getTokenResponse()));
+                                  googleModel.getTokenResponse());
                           Response response =
                               new Response(
                                   HttpStatus.OK.value(),
-                                  "Login successfully, welcome " + user1.getUsername() + " !",
+                                  "Login successfully, welcome " + user1.getUsername() + "!",
                                   CorrelationIdUtils.getCorrelationId(),
                                   includeUserInfo
                                       ? new OAuthTokenResponse(
-                                          token, googleModel.getTokenResponse(), user1)
-                                      : new OAuthTokenResponse(
-                                          token, googleModel.getTokenResponse()));
+                                          token,
+                                          googleModel.getJwtData(),
+                                          includeUserData ? user1 : null)
+                                      : includeUserData
+                                          ? new OAuthTokenResponse(token, user1)
+                                          : token);
                           return ResponseEntity.ok(response);
                         });
               }
@@ -235,7 +253,11 @@ public class OAuthService {
   }
 
   private Mono<ResponseEntity<Response>> makeClassicLogin(
-      String basic, ClientCredential clientCredential, boolean includeUserInfo) {
+      String basic,
+      ClientCredential clientCredential,
+      boolean includeUserInfo,
+      boolean includeUserData,
+      ServerHttpRequest request) {
     LOG.debug("Decoding user using Base64 Decoder");
     String username;
     String password;
@@ -255,9 +277,11 @@ public class OAuthService {
     username = email != null ? null : username;
 
     return dataService
-        .login(username, email, password, clientCredential)
+        .login(username, email, password, clientCredential, request)
         .map(
             tokenResponse -> {
+              // TODO: [OPZIONALE] Non torno i ruoli perchè strapi non gestisce i ruoli alla login,
+              // se li vuoi implementa la user/me
               String message =
                   "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
 
@@ -266,10 +290,11 @@ public class OAuthService {
                       HttpStatus.OK.value(),
                       message,
                       CorrelationIdUtils.getCorrelationId(),
-                      includeUserInfo
-                          ? tokenResponse
-                          : new OAuthTokenResponse(
-                              tokenResponse.getToken(), tokenResponse.getStrapiJwt()));
+                      new OAuthTokenResponse(
+                          tokenResponse.getToken(),
+                          tokenResponse.getStrapiJwt(),
+                          includeUserInfo ? tokenResponse.getUserInfo() : null,
+                          includeUserData ? tokenResponse.getUser() : null));
               LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
               return ResponseEntity.ok(response);
             });

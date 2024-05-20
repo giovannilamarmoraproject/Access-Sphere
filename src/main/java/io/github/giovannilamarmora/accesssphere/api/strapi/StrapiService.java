@@ -6,6 +6,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiError;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLogin;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
+import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -27,8 +28,8 @@ public class StrapiService {
   @Autowired private StrapiClient strapiClient;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<StrapiResponse>> registerUserToStrapi(User user) {
-    StrapiUser strapiUser = StrapiMapper.mapFromUserToStrapiUser(user);
+  public Mono<ResponseEntity<StrapiResponse>> registerUserToStrapi(User user, ClientCredential clientCredential) {
+    StrapiUser strapiUser = StrapiMapper.mapFromUserToStrapiUser(user, clientCredential);
     return strapiClient
         .saveUser(strapiUser)
         .doOnError(

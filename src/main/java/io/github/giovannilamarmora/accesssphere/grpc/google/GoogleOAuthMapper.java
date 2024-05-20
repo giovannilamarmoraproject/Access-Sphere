@@ -16,27 +16,27 @@ public class GoogleOAuthMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(GoogleOAuthMapper.class);
 
-  public static User generateGoogleUser(GoogleIdToken.Payload userInfo) {
+  public static User generateGoogleUser(GoogleModel googleModel) {
 
     return new User(
-        UUID.randomUUID().toString(),
-        getUserInfoValue(userInfo, "given_name"),
-        getUserInfoValue(userInfo, "family_name"),
-        userInfo.getEmail(),
-        userInfo.getSubject(),
+        googleModel.getJwtData().getIdentifier(),
+        getUserInfoValue(googleModel.getUserInfo(), "given_name"),
+        getUserInfoValue(googleModel.getUserInfo(), "family_name"),
+        googleModel.getJwtData().getEmail(),
+        googleModel.getJwtData().getSub(),
         null,
-        UserRole.USER,
-        getUserInfoValue(userInfo, "picture"),
+        googleModel.getJwtData().getRoles(),
+        getUserInfoValue(googleModel.getUserInfo(), "picture"),
         null,
-        getUserInfoValue(userInfo, "phone_number"),
-        null,
-        null,
+        getUserInfoValue(googleModel.getUserInfo(), "phone_number"),
         null,
         null,
         null,
         null,
         null,
-        userInfo);
+        null,
+        null,
+        null);
   }
 
   private static String getUserInfoValue(GoogleIdToken.Payload userInfo, String value) {

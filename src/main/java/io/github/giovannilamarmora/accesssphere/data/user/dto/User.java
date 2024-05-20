@@ -2,7 +2,6 @@ package io.github.giovannilamarmora.accesssphere.data.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.data.address.model.Address;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
@@ -44,7 +43,7 @@ public class User extends GenericDTO {
   // TODO: Capire se password è un campo required
   private String password;
 
-  private UserRole role = UserRole.USER;
+  private List<String> roles;
 
   private String profilePhoto;
 
@@ -68,11 +67,11 @@ public class User extends GenericDTO {
 
   private Map<String, Object> attributes;
 
-  public User(String identifier, String username, String email, UserRole role) {
+  public User(String identifier, String username, String email, List<String> roles) {
     super(null, null, null, null);
     this.identifier = identifier;
     this.username = username;
     this.email = email;
-    this.role = role;
+    this.roles = roles;
   }
 }

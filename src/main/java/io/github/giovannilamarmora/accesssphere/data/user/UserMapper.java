@@ -8,6 +8,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
+import java.util.Arrays;
+
 @Component
 public class UserMapper {
 
@@ -15,6 +17,8 @@ public class UserMapper {
   public static UserEntity mapUserToUserEntity(User user) {
     UserEntity userEntity = new UserEntity();
     BeanUtils.copyProperties(user, userEntity);
+    if (!ObjectUtils.isEmpty(user.getRoles()))
+      userEntity.setRoles(String.join(" ", user.getRoles()));
     return userEntity;
   }
 
@@ -23,6 +27,7 @@ public class UserMapper {
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
     if (!ObjectUtils.isEmpty(userEntity.getStrapiId())) user.setId(userEntity.getStrapiId());
+    user.setRoles(Arrays.stream(userEntity.getRoles().split(" ")).toList());
     return user;
   }
 }

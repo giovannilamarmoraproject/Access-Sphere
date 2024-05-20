@@ -1,7 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.OAuthStrapiClient;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.springframework.util.ObjectUtils;
 
 @Component
 public class ClientMapper {
+
+  private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static ClientCredential fromClientCredentialEntityToClientCredential(
@@ -34,6 +37,11 @@ public class ClientMapper {
         clientCredentialEntity.getJwtExpiration(),
         clientCredentialEntity.getJweSecret(),
         clientCredentialEntity.getJweExpiration(),
-        clientCredentialEntity.getRegistrationToken());
+        clientCredentialEntity.getRegistrationToken(),
+        /*ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRoles())
+        ? null
+        : Arrays.stream(clientCredentialEntity.getDefaultRoles().split(" ")).toList()*/
+        mapper.convertValue(
+            clientCredentialEntity.getDefaultRoles(), new TypeReference<List<AppRole>>() {}));
   }
 }

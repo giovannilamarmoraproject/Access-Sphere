@@ -1,9 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.api.client.auth.oauth2.TokenResponse;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,33 +15,28 @@ import lombok.NoArgsConstructor;
 public class OAuthTokenResponse {
   private AuthToken token;
   private String strapiJwt;
-  private TokenResponse googleToken;
+  private JWTData userInfo;
   private User user;
 
-  public OAuthTokenResponse(AuthToken token, TokenResponse googleToken) {
+  public OAuthTokenResponse(AuthToken token, JWTData userInfo) {
     this.token = token;
-    this.googleToken = googleToken;
+    this.userInfo = userInfo;
+  }
+
+  public OAuthTokenResponse(AuthToken token, JWTData userInfo, User user) {
+    this.token = token;
+    this.userInfo = userInfo;
+    this.user = user;
+  }
+
+  public OAuthTokenResponse(User user, JWTData userInfo, AuthToken token) {
+    this.user = user;
+    this.userInfo = userInfo;
+    this.token = token;
   }
 
   public OAuthTokenResponse(AuthToken token, User user) {
     this.token = token;
     this.user = user;
-  }
-
-  public OAuthTokenResponse(AuthToken token, String strapiJwt, User user) {
-    this.token = token;
-    this.strapiJwt = strapiJwt;
-    this.user = user;
-  }
-
-  public OAuthTokenResponse(AuthToken token, TokenResponse googleToken, User user) {
-    this.token = token;
-    this.googleToken = googleToken;
-    this.user = user;
-  }
-
-  public OAuthTokenResponse(AuthToken token, String strapiJwt) {
-    this.token = token;
-    this.strapiJwt = strapiJwt;
   }
 }

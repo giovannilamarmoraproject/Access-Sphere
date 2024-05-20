@@ -94,6 +94,7 @@ public class StrapiClient {
   public Mono<ResponseEntity<List<StrapiUser>>> getUserByEmail(String email) {
     Map<String, Object> params = new HashMap<>();
     params.put("filters[email][$eq]", email);
+    params.put("populate", "*");
 
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);

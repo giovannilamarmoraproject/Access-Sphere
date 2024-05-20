@@ -42,8 +42,6 @@ public class UserService {
 
     return clientCredentialMono.flatMap(
         clientCredential -> {
-          user.setRole(UserRole.USER);
-
           if (ObjectUtils.isEmpty(registration_token)) {
             LOG.error("Missing registration_token");
             throw new OAuthException(
@@ -70,7 +68,7 @@ public class UserService {
           }
 
           return dataService
-              .registerUser(user)
+              .registerUser(user, clientCredential)
               .map(
                   user1 -> {
                     Response response =

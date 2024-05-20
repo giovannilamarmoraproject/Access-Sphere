@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -42,7 +43,9 @@ public class StrapiUser {
 
   private String password;
 
-  private UserRole userRole = UserRole.USER;
+  private List<StrapiAddress> addresses;
+
+  private List<AppRole> app_roles;
 
   private String profilePhoto;
 

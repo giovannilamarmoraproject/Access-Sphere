@@ -66,7 +66,10 @@ public class GrpcService {
               googleTokenResponse.get("id_token").toString(),
               clientCredential.getExternalClientId());
       LOG.info("Obtained user is {}", Utils.mapper.writeValueAsString(userInfo));
-      return new GoogleModel(googleTokenResponse, userInfo);
+      return new GoogleModel(
+          googleTokenResponse,
+          userInfo,
+          GrpcMapper.fromGoogleDataToJWTData(userInfo, clientCredential));
     } catch (IOException | GeneralSecurityException e) {
       LOG.error("An error happen during oAuth Google Login, message is {}", e.getMessage());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());

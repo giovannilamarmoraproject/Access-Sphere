@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.client.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
@@ -40,4 +41,5 @@ public class ClientCredential extends GenericDTO {
   private String jweSecret;
   private Long jweExpiration;
   private String registrationToken;
+  private List<AppRole> defaultRoles;
 }

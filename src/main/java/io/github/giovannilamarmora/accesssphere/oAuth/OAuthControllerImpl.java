@@ -59,12 +59,15 @@ public class OAuthControllerImpl {
       @RequestParam(value = "prompt", required = false) String prompt,
       @RequestParam(value = "include_user_info", required = false, defaultValue = "true")
           boolean includeUserInfo,
+      @RequestParam(value = "include_user_data", required = false, defaultValue = "true")
+          boolean includeUserData,
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
-          @Schema(description = "Authorization Basic or Bearer")
+          @Schema(description = "Authorization Basic")
           String basic,
       ServerHttpRequest request) {
-    return oAuthService.token(clientId, scope, code, prompt, includeUserInfo, basic, request);
+    return oAuthService.token(
+        clientId, scope, code, prompt, includeUserInfo, includeUserData, basic, request);
   }
 
   @GetMapping(value = "/token", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -82,12 +85,23 @@ public class OAuthControllerImpl {
       @RequestParam(value = "prompt", required = false) String prompt,
       @RequestParam(value = "include_user_info", required = false, defaultValue = "false")
           boolean includeUserInfo,
+      @RequestParam(value = "include_user_data", required = false, defaultValue = "false")
+          boolean includeUserData,
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
-          @Schema(description = "Authorization Basic or Bearer")
+          @Schema(description = "Authorization Basic")
           String auth,
       ServerHttpRequest request) {
     return oAuthService.tokenOAuth(
-        clientId, grant_type, scope, code, prompt, redirectUri, includeUserInfo, auth, request);
+        clientId,
+        grant_type,
+        scope,
+        code,
+        prompt,
+        redirectUri,
+        includeUserInfo,
+        includeUserData,
+        auth,
+        request);
   }
 }

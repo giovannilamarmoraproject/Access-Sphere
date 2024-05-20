@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.client.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
@@ -10,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -66,4 +69,9 @@ public class ClientCredentialEntity extends GenericEntity {
 
   @Column(name = "REGISTRATION_TOKEN")
   private String registrationToken;
+
+  @Lob
+  @JsonRawValue
+  @Column(name = "DEFAULT_ROLES", columnDefinition = "json")
+  private String defaultRoles;
 }
