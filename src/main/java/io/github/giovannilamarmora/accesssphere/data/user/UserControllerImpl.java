@@ -33,8 +33,7 @@ public class UserControllerImpl {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> registerUser(
       @RequestBody @Valid @NotNull User user,
-      @RequestParam(value = "client_id") @NotNull(message = "Client ID is Required")
-          String clientId,
+      @RequestParam(value = "client_id") String clientId,
       @RequestParam(value = "registration_token")
           @NotNull(message = "Registration Token is Required")
           String registration_token) {

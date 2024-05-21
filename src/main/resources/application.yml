@@ -52,6 +52,7 @@ rest:
         registerUser: /api/auth/local/register
         getUserByEmail: /api/users
         login: /api/auth/local
+        refreshToken: /api/auth/token/request
 
 app:
   version: @project.version@

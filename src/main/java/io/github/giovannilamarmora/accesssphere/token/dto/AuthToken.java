@@ -11,9 +11,10 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthToken {
 
-  private String idToken;
-  private String accessToken;
-  private String refreshToken;
-  private Long expirationTime;
-  private String type;
+  private String id_token;
+  private String access_token;
+  private String refresh_token;
+  private Long expires_at;
+  private Long expires;
+  private String token_type;
 }

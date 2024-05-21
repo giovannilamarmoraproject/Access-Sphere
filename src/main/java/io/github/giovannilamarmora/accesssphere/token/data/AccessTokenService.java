@@ -34,7 +34,7 @@ public class AccessTokenService {
               jwtData.getIdentifier(),
               jwtData.getType(),
               issueDate,
-              Utils.mapper.writeValueAsString(payload));
+              Utils.mapper().writeValueAsString(payload));
     } catch (JsonProcessingException e) {
       LOG.error(
           "An error happen during creating and storing refresh token, message is {}",

@@ -1,12 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.utilities;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -17,6 +10,12 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpCookie;
@@ -28,12 +27,16 @@ import org.springframework.util.ObjectUtils;
 
 public class Utils {
 
-  public static final ObjectMapper mapper =
+  private static final ObjectMapper mapper =
       new ObjectMapper()
           .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
           .findAndRegisterModules();
 
   private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
+
+  public static ObjectMapper mapper() {
+    return mapper;
+  }
 
   public static boolean checkCharacterAndRegexValid(String field, String regex) {
     if (ObjectUtils.isEmpty(field) || ObjectUtils.isEmpty(regex)) return false;

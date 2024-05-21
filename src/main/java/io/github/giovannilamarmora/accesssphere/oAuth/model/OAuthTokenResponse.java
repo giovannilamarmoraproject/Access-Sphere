@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OAuthTokenResponse {
   private AuthToken token;
-  private String strapiJwt;
+  private Object strapiToken;
   private JWTData userInfo;
   private User user;
 

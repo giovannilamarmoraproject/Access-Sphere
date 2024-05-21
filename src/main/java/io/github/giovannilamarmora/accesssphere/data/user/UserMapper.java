@@ -27,7 +27,8 @@ public class UserMapper {
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
     if (!ObjectUtils.isEmpty(userEntity.getStrapiId())) user.setId(userEntity.getStrapiId());
-    user.setRoles(Arrays.stream(userEntity.getRoles().split(" ")).toList());
+    if (!ObjectUtils.isEmpty(userEntity.getRoles()))
+      user.setRoles(Arrays.stream(userEntity.getRoles().split(" ")).toList());
     return user;
   }
 }

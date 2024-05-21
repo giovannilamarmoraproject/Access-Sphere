@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLogin;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.data.DataValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -28,17 +29,26 @@ public class StrapiService {
   @Autowired private StrapiClient strapiClient;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<StrapiResponse>> registerUserToStrapi(User user, ClientCredential clientCredential) {
+  public Mono<StrapiResponse> registerUserToStrapi(User user, ClientCredential clientCredential) {
     StrapiUser strapiUser = StrapiMapper.mapFromUserToStrapiUser(user, clientCredential);
     return strapiClient
         .saveUser(strapiUser)
+        .map(
+            strapiResponseResponseEntity -> {
+              DataValidator.validateStrapiResponse(strapiResponseResponseEntity);
+              strapiResponseResponseEntity
+                  .getBody()
+                  .getUser()
+                  .setApp_roles(strapiUser.getApp_roles());
+              return strapiResponseResponseEntity.getBody();
+            })
         .doOnError(
             throwable -> {
               String messageBody = throwable.getMessage().split("and body message ")[1];
               if (Utils.isInstanceOf(messageBody, new TypeReference<StrapiError>() {})) {
                 StrapiError response;
                 try {
-                  response = Utils.mapper.readValue(messageBody, StrapiError.class);
+                  response = Utils.mapper().readValue(messageBody, StrapiError.class);
                 } catch (JsonProcessingException e) {
                   LOG.error(
                       "An error happen during read value from strapi, message is {}",
@@ -89,15 +99,26 @@ public class StrapiService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<StrapiResponse> login(String email, String password) {
-    return strapiClient
-        .login(new StrapiLogin(email, password))
+    return Mono.zip(
+            strapiClient.login(new StrapiLogin(email, password)),
+            strapiClient.refreshToken(new StrapiLogin(email, password)))
         .flatMap(
-            strapiResponseResponseEntity -> {
+            objects -> {
+              ResponseEntity<StrapiResponse> strapiResponseResponseEntity = objects.getT1();
               if (ObjectUtils.isEmpty(strapiResponseResponseEntity.getBody())) {
                 LOG.error("Strapi returned an empty body on login");
                 throw new OAuthException(
-                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+                    ExceptionMap.ERR_STRAPI_400, ExceptionMap.ERR_STRAPI_400.getMessage());
               }
+              ResponseEntity<StrapiResponse> strapiResponseRefresh = objects.getT2();
+              if (ObjectUtils.isEmpty(strapiResponseRefresh.getBody())) {
+                LOG.error("Strapi returned an empty body on login");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_400, ExceptionMap.ERR_STRAPI_400.getMessage());
+              }
+              strapiResponseResponseEntity
+                  .getBody()
+                  .setRefresh_token(strapiResponseRefresh.getBody().getRefresh_token());
               return Mono.just(strapiResponseResponseEntity.getBody());
             })
         .doOnError(
@@ -107,7 +128,6 @@ public class StrapiService {
                 throw new OAuthException(
                     ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
               }
-              ;
             });
   }
 }

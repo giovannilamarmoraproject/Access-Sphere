@@ -1,17 +1,13 @@
 package io.github.giovannilamarmora.accesssphere.api.strapi;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLogin;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.webClient.UtilsUriBuilder;
 import io.github.giovannilamarmora.utils.webClient.WebClientRest;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +45,9 @@ public class StrapiClient {
 
   @Value(value = "${rest.client.strapi.path.login}")
   private String loginUrl;
+
+  @Value(value = "${rest.client.strapi.path.refreshToken}")
+  private String refreshTokenUrl;
 
   @Autowired private WebClient.Builder builder;
 
@@ -114,10 +113,24 @@ public class StrapiClient {
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 
     return webClientRest.perform(
-            HttpMethod.POST,
-            UtilsUriBuilder.buildUri(loginUrl, null),
-            login,
-            headers,
-            StrapiResponse.class);
+        HttpMethod.POST,
+        UtilsUriBuilder.buildUri(loginUrl, null),
+        login,
+        headers,
+        StrapiResponse.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<StrapiResponse>> refreshToken(StrapiLogin login) {
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
+    return webClientRest.perform(
+        HttpMethod.POST,
+        UtilsUriBuilder.buildUri(refreshTokenUrl, null),
+        login,
+        headers,
+        StrapiResponse.class);
   }
 }

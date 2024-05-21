@@ -16,6 +16,8 @@ import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +44,7 @@ public class DataService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> getUserByEmail(String email) {
     if (isStrapiEnabled) {
-      LOG.info("Strapi is active");
+      LOG.debug("Strapi is enabled, finding user, using email {}", email);
       return strapiService
           .getUserByEmail(email)
           .flatMap(strapiUser -> Mono.just(StrapiMapper.mapFromStrapiUserToUser(strapiUser)))
@@ -80,17 +82,19 @@ public class DataService {
     userEntity.setIdentifier(identifier);
 
     if (isStrapiEnabled) {
+      LOG.debug("Strapi is enabled, registering user with email {} on strapi", user.getEmail());
       return strapiService
           .registerUserToStrapi(user, clientCredential)
           .map(
-              strapiResponseRes -> {
-                if (ObjectUtils.isEmpty(strapiResponseRes.getBody())) {
-                  LOG.error("Strapi response on user is null");
-                  throw new OAuthException(
-                      ExceptionMap.ERR_STRAPI_400, ExceptionMap.ERR_STRAPI_400.getMessage());
-                }
-                userEntity.setStrapiId(strapiResponseRes.getBody().getUser().getId());
-                // TODO: Setta i ruoli salvati su strapi
+              strapiResponse -> {
+                userEntity.setStrapiId(strapiResponse.getUser().getId());
+                if (!ObjectUtils.isEmpty(strapiResponse.getUser().getApp_roles()))
+                  userEntity.setRoles(
+                      String.join(
+                          " ",
+                          strapiResponse.getUser().getApp_roles().stream()
+                              .map(AppRole::getRole)
+                              .toList()));
                 // Registro l'utente a prescindere che strapi funzioni o meno
                 UserEntity userSaved = userDataService.saveAndFlush(userEntity);
                 return UserMapper.mapUserEntityToUser(userSaved);
@@ -122,16 +126,22 @@ public class DataService {
       ClientCredential clientCredential,
       ServerHttpRequest request) {
     if (isStrapiEnabled) {
+      LOG.debug(
+          "Strapi is enabled, making login via strapi, using identifier {}",
+          ObjectUtils.isEmpty(email) ? username : email);
       return strapiService
           .login(ObjectUtils.isEmpty(email) ? username : email, password)
           .flatMap(
               strapiResponse -> {
                 User user = StrapiMapper.mapFromStrapiUserToUser(strapiResponse.getUser());
                 JWTData jwtData = JWTData.generateJWTData(user, clientCredential, request);
+                Map<String, Object> strapiToken = new HashMap<>();
+                strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
+                strapiToken.put("access_token", strapiResponse.getJwt());
                 AuthToken token =
-                    tokenService.generateToken(jwtData, clientCredential, strapiResponse.getJwt());
-                return Mono.just(
-                    new OAuthTokenResponse(token, strapiResponse.getJwt(), jwtData, user));
+                    tokenService.generateToken(jwtData, clientCredential, strapiToken);
+                strapiToken.put("expires_at", jwtData.getExp());
+                return Mono.just(new OAuthTokenResponse(token, strapiToken, jwtData, user));
               })
           .onErrorResume(
               throwable -> {
@@ -155,23 +165,24 @@ public class DataService {
       String password,
       ClientCredential clientCredential,
       ServerHttpRequest request) {
+    LOG.debug("Login process via Database started for username={} and email={}", username, email);
     UserEntity userEntity = userDataService.findUserEntityByUsernameOrEmail(username, email);
 
     if (ObjectUtils.isEmpty(userEntity)) {
-      LOG.error("An error happen during findUserEntityByUsernameOrEmail()");
+      LOG.error("No data where found od database for the user {}, with email {}", username, email);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
     boolean matches = bCryptPasswordEncoder.matches(password, userEntity.getPassword());
     if (!matches) {
-      LOG.error(
-          "An error happen during findUserEntityByUsernameOrEmail(), the password do not match");
+      LOG.error("An error happen during bCryptPasswordEncoder.matches, the password do not match");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
     User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
     userEntityToUser.setPassword(null);
     JWTData jwtData = JWTData.generateJWTData(userEntityToUser, clientCredential, request);
     AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
+    LOG.debug("Login process via Database ended for username={} and email={}", username, email);
     return new OAuthTokenResponse(userEntityToUser, jwtData, token);
   }
 }

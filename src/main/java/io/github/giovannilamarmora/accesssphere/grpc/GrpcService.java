@@ -11,17 +11,15 @@ import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 @Logged
@@ -51,6 +49,8 @@ public class GrpcService {
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public GoogleModel authenticateOAuth(
       String code, String scope, String redirectUri, ClientCredential clientCredential) {
+    LOG.debug(
+        "Starting google authentication with redirect_uri {} and scope {}", redirectUri, scope);
     TokenResponse googleTokenResponse;
     try {
       googleTokenResponse =
@@ -65,7 +65,7 @@ public class GrpcService {
           googleOAuthService.getUserInfo(
               googleTokenResponse.get("id_token").toString(),
               clientCredential.getExternalClientId());
-      LOG.info("Obtained user is {}", Utils.mapper.writeValueAsString(userInfo));
+      LOG.info("Obtained user is {}", Utils.mapper().writeValueAsString(userInfo));
       return new GoogleModel(
           googleTokenResponse,
           userInfo,

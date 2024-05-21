@@ -43,12 +43,12 @@ public class TokenService {
         if (ObjectUtils.isEmpty(clientCredential.getJwtSecret())) {
           LOG.error("JWT Secret is not defined, please define them into the client");
           throw new TokenException(
-              ExceptionMap.ERR_TOKEN_400, ExceptionMap.ERR_TOKEN_400.getMessage());
+              ExceptionMap.ERR_TOKEN_400, "Invalid JWT Secret on client configuration");
         }
         if (ObjectUtils.isEmpty(clientCredential.getJwtExpiration())) {
           LOG.error("JWT Expiration is not defined, please define them into the client");
           throw new TokenException(
-              ExceptionMap.ERR_TOKEN_400, ExceptionMap.ERR_TOKEN_400.getMessage());
+              ExceptionMap.ERR_TOKEN_400, "Invalid JWT Expiration on client configuration");
         }
         return generateJWTToken(jwtData, clientCredential, payload);
       }
@@ -56,19 +56,19 @@ public class TokenService {
         if (ObjectUtils.isEmpty(clientCredential.getJweSecret())) {
           LOG.error("JWE Secret is not defined, please define them into the client");
           throw new TokenException(
-              ExceptionMap.ERR_TOKEN_400, ExceptionMap.ERR_TOKEN_400.getMessage());
+              ExceptionMap.ERR_TOKEN_400, "Invalid JWE Secret on client configuration");
         }
         if (ObjectUtils.isEmpty(clientCredential.getJweExpiration())) {
           LOG.error("JWE Expiration is not defined, please define them into the client");
           throw new TokenException(
-              ExceptionMap.ERR_TOKEN_400, ExceptionMap.ERR_TOKEN_400.getMessage());
+              ExceptionMap.ERR_TOKEN_400, "Invalid JWE Expiration on client configuration");
         }
         return generateJWEToken(jwtData, clientCredential, payload);
       }
       default -> {
         LOG.error("Token type is not defined, please define them into the client");
         throw new TokenException(
-            ExceptionMap.ERR_TOKEN_400, ExceptionMap.ERR_TOKEN_400.getMessage());
+            ExceptionMap.ERR_TOKEN_400, "Invalid token_type in client configuration");
       }
     }
   }
@@ -127,7 +127,13 @@ public class TokenService {
 
     accessTokenService.save(jwtData, refreshToken, now.toInstant().toEpochMilli(), payload);
 
-    return new AuthToken(idToken, accessToken, refreshToken, jwtExpiration, "Bearer");
+    return new AuthToken(
+        idToken,
+        accessToken,
+        refreshToken,
+        now.toInstant().toEpochMilli() + jwtExpiration,
+        jwtExpiration,
+        "Bearer");
   }
 
   // @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -233,7 +239,12 @@ public class TokenService {
     accessTokenService.save(jwtData, refreshToken, now.toInstant().toEpochMilli(), payload);
 
     return new AuthToken(
-        idToken, accessToken, refreshToken, claimsSet.getExpirationTime().getTime(), "Bearer");
+        idToken,
+        accessToken,
+        refreshToken,
+        claimsSet.getExpirationTime().getTime(),
+        jweExpiration,
+        "Bearer");
   }
 
   // @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -269,7 +280,7 @@ public class TokenService {
       LOG.error(
           "An error happen during the generation of the refresh token, message is {}",
           e.getMessage());
-      throw new TokenException(ExceptionMap.ERR_TOKEN_500, e.getMessage());
+      throw new TokenException(e.getMessage());
     }
     messageDigest.update(_message.getBytes());
     return Base64.encodeBase64URLSafeString(messageDigest.digest());

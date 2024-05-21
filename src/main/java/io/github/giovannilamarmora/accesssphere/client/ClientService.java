@@ -37,19 +37,24 @@ public class ClientService {
       return strapiData
           .map(
               responseEntity -> {
-                if (ObjectUtils.isEmpty(responseEntity.getBody())) {
+                if (ObjectUtils.isEmpty(responseEntity.getBody())
+                    || ObjectUtils.isEmpty(responseEntity.getBody().getData())) {
                   LOG.error("Strapi returned an empty object");
-                  throw new StrapiException(ExceptionMap.ERR_STRAPI_404.getMessage());
+                  throw new StrapiException(
+                      ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
                 }
                 return StrapiMapper.mapFromStrapiResponseToClientCredential(
                     responseEntity.getBody());
               })
           .onErrorResume(
               throwable -> {
-                LOG.info(
-                    "Error on strapi, getting data from database, message is {}",
-                    throwable.getMessage());
-                return getClientFromDatabaseByClientID(clientID);
+                if (!throwable.getMessage().contains("Invalid client_id provided!")) {
+                  LOG.info(
+                      "Error on strapi, getting data from database, message is {}",
+                      throwable.getMessage());
+                  return getClientFromDatabaseByClientID(clientID);
+                }
+                return Mono.error(throwable);
               });
     }
     return getClientFromDatabaseByClientID(clientID);
@@ -60,8 +65,7 @@ public class ClientService {
     if (ObjectUtils.isEmpty(clientCredentialEntity)) {
       if (ObjectUtils.isEmpty(clientCredentialEntity)) {
         LOG.error("Client credential ot found on Database");
-        throw new OAuthException(
-            ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
+        throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
       }
     }
     return Mono.just(clientCredentialEntity)
