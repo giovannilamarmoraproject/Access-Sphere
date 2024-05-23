@@ -35,6 +35,8 @@ public final class OpenAPI {
           "A parameter used to specify the prompt behavior. Common values include none, consent, and select_account";
       public static final String BASIC =
           "The credentials used to authenticate the client with the authorization server. This usually takes the form of an HTTP Basic Authentication header.";
+      public static final String BEARER =
+          "The credentials used to authenticate the client with the authorization server. This usually takes the form of an HTTP Bearer Authentication header.";
       public static final String INCLUDE_USER_INFO = "(optional): Include UserInfo Response.";
       public static final String INCLUDE_USER_DATA = "(optional): Include UserData Response.";
     }
@@ -51,6 +53,7 @@ public final class OpenAPI {
       public static final String CODE = "abcdef";
       public static final String PROMPT = "consent";
       public static final String BASIC = "Basic dGVzdDpzZWNyZXQ=";
+      public static final String BEARER = "Bearer dGVzdDpzZWNyZXQ.....";
       public static final String INCLUDE_USER_INFO = "true";
       public static final String INCLUDE_USER_DATA = "true";
     }

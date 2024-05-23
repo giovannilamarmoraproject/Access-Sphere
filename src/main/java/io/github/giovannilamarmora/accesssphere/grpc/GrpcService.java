@@ -75,4 +75,18 @@ public class GrpcService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
   }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
+  public GoogleModel userInfo(String idToken, ClientCredential clientCredential) {
+    LOG.debug("Starting google userInfo with client_id {}", clientCredential.getClientId());
+    GoogleIdToken.Payload userInfo;
+    try {
+      userInfo = googleOAuthService.getUserInfo(idToken, clientCredential.getExternalClientId());
+      LOG.info("Obtained userInfo is {}", Utils.mapper().writeValueAsString(userInfo));
+      return new GoogleModel(null, userInfo, null);
+    } catch (IOException | GeneralSecurityException e) {
+      LOG.error("An error happen during oAuth Google UserInfo, message is {}", e.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+    }
+  }
 }

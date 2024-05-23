@@ -130,4 +130,27 @@ public class StrapiService {
               }
             });
   }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiUser> userInfo(String token) {
+    return strapiClient
+        .userInfo(token)
+        .flatMap(
+            strapiUserResponseEntity -> {
+              if (ObjectUtils.isEmpty(strapiUserResponseEntity.getBody())) {
+                LOG.error("Strapi returned an empty body on userInfo");
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+              }
+              return Mono.just(strapiUserResponseEntity.getBody());
+            })
+        .doOnError(
+            throwable -> {
+              if (throwable.getMessage().contains("Missing or invalid credentials")) {
+                LOG.error("Basic token is wrong or not valid, error is {}", throwable.getMessage());
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+              }
+            });
+  }
 }

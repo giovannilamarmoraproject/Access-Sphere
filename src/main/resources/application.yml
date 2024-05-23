@@ -53,6 +53,7 @@ rest:
         getUserByEmail: /api/users
         login: /api/auth/local
         refreshToken: /api/auth/token/request
+        userInfo: /api/users/me
 
 app:
   version: @project.version@

@@ -4,9 +4,13 @@ import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.UserRole;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
+import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
@@ -29,6 +33,47 @@ public class UserService {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   @Autowired private DataService dataService;
   @Autowired private ClientService clientService;
+  @Autowired private AccessTokenService accessTokenService;
+  @Autowired private TokenService tokenService;
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> userInfo(String bearer, boolean includeUserData) {
+    LOG.info("UserInfo process started, include Data: {}", includeUserData);
+    AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(accessTokenData.getClientId());
+
+    return clientCredentialMono.flatMap(
+        clientCredential -> {
+          if (!clientCredential.getAuthType().equals(accessTokenData.getType())) {
+            LOG.error("Invalid Authentication Type on client");
+            throw new OAuthException(
+                ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+          }
+          JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
+          switch (decryptToken.getType()) {
+            case BEARER -> {
+              return dataService
+                  .getUserInfo(
+                      decryptToken, accessTokenData.getPayload().get("access_token").textValue())
+                  .map(
+                      user -> {
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(),
+                                "UserInfo Data for " + user.getUsername(),
+                                CorrelationIdUtils.getCorrelationId(),
+                                includeUserData
+                                    ? new OAuthTokenResponse(decryptToken, user)
+                                    : decryptToken);
+                        return ResponseEntity.ok(response);
+                      });
+            }
+          }
+          return Mono.empty();
+        });
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> register(

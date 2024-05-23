@@ -23,17 +23,26 @@ public class AccessTokenService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AccessTokenData save(
-      JWTData jwtData, String refreshToken, Long issueDate, Object payload) {
+      JWTData jwtData,
+      String refreshToken,
+      String accessToken,
+      String idToken,
+      String client_id,
+      Object payload) {
     AccessTokenEntity accessTokenToBeSaved = new AccessTokenEntity();
     try {
       accessTokenToBeSaved =
           new AccessTokenEntity(
               null,
               refreshToken,
+              accessToken,
+              idToken,
+              client_id,
               jwtData.getSub(),
               jwtData.getIdentifier(),
               jwtData.getType(),
-              issueDate,
+              jwtData.getIat(),
+              jwtData.getExp(),
               Utils.mapper().writeValueAsString(payload));
     } catch (JsonProcessingException e) {
       LOG.error(
@@ -47,5 +56,18 @@ public class AccessTokenService {
       throw new TokenException(ExceptionMap.ERR_TOKEN_500, ExceptionMap.ERR_TOKEN_500.getMessage());
     }
     return AccessTokenMapper.fromAccessTokenEntityToData(accessTokenSaved);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public AccessTokenData getByAccessTokenOrIdToken(String token) {
+    String hashedToken = Utils.hashingToken(token.split("Bearer ")[1]);
+    AccessTokenEntity accessToken = accessTokenDAO.findByTokenHash(hashedToken);
+
+    if (ObjectUtils.isEmpty(accessToken)) {
+      LOG.error("Access token data not found on Database");
+      throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+
+    return AccessTokenMapper.fromAccessTokenEntityToData(accessToken);
   }
 }

@@ -39,4 +39,9 @@ public class OAuthTokenResponse {
     this.token = token;
     this.user = user;
   }
+
+  public OAuthTokenResponse(JWTData userInfo, User user) {
+    this.userInfo = userInfo;
+    this.user = user;
+  }
 }

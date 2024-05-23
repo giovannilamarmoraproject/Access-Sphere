@@ -19,13 +19,34 @@ import reactor.core.publisher.Mono;
 
 @Logged
 @RestController
-@RequestMapping("/v1/users")
+@RequestMapping("/v1")
 @Tag(name = OpenAPI.Tag.USERS, description = "API to manage users")
 public class UserControllerImpl {
 
   @Autowired private UserService userService;
 
-  @PostMapping("/register")
+  @GetMapping("/userInfo")
+  @Operation(
+      description = "Obtaining the Info of the current User",
+      summary = "User Info",
+      tags = OpenAPI.Tag.USERS)
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> userInfo(
+      @RequestParam(value = "include_user_data", required = false, defaultValue = "false")
+          @Schema(
+              description = OpenAPI.Params.Description.INCLUDE_USER_DATA,
+              example = OpenAPI.Params.Example.INCLUDE_USER_DATA)
+          boolean includeUserData,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer) {
+    return userService.userInfo(bearer, includeUserData);
+  }
+
+  @PostMapping("/users/register")
   @Operation(
       description = "Register a new user",
       summary = "User Registration",

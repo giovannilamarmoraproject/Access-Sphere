@@ -49,6 +49,9 @@ public class StrapiClient {
   @Value(value = "${rest.client.strapi.path.refreshToken}")
   private String refreshTokenUrl;
 
+  @Value(value = "${rest.client.strapi.path.userInfo}")
+  private String userInfoUrl;
+
   @Autowired private WebClient.Builder builder;
 
   @PostConstruct
@@ -132,5 +135,18 @@ public class StrapiClient {
         login,
         headers,
         StrapiResponse.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<StrapiUser>> userInfo(String bearer) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("populate", "*");
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + bearer);
+
+    return webClientRest.perform(
+        HttpMethod.GET, UtilsUriBuilder.buildUri(userInfoUrl, params), headers, StrapiUser.class);
   }
 }

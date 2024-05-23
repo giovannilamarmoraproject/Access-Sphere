@@ -24,8 +24,20 @@ public class AccessTokenEntity extends GenericEntity {
   @Column(name = "ID", nullable = false)
   private Long id;
 
-  @Column(name = "REFRESH_TOKEN_HASH")
+  @Lob
+  @Column(name = "REFRESH_TOKEN_HASH", columnDefinition = "TEXT")
   private String refreshTokenHash;
+
+  @Lob
+  @Column(name = "ACCESS_TOKEN_HASH", columnDefinition = "TEXT")
+  private String accessTokenHash;
+
+  @Lob
+  @Column(name = "ID_TOKEN_HASH", columnDefinition = "TEXT")
+  private String idTokenHash;
+
+  @Column(name = "CLIENT_ID")
+  private String clientId;
 
   @Column(name = "SUBJECT")
   private String subject;
@@ -39,6 +51,9 @@ public class AccessTokenEntity extends GenericEntity {
 
   @Column(name = "ISSUE_DATE")
   private Long issueDate;
+
+  @Column(name = "EXPIRE_DATE")
+  private Long expireDate;
 
   @Lob
   @JsonRawValue

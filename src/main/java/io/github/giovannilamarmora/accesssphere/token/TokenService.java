@@ -1,23 +1,38 @@
 package io.github.giovannilamarmora.accesssphere.token;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.DirectEncrypter;
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.JWEDecryptionKeySelector;
+import com.nimbusds.jose.proc.JWEKeySelector;
+import com.nimbusds.jose.proc.SimpleSecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
+import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.validation.constraints.NotNull;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.apache.commons.codec.binary.Base64;
@@ -34,6 +49,8 @@ public class TokenService {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
   private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
   @Autowired private AccessTokenService accessTokenService;
+
+  private final String testSecret = "flhfEg6QbtVU4f9WgIUVbkTebFBX7O7lQ43ly+uKDg4=";
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken generateToken(
@@ -74,6 +91,33 @@ public class TokenService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public JWTData parseToken(String token, ClientCredential clientCredential) {
+    switch (clientCredential.getTokenType()) {
+      case BEARER_JWT -> {
+        if (ObjectUtils.isEmpty(clientCredential.getJwtSecret())) {
+          LOG.error("JWT Secret is not defined, please define them into the client");
+          throw new TokenException(
+              ExceptionMap.ERR_TOKEN_400, "Invalid JWT Secret on client configuration");
+        }
+        return parseJWTToken(token, clientCredential);
+      }
+      case BEARER_JWE -> {
+        if (ObjectUtils.isEmpty(clientCredential.getJweSecret())) {
+          LOG.error("JWE Secret is not defined, please define them into the client");
+          throw new TokenException(
+              ExceptionMap.ERR_TOKEN_400, "Invalid JWE Secret on client configuration");
+        }
+        return parseJWEToken(token, clientCredential);
+      }
+      default -> {
+        LOG.error("Token type is not defined, please define them into the client");
+        throw new TokenException(
+            ExceptionMap.ERR_TOKEN_400, "Invalid token_type in client configuration");
+      }
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private AuthToken generateJWTToken(
       JWTData jwtData, ClientCredential clientCredential, Object payload) {
     // Access Token
@@ -99,7 +143,7 @@ public class TokenService {
     SecretKey key = Keys.hmacShaKeyFor(clientCredential.getJwtSecret().getBytes());
 
     String accessToken =
-        Jwts.builder().claims(claims.build()).expiration(exp).signWith(key).compact();
+        Jwts.builder().claims(claims.build()).issuedAt(now).expiration(exp).signWith(key).compact();
 
     // ID Token
     ClaimsBuilder idClaims = Jwts.claims().subject(jwtData.getSub());
@@ -125,7 +169,13 @@ public class TokenService {
     String refreshToken =
         generateRefreshToken(UUID.randomUUID().toString(), jwtData.getIdentifier());
 
-    accessTokenService.save(jwtData, refreshToken, now.toInstant().toEpochMilli(), payload);
+    accessTokenService.save(
+        jwtData,
+        refreshToken,
+        Utils.hashingToken(accessToken),
+        Utils.hashingToken(idToken),
+        clientCredential.getClientId(),
+        payload);
 
     return new AuthToken(
         idToken,
@@ -136,26 +186,54 @@ public class TokenService {
         "Bearer");
   }
 
-  // @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  // public User parseJWTToken(AuthToken token, String secret) throws UtilsException {
-  //   Claims body = null;
-  //   SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
-  //   try {
-  //     Jws<Claims> jwt =
-  //         Jwts.parser().decryptWith(key).build().parseSignedClaims(token.getAccessToken());
-  //     body = jwt.getPayload();
-  //   } catch (JwtException e) {
-  //     LOG.error("An error happen during parsing of JWT token, message is {}", e.getMessage());
-  //     throw new TokenException(ExceptionMap.ERR_TOKEN_401,
-  // ExceptionMap.ERR_TOKEN_401.getMessage());
-  //   }
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  private JWTData parseJWTToken(String token, ClientCredential clientCredential) {
+    Claims body = null;
+    SecretKey key = Keys.hmacShaKeyFor(clientCredential.getJwtSecret().getBytes());
+    try {
+      String tokenSplit = token.split("Bearer ")[1];
+      Jws<Claims> jwt = Jwts.parser().verifyWith(key).build().parseSignedClaims(tokenSplit);
+      body = jwt.getPayload();
+    } catch (JwtException e) {
+      LOG.error("An error happen during parsing of JWT token, message is {}", e.getMessage());
+      throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
+    }
 
-  //   return new User(
-  //       (@NotNull String) body.get(TokenClaims.IDENTIFIER.claim()),
-  //       body.getSubject(),
-  //       (@NotNull String) body.get(TokenClaims.EMAIL.claim()),
-  //       UserRole.valueOf((String) body.get(TokenClaims.ROLE.claim())));
-  // }
+    return new JWTData(
+        (@NotNull String) body.get(TokenClaims.IDENTIFIER.claim()),
+        String.join(", ", (Set) (body.get(TokenClaims.AUD.claim()))),
+        (String) body.get(TokenClaims.AZP.claim()),
+        (Long) body.get(TokenClaims.EXP.claim()),
+        (Long) body.get(TokenClaims.IAT.claim()),
+        (@NotNull String) body.get(TokenClaims.ISS.claim()),
+        body.getSubject(),
+        ObjectUtils.isEmpty(body.get(TokenClaims.NAME.claim()))
+            ? null
+            : (String) body.get(TokenClaims.NAME.claim()),
+        (@NotNull String) body.get(TokenClaims.EMAIL.claim()),
+        ObjectUtils.isEmpty(body.get(TokenClaims.PICTURE.claim()))
+            ? null
+            : (String) body.get(TokenClaims.PICTURE.claim()),
+        ObjectUtils.isEmpty(body.get(TokenClaims.GIVEN_NAME.claim()))
+            ? null
+            : (String) body.get(TokenClaims.GIVEN_NAME.claim()),
+        ObjectUtils.isEmpty(body.get(TokenClaims.FAMILY_NAME.claim()))
+            ? null
+            : (String) body.get(TokenClaims.FAMILY_NAME.claim()),
+        (@NotNull String) body.get(TokenClaims.AT_HASH.claim()),
+        true,
+        ObjectUtils.isEmpty(body.get(TokenClaims.ROLE.claim()))
+            ? null
+            : Utils.mapper()
+                .convertValue(body.get(TokenClaims.ROLE.claim()), new TypeReference<>() {}),
+        ObjectUtils.isEmpty(body.get(TokenClaims.AUTH_TYPE.claim()))
+            ? null
+            : OAuthType.valueOf((String) body.get(TokenClaims.AUTH_TYPE.claim())),
+        ObjectUtils.isEmpty(body.get(TokenClaims.ATTRIBUTES.claim()))
+            ? null
+            : Utils.mapper()
+                .convertValue(body.get(TokenClaims.ATTRIBUTES.claim()), new TypeReference<>() {}));
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private AuthToken generateJWEToken(
@@ -236,7 +314,13 @@ public class TokenService {
     String refreshToken =
         generateRefreshToken(UUID.randomUUID().toString(), jwtData.getIdentifier());
 
-    accessTokenService.save(jwtData, refreshToken, now.toInstant().toEpochMilli(), payload);
+    accessTokenService.save(
+        jwtData,
+        refreshToken,
+        Utils.hashingToken(accessToken),
+        Utils.hashingToken(idToken),
+        clientCredential.getClientId(),
+        payload);
 
     return new AuthToken(
         idToken,
@@ -247,29 +331,62 @@ public class TokenService {
         "Bearer");
   }
 
-  // @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  // public User parseJWEToken(AuthToken token, String secret) throws UtilsException {
-  //  try {
-  //    String tokenSplit = token.getAccessToken().split("Bearer ")[1];
-  //    ConfigurableJWTProcessor<SimpleSecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
-  //    JWKSource<SimpleSecurityContext> jweKeySource = new ImmutableSecret<>(secret.getBytes());
-  //    JWEKeySelector<SimpleSecurityContext> jweKeySelector =
-  //        new JWEDecryptionKeySelector<>(
-  //            JWEAlgorithm.DIR, EncryptionMethod.A256CBC_HS512, jweKeySource);
-  //    jwtProcessor.setJWEKeySelector(jweKeySelector);
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  private JWTData parseJWEToken(String token, ClientCredential clientCredential) {
+    try {
+      String tokenSplit = token.split("Bearer ")[1];
+      ConfigurableJWTProcessor<SimpleSecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
+      JWKSource<SimpleSecurityContext> jweKeySource =
+          new ImmutableSecret<>(clientCredential.getJweSecret().getBytes());
+      JWEKeySelector<SimpleSecurityContext> jweKeySelector =
+          new JWEDecryptionKeySelector<>(
+              JWEAlgorithm.DIR, EncryptionMethod.A256CBC_HS512, jweKeySource);
+      jwtProcessor.setJWEKeySelector(jweKeySelector);
 
-  //    JWTClaimsSet claimsSet = jwtProcessor.process(tokenSplit, null);
+      JWTClaimsSet claimsSet = jwtProcessor.process(tokenSplit, null);
 
-  //    return new User(
-  //        (String) claimsSet.getClaim(TokenClaims.IDENTIFIER.claim()),
-  //        claimsSet.getSubject(),
-  //        (String) claimsSet.getClaim(TokenClaims.EMAIL.claim()),
-  //        UserRole.valueOf((String) claimsSet.getClaim(TokenClaims.ROLE.claim())));
-  //  } catch (JOSEException | ParseException | BadJOSEException e) {
-  //    LOG.error("An error happen during parsing JWE Token, message is {}", e.getMessage());
-  //    throw new TokenException(ExceptionMap.ERR_TOKEN_401, e.getMessage());
-  //  }
-  // }
+      return new JWTData(
+          (@NotNull String) claimsSet.getClaim(TokenClaims.IDENTIFIER.claim()),
+          (String) claimsSet.getClaim(TokenClaims.AUD.claim()),
+          (String) claimsSet.getClaim(TokenClaims.AZP.claim()),
+          Long.parseLong((String) claimsSet.getClaim(TokenClaims.EXP.claim())),
+          Long.parseLong((String) claimsSet.getClaim(TokenClaims.IAT.claim())),
+          (@NotNull String) claimsSet.getClaim(TokenClaims.ISS.claim()),
+          claimsSet.getSubject(),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.NAME.claim()))
+              ? null
+              : (String) claimsSet.getClaim(TokenClaims.NAME.claim()),
+          (@NotNull String) claimsSet.getClaim(TokenClaims.EMAIL.claim()),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.PICTURE.claim()))
+              ? null
+              : (String) claimsSet.getClaim(TokenClaims.PICTURE.claim()),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()))
+              ? null
+              : (String) claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.FAMILY_NAME.claim()))
+              ? null
+              : (String) claimsSet.getClaim(TokenClaims.FAMILY_NAME.claim()),
+          (@NotNull String) claimsSet.getClaim(TokenClaims.AT_HASH.claim()),
+          true,
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.ROLE.claim()))
+              ? null
+              : Utils.mapper()
+                  .convertValue(
+                      claimsSet.getClaim(TokenClaims.ROLE.claim()), new TypeReference<>() {}),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim()))
+              ? null
+              : OAuthType.valueOf((String) claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim())),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.ATTRIBUTES.claim()))
+              ? null
+              : Utils.mapper()
+                  .convertValue(
+                      claimsSet.getClaim(TokenClaims.ATTRIBUTES.claim()),
+                      new TypeReference<>() {}));
+    } catch (JOSEException | ParseException | BadJOSEException e) {
+      LOG.error("An error happen during parsing JWE Token, message is {}", e.getMessage());
+      throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
+    }
+  }
 
   private String generateRefreshToken(String plain, String identifier) {
     String _message = identifier + "_" + plain + "_Access_Sphere";
@@ -284,5 +401,10 @@ public class TokenService {
     }
     messageDigest.update(_message.getBytes());
     return Base64.encodeBase64URLSafeString(messageDigest.digest());
+  }
+
+  private SecretKey getSignInKey() {
+    byte[] keyBytes = Decoders.BASE64.decode(testSecret);
+    return Keys.hmacShaKeyFor(keyBytes);
   }
 }

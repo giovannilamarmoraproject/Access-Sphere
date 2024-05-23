@@ -185,4 +185,31 @@ public class DataService {
     LOG.debug("Login process via Database ended for username={} and email={}", username, email);
     return new OAuthTokenResponse(userEntityToUser, jwtData, token);
   }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<User> getUserInfo(JWTData jwtData, String token) {
+    if (isStrapiEnabled) {
+      LOG.debug("Strapi is enabled, getting userInfo");
+      return strapiService
+          .userInfo(token)
+          .flatMap(strapiUser -> Mono.just(StrapiMapper.mapFromStrapiUserToUser(strapiUser)))
+          .onErrorResume(
+              throwable -> {
+                if (!throwable
+                    .getMessage()
+                    .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_401.getMessage())) {
+                  LOG.info(
+                      "Error on strapi, getting userInfo into database, message is {}",
+                      throwable.getMessage());
+                  UserEntity userEntity = userDataService.findUserEntityByEmail(jwtData.getEmail());
+                  DataValidator.validateUser(userEntity);
+                  return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+                }
+                return Mono.error(throwable);
+              });
+    }
+    UserEntity userEntity = userDataService.findUserEntityByEmail(jwtData.getEmail());
+    DataValidator.validateUser(userEntity);
+    return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+  }
 }
