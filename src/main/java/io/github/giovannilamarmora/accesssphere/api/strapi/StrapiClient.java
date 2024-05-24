@@ -46,11 +46,14 @@ public class StrapiClient {
   @Value(value = "${rest.client.strapi.path.login}")
   private String loginUrl;
 
-  @Value(value = "${rest.client.strapi.path.refreshToken}")
-  private String refreshTokenUrl;
+  @Value(value = "${rest.client.strapi.path.getRefreshToken}")
+  private String getRefreshTokenUrl;
 
   @Value(value = "${rest.client.strapi.path.userInfo}")
   private String userInfoUrl;
+
+  @Value(value = "${rest.client.strapi.path.refreshToken}")
+  private String refreshTokenUrl;
 
   @Autowired private WebClient.Builder builder;
 
@@ -124,14 +127,14 @@ public class StrapiClient {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public Mono<ResponseEntity<StrapiResponse>> refreshToken(StrapiLogin login) {
+  public Mono<ResponseEntity<StrapiResponse>> getRefreshToken(StrapiLogin login) {
 
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 
     return webClientRest.perform(
         HttpMethod.POST,
-        UtilsUriBuilder.buildUri(refreshTokenUrl, null),
+        UtilsUriBuilder.buildUri(getRefreshTokenUrl, null),
         login,
         headers,
         StrapiResponse.class);
@@ -148,5 +151,21 @@ public class StrapiClient {
 
     return webClientRest.perform(
         HttpMethod.GET, UtilsUriBuilder.buildUri(userInfoUrl, params), headers, StrapiUser.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<StrapiResponse>> refreshToken(String refresh_token) {
+    Map<String, Object> body = new HashMap<>();
+    body.put("token", refresh_token);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
+    return webClientRest.perform(
+        HttpMethod.POST,
+        UtilsUriBuilder.buildUri(refreshTokenUrl, null),
+        body,
+        headers,
+        StrapiResponse.class);
   }
 }

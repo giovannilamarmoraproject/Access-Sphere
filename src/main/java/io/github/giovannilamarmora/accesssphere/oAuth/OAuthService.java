@@ -8,6 +8,8 @@ import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -38,6 +40,7 @@ public class OAuthService {
   @Autowired private ClientService clientService;
   @Autowired private AuthService authService;
   @Autowired private GrpcService grpcService;
+  @Autowired private AccessTokenService accessTokenService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> authorize(
@@ -96,6 +99,7 @@ public class OAuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> tokenOAuth(
       String clientId,
+      String refresh_token,
       String grant_type,
       String scope,
       String code,
@@ -120,7 +124,8 @@ public class OAuthService {
             request);
       }
       case REFRESH_TOKEN -> {
-        return refreshToken(clientId, grant_type, scope, includeUserData, includeUserData, request);
+        return refreshToken(
+            clientId, refresh_token, grant_type, scope, includeUserData, includeUserData, request);
       }
       default -> {
         LOG.error("Invalid grant_type for {}", grant_type);
@@ -187,6 +192,7 @@ public class OAuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private Mono<ResponseEntity<?>> refreshToken(
       String clientId,
+      String refresh_token,
       String grant_type,
       String scope,
       boolean includeUserInfo,
@@ -199,8 +205,32 @@ public class OAuthService {
             : request.getRemoteAddress().getHostName(),
         clientId,
         grant_type);
+    if (ObjectUtils.isEmpty(refresh_token)) {
+      LOG.error("You must provide a valid refresh_token!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, "Invalid request, you must provide a valid refresh_token!");
+    }
+    if (ObjectUtils.isEmpty(grant_type)
+        || !grant_type.equalsIgnoreCase(GrantType.REFRESH_TOKEN.type())) {
+      LOG.error(
+          "The grant_type should be {} instead of {}", GrantType.REFRESH_TOKEN.type(), grant_type);
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, "Invalid request, you must provide a valid grant_type!");
+    }
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
-    return Mono.empty();
+
+    return clientCredentialMono.flatMap(
+        clientCredential -> {
+          AccessTokenData accessTokenData =
+              accessTokenService.getByAccessTokenIdTokenOrRefreshToken(refresh_token);
+          switch (clientCredential.getAuthType()) {
+            case BEARER -> {
+              return authService.refreshToken(
+                  accessTokenData, clientCredential, includeUserInfo, includeUserData, request);
+            }
+          }
+          return Mono.empty();
+        });
   }
 }

@@ -39,6 +39,7 @@ public final class OpenAPI {
           "The credentials used to authenticate the client with the authorization server. This usually takes the form of an HTTP Bearer Authentication header.";
       public static final String INCLUDE_USER_INFO = "(optional): Include UserInfo Response.";
       public static final String INCLUDE_USER_DATA = "(optional): Include UserData Response.";
+      public static final String REFRESH_TOKEN = "Refresh token to refresh all tokens.";
     }
 
     public final class Example {
@@ -56,6 +57,7 @@ public final class OpenAPI {
       public static final String BEARER = "Bearer dGVzdDpzZWNyZXQ.....";
       public static final String INCLUDE_USER_INFO = "true";
       public static final String INCLUDE_USER_DATA = "true";
+      public static final String REFRESH_TOKEN = "Bearer dGVzdDpzZWNyZXQ.....";
     }
   }
 }

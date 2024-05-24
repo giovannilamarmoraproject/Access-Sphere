@@ -134,6 +134,11 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.CLIENT_ID,
               example = OpenAPI.Params.Example.CLIENT_ID)
           String clientId,
+      @RequestParam(value = "refresh_token", required = false)
+          @Schema(
+              description = OpenAPI.Params.Description.REFRESH_TOKEN,
+              example = OpenAPI.Params.Example.REFRESH_TOKEN)
+          String refresh_token,
       @RequestParam(value = "grant_type")
           @Schema(
               description = OpenAPI.Params.Description.GRANT_TYPE,

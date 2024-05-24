@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
@@ -12,8 +13,10 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.HashMap;
@@ -138,10 +141,20 @@ public class DataService {
                 Map<String, Object> strapiToken = new HashMap<>();
                 strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
                 strapiToken.put("access_token", strapiResponse.getJwt());
-                AuthToken token =
-                    tokenService.generateToken(jwtData, clientCredential, strapiToken);
-                strapiToken.put("expires_at", jwtData.getExp());
-                return Mono.just(new OAuthTokenResponse(token, strapiToken, jwtData, user));
+                return getUserInfo(jwtData, strapiResponse.getJwt())
+                    .flatMap(
+                        user1 -> {
+                          jwtData.setRoles(user1.getRoles());
+                          AuthToken token =
+                              tokenService.generateToken(jwtData, clientCredential, strapiToken);
+                          strapiToken.put("expires_at", jwtData.getExp());
+                          return Mono.just(
+                              new OAuthTokenResponse(
+                                  token,
+                                  Utils.mapper().convertValue(strapiToken, JsonNode.class),
+                                  jwtData,
+                                  user1));
+                        });
               })
           .onErrorResume(
               throwable -> {
@@ -211,5 +224,69 @@ public class DataService {
     UserEntity userEntity = userDataService.findUserEntityByEmail(jwtData.getEmail());
     DataValidator.validateUser(userEntity);
     return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<OAuthTokenResponse> refreshJWTToken(
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      String token,
+      ServerHttpRequest request) {
+    if (isStrapiEnabled) {
+      LOG.debug("Strapi is enabled, getting refresh token");
+      return strapiService
+          .refreshJWToken(token)
+          .flatMap(
+              strapiResponse -> {
+                JWTData jwtData = new JWTData();
+                jwtData.setEmail(accessTokenData.getEmail());
+                Map<String, Object> strapiToken = new HashMap<>();
+                strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
+                strapiToken.put("access_token", strapiResponse.getJwt());
+                return getUserInfo(jwtData, strapiResponse.getJwt())
+                    .map(
+                        user1 -> {
+                          JWTData jwtDataFinal =
+                              JWTData.generateJWTData(user1, clientCredential, request);
+                          jwtDataFinal.setRoles(user1.getRoles());
+                          AuthToken authToken =
+                              tokenService.generateToken(
+                                  jwtDataFinal, clientCredential, strapiToken);
+                          strapiToken.put("expires_at", jwtDataFinal.getExp());
+                          return new OAuthTokenResponse(
+                              authToken,
+                              Utils.mapper().convertValue(strapiToken, JsonNode.class),
+                              jwtDataFinal,
+                              user1);
+                        });
+              })
+          .onErrorResume(
+              throwable -> {
+                if (!throwable
+                    .getMessage()
+                    .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_401.getMessage())) {
+                  LOG.info(
+                      "Error on strapi, getting refresh token into database, message is {}",
+                      throwable.getMessage());
+                  UserEntity userEntity =
+                      userDataService.findUserEntityByEmail(accessTokenData.getEmail());
+                  DataValidator.validateUser(userEntity);
+                  User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
+                  userEntityToUser.setPassword(null);
+                  JWTData jwtData =
+                      JWTData.generateJWTData(userEntityToUser, clientCredential, request);
+                  AuthToken authToken = tokenService.generateToken(jwtData, clientCredential, null);
+                  return Mono.just(new OAuthTokenResponse(userEntityToUser, jwtData, authToken));
+                }
+                return Mono.error(throwable);
+              });
+    }
+    UserEntity userEntity = userDataService.findUserEntityByEmail(accessTokenData.getEmail());
+    DataValidator.validateUser(userEntity);
+    User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
+    userEntityToUser.setPassword(null);
+    JWTData jwtData = JWTData.generateJWTData(userEntityToUser, clientCredential, request);
+    AuthToken authToken = tokenService.generateToken(jwtData, clientCredential, null);
+    return Mono.just(new OAuthTokenResponse(userEntityToUser, jwtData, authToken));
   }
 }

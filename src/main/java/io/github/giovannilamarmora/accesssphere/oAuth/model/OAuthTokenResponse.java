@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OAuthTokenResponse {
   private AuthToken token;
-  private Object strapiToken;
+  private JsonNode strapiToken;
   private JWTData userInfo;
   private User user;
 

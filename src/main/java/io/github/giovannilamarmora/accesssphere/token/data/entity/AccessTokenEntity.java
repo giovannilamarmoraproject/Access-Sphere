@@ -42,6 +42,9 @@ public class AccessTokenEntity extends GenericEntity {
   @Column(name = "SUBJECT")
   private String subject;
 
+  @Column(name = "EMAIL")
+  private String email;
+
   @Column(name = "IDENTIFIER")
   private String identifier;
 

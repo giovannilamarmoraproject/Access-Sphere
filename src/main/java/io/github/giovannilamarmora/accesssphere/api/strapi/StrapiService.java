@@ -101,7 +101,7 @@ public class StrapiService {
   public Mono<StrapiResponse> login(String email, String password) {
     return Mono.zip(
             strapiClient.login(new StrapiLogin(email, password)),
-            strapiClient.refreshToken(new StrapiLogin(email, password)))
+            strapiClient.getRefreshToken(new StrapiLogin(email, password)))
         .flatMap(
             objects -> {
               ResponseEntity<StrapiResponse> strapiResponseResponseEntity = objects.getT1();
@@ -148,6 +148,31 @@ public class StrapiService {
             throwable -> {
               if (throwable.getMessage().contains("Missing or invalid credentials")) {
                 LOG.error("Basic token is wrong or not valid, error is {}", throwable.getMessage());
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+              }
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiResponse> refreshJWToken(String refresh_token) {
+    return strapiClient
+        .refreshToken(refresh_token)
+        .flatMap(
+            strapiUserResponseEntity -> {
+              if (ObjectUtils.isEmpty(strapiUserResponseEntity.getBody())) {
+                LOG.error("Strapi returned an empty body on refreshToken");
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+              }
+              strapiUserResponseEntity.getBody().setRefresh_token(refresh_token);
+              return Mono.just(strapiUserResponseEntity.getBody());
+            })
+        .doOnError(
+            throwable -> {
+              if (throwable.getMessage().contains("Refresh Token not found")) {
+                LOG.error(
+                    "Refresh token is wrong or not valid, error is {}", throwable.getMessage());
                 throw new OAuthException(
                     ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
               }

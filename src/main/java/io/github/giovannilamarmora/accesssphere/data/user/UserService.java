@@ -5,6 +5,8 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
+import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
@@ -35,11 +37,13 @@ public class UserService {
   @Autowired private ClientService clientService;
   @Autowired private AccessTokenService accessTokenService;
   @Autowired private TokenService tokenService;
+  @Autowired private GrpcService grpcService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> userInfo(String bearer, boolean includeUserData) {
     LOG.info("UserInfo process started, include Data: {}", includeUserData);
-    AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+    AccessTokenData accessTokenData =
+        accessTokenService.getByAccessTokenIdTokenOrRefreshToken(bearer);
 
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(accessTokenData.getClientId());
@@ -70,8 +74,47 @@ public class UserService {
                         return ResponseEntity.ok(response);
                       });
             }
+            case GOOGLE -> {
+              GoogleModel userInfo =
+                  grpcService.userInfo(
+                      accessTokenData.getPayload().get("id_token").textValue(), clientCredential);
+              if (!userInfo.getUserInfo().getEmail().equalsIgnoreCase(decryptToken.getEmail())) {
+                LOG.error(
+                    "The JWT User {}, is different than the one on google {}",
+                    decryptToken.getEmail(),
+                    userInfo.getUserInfo().get("email"));
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+              }
+              if (includeUserData) {
+                return dataService
+                    .getUserByEmail(decryptToken.getEmail())
+                    .map(
+                        user -> {
+                          Response response =
+                              new Response(
+                                  HttpStatus.OK.value(),
+                                  "UserInfo Data for " + user.getUsername(),
+                                  CorrelationIdUtils.getCorrelationId(),
+                                  new OAuthTokenResponse(decryptToken, user));
+                          return ResponseEntity.ok(response);
+                        });
+              }
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(),
+                      "UserInfo Data for " + decryptToken.getSub(),
+                      CorrelationIdUtils.getCorrelationId(),
+                      decryptToken);
+              return Mono.just(ResponseEntity.ok(response));
+            }
+            default -> {
+              LOG.error("Type miss match on client");
+              return Mono.error(
+                  new OAuthException(
+                      ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
+            }
           }
-          return Mono.empty();
         });
   }
 

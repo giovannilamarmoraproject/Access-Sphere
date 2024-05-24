@@ -48,6 +48,7 @@ public class OAuthControllerImpl implements OAuthController {
   @Override
   public Mono<ResponseEntity<?>> token(
       String clientId,
+      String refresh_token,
       String grant_type,
       String scope,
       String code,
@@ -59,6 +60,7 @@ public class OAuthControllerImpl implements OAuthController {
       ServerHttpRequest request) {
     return oAuthService.tokenOAuth(
         clientId,
+        refresh_token,
         grant_type,
         scope,
         code,

@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -13,6 +12,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -36,7 +36,6 @@ public class AuthService {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
   @Autowired private TokenService tokenService;
-  @Autowired private ClientService clientService;
   @Autowired private DataService dataService;
   @Autowired private GrpcService grpcService;
 
@@ -153,8 +152,6 @@ public class AuthService {
         .login(username, email, password, clientCredential, request)
         .map(
             tokenResponse -> {
-              // TODO: [OPZIONALE] Non torno i ruoli perchè strapi non gestisce i ruoli alla login,
-              // se li vuoi implementa la user/me
               String message =
                   "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
 
@@ -169,6 +166,39 @@ public class AuthService {
                           includeUserInfo ? tokenResponse.getUserInfo() : null,
                           includeUserData ? tokenResponse.getUser() : null));
               LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
+              return ResponseEntity.ok(response);
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> refreshToken(
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      boolean includeUserInfo,
+      boolean includeUserData,
+      ServerHttpRequest request) {
+
+    String token = accessTokenData.getPayload().get("refresh_token").textValue();
+
+    return dataService
+        .refreshJWTToken(accessTokenData, clientCredential, token, request)
+        .map(
+            tokenResponse -> {
+              String message =
+                  "Refresh Successfully! Welcome back "
+                      + tokenResponse.getUser().getUsername()
+                      + "!";
+
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(),
+                      message,
+                      CorrelationIdUtils.getCorrelationId(),
+                      new OAuthTokenResponse(
+                          tokenResponse.getToken(),
+                          tokenResponse.getStrapiToken(),
+                          includeUserInfo ? tokenResponse.getUserInfo() : null,
+                          includeUserData ? tokenResponse.getUser() : null));
               return ResponseEntity.ok(response);
             });
   }
