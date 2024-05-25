@@ -10,6 +10,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -17,7 +18,6 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -34,7 +34,7 @@ public class OAuthService {
   public static final String COOKIE_TOKEN = "REGISTRATION-TOKEN";
   public static final String COOKIE_REDIRECT_URI = "REDIRECT-URI";
 
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
   @Autowired private TokenService tokenService;
   @Autowired private ClientService clientService;

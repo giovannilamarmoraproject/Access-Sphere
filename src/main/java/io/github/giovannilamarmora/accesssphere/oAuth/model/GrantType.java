@@ -2,8 +2,8 @@ package io.github.giovannilamarmora.accesssphere.oAuth.model;
 
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public enum GrantType {
   AUTHORIZATION_CODE("authorization_code"),
@@ -20,7 +20,7 @@ public enum GrantType {
     return type;
   }
 
-  private static final Logger LOG = LoggerFactory.getLogger(GrantType.class);
+  private static final Logger LOG = LoggerFilter.getLogger(GrantType.class);
 
   public static GrantType fromType(String type) {
     for (GrantType grantType : values()) {

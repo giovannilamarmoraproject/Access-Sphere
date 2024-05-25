@@ -28,7 +28,7 @@ spring:
 # Level of LOG
 logging:
   logback:
-    # Logging on LogTail
+    # Logging on LogTails
     logTail: # Disabled
       active: false
     google-cloud:

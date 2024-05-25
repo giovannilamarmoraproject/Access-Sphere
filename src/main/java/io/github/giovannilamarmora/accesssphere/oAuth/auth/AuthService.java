@@ -5,7 +5,6 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleOAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -14,6 +13,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -21,7 +21,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import java.util.Base64;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,11 +32,10 @@ import reactor.core.publisher.Mono;
 @Service
 public class AuthService {
 
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
   @Autowired private TokenService tokenService;
   @Autowired private DataService dataService;
-  @Autowired private GrpcService grpcService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> performGoogleLogin(

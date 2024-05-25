@@ -1,41 +1,36 @@
 package io.github.giovannilamarmora.accesssphere.grpc.google;
 
-import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
-import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
-import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
-import com.google.api.client.auth.oauth2.TokenResponse;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.auth.oauth2.*;
+import com.google.api.client.googleapis.auth.oauth2.*;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @Logged
 @RequiredArgsConstructor
 public class GoogleOAuthService {
 
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private static final Logger LOG = LoggerFilter.getLogger(GoogleOAuthService.class);
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-  private final HttpTransport transport = new NetHttpTransport();
 
-  public String startGoogleAuthorization(
+  @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
+  public static String startGoogleAuthorization(
       List<String> scopes,
       String redirect_uri,
       String access_type,
@@ -53,7 +48,8 @@ public class GoogleOAuthService {
     return authorizationUrl.build();
   }
 
-  public TokenResponse getTokenResponse(
+  @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
+  public static TokenResponse getTokenResponse(
       String code,
       String clientId,
       String clientSecret,
@@ -62,20 +58,32 @@ public class GoogleOAuthService {
       String redirect_uri)
       throws IOException, GeneralSecurityException {
     HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-    AuthorizationCodeFlow flow =
-        new GoogleAuthorizationCodeFlow.Builder(
-                httpTransport, JSON_FACTORY, getClientSecrets(clientId, clientSecret), scopes)
-            .setAccessType(access_type)
-            .build();
-    AuthorizationCodeTokenRequest tokenRequest = flow.newTokenRequest(code);
-    tokenRequest.setRedirectUri(redirect_uri);
-    return tokenRequest.execute();
+    try {
+      AuthorizationCodeFlow flow =
+          new GoogleAuthorizationCodeFlow.Builder(
+                  httpTransport, JSON_FACTORY, getClientSecrets(clientId, clientSecret), scopes)
+              .setAccessType(access_type)
+              .build();
+      AuthorizationCodeTokenRequest tokenRequest = flow.newTokenRequest(code);
+      tokenRequest.setRedirectUri(redirect_uri);
+      return tokenRequest.execute();
+    } catch (TokenResponseException e) {
+      LOG.error(
+          "An error happen during get access token with google, message is {}",
+          !ObjectUtils.isEmpty(e.getDetails())
+                  && !ObjectUtils.isEmpty(e.getDetails().getErrorDescription())
+              ? e.getDetails().getErrorDescription()
+              : e.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+    }
   }
 
-  public GoogleIdToken.Payload getUserInfo(String accessToken, String clientId)
+  @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
+  public static GoogleIdToken.Payload getUserInfo(String accessToken, String clientId)
       throws IOException, GeneralSecurityException {
+    HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
     GoogleIdTokenVerifier verifier =
-        new GoogleIdTokenVerifier.Builder(transport, JSON_FACTORY)
+        new GoogleIdTokenVerifier.Builder(httpTransport, JSON_FACTORY)
             .setAudience(Collections.singletonList(clientId))
             .build();
     GoogleIdToken idToken = verifier.verify(accessToken);
@@ -87,7 +95,27 @@ public class GoogleOAuthService {
     }
   }
 
-  private GoogleClientSecrets getClientSecrets(String clientId, String clientSecret) {
+  @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
+  public static TokenResponse refreshGoogleOAuthToken(
+      String refreshToken, String clientId, String clientSecret)
+      throws GeneralSecurityException, IOException {
+    HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+    try {
+      return new GoogleRefreshTokenRequest(
+              httpTransport, JSON_FACTORY, refreshToken, clientId, clientSecret)
+          .execute();
+    } catch (TokenResponseException e) {
+      LOG.error(
+          "An error happen during refreshing token with google, message is {}",
+          !ObjectUtils.isEmpty(e.getDetails())
+                  && !ObjectUtils.isEmpty(e.getDetails().getErrorDescription())
+              ? e.getDetails().getErrorDescription()
+              : e.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+    }
+  }
+
+  private static GoogleClientSecrets getClientSecrets(String clientId, String clientSecret) {
     GoogleClientSecrets clientSecrets = new GoogleClientSecrets();
     GoogleClientSecrets.Details details = new GoogleClientSecrets.Details();
     details.setClientId(clientId);

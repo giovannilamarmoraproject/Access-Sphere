@@ -6,11 +6,11 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.entity.AccessTokenEntity;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -18,7 +18,7 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class AccessTokenMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AccessTokenMapper.class);
+  private static final Logger LOG = LoggerFilter.getLogger(AccessTokenMapper.class);
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static AccessTokenData fromAccessTokenEntityToData(AccessTokenEntity accessTokenEntity) {

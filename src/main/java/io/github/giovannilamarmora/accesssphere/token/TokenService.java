@@ -20,6 +20,7 @@ import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
+import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -37,7 +38,6 @@ import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -46,7 +46,7 @@ import org.springframework.util.ObjectUtils;
 @Service
 public class TokenService {
 
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
   @Autowired private AccessTokenService accessTokenService;
 

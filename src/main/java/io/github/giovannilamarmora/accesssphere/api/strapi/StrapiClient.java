@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.api.strapi;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLogin;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
+import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -25,7 +25,7 @@ import reactor.core.publisher.Mono;
 @Logged
 public class StrapiClient {
 
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   private final WebClientRest webClientRest = new WebClientRest();
 
   @Value(value = "${rest.client.strapi.baseUrl}")

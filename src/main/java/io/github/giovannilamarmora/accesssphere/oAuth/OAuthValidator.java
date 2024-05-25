@@ -3,19 +3,19 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
+import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.HashSet;
 import java.util.List;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @Component
 public class OAuthValidator {
 
-  private static final Logger LOG = LoggerFactory.getLogger(OAuthValidator.class);
+  private static final Logger LOG = LoggerFilter.getLogger(OAuthValidator.class);
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateClient(

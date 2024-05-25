@@ -21,7 +21,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -36,7 +35,7 @@ public class Utils {
           .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
           .findAndRegisterModules();
 
-  private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
+  private static final Logger LOG = LoggerFilter.getLogger(Utils.class);
 
   public static ObjectMapper mapper() {
     return mapper;
