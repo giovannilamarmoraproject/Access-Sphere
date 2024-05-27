@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -66,6 +67,7 @@ public class OAuthValidator {
     }
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateOAuthToken(String client_id, String grant_type) {
     if (ObjectUtils.isEmpty(client_id)) {
       LOG.error("No Client ID found");
@@ -78,6 +80,7 @@ public class OAuthValidator {
     }
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateOAuthGoogle(
       ClientCredential clientCredential,
       String code,
@@ -114,6 +117,42 @@ public class OAuthValidator {
     if (!new HashSet<>(clientCredential.getScopes()).containsAll(scopes)) {
       LOG.error("Scopes provided should be {} instead of {}", clientCredential.getScopes(), scope);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid scope provided!");
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateRefreshToken(String refresh_token, String grant_type) {
+    if (ObjectUtils.isEmpty(refresh_token)) {
+      LOG.error("You must provide a valid refresh_token!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, "Invalid request, you must provide a valid refresh_token!");
+    }
+    if (ObjectUtils.isEmpty(grant_type)
+        || !grant_type.equalsIgnoreCase(GrantType.REFRESH_TOKEN.type())) {
+      LOG.error(
+          "The grant_type should be {} instead of {}", GrantType.REFRESH_TOKEN.type(), grant_type);
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, "Invalid request, you must provide a valid grant_type!");
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateRefreshTokenData(
+      AccessTokenData accessTokenData, ClientCredential clientCredential) {
+    if (!accessTokenData.getClientId().equalsIgnoreCase(clientCredential.getClientId())) {
+      LOG.error(
+          "The Client ID should be {} instead of {}",
+          accessTokenData.getClientId(),
+          clientCredential.getClientId());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
+    }
+
+    if (!accessTokenData.getType().equals(clientCredential.getAuthType())) {
+      LOG.error(
+          "The OAuthType should be {} instead of {}",
+          accessTokenData.getType(),
+          clientCredential.getAuthType());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
   }
 }

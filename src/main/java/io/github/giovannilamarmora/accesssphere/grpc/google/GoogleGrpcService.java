@@ -24,9 +24,9 @@ import org.springframework.util.ObjectUtils;
 @Service
 @Logged
 @RequiredArgsConstructor
-public class GoogleOAuthService {
+public class GoogleGrpcService {
 
-  private static final Logger LOG = LoggerFilter.getLogger(GoogleOAuthService.class);
+  private static final Logger LOG = LoggerFilter.getLogger(GoogleGrpcService.class);
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)

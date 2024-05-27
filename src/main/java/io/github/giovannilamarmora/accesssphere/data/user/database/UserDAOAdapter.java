@@ -5,7 +5,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 @Service
 public class UserDAOAdapter implements UserDataService {
@@ -34,5 +33,11 @@ public class UserDAOAdapter implements UserDataService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public UserEntity findUserEntityByTokenReset(String token) {
     return userDAO.findUserEntityByTokenReset(token);
+  }
+
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public UserEntity updateUserEntityByIdentifier(UserEntity userEntity, String identifier) {
+    return userDAO.updateUserEntityByIdentifier(userEntity, identifier);
   }
 }

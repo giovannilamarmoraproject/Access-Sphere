@@ -74,7 +74,7 @@ public class StrapiMapper {
         user.getUsername(),
         user.getPassword(),
         fromAddressesToStrapiAddresses(user.getAddresses()),
-        clientCredential.getDefaultRoles(),
+        ObjectUtils.isEmpty(clientCredential) ? null : clientCredential.getDefaultRoles(),
         user.getProfilePhoto(),
         user.getPhoneNumber(),
         user.getBirthDate(),

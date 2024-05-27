@@ -6,7 +6,7 @@ import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
-import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleModel;
+import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
@@ -37,10 +38,12 @@ public class UserService {
   @Autowired private ClientService clientService;
   @Autowired private AccessTokenService accessTokenService;
   @Autowired private TokenService tokenService;
-  @Autowired private GrpcService grpcService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> userInfo(String bearer, boolean includeUserData) {
+  public Mono<ResponseEntity<Response>> userInfo(String bearer, ServerHttpRequest request) {
+    boolean includeUserData =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
     LOG.info("UserInfo process started, include Data: {}", includeUserData);
     AccessTokenData accessTokenData =
         accessTokenService.getByAccessTokenIdTokenOrRefreshToken(bearer);
@@ -76,7 +79,7 @@ public class UserService {
             }
             case GOOGLE -> {
               GoogleModel userInfo =
-                  grpcService.userInfo(
+                  GrpcService.userInfo(
                       accessTokenData.getPayload().get("id_token").textValue(), clientCredential);
               if (!userInfo.getUserInfo().getEmail().equalsIgnoreCase(decryptToken.getEmail())) {
                 LOG.error(
@@ -132,27 +135,22 @@ public class UserService {
         clientCredential -> {
           if (ObjectUtils.isEmpty(registration_token)) {
             LOG.error("Missing registration_token");
-            throw new OAuthException(
-                ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+            throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Missing registration_token!");
           }
           if (!registration_token.equalsIgnoreCase(clientCredential.getRegistrationToken())) {
             LOG.error("Invalid registration_token");
-            throw new OAuthException(
-                ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+            throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid registration_token!");
           }
-          // user.setPassword(new String(Base64.getDecoder().decode(user.getPassword())));
 
           if (!Utils.checkCharacterAndRegexValid(
               user.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
             LOG.error("Invalid regex for field password for user {}", user.getUsername());
-            throw new UserException(
-                ExceptionMap.ERR_USER_400, ExceptionMap.ERR_USER_400.getMessage());
+            throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
           }
 
           if (!Utils.checkCharacterAndRegexValid(user.getEmail(), RegEx.EMAIL.getValue())) {
             LOG.error("Invalid regex for field email for user {}", user.getUsername());
-            throw new UserException(
-                ExceptionMap.ERR_USER_400, ExceptionMap.ERR_USER_400.getMessage());
+            throw new UserException(ExceptionMap.ERR_USER_400, "Invalid email provided!");
           }
 
           return dataService
@@ -168,5 +166,51 @@ public class UserService {
                     return ResponseEntity.ok(response);
                   });
         });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> updateUser(
+      User userToUpdate, String bearer, ServerHttpRequest request) throws UtilsException {
+    LOG.info(
+        "Updating user process started, username: {}, email: {}",
+        userToUpdate.getUsername(),
+        userToUpdate.getEmail());
+
+    AccessTokenData accessTokenData =
+        accessTokenService.getByAccessTokenIdTokenOrRefreshToken(bearer);
+    // Setting UserData
+    if (!accessTokenData.getIdentifier().equalsIgnoreCase(userToUpdate.getIdentifier())) {
+      LOG.error(
+          "Identifier miss match, you should use {} instead of {}",
+          accessTokenData.getIdentifier(),
+          userToUpdate.getIdentifier());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+    switch (accessTokenData.getType()) {
+      case BEARER -> {
+        String strapiToken = accessTokenData.getPayload().get("access_token").textValue();
+        return dataService
+            .updateUser(userToUpdate, strapiToken)
+            .flatMap(
+                user -> {
+                  Response response =
+                      new Response(
+                          HttpStatus.OK.value(),
+                          "User " + user.getUsername() + " successfully registered!",
+                          CorrelationIdUtils.getCorrelationId(),
+                          user);
+                  return Mono.just(ResponseEntity.ok(response));
+                });
+      }
+      default -> {
+        return defaultErrorType();
+      }
+    }
+  }
+
+  private Mono<ResponseEntity<Response>> defaultErrorType() {
+    LOG.error("Type not configured, miss match on client");
+    return Mono.error(
+        new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
   }
 }

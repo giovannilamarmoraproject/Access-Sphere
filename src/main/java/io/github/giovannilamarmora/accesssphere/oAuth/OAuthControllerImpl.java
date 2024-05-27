@@ -34,15 +34,8 @@ public class OAuthControllerImpl implements OAuthController {
 
   @Override
   public Mono<ResponseEntity<?>> login(
-      String clientId,
-      String scope,
-      String code,
-      String prompt,
-      boolean includeUserInfo,
-      boolean includeUserData,
-      ServerHttpRequest request) {
-    return oAuthService.token(
-        clientId, scope, code, prompt, includeUserInfo, includeUserData, request);
+      String clientId, String scope, String code, String prompt, ServerHttpRequest request) {
+    return oAuthService.token(clientId, scope, code, prompt, request);
   }
 
   @Override
@@ -54,21 +47,9 @@ public class OAuthControllerImpl implements OAuthController {
       String code,
       String redirectUri,
       String prompt,
-      boolean includeUserInfo,
-      boolean includeUserData,
       String auth,
       ServerHttpRequest request) {
     return oAuthService.tokenOAuth(
-        clientId,
-        refresh_token,
-        grant_type,
-        scope,
-        code,
-        prompt,
-        redirectUri,
-        includeUserInfo,
-        includeUserData,
-        auth,
-        request);
+        clientId, refresh_token, grant_type, scope, code, prompt, redirectUri, auth, request);
   }
 }

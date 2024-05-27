@@ -37,14 +37,8 @@ public interface OAuthController {
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Unauthorized",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE))
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@BadRequest.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<?>> authorize(
       @RequestParam(value = "response_type")
@@ -88,6 +82,14 @@ public interface OAuthController {
       description = "API to perform OAuth 2.0 login",
       summary = "Perform OAuth 2.0 Login",
       tags = OpenAPI.Tag.OAUTH)
+  @ApiResponse(
+      responseCode = "400",
+      description = "Bad Input",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@BadRequest.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<?>> login(
       @PathVariable(value = "client_id")
@@ -110,16 +112,6 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.PROMPT,
               example = OpenAPI.Params.Example.PROMPT)
           String prompt,
-      @RequestParam(value = "include_user_info", required = false, defaultValue = "true")
-          @Schema(
-              description = OpenAPI.Params.Description.INCLUDE_USER_INFO,
-              example = OpenAPI.Params.Example.INCLUDE_USER_INFO)
-          boolean includeUserInfo,
-      @RequestParam(value = "include_user_data", required = false, defaultValue = "true")
-          @Schema(
-              description = OpenAPI.Params.Description.INCLUDE_USER_DATA,
-              example = OpenAPI.Params.Example.INCLUDE_USER_DATA)
-          boolean includeUserData,
       ServerHttpRequest request);
 
   @PostMapping(value = "/token", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -127,6 +119,14 @@ public interface OAuthController {
       description = "API to perform OAuth 2.0 login",
       summary = "Perform OAuth 2.0 Login",
       tags = OpenAPI.Tag.OAUTH)
+  @ApiResponse(
+      responseCode = "400",
+      description = "Bad Input",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@BadRequest.json")))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<?>> token(
       @RequestParam(value = "client_id")
@@ -164,16 +164,6 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.PROMPT,
               example = OpenAPI.Params.Example.PROMPT)
           String prompt,
-      @RequestParam(value = "include_user_info", required = false, defaultValue = "false")
-          @Schema(
-              description = OpenAPI.Params.Description.INCLUDE_USER_INFO,
-              example = OpenAPI.Params.Example.INCLUDE_USER_INFO)
-          boolean includeUserInfo,
-      @RequestParam(value = "include_user_data", required = false, defaultValue = "false")
-          @Schema(
-              description = OpenAPI.Params.Description.INCLUDE_USER_DATA,
-              example = OpenAPI.Params.Example.INCLUDE_USER_DATA)
-          boolean includeUserData,
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(

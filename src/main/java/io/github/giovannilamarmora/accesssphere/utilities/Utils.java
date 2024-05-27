@@ -129,4 +129,11 @@ public class Utils {
     messageDigest.update(token.getBytes());
     return Base64.encodeBase64URLSafeString(messageDigest.digest());
   }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
+  public static String getRemoteAddress(ServerHttpRequest request) {
+    return ObjectUtils.isEmpty(request.getRemoteAddress())
+        ? null
+        : request.getRemoteAddress().getHostName();
+  }
 }

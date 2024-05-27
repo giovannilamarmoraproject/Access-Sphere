@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.grpc.google;
+package io.github.giovannilamarmora.accesssphere.grpc.google.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.api.client.auth.oauth2.TokenResponse;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GoogleModel {
-    private TokenResponse tokenResponse;
-    private GoogleIdToken.Payload userInfo;
-    private JWTData jwtData;
+  private TokenResponse tokenResponse;
+  private GoogleIdToken.Payload userInfo;
+  private JWTData jwtData;
 }

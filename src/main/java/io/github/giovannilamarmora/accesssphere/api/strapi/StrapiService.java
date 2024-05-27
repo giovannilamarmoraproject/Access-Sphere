@@ -178,4 +178,28 @@ public class StrapiService {
               }
             });
   }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiUser> updateUser(User user, String bearer) {
+    StrapiUser strapiUser = StrapiMapper.mapFromUserToStrapiUser(user, null);
+    return strapiClient
+        .updateUser(strapiUser, bearer)
+        .flatMap(
+            strapiUserResponseEntity -> {
+              if (ObjectUtils.isEmpty(strapiUserResponseEntity.getBody())) {
+                LOG.error("Strapi returned an empty body on updateUser");
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+              }
+              return Mono.just(strapiUserResponseEntity.getBody());
+            })
+        .doOnError(
+            throwable -> {
+              if (throwable.getMessage().contains("NotFoundError")) {
+                LOG.error("User not found, error is {}", throwable.getMessage());
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+              }
+            });
+  }
 }

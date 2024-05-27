@@ -4,8 +4,8 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleModel;
-import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleOAuthService;
+import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleGrpcService;
+import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
@@ -24,14 +24,14 @@ import org.springframework.stereotype.Service;
 @Logged
 public class GrpcService {
 
-  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+  private static final Logger LOG = LoggerFilter.getLogger(GrpcService.class);
 
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
-  public URI getGoogleOAuthLocation(
+  public static URI getGoogleOAuthLocation(
       String scope, String redirectUri, String accessType, ClientCredential clientCredential) {
     try {
       String redirect =
-          GoogleOAuthService.startGoogleAuthorization(
+          GoogleGrpcService.startGoogleAuthorization(
               List.of(scope.split(" ")),
               redirectUri,
               accessType,
@@ -45,14 +45,14 @@ public class GrpcService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
-  public GoogleModel authenticateOAuth(
+  public static GoogleModel authenticateOAuth(
       String code, String scope, String redirectUri, ClientCredential clientCredential) {
     LOG.debug(
         "Starting google authentication with redirect_uri {} and scope {}", redirectUri, scope);
     TokenResponse googleTokenResponse;
     try {
       googleTokenResponse =
-          GoogleOAuthService.getTokenResponse(
+          GoogleGrpcService.getTokenResponse(
               code,
               clientCredential.getExternalClientId(),
               clientCredential.getClientSecret(),
@@ -60,7 +60,7 @@ public class GrpcService {
               clientCredential.getAccessType().value(),
               redirectUri);
       GoogleIdToken.Payload userInfo =
-          GoogleOAuthService.getUserInfo(
+          GoogleGrpcService.getUserInfo(
               googleTokenResponse.get("id_token").toString(),
               clientCredential.getExternalClientId());
       LOG.debug("Obtained user is {}", Utils.mapper().writeValueAsString(userInfo));
@@ -75,11 +75,11 @@ public class GrpcService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
-  public GoogleModel userInfo(String idToken, ClientCredential clientCredential) {
+  public static GoogleModel userInfo(String idToken, ClientCredential clientCredential) {
     LOG.debug("Starting google userInfo with client_id {}", clientCredential.getClientId());
     GoogleIdToken.Payload userInfo;
     try {
-      userInfo = GoogleOAuthService.getUserInfo(idToken, clientCredential.getExternalClientId());
+      userInfo = GoogleGrpcService.getUserInfo(idToken, clientCredential.getExternalClientId());
       LOG.debug("Obtained userInfo is {}", Utils.mapper().writeValueAsString(userInfo));
       return new GoogleModel(null, userInfo, null);
     } catch (IOException | GeneralSecurityException e) {
@@ -89,17 +89,17 @@ public class GrpcService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
-  public GoogleModel refreshToken(String refreshToken, ClientCredential clientCredential) {
+  public static GoogleModel refreshToken(String refreshToken, ClientCredential clientCredential) {
     LOG.debug("Starting google refresh token");
     TokenResponse googleTokenResponse;
     try {
       googleTokenResponse =
-          GoogleOAuthService.refreshGoogleOAuthToken(
+          GoogleGrpcService.refreshGoogleOAuthToken(
               refreshToken,
               clientCredential.getExternalClientId(),
               clientCredential.getClientSecret());
       GoogleIdToken.Payload userInfo =
-          GoogleOAuthService.getUserInfo(
+          GoogleGrpcService.getUserInfo(
               googleTokenResponse.get("id_token").toString(),
               clientCredential.getExternalClientId());
       LOG.debug("Obtained user is {}", Utils.mapper().writeValueAsString(userInfo));

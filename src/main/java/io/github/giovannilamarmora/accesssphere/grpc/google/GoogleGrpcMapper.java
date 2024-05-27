@@ -2,15 +2,16 @@ package io.github.giovannilamarmora.accesssphere.grpc.google;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @Component
-public class GoogleOAuthMapper {
+public class GoogleGrpcMapper {
 
-  private static final Logger LOG = LoggerFilter.getLogger(GoogleOAuthMapper.class);
+  private static final Logger LOG = LoggerFilter.getLogger(GoogleGrpcMapper.class);
 
   public static User generateGoogleUser(GoogleModel googleModel) {
 

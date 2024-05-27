@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -54,6 +55,9 @@ public class StrapiClient {
 
   @Value(value = "${rest.client.strapi.path.refreshToken}")
   private String refreshTokenUrl;
+
+  @Value(value = "${rest.client.strapi.path.updateUser}")
+  private String updateUserUrl;
 
   @Autowired private WebClient.Builder builder;
 
@@ -167,5 +171,26 @@ public class StrapiClient {
         body,
         headers,
         StrapiResponse.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<StrapiUser>> updateUser(StrapiUser user, String bearer) {
+    Map<String, Object> query = new HashMap<>();
+    query.put("userId", user.getId());
+
+    String updateUser = UtilsUriBuilder.toBuild().set(updateUserUrl, query).getStringUri();
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(
+        HttpHeaders.AUTHORIZATION,
+        "Bearer " + (ObjectUtils.isEmpty(bearer) ? strapiToken : bearer));
+
+    return webClientRest.perform(
+        HttpMethod.PUT,
+        UtilsUriBuilder.buildUri(updateUser, null),
+        user,
+        headers,
+        StrapiUser.class);
   }
 }

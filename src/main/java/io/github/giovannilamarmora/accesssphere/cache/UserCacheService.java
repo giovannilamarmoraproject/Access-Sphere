@@ -62,4 +62,10 @@ public class UserCacheService implements UserDataService {
   public UserEntity findUserEntityByTokenReset(String token) {
     return userDAO.findUserEntityByTokenReset(token);
   }
+
+  @Override
+  public UserEntity updateUserEntityByIdentifier(UserEntity userEntity, String identifier) {
+    deleteUserCache();
+    return userDAO.updateUserEntityByIdentifier(userEntity, identifier);
+  }
 }

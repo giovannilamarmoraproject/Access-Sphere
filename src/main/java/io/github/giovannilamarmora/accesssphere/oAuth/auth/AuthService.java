@@ -1,20 +1,13 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleModel;
-import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleOAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.oAuth.OAuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
-import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -38,96 +31,8 @@ public class AuthService {
   @Autowired private DataService dataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> performGoogleLogin(
-      GoogleModel googleModel,
-      ClientCredential clientCredential,
-      boolean includeUserInfo,
-      boolean includeUserData,
-      ServerHttpRequest request) {
-    return dataService
-        .getUserByEmail(googleModel.getJwtData().getEmail())
-        .map(
-            user -> {
-              googleModel.getJwtData().setIdentifier(user.getIdentifier());
-              googleModel.getJwtData().setRoles(user.getRoles());
-              googleModel.getJwtData().setSub(user.getUsername());
-              AuthToken token =
-                  tokenService.generateToken(
-                      googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "Login successfully, welcome " + user.getUsername() + " !",
-                      CorrelationIdUtils.getCorrelationId(),
-                      includeUserInfo
-                          ? new OAuthTokenResponse(token, googleModel.getJwtData())
-                          : token);
-              return ResponseEntity.ok(response);
-            })
-        .onErrorResume(
-            throwable -> {
-              if (throwable
-                  .getMessage()
-                  .equalsIgnoreCase(ExceptionMap.ERR_STRAPI_404.getMessage())) {
-                String registration_token = Utils.getCookie(OAuthService.COOKIE_TOKEN, request);
-                if (ObjectUtils.isEmpty(registration_token)) {
-                  LOG.error("Missing registration_token");
-                  throw new OAuthException(
-                      ExceptionMap.ERR_OAUTH_403,
-                      "Missing registration_token, you cannot proceed!");
-                }
-                if (!registration_token.equalsIgnoreCase(clientCredential.getRegistrationToken())) {
-                  LOG.error("Invalid registration_token");
-                  throw new OAuthException(
-                      ExceptionMap.ERR_OAUTH_403,
-                      "Invalid registration_token, you cannot proceed!");
-                }
-                User userGoogle = GoogleOAuthMapper.generateGoogleUser(googleModel);
-                userGoogle.setPassword(Utils.getCookie(OAuthService.COOKIE_TOKEN, request));
-                return dataService
-                    .registerUser(userGoogle, clientCredential)
-                    .map(
-                        user1 -> {
-                          googleModel
-                              .getJwtData()
-                              .setRoles(
-                                  ObjectUtils.isEmpty(clientCredential.getDefaultRoles())
-                                      ? null
-                                      : clientCredential.getDefaultRoles().stream()
-                                          .map(AppRole::getRole)
-                                          .toList());
-                          AuthToken token =
-                              tokenService.generateToken(
-                                  googleModel.getJwtData(),
-                                  clientCredential,
-                                  googleModel.getTokenResponse());
-                          Response response =
-                              new Response(
-                                  HttpStatus.OK.value(),
-                                  "Login successfully, welcome " + user1.getUsername() + "!",
-                                  CorrelationIdUtils.getCorrelationId(),
-                                  includeUserInfo
-                                      ? new OAuthTokenResponse(
-                                          token,
-                                          googleModel.getJwtData(),
-                                          includeUserData ? user1 : null)
-                                      : includeUserData
-                                          ? new OAuthTokenResponse(token, user1)
-                                          : token);
-                          return ResponseEntity.ok(response);
-                        });
-              }
-              return Mono.error(throwable);
-            });
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> makeClassicLogin(
-      String basic,
-      ClientCredential clientCredential,
-      boolean includeUserInfo,
-      boolean includeUserData,
-      ServerHttpRequest request) {
+      String basic, ClientCredential clientCredential, ServerHttpRequest request) {
     LOG.debug("Decoding user using Base64 Decoder");
     String username;
     String password;
@@ -145,6 +50,13 @@ public class AuthService {
     // Controllo se ha usato l'email invece dello username
     String email = username.contains("@") ? username : null;
     username = email != null ? null : username;
+
+    boolean includeUserInfo =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
+    boolean includeUserData =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
     return dataService
         .login(username, email, password, clientCredential, request)
@@ -172,9 +84,14 @@ public class AuthService {
   public Mono<ResponseEntity<Response>> refreshToken(
       AccessTokenData accessTokenData,
       ClientCredential clientCredential,
-      boolean includeUserInfo,
-      boolean includeUserData,
       ServerHttpRequest request) {
+
+    boolean includeUserInfo =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
+    boolean includeUserData =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
     String token = accessTokenData.getPayload().get("refresh_token").textValue();
 

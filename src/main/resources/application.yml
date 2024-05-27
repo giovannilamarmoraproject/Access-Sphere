@@ -55,6 +55,7 @@ rest:
         getRefreshToken: /api/auth/token/request
         userInfo: /api/users/me
         refreshToken: /api/auth/token
+        updateUser: /api/users/:userId
 
 app:
   version: @project.version@

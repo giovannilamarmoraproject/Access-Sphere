@@ -30,6 +30,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     in = SecuritySchemeIn.HEADER)
 public class AppConfig {
 
+  public static final String COOKIE_TOKEN = "REGISTRATION-TOKEN";
+  public static final String COOKIE_REDIRECT_URI = "REDIRECT-URI";
+
   @Bean
   public OpenApiCustomizer applyStandardOpenAPIModifications() {
     return openApi -> {

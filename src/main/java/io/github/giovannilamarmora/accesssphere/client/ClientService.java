@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class ClientService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+  private static final String CLIENT_CREDENTIAL_CACHE = "Client-Credential-Cache";
 
   @Value(value = "${rest.client.strapi.active}")
   private Boolean isStrapiEnabled;
@@ -30,6 +31,7 @@ public class ClientService {
   @Autowired private IClientDAO iClientDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+ // @Cacheable(value = CLIENT_CREDENTIAL_CACHE, key = "#clientID", condition = "#clientID!=null")
   public Mono<ClientCredential> getClientCredentialByClientID(String clientID) {
     if (isStrapiEnabled) {
       LOG.info("Strapi is active");
