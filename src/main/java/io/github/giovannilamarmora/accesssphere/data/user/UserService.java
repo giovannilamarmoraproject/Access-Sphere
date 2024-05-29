@@ -45,8 +45,7 @@ public class UserService {
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
     LOG.info("UserInfo process started, include Data: {}", includeUserData);
-    AccessTokenData accessTokenData =
-        accessTokenService.getByAccessTokenIdTokenOrRefreshToken(bearer);
+    AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
 
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(accessTokenData.getClientId());
@@ -171,13 +170,13 @@ public class UserService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> updateUser(
       User userToUpdate, String bearer, ServerHttpRequest request) throws UtilsException {
+    userToUpdate.setPassword(null);
     LOG.info(
         "Updating user process started, username: {}, email: {}",
         userToUpdate.getUsername(),
         userToUpdate.getEmail());
 
-    AccessTokenData accessTokenData =
-        accessTokenService.getByAccessTokenIdTokenOrRefreshToken(bearer);
+    AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
     // Setting UserData
     if (!accessTokenData.getIdentifier().equalsIgnoreCase(userToUpdate.getIdentifier())) {
       LOG.error(
@@ -186,31 +185,17 @@ public class UserService {
           userToUpdate.getIdentifier());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
-    switch (accessTokenData.getType()) {
-      case BEARER -> {
-        String strapiToken = accessTokenData.getPayload().get("access_token").textValue();
-        return dataService
-            .updateUser(userToUpdate, strapiToken)
-            .flatMap(
-                user -> {
-                  Response response =
-                      new Response(
-                          HttpStatus.OK.value(),
-                          "User " + user.getUsername() + " successfully registered!",
-                          CorrelationIdUtils.getCorrelationId(),
-                          user);
-                  return Mono.just(ResponseEntity.ok(response));
-                });
-      }
-      default -> {
-        return defaultErrorType();
-      }
-    }
-  }
-
-  private Mono<ResponseEntity<Response>> defaultErrorType() {
-    LOG.error("Type not configured, miss match on client");
-    return Mono.error(
-        new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
+    return dataService
+        .updateUser(userToUpdate)
+        .flatMap(
+            user -> {
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(),
+                      "User " + user.getUsername() + " successfully updated!",
+                      CorrelationIdUtils.getCorrelationId(),
+                      user);
+              return Mono.just(ResponseEntity.ok(response));
+            });
   }
 }

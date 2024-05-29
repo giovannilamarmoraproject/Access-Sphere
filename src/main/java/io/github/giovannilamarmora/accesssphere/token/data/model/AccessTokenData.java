@@ -25,6 +25,8 @@ public class AccessTokenData extends GenericDTO {
   private String identifier;
   private OAuthType type;
   private Long issueDate;
-  private Long expireDate;
+  private Long refreshExpireDate;
+  private Long accessExpireDate;
   private JsonNode payload;
+  private TokenStatus status;
 }

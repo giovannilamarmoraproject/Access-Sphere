@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -71,6 +70,7 @@ public class StrapiClient {
   public Mono<ResponseEntity<StrapiResponse>> getClientByClientID(String clientID) {
     Map<String, Object> params = new HashMap<>();
     params.put("filters[clientId][$eq]", clientID);
+    params.put("populate", "*");
 
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -103,6 +103,23 @@ public class StrapiClient {
   public Mono<ResponseEntity<List<StrapiUser>>> getUserByEmail(String email) {
     Map<String, Object> params = new HashMap<>();
     params.put("filters[email][$eq]", email);
+    params.put("populate", "*");
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
+
+    return webClientRest.performList(
+        HttpMethod.GET,
+        UtilsUriBuilder.buildUri(getUserByEmailUrl, params),
+        headers,
+        StrapiUser.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<List<StrapiUser>>> getUserByIdentifier(String identifier) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("filters[identifier][$eq]", identifier);
     params.put("populate", "*");
 
     HttpHeaders headers = new HttpHeaders();
@@ -174,7 +191,7 @@ public class StrapiClient {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public Mono<ResponseEntity<StrapiUser>> updateUser(StrapiUser user, String bearer) {
+  public Mono<ResponseEntity<StrapiUser>> updateUser(StrapiUser user) {
     Map<String, Object> query = new HashMap<>();
     query.put("userId", user.getId());
 
@@ -182,9 +199,7 @@ public class StrapiClient {
 
     HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-    headers.add(
-        HttpHeaders.AUTHORIZATION,
-        "Bearer " + (ObjectUtils.isEmpty(bearer) ? strapiToken : bearer));
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
 
     return webClientRest.perform(
         HttpMethod.PUT,

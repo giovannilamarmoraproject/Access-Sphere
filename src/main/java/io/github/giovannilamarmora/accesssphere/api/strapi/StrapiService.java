@@ -98,6 +98,29 @@ public class StrapiService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiUser> getUserByIdentifier(String identifier) {
+    return strapiClient
+        .getUserByIdentifier(identifier)
+        .flatMap(
+            listResponseEntity -> {
+              if (!listResponseEntity.hasBody()
+                  || ObjectUtils.isEmpty(listResponseEntity.getBody())) {
+                LOG.error(
+                    "An error happen during get user by identifier on strapi, user not found");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              if (listResponseEntity.getBody().isEmpty()) {
+                LOG.error(
+                    "An error happen during get user by identifier on strapi, user not found");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              return Mono.just(listResponseEntity.getBody().getFirst());
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<StrapiResponse> login(String email, String password) {
     return Mono.zip(
             strapiClient.login(new StrapiLogin(email, password)),
@@ -180,10 +203,10 @@ public class StrapiService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<StrapiUser> updateUser(User user, String bearer) {
+  public Mono<StrapiUser> updateUser(User user) {
     StrapiUser strapiUser = StrapiMapper.mapFromUserToStrapiUser(user, null);
     return strapiClient
-        .updateUser(strapiUser, bearer)
+        .updateUser(strapiUser)
         .flatMap(
             strapiUserResponseEntity -> {
               if (ObjectUtils.isEmpty(strapiUserResponseEntity.getBody())) {

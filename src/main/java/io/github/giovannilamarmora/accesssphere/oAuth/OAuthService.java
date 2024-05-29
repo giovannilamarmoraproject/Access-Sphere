@@ -181,8 +181,7 @@ public class OAuthService {
 
     return clientCredentialMono.flatMap(
         clientCredential -> {
-          AccessTokenData accessTokenData =
-              accessTokenService.getByAccessTokenIdTokenOrRefreshToken(refresh_token);
+          AccessTokenData accessTokenData = accessTokenService.getByRefreshToken(refresh_token);
           OAuthValidator.validateRefreshTokenData(accessTokenData, clientCredential);
           switch (clientCredential.getAuthType()) {
             case BEARER -> {

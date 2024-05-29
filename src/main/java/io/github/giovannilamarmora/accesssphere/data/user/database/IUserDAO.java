@@ -13,5 +13,5 @@ public interface IUserDAO extends JpaRepository<UserEntity, Long> {
 
   UserEntity findUserEntityByTokenReset(String token);
 
-  UserEntity updateUserEntityByIdentifier(UserEntity userEntity, String identifier);
+  UserEntity findUserEntityByIdentifier(String identifier);
 }

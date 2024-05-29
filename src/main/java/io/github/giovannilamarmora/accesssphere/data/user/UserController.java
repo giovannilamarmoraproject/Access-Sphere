@@ -95,9 +95,49 @@ public interface UserController {
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> registerUser(
-      @RequestBody @Valid @NotNull User user,
-      @RequestParam(value = "client_id") String clientId,
+      @RequestBody @Valid @NotNull(message = "User cannot be null") User user,
+      @RequestParam(value = "client_id")
+          @Schema(
+              description = OpenAPI.Params.Description.CLIENT_ID,
+              example = OpenAPI.Params.Example.CLIENT_ID)
+          String clientId,
       @RequestParam(value = "registration_token")
-          @NotNull(message = "Registration Token is Required")
+          @Schema(
+              description = OpenAPI.Params.Description.REGISTRATION_TOKEN,
+              example = OpenAPI.Params.Example.REGISTRATION_TOKEN)
           String registration_token);
+
+  @PutMapping("/users/update")
+  @Operation(
+      description = "Update an existing user",
+      summary = "User Update",
+      tags = OpenAPI.Tag.USERS)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "User updated successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class),
+                    examples = @ExampleObject(value = "@BadRequest.json")))
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> updateUser(
+      @RequestBody @Valid @NotNull(message = "User cannot be null") User user,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      ServerHttpRequest request);
 }

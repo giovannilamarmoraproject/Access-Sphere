@@ -12,5 +12,5 @@ public interface UserDataService {
 
   UserEntity findUserEntityByTokenReset(String token);
 
-  UserEntity updateUserEntityByIdentifier(UserEntity userEntity, String identifier);
+  UserEntity findUserEntityByIdentifier(String identifier);
 }

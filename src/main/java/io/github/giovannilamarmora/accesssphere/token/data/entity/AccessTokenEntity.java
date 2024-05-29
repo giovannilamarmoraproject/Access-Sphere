@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.token.data.entity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -55,11 +56,18 @@ public class AccessTokenEntity extends GenericEntity {
   @Column(name = "ISSUE_DATE")
   private Long issueDate;
 
-  @Column(name = "EXPIRE_DATE")
-  private Long expireDate;
+  @Column(name = "REFRESH_EXPIRE_DATE")
+  private Long refreshExpireDate;
+
+  @Column(name = "ACCESS_EXPIRE_DATE")
+  private Long accessExpireDate;
 
   @Lob
   @JsonRawValue
   @Column(name = "PAYLOAD", columnDefinition = "json")
   private Object payload;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "STATUS")
+  private TokenStatus status;
 }

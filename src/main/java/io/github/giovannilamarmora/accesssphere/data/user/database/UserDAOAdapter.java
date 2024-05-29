@@ -37,7 +37,7 @@ public class UserDAOAdapter implements UserDataService {
 
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public UserEntity updateUserEntityByIdentifier(UserEntity userEntity, String identifier) {
-    return userDAO.updateUserEntityByIdentifier(userEntity, identifier);
+  public UserEntity findUserEntityByIdentifier(String identifier) {
+    return userDAO.findUserEntityByIdentifier(identifier);
   }
 }

@@ -30,8 +30,9 @@ public class UserControllerImpl implements UserController {
     return userService.register(user, clientId, registration_token);
   }
 
+  @Override
   public Mono<ResponseEntity<Response>> updateUser(
-      User user, String clientId, String registration_token) {
-    return userService.register(user, clientId, registration_token);
+      User user, String bearer, ServerHttpRequest request) {
+    return userService.updateUser(user, bearer, request);
   }
 }

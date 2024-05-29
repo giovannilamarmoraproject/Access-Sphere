@@ -53,7 +53,9 @@ public class JWTData {
             ? null
             : "https://" + request.getRemoteAddress().getHostName(),
         user.getUsername(),
-        Joiner.on(" ").join(user.getSurname(), user.getName()),
+        ObjectUtils.isEmpty(user.getSurname()) || ObjectUtils.isEmpty(user.getName())
+            ? null
+            : Joiner.on(" ").join(user.getSurname(), user.getName()),
         user.getEmail(),
         user.getProfilePhoto(),
         user.getName(),

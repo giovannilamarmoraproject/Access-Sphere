@@ -1,12 +1,11 @@
 package io.github.giovannilamarmora.accesssphere.api.strapi.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -47,7 +46,7 @@ public class OAuthStrapiClient {
   @AllArgsConstructor
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public static class StrapiData {
-    private String id;
+    private Long id;
     private AppRole attributes;
   }
 }

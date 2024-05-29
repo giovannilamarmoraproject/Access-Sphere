@@ -4,16 +4,14 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.*;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
-import io.github.giovannilamarmora.accesssphere.data.address.AddressMapper;
 import io.github.giovannilamarmora.accesssphere.data.address.model.Address;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
-
-import java.util.List;
 
 @Component
 public class StrapiMapper {
@@ -57,7 +55,10 @@ public class StrapiMapper {
         .map(
             strapiData ->
                 new AppRole(
-                    strapiData.getAttributes().getId(), strapiData.getAttributes().getRole()))
+                    ObjectUtils.isEmpty(strapiData.getAttributes().getId())
+                        ? strapiData.getId()
+                        : strapiData.getAttributes().getId(),
+                    strapiData.getAttributes().getRole()))
         .toList();
   }
 

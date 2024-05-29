@@ -64,8 +64,7 @@ public class UserCacheService implements UserDataService {
   }
 
   @Override
-  public UserEntity updateUserEntityByIdentifier(UserEntity userEntity, String identifier) {
-    deleteUserCache();
-    return userDAO.updateUserEntityByIdentifier(userEntity, identifier);
+  public UserEntity findUserEntityByIdentifier(String identifier) {
+    return userDAO.findUserEntityByIdentifier(identifier);
   }
 }

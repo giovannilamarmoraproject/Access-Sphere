@@ -18,11 +18,9 @@ import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
-import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -76,10 +74,13 @@ public class DataService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> registerUser(User user, ClientCredential clientCredential) {
-    user.setRoles(
-        ObjectUtils.isEmpty(clientCredential.getDefaultRoles())
-            ? null
-            : clientCredential.getDefaultRoles().stream().map(AppRole::getRole).toList());
+    if (ObjectUtils.isEmpty(clientCredential.getDefaultRoles())) {
+      LOG.error(
+          "Default roles not present on client configuration under client_id {}",
+          clientCredential.getClientId());
+      throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
+    }
+    user.setRoles(clientCredential.getDefaultRoles().stream().map(AppRole::getRole).toList());
     // Se l'utente non ha password?
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
     userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
@@ -102,8 +103,7 @@ public class DataService {
                               .map(AppRole::getRole)
                               .toList()));
                 // Registro l'utente a prescindere che strapi funzioni o meno
-                UserEntity userSaved = userDataService.saveAndFlush(userEntity);
-                return UserMapper.mapUserEntityToUser(userSaved);
+                return saveUserIntoDatabase(userEntity);
               })
           .onErrorResume(
               throwable -> {
@@ -111,17 +111,13 @@ public class DataService {
                   LOG.info(
                       "Error on strapi, register user into database, message is {}",
                       throwable.getMessage());
-                  UserEntity userSaved = userDataService.saveAndFlush(userEntity);
-                  DataValidator.validateUser(userEntity);
-                  return Mono.just(UserMapper.mapUserEntityToUser(userSaved));
+                  return Mono.just(saveUserIntoDatabase(userEntity));
                 }
                 return Mono.error(throwable);
               })
           .doOnSuccess(user1 -> LOG.info("User {} saved", user1.getUsername()));
     }
-    UserEntity userSaved = userDataService.saveAndFlush(userEntity);
-    DataValidator.validateUser(userEntity);
-    return Mono.just(UserMapper.mapUserEntityToUser(userSaved));
+    return Mono.just(saveUserIntoDatabase(userEntity));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -294,55 +290,77 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(User userToUpdate, String strapiJwt) {
+  public Mono<User> updateUser(User userToUpdate) {
 
-    if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
-      userToUpdate.setPassword(new String(Base64.getDecoder().decode(userToUpdate.getPassword())));
-      if (!Utils.checkCharacterAndRegexValid(
-          userToUpdate.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
-        LOG.error("Invalid regex for field password for user {}", userToUpdate.getUsername());
-        throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
-      }
-    }
     // Se l'utente non ha password?
     UserEntity userEntity = UserMapper.mapUserToUserEntity(userToUpdate);
-    userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
+
+    // if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
+    //  userToUpdate.setPassword(new
+    // String(Base64.getDecoder().decode(userToUpdate.getPassword())));
+    //  if (!Utils.checkCharacterAndRegexValid(
+    //      userToUpdate.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
+    //    LOG.error("Invalid regex for field password for user {}", userToUpdate.getUsername());
+    //    throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
+    //  }
+    //  userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
+    // }
 
     if (isStrapiEnabled) {
       LOG.debug(
           "Strapi is enabled, updating user with email {} on strapi", userToUpdate.getEmail());
       return strapiService
-          .updateUser(userToUpdate, strapiJwt)
-          .map(
+          .getUserByIdentifier(userToUpdate.getIdentifier())
+          .flatMap(
               strapiUser -> {
-                userEntity.setStrapiId(strapiUser.getId());
-                if (!ObjectUtils.isEmpty(userToUpdate.getRoles()))
-                  userEntity.setRoles(String.join(" ", userToUpdate.getRoles()));
-                // Registro l'utente a prescindere che strapi funzioni o meno
-                UserEntity userSaved =
-                    userDataService.updateUserEntityByIdentifier(
-                        userEntity, userToUpdate.getIdentifier());
-                return UserMapper.mapUserEntityToUser(userSaved);
-              })
-          .onErrorResume(
-              throwable -> {
-                if (!throwable.getMessage().contains("NotFoundError")) {
-                  LOG.info(
-                      "Error on strapi, update user into database, message is {}",
-                      throwable.getMessage());
-                  UserEntity userSaved =
-                      userDataService.updateUserEntityByIdentifier(
-                          userEntity, userToUpdate.getIdentifier());
-                  DataValidator.validateUser(userEntity);
-                  return Mono.just(UserMapper.mapUserEntityToUser(userSaved));
-                }
-                return Mono.error(throwable);
-              })
-          .doOnSuccess(user1 -> LOG.info("User {} updated", user1.getUsername()));
+                userToUpdate.setId(strapiUser.getId());
+                return strapiService
+                    .updateUser(userToUpdate)
+                    .map(
+                        strapiUserUpdated -> {
+                          userEntity.setStrapiId(strapiUserUpdated.getId());
+                          // if (!ObjectUtils.isEmpty(userToUpdate.getRoles()))
+                          //  userEntity.setRoles(String.join(" ", userToUpdate.getRoles()));
+                          // Registro l'utente a prescindere che strapi funzioni o meno
+                          UserEntity userFind =
+                              userDataService.findUserEntityByIdentifier(
+                                  userToUpdate.getIdentifier());
+                          setDataBeforeUpdate(userEntity, userFind);
+                          return saveUserIntoDatabase(userEntity);
+                        })
+                    .onErrorResume(
+                        throwable -> {
+                          if (!throwable.getMessage().contains("NotFoundError")) {
+                            LOG.info(
+                                "Error on strapi, update user into database, message is {}",
+                                throwable.getMessage());
+                            UserEntity userFind =
+                                userDataService.findUserEntityByIdentifier(
+                                    userToUpdate.getIdentifier());
+                            setDataBeforeUpdate(userEntity, userFind);
+                            return Mono.just(saveUserIntoDatabase(userEntity));
+                          }
+                          return Mono.error(throwable);
+                        })
+                    .doOnSuccess(user1 -> LOG.info("User {} updated", user1.getUsername()));
+              });
     }
-    UserEntity userSaved =
-        userDataService.updateUserEntityByIdentifier(userEntity, userToUpdate.getIdentifier());
-    DataValidator.validateUser(userEntity);
-    return Mono.just(UserMapper.mapUserEntityToUser(userSaved));
+    UserEntity userFind = userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
+    setDataBeforeUpdate(userEntity, userFind);
+    return Mono.just(saveUserIntoDatabase(userEntity));
+  }
+
+  private User saveUserIntoDatabase(UserEntity userEntity) {
+    UserEntity userSaved = userDataService.saveAndFlush(userEntity);
+    userSaved.setPassword(null);
+    DataValidator.validateUser(userSaved);
+    return UserMapper.mapUserEntityToUser(userSaved);
+  }
+
+  private void setDataBeforeUpdate(UserEntity userEntity, UserEntity userFind) {
+    userEntity.setId(userFind.getId());
+    userEntity.setIdentifier(userFind.getIdentifier());
+    userEntity.setPassword(userFind.getPassword());
+    userEntity.setRoles(userFind.getRoles());
   }
 }
