@@ -31,6 +31,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up JDK and Maven
+        id: setup
+        uses: actions/setup-java@v4.2.1
+        with:
+          java-version: '22'
+          distribution: 'corretto'
+
       - name: ⬇️ Install dependencies
         run: |
           mvn -X clean install
@@ -62,6 +69,13 @@ jobs:
     needs: [ install-test-and-build, docker-login ]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up JDK and Maven
+        id: setup
+        uses: actions/setup-java@v4.2.1
+        with:
+          java-version: '22'
+          distribution: 'corretto'
 
       - name: 📝 Set Release Version
         run: |
