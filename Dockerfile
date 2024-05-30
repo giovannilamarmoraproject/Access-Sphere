@@ -1,6 +1,6 @@
 FROM maven:3.9.7-eclipse-temurin-22 AS build
 COPY . .
-RUN mvn clean package
+RUN mvn clean package -DGCLOUD_PROJECT=access-sphere
 
 FROM eclipse-temurin:22-jdk
 EXPOSE 8080
