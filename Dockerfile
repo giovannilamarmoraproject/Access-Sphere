@@ -1,14 +1,11 @@
-# Fase di build
-FROM maven:3.8.2-eclipse-temurin-22 AS build
-WORKDIR /app
+FROM maven:3.8.2-jdk-11 AS build
 COPY . .
 RUN mvn clean package
 
-# Fase di runtime
-FROM eclipse-temurin:22-jre
+FROM amazoncorretto:22
 EXPOSE 8080
-WORKDIR /app
-COPY --from=build /app/target/access-sphere.jar access-sphere.jar
+WORKDIR /
+COPY --from=build /target/access-sphere.jar access-sphere.jar
 
 ENTRYPOINT ["java","-jar","access-sphere.jar"]
-ENV TZ Europe/Rome
+ENV TZ=Europe/Rome
