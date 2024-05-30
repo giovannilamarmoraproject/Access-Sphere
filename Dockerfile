@@ -1,4 +1,4 @@
-FROM maven:3.9.7-eclipse-temurin-11 AS build
+FROM maven:3.9.7-eclipse-temurin-22 AS build
 COPY . .
 RUN mvn clean package
 
