@@ -19,10 +19,10 @@ jobs:
 
       - name: Set up JDK and Maven
         id: setup
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v4.2.1
         with:
           java-version: '22'
-          distribution: 'temurin'
+          distribution: 'corretto'
 
   install-test-and-build:
     name: 🌱 Install, Test and Build
