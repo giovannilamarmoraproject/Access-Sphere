@@ -1,0 +1,40 @@
+version: '3.7'
+services:
+  service:
+    container_name: access-sphere-stg
+    image: ${DOCKER_REPOSITORY}:${APP_VERSION}
+    hostname: access.sphere.service.stg
+    ports:
+      - "8006:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=deploy
+      - DATABASE_JDBC_URL=${DATABASE_JDBC_URL}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - LOGGING_LEVEL=${LOGGING_LEVEL}
+      - APP_ENV=${APP_ENV}
+      - STRAPI_AUTH_TOKEN=${STRAPI_AUTH_TOKEN}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+    deploy:
+      replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
+      #update_config:
+      #  parallelism: 1
+      #  delay: 10s
+      #restart_policy:
+      #  condition: on-failure
+      #placement:
+      #  constraints:
+      #    - node.role == manager
+    networks:
+      docker-network:
+        aliases:
+          - access.sphere.service.stg
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-service.rule=Host(`access.sphere.service.stg`)"
+      - "traefik.http.services.backend-service.loadbalancer.server.port=8080"
+
+networks:
+  docker-network:
+    external: true
