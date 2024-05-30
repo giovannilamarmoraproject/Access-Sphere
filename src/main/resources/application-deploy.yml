@@ -48,7 +48,7 @@ rest:
   client:
     strapi:
       active: true
-      baseUrl: http://app.strapi.cms:8080
+      baseUrl: http://app.strapi.cms:1337
       bearer: ${STRAPI_AUTH_TOKEN}
       path:
         clientId: /api/Oauthclientids
