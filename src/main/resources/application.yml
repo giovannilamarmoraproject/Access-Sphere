@@ -24,6 +24,9 @@ spring:
   sql:
     init:
       mode: always
+  cloud:
+    gcp:
+      project-id: access-sphere
 
 # Level of LOG
 logging:

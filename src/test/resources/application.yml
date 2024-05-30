@@ -1,0 +1,42 @@
+env: "Test" # Used for Google Cloud LOG
+spring:
+  application:
+    name: access-sphere
+    starter-log: true # Show Started Application
+  datasource:
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: never
+
+rest:
+  client:
+    strapi:
+      active: true
+      baseUrl: http://strapi.app.mock
+      bearer: token
+      path:
+        clientId: /api/Oauthclientids
+        registerUser: /api/auth/local/register
+        getUserByEmail: /api/users
+        login: /api/auth/local
+        getRefreshToken: /api/auth/token/request
+        userInfo: /api/users/me
+        refreshToken: /api/auth/token
+        updateUser: /api/users/:userId
+
+app:
+  version: 1.0.0
+  cache:
+    active: false
+  shouldNotFilter: "**/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/**"
+  exception:
+    stacktrace: false # Active StackTrace in Response
+  # Cors status
+  cors: # Disabled
+    enabled: false

@@ -8,6 +8,7 @@ services:
       - "8006:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=deploy
+      - GCLOUD_PROJECT=access-sphere
       - DATABASE_JDBC_URL=${DATABASE_JDBC_URL}
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_USERNAME=${DATABASE_USERNAME}

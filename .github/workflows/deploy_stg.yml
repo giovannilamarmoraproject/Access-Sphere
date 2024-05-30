@@ -40,15 +40,15 @@ jobs:
 
       - name: ⬇️ Install dependencies
         run: |
-          mvn -X clean install
+          mvn -X clean install -DGCLOUD_PROJECT=access-sphere
 
       - name: 📂 Test with Maven
         run: |
-          mvn test
+          mvn test -DGCLOUD_PROJECT=access-sphere
 
       - name: 📂 Build with Maven
         run: |
-          mvn -B package --file pom.xml -DskipTests
+          mvn -B package --file pom.xml -DskipTests -DGCLOUD_PROJECT=access-sphere
 
   docker-login:
     name: 🐳 Docker Login
