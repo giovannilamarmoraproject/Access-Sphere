@@ -20,11 +20,12 @@ import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
+import io.github.giovannilamarmora.utils.auth.TokenUtils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -172,8 +173,8 @@ public class TokenService {
     accessTokenService.save(
         jwtData,
         refreshToken,
-        Utils.hashingToken(accessToken),
-        Utils.hashingToken(idToken),
+        TokenUtils.hashingToken(accessToken),
+        TokenUtils.hashingToken(idToken),
         clientCredential.getClientId(),
         payload);
 
@@ -317,8 +318,8 @@ public class TokenService {
     accessTokenService.save(
         jwtData,
         refreshToken,
-        Utils.hashingToken(accessToken),
-        Utils.hashingToken(idToken),
+        TokenUtils.hashingToken(accessToken),
+        TokenUtils.hashingToken(idToken),
         clientCredential.getClientId(),
         payload);
 

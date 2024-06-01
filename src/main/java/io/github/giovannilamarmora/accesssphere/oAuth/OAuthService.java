@@ -11,11 +11,12 @@ import io.github.giovannilamarmora.accesssphere.oAuth.auth.GoogleAuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
-import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.web.CookieManager;
+import io.github.giovannilamarmora.utils.web.WebManager;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -65,10 +66,10 @@ public class OAuthService {
           URI location =
               GrpcService.getGoogleOAuthLocation(scope, redirectUri, accessType, clientCredential);
           HttpHeaders headers =
-              Utils.setCookieInResponse(AppConfig.COOKIE_REDIRECT_URI, redirectUri);
+              CookieManager.setCookieInResponse(AppConfig.COOKIE_REDIRECT_URI, redirectUri);
           headers.addAll(
               !ObjectUtils.isEmpty(registration_token)
-                  ? Utils.setCookieInResponse(AppConfig.COOKIE_TOKEN, registration_token)
+                  ? CookieManager.setCookieInResponse(AppConfig.COOKIE_TOKEN, registration_token)
                   : new HttpHeaders());
           LOG.info(
               "Completed endpoint authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
@@ -127,7 +128,7 @@ public class OAuthService {
       ServerHttpRequest request) {
     LOG.info(
         "Starting /token endpoint for host={} client_id={}, grant_type={}",
-        Utils.getRemoteAddress(request),
+        WebManager.getRemoteAddress(request),
         clientId,
         grant_type);
     OAuthValidator.validateOAuthToken(clientId, grant_type);
@@ -145,7 +146,7 @@ public class OAuthService {
               LOG.info("Google oAuth 2.0 Login started");
               String redirectUri = redirect_uri;
               if (ObjectUtils.isEmpty(redirectUri))
-                redirectUri = Utils.getCookie(AppConfig.COOKIE_REDIRECT_URI, request);
+                redirectUri = CookieManager.getCookie(AppConfig.COOKIE_REDIRECT_URI, request);
               OAuthValidator.validateOAuthGoogle(
                   clientCredential, code, scope, redirectUri, grant_type);
               GoogleModel googleModel =

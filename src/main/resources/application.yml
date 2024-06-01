@@ -1,4 +1,4 @@
-env: "Local" # Used for Google Cloud LOG
+env: Local
 spring:
   application:
     name: access-sphere

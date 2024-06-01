@@ -24,6 +24,10 @@ public class UserControllerImpl implements UserController {
     return userService.userInfo(bearer, request);
   }
 
+  public Mono<ResponseEntity<Response>> profile(String bearer, ServerHttpRequest request) {
+    return userService.profile(bearer, request);
+  }
+
   @Override
   public Mono<ResponseEntity<Response>> registerUser(
       User user, String clientId, String registration_token) {

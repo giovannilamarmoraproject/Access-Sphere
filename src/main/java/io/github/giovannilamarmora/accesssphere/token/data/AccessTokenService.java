@@ -7,10 +7,11 @@ import io.github.giovannilamarmora.accesssphere.token.data.entity.AccessTokenEnt
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
+import io.github.giovannilamarmora.utils.auth.TokenUtils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.util.Date;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,7 @@ public class AccessTokenService {
       throw new TokenException(ExceptionMap.ERR_TOKEN_500, ExceptionMap.ERR_TOKEN_500.getMessage());
     }
     AccessTokenEntity accessTokenSaved = accessTokenDAO.save(accessTokenToBeSaved);
+    accessTokenDAO.revokeTokensExcept(TokenStatus.REVOKED, accessToken, jwtData.getIdentifier());
     if (ObjectUtils.isEmpty(accessTokenSaved)) {
       LOG.error("Refresh Token not saved");
       throw new TokenException(ExceptionMap.ERR_TOKEN_500, ExceptionMap.ERR_TOKEN_500.getMessage());
@@ -67,7 +69,7 @@ public class AccessTokenService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AccessTokenData getByAccessTokenOrIdToken(String token) {
     String hashedToken =
-        token.contains("Bearer") ? Utils.hashingToken(token.split("Bearer ")[1]) : token;
+        token.contains("Bearer") ? TokenUtils.hashingToken(token.split("Bearer ")[1]) : token;
     AccessTokenEntity accessToken = accessTokenDAO.findByTokenHash(hashedToken);
 
     if (ObjectUtils.isEmpty(accessToken)) {
@@ -75,7 +77,9 @@ public class AccessTokenService {
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
     Date now = new Date();
-    if (now.after(new Date(accessToken.getAccessExpireDate()))) {
+    if (now.after(new Date(accessToken.getAccessExpireDate()))
+        || accessToken.getStatus().equals(TokenStatus.EXPIRED)
+        || accessToken.getStatus().equals(TokenStatus.REVOKED)) {
       LOG.error(
           "The current access token is expired on {}", new Date(accessToken.getAccessExpireDate()));
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
@@ -87,7 +91,7 @@ public class AccessTokenService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AccessTokenData getByRefreshToken(String token) {
     String hashedToken =
-        token.contains("Bearer") ? Utils.hashingToken(token.split("Bearer ")[1]) : token;
+        token.contains("Bearer") ? TokenUtils.hashingToken(token.split("Bearer ")[1]) : token;
     AccessTokenEntity accessToken = accessTokenDAO.findByTokenHash(hashedToken);
 
     if (ObjectUtils.isEmpty(accessToken)) {
@@ -95,7 +99,9 @@ public class AccessTokenService {
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
     Date now = new Date();
-    if (now.after(new Date(accessToken.getRefreshExpireDate()))) {
+    if (now.after(new Date(accessToken.getRefreshExpireDate()))
+        || accessToken.getStatus().equals(TokenStatus.EXPIRED)
+        || accessToken.getStatus().equals(TokenStatus.REVOKED)) {
       LOG.error(
           "The current refresh token is expired on {}",
           new Date(accessToken.getRefreshExpireDate()));

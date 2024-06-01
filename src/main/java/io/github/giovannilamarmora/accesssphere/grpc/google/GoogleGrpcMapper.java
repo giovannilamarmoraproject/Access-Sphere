@@ -3,7 +3,7 @@ package io.github.giovannilamarmora.accesssphere.grpc.google;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;

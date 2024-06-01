@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth.model;
 
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import org.slf4j.Logger;
 
 public enum GrantType {

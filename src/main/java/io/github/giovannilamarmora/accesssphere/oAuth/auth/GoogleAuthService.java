@@ -14,12 +14,12 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
-import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.web.CookieManager;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -71,7 +71,8 @@ public class GoogleAuthService {
               if (throwable
                   .getMessage()
                   .equalsIgnoreCase(ExceptionMap.ERR_STRAPI_404.getMessage())) {
-                String registration_token = Utils.getCookie(AppConfig.COOKIE_TOKEN, request);
+                String registration_token =
+                    CookieManager.getCookie(AppConfig.COOKIE_TOKEN, request);
                 if (ObjectUtils.isEmpty(registration_token)) {
                   LOG.error("Missing registration_token");
                   throw new OAuthException(
@@ -85,7 +86,7 @@ public class GoogleAuthService {
                       "Invalid registration_token, you cannot proceed!");
                 }
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
-                userGoogle.setPassword(Utils.getCookie(AppConfig.COOKIE_TOKEN, request));
+                userGoogle.setPassword(CookieManager.getCookie(AppConfig.COOKIE_TOKEN, request));
                 return dataService
                     .registerUser(userGoogle, clientCredential)
                     .map(

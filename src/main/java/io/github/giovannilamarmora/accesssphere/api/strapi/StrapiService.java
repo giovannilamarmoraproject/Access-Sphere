@@ -11,10 +11,11 @@ import io.github.giovannilamarmora.accesssphere.data.DataValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class StrapiService {
         .doOnError(
             throwable -> {
               String messageBody = throwable.getMessage().split("and body message ")[1];
-              if (Utils.isInstanceOf(messageBody, new TypeReference<StrapiError>() {})) {
+              if (Utilities.isInstanceOf(messageBody, new TypeReference<StrapiError>() {})) {
                 StrapiError response;
                 try {
                   response = Utils.mapper().readValue(messageBody, StrapiError.class);

@@ -4,23 +4,19 @@ import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
-import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
-import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
-import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -52,11 +48,7 @@ public class UserService {
 
     return clientCredentialMono.flatMap(
         clientCredential -> {
-          if (!clientCredential.getAuthType().equals(accessTokenData.getType())) {
-            LOG.error("Invalid Authentication Type on client");
-            throw new OAuthException(
-                ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
-          }
+          UserValidator.validateAuthType(clientCredential, accessTokenData);
           JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
           switch (decryptToken.getType()) {
             case BEARER -> {
@@ -80,14 +72,7 @@ public class UserService {
               GoogleModel userInfo =
                   GrpcService.userInfo(
                       accessTokenData.getPayload().get("id_token").textValue(), clientCredential);
-              if (!userInfo.getUserInfo().getEmail().equalsIgnoreCase(decryptToken.getEmail())) {
-                LOG.error(
-                    "The JWT User {}, is different than the one on google {}",
-                    decryptToken.getEmail(),
-                    userInfo.getUserInfo().get("email"));
-                throw new OAuthException(
-                    ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
-              }
+              UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
               if (includeUserData) {
                 return dataService
                     .getUserByEmail(decryptToken.getEmail())
@@ -111,10 +96,60 @@ public class UserService {
               return Mono.just(ResponseEntity.ok(response));
             }
             default -> {
-              LOG.error("Type miss match on client");
-              return Mono.error(
-                  new OAuthException(
-                      ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
+              return UserValidator.defaultErrorOnType();
+            }
+          }
+        });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> profile(String bearer, ServerHttpRequest request) {
+    LOG.info("Getting profile process started");
+    AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(accessTokenData.getClientId());
+
+    return clientCredentialMono.flatMap(
+        clientCredential -> {
+          UserValidator.validateAuthType(clientCredential, accessTokenData);
+          JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
+          switch (decryptToken.getType()) {
+            case BEARER -> {
+              return dataService
+                  .getUserInfo(
+                      decryptToken, accessTokenData.getPayload().get("access_token").textValue())
+                  .map(
+                      user -> {
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(),
+                                "Profile Data for " + user.getUsername(),
+                                CorrelationIdUtils.getCorrelationId(),
+                                user);
+                        return ResponseEntity.ok(response);
+                      });
+            }
+            case GOOGLE -> {
+              GoogleModel userInfo =
+                  GrpcService.userInfo(
+                      accessTokenData.getPayload().get("id_token").textValue(), clientCredential);
+              UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
+              return dataService
+                  .getUserByEmail(decryptToken.getEmail())
+                  .map(
+                      user -> {
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(),
+                                "Profile Data for " + user.getUsername(),
+                                CorrelationIdUtils.getCorrelationId(),
+                                user);
+                        return ResponseEntity.ok(response);
+                      });
+            }
+            default -> {
+              return UserValidator.defaultErrorOnType();
             }
           }
         });
@@ -132,26 +167,7 @@ public class UserService {
 
     return clientCredentialMono.flatMap(
         clientCredential -> {
-          if (ObjectUtils.isEmpty(registration_token)) {
-            LOG.error("Missing registration_token");
-            throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Missing registration_token!");
-          }
-          if (!registration_token.equalsIgnoreCase(clientCredential.getRegistrationToken())) {
-            LOG.error("Invalid registration_token");
-            throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid registration_token!");
-          }
-
-          if (!Utils.checkCharacterAndRegexValid(
-              user.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
-            LOG.error("Invalid regex for field password for user {}", user.getUsername());
-            throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
-          }
-
-          if (!Utils.checkCharacterAndRegexValid(user.getEmail(), RegEx.EMAIL.getValue())) {
-            LOG.error("Invalid regex for field email for user {}", user.getUsername());
-            throw new UserException(ExceptionMap.ERR_USER_400, "Invalid email provided!");
-          }
-
+          UserValidator.validateRegistration(registration_token, clientCredential, user);
           return dataService
               .registerUser(user, clientCredential)
               .map(
@@ -162,7 +178,7 @@ public class UserService {
                             "User " + user.getUsername() + " successfully registered!",
                             CorrelationIdUtils.getCorrelationId(),
                             user1);
-                    return ResponseEntity.ok(response);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(response);
                   });
         });
   }
@@ -178,13 +194,7 @@ public class UserService {
 
     AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
     // Setting UserData
-    if (!accessTokenData.getIdentifier().equalsIgnoreCase(userToUpdate.getIdentifier())) {
-      LOG.error(
-          "Identifier miss match, you should use {} instead of {}",
-          accessTokenData.getIdentifier(),
-          userToUpdate.getIdentifier());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
-    }
+    UserValidator.validateUpdate(accessTokenData, userToUpdate);
     return dataService
         .updateUser(userToUpdate)
         .flatMap(

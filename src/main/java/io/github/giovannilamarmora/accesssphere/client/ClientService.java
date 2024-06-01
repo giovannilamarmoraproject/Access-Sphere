@@ -8,9 +8,9 @@ import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEn
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ public class ClientService {
   @Autowired private IClientDAO iClientDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
- // @Cacheable(value = CLIENT_CREDENTIAL_CACHE, key = "#clientID", condition = "#clientID!=null")
+  // @Cacheable(value = CLIENT_CREDENTIAL_CACHE, key = "#clientID", condition = "#clientID!=null")
   public Mono<ClientCredential> getClientCredentialByClientID(String clientID) {
     if (isStrapiEnabled) {
       LOG.info("Strapi is active");

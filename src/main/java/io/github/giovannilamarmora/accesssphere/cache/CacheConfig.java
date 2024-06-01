@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.cache;
 
 import io.github.giovannilamarmora.accesssphere.data.user.database.UserDAOAdapter;
 import io.github.giovannilamarmora.accesssphere.data.user.database.UserDataService;
-import io.github.giovannilamarmora.accesssphere.utilities.LoggerFilter;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import org.slf4j.Logger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
