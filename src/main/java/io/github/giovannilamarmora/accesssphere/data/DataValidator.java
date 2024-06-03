@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,14 @@ public class DataValidator {
     if (ObjectUtils.isEmpty(userEntity)) {
       LOG.error("User not found into database");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateResetToken(LocalDateTime updateDate) {
+    if (updateDate.plusDays(1).isBefore(LocalDateTime.now())) {
+      LOG.error("Token Expired, last created was at {}", updateDate);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
   }
 

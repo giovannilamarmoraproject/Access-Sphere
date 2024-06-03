@@ -58,6 +58,9 @@ public class StrapiClient {
   @Value(value = "${rest.client.strapi.path.updateUser}")
   private String updateUserUrl;
 
+  @Value(value = "${rest.client.strapi.path.getTemplate}")
+  private String templateUrl;
+
   @Autowired private WebClient.Builder builder;
 
   @PostConstruct
@@ -205,6 +208,40 @@ public class StrapiClient {
         HttpMethod.PUT,
         UtilsUriBuilder.buildUri(updateUser, null),
         user,
+        headers,
+        StrapiUser.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<StrapiResponse>> getTemplateById(String templateId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("filters[identifier][$eq]", templateId);
+    params.put("populate", "*");
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
+
+    return webClientRest.perform(
+        HttpMethod.GET,
+        UtilsUriBuilder.buildUri(templateUrl, params),
+        headers,
+        StrapiResponse.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<List<StrapiUser>>> getUserByTokenReset(String tokenReset) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("filters[tokenReset][$eq]", tokenReset);
+    params.put("populate", "*");
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
+
+    return webClientRest.performList(
+        HttpMethod.GET,
+        UtilsUriBuilder.buildUri(getUserByEmailUrl, params),
         headers,
         StrapiUser.class);
   }

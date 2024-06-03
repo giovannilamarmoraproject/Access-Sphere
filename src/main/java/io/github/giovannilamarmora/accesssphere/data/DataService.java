@@ -17,10 +17,12 @@ import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -69,6 +71,38 @@ public class DataService {
     }
     UserEntity userEntity = userDataService.findUserEntityByEmail(email);
     DataValidator.validateUser(userEntity);
+    return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<User> getUserByTokenReset(String tokenReset) {
+    if (isStrapiEnabled) {
+      LOG.debug("Strapi is enabled, finding user, using token {}", tokenReset);
+      return strapiService
+          .getUserByTokenReset(tokenReset)
+          .flatMap(strapiUser -> Mono.just(StrapiMapper.mapFromStrapiUserToUser(strapiUser)))
+          .onErrorResume(
+              throwable -> {
+                if (!throwable
+                        .getMessage()
+                        .equalsIgnoreCase(ExceptionMap.ERR_STRAPI_404.getMessage())
+                    || !throwable
+                        .getMessage()
+                        .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_403.getMessage())) {
+                  LOG.info(
+                      "Error on strapi, finding user into database, message is {}",
+                      throwable.getMessage());
+                  UserEntity userEntity = userDataService.findUserEntityByTokenReset(tokenReset);
+                  DataValidator.validateUser(userEntity);
+                  DataValidator.validateResetToken(userEntity.getUpdateDate());
+                  return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+                }
+                return Mono.error(throwable);
+              });
+    }
+    UserEntity userEntity = userDataService.findUserEntityByTokenReset(tokenReset);
+    DataValidator.validateUser(userEntity);
+    DataValidator.validateResetToken(userEntity.getUpdateDate());
     return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
   }
 
@@ -290,21 +324,29 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(User userToUpdate) {
+  public Mono<User> updateUser(User userToUpdate, boolean isUpdatePassword) {
+    return updateUserProcess(userToUpdate, isUpdatePassword);
+  }
 
-    // Se l'utente non ha password?
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<User> updateUser(User userToUpdate) {
+    return updateUserProcess(userToUpdate, false);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  private Mono<User> updateUserProcess(User userToUpdate, boolean isUpdatePassword) {
     UserEntity userEntity = UserMapper.mapUserToUserEntity(userToUpdate);
 
-    // if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
-    //  userToUpdate.setPassword(new
-    // String(Base64.getDecoder().decode(userToUpdate.getPassword())));
-    //  if (!Utils.checkCharacterAndRegexValid(
-    //      userToUpdate.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
-    //    LOG.error("Invalid regex for field password for user {}", userToUpdate.getUsername());
-    //    throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
-    //  }
-    //  userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
-    // }
+    if (isUpdatePassword) {
+      if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
+        if (!Utilities.isCharacterAndRegexValid(
+            userToUpdate.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
+          LOG.error("Invalid regex for field password for user {}", userToUpdate.getUsername());
+          throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
+        }
+        userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
+      }
+    }
 
     if (isStrapiEnabled) {
       LOG.debug(
@@ -325,7 +367,7 @@ public class DataService {
                           UserEntity userFind =
                               userDataService.findUserEntityByIdentifier(
                                   userToUpdate.getIdentifier());
-                          setDataBeforeUpdate(userEntity, userFind);
+                          setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
                           return saveUserIntoDatabase(userEntity);
                         })
                     .onErrorResume(
@@ -337,7 +379,7 @@ public class DataService {
                             UserEntity userFind =
                                 userDataService.findUserEntityByIdentifier(
                                     userToUpdate.getIdentifier());
-                            setDataBeforeUpdate(userEntity, userFind);
+                            setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
                             return Mono.just(saveUserIntoDatabase(userEntity));
                           }
                           return Mono.error(throwable);
@@ -346,7 +388,7 @@ public class DataService {
               });
     }
     UserEntity userFind = userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
-    setDataBeforeUpdate(userEntity, userFind);
+    setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
     return Mono.just(saveUserIntoDatabase(userEntity));
   }
 
@@ -357,10 +399,11 @@ public class DataService {
     return UserMapper.mapUserEntityToUser(userSaved);
   }
 
-  private void setDataBeforeUpdate(UserEntity userEntity, UserEntity userFind) {
+  private void setDataBeforeUpdate(
+      UserEntity userEntity, UserEntity userFind, boolean isUpdatePassword) {
     userEntity.setId(userFind.getId());
     userEntity.setIdentifier(userFind.getIdentifier());
-    userEntity.setPassword(userFind.getPassword());
+    if (!isUpdatePassword) userEntity.setPassword(userFind.getPassword());
     userEntity.setRoles(userFind.getRoles());
   }
 }

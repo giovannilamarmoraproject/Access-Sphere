@@ -41,7 +41,8 @@ public enum ExceptionMap implements ExceptionCode {
       "TOKEN_NOT_VALID",
       HttpStatus.UNAUTHORIZED,
       "You cannot make this request cause the auth-token is invalid"),
-  ERR_USER_500("TOKEN_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, "Generic Server Error"),
+  ERR_USER_429("TOO_MANY_REQUEST", HttpStatus.TOO_MANY_REQUESTS, "Too many requests"),
+  ERR_EMAIL_SEND_001("CLIENT_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on client: "),
   ;
 
   private final HttpStatus status;

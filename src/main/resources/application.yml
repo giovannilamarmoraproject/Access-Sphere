@@ -44,6 +44,10 @@ springdoc:
     path: /swagger-ui.html
     disable-swagger-default-url: true
 
+filter:
+  rate-limiting:
+    shouldFilter: "*/users/change/password,*/users/change/password/request"
+
 rest:
   client:
     strapi:
@@ -59,6 +63,11 @@ rest:
         userInfo: /api/users/me
         refreshToken: /api/auth/token
         updateUser: /api/users/:userId
+        getTemplate: /api/email-templates
+    email-sender:
+      baseUrl: https://email-sender.hostwebserver.site/email-sender
+      path:
+        sendEmailUrl: /v1/send-email
 
 app:
   version: @project.version@

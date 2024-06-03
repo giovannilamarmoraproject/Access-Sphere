@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.api.strapi;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.*;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
@@ -9,6 +10,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -16,10 +18,14 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class StrapiMapper {
 
+  private static final ObjectMapper mapper = MapperUtils.mapper().failOnEmptyBean().build();
+
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static ClientCredential mapFromStrapiResponseToClientCredential(
       StrapiResponse strapiResponse) {
-    OAuthStrapiClient strapiClient = strapiResponse.getData().getFirst().getAttributes();
+    OAuthStrapiClient strapiClient =
+        mapper.convertValue(
+            strapiResponse.getData().getFirst().getAttributes(), OAuthStrapiClient.class);
     return new ClientCredential(
         strapiClient.getClientId(),
         strapiClient.getExternalClientId(),

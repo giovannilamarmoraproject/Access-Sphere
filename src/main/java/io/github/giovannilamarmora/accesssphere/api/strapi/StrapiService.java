@@ -2,10 +2,8 @@ package io.github.giovannilamarmora.accesssphere.api.strapi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiError;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLogin;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.*;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -15,7 +13,9 @@ import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
+import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -116,6 +116,35 @@ public class StrapiService {
                     "An error happen during get user by identifier on strapi, user not found");
                 throw new OAuthException(
                     ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              return Mono.just(listResponseEntity.getBody().getFirst());
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiUser> getUserByTokenReset(String tokenReset) {
+    return strapiClient
+        .getUserByTokenReset(tokenReset)
+        .flatMap(
+            listResponseEntity -> {
+              if (!listResponseEntity.hasBody()
+                  || ObjectUtils.isEmpty(listResponseEntity.getBody())) {
+                LOG.error(
+                    "An error happen during get user by tokenReset on strapi, user not found");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              if (listResponseEntity.getBody().isEmpty()) {
+                LOG.error(
+                    "An error happen during get user by tokenReset on strapi, user not found");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              StrapiUser strapiUser = listResponseEntity.getBody().getFirst();
+              if (strapiUser.getUpdatedAt().plusDays(1).isBefore(LocalDateTime.now())) {
+                LOG.error("Token Expired, last created was at {}", strapiUser.getUpdatedAt());
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
               }
               return Mono.just(listResponseEntity.getBody().getFirst());
             });
@@ -224,6 +253,26 @@ public class StrapiService {
                 throw new OAuthException(
                     ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
               }
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiEmailTemplate> getTemplateById(String templateId) {
+    return strapiClient
+        .getTemplateById(templateId)
+        .flatMap(
+            responseEntity -> {
+              if (ObjectUtils.isEmpty(responseEntity.getBody())
+                  || ObjectUtils.isEmpty(responseEntity.getBody().getData())) {
+                LOG.error("Strapi returned an empty object");
+                throw new StrapiException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              ObjectMapper mapper = MapperUtils.mapper().failOnEmptyBean().build();
+              return Mono.just(
+                  mapper.convertValue(
+                      responseEntity.getBody().getData().getFirst().getAttributes(),
+                      StrapiEmailTemplate.class));
             });
   }
 }

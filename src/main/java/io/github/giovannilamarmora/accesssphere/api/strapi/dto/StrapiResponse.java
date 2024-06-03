@@ -25,7 +25,8 @@ public class StrapiResponse {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public static class StrapiData {
     private String id;
-    private OAuthStrapiClient attributes;
+    
+    private Object attributes;
   }
 
   @Builder

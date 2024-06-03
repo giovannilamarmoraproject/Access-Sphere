@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
+import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
@@ -180,4 +181,57 @@ public interface UserController {
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
       ServerHttpRequest request);
+
+  @PostMapping("/users/change/password/request")
+  @Operation(
+      description = "Send Email to change the user password",
+      summary = "Change Password Step 1",
+      tags = OpenAPI.Tag.USERS)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Email successfully send!",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class),
+                    examples = @ExampleObject(value = "@BadRequest.json")))
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> changePasswordRequest(
+      @RequestBody @Valid ChangePassword changePassword);
+
+  @PostMapping("/users/change/password")
+  @Operation(
+      description = "Change the user password",
+      summary = "Change Password Step 2",
+      tags = OpenAPI.Tag.USERS)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Email successfully send!",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class),
+                    examples = @ExampleObject(value = "@BadRequest.json")))
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> changePassword(@RequestBody @Valid ChangePassword changePassword);
 }

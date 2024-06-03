@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
+import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -38,5 +39,15 @@ public class UserControllerImpl implements UserController {
   public Mono<ResponseEntity<Response>> updateUser(
       User user, String bearer, ServerHttpRequest request) {
     return userService.updateUser(user, bearer, request);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> changePasswordRequest(ChangePassword changePassword) {
+    return userService.changePasswordRequest(changePassword);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> changePassword(ChangePassword changePassword) {
+    return userService.changePassword(changePassword);
   }
 }

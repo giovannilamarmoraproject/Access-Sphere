@@ -12,6 +12,8 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 
 public class Utils {
@@ -41,5 +43,30 @@ public class Utils {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
     return attributes;
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
+  public static Map<String, String> getFinalMapFromValue(
+      Map<String, String> source, Map<String, String> target) {
+    // Creazione della mappa finalParam
+    Map<String, String> finalParam = new HashMap<>();
+    Pattern pattern = Pattern.compile("\\{\\{(.+?)\\}\\}");
+
+    for (Map.Entry<String, String> entry : target.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      Matcher matcher = pattern.matcher(value);
+
+      StringBuffer result = new StringBuffer();
+      while (matcher.find()) {
+        String placeholder = matcher.group(1);
+        String replacement = source.getOrDefault(placeholder, matcher.group(0));
+        matcher.appendReplacement(result, replacement);
+      }
+      matcher.appendTail(result);
+
+      finalParam.put(key, result.toString());
+    }
+    return finalParam;
   }
 }
