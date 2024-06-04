@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.config;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.giovannilamarmora.accesssphere.data.user.UserException;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import java.time.Duration;
 import java.util.List;
@@ -26,7 +27,7 @@ public class RateLimitingFilter implements WebFilter {
 
   public RateLimitingFilter() {
     Bandwidth limit =
-        Bandwidth.builder().capacity(10).refillGreedy(10, Duration.ofMinutes(1)).build();
+        Bandwidth.builder().capacity(5).refillGreedy(5, Duration.ofMinutes(1)).build();
     this.bucket = Bucket.builder().addLimit(limit).build();
   }
 
@@ -37,8 +38,9 @@ public class RateLimitingFilter implements WebFilter {
       if (bucket.tryConsume(1)) {
         return chain.filter(exchange);
       } else {
-        return Mono.error(
-            new UserException(ExceptionMap.ERR_USER_429, ExceptionMap.ERR_USER_429.getMessage()));
+        return ExceptionHandler.handleFilterException(
+            new UserException(ExceptionMap.ERR_USER_429, ExceptionMap.ERR_USER_429.getMessage()),
+            exchange);
       }
     } else {
       return chain.filter(exchange);

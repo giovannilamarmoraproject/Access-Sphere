@@ -59,11 +59,17 @@ rest:
         userInfo: /api/users/me
         refreshToken: /api/auth/token
         updateUser: /api/users/:userId
+        getTemplate: /api/email-templates
+    email-sender:
+      baseUrl: http://email.sender:8080/email-sender
+      path:
+        sendEmailUrl: /v1/send-email
 
 app:
   version: @project.version@
   cache:
-    active: false
+    active: ${CACHE_ENABLE}
+    cron: 0 0 1 * * *
   shouldNotFilter: "**/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/**"
   exception:
     stacktrace: true # Active StackTrace in Response
