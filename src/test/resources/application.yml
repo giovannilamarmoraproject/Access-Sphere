@@ -14,6 +14,10 @@ spring:
     init:
       mode: never
 
+filter:
+  rate-limiting:
+    shouldFilter: "*/users/change/password,*/users/change/password/request"
+
 rest:
   client:
     strapi:
