@@ -226,7 +226,8 @@ public class UserService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> changePasswordRequest(ChangePassword changePassword) {
+  public Mono<ResponseEntity<Response>> changePasswordRequest(
+      ChangePassword changePassword, String locale) {
     if (!Utilities.isCharacterAndRegexValid(changePassword.getEmail(), RegEx.EMAIL.getValue())) {
       LOG.error("Invalid regex for field email {}", changePassword.getEmail());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid field email, try again!");
@@ -243,7 +244,7 @@ public class UserService {
                 });
 
     Mono<StrapiEmailTemplate> strapiEmailTemplateMono =
-        strapiService.getTemplateById(changePassword.getTemplateId());
+        strapiService.getTemplateById(changePassword.getTemplateId(), locale);
     return Mono.zip(userMono, strapiEmailTemplateMono)
         .flatMap(
             objects -> {

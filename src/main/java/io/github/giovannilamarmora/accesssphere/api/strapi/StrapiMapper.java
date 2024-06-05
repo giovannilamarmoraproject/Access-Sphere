@@ -26,6 +26,24 @@ public class StrapiMapper {
     OAuthStrapiClient strapiClient =
         mapper.convertValue(
             strapiResponse.getData().getFirst().getAttributes(), OAuthStrapiClient.class);
+    return mapFromOAuthStrapiClientToClientCredential(strapiClient);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<ClientCredential> mapFromStrapiResponseToClientCredentials(
+      StrapiResponse strapiResponse) {
+    List<StrapiResponse.StrapiData> strapiDataList = strapiResponse.getData();
+
+    return strapiDataList.stream()
+        .map(
+            strapiData ->
+                mapFromOAuthStrapiClientToClientCredential(
+                    mapper.convertValue(strapiData.getAttributes(), OAuthStrapiClient.class)))
+        .toList();
+  }
+
+  private static ClientCredential mapFromOAuthStrapiClientToClientCredential(
+      OAuthStrapiClient strapiClient) {
     return new ClientCredential(
         strapiClient.getClientId(),
         strapiClient.getExternalClientId(),

@@ -9,10 +9,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class StrapiGeneric {
-
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private LocalDateTime createdAt;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private LocalDateTime updatedAt;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private LocalDateTime publishedAt;
 }

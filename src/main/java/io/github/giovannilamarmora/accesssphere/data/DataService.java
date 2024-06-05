@@ -83,12 +83,9 @@ public class DataService {
           .flatMap(strapiUser -> Mono.just(StrapiMapper.mapFromStrapiUserToUser(strapiUser)))
           .onErrorResume(
               throwable -> {
-                if (!throwable
-                        .getMessage()
-                        .equalsIgnoreCase(ExceptionMap.ERR_STRAPI_404.getMessage())
-                    || !throwable
-                        .getMessage()
-                        .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_403.getMessage())) {
+                if (throwable instanceof OAuthException) {
+                  return Mono.error(throwable);
+                } else {
                   LOG.info(
                       "Error on strapi, finding user into database, message is {}",
                       throwable.getMessage());
@@ -97,7 +94,6 @@ public class DataService {
                   DataValidator.validateResetToken(userEntity.getUpdateDate());
                   return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
                 }
-                return Mono.error(throwable);
               });
     }
     UserEntity userEntity = userDataService.findUserEntityByTokenReset(tokenReset);

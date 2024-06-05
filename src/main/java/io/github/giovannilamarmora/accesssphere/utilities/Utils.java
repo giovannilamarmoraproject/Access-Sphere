@@ -10,11 +10,15 @@ import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
+import org.springframework.util.ObjectUtils;
 
 public class Utils {
 
@@ -61,12 +65,22 @@ public class Utils {
       while (matcher.find()) {
         String placeholder = matcher.group(1);
         String replacement = source.getOrDefault(placeholder, matcher.group(0));
-        matcher.appendReplacement(result, replacement);
+        if (!ObjectUtils.isEmpty(replacement)) matcher.appendReplacement(result, replacement);
       }
       matcher.appendTail(result);
 
       finalParam.put(key, result.toString());
     }
     return finalParam;
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
+  public static String encodeURLValue(String value) {
+    return ObjectUtils.isEmpty(value) ? value : URLEncoder.encode(value, StandardCharsets.UTF_8);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
+  public static String decodeURLValue(String value) {
+    return ObjectUtils.isEmpty(value) ? value : URLDecoder.decode(value, StandardCharsets.UTF_8);
   }
 }

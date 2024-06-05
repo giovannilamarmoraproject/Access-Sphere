@@ -42,8 +42,9 @@ public class UserControllerImpl implements UserController {
   }
 
   @Override
-  public Mono<ResponseEntity<Response>> changePasswordRequest(ChangePassword changePassword) {
-    return userService.changePasswordRequest(changePassword);
+  public Mono<ResponseEntity<Response>> changePasswordRequest(
+      ChangePassword changePassword, String locale) {
+    return userService.changePasswordRequest(changePassword, locale);
   }
 
   @Override

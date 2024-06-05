@@ -18,51 +18,79 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class StrapiUser extends StrapiGeneric {
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private Long id;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private String identifier;
 
-  @UpperCamelCase private String name;
-  @UpperCamelCase private String surname;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @UpperCamelCase
+  private String name;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @UpperCamelCase
+  private String surname;
 
   @NotNull(message = "Email is required")
   @NotBlank(message = "Email is required")
   @LowerCase
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private String email;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private Boolean confirmed;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private Boolean blocked;
 
   @NotNull(message = "Username is required")
   @NotBlank(message = "Username is required")
   @LowerCase
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private String username;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private String password;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private List<StrapiAddress> addresses;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private List<AppRole> app_roles;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private String profilePhoto;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private String phoneNumber;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private LocalDate birthDate;
 
-  @UpperCase private String gender;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @UpperCase
+  private String gender;
 
-  @UpperCamelCase private String occupation;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @UpperCamelCase
+  private String occupation;
 
-  @UpperCamelCase private String education;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @UpperCamelCase
+  private String education;
 
-  @UpperCamelCase private String nationality;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @UpperCamelCase
+  private String nationality;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private String ssn; // Social Security Number
 
   private String tokenReset;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private Map<String, Object> attributes;
 }

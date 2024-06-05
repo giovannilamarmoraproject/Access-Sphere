@@ -257,16 +257,17 @@ public class StrapiService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<StrapiEmailTemplate> getTemplateById(String templateId) {
+  public Mono<StrapiEmailTemplate> getTemplateById(String templateId, String locale) {
     return strapiClient
-        .getTemplateById(templateId)
+        .getTemplateById(templateId, locale)
         .flatMap(
             responseEntity -> {
               if (ObjectUtils.isEmpty(responseEntity.getBody())
                   || ObjectUtils.isEmpty(responseEntity.getBody().getData())) {
                 LOG.error("Strapi returned an empty object");
                 throw new StrapiException(
-                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+                    ExceptionMap.ERR_STRAPI_404,
+                    "Template with templateId (" + templateId + ") not found");
               }
               ObjectMapper mapper = MapperUtils.mapper().failOnEmptyBean().build();
               return Mono.just(

@@ -87,6 +87,22 @@ public class StrapiClient {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<StrapiResponse>> getClients() {
+    Map<String, Object> params = new HashMap<>();
+    params.put("populate", "*");
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
+
+    return webClientRest.perform(
+        HttpMethod.GET,
+        UtilsUriBuilder.buildUri(clientIdUrl, params),
+        headers,
+        StrapiResponse.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public Mono<ResponseEntity<StrapiResponse>> saveUser(StrapiUser user) {
     Map<String, Object> params = new HashMap<>();
 
@@ -106,6 +122,22 @@ public class StrapiClient {
   public Mono<ResponseEntity<List<StrapiUser>>> getUserByEmail(String email) {
     Map<String, Object> params = new HashMap<>();
     params.put("filters[email][$eq]", email);
+    params.put("populate", "*");
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
+
+    return webClientRest.performList(
+        HttpMethod.GET,
+        UtilsUriBuilder.buildUri(getUserByEmailUrl, params),
+        headers,
+        StrapiUser.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<List<StrapiUser>>> getUsers() {
+    Map<String, Object> params = new HashMap<>();
     params.put("populate", "*");
 
     HttpHeaders headers = new HttpHeaders();
@@ -213,9 +245,10 @@ public class StrapiClient {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public Mono<ResponseEntity<StrapiResponse>> getTemplateById(String templateId) {
+  public Mono<ResponseEntity<StrapiResponse>> getTemplateById(String templateId, String locale) {
     Map<String, Object> params = new HashMap<>();
     params.put("filters[identifier][$eq]", templateId);
+    params.put("locale", locale);
     params.put("populate", "*");
 
     HttpHeaders headers = new HttpHeaders();

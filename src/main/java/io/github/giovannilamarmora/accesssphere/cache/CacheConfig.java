@@ -39,14 +39,17 @@ public class CacheConfig {
 
   @Scheduled(cron = "${app.cache.cron}")
   public void evictAllCaches() {
-    cacheManager
-        .getCacheNames()
-        .forEach(
-            cacheName -> {
-              if (!ObjectUtils.isEmpty(cacheName)
-                  && !ObjectUtils.isEmpty(cacheManager.getCache(cacheName))) {
-                Objects.requireNonNull(cacheManager.getCache(cacheName)).clear();
-              }
-            });
+    if (!ObjectUtils.isEmpty(cacheManager) && !cacheManager.getCacheNames().isEmpty()) {
+      LOG.info("Deleting cache for {}", cacheManager.getCacheNames());
+      cacheManager
+          .getCacheNames()
+          .forEach(
+              cacheName -> {
+                if (!ObjectUtils.isEmpty(cacheName)
+                    && !ObjectUtils.isEmpty(cacheManager.getCache(cacheName))) {
+                  Objects.requireNonNull(cacheManager.getCache(cacheName)).clear();
+                }
+              });
+    }
   }
 }

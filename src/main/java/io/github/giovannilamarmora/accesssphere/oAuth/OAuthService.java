@@ -11,6 +11,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.auth.GoogleAuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -46,7 +47,7 @@ public class OAuthService {
       String responseType,
       String accessType,
       String clientId,
-      String redirectUri,
+      String redirect_uri,
       String scope,
       String registration_token,
       String state) {
@@ -59,14 +60,16 @@ public class OAuthService {
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
 
+    String finalRedirect_uri = Utils.decodeURLValue(redirect_uri);
     return clientCredentialMono.map(
         clientCredential -> {
           OAuthValidator.validateClient(
-              clientCredential, responseType, accessType, redirectUri, scope);
+              clientCredential, responseType, accessType, finalRedirect_uri, scope);
           URI location =
-              GrpcService.getGoogleOAuthLocation(scope, redirectUri, accessType, clientCredential);
+              GrpcService.getGoogleOAuthLocation(
+                  scope, finalRedirect_uri, accessType, clientCredential);
           HttpHeaders headers =
-              CookieManager.setCookieInResponse(AppConfig.COOKIE_REDIRECT_URI, redirectUri);
+              CookieManager.setCookieInResponse(AppConfig.COOKIE_REDIRECT_URI, finalRedirect_uri);
           headers.addAll(
               !ObjectUtils.isEmpty(registration_token)
                   ? CookieManager.setCookieInResponse(AppConfig.COOKIE_TOKEN, registration_token)
@@ -102,6 +105,7 @@ public class OAuthService {
       String redirect_uri,
       String basic,
       ServerHttpRequest request) {
+    redirect_uri = Utils.decodeURLValue(redirect_uri);
     switch (GrantType.fromType(grant_type)) {
       case AUTHORIZATION_CODE, PASSWORD -> {
         return getToken(clientId, grant_type, scope, code, prompt, redirect_uri, basic, request);

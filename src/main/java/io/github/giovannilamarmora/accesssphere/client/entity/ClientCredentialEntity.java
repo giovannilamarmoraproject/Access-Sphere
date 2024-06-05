@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.client.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonRawValue;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
@@ -12,15 +11,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Table(name = "ASS_CLIENT")
+@Table(name = "OAUTH_CLIENT")
 public class ClientCredentialEntity extends GenericEntity {
 
   @Id
@@ -37,7 +34,8 @@ public class ClientCredentialEntity extends GenericEntity {
   @Column(name = "CLIENT_SECRET")
   private String clientSecret;
 
-  @Column(name = "SCOPES")
+  @Lob
+  @Column(name = "SCOPES", columnDefinition = "TEXT")
   private String scopes;
 
   @Column(name = "REDIRECT_URI")
@@ -71,7 +69,6 @@ public class ClientCredentialEntity extends GenericEntity {
   private String registrationToken;
 
   @Lob
-  @JsonRawValue
-  @Column(name = "DEFAULT_ROLES", columnDefinition = "json")
+  @Column(name = "DEFAULT_ROLES", columnDefinition = "TEXT")
   private String defaultRoles;
 }

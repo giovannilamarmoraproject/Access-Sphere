@@ -33,7 +33,7 @@ public class EmailSenderService {
     Map<String, String> finalParam =
         Utils.getFinalMapFromValue(params, strapiEmailTemplate.getParams());
     for (String key : finalParam.keySet()) {
-      template = template.replace(key, finalParam.get(key));
+      template = template.replace("{{" + key + "}}", finalParam.get(key));
     }
 
     emailContent.setText(template);

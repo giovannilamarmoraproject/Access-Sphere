@@ -4,11 +4,10 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import java.util.Arrays;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
-
-import java.util.Arrays;
 
 @Component
 public class UserMapper {
@@ -19,6 +18,8 @@ public class UserMapper {
     BeanUtils.copyProperties(user, userEntity);
     if (!ObjectUtils.isEmpty(user.getRoles()))
       userEntity.setRoles(String.join(" ", user.getRoles()));
+
+    // TODO: Missing attributes
     return userEntity;
   }
 

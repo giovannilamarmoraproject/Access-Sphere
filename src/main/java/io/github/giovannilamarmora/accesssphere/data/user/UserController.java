@@ -207,7 +207,8 @@ public interface UserController {
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> changePasswordRequest(
-      @RequestBody @Valid ChangePassword changePassword);
+      @RequestBody @Valid ChangePassword changePassword,
+      @RequestParam(value = "locale", required = false, defaultValue = "en-GB") String locale);
 
   @PostMapping("/users/change/password")
   @Operation(
