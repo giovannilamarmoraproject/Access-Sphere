@@ -24,8 +24,8 @@ public class UsersSyncScheduler {
 
   @Autowired private DataService dataService;
 
-  @Scheduled(initialDelay = 1000)
-  // @Scheduled(cron = "0 0 0 * * *")
+  // @Scheduled(initialDelay = 1000)
+  @Scheduled(cron = "0 0 0 * * *")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncUsers() {
     if (dataService.getIsStrapiEnabled()) {
