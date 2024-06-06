@@ -16,6 +16,7 @@ import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -118,6 +119,27 @@ public class StrapiService {
                     ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
               }
               return Mono.just(listResponseEntity.getBody().getFirst());
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<StrapiUser>> getUsers() {
+    return strapiClient
+        .getUsers()
+        .map(
+            listResponseEntity -> {
+              if (!listResponseEntity.hasBody()
+                  || ObjectUtils.isEmpty(listResponseEntity.getBody())) {
+                LOG.error("An error happen during get users on strapi, user not found");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              if (listResponseEntity.getBody().isEmpty()) {
+                LOG.error("An error happen during get users on strapi, user not found");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              return listResponseEntity.getBody();
             });
   }
 

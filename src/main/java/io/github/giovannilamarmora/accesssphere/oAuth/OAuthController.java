@@ -2,8 +2,6 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
-import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
-import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -39,7 +37,6 @@ public interface OAuthController {
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@BadRequest.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<?>> authorize(
       @RequestParam(value = "response_type")
           @Schema(
@@ -90,7 +87,6 @@ public interface OAuthController {
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@BadRequest.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<?>> login(
       @PathVariable(value = "client_id")
           @Schema(
@@ -127,7 +123,6 @@ public interface OAuthController {
               schema = @Schema(implementation = ExceptionResponse.class),
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               examples = @ExampleObject(value = "@BadRequest.json")))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<?>> token(
       @RequestParam(value = "client_id")
           @Schema(

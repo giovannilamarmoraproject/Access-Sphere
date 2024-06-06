@@ -1,6 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ public class OAuthControllerImpl implements OAuthController {
   @Autowired private OAuthService oAuthService;
 
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<?>> authorize(
       String responseType,
       String accessType,
@@ -33,12 +36,14 @@ public class OAuthControllerImpl implements OAuthController {
   }
 
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<?>> login(
       String clientId, String scope, String code, String prompt, ServerHttpRequest request) {
     return oAuthService.token(clientId, scope, code, prompt, request);
   }
 
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<?>> token(
       String clientId,
       String refresh_token,

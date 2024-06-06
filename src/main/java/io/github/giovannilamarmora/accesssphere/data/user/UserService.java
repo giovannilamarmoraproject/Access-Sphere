@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderService;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
+import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
@@ -27,10 +28,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -227,7 +225,7 @@ public class UserService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> changePasswordRequest(
-      ChangePassword changePassword, String locale) {
+      ChangePassword changePassword, String locale, boolean sendEmail) {
     if (!Utilities.isCharacterAndRegexValid(changePassword.getEmail(), RegEx.EMAIL.getValue())) {
       LOG.error("Invalid regex for field email {}", changePassword.getEmail());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid field email, try again!");
@@ -259,23 +257,40 @@ public class UserService {
 
               Map<String, String> emailParams = TemplateParam.getTemplateParam(objects.getT1());
 
-              return emailSenderService
-                  .sendEmail(objects.getT2(), emailParams, emailContent)
-                  .zipWith(updatedUserMono)
-                  .flatMap(
-                      objects1 -> {
-                        objects1.getT1().setToken(objects1.getT2().getTokenReset());
-                        String message = "Email Sent! Check your email address!";
+              if (sendEmail)
+                return emailSenderService
+                    .sendEmail(objects.getT2(), emailParams, emailContent)
+                    .zipWith(updatedUserMono)
+                    .flatMap(
+                        objects1 -> {
+                          objects1.getT1().setToken(objects1.getT2().getTokenReset());
+                          String message = "Email Sent! Check your email address!";
 
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(),
-                                message,
-                                CorrelationIdUtils.getCorrelationId(),
-                                objects1.getT1());
+                          Response response =
+                              new Response(
+                                  HttpStatus.OK.value(),
+                                  message,
+                                  CorrelationIdUtils.getCorrelationId(),
+                                  objects1.getT1());
 
-                        return Mono.just(ResponseEntity.ok(response));
-                      });
+                          return Mono.just(ResponseEntity.ok(response));
+                        });
+              else
+                return updatedUserMono.flatMap(
+                    user -> {
+                      EmailResponse responseEmail = new EmailResponse();
+                      responseEmail.setToken(user.getTokenReset());
+                      String message = "Email Sent! Check your email address!";
+
+                      Response response =
+                          new Response(
+                              HttpStatus.OK.value(),
+                              message,
+                              CorrelationIdUtils.getCorrelationId(),
+                              responseEmail);
+
+                      return Mono.just(ResponseEntity.ok(response));
+                    });
             });
   }
 

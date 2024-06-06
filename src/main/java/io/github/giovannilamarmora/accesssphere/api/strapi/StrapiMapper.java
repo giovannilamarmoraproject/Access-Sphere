@@ -136,6 +136,11 @@ public class StrapiMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<User> mapFromStrapiUsersToUsers(List<StrapiUser> user) {
+    return user.stream().map(StrapiMapper::mapFromStrapiUserToUser).toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   private static List<String> getAppRoles(List<AppRole> appRoles) {
     if (ObjectUtils.isEmpty(appRoles)) return null;
     return appRoles.stream().map(AppRole::getRole).toList();

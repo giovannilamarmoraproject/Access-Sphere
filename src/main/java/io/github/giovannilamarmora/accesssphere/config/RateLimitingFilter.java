@@ -51,7 +51,7 @@ public class RateLimitingFilter implements WebFilter {
     String path = req.getPath().value();
     String method = req.getMethod().name();
     if (HttpMethod.OPTIONS.name().equals(method)) {
-      return true;
+      return false;
     }
     return shouldFilter.stream()
         .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));

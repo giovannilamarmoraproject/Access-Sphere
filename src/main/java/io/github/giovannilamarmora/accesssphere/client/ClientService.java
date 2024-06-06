@@ -27,7 +27,8 @@ import reactor.core.publisher.Mono;
 @Service
 public class ClientService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  private static final String STRAPI_STATUS_LOG = "Performing call with strapi";
+  private static final String STRAPI_STATUS_LOG =
+      "\uD83C\uDF10 Strapi status is Active, performing call with strapi client";
 
   @Getter
   @Value(value = "${rest.client.strapi.active}")

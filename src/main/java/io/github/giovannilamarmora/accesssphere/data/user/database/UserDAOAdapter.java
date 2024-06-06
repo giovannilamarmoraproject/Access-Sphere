@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.data.user.database;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,5 +40,17 @@ public class UserDAOAdapter implements UserDataService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public UserEntity findUserEntityByIdentifier(String identifier) {
     return userDAO.findUserEntityByIdentifier(identifier);
+  }
+
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<UserEntity> findAll() {
+    return userDAO.findAll();
+  }
+
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public void delete(UserEntity userEntity) {
+    userDAO.delete(userEntity);
   }
 }

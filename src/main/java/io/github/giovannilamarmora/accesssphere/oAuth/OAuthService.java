@@ -17,7 +17,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.web.CookieManager;
-import io.github.giovannilamarmora.utils.web.WebManager;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -52,7 +51,7 @@ public class OAuthService {
       String registration_token,
       String state) {
     LOG.info(
-        "Starting endpoint authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
+        "\uD83D\uDD10 Starting endpoint authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
         clientId,
         accessType,
         responseType,
@@ -75,7 +74,7 @@ public class OAuthService {
                   ? CookieManager.setCookieInResponse(AppConfig.COOKIE_TOKEN, registration_token)
                   : new HttpHeaders());
           LOG.info(
-              "Completed endpoint authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
+              "\uD83D\uDD10 Completed endpoint authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
               clientId,
               accessType,
               responseType,
@@ -131,39 +130,46 @@ public class OAuthService {
       String basic,
       ServerHttpRequest request) {
     LOG.info(
-        "Starting /token endpoint for host={} client_id={}, grant_type={}",
-        WebManager.getRemoteAddress(request),
+        "\uD83D\uDDDD\uFE0F Starting /token endpoint with client_id={}, grant_type={}",
         clientId,
         grant_type);
     OAuthValidator.validateOAuthToken(clientId, grant_type);
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
 
-    return clientCredentialMono.flatMap(
-        clientCredential -> {
-          switch (clientCredential.getAuthType()) {
-            case BEARER -> {
-              OAuthValidator.validateBasicAuth(basic, grant_type);
-              return authService.makeClassicLogin(basic, clientCredential, request);
-            }
-            case GOOGLE -> {
-              LOG.info("Google oAuth 2.0 Login started");
-              String redirectUri = redirect_uri;
-              if (ObjectUtils.isEmpty(redirectUri))
-                redirectUri = CookieManager.getCookie(AppConfig.COOKIE_REDIRECT_URI, request);
-              OAuthValidator.validateOAuthGoogle(
-                  clientCredential, code, scope, redirectUri, grant_type);
-              GoogleModel googleModel =
-                  GrpcService.authenticateOAuth(code, scope, redirectUri, clientCredential);
-              return googleAuthService
-                  .performGoogleLogin(googleModel, clientCredential, request)
-                  .doOnSuccess(responseResponseEntity -> LOG.info("Google oAuth 2.0 Login ended"));
-            }
-            default -> {
-              return defaultErrorType();
-            }
-          }
-        });
+    return clientCredentialMono
+        .flatMap(
+            clientCredential -> {
+              switch (clientCredential.getAuthType()) {
+                case BEARER -> {
+                  OAuthValidator.validateBasicAuth(basic, grant_type);
+                  return authService.makeClassicLogin(basic, clientCredential, request);
+                }
+                case GOOGLE -> {
+                  LOG.info("Google oAuth 2.0 Login started");
+                  String redirectUri = redirect_uri;
+                  if (ObjectUtils.isEmpty(redirectUri))
+                    redirectUri = CookieManager.getCookie(AppConfig.COOKIE_REDIRECT_URI, request);
+                  OAuthValidator.validateOAuthGoogle(
+                      clientCredential, code, scope, redirectUri, grant_type);
+                  GoogleModel googleModel =
+                      GrpcService.authenticateOAuth(code, scope, redirectUri, clientCredential);
+                  return googleAuthService
+                      .performGoogleLogin(googleModel, clientCredential, request)
+                      .doOnSuccess(
+                          responseResponseEntity -> LOG.info("Google oAuth 2.0 Login ended"));
+                }
+                default -> {
+                  return defaultErrorType();
+                }
+              }
+            })
+        .doOnSuccess(
+            responseEntity ->
+                LOG.info(
+                    "\uD83D\uDDDD\uFE0F Ending /token endpoint with client_id={}, grant_type={}",
+                    clientId,
+                    grant_type));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -174,33 +180,37 @@ public class OAuthService {
       String scope,
       ServerHttpRequest request) {
     LOG.info(
-        "Starting refresh_token endpoint for host={} client_id={}, grant_type={}",
-        ObjectUtils.isEmpty(request.getRemoteAddress())
-            ? null
-            : request.getRemoteAddress().getHostName(),
+        "\uD83D\uDD03 Starting refresh_token endpoint with client_id={}, grant_type={}",
         clientId,
         grant_type);
     OAuthValidator.validateRefreshToken(refresh_token, grant_type);
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
 
-    return clientCredentialMono.flatMap(
-        clientCredential -> {
-          AccessTokenData accessTokenData = accessTokenService.getByRefreshToken(refresh_token);
-          OAuthValidator.validateRefreshTokenData(accessTokenData, clientCredential);
-          switch (clientCredential.getAuthType()) {
-            case BEARER -> {
-              return authService.refreshToken(accessTokenData, clientCredential, request);
-            }
-            case GOOGLE -> {
-              return googleAuthService.refreshGoogleToken(
-                  accessTokenData, clientCredential, request);
-            }
-            default -> {
-              return defaultErrorType();
-            }
-          }
-        });
+    return clientCredentialMono
+        .flatMap(
+            clientCredential -> {
+              AccessTokenData accessTokenData = accessTokenService.getByRefreshToken(refresh_token);
+              OAuthValidator.validateRefreshTokenData(accessTokenData, clientCredential);
+              switch (clientCredential.getAuthType()) {
+                case BEARER -> {
+                  return authService.refreshToken(accessTokenData, clientCredential, request);
+                }
+                case GOOGLE -> {
+                  return googleAuthService.refreshGoogleToken(
+                      accessTokenData, clientCredential, request);
+                }
+                default -> {
+                  return defaultErrorType();
+                }
+              }
+            })
+        .doOnSuccess(
+            responseEntity ->
+                LOG.info(
+                    "\uD83D\uDD03 Ending refresh_token endpoint with client_id={}, grant_type={}",
+                    clientId,
+                    grant_type));
   }
 
   private Mono<ResponseEntity<?>> defaultErrorType() {

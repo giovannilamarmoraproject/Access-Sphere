@@ -24,20 +24,24 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 @Service
 public class DataService {
 
+  @Getter
   @Value(value = "${rest.client.strapi.active}")
   private Boolean isStrapiEnabled;
 
@@ -72,6 +76,22 @@ public class DataService {
     UserEntity userEntity = userDataService.findUserEntityByEmail(email);
     DataValidator.validateUser(userEntity);
     return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<User>> getUsers() {
+    LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting all users in database");
+    List<UserEntity> userEntities = userDataService.findAll();
+    return Mono.just(UserMapper.mapUserEntitiesToUsers(userEntities));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<User>> getStrapiUsers() {
+    LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting all users in strapi");
+
+    return strapiService
+        .getUsers()
+        .flatMap(strapiUsers -> Mono.just(StrapiMapper.mapFromStrapiUsersToUsers(strapiUsers)));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -133,7 +153,7 @@ public class DataService {
                               .map(AppRole::getRole)
                               .toList()));
                 // Registro l'utente a prescindere che strapi funzioni o meno
-                return saveUserIntoDatabase(userEntity);
+                return saveUserEntityIntoDatabase(userEntity);
               })
           .onErrorResume(
               throwable -> {
@@ -141,13 +161,13 @@ public class DataService {
                   LOG.info(
                       "Error on strapi, register user into database, message is {}",
                       throwable.getMessage());
-                  return Mono.just(saveUserIntoDatabase(userEntity));
+                  return Mono.just(saveUserEntityIntoDatabase(userEntity));
                 }
                 return Mono.error(throwable);
               })
           .doOnSuccess(user1 -> LOG.info("User {} saved", user1.getUsername()));
     }
-    return Mono.just(saveUserIntoDatabase(userEntity));
+    return Mono.just(saveUserEntityIntoDatabase(userEntity));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -364,7 +384,7 @@ public class DataService {
                               userDataService.findUserEntityByIdentifier(
                                   userToUpdate.getIdentifier());
                           setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
-                          return saveUserIntoDatabase(userEntity);
+                          return saveUserEntityIntoDatabase(userEntity);
                         })
                     .onErrorResume(
                         throwable -> {
@@ -376,7 +396,7 @@ public class DataService {
                                 userDataService.findUserEntityByIdentifier(
                                     userToUpdate.getIdentifier());
                             setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
-                            return Mono.just(saveUserIntoDatabase(userEntity));
+                            return Mono.just(saveUserEntityIntoDatabase(userEntity));
                           }
                           return Mono.error(throwable);
                         })
@@ -385,14 +405,43 @@ public class DataService {
     }
     UserEntity userFind = userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
     setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
-    return Mono.just(saveUserIntoDatabase(userEntity));
+    return Mono.just(saveUserEntityIntoDatabase(userEntity));
   }
 
-  private User saveUserIntoDatabase(UserEntity userEntity) {
+  public User saveUserIntoDatabase(User user) {
+    UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
+    return saveUserEntityIntoDatabase(userEntity);
+  }
+
+  public User updateUserIntoDatabase(User user) {
+    UserEntity userSaved = userDataService.findUserEntityByIdentifier(user.getIdentifier());
+    if (!ObjectUtils.isEmpty(userSaved)) {
+      // Aggiornare i campi dell'entità esistente con i valori del ClientCredential
+      UserMapper.updateUserEntityFields(userSaved, user);
+      saveUserEntityIntoDatabase(userSaved);
+    } else {
+      // Se il client non esiste, possiamo decidere di aggiungerlo o lanciare un'eccezione
+      throw new IllegalArgumentException("User not found: " + userSaved.getIdentifier());
+    }
+    return UserMapper.mapUserEntityToUser(userSaved);
+  }
+
+  @Transactional
+  private User saveUserEntityIntoDatabase(UserEntity userEntity) {
     UserEntity userSaved = userDataService.saveAndFlush(userEntity);
     userSaved.setPassword(null);
     DataValidator.validateUser(userSaved);
     return UserMapper.mapUserEntityToUser(userSaved);
+  }
+
+  @Transactional
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public void deleteClientFromDatabase(User user) {
+    // Trovare l'entità esistente nel database
+    UserEntity existingUser = userDataService.findUserEntityByIdentifier(user.getIdentifier());
+    if (!ObjectUtils.isEmpty(existingUser)) {
+      userDataService.delete(existingUser);
+    }
   }
 
   private void setDataBeforeUpdate(

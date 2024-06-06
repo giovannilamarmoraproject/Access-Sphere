@@ -6,6 +6,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,18 +54,34 @@ public class UserCacheService implements UserDataService {
   }
 
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public UserEntity saveAndFlush(UserEntity user) {
     deleteUserCache();
     return userDAO.saveAndFlush(user);
   }
 
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public UserEntity findUserEntityByTokenReset(String token) {
     return userDAO.findUserEntityByTokenReset(token);
   }
 
   @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
   public UserEntity findUserEntityByIdentifier(String identifier) {
     return userDAO.findUserEntityByIdentifier(identifier);
+  }
+
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  public List<UserEntity> findAll() {
+    return userDAO.findAll();
+  }
+
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CACHE)
+  public void delete(UserEntity userEntity) {
+    deleteUserCache();
+    userDAO.delete(userEntity);
   }
 }
