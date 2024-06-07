@@ -35,13 +35,13 @@ public class ExceptionHandler extends UtilsException {
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse serverHttpResponse = exchange.getResponse();
     HttpStatus status = e.getExceptionCode().getStatus();
-    ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_USER_429);
+    ExceptionResponse response = getExceptionResponse(e, request, e.getExceptionCode());
     response.getError().setMessage(e.getMessage());
-    response.getError().setException(ExceptionMap.ERR_USER_429.exception());
+    response.getError().setException(e.getExceptionCode().exception());
     response.getError().setExceptionMessage(null);
     response.getError().setStackTrace(null);
-    serverHttpResponse.setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-    serverHttpResponse.setRawStatusCode(HttpStatus.TOO_MANY_REQUESTS.value());
+    serverHttpResponse.setStatusCode(status);
+    serverHttpResponse.setRawStatusCode(status.value());
     serverHttpResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);
     DataBuffer responseBuffer =
         new DefaultDataBufferFactory().wrap(Utilities.convertObjectToJson(response).getBytes());

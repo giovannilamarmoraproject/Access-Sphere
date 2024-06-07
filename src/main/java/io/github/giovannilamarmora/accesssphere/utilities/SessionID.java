@@ -1,0 +1,61 @@
+package io.github.giovannilamarmora.accesssphere.utilities;
+
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import java.util.Random;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+
+@Service
+public class SessionID {
+
+  private static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+    private int letterCount = 4;
+    private int uuidPartLength = 8;
+
+    public Builder withLetterCount(int count) {
+      this.letterCount = count;
+      return this;
+    }
+
+    public Builder withUUIDPartLength(int length) {
+      this.uuidPartLength = length;
+      return this;
+    }
+
+    @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
+    public String generate() {
+      // 1. Genera lettere casuali
+      String randomLetters = generateRandomLetters(letterCount);
+
+      // 2. Ottieni il timestamp corrente
+      long timestamp = System.currentTimeMillis();
+
+      // 3. Genera una stringa casuale da UUID, limitata a uuidPartLength caratteri
+      String randomUUIDPart = generateRandomUUIDPart(uuidPartLength).toUpperCase();
+
+      // 4. Combina i componenti nel formato desiderato
+      return String.format("%s-%d-%s", randomLetters, timestamp, randomUUIDPart);
+    }
+
+    private String generateRandomLetters(int length) {
+      Random random = new Random();
+      StringBuilder sb = new StringBuilder(length);
+      for (int i = 0; i < length; i++) {
+        sb.append(LETTERS.charAt(random.nextInt(LETTERS.length())));
+      }
+      return sb.toString();
+    }
+
+    private String generateRandomUUIDPart(int length) {
+      String uuid = UUID.randomUUID().toString().replace("-", "");
+      return uuid.substring(0, Math.min(length, uuid.length()));
+    }
+  }
+}

@@ -54,147 +54,169 @@ public class UserService {
     boolean includeUserData =
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
-    LOG.info("UserInfo process started, include Data: {}", includeUserData);
+    LOG.info(
+        "\uD83E\uDD37\u200D♂\uFE0F UserInfo process started, include Data: {}", includeUserData);
     AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
 
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(accessTokenData.getClientId());
 
-    return clientCredentialMono.flatMap(
-        clientCredential -> {
-          UserValidator.validateAuthType(clientCredential, accessTokenData);
-          JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
-          switch (decryptToken.getType()) {
-            case BEARER -> {
-              return dataService
-                  .getUserInfo(
-                      decryptToken, accessTokenData.getPayload().get("access_token").textValue())
-                  .map(
-                      user -> {
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(),
-                                "UserInfo Data for " + user.getUsername(),
-                                CorrelationIdUtils.getCorrelationId(),
-                                includeUserData
-                                    ? new OAuthTokenResponse(decryptToken, user)
-                                    : decryptToken);
-                        return ResponseEntity.ok(response);
-                      });
-            }
-            case GOOGLE -> {
-              GoogleModel userInfo =
-                  GrpcService.userInfo(
-                      accessTokenData.getPayload().get("id_token").textValue(), clientCredential);
-              UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
-              if (includeUserData) {
-                return dataService
-                    .getUserByEmail(decryptToken.getEmail())
-                    .map(
-                        user -> {
-                          Response response =
-                              new Response(
-                                  HttpStatus.OK.value(),
-                                  "UserInfo Data for " + user.getUsername(),
-                                  CorrelationIdUtils.getCorrelationId(),
-                                  new OAuthTokenResponse(decryptToken, user));
-                          return ResponseEntity.ok(response);
-                        });
+    return clientCredentialMono
+        .flatMap(
+            clientCredential -> {
+              UserValidator.validateAuthType(clientCredential, accessTokenData);
+              JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
+              switch (decryptToken.getType()) {
+                case BEARER -> {
+                  return dataService
+                      .getUserInfo(
+                          decryptToken,
+                          accessTokenData.getPayload().get("access_token").textValue())
+                      .map(
+                          user -> {
+                            Response response =
+                                new Response(
+                                    HttpStatus.OK.value(),
+                                    "UserInfo Data for " + user.getUsername(),
+                                    CorrelationIdUtils.getCorrelationId(),
+                                    includeUserData
+                                        ? new OAuthTokenResponse(decryptToken, user)
+                                        : decryptToken);
+                            return ResponseEntity.ok(response);
+                          });
+                }
+                case GOOGLE -> {
+                  GoogleModel userInfo =
+                      GrpcService.userInfo(
+                          accessTokenData.getPayload().get("id_token").textValue(),
+                          clientCredential);
+                  UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
+                  if (includeUserData) {
+                    return dataService
+                        .getUserByEmail(decryptToken.getEmail())
+                        .map(
+                            user -> {
+                              Response response =
+                                  new Response(
+                                      HttpStatus.OK.value(),
+                                      "UserInfo Data for " + user.getUsername(),
+                                      CorrelationIdUtils.getCorrelationId(),
+                                      new OAuthTokenResponse(decryptToken, user));
+                              return ResponseEntity.ok(response);
+                            });
+                  }
+                  Response response =
+                      new Response(
+                          HttpStatus.OK.value(),
+                          "UserInfo Data for " + decryptToken.getSub(),
+                          CorrelationIdUtils.getCorrelationId(),
+                          decryptToken);
+                  return Mono.just(ResponseEntity.ok(response));
+                }
+                default -> {
+                  return UserValidator.defaultErrorOnType();
+                }
               }
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "UserInfo Data for " + decryptToken.getSub(),
-                      CorrelationIdUtils.getCorrelationId(),
-                      decryptToken);
-              return Mono.just(ResponseEntity.ok(response));
-            }
-            default -> {
-              return UserValidator.defaultErrorOnType();
-            }
-          }
-        });
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info(
+                    "\uD83E\uDD37\u200D♂\uFE0F UserInfo process ended, include Data: {}",
+                    includeUserData));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> profile(String bearer, ServerHttpRequest request) {
-    LOG.info("Getting profile process started");
+    LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting profile process started");
     AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
 
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(accessTokenData.getClientId());
 
-    return clientCredentialMono.flatMap(
-        clientCredential -> {
-          UserValidator.validateAuthType(clientCredential, accessTokenData);
-          JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
-          switch (decryptToken.getType()) {
-            case BEARER -> {
-              return dataService
-                  .getUserInfo(
-                      decryptToken, accessTokenData.getPayload().get("access_token").textValue())
-                  .map(
-                      user -> {
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(),
-                                "Profile Data for " + user.getUsername(),
-                                CorrelationIdUtils.getCorrelationId(),
-                                user);
-                        return ResponseEntity.ok(response);
-                      });
-            }
-            case GOOGLE -> {
-              GoogleModel userInfo =
-                  GrpcService.userInfo(
-                      accessTokenData.getPayload().get("id_token").textValue(), clientCredential);
-              UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
-              return dataService
-                  .getUserByEmail(decryptToken.getEmail())
-                  .map(
-                      user -> {
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(),
-                                "Profile Data for " + user.getUsername(),
-                                CorrelationIdUtils.getCorrelationId(),
-                                user);
-                        return ResponseEntity.ok(response);
-                      });
-            }
-            default -> {
-              return UserValidator.defaultErrorOnType();
-            }
-          }
-        });
+    return clientCredentialMono
+        .flatMap(
+            clientCredential -> {
+              UserValidator.validateAuthType(clientCredential, accessTokenData);
+              JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
+              switch (decryptToken.getType()) {
+                case BEARER -> {
+                  return dataService
+                      .getUserInfo(
+                          decryptToken,
+                          accessTokenData.getPayload().get("access_token").textValue())
+                      .map(
+                          user -> {
+                            Response response =
+                                new Response(
+                                    HttpStatus.OK.value(),
+                                    "Profile Data for " + user.getUsername(),
+                                    CorrelationIdUtils.getCorrelationId(),
+                                    user);
+                            return ResponseEntity.ok(response);
+                          });
+                }
+                case GOOGLE -> {
+                  GoogleModel userInfo =
+                      GrpcService.userInfo(
+                          accessTokenData.getPayload().get("id_token").textValue(),
+                          clientCredential);
+                  UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
+                  return dataService
+                      .getUserByEmail(decryptToken.getEmail())
+                      .map(
+                          user -> {
+                            Response response =
+                                new Response(
+                                    HttpStatus.OK.value(),
+                                    "Profile Data for " + user.getUsername(),
+                                    CorrelationIdUtils.getCorrelationId(),
+                                    user);
+                            return ResponseEntity.ok(response);
+                          });
+                }
+                default -> {
+                  return UserValidator.defaultErrorOnType();
+                }
+              }
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting profile process ended"));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> register(
       User user, String clientId, String registration_token) throws UtilsException {
     LOG.info(
-        "Registration process started, username: {}, email: {}",
+        "\uD83E\uDD37\u200D♂\uFE0F Registration process started, username: {}, email: {}",
         user.getUsername(),
         user.getEmail());
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
 
-    return clientCredentialMono.flatMap(
-        clientCredential -> {
-          UserValidator.validateRegistration(registration_token, clientCredential, user);
-          return dataService
-              .registerUser(user, clientCredential)
-              .map(
-                  user1 -> {
-                    Response response =
-                        new Response(
-                            HttpStatus.OK.value(),
-                            "User " + user.getUsername() + " successfully registered!",
-                            CorrelationIdUtils.getCorrelationId(),
-                            user1);
-                    return ResponseEntity.status(HttpStatus.CREATED).body(response);
-                  });
-        });
+    return clientCredentialMono
+        .flatMap(
+            clientCredential -> {
+              UserValidator.validateRegistration(registration_token, clientCredential, user);
+              return dataService
+                  .registerUser(user, clientCredential)
+                  .map(
+                      user1 -> {
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(),
+                                "User " + user.getUsername() + " successfully registered!",
+                                CorrelationIdUtils.getCorrelationId(),
+                                user1);
+                        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                      });
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info(
+                    "\uD83E\uDD37\u200D♂\uFE0F Registration process successfully ended, username: {}, email: {}",
+                    user.getUsername(),
+                    user.getEmail()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -202,7 +224,7 @@ public class UserService {
       User userToUpdate, String bearer, ServerHttpRequest request) throws UtilsException {
     userToUpdate.setPassword(null);
     LOG.info(
-        "Updating user process started, username: {}, email: {}",
+        "\uD83E\uDD37\u200D♂\uFE0F Updating user process started, username: {}, email: {}",
         userToUpdate.getUsername(),
         userToUpdate.getEmail());
 
@@ -220,12 +242,22 @@ public class UserService {
                       CorrelationIdUtils.getCorrelationId(),
                       user);
               return Mono.just(ResponseEntity.ok(response));
-            });
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info(
+                    "\uD83E\uDD37\u200D♂\uFE0F Updating user process ended, username: {}, email: {}",
+                    userToUpdate.getUsername(),
+                    userToUpdate.getEmail()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> changePasswordRequest(
       ChangePassword changePassword, String locale, boolean sendEmail) {
+    LOG.info(
+        "\uD83E\uDD37\u200D♂\uFE0F Change password request user process started, locale: {}, sendEmail: {}",
+        locale,
+        sendEmail);
     if (!Utilities.isCharacterAndRegexValid(changePassword.getEmail(), RegEx.EMAIL.getValue())) {
       LOG.error("Invalid regex for field email {}", changePassword.getEmail());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid field email, try again!");
@@ -291,11 +323,18 @@ public class UserService {
 
                       return Mono.just(ResponseEntity.ok(response));
                     });
-            });
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info(
+                    "\uD83E\uDD37\u200D♂\uFE0F Change password request user process ended, locale: {}, sendEmail: {}",
+                    locale,
+                    sendEmail));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> changePassword(ChangePassword changePassword) {
+    LOG.info("\uD83E\uDD37\u200D♂\uFE0F Change password user process started");
     changePassword.setPassword(
         new String(Base64.getDecoder().decode(changePassword.getPassword())));
     if (!Utilities.isCharacterAndRegexValid(
@@ -325,6 +364,9 @@ public class UserService {
                                 null);
                         return Mono.just(ResponseEntity.ok(response));
                       });
-            });
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info("\uD83E\uDD37\u200D♂\uFE0F Change password user process ended"));
   }
 }
