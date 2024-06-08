@@ -32,6 +32,7 @@ public class AccessTokenService {
       String accessToken,
       String idToken,
       String client_id,
+      String session_id,
       Object payload) {
     AccessTokenEntity accessTokenToBeSaved = new AccessTokenEntity();
     try {
@@ -41,6 +42,7 @@ public class AccessTokenService {
               refreshToken,
               accessToken,
               idToken,
+              session_id,
               client_id,
               jwtData.getSub(),
               jwtData.getEmail(),

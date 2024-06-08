@@ -1,5 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.utils.config.OpenAPIConfig;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
@@ -46,5 +48,15 @@ public class AppConfig {
                       OpenAPIConfig.addJSONExamplesOnResource(entry.getValue(), AppConfig.class)));
       openApi.setPaths(paths);
     };
+  }
+
+  @Bean
+  public SessionID sessionID() {
+    return new SessionID();
+  }
+
+  @Bean
+  public AccessTokenData accessTokenData() {
+    return new AccessTokenData();
   }
 }

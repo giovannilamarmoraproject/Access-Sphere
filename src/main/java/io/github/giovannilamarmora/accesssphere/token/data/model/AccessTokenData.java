@@ -20,6 +20,7 @@ public class AccessTokenData extends GenericDTO {
   private String accessTokenHash;
   private String idTokenHash;
   private String clientId;
+  private String sessionId;
   private String subject;
   private String email;
   private String identifier;

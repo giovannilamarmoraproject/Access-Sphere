@@ -37,6 +37,9 @@ public class AccessTokenEntity extends GenericEntity {
   @Column(name = "ID_TOKEN_HASH", columnDefinition = "TEXT")
   private String idTokenHash;
 
+  @Column(name = "SESSION_ID")
+  private String sessionId;
+
   @Column(name = "CLIENT_ID")
   private String clientId;
 

@@ -20,6 +20,7 @@ import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
+import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.auth.TokenUtils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -37,6 +38,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 import javax.crypto.SecretKey;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +47,12 @@ import org.springframework.util.ObjectUtils;
 
 @Logged
 @Service
+@RequiredArgsConstructor
 public class TokenService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+  private final SessionID sessionID;
   @Autowired private AccessTokenService accessTokenService;
 
   private final String testSecret = "flhfEg6QbtVU4f9WgIUVbkTebFBX7O7lQ43ly+uKDg4=";
@@ -176,6 +180,7 @@ public class TokenService {
         TokenUtils.hashingToken(accessToken),
         TokenUtils.hashingToken(idToken),
         clientCredential.getClientId(),
+        sessionID.getSessionID(),
         payload);
 
     return new AuthToken(
@@ -321,6 +326,7 @@ public class TokenService {
         TokenUtils.hashingToken(accessToken),
         TokenUtils.hashingToken(idToken),
         clientCredential.getClientId(),
+        sessionID.getSessionID(),
         payload);
 
     return new AuthToken(

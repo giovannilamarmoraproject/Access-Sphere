@@ -1,13 +1,21 @@
 package io.github.giovannilamarmora.accesssphere.utilities;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.Random;
 import java.util.UUID;
-import org.springframework.stereotype.Service;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Service
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SessionID {
+
+  private String sessionID;
 
   private static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
