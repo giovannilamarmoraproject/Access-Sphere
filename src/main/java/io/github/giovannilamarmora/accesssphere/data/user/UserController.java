@@ -209,7 +209,8 @@ public interface UserController {
   Mono<ResponseEntity<Response>> changePasswordRequest(
       @RequestBody @Valid ChangePassword changePassword,
       @RequestParam(value = "locale", required = false, defaultValue = "en-GB") String locale,
-      @RequestParam(value = "emailSend") boolean sendEmail);
+      @RequestParam(value = "emailSend", required = false, defaultValue = "true")
+          boolean sendEmail);
 
   @PostMapping("/users/change/password")
   @Operation(

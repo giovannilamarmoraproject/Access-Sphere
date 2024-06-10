@@ -1,15 +1,15 @@
-# AccessSphere API
+# 🎡 **AccessSphere API**
 
-## Overview
+## 📝 **Overview**
 
-This repository contains the implementation of the AccessSphere API, providing endpoints for user management and OAuth
-2.0 authentication and authorization.
+AccessSphere API provides endpoints for user management and OAuth 2.0 authentication and authorization. This
+microservice is designed to handle user registration, login, session management, and token-based authentication.
 
-## Endpoints
+## 🚀 **Endpoints**
 
-### UserController
+### 👤 **UserController**
 
-#### Get User Info
+#### 📄 **Get User Info**
 
 Retrieve the information of the current user.
 
@@ -22,7 +22,7 @@ Retrieve the information of the current user.
     - `401 Unauthorized`: Invalid or missing authorization token.
     - `403 Forbidden`: Access to the resource is forbidden.
 
-#### Register User
+#### 📝 **Register User**
 
 Register a new user in the system.
 
@@ -38,7 +38,7 @@ Register a new user in the system.
     - `400 Bad Request`: Invalid input data.
     - `409 Conflict`: User already exists.
 
-#### Update User
+#### ✏️ **Update User**
 
 Update the details of an existing user.
 
@@ -49,12 +49,12 @@ Update the details of an existing user.
 - **Headers**:
     - `Authorization`: Bearer token (optional)
 - **Responses**:
-    - `201 Created`: User updated successfully.
+    - `200 OK`: User updated successfully.
     - `400 Bad Request`: Invalid input data.
 
-### OAuthController
+### 🔐 **OAuthController**
 
-#### Start OAuth 2.0 Authorization
+#### 🔄 **Start OAuth 2.0 Authorization**
 
 Initiate the OAuth 2.0 authorization flow.
 
@@ -72,7 +72,7 @@ Initiate the OAuth 2.0 authorization flow.
     - `200 OK`: Successful operation.
     - `400 Bad Request`: Invalid input data.
 
-#### Perform OAuth 2.0 Login
+#### 🔐 **Perform OAuth 2.0 Login**
 
 Perform the login operation for OAuth 2.0.
 
@@ -85,7 +85,7 @@ Perform the login operation for OAuth 2.0.
 - **Responses**:
     - `400 Bad Request`: Invalid input data.
 
-#### Get OAuth 2.0 Token
+#### 🔑 **Get OAuth 2.0 Token**
 
 Retrieve the OAuth 2.0 token.
 
@@ -102,19 +102,63 @@ Retrieve the OAuth 2.0 token.
 - **Headers**:
     - `Authorization`: Basic auth (optional)
 - **Responses**:
+    - `200 OK`: Token retrieved successfully.
     - `400 Bad Request`: Invalid input data.
 
-## Development
+## 🛠 **Development**
 
-### Prerequisites
+### 📋 **Prerequisites**
 
 - Java 11+
 - Spring Boot
 - Maven or Gradle
 
-### Running the Application
+### ▶️ **Running the Application**
+
+To run the application, use one of the following commands:
 
 ```bash
 ./mvnw spring-boot:run
 # or
 ./gradlew bootRun
+```
+
+### 🛠 **Building the Application**
+
+To build the application, you can use Maven or Gradle:
+
+**With Maven:**
+
+```bash
+./mvnw clean install
+```
+
+### ⚙️ **Configuration**
+
+#### `application.properties`
+
+The application's configuration is managed primarily through Spring Boot's properties and YAML files. Below are some key
+configuration points:
+
+```properties
+# Configurazione del server
+server.port=8080
+# Configurazione del filtro Session ID
+filter.session-id.shouldNotFilter=/public/**
+filter.session-id.generateSessionURI=/auth/**
+filter.session-id.logoutURI=/logout
+filter.session-id.bearerNotFilter=/public/**
+```
+
+### 📝  **Logging**
+
+📝 Logging
+The application utilizes SLF4J for logging. Configure logging using
+`logback-spring.xml` o `application.yml`.
+
+```properties
+logging.level.root=INFO
+logging.level.io.github.giovannilamarmora.accesssphere=DEBUG
+logging.file.name=logs/accesssphere.log
+
+```

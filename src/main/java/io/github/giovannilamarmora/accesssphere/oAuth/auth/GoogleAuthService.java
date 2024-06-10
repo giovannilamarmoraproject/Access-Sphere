@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
@@ -36,6 +37,7 @@ public class GoogleAuthService {
 
   @Autowired private TokenService tokenService;
   @Autowired private DataService dataService;
+  @Autowired private AuthService authService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> performGoogleLogin(
@@ -162,5 +164,16 @@ public class GoogleAuthService {
                           : includeUserData ? new OAuthTokenResponse(authToken, user) : authToken);
               return ResponseEntity.ok(response);
             });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<?>> processGoogleLogout(
+      String redirect_uri, AccessTokenData accessTokenData, ServerHttpResponse response) {
+    LOG.info("Google oAuth 2.0 Logout started");
+    String accessToken = accessTokenData.getPayload().get("access_token").textValue();
+    GrpcService.logout(accessToken);
+    return authService
+        .logout(redirect_uri, accessTokenData, response)
+        .doOnSuccess(responseResponseEntity -> LOG.info("Google oAuth 2.0 Logout ended"));
   }
 }

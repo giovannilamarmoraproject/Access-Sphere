@@ -50,7 +50,6 @@ public class UserMapper {
     existingUser.setSurname(user.getSurname());
     existingUser.setEmail(user.getEmail());
     existingUser.setUsername(user.getUsername());
-    existingUser.setPassword(user.getPassword());
     existingUser.setRoles(
         ObjectUtils.isEmpty(user.getRoles()) ? null : Joiner.on(" ").join(user.getRoles()));
     existingUser.setProfilePhoto(user.getProfilePhoto());

@@ -26,7 +26,7 @@ public class RequestResponseFilter implements WebFilter {
       return Mono.defer(
           () -> {
             LOG.info(
-                "Received Request: {} {} from {}",
+                "[REQUEST] Received Request: {} {} from {}",
                 request.getMethod(),
                 request.getURI(),
                 request.getHeaders().get("Referer"));
@@ -36,7 +36,7 @@ public class RequestResponseFilter implements WebFilter {
                     Mono.fromRunnable(
                         () -> {
                           LOG.info(
-                              "Sent Response: {} with status {} to {}",
+                              "[RESPONSE] Sent Response: {} with status {} to {}",
                               request.getURI(),
                               response.getStatusCode(),
                               request.getHeaders().get("Referer"));

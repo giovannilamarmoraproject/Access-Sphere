@@ -11,8 +11,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 public interface OAuthController {
@@ -108,7 +109,7 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.PROMPT,
               example = OpenAPI.Params.Example.PROMPT)
           String prompt,
-      ServerHttpRequest request);
+      ServerWebExchange exchange);
 
   @PostMapping(value = "/token", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
@@ -165,5 +166,37 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.BASIC,
               example = OpenAPI.Params.Example.BASIC)
           String auth,
-      ServerHttpRequest request);
+      ServerWebExchange exchange);
+
+  @PostMapping(value = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(
+      description = "API to perform OAuth 2.0 logout",
+      summary = "Perform OAuth 2.0 Logout",
+      tags = OpenAPI.Tag.OAUTH)
+  @ApiResponse(
+      responseCode = "400",
+      description = "Bad Input",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              examples = @ExampleObject(value = "@BadRequest.json")))
+  Mono<ResponseEntity<?>> logout(
+      @RequestParam(value = "client_id")
+          @Schema(
+              description = OpenAPI.Params.Description.CLIENT_ID,
+              example = OpenAPI.Params.Example.CLIENT_ID)
+          String clientId,
+      @RequestParam(value = "redirect_uri", required = false)
+          @Schema(
+              description = OpenAPI.Params.Description.REDIRECT_URI,
+              example = OpenAPI.Params.Example.REDIRECT_URI)
+          String redirectUri,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BASIC,
+              example = OpenAPI.Params.Example.BASIC)
+          String auth,
+      ServerHttpResponse response);
 }

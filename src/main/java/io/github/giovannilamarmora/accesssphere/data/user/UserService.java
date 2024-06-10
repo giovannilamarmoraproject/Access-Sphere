@@ -29,6 +29,7 @@ import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationI
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.*;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,7 @@ import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
@@ -48,6 +50,7 @@ public class UserService {
   @Autowired private TokenService tokenService;
   @Autowired private StrapiService strapiService;
   @Autowired private EmailSenderService emailSenderService;
+  @Autowired private AccessTokenData accessTokenData;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> userInfo(String bearer, ServerHttpRequest request) {
@@ -56,7 +59,7 @@ public class UserService {
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F UserInfo process started, include Data: {}", includeUserData);
-    AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+    // AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
 
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(accessTokenData.getClientId());
@@ -128,7 +131,7 @@ public class UserService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> profile(String bearer, ServerHttpRequest request) {
     LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting profile process started");
-    AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+    // AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
 
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(accessTokenData.getClientId());
@@ -228,7 +231,7 @@ public class UserService {
         userToUpdate.getUsername(),
         userToUpdate.getEmail());
 
-    AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+    // AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
     // Setting UserData
     UserValidator.validateUpdate(accessTokenData, userToUpdate);
     return dataService

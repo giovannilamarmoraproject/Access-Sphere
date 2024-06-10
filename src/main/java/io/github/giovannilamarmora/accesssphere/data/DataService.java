@@ -14,6 +14,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +44,7 @@ import reactor.core.publisher.Mono;
 public class DataService {
 
   @Getter
+  @Setter
   @Value(value = "${rest.client.strapi.active}")
   private Boolean isStrapiEnabled;
 
@@ -50,6 +53,7 @@ public class DataService {
   @Autowired private UserDataService userDataService;
   @Autowired private StrapiService strapiService;
   @Autowired private TokenService tokenService;
+  @Autowired private AccessTokenService accessTokenService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> getUserByEmail(String email) {
@@ -76,6 +80,22 @@ public class DataService {
     UserEntity userEntity = userDataService.findUserEntityByEmail(email);
     DataValidator.validateUser(userEntity);
     return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<Void> logout(String refresh_token, AccessTokenData accessTokenData) {
+    if (isStrapiEnabled && !ObjectUtils.isEmpty(refresh_token)) {
+      LOG.debug("Strapi is enabled, logout user");
+      return strapiService
+          .logout(refresh_token)
+          .doOnSuccess(
+              unused -> {
+                accessTokenService.revokeTokenByIdentifier(accessTokenData.getIdentifier());
+              })
+          .then();
+    }
+    accessTokenService.revokeTokenByIdentifier(accessTokenData.getIdentifier());
+    return Mono.empty();
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

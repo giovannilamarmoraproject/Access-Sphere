@@ -5,9 +5,11 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
+import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
+import io.github.giovannilamarmora.utils.logger.MDCUtils;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
@@ -36,7 +38,6 @@ import reactor.core.publisher.Mono;
 public class SessionIDFilter implements WebFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(SessionIDFilter.class);
-  private static final String SESSION_COOKIE_NAME = "Session-ID";
 
   @Value(value = "${filter.session-id.shouldNotFilter}")
   private List<String> shouldNotFilter;
@@ -44,8 +45,14 @@ public class SessionIDFilter implements WebFilter {
   @Value(value = "${filter.session-id.generateSessionURI}")
   private List<String> generateSessionURI;
 
+  @Value(value = "${filter.session-id.logoutURI}")
+  private String logoutURI;
+
+  @Value(value = "${filter.session-id.bearerNotFilter}")
+  private List<String> bearerNotFilterURI;
+
   private final SessionID sessionID;
-  private final AccessTokenData accessTokenData;
+  @Autowired private AccessTokenData accessTokenData;
 
   @Autowired private AccessTokenService accessTokenService;
 
@@ -54,25 +61,32 @@ public class SessionIDFilter implements WebFilter {
     if (WebManager.shouldNotFilter(exchange.getRequest(), shouldNotFilter))
       return chain.filter(exchange);
 
+    if (isLogout(exchange.getRequest())) return logoutFilter(exchange, chain);
+
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
-    HttpCookie sessionCookie = request.getCookies().getFirst(SESSION_COOKIE_NAME);
+    HttpCookie sessionCookie = request.getCookies().getFirst(SessionID.SESSION_COOKIE_NAME);
     String session_id = null;
     if (isGenerateSessionURI(request)) {
       session_id = SessionID.builder().generate();
       LOG.info("Generating new session ID: {}", session_id);
-      response.addCookie(CookieManager.setCookie(SESSION_COOKIE_NAME, session_id));
+      response.addCookie(CookieManager.setCookie(SessionID.SESSION_COOKIE_NAME, session_id));
       addSessionInContext(session_id);
       return chain.filter(exchange);
     } else if (ObjectUtils.isEmpty(sessionCookie)
         || ObjectUtils.isEmpty(sessionCookie.getValue())) {
       LOG.error("Session ID not found, needs login");
       return ExceptionHandler.handleFilterException(
-          new UserException(ExceptionMap.ERR_OAUTH_401, "Invalid Session ID Provided!"), exchange);
+          new UserException(ExceptionMap.ERR_OAUTH_401, "No Session ID Provided!"), exchange);
     }
 
     session_id = sessionCookie.getValue();
+
+    if (isBearerNotRequiredEndpoint(request)) {
+      addSessionInContext(session_id);
+      return chain.filter(exchange);
+    }
 
     String bearer = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     if (ObjectUtils.isEmpty(bearer)) {
@@ -81,17 +95,65 @@ public class SessionIDFilter implements WebFilter {
           new OAuthException(ExceptionMap.ERR_OAUTH_401, "Missing Authorization Header"), exchange);
     }
 
-    AccessTokenData accessTokenDB = accessTokenService.getByAccessTokenOrIdToken(bearer);
-    if (ObjectUtils.isEmpty(accessTokenDB.getSessionId())
+    AccessTokenData accessTokenDB = new AccessTokenData();
+    try {
+      accessTokenDB = accessTokenService.getByAccessTokenOrIdToken(bearer);
+    } catch (TokenException e) {
+      LOG.error("An error happen during validation of token, message is {}", e.getMessage());
+      return ExceptionHandler.handleFilterException(
+          new OAuthException(e.getExceptionCode(), e.getMessage()), exchange);
+    }
+
+    if (ObjectUtils.isEmpty(accessTokenDB)
+        || ObjectUtils.isEmpty(accessTokenDB.getSessionId())
         || !accessTokenDB.getSessionId().equalsIgnoreCase(session_id)) {
       LOG.error(
           "Invalid session_id, should be {} instead to {}",
-          accessTokenDB.getSessionId(),
+          ObjectUtils.isEmpty(accessTokenDB) ? null : accessTokenDB.getSessionId(),
           session_id);
       return ExceptionHandler.handleFilterException(
-          new OAuthException(ExceptionMap.ERR_OAUTH_403, "Invalid Session ID!"), exchange);
+          new OAuthException(ExceptionMap.ERR_OAUTH_403, "Invalid Session ID Provided!"), exchange);
     }
     addSessionInContext(session_id);
+    BeanUtils.copyProperties(accessTokenDB, accessTokenData);
+    return chain.filter(exchange);
+  }
+
+  public Mono<Void> logoutFilter(ServerWebExchange exchange, WebFilterChain chain) {
+    ServerHttpRequest request = exchange.getRequest();
+    ServerHttpResponse response = exchange.getResponse();
+
+    HttpCookie sessionCookie = request.getCookies().getFirst(SessionID.SESSION_COOKIE_NAME);
+    String session_id = null;
+    if (ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())) {
+      LOG.warn("Session ID not found, already logged out");
+    } else session_id = sessionCookie.getValue();
+
+    String bearer = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    if (ObjectUtils.isEmpty(bearer)) {
+      LOG.error("Missing Authorization Header");
+      return ExceptionHandler.handleFilterException(
+          new OAuthException(ExceptionMap.ERR_OAUTH_401, "Missing Authorization Header"), exchange);
+    }
+
+    AccessTokenData accessTokenDB = new AccessTokenData();
+    try {
+      accessTokenDB = accessTokenService.getByAccessTokenOrIdToken(bearer);
+      if (ObjectUtils.isEmpty(accessTokenDB)
+          || ObjectUtils.isEmpty(accessTokenDB.getSessionId())
+          || !accessTokenDB.getSessionId().equalsIgnoreCase(session_id)) {
+        LOG.error(
+            "Invalid session_id, should be {} instead to {}",
+            ObjectUtils.isEmpty(accessTokenDB) ? null : accessTokenDB.getSessionId(),
+            session_id);
+        return ExceptionHandler.handleFilterException(
+            new OAuthException(ExceptionMap.ERR_OAUTH_403, "Invalid Session ID Provided!"),
+            exchange);
+      }
+      addSessionInContext(session_id);
+    } catch (TokenException e) {
+      LOG.warn("Access Token not found, already logged out");
+    }
     BeanUtils.copyProperties(accessTokenDB, accessTokenData);
     return chain.filter(exchange);
   }
@@ -102,11 +164,17 @@ public class SessionIDFilter implements WebFilter {
   }
 
   private boolean isTokenEndpointWithPasswordGrant(ServerHttpRequest req, String path) {
-    if (path.equalsIgnoreCase("/v1/oAuth/2.0/token")) {
+    if (PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path)) {
       String param = req.getQueryParams().getFirst("grant_type");
       return !ObjectUtils.isEmpty(param) && param.equalsIgnoreCase(GrantType.PASSWORD.type());
     }
     return false;
+  }
+
+  private boolean isBearerNotRequiredEndpoint(ServerHttpRequest req) {
+    String path = req.getPath().value();
+    return bearerNotFilterURI.stream()
+        .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
   }
 
   private boolean isConfiguredGenerateSessionURI(String path) {
@@ -117,5 +185,11 @@ public class SessionIDFilter implements WebFilter {
   private void addSessionInContext(String session_id) {
     SessionID sessionID1 = new SessionID(session_id);
     BeanUtils.copyProperties(sessionID1, sessionID);
+    MDCUtils.setDataIntoMDC("Session-ID", session_id);
+  }
+
+  private boolean isLogout(ServerHttpRequest request) {
+    String path = request.getPath().value();
+    return PatternMatchUtils.simpleMatch(logoutURI, path);
   }
 }

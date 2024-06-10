@@ -89,6 +89,12 @@ public class GrpcService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
+  public static void logout(String accessToken) {
+    LOG.debug("Starting google revoke");
+    GoogleGrpcService.logout(accessToken);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public static GoogleModel refreshToken(String refreshToken, ClientCredential clientCredential) {
     LOG.debug("Starting google refresh token");
     TokenResponse googleTokenResponse;

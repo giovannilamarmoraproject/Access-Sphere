@@ -61,6 +61,9 @@ public class StrapiClient {
   @Value(value = "${rest.client.strapi.path.getTemplate}")
   private String templateUrl;
 
+  @Value(value = "${rest.client.strapi.path.logout}")
+  private String logoutUrl;
+
   @Autowired private WebClient.Builder builder;
 
   @PostConstruct
@@ -277,5 +280,17 @@ public class StrapiClient {
         UtilsUriBuilder.buildUri(getUserByEmailUrl, params),
         headers,
         StrapiUser.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<Void>> logout(String refresh_token) {
+    Map<String, Object> body = new HashMap<>();
+    body.put("token", refresh_token);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
+    return webClientRest.perform(
+        HttpMethod.POST, UtilsUriBuilder.buildUri(logoutUrl, null), body, headers, Void.class);
   }
 }

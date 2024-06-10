@@ -155,4 +155,14 @@ public class OAuthValidator {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
   }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateClientLogout(AccessTokenData accessTokenData, String clientId) {
+    if (!ObjectUtils.isEmpty(accessTokenData.getClientId())
+        && !accessTokenData.getClientId().equalsIgnoreCase(clientId)) {
+      LOG.error(
+          "The client_id should be {}, instead of {}", accessTokenData.getClientId(), clientId);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
+    }
+  }
 }

@@ -112,4 +112,15 @@ public class AccessTokenService {
 
     return AccessTokenMapper.fromAccessTokenEntityToData(accessToken);
   }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public void revokeTokenByIdentifier(String identifier) {
+    accessTokenDAO.revokeToken(TokenStatus.REVOKED, identifier);
+    LOG.info("Token revoked on Database");
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public void deleteAccessTokenExpired() {
+    accessTokenDAO.deleteExpiredToken();
+  }
 }

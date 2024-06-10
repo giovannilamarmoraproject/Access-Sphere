@@ -3,7 +3,8 @@ package io.github.giovannilamarmora.accesssphere.grpc.google;
 import com.google.api.client.auth.oauth2.*;
 import com.google.api.client.googleapis.auth.oauth2.*;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.*;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -111,6 +112,36 @@ public class GoogleGrpcService {
                   && !ObjectUtils.isEmpty(e.getDetails().getErrorDescription())
               ? e.getDetails().getErrorDescription()
               : e.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
+  public static void logout(String accessToken) {
+    // Crea una nuova istanza di GoogleCredential senza token di accesso
+    Credential credential = new GoogleCredential.Builder().build();
+
+    // Crea una nuova istanza di HttpRequestFactory
+    HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(credential);
+
+    HttpRequest request = null;
+    HttpResponse response = null;
+    try {
+      request =
+          requestFactory.buildGetRequest(
+              new GenericUrl("https://oauth2.googleapis.com/revoke?token=" + accessToken));
+      response = request.execute();
+    } catch (IOException e) {
+      LOG.error(
+          "An error happen during get revoke token with google, message is {}", e.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+    }
+
+    // Leggi la risposta
+    int statusCode = response.getStatusCode();
+    if (statusCode != 200) {
+      LOG.error(
+          "An error happen during get revoke token with google, status code is {}", statusCode);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
   }

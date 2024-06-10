@@ -49,7 +49,9 @@ filter:
     shouldFilter: "*/users/change/password,*/users/change/password/request"
   session-id:
     shouldNotFilter: "**/swagger-ui/index.html,/swagger-ui/swagger-initializer.js,/v3/api-docs,/v3/api-docs/**"
-    generateSessionURI: "/v1/oAuth/2.0/authorize,/v1/oAuth/2.0/token"
+    generateSessionURI: "/v1/oAuth/2.0/authorize,*/users/register"
+    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password"
+    logoutURI: "*/v1/oAuth/2.0/logout"
 
 rest:
   client:
@@ -65,6 +67,7 @@ rest:
         getRefreshToken: /api/auth/token/request
         userInfo: /api/users/me
         refreshToken: /api/auth/token
+        logout: /api/auth/revoke
         updateUser: /api/users/:userId
         getTemplate: /api/email-templates
     email-sender:

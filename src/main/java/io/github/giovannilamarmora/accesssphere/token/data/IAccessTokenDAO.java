@@ -22,4 +22,14 @@ public interface IAccessTokenDAO extends JpaRepository<AccessTokenEntity, Long> 
       @Param("status") TokenStatus status,
       @Param("accessTokenHash") String accessTokenHash,
       @Param("identifier") String identifier);
+
+  @Modifying
+  @Transactional
+  @Query("UPDATE AccessTokenEntity a SET a.status = :status WHERE a.identifier = :identifier")
+  void revokeToken(@Param("status") TokenStatus status, @Param("identifier") String identifier);
+
+  @Modifying
+  @Transactional
+  @Query("DELETE FROM AccessTokenEntity a WHERE a.status = 'EXPIRED' OR a.status = 'REVOKED'")
+  void deleteExpiredToken();
 }
