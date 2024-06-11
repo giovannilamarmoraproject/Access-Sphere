@@ -58,6 +58,16 @@ public class UsersSyncScheduler {
   }
 
   private void syncClients(List<User> strapiUsers, List<User> dbUsers) {
+    // Optionally handle deletion of clients that are no longer in Strapi
+    Set<String> strapiUsersId =
+        strapiUsers.stream().map(User::getIdentifier).collect(Collectors.toSet());
+
+    for (User dbUser : dbUsers) {
+      if (!strapiUsersId.contains(dbUser.getIdentifier())) {
+        dataService.deleteClientFromDatabase(dbUser);
+      }
+    }
+
     // Convert the list of dbClients to a map for quick lookup
     Map<String, User> dbUserMap =
         dbUsers.stream().collect(Collectors.toMap(User::getIdentifier, Function.identity()));
@@ -75,16 +85,6 @@ public class UsersSyncScheduler {
           userStrapi.setId(dbUser.getId());
           dataService.updateUserIntoDatabase(userStrapi);
         } else LOG.info("Data already updated for user={}", dbUser.getIdentifier());
-      }
-    }
-
-    // Optionally handle deletion of clients that are no longer in Strapi
-    Set<String> strapiUsersId =
-        strapiUsers.stream().map(User::getIdentifier).collect(Collectors.toSet());
-
-    for (User dbUser : dbUsers) {
-      if (!strapiUsersId.contains(dbUser.getIdentifier())) {
-        dataService.deleteClientFromDatabase(dbUser);
       }
     }
   }

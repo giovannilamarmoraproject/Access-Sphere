@@ -22,7 +22,6 @@ public class DataServiceTest {
 
   @Test
   public void test_retrieve_user_by_email_when_strapi_is_enabled() {
-    // Arrange
     dataService.setIsStrapiEnabled(true);
     String email = "test@example.com";
     UserEntity userEntity = new UserEntity();

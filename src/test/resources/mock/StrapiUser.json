@@ -1,0 +1,35 @@
+[
+    {
+        "id": 30,
+        "username": "test22",
+        "email": "pippo@gmail.com",
+        "provider": "local",
+        "confirmed": true,
+        "blocked": false,
+        "createdAt": "2024-06-10T13:21:40.110Z",
+        "updatedAt": "2024-06-10T14:43:11.255Z",
+        "name": "Giova",
+        "surname": null,
+        "profilePhoto": null,
+        "phoneNumber": "+393471755045",
+        "birthdate": null,
+        "gender": null,
+        "occupation": null,
+        "education": null,
+        "ssn": null,
+        "tokenReset": null,
+        "attributes": null,
+        "nationality": null,
+        "identifier": "0eceedb7-96ee-4b76-bb4c-7839e7a77b59",
+        "app_roles": [
+            {
+                "id": 2,
+                "createdAt": "2024-05-20T10:45:13.876Z",
+                "updatedAt": "2024-05-20T10:45:32.090Z",
+                "publishedAt": "2024-05-20T10:45:32.087Z",
+                "role": "DEFAULT_ROLE"
+            }
+        ],
+        "addresses": []
+    }
+]

@@ -1,0 +1,16 @@
+{
+  "identifier": "0eceedb7-96ee-4b76-bb4c-7839e7a77b59",
+  "aud": "BEARER-OAUTH-01.nginx-proxy-manager.docker-network",
+  "azp": "BEARER-OAUTH-01.nginx-proxy-manager.docker-network",
+  "exp": 1718118955,
+  "iat": 1718115355551,
+  "iss": "https://nginx-proxy-manager.docker-network",
+  "sub": "test22",
+  "email": "pippo@gmail.com",
+  "given_name": "Giova",
+  "email_verified": true,
+  "roles": [
+    "DEFAULT_ROLE"
+  ],
+  "type": "GOOGLE"
+}
