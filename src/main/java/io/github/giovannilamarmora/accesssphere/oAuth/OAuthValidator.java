@@ -56,6 +56,17 @@ public class OAuthValidator {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateClientId(ClientCredential clientCredential, String client_id) {
+    if (!client_id.equalsIgnoreCase(clientCredential.getClientId())) {
+      LOG.error(
+          "The Client ID provided should be {} instead of {}",
+          clientCredential.getClientId(),
+          client_id);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateBasicAuth(String basic, String grantType) {
     if (ObjectUtils.isEmpty(basic) || !basic.contains("Basic")) {
       LOG.error("No Basic Auth found");

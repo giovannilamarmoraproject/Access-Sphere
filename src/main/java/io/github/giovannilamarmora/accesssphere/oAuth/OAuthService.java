@@ -160,6 +160,7 @@ public class OAuthService {
     return clientCredentialMono
         .flatMap(
             clientCredential -> {
+              // OAuthValidator.validateClientId(clientCredential, clientId);
               switch (clientCredential.getAuthType()) {
                 case BEARER -> {
                   OAuthValidator.validateBasicAuth(basic, grant_type);

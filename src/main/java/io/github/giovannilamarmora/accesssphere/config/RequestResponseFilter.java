@@ -1,7 +1,10 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.web.WebManager;
+import java.util.List;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -18,8 +21,13 @@ public class RequestResponseFilter implements WebFilter {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
+  @Value(value = "${filter.requestResponse.shouldNotFilter}")
+  private List<String> shouldNotFilter;
+
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+    if (WebManager.shouldNotFilter(exchange.getRequest(), shouldNotFilter))
+      return chain.filter(exchange);
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
     if (shouldFilter(exchange.getRequest())) {

@@ -1,5 +1,6 @@
 {
   "jwt": "token",
+  "refresh_token": "token",
   "user": {
     "id": 3,
     "username": "test2",
@@ -18,7 +19,7 @@
     "occupation": null,
     "education": null,
     "ssn": null,
-    "tokenReset": null,
+    "tokenReset": "token",
     "attributes": null,
     "nationality": null,
     "userRole": "USER"

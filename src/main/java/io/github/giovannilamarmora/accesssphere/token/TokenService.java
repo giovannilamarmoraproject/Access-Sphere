@@ -35,6 +35,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import javax.crypto.SecretKey;
@@ -259,11 +260,11 @@ public class TokenService {
             .claim(TokenClaims.ROLE.claim(), jwtData.getRoles())
             .claim(TokenClaims.AUTH_TYPE.claim(), jwtData.getType())
             .claim(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes())
-            .claim(TokenClaims.IAT.claim(), now.toInstant().toEpochMilli())
+            .claim(TokenClaims.IAT.claim(), new Date(now.toInstant().toEpochMilli()))
             .expirationTime(
-                new Date(now.toInstant().toEpochMilli() + clientCredential.getJwtExpiration()))
+                new Date(now.toInstant().toEpochMilli() + clientCredential.getJweExpiration()))
             .build();
-    jwtData.setExp(now.toInstant().toEpochMilli() + clientCredential.getJwtExpiration());
+    jwtData.setExp(now.toInstant().toEpochMilli() + clientCredential.getJweExpiration());
     jwtData.setIat(now.toInstant().toEpochMilli());
     Payload payloadAccess = new Payload(claimsSet.toJSONObject());
 
@@ -294,8 +295,7 @@ public class TokenService {
             .claim(TokenClaims.ROLE.claim(), jwtData.getRoles())
             .claim(TokenClaims.AUTH_TYPE.claim(), jwtData.getType())
             .claim(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes())
-            .claim(TokenClaims.IAT.claim(), now.toInstant().toEpochMilli())
-            .claim(TokenClaims.IAT.claim(), now.toInstant().toEpochMilli())
+            .claim(TokenClaims.IAT.claim(), new Date(now.toInstant().toEpochMilli()))
             .claim(TokenClaims.NAME.claim(), jwtData.getName())
             .claim(TokenClaims.PICTURE.claim(), jwtData.getPicture())
             .claim(TokenClaims.GIVEN_NAME.claim(), jwtData.getGiven_name())
@@ -304,7 +304,7 @@ public class TokenService {
                 new Date(now.toInstant().toEpochMilli() + clientCredential.getJwtExpiration()))
             .build();
 
-    Payload payloadId = new Payload(claimsSet.toJSONObject());
+    Payload payloadId = new Payload(idClaimsSet.toJSONObject());
 
     DirectEncrypter encryptedIds = null;
     JWEObject jweObjectId = new JWEObject(header, payloadId);
@@ -354,10 +354,10 @@ public class TokenService {
 
       return new JWTData(
           (@NotNull String) claimsSet.getClaim(TokenClaims.IDENTIFIER.claim()),
-          (String) claimsSet.getClaim(TokenClaims.AUD.claim()),
+          String.join(", ", (List) claimsSet.getClaim(TokenClaims.AUD.claim())),
           (String) claimsSet.getClaim(TokenClaims.AZP.claim()),
-          Long.parseLong((String) claimsSet.getClaim(TokenClaims.EXP.claim())),
-          Long.parseLong((String) claimsSet.getClaim(TokenClaims.IAT.claim())),
+          ((Date) claimsSet.getClaim(TokenClaims.EXP.claim())).toInstant().toEpochMilli(),
+          ((Date) claimsSet.getClaim(TokenClaims.IAT.claim())).toInstant().toEpochMilli(),
           (@NotNull String) claimsSet.getClaim(TokenClaims.ISS.claim()),
           claimsSet.getSubject(),
           ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.NAME.claim()))
