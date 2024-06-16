@@ -6,6 +6,7 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -27,7 +28,7 @@ import org.springframework.util.ObjectUtils;
 public class GoogleGrpcService {
 
   private static final Logger LOG = LoggerFilter.getLogger(GoogleGrpcService.class);
-  private static final JsonFactory JSON_FACTORY = null;
+  private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public static String startGoogleAuthorization(
