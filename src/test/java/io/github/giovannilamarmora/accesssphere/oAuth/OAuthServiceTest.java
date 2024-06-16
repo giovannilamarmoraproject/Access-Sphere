@@ -57,6 +57,7 @@ public class OAuthServiceTest {
   @MockBean private AccessTokenService accessTokenService;
   private MockedStatic<GoogleGrpcService> mockStatic;
   @MockBean private IAccessTokenDAO accessTokenDAO;
+  @MockBean private AccessTokenData accessTokenData;
 
   @BeforeEach
   public void setUp() {
@@ -491,6 +492,320 @@ public class OAuthServiceTest {
             redirect_uri,
             basic,
             exchange);
+
+    // Assert
+    StepVerifier.create(result)
+        .assertNext(
+            res -> {
+              assertEquals(HttpStatus.OK, res.getStatusCode());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  public void test_successfully_google_refresh_token_include_user_data_false()
+      throws IOException, GeneralSecurityException {
+    String basic = "Basic " + Base64.getEncoder().encodeToString("user:user".getBytes());
+    // Arrange
+    String clientId = "GOOGLE-OAUTH-01";
+    String refresh_token = "token";
+    String grant_type = "refresh_token";
+    String scope = "openid";
+    String code = "openid";
+    String prompt = "prompt";
+    String redirect_uri = "http://localhost/redirect";
+    ServerWebExchange exchange =
+        MockServerWebExchange.from(
+            MockServerHttpRequest.get("/tokenOAuth?include_user_data=false").build());
+
+    StrapiResponse response =
+        mapper.readValue(
+            new ClassPathResource("mock/ClientIDGoogle.json").getInputStream(),
+            StrapiResponse.class);
+
+    when(strapiClient.getClientByClientID(clientId))
+        .thenReturn(Mono.just(ResponseEntity.ok(response)));
+
+    String payload = "{\"access_token\": \"token\", \"refresh_token\": \"token\"}";
+
+    AccessTokenData accessToken =
+        new AccessTokenData(
+            TokenUtils.hashingToken("token"),
+            TokenUtils.hashingToken("token"),
+            TokenUtils.hashingToken("token"),
+            clientId,
+            SessionID.builder().generate(),
+            null,
+            "email@emial.com",
+            "identifier",
+            OAuthType.GOOGLE,
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli(),
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
+            mapper.readTree(payload),
+            TokenStatus.ISSUED);
+
+    when(accessTokenService.getByRefreshToken(anyString())).thenReturn(accessToken);
+
+    StrapiResponse responseUser =
+        mapper.readValue(
+            new ClassPathResource("mock/StrapiResponseOfUser.json").getInputStream(),
+            StrapiResponse.class);
+    when(strapiClient.refreshToken(any())).thenReturn(Mono.just(ResponseEntity.ok(responseUser)));
+
+    List<StrapiUser> strapiUser =
+        mapper.readValue(
+            new ClassPathResource("mock/StrapiUser.json").getInputStream(),
+            new TypeReference<>() {});
+    when(strapiClient.userInfo(any()))
+        .thenReturn(Mono.just(ResponseEntity.ok(strapiUser.getFirst())));
+
+    when(accessTokenService.save(
+            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
+        .thenReturn(new AccessTokenData());
+
+    TokenResponse tokenResponse = new TokenResponse();
+    tokenResponse.set("id_token", "token");
+    Mockito.when(GoogleGrpcService.refreshGoogleOAuthToken(anyString(), anyString(), anyString()))
+        .thenReturn(tokenResponse);
+
+    GoogleIdToken.Payload google =
+        mapper.readValue(
+            new ClassPathResource("mock/GooglePayload.json").getInputStream(),
+            GoogleIdToken.Payload.class);
+    google.setExpirationTimeSeconds(3600000L);
+    google.setIssuedAtTimeSeconds(360000L);
+
+    Mockito.when(GoogleGrpcService.getUserInfo(anyString(), anyString())).thenReturn(google);
+
+    when(strapiClient.getUserByEmail(any())).thenReturn(Mono.just(ResponseEntity.ok(strapiUser)));
+    // Act
+    Mono<ResponseEntity<?>> result =
+        oAuthService.tokenOAuth(
+            clientId,
+            refresh_token,
+            grant_type,
+            scope,
+            code,
+            prompt,
+            redirect_uri,
+            basic,
+            exchange);
+
+    // Assert
+    StepVerifier.create(result)
+        .assertNext(
+            res -> {
+              assertEquals(HttpStatus.OK, res.getStatusCode());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  public void test_successfully_google_refresh_token_include_user_data_true()
+      throws IOException, GeneralSecurityException {
+    String basic = "Basic " + Base64.getEncoder().encodeToString("user:user".getBytes());
+    // Arrange
+    String clientId = "GOOGLE-OAUTH-01";
+    String refresh_token = "token";
+    String grant_type = "refresh_token";
+    String scope = "openid";
+    String code = "openid";
+    String prompt = "prompt";
+    String redirect_uri = "http://localhost/redirect";
+    ServerWebExchange exchange =
+        MockServerWebExchange.from(
+            MockServerHttpRequest.get("/tokenOAuth?include_user_data=true").build());
+
+    StrapiResponse response =
+        mapper.readValue(
+            new ClassPathResource("mock/ClientIDGoogle.json").getInputStream(),
+            StrapiResponse.class);
+
+    when(strapiClient.getClientByClientID(clientId))
+        .thenReturn(Mono.just(ResponseEntity.ok(response)));
+
+    String payload = "{\"access_token\": \"token\", \"refresh_token\": \"token\"}";
+
+    AccessTokenData accessToken =
+        new AccessTokenData(
+            TokenUtils.hashingToken("token"),
+            TokenUtils.hashingToken("token"),
+            TokenUtils.hashingToken("token"),
+            clientId,
+            SessionID.builder().generate(),
+            null,
+            "email@emial.com",
+            "identifier",
+            OAuthType.GOOGLE,
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli(),
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
+            mapper.readTree(payload),
+            TokenStatus.ISSUED);
+
+    when(accessTokenService.getByRefreshToken(anyString())).thenReturn(accessToken);
+
+    StrapiResponse responseUser =
+        mapper.readValue(
+            new ClassPathResource("mock/StrapiResponseOfUser.json").getInputStream(),
+            StrapiResponse.class);
+    when(strapiClient.refreshToken(any())).thenReturn(Mono.just(ResponseEntity.ok(responseUser)));
+
+    List<StrapiUser> strapiUser =
+        mapper.readValue(
+            new ClassPathResource("mock/StrapiUser.json").getInputStream(),
+            new TypeReference<>() {});
+    when(strapiClient.userInfo(any()))
+        .thenReturn(Mono.just(ResponseEntity.ok(strapiUser.getFirst())));
+
+    when(accessTokenService.save(
+            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
+        .thenReturn(new AccessTokenData());
+
+    TokenResponse tokenResponse = new TokenResponse();
+    tokenResponse.set("id_token", "token");
+    Mockito.when(GoogleGrpcService.refreshGoogleOAuthToken(anyString(), anyString(), anyString()))
+        .thenReturn(tokenResponse);
+
+    GoogleIdToken.Payload google =
+        mapper.readValue(
+            new ClassPathResource("mock/GooglePayload.json").getInputStream(),
+            GoogleIdToken.Payload.class);
+    google.setExpirationTimeSeconds(3600000L);
+    google.setIssuedAtTimeSeconds(360000L);
+
+    Mockito.when(GoogleGrpcService.getUserInfo(anyString(), anyString())).thenReturn(google);
+
+    when(strapiClient.getUserByEmail(any())).thenReturn(Mono.just(ResponseEntity.ok(strapiUser)));
+    // Act
+    Mono<ResponseEntity<?>> result =
+        oAuthService.tokenOAuth(
+            clientId,
+            refresh_token,
+            grant_type,
+            scope,
+            code,
+            prompt,
+            redirect_uri,
+            basic,
+            exchange);
+
+    // Assert
+    StepVerifier.create(result)
+        .assertNext(
+            res -> {
+              assertEquals(HttpStatus.OK, res.getStatusCode());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  public void test_successfully_logout_google() throws IOException, GeneralSecurityException {
+    String bearer = "Bearer " + Base64.getEncoder().encodeToString("user:user".getBytes());
+    // Arrange
+    String clientId = "GOOGLE-OAUTH-01";
+    String redirect_uri = "http://localhost/redirect";
+
+    StrapiResponse response =
+        mapper.readValue(
+            new ClassPathResource("mock/ClientIDGoogle.json").getInputStream(),
+            StrapiResponse.class);
+
+    when(strapiClient.getClientByClientID(clientId))
+        .thenReturn(Mono.just(ResponseEntity.ok(response)));
+
+    String payload = "{\"access_token\": \"token\", \"refresh_token\": \"token\"}";
+
+    AccessTokenData accessToken =
+        new AccessTokenData(
+            TokenUtils.hashingToken("token"),
+            TokenUtils.hashingToken("token"),
+            TokenUtils.hashingToken("token"),
+            clientId,
+            SessionID.builder().generate(),
+            null,
+            "email@emial.com",
+            "identifier",
+            OAuthType.GOOGLE,
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli(),
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
+            mapper.readTree(payload),
+            TokenStatus.ISSUED);
+
+    when(accessTokenData.getClientId()).thenReturn(accessToken.getClientId());
+    when(accessTokenData.getIdentifier()).thenReturn(accessToken.getIdentifier());
+    when(accessTokenData.getPayload()).thenReturn(accessToken.getPayload());
+
+    Mockito.doNothing().when(accessTokenService).revokeTokenByIdentifier(anyString());
+
+    when(strapiClient.logout(any())).thenReturn(Mono.just(ResponseEntity.ok(null)));
+
+    ServerWebExchange exchange =
+        MockServerWebExchange.from(MockServerHttpRequest.get("/logout").build());
+
+    // Act
+    Mono<ResponseEntity<?>> result =
+        oAuthService.logout(clientId, redirect_uri, bearer, exchange.getResponse());
+
+    // Assert
+    StepVerifier.create(result)
+        .assertNext(
+            res -> {
+              assertEquals(HttpStatus.OK, res.getStatusCode());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  public void test_successfully_logout_bearer() throws IOException, GeneralSecurityException {
+    String bearer = "Bearer " + Base64.getEncoder().encodeToString("user:user".getBytes());
+    // Arrange
+    String clientId = "BEARER-OAUTH-01";
+    String redirect_uri = "http://localhost/redirect";
+
+    StrapiResponse response =
+        mapper.readValue(
+            new ClassPathResource("mock/ClientIDBearer.json").getInputStream(),
+            StrapiResponse.class);
+
+    when(strapiClient.getClientByClientID(clientId))
+        .thenReturn(Mono.just(ResponseEntity.ok(response)));
+
+    String payload = "{\"access_token\": \"token\", \"refresh_token\": \"token\"}";
+
+    AccessTokenData accessToken =
+        new AccessTokenData(
+            TokenUtils.hashingToken("token"),
+            TokenUtils.hashingToken("token"),
+            TokenUtils.hashingToken("token"),
+            clientId,
+            SessionID.builder().generate(),
+            null,
+            "email@emial.com",
+            "identifier",
+            OAuthType.BEARER,
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli(),
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
+            mapper.readTree(payload),
+            TokenStatus.ISSUED);
+
+    when(accessTokenData.getClientId()).thenReturn(accessToken.getClientId());
+    when(accessTokenData.getIdentifier()).thenReturn(accessToken.getIdentifier());
+    when(accessTokenData.getPayload()).thenReturn(accessToken.getPayload());
+
+    Mockito.doNothing().when(accessTokenService).revokeTokenByIdentifier(anyString());
+
+    when(strapiClient.logout(any())).thenReturn(Mono.just(ResponseEntity.ok(null)));
+
+    ServerWebExchange exchange =
+        MockServerWebExchange.from(MockServerHttpRequest.get("/logout").build());
+
+    // Act
+    Mono<ResponseEntity<?>> result =
+        oAuthService.logout(clientId, redirect_uri, bearer, exchange.getResponse());
 
     // Assert
     StepVerifier.create(result)
