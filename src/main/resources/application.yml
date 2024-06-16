@@ -1,7 +1,7 @@
 env: Local
 spring:
-  autoconfigure:
-    exclude: org.springframework.cloud.gcp.logging.LoggingAppender
+  #autoconfigure:
+  #  exclude: org.springframework.cloud.gcp.logging.LoggingAppender
   application:
     name: access-sphere
     starter-log: true # Show Started Application
