@@ -6,10 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Access Sphere</title>
     <link rel="stylesheet" href="style.css"/>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-R4KLC18RH6');
+    </script>
 </head>
 <body>
 <main>
-    <div class="big-wrapper light">
+    <div class="big-wrapper dark">
         <img src="img/shape.png" alt="" class="shape"/>
 
         <header>
@@ -51,14 +60,15 @@
                     <div class="cta">
                         <a
                                 target="_blank"
-                                href="https://documentations.hostwebserver.site"
+                                href="https://access.sphere.doc.giovannilamarmora.com"
                                 class="btn"
                         >Get started</a
                         >
                     </div>
                 </div>
 
-                <div class="right animated animatedFadeInUp fadeInUp">
+                <!--<div class="right animated animatedFadeInUp fadeInUp">-->
+                <div id="person" class="right animated animatedFadeInUp fadeInUp">
                     <img src="img/person.png" alt="Person Image" class="person"/>
                 </div>
             </div>

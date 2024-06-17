@@ -2,11 +2,13 @@
 var toggle_btn;
 var big_wrapper;
 var hamburger_menu;
+var person;
 
 function declare() {
   toggle_btn = document.querySelector(".toggle-btn");
   big_wrapper = document.querySelector(".big-wrapper");
   hamburger_menu = document.querySelector(".hamburger-menu");
+  person = document.getElementById("person");
 }
 
 const main = document.querySelector("main");
@@ -15,10 +17,9 @@ declare();
 
 // Enable dark mode by default
 let dark = true;
-big_wrapper.classList.remove("light");
-big_wrapper.classList.add("dark");
 
 function toggleAnimation() {
+  person.classList.remove("animated", "animatedFadeInUp", "fadeInUp");
   // Clone the wrapper
   dark = !dark;
   let clone = big_wrapper.cloneNode(true);
