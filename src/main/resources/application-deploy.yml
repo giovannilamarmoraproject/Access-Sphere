@@ -41,6 +41,7 @@ springdoc:
 
 filter:
   requestResponse:
+    enabled: true
     shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico"
   rate-limiting:
     shouldFilter: "*/users/change/password,*/users/change/password/request"
