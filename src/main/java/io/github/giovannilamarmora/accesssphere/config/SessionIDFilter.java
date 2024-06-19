@@ -76,7 +76,11 @@ public class SessionIDFilter implements WebFilter {
       return chain.filter(exchange);
     } else if (ObjectUtils.isEmpty(sessionCookie)
         || ObjectUtils.isEmpty(sessionCookie.getValue())) {
-      LOG.error("Session ID not found for path {}, needs login", request.getPath().value());
+      LOG.error(
+          "Session ID not found for path [{}], with ip address [{}] and hostname [{}], needs login",
+          request.getPath().value(),
+          WebManager.getRealClientIP(request),
+          request.getHeaders().get("Referer"));
       return ExceptionHandler.handleFilterException(
           new UserException(ExceptionMap.ERR_OAUTH_401, "No Session ID Provided!"), exchange);
     }
