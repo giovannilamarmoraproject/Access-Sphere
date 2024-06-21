@@ -69,7 +69,7 @@ rest:
         updateUser: /api/users/:userId
         getTemplate: /api/email-templates
     email-sender:
-      baseUrl: http://email.sender:8080/email-sender
+      baseUrl: http://email.sender:8080
       path:
         sendEmailUrl: /v1/send-email
 

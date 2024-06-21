@@ -65,7 +65,7 @@ rest:
         updateUser: /api/users/:userId
         getTemplate: /api/email-templates
     email-sender:
-      baseUrl: https://email-sender.hostwebserver.site/email-sender
+      baseUrl: https://email-sender.giovannilamarmora.com
       path:
         sendEmailUrl: /v1/send-email
 
