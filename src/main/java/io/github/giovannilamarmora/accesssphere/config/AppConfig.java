@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Paths;
 import java.util.Map;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -25,7 +26,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableCaching
 @OpenAPIDefinition(
     info = @Info(title = "Access Sphere Swagger", version = "1.0.0"),
-    security = {@SecurityRequirement(name = HttpHeaders.AUTHORIZATION)})
+    security = {@SecurityRequirement(name = HttpHeaders.AUTHORIZATION)},
+    servers = {
+      @Server(
+          url = "https://access.sphere.service.stg.giovannilamarmora.com/",
+          description = "Staging Server URL"),
+      @Server(url = "http://localhost:8080", description = "Local Server URL")
+    })
 @SecurityScheme(
     type = SecuritySchemeType.APIKEY,
     name = HttpHeaders.AUTHORIZATION,
