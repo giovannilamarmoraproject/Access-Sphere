@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -9,7 +10,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,7 +38,7 @@ public interface UserController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
+                    schema = @Schema(implementation = JWTData.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -78,7 +78,7 @@ public interface UserController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
+                    schema = @Schema(implementation = User.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -117,15 +117,14 @@ public interface UserController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
+                    schema = @Schema(implementation = User.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request",
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class),
-                    examples = @ExampleObject(value = "@BadRequest.json"))),
+                    schema = @Schema(implementation = ExceptionResponse.class))),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict, user already exists",
@@ -161,15 +160,14 @@ public interface UserController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
+                    schema = @Schema(implementation = User.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request",
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class),
-                    examples = @ExampleObject(value = "@BadRequest.json")))
+                    schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> updateUser(
@@ -202,8 +200,7 @@ public interface UserController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class),
-                    examples = @ExampleObject(value = "@BadRequest.json")))
+                    schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> changePasswordRequest(
@@ -232,8 +229,7 @@ public interface UserController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class),
-                    examples = @ExampleObject(value = "@BadRequest.json")))
+                    schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> changePassword(@RequestBody @Valid ChangePassword changePassword);

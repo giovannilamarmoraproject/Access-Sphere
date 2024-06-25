@@ -33,3 +33,4 @@ build/
 .vscode/
 .mvn/
 *.log
+/src/main/resources/access.json

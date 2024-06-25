@@ -17,7 +17,6 @@ import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
@@ -46,7 +45,6 @@ public class UserService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   @Autowired private DataService dataService;
   @Autowired private ClientService clientService;
-  @Autowired private AccessTokenService accessTokenService;
   @Autowired private TokenService tokenService;
   @Autowired private StrapiService strapiService;
   @Autowired private EmailSenderService emailSenderService;

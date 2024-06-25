@@ -1,7 +1,10 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
+import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -36,8 +39,7 @@ public interface OAuthController {
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@BadRequest.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE))
   Mono<ResponseEntity<?>> authorize(
       @RequestParam(value = "response_type")
           @Schema(
@@ -81,13 +83,16 @@ public interface OAuthController {
       summary = "Perform OAuth 2.0 Login",
       tags = OpenAPI.Tag.OAUTH)
   @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content = @Content(schema = @Schema(implementation = OAuthTokenResponse.class)))
+  @ApiResponse(
       responseCode = "400",
       description = "Bad Input",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@BadRequest.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE))
   Mono<ResponseEntity<?>> login(
       @PathVariable(value = "client_id")
           @Schema(
@@ -117,13 +122,16 @@ public interface OAuthController {
       summary = "Perform OAuth 2.0 Login",
       tags = OpenAPI.Tag.OAUTH)
   @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content = @Content(schema = @Schema(implementation = AuthToken.class)))
+  @ApiResponse(
       responseCode = "400",
       description = "Bad Input",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@BadRequest.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE))
   Mono<ResponseEntity<?>> token(
       @RequestParam(value = "client_id")
           @Schema(
@@ -174,13 +182,16 @@ public interface OAuthController {
       summary = "Perform OAuth 2.0 Logout",
       tags = OpenAPI.Tag.OAUTH)
   @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content = @Content(schema = @Schema(implementation = Response.class)))
+  @ApiResponse(
       responseCode = "400",
       description = "Bad Input",
       content =
           @Content(
               schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              examples = @ExampleObject(value = "@BadRequest.json")))
+              mediaType = MediaType.APPLICATION_JSON_VALUE))
   Mono<ResponseEntity<?>> logout(
       @RequestParam(value = "client_id")
           @Schema(
