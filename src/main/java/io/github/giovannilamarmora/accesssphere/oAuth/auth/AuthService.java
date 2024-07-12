@@ -8,10 +8,10 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.net.URI;
 import java.util.Base64;
@@ -72,7 +72,7 @@ public class AuthService {
                   new Response(
                       HttpStatus.OK.value(),
                       message,
-                      CorrelationIdUtils.getCorrelationId(),
+                      TraceUtils.getSpanID(),
                       new OAuthTokenResponse(
                           tokenResponse.getToken(),
                           tokenResponse.getStrapiToken(),
@@ -111,7 +111,7 @@ public class AuthService {
                   new Response(
                       HttpStatus.OK.value(),
                       message,
-                      CorrelationIdUtils.getCorrelationId(),
+                      TraceUtils.getSpanID(),
                       new OAuthTokenResponse(
                           tokenResponse.getToken(),
                           tokenResponse.getStrapiToken(),
@@ -131,8 +131,7 @@ public class AuthService {
     }
 
     String message = "Logout Successfully for " + accessTokenData.getEmail() + "!";
-    Response res =
-        new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), null);
+    Response res = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), null);
 
     ResponseEntity<Response> responseResponseEntity = ResponseEntity.ok(res);
     if (!ObjectUtils.isEmpty(redirect_uri))

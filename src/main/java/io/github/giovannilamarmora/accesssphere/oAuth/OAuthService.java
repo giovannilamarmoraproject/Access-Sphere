@@ -13,11 +13,11 @@ import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.net.URI;
@@ -270,8 +270,7 @@ public class OAuthService {
     LOG.warn("Some data are empty, logout already done");
     SessionID.invalidateSessionID(response);
     String message = "Logout Successfully!";
-    Response res =
-        new Response(HttpStatus.OK.value(), message, CorrelationIdUtils.getCorrelationId(), null);
+    Response res = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), null);
     ResponseEntity<Response> responseResponseEntity = ResponseEntity.ok(res);
     if (!ObjectUtils.isEmpty(redirect_uri)) {
       responseResponseEntity =

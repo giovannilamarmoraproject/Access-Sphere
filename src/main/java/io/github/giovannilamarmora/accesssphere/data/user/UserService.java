@@ -20,11 +20,11 @@ import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.*;
@@ -79,7 +79,7 @@ public class UserService {
                                 new Response(
                                     HttpStatus.OK.value(),
                                     "UserInfo Data for " + user.getUsername(),
-                                    CorrelationIdUtils.getCorrelationId(),
+                                    TraceUtils.getSpanID(),
                                     includeUserData
                                         ? new OAuthTokenResponse(decryptToken, user)
                                         : decryptToken);
@@ -101,7 +101,7 @@ public class UserService {
                                   new Response(
                                       HttpStatus.OK.value(),
                                       "UserInfo Data for " + user.getUsername(),
-                                      CorrelationIdUtils.getCorrelationId(),
+                                      TraceUtils.getSpanID(),
                                       new OAuthTokenResponse(decryptToken, user));
                               return ResponseEntity.ok(response);
                             });
@@ -110,7 +110,7 @@ public class UserService {
                       new Response(
                           HttpStatus.OK.value(),
                           "UserInfo Data for " + decryptToken.getSub(),
-                          CorrelationIdUtils.getCorrelationId(),
+                          TraceUtils.getSpanID(),
                           decryptToken);
                   return Mono.just(ResponseEntity.ok(response));
                 }
@@ -151,7 +151,7 @@ public class UserService {
                                 new Response(
                                     HttpStatus.OK.value(),
                                     "Profile Data for " + user.getUsername(),
-                                    CorrelationIdUtils.getCorrelationId(),
+                                    TraceUtils.getSpanID(),
                                     user);
                             return ResponseEntity.ok(response);
                           });
@@ -170,7 +170,7 @@ public class UserService {
                                 new Response(
                                     HttpStatus.OK.value(),
                                     "Profile Data for " + user.getUsername(),
-                                    CorrelationIdUtils.getCorrelationId(),
+                                    TraceUtils.getSpanID(),
                                     user);
                             return ResponseEntity.ok(response);
                           });
@@ -207,7 +207,7 @@ public class UserService {
                             new Response(
                                 HttpStatus.OK.value(),
                                 "User " + user.getUsername() + " successfully registered!",
-                                CorrelationIdUtils.getCorrelationId(),
+                                TraceUtils.getSpanID(),
                                 user1);
                         return ResponseEntity.status(HttpStatus.CREATED).body(response);
                       });
@@ -240,7 +240,7 @@ public class UserService {
                   new Response(
                       HttpStatus.OK.value(),
                       "User " + user.getUsername() + " successfully updated!",
-                      CorrelationIdUtils.getCorrelationId(),
+                      TraceUtils.getSpanID(),
                       user);
               return Mono.just(ResponseEntity.ok(response));
             })
@@ -303,7 +303,7 @@ public class UserService {
                               new Response(
                                   HttpStatus.OK.value(),
                                   message,
-                                  CorrelationIdUtils.getCorrelationId(),
+                                  TraceUtils.getSpanID(),
                                   objects1.getT1());
 
                           return Mono.just(ResponseEntity.ok(response));
@@ -319,7 +319,7 @@ public class UserService {
                           new Response(
                               HttpStatus.OK.value(),
                               message,
-                              CorrelationIdUtils.getCorrelationId(),
+                              TraceUtils.getSpanID(),
                               responseEmail);
 
                       return Mono.just(ResponseEntity.ok(response));
@@ -359,10 +359,7 @@ public class UserService {
 
                         Response response =
                             new Response(
-                                HttpStatus.OK.value(),
-                                message,
-                                CorrelationIdUtils.getCorrelationId(),
-                                null);
+                                HttpStatus.OK.value(), message, TraceUtils.getSpanID(), null);
                         return Mono.just(ResponseEntity.ok(response));
                       });
             })

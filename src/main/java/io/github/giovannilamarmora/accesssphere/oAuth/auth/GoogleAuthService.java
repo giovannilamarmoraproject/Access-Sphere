@@ -14,10 +14,10 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.interceptors.correlationID.CorrelationIdUtils;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ public class GoogleAuthService {
                   new Response(
                       HttpStatus.OK.value(),
                       "Login successfully, welcome " + user.getUsername() + " !",
-                      CorrelationIdUtils.getCorrelationId(),
+                      TraceUtils.getSpanID(),
                       includeUserInfo
                           ? new OAuthTokenResponse(token, googleModel.getJwtData())
                           : token);
@@ -110,7 +110,7 @@ public class GoogleAuthService {
                               new Response(
                                   HttpStatus.OK.value(),
                                   "Login successfully, welcome " + user1.getUsername() + "!",
-                                  CorrelationIdUtils.getCorrelationId(),
+                                  TraceUtils.getSpanID(),
                                   includeUserInfo
                                       ? new OAuthTokenResponse(
                                           token,
@@ -157,7 +157,7 @@ public class GoogleAuthService {
                   new Response(
                       HttpStatus.OK.value(),
                       "Token refreshed for " + user.getUsername() + "!",
-                      CorrelationIdUtils.getCorrelationId(),
+                      TraceUtils.getSpanID(),
                       includeUserInfo
                           ? new OAuthTokenResponse(
                               authToken, googleModel.getJwtData(), includeUserData ? user : null)
