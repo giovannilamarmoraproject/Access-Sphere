@@ -33,10 +33,10 @@ services:
       docker-network:
         aliases:
           - access.sphere.service.stg
-    #labels:
-    #- "traefik.enable=true"
-    #- "traefik.http.routers.access-sphere.rule=Host(`access.sphere.service.stg`)"
-    #- "traefik.http.services.access-sphere.loadbalancer.server.port=8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.access-sphere.rule=Host(`access.sphere.service.stg`)"
+      - "traefik.http.services.access-sphere.loadbalancer.server.port=8080"
     #- "traefik.http.routers.access-sphere.middlewares=my-cache"
     #- "traefik.http.routers.access-sphere.middlewares=my-cloudflarewarp@file"
 
