@@ -33,7 +33,7 @@ services:
       docker-network:
         aliases:
           - access.sphere.service.stg
-    labels:
+    #labels:
     #- "traefik.enable=true"
     #- "traefik.http.routers.access-sphere.rule=Host(`access.sphere.service.stg`)"
     #- "traefik.http.services.access-sphere.loadbalancer.server.port=8080"
