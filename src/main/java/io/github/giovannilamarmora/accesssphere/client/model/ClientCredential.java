@@ -9,12 +9,11 @@ import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -41,5 +40,9 @@ public class ClientCredential extends GenericDTO {
   private String jweSecret;
   private Long jweExpiration;
   private String registrationToken;
-  private List<AppRole> defaultRoles;
+  private AppRole defaultRole;
+  private List<AppRole> appRoles;
+  private Boolean idToken;
+  private Boolean accessToken;
+  private Boolean strapiToken;
 }

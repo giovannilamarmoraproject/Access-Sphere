@@ -2,7 +2,6 @@ package io.github.giovannilamarmora.accesssphere.token.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.Joiner;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
@@ -62,9 +61,10 @@ public class JWTData {
         user.getSurname(),
         null,
         true,
-        ObjectUtils.isEmpty(clientCredential.getDefaultRoles())
+        ObjectUtils.isEmpty(clientCredential.getDefaultRole())
             ? null
-            : clientCredential.getDefaultRoles().stream().map(AppRole::getRole).toList(),
+            : List.of(clientCredential.getDefaultRole().getRole()),
+        //   : clientCredential.getDefaultRoles().stream().map(AppRole::getRole).toList(),
         OAuthType.BEARER,
         null);
   }

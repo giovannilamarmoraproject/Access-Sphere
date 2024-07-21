@@ -71,4 +71,17 @@ public class ClientCredentialEntity extends GenericEntity {
   @Lob
   @Column(name = "DEFAULT_ROLES", columnDefinition = "TEXT")
   private String defaultRoles;
+
+  @Lob
+  @Column(name = "APP_ROLES", columnDefinition = "TEXT")
+  private String appRoles;
+
+  @Column(name = "ID_TOKEN")
+  private Boolean idToken;
+
+  @Column(name = "ACCESS_TOKEN")
+  private Boolean accessToken;
+
+  @Column(name = "STRAPI_TOKEN")
+  private Boolean strapiToken;
 }

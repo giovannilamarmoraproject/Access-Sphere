@@ -6,12 +6,14 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.logger.MDCUtils;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -19,6 +21,9 @@ import reactor.core.publisher.Mono;
 @Logged
 @Service
 public class ClientSyncScheduler {
+
+  @Value(value = "${env:Default}")
+  private String env;
 
   private static final Logger LOG = LoggerFactory.getLogger(ClientSyncScheduler.class);
 
@@ -28,6 +33,7 @@ public class ClientSyncScheduler {
   @Scheduled(cron = "0 0 0 * * *")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncClients() {
+    MDCUtils.registerDefaultMDC(env);
     if (clientService.getIsStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler client sync with Strapi");
       Mono<List<ClientCredential>> strapiClientsMono = clientService.getStrapiClientCredentials();
@@ -104,6 +110,10 @@ public class ClientSyncScheduler {
         && Objects.equals(strapiClient.getJweSecret(), dbClient.getJweSecret())
         && Objects.equals(strapiClient.getJweExpiration(), dbClient.getJweExpiration())
         && Objects.equals(strapiClient.getRegistrationToken(), dbClient.getRegistrationToken())
-        && Objects.equals(strapiClient.getDefaultRoles(), dbClient.getDefaultRoles());
+        && Objects.equals(strapiClient.getDefaultRole(), dbClient.getDefaultRole())
+        && Objects.equals(strapiClient.getAppRoles(), dbClient.getAppRoles())
+        && Objects.equals(strapiClient.getIdToken(), dbClient.getIdToken())
+        && Objects.equals(strapiClient.getAccessToken(), dbClient.getAccessToken())
+        && Objects.equals(strapiClient.getStrapiToken(), dbClient.getStrapiToken());
   }
 }

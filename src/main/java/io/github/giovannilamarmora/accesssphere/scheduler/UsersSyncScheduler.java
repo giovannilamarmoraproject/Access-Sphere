@@ -6,12 +6,14 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.logger.MDCUtils;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -19,6 +21,9 @@ import reactor.core.publisher.Mono;
 @Logged
 @Service
 public class UsersSyncScheduler {
+
+  @Value(value = "${env:Default}")
+  private String env;
 
   private static final Logger LOG = LoggerFactory.getLogger(UsersSyncScheduler.class);
 
@@ -28,6 +33,7 @@ public class UsersSyncScheduler {
   @Scheduled(cron = "0 0 0 * * *")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncUsers() {
+    MDCUtils.registerDefaultMDC(env);
     if (dataService.getIsStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler users sync with Strapi");
       Mono<List<User>> strapiUsers = dataService.getStrapiUsers();

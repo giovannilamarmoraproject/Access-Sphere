@@ -75,7 +75,7 @@ public class AuthService {
                       TraceUtils.getSpanID(),
                       new OAuthTokenResponse(
                           tokenResponse.getToken(),
-                          tokenResponse.getStrapiToken(),
+                          clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() : null,
                           includeUserInfo ? tokenResponse.getUserInfo() : null,
                           includeUserData ? tokenResponse.getUser() : null));
               LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());

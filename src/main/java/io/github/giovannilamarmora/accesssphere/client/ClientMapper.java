@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -49,8 +50,14 @@ public class ClientMapper {
               : Arrays.stream(clientCredentialEntity.getDefaultRoles().split(" ")).toList()*/
               ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRoles())
                   ? null
+                  : mapper.readValue(clientCredentialEntity.getDefaultRoles(), AppRole.class),
+              ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRoles())
+                  ? null
                   : mapper.readValue(
-                      clientCredentialEntity.getDefaultRoles(), new TypeReference<>() {}));
+                      clientCredentialEntity.getDefaultRoles(), new TypeReference<>() {}),
+              clientCredentialEntity.getIdToken(),
+              clientCredentialEntity.getAccessToken(),
+              clientCredentialEntity.getStrapiToken());
       clientCredential.setId(clientCredentialEntity.getId());
       return clientCredential;
     } catch (JsonProcessingException e) {
@@ -80,9 +87,15 @@ public class ClientMapper {
         clientCredential.getJweSecret(),
         clientCredential.getJweExpiration(),
         clientCredential.getRegistrationToken(),
-        ObjectUtils.isEmpty(clientCredential.getDefaultRoles())
+        ObjectUtils.isEmpty(clientCredential.getDefaultRole())
             ? null
-            : Utilities.convertObjectToJson(clientCredential.getDefaultRoles()));
+            : Utilities.convertObjectToJson(clientCredential.getDefaultRole()),
+        ObjectUtils.isEmpty(clientCredential.getAppRoles())
+            ? null
+            : Utilities.convertObjectToJson(clientCredential.getAppRoles()),
+        clientCredential.getIdToken(),
+        clientCredential.getAccessToken(),
+        clientCredential.getStrapiToken());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -108,9 +121,16 @@ public class ClientMapper {
     existingClient.setJweExpiration(clientCredential.getJweExpiration());
     existingClient.setRegistrationToken(clientCredential.getRegistrationToken());
     existingClient.setDefaultRoles(
-        ObjectUtils.isEmpty(clientCredential.getDefaultRoles())
+        ObjectUtils.isEmpty(clientCredential.getDefaultRole())
             ? null
-            : Utilities.convertObjectToJson(clientCredential.getDefaultRoles()));
+            : Utilities.convertObjectToJson(clientCredential.getDefaultRole()));
+    existingClient.setAppRoles(
+        ObjectUtils.isEmpty(clientCredential.getAppRoles())
+            ? null
+            : Utilities.convertObjectToJson(clientCredential.getAppRoles()));
+    existingClient.setIdToken(clientCredential.getIdToken());
+    existingClient.setAccessToken(clientCredential.getAccessToken());
+    existingClient.setStrapiToken(clientCredential.getStrapiToken());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

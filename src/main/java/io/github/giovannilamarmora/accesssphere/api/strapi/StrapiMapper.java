@@ -44,6 +44,7 @@ public class StrapiMapper {
 
   private static ClientCredential mapFromOAuthStrapiClientToClientCredential(
       OAuthStrapiClient strapiClient) {
+    List<AppRole> defaultRole = getRoles(strapiClient.getDefault_role());
     return new ClientCredential(
         strapiClient.getClientId(),
         strapiClient.getExternalClientId(),
@@ -68,11 +69,15 @@ public class StrapiMapper {
         strapiClient.getJweSecret(),
         strapiClient.getJweExpiration(),
         strapiClient.getRegistrationToken(),
-        getRoles(strapiClient.getDefault_roles()));
+        ObjectUtils.isEmpty(defaultRole) ? null : defaultRole.getFirst(),
+        getRoles(strapiClient.getApp_roles()),
+        strapiClient.getId_token(),
+        strapiClient.getAccess_token(),
+        strapiClient.getStrapi_token());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  private static List<AppRole> getRoles(OAuthStrapiClient.DefaultRoles defaultRoles) {
+  private static List<AppRole> getRoles(OAuthStrapiClient.Roles defaultRoles) {
     if (ObjectUtils.isEmpty(defaultRoles) || ObjectUtils.isEmpty(defaultRoles.getData()))
       return null;
     return defaultRoles.getData().stream()
@@ -99,7 +104,7 @@ public class StrapiMapper {
         user.getUsername(),
         user.getPassword(),
         fromAddressesToStrapiAddresses(user.getAddresses()),
-        ObjectUtils.isEmpty(clientCredential) ? null : clientCredential.getDefaultRoles(),
+        ObjectUtils.isEmpty(clientCredential) ? null : List.of(clientCredential.getDefaultRole()),
         user.getProfilePhoto(),
         user.getPhoneNumber(),
         user.getBirthDate(),

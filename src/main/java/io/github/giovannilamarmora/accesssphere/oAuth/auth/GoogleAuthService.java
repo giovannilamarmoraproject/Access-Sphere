@@ -1,6 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.config.AppConfig;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
@@ -20,6 +19,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.web.CookieManager;
+import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -96,11 +96,9 @@ public class GoogleAuthService {
                           googleModel
                               .getJwtData()
                               .setRoles(
-                                  ObjectUtils.isEmpty(clientCredential.getDefaultRoles())
+                                  ObjectUtils.isEmpty(clientCredential.getDefaultRole())
                                       ? null
-                                      : clientCredential.getDefaultRoles().stream()
-                                          .map(AppRole::getRole)
-                                          .toList());
+                                      : List.of(clientCredential.getDefaultRole().getRole()));
                           AuthToken token =
                               tokenService.generateToken(
                                   googleModel.getJwtData(),

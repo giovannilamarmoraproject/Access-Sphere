@@ -185,8 +185,8 @@ public class TokenService {
         payload);
 
     return new AuthToken(
-        idToken,
-        accessToken,
+        clientCredential.getIdToken() ? idToken : null,
+        clientCredential.getAccessToken() ? accessToken : null,
         refreshToken,
         now.toInstant().toEpochMilli() + jwtExpiration,
         jwtExpiration,
@@ -330,8 +330,8 @@ public class TokenService {
         payload);
 
     return new AuthToken(
-        idToken,
-        accessToken,
+        clientCredential.getIdToken() ? idToken : null,
+        clientCredential.getAccessToken() ? accessToken : null,
         refreshToken,
         claimsSet.getExpirationTime().getTime(),
         jweExpiration,

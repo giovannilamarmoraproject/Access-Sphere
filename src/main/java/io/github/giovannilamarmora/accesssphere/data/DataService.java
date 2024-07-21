@@ -144,13 +144,14 @@ public class DataService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> registerUser(User user, ClientCredential clientCredential) {
-    if (ObjectUtils.isEmpty(clientCredential.getDefaultRoles())) {
+    if (ObjectUtils.isEmpty(clientCredential.getDefaultRole())) {
       LOG.error(
           "Default roles not present on client configuration under client_id {}",
           clientCredential.getClientId());
       throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
     }
-    user.setRoles(clientCredential.getDefaultRoles().stream().map(AppRole::getRole).toList());
+    //  user.setRoles(clientCredential.getDefaultRole().stream().map(AppRole::getRole).toList());
+    user.setRoles(List.of(clientCredential.getDefaultRole().getRole()));
     // Se l'utente non ha password?
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
     userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));

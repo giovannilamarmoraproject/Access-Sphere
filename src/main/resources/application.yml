@@ -52,7 +52,7 @@ rest:
   client:
     strapi:
       active: true
-      baseUrl: https://strapi.hostwebserver.site
+      baseUrl: https://strapi.giovannilamarmora.com
       bearer: ${STRAPI_AUTH_TOKEN}
       path:
         clientId: /api/Oauthclientids
