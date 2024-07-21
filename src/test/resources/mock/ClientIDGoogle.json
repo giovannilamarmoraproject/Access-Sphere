@@ -19,7 +19,23 @@
         "jweSecret": "b936cee86c9f87aa5d3c6f2e84cb5a4239a5fe50480a6ec66b70ab5b1f4ac673",
         "jweExpiration": "3600000",
         "registrationToken": "token",
-        "default_roles": {
+        "default_role": {
+          "data": [
+            {
+              "id": 2,
+              "attributes": {
+                "createdAt": "2024-05-20T10:45:13.876Z",
+                "updatedAt": "2024-05-20T10:45:32.090Z",
+                "publishedAt": "2024-05-20T10:45:32.087Z",
+                "role": "DEFAULT_ROLE"
+              }
+            }
+          ]
+        },
+        "id_token": true,
+        "access_token": true,
+        "strapi_token": true,
+        "app_roles": {
           "data": [
             {
               "id": 2,
