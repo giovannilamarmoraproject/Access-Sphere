@@ -37,7 +37,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.access-sphere.rule=Host(`access.sphere.service.stg.giovannilamarmora.com`)"
       - "traefik.http.services.access-sphere.loadbalancer.server.port=8080"
-      #- "traefik.http.routers.access-sphere.middlewares=cloudflarewarp@file,geoblock@file"
+      - "traefik.http.routers.access-sphere.middlewares=geoblock@file"
 
 networks:
   docker-network:
