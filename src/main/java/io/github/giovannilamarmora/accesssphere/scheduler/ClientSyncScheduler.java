@@ -44,26 +44,26 @@ public class ClientSyncScheduler {
     MDC.put(ENV_KEY, context.getOrDefault(ENV_KEY, ""));
   }
 
-  @Scheduled(initialDelay = 1000)
-  // @Scheduled(cron = "0 0 0 * * *")
+  // @Scheduled(initialDelay = 1000)
+  @Scheduled(cron = "0 0 0 * * *")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncClients() {
     MDCUtils.registerDefaultMDC(env);
-        //.then(
-        //    Mono.deferContextual(
-        //        contextView -> {
-        //          setMDCFromContext((Context) contextView); // Set MDC from context
-        //          return Mono.empty();
-        //        }))
-        //.subscribeOn(Schedulers.parallel())
-        //.publishOn(Schedulers.parallel())
-        //.doOnEach(
-        //    signal -> {
-        //      if (signal.isOnNext() || signal.isOnError() || signal.isOnComplete()) {
-        //        setMDCFromContext((Context) signal.getContextView());
-        //      }
-        //    })
-        //.subscribe();
+    // .then(
+    //    Mono.deferContextual(
+    //        contextView -> {
+    //          setMDCFromContext((Context) contextView); // Set MDC from context
+    //          return Mono.empty();
+    //        }))
+    // .subscribeOn(Schedulers.parallel())
+    // .publishOn(Schedulers.parallel())
+    // .doOnEach(
+    //    signal -> {
+    //      if (signal.isOnNext() || signal.isOnError() || signal.isOnComplete()) {
+    //        setMDCFromContext((Context) signal.getContextView());
+    //      }
+    //    })
+    // .subscribe();
 
     if (clientService.getIsStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler client sync with Strapi");
