@@ -48,13 +48,13 @@ public class ClientMapper {
               /*ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRoles())
               ? null
               : Arrays.stream(clientCredentialEntity.getDefaultRoles().split(" ")).toList()*/
-              ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRoles())
+              ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRole())
                   ? null
-                  : mapper.readValue(clientCredentialEntity.getDefaultRoles(), AppRole.class),
-              ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRoles())
+                  : mapper.readValue(clientCredentialEntity.getDefaultRole(), AppRole.class),
+              ObjectUtils.isEmpty(clientCredentialEntity.getAppRoles())
                   ? null
                   : mapper.readValue(
-                      clientCredentialEntity.getDefaultRoles(), new TypeReference<>() {}),
+                      clientCredentialEntity.getAppRoles(), new TypeReference<>() {}),
               clientCredentialEntity.getIdToken(),
               clientCredentialEntity.getAccessToken(),
               clientCredentialEntity.getStrapiToken());
@@ -120,7 +120,7 @@ public class ClientMapper {
     existingClient.setJweSecret(clientCredential.getJweSecret());
     existingClient.setJweExpiration(clientCredential.getJweExpiration());
     existingClient.setRegistrationToken(clientCredential.getRegistrationToken());
-    existingClient.setDefaultRoles(
+    existingClient.setDefaultRole(
         ObjectUtils.isEmpty(clientCredential.getDefaultRole())
             ? null
             : Utilities.convertObjectToJson(clientCredential.getDefaultRole()));

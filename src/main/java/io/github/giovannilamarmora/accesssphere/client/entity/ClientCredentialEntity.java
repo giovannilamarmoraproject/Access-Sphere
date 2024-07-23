@@ -69,8 +69,8 @@ public class ClientCredentialEntity extends GenericEntity {
   private String registrationToken;
 
   @Lob
-  @Column(name = "DEFAULT_ROLES", columnDefinition = "TEXT")
-  private String defaultRoles;
+  @Column(name = "DEFAULT_ROLE", columnDefinition = "TEXT")
+  private String defaultRole;
 
   @Lob
   @Column(name = "APP_ROLES", columnDefinition = "TEXT")

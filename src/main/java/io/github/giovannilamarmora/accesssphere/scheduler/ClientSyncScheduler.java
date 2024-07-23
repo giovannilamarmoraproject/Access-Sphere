@@ -12,11 +12,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 @Logged
 @Service
@@ -25,15 +27,44 @@ public class ClientSyncScheduler {
   @Value(value = "${env:Default}")
   private String env;
 
+  public static final String TRACE_ID_KEY = "traceId";
+  public static final String SPAN_ID_KEY = "spanId";
+  public static final String PARENT_ID_KEY = "parentId";
+  public static final String ENV_KEY = "env";
+
   private static final Logger LOG = LoggerFactory.getLogger(ClientSyncScheduler.class);
 
   @Autowired private ClientService clientService;
 
-  // @Scheduled(initialDelay = 1000)
-  @Scheduled(cron = "0 0 0 * * *")
+  // Utility method to set MDC from Reactor context
+  public static void setMDCFromContext(Context context) {
+    MDC.put(TRACE_ID_KEY, context.getOrDefault(TRACE_ID_KEY, ""));
+    MDC.put(SPAN_ID_KEY, context.getOrDefault(SPAN_ID_KEY, ""));
+    MDC.put(PARENT_ID_KEY, context.getOrDefault(PARENT_ID_KEY, ""));
+    MDC.put(ENV_KEY, context.getOrDefault(ENV_KEY, ""));
+  }
+
+  @Scheduled(initialDelay = 1000)
+  // @Scheduled(cron = "0 0 0 * * *")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncClients() {
     MDCUtils.registerDefaultMDC(env);
+        //.then(
+        //    Mono.deferContextual(
+        //        contextView -> {
+        //          setMDCFromContext((Context) contextView); // Set MDC from context
+        //          return Mono.empty();
+        //        }))
+        //.subscribeOn(Schedulers.parallel())
+        //.publishOn(Schedulers.parallel())
+        //.doOnEach(
+        //    signal -> {
+        //      if (signal.isOnNext() || signal.isOnError() || signal.isOnComplete()) {
+        //        setMDCFromContext((Context) signal.getContextView());
+        //      }
+        //    })
+        //.subscribe();
+
     if (clientService.getIsStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler client sync with Strapi");
       Mono<List<ClientCredential>> strapiClientsMono = clientService.getStrapiClientCredentials();
