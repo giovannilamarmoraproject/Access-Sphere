@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.exception;
 
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpStatus;
@@ -44,7 +44,7 @@ public class ExceptionHandler extends UtilsException {
     serverHttpResponse.setRawStatusCode(status.value());
     serverHttpResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);
     DataBuffer responseBuffer =
-        new DefaultDataBufferFactory().wrap(Utilities.convertObjectToJson(response).getBytes());
+        new DefaultDataBufferFactory().wrap(Mapper.writeObjectToString(response).getBytes());
     return serverHttpResponse.writeWith(Mono.just(responseBuffer));
   }
 }

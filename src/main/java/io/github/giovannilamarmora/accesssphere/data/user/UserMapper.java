@@ -6,7 +6,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.BeanUtils;
@@ -80,6 +80,6 @@ public class UserMapper {
     existingUser.setAttributes(
         ObjectUtils.isEmpty(user.getAttributes())
             ? null
-            : Utilities.convertObjectToJson(user.getAttributes()));
+            : Mapper.writeObjectToString(user.getAttributes()));
   }
 }

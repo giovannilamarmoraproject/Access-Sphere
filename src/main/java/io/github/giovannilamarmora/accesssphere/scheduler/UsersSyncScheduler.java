@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Logged
 @Service
@@ -33,7 +34,7 @@ public class UsersSyncScheduler {
   @Scheduled(cron = "0 0 0 * * *")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncUsers() {
-    MDCUtils.registerDefaultMDC(env);
+    MDCUtils.registerDefaultMDC(env).publishOn(Schedulers.parallel()).subscribe();
     if (dataService.getIsStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler users sync with Strapi");
       Mono<List<User>> strapiUsers = dataService.getStrapiUsers();

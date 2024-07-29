@@ -11,8 +11,8 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -89,10 +89,10 @@ public class ClientMapper {
         clientCredential.getRegistrationToken(),
         ObjectUtils.isEmpty(clientCredential.getDefaultRole())
             ? null
-            : Utilities.convertObjectToJson(clientCredential.getDefaultRole()),
+            : Mapper.writeObjectToString(clientCredential.getDefaultRole()),
         ObjectUtils.isEmpty(clientCredential.getAppRoles())
             ? null
-            : Utilities.convertObjectToJson(clientCredential.getAppRoles()),
+            : Mapper.writeObjectToString(clientCredential.getAppRoles()),
         clientCredential.getIdToken(),
         clientCredential.getAccessToken(),
         clientCredential.getStrapiToken());
@@ -123,11 +123,11 @@ public class ClientMapper {
     existingClient.setDefaultRole(
         ObjectUtils.isEmpty(clientCredential.getDefaultRole())
             ? null
-            : Utilities.convertObjectToJson(clientCredential.getDefaultRole()));
+            : Mapper.writeObjectToString(clientCredential.getDefaultRole()));
     existingClient.setAppRoles(
         ObjectUtils.isEmpty(clientCredential.getAppRoles())
             ? null
-            : Utilities.convertObjectToJson(clientCredential.getAppRoles()));
+            : Mapper.writeObjectToString(clientCredential.getAppRoles()));
     existingClient.setIdToken(clientCredential.getIdToken());
     existingClient.setAccessToken(clientCredential.getAccessToken());
     existingClient.setStrapiToken(clientCredential.getStrapiToken());

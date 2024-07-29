@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.context.Context;
 
 @Logged
@@ -48,7 +49,7 @@ public class ClientSyncScheduler {
   @Scheduled(cron = "0 0 0 * * *")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncClients() {
-    MDCUtils.registerDefaultMDC(env);
+    MDCUtils.registerDefaultMDC(env).publishOn(Schedulers.parallel()).subscribe();
     // .then(
     //    Mono.deferContextual(
     //        contextView -> {
