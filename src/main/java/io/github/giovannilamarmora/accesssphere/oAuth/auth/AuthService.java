@@ -35,7 +35,10 @@ public class AuthService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> makeClassicLogin(
-      String basic, ClientCredential clientCredential, ServerHttpRequest request) {
+      String basic,
+      String redirect_uri,
+      ClientCredential clientCredential,
+      ServerHttpRequest request) {
     LOG.debug("Decoding user using Base64 Decoder");
     String username;
     String password;
@@ -79,7 +82,8 @@ public class AuthService {
                           includeUserInfo ? tokenResponse.getUserInfo() : null,
                           includeUserData ? tokenResponse.getUser() : null));
               LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
-              return ResponseEntity.ok(response);
+              if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
+              return ResponseEntity.ok().location(URI.create(redirect_uri)).body(response);
             });
   }
 

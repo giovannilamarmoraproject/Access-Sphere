@@ -52,9 +52,7 @@ public class StrapiMapper {
         ObjectUtils.isEmpty(strapiClient.getScopes())
             ? null
             : List.of(strapiClient.getScopes().split(" ")),
-        ObjectUtils.isEmpty(strapiClient.getRedirectUri())
-            ? null
-            : List.of(strapiClient.getRedirectUri().split(" ")),
+        ObjectUtils.isEmpty(strapiClient.getRedirectUri()) ? null : strapiClient.getRedirectUri(),
         ObjectUtils.isEmpty(strapiClient.getAccessType())
             ? null
             : AccessType.valueOf(strapiClient.getAccessType()),

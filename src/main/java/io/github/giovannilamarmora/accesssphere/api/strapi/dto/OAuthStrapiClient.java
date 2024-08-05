@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.api.strapi.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
+import java.util.Map;
 import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)
@@ -17,7 +18,7 @@ public class OAuthStrapiClient extends StrapiGeneric {
   private String externalClientId;
   private String clientSecret;
   private String scopes;
-  private String redirectUri;
+  private Map<String, String> redirectUri;
   private String accessType;
   private String type;
   private String tokenType;

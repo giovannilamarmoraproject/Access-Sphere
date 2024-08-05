@@ -1,5 +1,7 @@
 env: Local
 spring:
+  thymeleaf:
+    prefix: classpath:/static/
   application:
     name: access-sphere
     starter-log: true # Show Started Application
@@ -39,11 +41,11 @@ springdoc:
 filter:
   requestResponse:
     enabled: true
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico"
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,*/login/*"
   rate-limiting:
     shouldFilter: "*/users/change/password,*/users/change/password/request"
   session-id:
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico"
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*"
     generateSessionURI: "/v1/oAuth/2.0/authorize,*/users/register"
     bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico"
     logoutURI: "*/v1/oAuth/2.0/logout"

@@ -9,9 +9,7 @@ public enum ExceptionMap implements ExceptionCode {
    */
   ERR_OAUTH_400("BAD_INPUT_ERROR", HttpStatus.BAD_REQUEST, "Input miss match"),
   ERR_OAUTH_401(
-      "OAUTH_NOT_AUTHORIZED",
-      HttpStatus.UNAUTHORIZED,
-      "You are not allowed to make cannot make this request"),
+      "OAUTH_NOT_AUTHORIZED", HttpStatus.UNAUTHORIZED, "You are not allowed to make this request"),
   ERR_OAUTH_403(
       "OAUTH_NOT_VALID",
       HttpStatus.FORBIDDEN,

@@ -1,0 +1,134 @@
+.blur {
+    background-color: rgb(255 255 255 / 50%);
+    backdrop-filter: saturate(180%) blur(1px);
+    border: 2px solid rgb(0 246 253 / 0%);
+    box-shadow: rgb(0 0 0 / 10%) 0px 10px 15px -3px, rgb(0 0 0 / 5%) 0px 4px 6px -2px;
+}
+
+.card-body {
+    box-shadow: rgb(0 0 0 / 45%) 0px 25px 20px -20px;
+}
+
+.border_round{
+border-radius: 30px;
+}
+
+.background {
+  width: 70%;
+  padding: 40px;
+  height: 100vh;
+  background: radial-gradient(
+      125% 125% at 50% 10%,
+      rgba(0, 0, 0, 0.7) 40%,
+      rgba(102, 51, 238, 0.7) 100%
+    ),
+    url("./img/auth.jpg") center no-repeat;
+  background-size: cover;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  align-content: center;
+  flex-direction: row;
+}
+.background h1 {
+  max-width: 420px;
+  color: #fff;
+  text-align: right;
+  padding: 0;
+  margin: 0;
+}
+.background p {
+  max-width: 650px;
+  color: #1a1a1a;
+  font-size: 15px;
+  text-align: right;
+  padding: 0;
+  margin: 15px 0 0 0;
+}
+
+.input-small {
+  height: 50px;
+}
+
+@media (min-width: 1280px) {
+.logo-images{
+width: 100px;
+margin-bottom: 10px;
+}
+}
+
+@media (min-width: 780px) and (max-width: 1280px) {
+  .input-small {
+    height: 40px;
+  }
+
+  .max-w {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+}
+
+@media (max-width: 780px) {
+
+    .input-groups {
+        input {
+          border: 1px solid #262936 !important;
+          background-color: #262936;
+          &:focus {
+            outline: 0;
+            background-color: #262936;
+          }
+        }
+        label {
+          color: #999;
+        }
+      }
+
+    #google-btn {
+        border: 1px solid #262936 !important;
+        background-color: #262936 !important;
+        &:focus {
+           outline: 0;
+           background-color: #262936 !important;
+        }
+       span {
+         color: #999;
+       }
+    }
+
+  .max-w {
+    background: radial-gradient(
+      125% 125% at 50% 10%,
+      rgba(1, 1, 1, 1) 50%,
+      rgba(102, 51, 238, 1) 100%
+    );
+  }
+
+  h1,
+  p,
+  a,
+  label {
+    color: #fff !important;
+  }
+
+  .header-logo-image {
+    width: 100px;
+    align-items: center !important;
+    margin-left: calc(50% - 50px) !important;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  #footerText{
+  display: none;
+  }
+
+  #loginTitle, #forgotTitle, #resetTitle{
+  margin-top: 20px;
+  }
+
+  form {
+    margin-top: 20px;
+    }
+}

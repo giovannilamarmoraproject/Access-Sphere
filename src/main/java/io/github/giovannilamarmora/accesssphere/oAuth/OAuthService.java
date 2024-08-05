@@ -163,8 +163,10 @@ public class OAuthService {
               // OAuthValidator.validateClientId(clientCredential, clientId);
               switch (clientCredential.getAuthType()) {
                 case BEARER -> {
-                  OAuthValidator.validateBasicAuth(basic, grant_type);
-                  return authService.makeClassicLogin(basic, clientCredential, request);
+                  OAuthValidator.validateBasicAuth(
+                      basic, grant_type, redirect_uri, clientCredential);
+                  return authService.makeClassicLogin(
+                      basic, redirect_uri, clientCredential, request);
                 }
                 case GOOGLE -> {
                   LOG.info("Google oAuth 2.0 Login started");

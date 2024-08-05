@@ -38,8 +38,9 @@ public class OAuthValidator {
           accessType);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid access_type provided!");
     }
-
-    if (!clientCredential.getRedirect_uri().contains(redirectUri)) {
+    List<String> redirect_uris =
+        List.of(clientCredential.getRedirect_uri().get("redirect_uri").split(" "));
+    if (!redirect_uris.contains(redirectUri)) {
       LOG.error(
           "The Redirect Uri provided should be {} instead of {}",
           clientCredential.getRedirect_uri(),
@@ -67,7 +68,8 @@ public class OAuthValidator {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateBasicAuth(String basic, String grantType) {
+  public static void validateBasicAuth(
+      String basic, String grantType, String redirect_uri, ClientCredential clientCredential) {
     if (ObjectUtils.isEmpty(basic) || !basic.contains("Basic")) {
       LOG.error("No Basic Auth found");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid basic authorization!");
@@ -75,6 +77,27 @@ public class OAuthValidator {
     if (ObjectUtils.isEmpty(grantType) || !grantType.equalsIgnoreCase(GrantType.PASSWORD.type())) {
       LOG.error("The Grant Type provided should be password instead of {}", grantType);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid grant_type provided!");
+    }
+
+    if (!ObjectUtils.isEmpty(redirect_uri)) {
+      if (ObjectUtils.isEmpty(clientCredential.getRedirect_uri())) {
+        LOG.error(
+            "Missing configuration for the client {} on the redirect uri, miss match expected {} found {}",
+            clientCredential.getClientId(),
+            redirect_uri,
+            clientCredential.getRedirect_uri());
+        throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid redirect_uri provided!");
+      }
+
+      List<String> redirect_uris =
+          List.of(clientCredential.getRedirect_uri().get("redirect_uri").split(" "));
+      if (!redirect_uris.contains(redirect_uri)) {
+        LOG.error(
+            "The Redirect URI provided should be {} instead of {}",
+            clientCredential.getRedirect_uri(),
+            redirect_uri);
+        throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid redirect_uri provided!");
+      }
     }
   }
 
@@ -115,8 +138,9 @@ public class OAuthValidator {
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_400, "The param redirect_uri is a required field!");
     }
-
-    if (!clientCredential.getRedirect_uri().contains(redirect_uri)) {
+    List<String> redirect_uris =
+        List.of(clientCredential.getRedirect_uri().get("redirect_uri").split(" "));
+    if (!redirect_uris.contains(redirect_uri)) {
       LOG.error(
           "The Redirect URI provided should be {} instead of {}",
           clientCredential.getRedirect_uri(),

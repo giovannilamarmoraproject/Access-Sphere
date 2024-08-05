@@ -14,6 +14,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -36,7 +37,9 @@ public class ClientMapper {
                   : List.of(clientCredentialEntity.getScopes().split(" ")),
               ObjectUtils.isEmpty(clientCredentialEntity.getRedirect_uri())
                   ? null
-                  : List.of(clientCredentialEntity.getRedirect_uri().split(" ")),
+                  : Mapper.readObject(
+                      clientCredentialEntity.getRedirect_uri(),
+                      new TypeReference<Map<String, String>>() {}),
               clientCredentialEntity.getAccessType(),
               clientCredentialEntity.getAuthType(),
               clientCredentialEntity.getTokenType(),
@@ -78,7 +81,7 @@ public class ClientMapper {
             : Joiner.on(" ").join(clientCredential.getScopes()),
         ObjectUtils.isEmpty(clientCredential.getRedirect_uri())
             ? null
-            : Joiner.on(" ").join(clientCredential.getRedirect_uri()),
+            : Mapper.writeObjectToString(clientCredential.getRedirect_uri()),
         clientCredential.getAccessType(),
         clientCredential.getAuthType(),
         clientCredential.getTokenType(),
@@ -111,7 +114,7 @@ public class ClientMapper {
     existingClient.setRedirect_uri(
         ObjectUtils.isEmpty(clientCredential.getRedirect_uri())
             ? null
-            : Joiner.on(" ").join(clientCredential.getRedirect_uri()));
+            : Mapper.writeObjectToString(clientCredential.getRedirect_uri()));
     existingClient.setAccessType(clientCredential.getAccessType());
     existingClient.setAuthType(clientCredential.getAuthType());
     existingClient.setTokenType(clientCredential.getTokenType());

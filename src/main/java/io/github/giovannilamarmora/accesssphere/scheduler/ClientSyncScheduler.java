@@ -12,14 +12,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import reactor.util.context.Context;
 
 @Logged
 @Service
@@ -37,34 +34,11 @@ public class ClientSyncScheduler {
 
   @Autowired private ClientService clientService;
 
-  // Utility method to set MDC from Reactor context
-  public static void setMDCFromContext(Context context) {
-    MDC.put(TRACE_ID_KEY, context.getOrDefault(TRACE_ID_KEY, ""));
-    MDC.put(SPAN_ID_KEY, context.getOrDefault(SPAN_ID_KEY, ""));
-    MDC.put(PARENT_ID_KEY, context.getOrDefault(PARENT_ID_KEY, ""));
-    MDC.put(ENV_KEY, context.getOrDefault(ENV_KEY, ""));
-  }
-
   // @Scheduled(initialDelay = 1000)
   @Scheduled(cron = "0 0 0 * * *")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncClients() {
-    MDCUtils.registerDefaultMDC(env).publishOn(Schedulers.parallel()).subscribe();
-    // .then(
-    //    Mono.deferContextual(
-    //        contextView -> {
-    //          setMDCFromContext((Context) contextView); // Set MDC from context
-    //          return Mono.empty();
-    //        }))
-    // .subscribeOn(Schedulers.parallel())
-    // .publishOn(Schedulers.parallel())
-    // .doOnEach(
-    //    signal -> {
-    //      if (signal.isOnNext() || signal.isOnError() || signal.isOnComplete()) {
-    //        setMDCFromContext((Context) signal.getContextView());
-    //      }
-    //    })
-    // .subscribe();
+    MDCUtils.registerDefaultMDC(env).subscribe();
 
     if (clientService.getIsStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler client sync with Strapi");

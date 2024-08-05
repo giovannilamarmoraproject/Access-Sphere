@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -31,7 +32,7 @@ public class ClientCredential extends GenericDTO {
   private String externalClientId;
   private String clientSecret;
   @LowerCase private List<String> scopes;
-  @LowerCase private List<String> redirect_uri;
+  @LowerCase private Map<String, String> redirect_uri;
   private AccessType accessType;
   private OAuthType authType;
   private TokenType tokenType;

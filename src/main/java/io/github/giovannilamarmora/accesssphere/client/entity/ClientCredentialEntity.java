@@ -38,7 +38,8 @@ public class ClientCredentialEntity extends GenericEntity {
   @Column(name = "SCOPES", columnDefinition = "TEXT")
   private String scopes;
 
-  @Column(name = "REDIRECT_URI")
+  @Lob
+  @Column(name = "REDIRECT_URI", columnDefinition = "TEXT")
   private String redirect_uri;
 
   @Enumerated(EnumType.STRING)
