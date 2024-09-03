@@ -9,7 +9,9 @@
         "publishedAt": "2024-05-11T18:10:52.276Z",
         "clientSecret": "secret",
         "scopes": "openid email profile https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/user.birthday.read https://www.googleapis.com/auth/user.phonenumbers.read https://www.googleapis.com/auth/user.addresses.read",
-        "redirectUri": "http://localhost/callback http://localhost/redirect",
+        "redirectUri": {
+          "redirect_uri": "http://localhost/redirect http://localhost/callback"
+        },
         "accessType": "ONLINE",
         "externalClientId": "client",
         "tokenType": "BEARER_JWE",
