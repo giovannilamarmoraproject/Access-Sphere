@@ -1,5 +1,7 @@
 env: ${APP_ENV} # Used for Google Cloud LOG
 spring:
+  thymeleaf:
+    prefix: classpath:/static/
   application:
     name: access-sphere
     starter-log: true # Show Started Application
