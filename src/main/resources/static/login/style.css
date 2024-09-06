@@ -94,9 +94,14 @@ margin-bottom: 10px;
   }
 }
 
-@media (max-width: 780px) {
+@media (max-width: 767px) {
+    .input-text {
+        margin-bottom: 10px;
+    }
 
     .input-groups {
+        margin-top: 10px;
+        margin-bottom: 10px;
         input {
           border: 1px solid #262936 !important;
           background-color: #262936;
@@ -150,10 +155,24 @@ margin-bottom: 10px;
   }
 
   #loginTitle, #forgotTitle, #resetTitle{
-  margin-top: 20px;
+    margin-top: 30px;
   }
 
   form {
     margin-top: 20px;
     }
+
+  .login-groups {
+      position: absolute;
+      right: 25px;
+      left: 25px;
+      bottom: 25px;
+  }
+
+  #title{
+    text-align:center;
+    font-size: 26px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
 }
