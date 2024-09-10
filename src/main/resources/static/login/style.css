@@ -116,6 +116,10 @@ body {
 }
 
 @media (max-width: 767px) {
+  .footer {
+    display: none;
+  }
+
   .input-text {
     margin-bottom: 10px;
   }
