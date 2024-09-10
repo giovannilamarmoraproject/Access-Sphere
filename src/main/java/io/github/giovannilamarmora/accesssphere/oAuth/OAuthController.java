@@ -71,6 +71,12 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.REGISTRATION_TOKEN,
               example = OpenAPI.Params.Example.REGISTRATION_TOKEN)
           String registration_token,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
       @RequestParam(value = "state", required = false)
           @Schema(
               description = OpenAPI.Params.Description.STATE,

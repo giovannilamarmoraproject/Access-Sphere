@@ -9,6 +9,7 @@ import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.GoogleAuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
+import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
@@ -55,6 +56,7 @@ public class OAuthService {
       String redirect_uri,
       String scope,
       String registration_token,
+      String bearer,
       String state) {
     LOG.info(
         "\uD83D\uDD10 Starting endpoint oAuth/2.0/authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
@@ -68,6 +70,32 @@ public class OAuthService {
     String finalRedirect_uri = Utils.decodeURLValue(redirect_uri);
     return clientCredentialMono.map(
         clientCredential -> {
+          if (!ObjectUtils.isEmpty(bearer)) {
+            try {
+              AccessTokenData accessTokenData =
+                  accessTokenService.getByAccessTokenOrIdToken(bearer);
+
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(),
+                      "Token is valid",
+                      TraceUtils.getSpanID(),
+                      accessTokenData);
+
+              return ResponseEntity.status(HttpStatus.OK).body(response);
+
+            } catch (TokenException e) {
+              LOG.warn("Token validation failed: {}", e.getMessage());
+
+              URI fallbackLocation =
+                  URI.create(clientCredential.getRedirect_uri().get("fallback_uri"));
+
+              return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
+                  .location(fallbackLocation)
+                  .build();
+            }
+          }
+
           OAuthValidator.validateClient(
               clientCredential, responseType, accessType, finalRedirect_uri, scope);
           URI location =

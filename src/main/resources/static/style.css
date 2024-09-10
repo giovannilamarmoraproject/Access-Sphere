@@ -1,5 +1,28 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
+.hidden-desktop {
+  visibility: hidden;
+}
+
+@media (max-width: 870px) {
+  .hidden-mobile {
+    visibility: hidden;
+  }
+
+  .hidden-desktop {
+    visibility: visible;
+  }
+}
+
+.ms-3 {
+  margin-left: 15px;
+}
+
+.login-btn {
+  position: absolute;
+  right: 25px;
+}
+
 .light {
   --mainColor: #64bcf4;
   --hoverColor: #5bacdf;

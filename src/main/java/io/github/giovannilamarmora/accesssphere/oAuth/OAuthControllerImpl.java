@@ -32,9 +32,10 @@ public class OAuthControllerImpl implements OAuthController {
       String redirectUri,
       String scope,
       String registration_token,
+      String bearer,
       String state) {
     return oAuthService.authorize(
-        responseType, accessType, clientId, redirectUri, scope, registration_token, state);
+        responseType, accessType, clientId, redirectUri, scope, registration_token, bearer, state);
   }
 
   @Override
