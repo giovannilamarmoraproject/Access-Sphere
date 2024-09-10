@@ -99,7 +99,7 @@ public class OAuthServiceTest {
     // Act
     Mono<ResponseEntity<?>> result =
         oAuthService.authorize(
-            responseType, accessType, clientId, redirectUri, scope, registrationToken, state);
+            responseType, accessType, clientId, redirectUri, scope, registrationToken, null, state);
 
     // Assert
     StepVerifier.create(result)
