@@ -68,7 +68,10 @@ public class GoogleAuthService {
               // TODO: Implementa mapper
               JsonNode strapi_token = null;
               try {
-                String tokenValue = user.getAttributes().get("strapi-token").toString();
+                String tokenValue =
+                    ObjectUtils.isEmpty(user.getAttributes())
+                        ? null
+                        : user.getAttributes().get("strapi-token").toString();
                 if (!ObjectUtils.isEmpty(tokenValue)) {
                   // Correggi la stringa JSON aggiungendo la chiusura }
                   String jsonString = "{\"access_token\":\"" + tokenValue + "\"}";
