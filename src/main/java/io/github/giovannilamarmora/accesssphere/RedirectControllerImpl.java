@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.*;
 
 @Logged
 @Controller
+@CrossOrigin("*")
 public class RedirectControllerImpl {
 
   @GetMapping("/login")
   public String login(Model model) {
-    model.addAttribute("client_id", "TEST");
     return "login/index";
   }
 }

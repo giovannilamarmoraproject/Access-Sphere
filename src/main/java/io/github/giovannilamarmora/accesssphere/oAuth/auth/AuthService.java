@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.config.Cookie;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -13,11 +14,13 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.net.URI;
 import java.util.Base64;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -38,7 +41,8 @@ public class AuthService {
       String basic,
       String redirect_uri,
       ClientCredential clientCredential,
-      ServerHttpRequest request) {
+      ServerHttpRequest request,
+      ServerHttpResponse serverHttpResponse) {
     LOG.debug("Decoding user using Base64 Decoder");
     String username;
     String password;
@@ -81,10 +85,32 @@ public class AuthService {
                           clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() : null,
                           includeUserInfo ? tokenResponse.getUserInfo() : null,
                           includeUserData ? tokenResponse.getUser() : null));
+
               LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
               if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
+              CookieManager.setCookieInResponse(
+                  Cookie.COOKIE_ACCESS_TOKEN.getCookie(),
+                  tokenResponse.getToken().getAccess_token(),
+                  serverHttpResponse);
+              CookieManager.setCookieInResponse(
+                  Cookie.COOKIE_STRAPI_TOKEN.getCookie(),
+                  tokenResponse.getStrapiToken().get("access_token").asText(),
+                  serverHttpResponse);
               return ResponseEntity.ok().location(URI.create(redirect_uri)).body(response);
             });
+  }
+
+  static void setCookieInResponseLocal(
+      String cookieName, String cookieValue, ServerHttpResponse response) {
+    ResponseCookie cookie =
+        ResponseCookie.from(cookieName, cookieValue)
+            .maxAge(360000L)
+            .sameSite("None")
+            .secure(true)
+            .httpOnly(false)
+            .path("/")
+            .build();
+    response.getHeaders().add("Set-Cookie", cookie.toString());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

@@ -45,4 +45,15 @@ public class OAuthTokenResponse {
     this.userInfo = userInfo;
     this.user = user;
   }
+
+  public OAuthTokenResponse(AuthToken token, JsonNode strapiToken, JWTData userInfo) {
+    this.token = token;
+    this.strapiToken = strapiToken;
+    this.userInfo = userInfo;
+  }
+
+  public OAuthTokenResponse(AuthToken token, JsonNode strapiToken) {
+    this.token = token;
+    this.strapiToken = strapiToken;
+  }
 }

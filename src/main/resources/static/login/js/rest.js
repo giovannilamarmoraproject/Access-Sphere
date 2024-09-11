@@ -64,25 +64,41 @@ document.addEventListener("DOMContentLoaded", function () {
       throw new Error(`Error on login, message is ${err.message}`);
     }
   };
-
-  function sweetalert(icon, title, message) {
-    const customClassSwal = Swal.mixin({
-      customClass: {
-        confirmButton: "rounded-pill buttonInput",
-        denyButton: "rounded-pill buttonInput",
-        popup: "border_round",
-      },
-      buttonsStyling: true,
-    });
-
-    return customClassSwal.fire({
-      icon: icon,
-      title: title,
-      text: message,
-      color: "#FFFFFF",
-      background: "rgba(56, 62, 66, 0.8)",
-      backdrop: "rgba(0, 0, 0, 0.5)",
-      showCancelButton: false,
-    });
-  }
 });
+
+function doGoogleLogin() {
+      const currentUrl = new URL(window.location.href);
+      const clientId = currentUrl.searchParams.get("client_id");
+      const redirectUri = currentUrl.searchParams.get("redirect_uri");
+
+      const url = new URL(window.location.origin + "/v1/oAuth/2.0/authorize");
+      url.searchParams.set("access_type", "online");
+      url.searchParams.set("scope", "openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
+      if (clientId) url.searchParams.set("client_id", clientId);
+      if (redirectUri) url.searchParams.set("redirect_uri", redirectUri);
+      url.searchParams.set("type", "google");
+      url.searchParams.set("response_type", "code");
+
+      window.location.href = url.toString();
+    }
+
+    function sweetalert(icon, title, message) {
+        const customClassSwal = Swal.mixin({
+          customClass: {
+            confirmButton: "rounded-pill buttonInput",
+            denyButton: "rounded-pill buttonInput",
+            popup: "border_round",
+          },
+          buttonsStyling: true,
+        });
+
+        return customClassSwal.fire({
+          icon: icon,
+          title: title,
+          text: message,
+          color: "#FFFFFF",
+          background: "rgba(56, 62, 66, 0.8)",
+          backdrop: "rgba(0, 0, 0, 0.5)",
+          showCancelButton: false,
+        });
+      }

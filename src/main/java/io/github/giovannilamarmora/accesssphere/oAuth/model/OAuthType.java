@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.model;
 
 public enum OAuthType {
+  ALL_TYPE("All-Type"),
   BEARER("Bearer"),
   GOOGLE("google");
 

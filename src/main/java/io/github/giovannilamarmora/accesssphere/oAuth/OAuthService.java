@@ -2,13 +2,14 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.config.AppConfig;
+import io.github.giovannilamarmora.accesssphere.config.Cookie;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.GoogleAuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
@@ -102,10 +103,12 @@ public class OAuthService {
               GrpcService.getGoogleOAuthLocation(
                   scope, finalRedirect_uri, accessType, clientCredential);
           HttpHeaders headers =
-              CookieManager.setCookieInResponse(AppConfig.COOKIE_REDIRECT_URI, finalRedirect_uri);
+              CookieManager.setCookieInResponse(
+                  Cookie.COOKIE_REDIRECT_URI.getCookie(), finalRedirect_uri);
           headers.addAll(
               !ObjectUtils.isEmpty(registration_token)
-                  ? CookieManager.setCookieInResponse(AppConfig.COOKIE_TOKEN, registration_token)
+                  ? CookieManager.setCookieInResponse(
+                      Cookie.COOKIE_TOKEN.getCookie(), registration_token)
                   : new HttpHeaders());
           LOG.info(
               "\uD83D\uDD10 Completed endpoint oAuth/2.0/authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
@@ -188,25 +191,31 @@ public class OAuthService {
     return clientCredentialMono
         .flatMap(
             clientCredential -> {
+              OAuthType authType =
+                  clientCredential.getAuthType().equals(OAuthType.ALL_TYPE)
+                          && !ObjectUtils.isEmpty(code)
+                      ? OAuthType.GOOGLE
+                      : clientCredential.getAuthType();
               // OAuthValidator.validateClientId(clientCredential, clientId);
-              switch (clientCredential.getAuthType()) {
+              switch (authType) {
                 case BEARER -> {
                   OAuthValidator.validateBasicAuth(
                       basic, grant_type, redirect_uri, clientCredential);
                   return authService.makeClassicLogin(
-                      basic, redirect_uri, clientCredential, request);
+                      basic, redirect_uri, clientCredential, request, response);
                 }
                 case GOOGLE -> {
                   LOG.info("Google oAuth 2.0 Login started");
                   String redirectUri = redirect_uri;
                   if (ObjectUtils.isEmpty(redirectUri))
-                    redirectUri = CookieManager.getCookie(AppConfig.COOKIE_REDIRECT_URI, request);
+                    redirectUri =
+                        CookieManager.getCookie(Cookie.COOKIE_REDIRECT_URI.getCookie(), request);
                   OAuthValidator.validateOAuthGoogle(
                       clientCredential, code, scope, redirectUri, grant_type);
                   GoogleModel googleModel =
                       GrpcService.authenticateOAuth(code, scope, redirectUri, clientCredential);
                   return googleAuthService
-                      .performGoogleLogin(googleModel, clientCredential, request)
+                      .performGoogleLogin(googleModel, clientCredential, request, response)
                       .doOnSuccess(
                           responseResponseEntity -> LOG.info("Google oAuth 2.0 Login ended"));
                 }
@@ -217,8 +226,8 @@ public class OAuthService {
             })
         .doOnSuccess(
             responseEntity -> {
-              CookieManager.deleteCookie(AppConfig.COOKIE_TOKEN, response);
-              CookieManager.deleteCookie(AppConfig.COOKIE_REDIRECT_URI, response);
+              CookieManager.deleteCookie(Cookie.COOKIE_TOKEN.getCookie(), response);
+              CookieManager.deleteCookie(Cookie.COOKIE_REDIRECT_URI.getCookie(), response);
               LOG.info(
                   "\uD83D\uDDDD\uFE0F Ending oAuth/2.0/token endpoint with client_id={}, grant_type={}",
                   clientId,

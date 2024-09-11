@@ -1,7 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.config.AppConfig;
+import io.github.giovannilamarmora.accesssphere.config.Cookie;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -18,6 +20,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.util.List;
 import org.slf4j.Logger;
@@ -41,7 +44,10 @@ public class GoogleAuthService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> performGoogleLogin(
-      GoogleModel googleModel, ClientCredential clientCredential, ServerHttpRequest request) {
+      GoogleModel googleModel,
+      ClientCredential clientCredential,
+      ServerHttpRequest request,
+      ServerHttpResponse serverHttpResponse) {
     boolean includeUserInfo =
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
@@ -58,14 +64,34 @@ public class GoogleAuthService {
               AuthToken token =
                   tokenService.generateToken(
                       googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
+
+              // TODO: Implementa mapper
+              JsonNode strapi_token = null;
+              try {
+                String tokenValue = user.getAttributes().get("strapi-token").toString();
+                if (!ObjectUtils.isEmpty(tokenValue)) {
+                  // Correggi la stringa JSON aggiungendo la chiusura }
+                  String jsonString = "{\"access_token\":\"" + tokenValue + "\"}";
+                  strapi_token = MapperUtils.mapper().build().readTree(jsonString);
+                }
+              } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+              }
+
               Response response =
                   new Response(
                       HttpStatus.OK.value(),
                       "Login successfully, welcome " + user.getUsername() + " !",
                       TraceUtils.getSpanID(),
                       includeUserInfo
-                          ? new OAuthTokenResponse(token, googleModel.getJwtData())
-                          : token);
+                          ? new OAuthTokenResponse(token, strapi_token, googleModel.getJwtData())
+                          : (ObjectUtils.isEmpty(strapi_token)
+                              ? token
+                              : new OAuthTokenResponse(token, strapi_token)));
+              CookieManager.setCookieInResponse(
+                  Cookie.COOKIE_ACCESS_TOKEN.getCookie(),
+                  token.getAccess_token(),
+                  serverHttpResponse);
               return ResponseEntity.ok(response);
             })
         .onErrorResume(
@@ -74,7 +100,7 @@ public class GoogleAuthService {
                   .getMessage()
                   .equalsIgnoreCase(ExceptionMap.ERR_STRAPI_404.getMessage())) {
                 String registration_token =
-                    CookieManager.getCookie(AppConfig.COOKIE_TOKEN, request);
+                    CookieManager.getCookie(Cookie.COOKIE_TOKEN.getCookie(), request);
                 if (ObjectUtils.isEmpty(registration_token)) {
                   LOG.error("Missing registration_token");
                   throw new OAuthException(
@@ -88,7 +114,8 @@ public class GoogleAuthService {
                       "Invalid registration_token, you cannot proceed!");
                 }
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
-                userGoogle.setPassword(CookieManager.getCookie(AppConfig.COOKIE_TOKEN, request));
+                userGoogle.setPassword(
+                    CookieManager.getCookie(Cookie.COOKIE_TOKEN.getCookie(), request));
                 return dataService
                     .registerUser(userGoogle, clientCredential)
                     .map(
