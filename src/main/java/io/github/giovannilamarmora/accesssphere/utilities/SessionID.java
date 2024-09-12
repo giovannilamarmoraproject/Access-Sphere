@@ -22,6 +22,7 @@ public class SessionID {
   private String sessionID;
 
   public static final String SESSION_COOKIE_NAME = "Session-ID";
+  public static final String SESSION_HEADER_NAME = "Session-Id";
   private static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   private static final Logger LOG = LoggerFilter.getLogger(SessionID.class);
@@ -79,6 +80,4 @@ public class SessionID {
     CookieManager.deleteCookie(SESSION_COOKIE_NAME, response);
     LOG.info("Session ID successfully invalidated");
   }
-
-  
 }

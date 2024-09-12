@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.config;
 import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionMessage;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
@@ -67,6 +68,8 @@ public class SessionIDFilter implements WebFilter {
     ServerHttpResponse response = exchange.getResponse();
 
     HttpCookie sessionCookie = request.getCookies().getFirst(SessionID.SESSION_COOKIE_NAME);
+    String sessionHeader = request.getHeaders().getFirst(SessionID.SESSION_HEADER_NAME);
+
     String session_id = null;
     if (isGenerateSessionURI(request)) {
       session_id = SessionID.builder().generate();
@@ -76,16 +79,21 @@ public class SessionIDFilter implements WebFilter {
       return chain.filter(exchange);
     } else if (ObjectUtils.isEmpty(sessionCookie)
         || ObjectUtils.isEmpty(sessionCookie.getValue())) {
-      LOG.error(
-          "Session ID not found for path [{}], with ip address [{}] and hostname [{}], needs login",
-          request.getPath().value(),
-          WebManager.getRealClientIP(request),
-          request.getHeaders().get("Referer"));
-      return ExceptionHandler.handleFilterException(
-          new UserException(ExceptionMap.ERR_OAUTH_401, "No Session ID Provided!"), exchange);
+      if (ObjectUtils.isEmpty(sessionHeader)) {
+        LOG.error(
+            "Session ID not found for path [{}], with hostname [{}], needs login",
+            request.getPath().value(),
+            request.getHeaders().get("Referer"));
+        return ExceptionHandler.handleFilterException(
+            new UserException(ExceptionMap.ERR_OAUTH_401, "No Session ID Provided!"), exchange);
+      } else
+        CookieManager.setCookieInResponse(SessionID.SESSION_COOKIE_NAME, sessionHeader, response);
     }
 
-    session_id = sessionCookie.getValue();
+    session_id =
+        ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())
+            ? sessionHeader
+            : sessionCookie.getValue();
 
     if (isBearerNotRequiredEndpoint(request)) {
       addSessionInContext(session_id);
@@ -94,9 +102,11 @@ public class SessionIDFilter implements WebFilter {
 
     String bearer = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     if (ObjectUtils.isEmpty(bearer)) {
-      LOG.error("Missing Authorization Header");
+      LOG.error(ExceptionMessage.AUTHORIZATION_HEADER.getMessage());
       return ExceptionHandler.handleFilterException(
-          new OAuthException(ExceptionMap.ERR_OAUTH_401, "Missing Authorization Header"), exchange);
+          new OAuthException(
+              ExceptionMap.ERR_OAUTH_401, ExceptionMessage.AUTHORIZATION_HEADER.getMessage()),
+          exchange);
     }
 
     AccessTokenData accessTokenDB = new AccessTokenData();
@@ -112,7 +122,7 @@ public class SessionIDFilter implements WebFilter {
         || ObjectUtils.isEmpty(accessTokenDB.getSessionId())
         || !accessTokenDB.getSessionId().equalsIgnoreCase(session_id)) {
       LOG.error(
-          "Invalid session_id, should be {} instead to {}",
+          ExceptionMessage.SESSION_SHOULD_BE.getMessage(),
           ObjectUtils.isEmpty(accessTokenDB) ? null : accessTokenDB.getSessionId(),
           session_id);
       return ExceptionHandler.handleFilterException(
@@ -135,9 +145,11 @@ public class SessionIDFilter implements WebFilter {
 
     String bearer = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     if (ObjectUtils.isEmpty(bearer)) {
-      LOG.error("Missing Authorization Header");
+      LOG.error(ExceptionMessage.AUTHORIZATION_HEADER.getMessage());
       return ExceptionHandler.handleFilterException(
-          new OAuthException(ExceptionMap.ERR_OAUTH_401, "Missing Authorization Header"), exchange);
+          new OAuthException(
+              ExceptionMap.ERR_OAUTH_401, ExceptionMessage.AUTHORIZATION_HEADER.getMessage()),
+          exchange);
     }
 
     AccessTokenData accessTokenDB = new AccessTokenData();
@@ -147,7 +159,7 @@ public class SessionIDFilter implements WebFilter {
           || ObjectUtils.isEmpty(accessTokenDB.getSessionId())
           || !accessTokenDB.getSessionId().equalsIgnoreCase(session_id)) {
         LOG.error(
-            "Invalid session_id, should be {} instead to {}",
+            ExceptionMessage.SESSION_SHOULD_BE.getMessage(),
             ObjectUtils.isEmpty(accessTokenDB) ? null : accessTokenDB.getSessionId(),
             session_id);
         return ExceptionHandler.handleFilterException(
@@ -177,8 +189,14 @@ public class SessionIDFilter implements WebFilter {
 
   private boolean isBearerNotRequiredEndpoint(ServerHttpRequest req) {
     String path = req.getPath().value();
-    return bearerNotFilterURI.stream()
-        .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
+    String codeParam = req.getQueryParams().getFirst("code");
+
+    boolean isTokenPathWithCode =
+        PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path) && codeParam != null;
+
+    return isTokenPathWithCode
+        || bearerNotFilterURI.stream()
+            .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
   }
 
   private boolean isConfiguredGenerateSessionURI(String path) {
