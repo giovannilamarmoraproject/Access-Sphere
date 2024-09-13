@@ -19,6 +19,7 @@ services:
       - GCLOUD_PROJECT=${GCLOUD_PROJECT}
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - CACHE_ENABLE=${CACHE_ENABLE}
+      - COOKIE_DOMAIN=${COOKIE_DOMAIN}
     deploy:
       replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
       #update_config:

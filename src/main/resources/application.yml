@@ -1,4 +1,5 @@
 env: Local
+cookie-domain: localhost
 spring:
   thymeleaf:
     prefix: classpath:/static/

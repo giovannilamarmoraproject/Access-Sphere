@@ -24,6 +24,7 @@ import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -36,6 +37,9 @@ import reactor.core.publisher.Mono;
 public class GoogleAuthService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+
+  @Value("cookie-domain")
+  private String cookieDomain;
 
   @Autowired private TokenService tokenService;
   @Autowired private DataService dataService;
@@ -87,6 +91,7 @@ public class GoogleAuthService {
               CookieManager.setCookieInResponse(
                   Cookie.COOKIE_ACCESS_TOKEN.getCookie(),
                   token.getAccess_token(),
+                  cookieDomain,
                   serverHttpResponse);
               return ResponseEntity.ok(response);
             })

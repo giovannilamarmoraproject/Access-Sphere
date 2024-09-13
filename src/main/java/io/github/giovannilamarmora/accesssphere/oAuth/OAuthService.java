@@ -26,6 +26,7 @@ import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,9 @@ import reactor.core.publisher.Mono;
 public class OAuthService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+
+  @Value("cookie-domain")
+  private String cookieDomain;
 
   @Autowired private ClientService clientService;
   @Autowired private AuthService authService;
@@ -104,11 +108,11 @@ public class OAuthService {
                   scope, finalRedirect_uri, accessType, clientCredential);
           HttpHeaders headers =
               CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_REDIRECT_URI.getCookie(), finalRedirect_uri);
+                  Cookie.COOKIE_REDIRECT_URI.getCookie(), finalRedirect_uri, cookieDomain);
           headers.addAll(
               !ObjectUtils.isEmpty(registration_token)
                   ? CookieManager.setCookieInResponse(
-                      Cookie.COOKIE_TOKEN.getCookie(), registration_token)
+                      Cookie.COOKIE_TOKEN.getCookie(), registration_token, cookieDomain)
                   : new HttpHeaders());
           LOG.info(
               "\uD83D\uDD10 Completed endpoint oAuth/2.0/authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",

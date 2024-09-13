@@ -19,6 +19,7 @@ import java.net.URI;
 import java.util.Base64;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,9 @@ import reactor.core.publisher.Mono;
 public class AuthService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+
+  @Value("cookie-domain")
+  private String cookieDomain;
 
   @Autowired private TokenService tokenService;
   @Autowired private DataService dataService;
@@ -91,10 +95,12 @@ public class AuthService {
               CookieManager.setCookieInResponse(
                   Cookie.COOKIE_ACCESS_TOKEN.getCookie(),
                   tokenResponse.getToken().getAccess_token(),
+                  cookieDomain,
                   serverHttpResponse);
               CookieManager.setCookieInResponse(
                   Cookie.COOKIE_STRAPI_TOKEN.getCookie(),
                   tokenResponse.getStrapiToken().get("access_token").asText(),
+                  cookieDomain,
                   serverHttpResponse);
               return ResponseEntity.ok().location(URI.create(redirect_uri)).body(response);
             });

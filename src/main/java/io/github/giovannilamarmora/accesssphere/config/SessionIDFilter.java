@@ -52,6 +52,9 @@ public class SessionIDFilter implements WebFilter {
   @Value(value = "${filter.session-id.bearerNotFilter}")
   private List<String> bearerNotFilterURI;
 
+  @Value("cookie-domain")
+  private String cookieDomain;
+
   private final SessionID sessionID;
   @Autowired private AccessTokenData accessTokenData;
 
@@ -74,7 +77,8 @@ public class SessionIDFilter implements WebFilter {
     if (isGenerateSessionURI(request)) {
       session_id = SessionID.builder().generate();
       LOG.info("Generating new session ID: {}", session_id);
-      response.addCookie(CookieManager.setCookie(SessionID.SESSION_COOKIE_NAME, session_id));
+      response.addCookie(
+          CookieManager.setCookie(SessionID.SESSION_COOKIE_NAME, session_id, cookieDomain));
       addSessionInContext(session_id);
       return chain.filter(exchange);
     } else if (ObjectUtils.isEmpty(sessionCookie)
@@ -87,7 +91,8 @@ public class SessionIDFilter implements WebFilter {
         return ExceptionHandler.handleFilterException(
             new UserException(ExceptionMap.ERR_OAUTH_401, "No Session ID Provided!"), exchange);
       } else
-        CookieManager.setCookieInResponse(SessionID.SESSION_COOKIE_NAME, sessionHeader, response);
+        CookieManager.setCookieInResponse(
+            SessionID.SESSION_COOKIE_NAME, sessionHeader, cookieDomain, response);
     }
 
     session_id =
