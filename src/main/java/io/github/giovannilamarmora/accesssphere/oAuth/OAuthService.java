@@ -44,7 +44,7 @@ public class OAuthService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Value("cookie-domain")
+  @Value("${cookie-domain}")
   private String cookieDomain;
 
   @Autowired private ClientService clientService;

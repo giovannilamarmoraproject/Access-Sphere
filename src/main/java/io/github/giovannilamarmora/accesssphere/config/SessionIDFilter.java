@@ -52,7 +52,7 @@ public class SessionIDFilter implements WebFilter {
   @Value(value = "${filter.session-id.bearerNotFilter}")
   private List<String> bearerNotFilterURI;
 
-  @Value("cookie-domain")
+  @Value("${cookie-domain}")
   private String cookieDomain;
 
   private final SessionID sessionID;

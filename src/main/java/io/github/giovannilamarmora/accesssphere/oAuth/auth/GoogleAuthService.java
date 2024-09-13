@@ -38,7 +38,7 @@ public class GoogleAuthService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Value("cookie-domain")
+  @Value("${cookie-domain}")
   private String cookieDomain;
 
   @Autowired private TokenService tokenService;
