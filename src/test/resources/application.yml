@@ -1,4 +1,5 @@
 env: "Test" # Used for Google Cloud LOG
+cookie-domain: localhost
 spring:
   application:
     name: access-sphere
