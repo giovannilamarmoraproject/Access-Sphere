@@ -40,7 +40,6 @@ public class User extends GenericDTO {
   @LowerCase
   private String username;
 
-  // TODO: Capire se password è un campo required
   private String password;
 
   private List<String> roles;

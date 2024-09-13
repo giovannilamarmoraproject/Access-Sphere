@@ -1,6 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.config.Cookie;
@@ -20,7 +19,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
-import io.github.giovannilamarmora.utils.utilities.MapperUtils;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.util.List;
 import org.slf4j.Logger;
@@ -65,20 +64,14 @@ public class GoogleAuthService {
                   tokenService.generateToken(
                       googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
 
-              // TODO: Implementa mapper
               JsonNode strapi_token = null;
-              try {
-                String tokenValue =
-                    ObjectUtils.isEmpty(user.getAttributes())
-                        ? null
-                        : user.getAttributes().get("strapi-token").toString();
-                if (!ObjectUtils.isEmpty(tokenValue)) {
-                  // Correggi la stringa JSON aggiungendo la chiusura }
-                  String jsonString = "{\"access_token\":\"" + tokenValue + "\"}";
-                  strapi_token = MapperUtils.mapper().build().readTree(jsonString);
-                }
-              } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+              String tokenValue =
+                  ObjectUtils.isEmpty(user.getAttributes())
+                      ? null
+                      : user.getAttributes().get("strapi-token").toString();
+              if (!ObjectUtils.isEmpty(tokenValue)) {
+                String jsonString = "{\"access_token\":\"" + tokenValue + "\"}";
+                strapi_token = Mapper.readTree(jsonString);
               }
 
               Response response =

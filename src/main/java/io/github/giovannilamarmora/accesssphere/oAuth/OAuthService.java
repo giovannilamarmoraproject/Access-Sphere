@@ -195,7 +195,10 @@ public class OAuthService {
                   clientCredential.getAuthType().equals(OAuthType.ALL_TYPE)
                           && !ObjectUtils.isEmpty(code)
                       ? OAuthType.GOOGLE
-                      : clientCredential.getAuthType();
+                      : (clientCredential.getAuthType().equals(OAuthType.ALL_TYPE)
+                              && grant_type.equalsIgnoreCase(GrantType.PASSWORD.type())
+                          ? OAuthType.BEARER
+                          : clientCredential.getAuthType());
               // OAuthValidator.validateClientId(clientCredential, clientId);
               switch (authType) {
                 case BEARER -> {
