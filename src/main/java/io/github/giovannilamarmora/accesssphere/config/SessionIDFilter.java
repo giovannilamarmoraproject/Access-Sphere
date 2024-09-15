@@ -9,7 +9,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
+import io.github.giovannilamarmora.accesssphere.utilities.*;
 import io.github.giovannilamarmora.utils.logger.MDCUtils;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import io.github.giovannilamarmora.utils.web.WebManager;
@@ -21,7 +21,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -70,37 +69,37 @@ public class SessionIDFilter implements WebFilter {
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
-    HttpCookie sessionCookie = request.getCookies().getFirst(SessionID.SESSION_COOKIE_NAME);
-    String sessionHeader = request.getHeaders().getFirst(SessionID.SESSION_HEADER_NAME);
+    // HttpCookie sessionCookie = request.getCookies().getFirst(Cookie.COOKIE_SESSION_ID);
+    // String sessionHeader = request.getHeaders().getFirst(ExposedHeaders.SESSION_ID);
 
-    String session_id = null;
-    if (isGenerateSessionURI(request)) {
+    String session_id = RequestManager.getCookieOrHeaderData(Cookie.COOKIE_SESSION_ID, request);
+
+    if (isGenerateSessionURI(request) || isAuthorizeCheckWithBearerNull(request)) {
       session_id = SessionID.builder().generate();
       LOG.info("Generating new session ID: {}", session_id);
-      response.addCookie(
-          CookieManager.setCookie(SessionID.SESSION_COOKIE_NAME, session_id, cookieDomain));
+      setSessionIDInResponse(session_id, response);
       addSessionInContext(session_id);
       return chain.filter(exchange);
-    } else if (ObjectUtils.isEmpty(sessionCookie)
-        || ObjectUtils.isEmpty(sessionCookie.getValue())) {
-      if (ObjectUtils.isEmpty(sessionHeader)) {
-        LOG.error(
-            "Session ID not found for path [{}], with hostname [{}], needs login",
-            request.getPath().value(),
-            request.getHeaders().get("Referer"));
-        return ExceptionHandler.handleFilterException(
-            new UserException(ExceptionMap.ERR_OAUTH_401, "No Session ID Provided!"), exchange);
-      } else
-        CookieManager.setCookieInResponse(
-            SessionID.SESSION_COOKIE_NAME, sessionHeader, cookieDomain, response);
+    } else if (ObjectUtils.isEmpty(session_id)) {
+      // else if (ObjectUtils.isEmpty(sessionCookie)
+      //    || ObjectUtils.isEmpty(sessionCookie.getValue())) {
+      // if (ObjectUtils.isEmpty(sessionHeader)) {
+      LOG.error(
+          "Session ID not found for path [{}], with hostname [{}], needs login",
+          request.getPath().value(),
+          request.getHeaders().get("Referer"));
+      return ExceptionHandler.handleFilterException(
+          new UserException(ExceptionMap.ERR_OAUTH_401, "No Session ID Provided!"), exchange);
+      // } else setSessionIDInResponse(session_id, response);
     }
 
-    session_id =
-        ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())
-            ? sessionHeader
-            : sessionCookie.getValue();
+    // session_id =
+    //    ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())
+    //        ? sessionHeader
+    //        : sessionCookie.getValue();
 
-    if (isBearerNotRequiredEndpoint(request)) {
+    if (isBearerNotRequiredEndpoint(request) || isAuthorizeCheckWithBearer(request)) {
+      setSessionIDInResponse(session_id, response);
       addSessionInContext(session_id);
       return chain.filter(exchange);
     }
@@ -134,6 +133,7 @@ public class SessionIDFilter implements WebFilter {
           new OAuthException(ExceptionMap.ERR_OAUTH_403, "Invalid Session ID Provided!"), exchange);
     }
     addSessionInContext(session_id);
+    setSessionIDInResponse(session_id, response);
     BeanUtils.copyProperties(accessTokenDB, accessTokenData);
     return chain.filter(exchange);
   }
@@ -142,11 +142,15 @@ public class SessionIDFilter implements WebFilter {
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
-    HttpCookie sessionCookie = request.getCookies().getFirst(SessionID.SESSION_COOKIE_NAME);
-    String session_id = null;
-    if (ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())) {
+    // HttpCookie sessionCookie = request.getCookies().getFirst(Cookie.COOKIE_SESSION_ID);
+    String session_id = RequestManager.getCookieOrHeaderData(Cookie.COOKIE_SESSION_ID, request);
+    // if (ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())) {
+    //  LOG.warn("Session ID not found, already logged out");
+    // } else session_id = sessionCookie.getValue();
+
+    if (ObjectUtils.isEmpty(session_id)) {
       LOG.warn("Session ID not found, already logged out");
-    } else session_id = sessionCookie.getValue();
+    }
 
     String bearer = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     if (ObjectUtils.isEmpty(bearer)) {
@@ -172,6 +176,7 @@ public class SessionIDFilter implements WebFilter {
             exchange);
       }
       addSessionInContext(session_id);
+      setSessionIDInResponse(session_id, response);
     } catch (TokenException e) {
       LOG.warn("Access Token not found, already logged out");
     }
@@ -181,7 +186,7 @@ public class SessionIDFilter implements WebFilter {
 
   private boolean isGenerateSessionURI(ServerHttpRequest req) {
     String path = req.getPath().value();
-    return isTokenEndpointWithPasswordGrant(req, path) || isConfiguredGenerateSessionURI(path);
+    return isTokenEndpointWithPasswordGrant(req, path) || isConfiguredGenerateSessionURI(req, path);
   }
 
   private boolean isTokenEndpointWithPasswordGrant(ServerHttpRequest req, String path) {
@@ -204,9 +209,26 @@ public class SessionIDFilter implements WebFilter {
             .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
   }
 
-  private boolean isConfiguredGenerateSessionURI(String path) {
+  private boolean isConfiguredGenerateSessionURI(ServerHttpRequest req, String path) {
     return generateSessionURI.stream()
-        .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
+            .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path))
+        // TODO: Se è un authorize senza header authorization crea un nuovo session id, da
+        // controllare per la register
+        && !req.getHeaders().containsKey("Authorization");
+  }
+
+  private boolean isAuthorizeCheckWithBearerNull(ServerHttpRequest request) {
+    String auth = request.getHeaders().getFirst("Authorization");
+
+    boolean isNull = ObjectUtils.isEmpty(auth) || auth.equalsIgnoreCase("null");
+    return (request.getPath().value().equalsIgnoreCase("/v1/oAuth/2.0/authorize")
+        && request.getHeaders().containsKey("Authorization")
+        && isNull);
+  }
+
+  private boolean isAuthorizeCheckWithBearer(ServerHttpRequest request) {
+    return (request.getPath().value().equalsIgnoreCase("/v1/oAuth/2.0/authorize")
+        && request.getHeaders().containsKey("Authorization"));
   }
 
   private void addSessionInContext(String session_id) {
@@ -218,5 +240,10 @@ public class SessionIDFilter implements WebFilter {
   private boolean isLogout(ServerHttpRequest request) {
     String path = request.getPath().value();
     return PatternMatchUtils.simpleMatch(logoutURI, path);
+  }
+
+  private void setSessionIDInResponse(String sessionId, ServerHttpResponse response) {
+    CookieManager.setCookieInResponse(Cookie.COOKIE_SESSION_ID, sessionId, cookieDomain, response);
+    HeaderManager.addHeaderInResponse(ExposedHeaders.SESSION_ID, sessionId, response);
   }
 }

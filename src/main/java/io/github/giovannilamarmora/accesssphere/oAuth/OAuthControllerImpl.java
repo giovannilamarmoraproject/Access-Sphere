@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
+import io.github.giovannilamarmora.accesssphere.utilities.ExposedHeaders;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -18,7 +19,19 @@ import reactor.core.publisher.Mono;
 @Validated
 @RestController
 @RequestMapping("/v1/oAuth/2.0")
-@CrossOrigin("*")
+@CrossOrigin(
+    origins = "*",
+    allowedHeaders = "*",
+    exposedHeaders = {
+      ExposedHeaders.LOCATION,
+      ExposedHeaders.SESSION_ID,
+      ExposedHeaders.AUTHORIZATION,
+      ExposedHeaders.TRACE_ID,
+      ExposedHeaders.SPAN_ID,
+      ExposedHeaders.PARENT_ID,
+      ExposedHeaders.REDIRECT_URI,
+      ExposedHeaders.REGISTRATION_TOKEN
+    })
 @Tag(name = OpenAPI.Tag.OAUTH, description = OpenAPI.Description.OAUTH)
 public class OAuthControllerImpl implements OAuthController {
 
@@ -34,9 +47,18 @@ public class OAuthControllerImpl implements OAuthController {
       String scope,
       String registration_token,
       String bearer,
-      String state) {
+      String state,
+      ServerHttpResponse serverHttpResponse) {
     return oAuthService.authorize(
-        responseType, accessType, clientId, redirectUri, scope, registration_token, bearer, state);
+        responseType,
+        accessType,
+        clientId,
+        redirectUri,
+        scope,
+        registration_token,
+        bearer,
+        state,
+        serverHttpResponse);
   }
 
   @Override

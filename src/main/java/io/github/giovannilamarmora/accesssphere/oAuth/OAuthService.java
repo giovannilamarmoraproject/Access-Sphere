@@ -2,17 +2,20 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.config.Cookie;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.GoogleAuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
+import io.github.giovannilamarmora.accesssphere.utilities.RequestManager;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -27,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -62,7 +64,8 @@ public class OAuthService {
       String scope,
       String registration_token,
       String bearer,
-      String state) {
+      String state,
+      ServerHttpResponse serverHttpResponse) {
     LOG.info(
         "\uD83D\uDD10 Starting endpoint oAuth/2.0/authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
         clientId,
@@ -79,13 +82,16 @@ public class OAuthService {
             try {
               AccessTokenData accessTokenData =
                   accessTokenService.getByAccessTokenOrIdToken(bearer);
+              AuthToken token = new AuthToken();
+              token.setAccess_token(
+                  bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
 
               Response response =
                   new Response(
                       HttpStatus.OK.value(),
                       "Token is valid",
                       TraceUtils.getSpanID(),
-                      accessTokenData);
+                      new OAuthTokenResponse(token, accessTokenData.getPayload()));
 
               return ResponseEntity.status(HttpStatus.OK).body(response);
 
@@ -106,24 +112,17 @@ public class OAuthService {
           URI location =
               GrpcService.getGoogleOAuthLocation(
                   scope, finalRedirect_uri, accessType, clientCredential);
-          HttpHeaders headers =
-              CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_REDIRECT_URI.getCookie(), finalRedirect_uri, cookieDomain);
-          headers.addAll(
-              !ObjectUtils.isEmpty(registration_token)
-                  ? CookieManager.setCookieInResponse(
-                      Cookie.COOKIE_TOKEN.getCookie(), registration_token, cookieDomain)
-                  : new HttpHeaders());
+          CookieManager.setCookieInResponse(
+              Cookie.COOKIE_REDIRECT_URI, finalRedirect_uri, cookieDomain, serverHttpResponse);
+          CookieManager.setCookieInResponse(
+              Cookie.COOKIE_TOKEN, registration_token, cookieDomain, serverHttpResponse);
           LOG.info(
               "\uD83D\uDD10 Completed endpoint oAuth/2.0/authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
               clientId,
               accessType,
               responseType,
               registration_token);
-          return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-              .location(location)
-              .headers(headers)
-              .build();
+          return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT).location(location).build();
         });
   }
 
@@ -215,8 +214,9 @@ public class OAuthService {
                   LOG.info("Google oAuth 2.0 Login started");
                   String redirectUri = redirect_uri;
                   if (ObjectUtils.isEmpty(redirectUri))
+                    // redirectUri = CookieManager.getCookie(Cookie.COOKIE_REDIRECT_URI, request);
                     redirectUri =
-                        CookieManager.getCookie(Cookie.COOKIE_REDIRECT_URI.getCookie(), request);
+                        RequestManager.getCookieOrHeaderData(Cookie.COOKIE_REDIRECT_URI, request);
                   OAuthValidator.validateOAuthGoogle(
                       clientCredential, code, scope, redirectUri, grant_type);
                   GoogleModel googleModel =
@@ -233,8 +233,8 @@ public class OAuthService {
             })
         .doOnSuccess(
             responseEntity -> {
-              CookieManager.deleteCookie(Cookie.COOKIE_TOKEN.getCookie(), response);
-              CookieManager.deleteCookie(Cookie.COOKIE_REDIRECT_URI.getCookie(), response);
+              CookieManager.deleteCookie(Cookie.COOKIE_TOKEN, response);
+              CookieManager.deleteCookie(Cookie.COOKIE_REDIRECT_URI, response);
               LOG.info(
                   "\uD83D\uDDDD\uFE0F Ending oAuth/2.0/token endpoint with client_id={}, grant_type={}",
                   clientId,

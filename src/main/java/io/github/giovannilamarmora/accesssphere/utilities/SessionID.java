@@ -21,8 +21,6 @@ public class SessionID {
 
   private String sessionID;
 
-  public static final String SESSION_COOKIE_NAME = "Session-ID";
-  public static final String SESSION_HEADER_NAME = "Session-Id";
   private static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   private static final Logger LOG = LoggerFilter.getLogger(SessionID.class);
@@ -77,7 +75,7 @@ public class SessionID {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public static void invalidateSessionID(ServerHttpResponse response) {
-    CookieManager.deleteCookie(SESSION_COOKIE_NAME, response);
+    CookieManager.deleteCookie(Cookie.COOKIE_SESSION_ID, response);
     LOG.info("Session ID successfully invalidated");
   }
 }

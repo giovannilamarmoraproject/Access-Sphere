@@ -5,6 +5,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
@@ -27,10 +28,12 @@ public class UserValidator {
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateAuthType(
       ClientCredential clientCredential, AccessTokenData accessTokenData) {
-    if (!clientCredential.getAuthType().equals(accessTokenData.getType())) {
-      LOG.error("Invalid Authentication Type on client");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
-    }
+    if (!clientCredential.getAuthType().equals(OAuthType.ALL_TYPE))
+      if (!clientCredential.getAuthType().equals(accessTokenData.getType())) {
+        LOG.error("Invalid Authentication Type on client");
+        throw new OAuthException(
+            ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)

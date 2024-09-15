@@ -96,10 +96,21 @@ public class OAuthServiceTest {
                 any(), anyString(), anyString(), anyString(), anyString()))
         .thenReturn(redirectUri);
 
+    ServerWebExchange exchange =
+        MockServerWebExchange.from(MockServerHttpRequest.get("/authorize").build());
+
     // Act
     Mono<ResponseEntity<?>> result =
         oAuthService.authorize(
-            responseType, accessType, clientId, redirectUri, scope, registrationToken, null, state);
+            responseType,
+            accessType,
+            clientId,
+            redirectUri,
+            scope,
+            registrationToken,
+            null,
+            state,
+            exchange.getResponse());
 
     // Assert
     StepVerifier.create(result)

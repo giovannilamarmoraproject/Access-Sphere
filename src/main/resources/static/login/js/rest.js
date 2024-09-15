@@ -32,12 +32,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (responseData.error != null)
         return sweetalert("error", responseData.error.status, responseData.error.message);
       else {
-        localStorage.setItem(
-          "strapi-token",
-          responseData.data.strapiToken.access_token
-        );
         const redirect_uri = data.headers.get("location");
-        if (redirect_uri != null) window.location.href = redirect_uri;
+        if (redirect_uri != null) window.location.href = redirect_uri + "?access-token=" + responseData.data.token.access_token + "&session-id=" + data.headers.get("Session-ID");
       }
     });
   }

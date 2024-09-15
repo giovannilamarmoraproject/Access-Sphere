@@ -1,13 +1,13 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.config.Cookie;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -93,12 +93,12 @@ public class AuthService {
               LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
               if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
               CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_ACCESS_TOKEN.getCookie(),
+                  Cookie.COOKIE_ACCESS_TOKEN,
                   tokenResponse.getToken().getAccess_token(),
                   cookieDomain,
                   serverHttpResponse);
               CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_STRAPI_TOKEN.getCookie(),
+                  Cookie.COOKIE_STRAPI_TOKEN,
                   tokenResponse.getStrapiToken().get("access_token").asText(),
                   cookieDomain,
                   serverHttpResponse);

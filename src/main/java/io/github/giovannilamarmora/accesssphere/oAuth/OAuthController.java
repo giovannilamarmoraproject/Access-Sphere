@@ -81,7 +81,8 @@ public interface OAuthController {
           @Schema(
               description = OpenAPI.Params.Description.STATE,
               example = OpenAPI.Params.Example.STATE)
-          String state);
+          String state,
+      ServerHttpResponse serverHttpResponse);
 
   @GetMapping(value = "/login/{client_id}", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
