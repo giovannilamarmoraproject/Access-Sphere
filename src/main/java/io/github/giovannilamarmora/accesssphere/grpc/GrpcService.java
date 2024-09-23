@@ -6,6 +6,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleGrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
+import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -65,7 +66,7 @@ public class GrpcService {
               clientCredential.getExternalClientId());
       LOG.debug("Obtained user is {}", Utils.mapper().writeValueAsString(userInfo));
       return new GoogleModel(
-          googleTokenResponse,
+          GoogleTokenResponse.setTokenResponse(googleTokenResponse),
           userInfo,
           GrpcMapper.fromGoogleDataToJWTData(userInfo, clientCredential));
     } catch (IOException | GeneralSecurityException e) {
@@ -110,7 +111,7 @@ public class GrpcService {
               clientCredential.getExternalClientId());
       LOG.debug("Obtained user is {}", Utils.mapper().writeValueAsString(userInfo));
       return new GoogleModel(
-          googleTokenResponse,
+          GoogleTokenResponse.setTokenResponse(googleTokenResponse),
           userInfo,
           GrpcMapper.fromGoogleDataToJWTData(userInfo, clientCredential));
     } catch (IOException | GeneralSecurityException e) {

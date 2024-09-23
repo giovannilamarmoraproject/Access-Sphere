@@ -148,6 +148,8 @@ public class OAuthServiceTest {
 
     TokenResponse tokenResponse = new TokenResponse();
     tokenResponse.set("id_token", "token");
+    tokenResponse.set("access_token", "token");
+    tokenResponse.set("token_type", "Bearer");
     Mockito.when(
             GoogleGrpcService.getTokenResponse(
                 anyString(), anyString(), anyString(), any(), anyString(), anyString()))
@@ -220,6 +222,8 @@ public class OAuthServiceTest {
 
     TokenResponse tokenResponse = new TokenResponse();
     tokenResponse.set("id_token", "token");
+    tokenResponse.set("access_token", "token");
+    tokenResponse.set("token_type", "Bearer");
     Mockito.when(
             GoogleGrpcService.getTokenResponse(
                 anyString(), anyString(), anyString(), any(), anyString(), anyString()))
@@ -577,6 +581,8 @@ public class OAuthServiceTest {
 
     TokenResponse tokenResponse = new TokenResponse();
     tokenResponse.set("id_token", "token");
+    tokenResponse.set("access_token", "token");
+    tokenResponse.set("token_type", "Bearer");
     Mockito.when(GoogleGrpcService.refreshGoogleOAuthToken(anyString(), anyString(), anyString()))
         .thenReturn(tokenResponse);
 
@@ -676,6 +682,8 @@ public class OAuthServiceTest {
 
     TokenResponse tokenResponse = new TokenResponse();
     tokenResponse.set("id_token", "token");
+    tokenResponse.set("access_token", "token");
+    tokenResponse.set("token_type", "Bearer");
     Mockito.when(GoogleGrpcService.refreshGoogleOAuthToken(anyString(), anyString(), anyString()))
         .thenReturn(tokenResponse);
 
@@ -748,6 +756,7 @@ public class OAuthServiceTest {
     when(accessTokenData.getClientId()).thenReturn(accessToken.getClientId());
     when(accessTokenData.getIdentifier()).thenReturn(accessToken.getIdentifier());
     when(accessTokenData.getPayload()).thenReturn(accessToken.getPayload());
+    when(accessTokenData.getType()).thenReturn(accessToken.getType());
 
     Mockito.doNothing().when(accessTokenService).revokeTokenByIdentifier(anyString());
 
@@ -806,6 +815,7 @@ public class OAuthServiceTest {
     when(accessTokenData.getClientId()).thenReturn(accessToken.getClientId());
     when(accessTokenData.getIdentifier()).thenReturn(accessToken.getIdentifier());
     when(accessTokenData.getPayload()).thenReturn(accessToken.getPayload());
+    when(accessTokenData.getType()).thenReturn(accessToken.getType());
 
     Mockito.doNothing().when(accessTokenService).revokeTokenByIdentifier(anyString());
 

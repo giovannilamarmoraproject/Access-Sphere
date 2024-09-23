@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -99,7 +100,10 @@ public class AuthService {
                   serverHttpResponse);
               CookieManager.setCookieInResponse(
                   Cookie.COOKIE_STRAPI_TOKEN,
-                  tokenResponse.getStrapiToken().get("access_token").asText(),
+                  tokenResponse
+                      .getStrapiToken()
+                      .get(TokenData.STRAPI_ACCESS_TOKEN.getToken())
+                      .asText(),
                   cookieDomain,
                   serverHttpResponse);
               return ResponseEntity.ok().location(URI.create(redirect_uri)).body(response);

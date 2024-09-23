@@ -1,9 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
 import io.github.giovannilamarmora.accesssphere.utilities.ExposedHeaders;
-import io.github.giovannilamarmora.accesssphere.utilities.HeaderManager;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.web.HeaderManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class RedirectFilter implements WebFilter {
           ExposedHeaders.REGISTRATION_TOKEN,
           request.getQueryParams().getFirst("registration_token"),
           exchange.getResponse());
-      LOG.info("Filtering Redirect for path {}", exchange.getRequest().getPath());
+      // LOG.info("Filtering Redirect for path {}", exchange.getRequest().getPath());
     }
     return chain.filter(exchange);
   }

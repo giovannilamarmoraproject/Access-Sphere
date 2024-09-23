@@ -12,6 +12,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -64,9 +65,6 @@ public class GoogleAuthService {
               googleModel.getJwtData().setIdentifier(user.getIdentifier());
               googleModel.getJwtData().setRoles(user.getRoles());
               googleModel.getJwtData().setSub(user.getUsername());
-              AuthToken token =
-                  tokenService.generateToken(
-                      googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
 
               JsonNode strapi_token = null;
               String tokenValue =
@@ -74,9 +72,15 @@ public class GoogleAuthService {
                       ? null
                       : user.getAttributes().get("strapi-token").toString();
               if (!ObjectUtils.isEmpty(tokenValue)) {
-                String jsonString = "{\"access_token\":\"" + tokenValue + "\"}";
+                String jsonString =
+                    "{\"" + TokenData.STRAPI_ACCESS_TOKEN.getToken() + "\":\"" + tokenValue + "\"}";
                 strapi_token = Mapper.readTree(jsonString);
+                googleModel.getTokenResponse().setStrapiToken(tokenValue);
               }
+
+              AuthToken token =
+                  tokenService.generateToken(
+                      googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
 
               Response response =
                   new Response(

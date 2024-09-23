@@ -16,6 +16,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
@@ -210,7 +211,7 @@ public class DataService {
                 JWTData jwtData = JWTData.generateJWTData(user, clientCredential, request);
                 Map<String, Object> strapiToken = new HashMap<>();
                 strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
-                strapiToken.put("access_token", strapiResponse.getJwt());
+                strapiToken.put(TokenData.STRAPI_ACCESS_TOKEN.getToken(), strapiResponse.getJwt());
                 return getUserInfo(jwtData, strapiResponse.getJwt())
                     .flatMap(
                         user1 -> {

@@ -12,6 +12,8 @@ import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData
 import io.github.giovannilamarmora.accesssphere.utilities.*;
 import io.github.giovannilamarmora.utils.logger.MDCUtils;
 import io.github.giovannilamarmora.utils.web.CookieManager;
+import io.github.giovannilamarmora.utils.web.HeaderManager;
+import io.github.giovannilamarmora.utils.web.RequestManager;
 import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -85,11 +87,13 @@ public class SessionIDFilter implements WebFilter {
       //    || ObjectUtils.isEmpty(sessionCookie.getValue())) {
       // if (ObjectUtils.isEmpty(sessionHeader)) {
       LOG.error(
-          "Session ID not found for path [{}], with hostname [{}], needs login",
+          "Session ID not found for path [{}], with hostname {}, needs login",
           request.getPath().value(),
           request.getHeaders().get("Referer"));
       return ExceptionHandler.handleFilterException(
-          new UserException(ExceptionMap.ERR_OAUTH_401, "No Session ID Provided!"), exchange);
+          new UserException(
+              ExceptionMap.ERR_OAUTH_401, ExceptionMessage.NO_SESSION_ID.getMessage()),
+          exchange);
       // } else setSessionIDInResponse(session_id, response);
     }
 
@@ -130,7 +134,9 @@ public class SessionIDFilter implements WebFilter {
           ObjectUtils.isEmpty(accessTokenDB) ? null : accessTokenDB.getSessionId(),
           session_id);
       return ExceptionHandler.handleFilterException(
-          new OAuthException(ExceptionMap.ERR_OAUTH_403, "Invalid Session ID Provided!"), exchange);
+          new OAuthException(
+              ExceptionMap.ERR_OAUTH_403, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
+          exchange);
     }
     addSessionInContext(session_id);
     setSessionIDInResponse(session_id, response);
@@ -172,7 +178,8 @@ public class SessionIDFilter implements WebFilter {
             ObjectUtils.isEmpty(accessTokenDB) ? null : accessTokenDB.getSessionId(),
             session_id);
         return ExceptionHandler.handleFilterException(
-            new OAuthException(ExceptionMap.ERR_OAUTH_403, "Invalid Session ID Provided!"),
+            new OAuthException(
+                ExceptionMap.ERR_OAUTH_403, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
             exchange);
       }
       addSessionInContext(session_id);

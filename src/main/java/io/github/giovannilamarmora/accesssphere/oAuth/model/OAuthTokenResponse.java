@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class OAuthTokenResponse {
   private AuthToken token;
   private JsonNode strapiToken;
+  private JsonNode googleToken;
   private JWTData userInfo;
   private User user;
 
@@ -52,8 +53,21 @@ public class OAuthTokenResponse {
     this.userInfo = userInfo;
   }
 
+  public OAuthTokenResponse(AuthToken token, JsonNode strapiToken, JsonNode googleToken) {
+    this.token = token;
+    this.strapiToken = strapiToken;
+    this.googleToken = googleToken;
+  }
+
   public OAuthTokenResponse(AuthToken token, JsonNode strapiToken) {
     this.token = token;
     this.strapiToken = strapiToken;
+  }
+
+  public OAuthTokenResponse(AuthToken token, JsonNode strapiToken, JWTData userInfo, User user) {
+    this.token = token;
+    this.strapiToken = strapiToken;
+    this.userInfo = userInfo;
+    this.user = user;
   }
 }

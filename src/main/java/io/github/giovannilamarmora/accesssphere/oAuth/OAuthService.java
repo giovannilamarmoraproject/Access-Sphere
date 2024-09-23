@@ -13,9 +13,9 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
-import io.github.giovannilamarmora.accesssphere.utilities.RequestManager;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -24,8 +24,12 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.web.CookieManager;
+import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,12 +90,27 @@ public class OAuthService {
               token.setAccess_token(
                   bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
 
+              Map<String, Object> strapiToken = null;
+              if (accessTokenData.getPayload().has(TokenData.STRAPI_TOKEN.getToken())) {
+                strapiToken = new HashMap<>();
+                strapiToken.put(
+                    TokenData.STRAPI_ACCESS_TOKEN.getToken(),
+                    accessTokenData.getPayload().get(TokenData.STRAPI_TOKEN.getToken()).asText());
+              }
+
               Response response =
                   new Response(
                       HttpStatus.OK.value(),
                       "Token is valid",
                       TraceUtils.getSpanID(),
-                      new OAuthTokenResponse(token, accessTokenData.getPayload()));
+                      ObjectUtils.isEmpty(strapiToken)
+                          ? new OAuthTokenResponse(token, accessTokenData.getPayload())
+                          : new OAuthTokenResponse(
+                              token,
+                              Mapper.readTree(strapiToken),
+                              Mapper.removeField(
+                                  accessTokenData.getPayload(),
+                                  TokenData.STRAPI_TOKEN.getToken())));
 
               return ResponseEntity.status(HttpStatus.OK).body(response);
 
@@ -195,13 +214,7 @@ public class OAuthService {
         .flatMap(
             clientCredential -> {
               OAuthType authType =
-                  clientCredential.getAuthType().equals(OAuthType.ALL_TYPE)
-                          && !ObjectUtils.isEmpty(code)
-                      ? OAuthType.GOOGLE
-                      : (clientCredential.getAuthType().equals(OAuthType.ALL_TYPE)
-                              && grant_type.equalsIgnoreCase(GrantType.PASSWORD.type())
-                          ? OAuthType.BEARER
-                          : clientCredential.getAuthType());
+                  getOAuthType(clientCredential, accessTokenData, grant_type, code);
               // OAuthValidator.validateClientId(clientCredential, clientId);
               switch (authType) {
                 case BEARER -> {
@@ -331,19 +344,31 @@ public class OAuthService {
       ClientCredential clientCredential,
       String redirect_uri,
       ServerHttpResponse response) {
-    switch (clientCredential.getAuthType()) {
-      case BEARER:
-        return authService.logout(redirect_uri, accessTokenData, response);
-      case GOOGLE:
-        return googleAuthService.processGoogleLogout(redirect_uri, accessTokenData, response);
-      default:
-        return defaultErrorType();
-    }
+    return switch (getOAuthType(clientCredential, accessTokenData, null, null)) {
+      case BEARER -> authService.logout(redirect_uri, accessTokenData, response);
+      case GOOGLE -> googleAuthService.processGoogleLogout(redirect_uri, accessTokenData, response);
+      default -> defaultErrorType();
+    };
   }
 
   private Mono<ResponseEntity<?>> defaultErrorType() {
     LOG.error("Type not configured, miss match on client");
     return Mono.error(
         new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
+  }
+
+  private OAuthType getOAuthType(
+      ClientCredential clientCredential,
+      AccessTokenData accessTokenData,
+      String grant_type,
+      String code) {
+    if (!ObjectUtils.isEmpty(grant_type) || !ObjectUtils.isEmpty(code))
+      return clientCredential.getAuthType().equals(OAuthType.ALL_TYPE) && !ObjectUtils.isEmpty(code)
+          ? OAuthType.GOOGLE
+          : (clientCredential.getAuthType().equals(OAuthType.ALL_TYPE)
+                  && grant_type.equalsIgnoreCase(GrantType.PASSWORD.type())
+              ? OAuthType.BEARER
+              : clientCredential.getAuthType());
+    else return accessTokenData.getType();
   }
 }
