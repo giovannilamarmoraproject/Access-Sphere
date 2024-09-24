@@ -5,6 +5,14 @@ body {
   height: 100%;
 }
 
+#login {
+  margin-top: 50px;
+}
+
+#title {
+  font-size: 1.5rem;
+}
+
 .footer {
   height: 35px;
   width: 100%;
@@ -153,11 +161,21 @@ body {
   }
 
   .max-w {
-    background: radial-gradient(
+    /*background: radial-gradient(
       125% 125% at 50% 10%,
       rgba(1, 1, 1, 1) 50%,
       rgba(102, 51, 238, 1) 100%
+    );*/
+    background: radial-gradient(
+      125% 125% at 50% 10%,
+      rgba(11, 9, 10, 1) 50%,
+      rgba(60, 9, 108, 1) 100%
     );
+    /*background: radial-gradient(
+      125% 125% at 50% 10%,
+      rgba(11, 9, 10, 1) 50%,
+      rgba(0, 53, 102, 1) 100%
+    );*/
   }
 
   h1,

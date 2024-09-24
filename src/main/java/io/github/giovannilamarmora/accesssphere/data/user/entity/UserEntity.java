@@ -1,17 +1,15 @@
 package io.github.giovannilamarmora.accesssphere.data.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonRawValue;
 import io.github.giovannilamarmora.accesssphere.data.address.entity.AddressEntity;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -85,7 +83,6 @@ public class UserEntity extends GenericEntity {
   private String tokenReset;
 
   @Lob
-  @JsonRawValue
-  @Column(name = "ATTRIBUTES", columnDefinition = "json")
+  @Column(name = "ATTRIBUTES", columnDefinition = "TEXT")
   private String attributes;
 }

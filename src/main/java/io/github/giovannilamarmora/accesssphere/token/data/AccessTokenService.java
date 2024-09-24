@@ -60,7 +60,8 @@ public class AccessTokenService {
       throw new TokenException(ExceptionMap.ERR_TOKEN_500, ExceptionMap.ERR_TOKEN_500.getMessage());
     }
     AccessTokenEntity accessTokenSaved = accessTokenDAO.save(accessTokenToBeSaved);
-    accessTokenDAO.revokeTokensExcept(TokenStatus.REVOKED, accessToken, jwtData.getIdentifier());
+    accessTokenDAO.revokeTokensExcept(
+        TokenStatus.REVOKED, accessToken, jwtData.getIdentifier(), System.currentTimeMillis());
     if (ObjectUtils.isEmpty(accessTokenSaved)) {
       LOG.error("Refresh Token not saved");
       throw new TokenException(ExceptionMap.ERR_TOKEN_500, ExceptionMap.ERR_TOKEN_500.getMessage());

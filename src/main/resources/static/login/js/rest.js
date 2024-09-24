@@ -30,10 +30,20 @@ document.addEventListener("DOMContentLoaded", function () {
     token(url, encode).then(async (data) => {
       const responseData = await data.json();
       if (responseData.error != null)
-        return sweetalert("error", responseData.error.status, responseData.error.message);
+        return sweetalert(
+          "error",
+          responseData.error.status,
+          responseData.error.message
+        );
       else {
         const redirect_uri = data.headers.get("location");
-        if (redirect_uri != null) window.location.href = redirect_uri + "?access-token=" + responseData.data.token.access_token + "&session-id=" + data.headers.get("Session-ID");
+        if (redirect_uri != null)
+          window.location.href =
+            redirect_uri +
+            "?access-token=" +
+            responseData.data.token.access_token +
+            "&session-id=" +
+            data.headers.get("Session-ID");
       }
     });
   }
@@ -63,38 +73,41 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function doGoogleLogin() {
-      const currentUrl = new URL(window.location.href);
-      const clientId = currentUrl.searchParams.get("client_id");
-      const redirectUri = currentUrl.searchParams.get("redirect_uri");
+  const currentUrl = new URL(window.location.href);
+  const clientId = currentUrl.searchParams.get("client_id");
+  const redirectUri = currentUrl.searchParams.get("redirect_uri");
 
-      const url = new URL(window.location.origin + "/v1/oAuth/2.0/authorize");
-      url.searchParams.set("access_type", "online");
-      url.searchParams.set("scope", "openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
-      if (clientId) url.searchParams.set("client_id", clientId);
-      if (redirectUri) url.searchParams.set("redirect_uri", redirectUri);
-      url.searchParams.set("type", "google");
-      url.searchParams.set("response_type", "code");
+  const url = new URL(window.location.origin + "/v1/oAuth/2.0/authorize");
+  url.searchParams.set("access_type", "online");
+  url.searchParams.set(
+    "scope",
+    "openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
+  );
+  if (clientId) url.searchParams.set("client_id", clientId);
+  if (redirectUri) url.searchParams.set("redirect_uri", redirectUri);
+  url.searchParams.set("type", "google");
+  url.searchParams.set("response_type", "code");
 
-      window.location.href = url.toString();
-    }
+  window.location.href = url.toString();
+}
 
-    function sweetalert(icon, title, message) {
-        const customClassSwal = Swal.mixin({
-          customClass: {
-            confirmButton: "rounded-pill buttonInput",
-            denyButton: "rounded-pill buttonInput",
-            popup: "border_round",
-          },
-          buttonsStyling: true,
-        });
+function sweetalert(icon, title, message) {
+  const customClassSwal = Swal.mixin({
+    customClass: {
+      confirmButton: "rounded-pill buttonInput",
+      denyButton: "rounded-pill buttonInput",
+      popup: "border_round",
+    },
+    buttonsStyling: true,
+  });
 
-        return customClassSwal.fire({
-          icon: icon,
-          title: title,
-          text: message,
-          color: "#FFFFFF",
-          background: "rgba(56, 62, 66, 0.8)",
-          backdrop: "rgba(0, 0, 0, 0.5)",
-          showCancelButton: false,
-        });
-      }
+  return customClassSwal.fire({
+    icon: icon,
+    title: title,
+    text: message,
+    color: "#FFFFFF",
+    background: "rgba(56, 62, 66, 0.8)",
+    backdrop: "rgba(0, 0, 0, 0.5)",
+    showCancelButton: false,
+  });
+}

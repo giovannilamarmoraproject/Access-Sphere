@@ -14,14 +14,24 @@ public interface IAccessTokenDAO extends JpaRepository<AccessTokenEntity, Long> 
       "SELECT a FROM AccessTokenEntity a WHERE a.accessTokenHash = :tokenHash OR a.idTokenHash = :tokenHash OR a.refreshTokenHash = :tokenHash")
   AccessTokenEntity findByTokenHash(@Param("tokenHash") String tokenHash);
 
+  // @Modifying
+  // @Transactional
+  // @Query(
+  //    "UPDATE AccessTokenEntity a SET a.status = :status WHERE a.accessTokenHash !=
+  // :accessTokenHash AND a.identifier = :identifier")
+  // void revokeTokensExcept(
+  //    @Param("status") TokenStatus status,
+  //    @Param("accessTokenHash") String accessTokenHash,
+  //    @Param("identifier") String identifier);
   @Modifying
   @Transactional
   @Query(
-      "UPDATE AccessTokenEntity a SET a.status = :status WHERE a.accessTokenHash != :accessTokenHash AND a.identifier = :identifier")
+      "UPDATE AccessTokenEntity a SET a.status = :status WHERE a.accessTokenHash != :accessTokenHash AND a.identifier = :identifier AND a.refreshExpireDate < :currentTime")
   void revokeTokensExcept(
       @Param("status") TokenStatus status,
       @Param("accessTokenHash") String accessTokenHash,
-      @Param("identifier") String identifier);
+      @Param("identifier") String identifier,
+      @Param("currentTime") long currentTime);
 
   @Modifying
   @Transactional
