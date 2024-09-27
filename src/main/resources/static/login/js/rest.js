@@ -96,7 +96,7 @@ function sweetalert(icon, title, message) {
     customClass: {
       confirmButton: "rounded-pill buttonInput",
       denyButton: "rounded-pill buttonInput",
-      popup: "border_round",
+      popup: "border_round blur-effect",
     },
     buttonsStyling: true,
   });
@@ -106,8 +106,8 @@ function sweetalert(icon, title, message) {
     title: title,
     text: message,
     color: "#FFFFFF",
-    background: "rgba(56, 62, 66, 0.8)",
-    backdrop: "rgba(0, 0, 0, 0.5)",
+    //background: "rgba(56, 62, 66, 0.8)",
+    //backdrop: "rgba(0, 0, 0, 0.5)",
     showCancelButton: false,
   });
 }

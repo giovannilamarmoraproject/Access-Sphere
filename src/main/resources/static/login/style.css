@@ -4,6 +4,25 @@ body {
   font-family: "Poppins", sans-serif !important;
   height: 100%;
 }
+/**
+ Sweetalert2
+*/
+body > * {
+  transition: 0.15s filter all;
+}
+
+body.swal2-shown > [aria-hidden="true"] {
+  filter: blur(5px);
+}
+
+.blur-effect {
+  backdrop-filter: blur(30px);
+  background: rgba(227, 228, 237, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+/**
+ END Sweetalert2
+*/
 
 #login {
   margin-top: 50px;
