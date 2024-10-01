@@ -126,7 +126,7 @@ body.swal2-shown > [aria-hidden="true"] {
 
 @media (min-width: 1280px) {
   .logo-images {
-    width: 100px;
+    width: 120px;
     margin-bottom: 10px;
   }
 }
