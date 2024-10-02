@@ -1,23 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title id="pageTitle">Access Sphere - Login</title>
-    <link rel="stylesheet" href="../login/style.css"/>
-    <link rel="stylesheet" href="../login/sliding-animations.css"/>
-    <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="../login/style.css" />
+    <link rel="stylesheet" href="../login/sliding-animations.css" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-KLC9VXFF");
+    </script>
+    <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-R4KLC18RH6");
+    </script>
     <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-            crossorigin="anonymous"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
     />
     <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-            crossorigin="anonymous"
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
     ></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -25,260 +53,270 @@
     <script src="../login/js/script.js" defer></script>
     <script src="../login/js/translations.js"></script>
     <script src="../login/js/rest.js" defer></script>
-</head>
-<body>
-<section class="flex flex-col flex-row h-screen items-center">
-    <div
-            class="background bg-blue-600 hidden lg:block md:block w-full md:w-2/3 xl:w-2/3 sm:w-0/3 h-screen"
-    >
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-KLC9VXFF"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <section class="flex flex-col flex-row h-screen items-center">
+      <div
+        class="background bg-blue-600 hidden lg:block md:block w-full md:w-2/3 xl:w-2/3 sm:w-0/3 h-screen"
+      >
         <!--<img src="3837559.jpg" alt="" class="w-full h-full object-cover" />-->
-    </div>
+      </div>
 
-    <div
-            id="form-login"
-            class="max-w bg-white w-full md:max-w-md lg:max-w-full md:mx-auto md:mx-0 md:w-1/3 sm:w-3/3 xl:w-1/3 h-screen px-6 lg:px-16 xl:px-12 flex items-center justify-center"
-    >
+      <div
+        id="form-login"
+        class="max-w bg-white w-full md:max-w-md lg:max-w-full md:mx-auto md:mx-0 md:w-1/3 sm:w-3/3 xl:w-1/3 h-screen px-6 lg:px-16 xl:px-12 flex items-center justify-center"
+      >
         <div class="w-full h-100 pt-3">
-            <a
-                    class="website_url"
-                    target="_blank"
-                    href="https://access.sphere.service.stg.giovannilamarmora.com"
-            >
-                <!--<img
+          <a
+            class="website_url"
+            target="_blank"
+            href="https://access.sphere.service.stg.giovannilamarmora.com"
+          >
+            <!--<img
                         width="60"
                         class="header-logo-image logo-images"
                         src="https://raw.githubusercontent.com/giovannilamarmora/giovannilamarmora.github.io/0f58a355856d25a7154482951a3220899ee59d10/assets/icons/svg/rounded_white.svg"
                         alt="Logo"
                 />-->
-                <img
-                        width="60"
-                        class="header-logo-image logo-images"
-                        src="./img/Access%20Sphere%20Transparent%20512x512.png"
-                        alt="Logo"
+            <img
+              width="60"
+              class="header-logo-image logo-images"
+              src="./img/Access%20Sphere%20Transparent%20512x512.png"
+              alt="Logo"
+            />
+          </a>
+
+          <h1 class="text-xl font-bold" id="title">Access Sphere</h1>
+
+          <div id="login">
+            <h1
+              class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-8"
+              id="loginTitle"
+            >
+              Log in to your account
+            </h1>
+
+            <form class="xl:mt-6 md:mt-3" id="loginForm">
+              <div class="input-groups">
+                <label class="block text-gray-700" id="emailLabel"
+                  >Email Address</label
+                >
+                <input
+                  id="emailInput"
+                  type="text"
+                  placeholder="Enter Email Address"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
                 />
-            </a>
+              </div>
 
-            <h1 class="text-xl font-bold" id="title">Access Sphere</h1>
-
-            <div id="login">
-                <h1
-                        class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-8"
-                        id="loginTitle"
+              <div class="xl:mt-4 md:mt-2 input-groups">
+                <label class="block text-gray-700" id="passwordLabel"
+                  >Password</label
                 >
-                    Log in to your account
-                </h1>
+                <input
+                  id="passwordInput"
+                  type="password"
+                  placeholder="Enter Password"
+                  minlength="6"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+              </div>
 
-                <form class="xl:mt-6 md:mt-3" id="loginForm">
-                    <div class="input-groups">
-                        <label class="block text-gray-700" id="emailLabel"
-                        >Email Address</label
-                        >
-                        <input
-                                id="emailInput"
-                                type="text"
-                                placeholder="Enter Email Address"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                    </div>
-
-                    <div class="xl:mt-4 md:mt-2 input-groups">
-                        <label class="block text-gray-700" id="passwordLabel"
-                        >Password</label
-                        >
-                        <input
-                                id="passwordInput"
-                                type="password"
-                                placeholder="Enter Password"
-                                minlength="6"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                    </div>
-
-                    <div class="text-right xl:mt-2 md:mt-1" hidden>
-                        <a
-                                href="#"
-                                id="forgotPassword"
-                                class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
-                                onclick="showForgotPassword()"
-                        >Forgot Password?</a
-                        >
-                    </div>
-                    <div class="login-groups" data-inviewport="slide-up">
-                        <button
-                                type="submit"
-                                id="loginButton"
-                                class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                        >
-                            Log In
-                        </button>
-
-                        <hr class="my-6 border-gray-300 w-full"/>
-
-                        <button
-                                onclick="doGoogleLogin()"
-                                id="google-btn"
-                                type="button"
-                                class="w-full block bg-white hover:bg-gray-100 focus:bg-gray-100 text-gray-900 font-semibold rounded-lg px-4 py-0 border border-gray-300 input-small"
-                        >
-                            <div class="flex items-center justify-center">
-                                <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-6 h-6"
-                                        viewBox="0 0 48 48"
-                                >
-                                    <defs>
-                                        <path
-                                                id="a"
-                                                d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"
-                                        />
-                                    </defs>
-                                    <clipPath id="b">
-                                        <use xlink:href="#a" overflow="visible"/>
-                                    </clipPath>
-                                    <path
-                                            clip-path="url(#b)"
-                                            fill="#FBBC05"
-                                            d="M0 37V11l17 13z"
-                                    />
-                                    <path
-                                            clip-path="url(#b)"
-                                            fill="#EA4335"
-                                            d="M0 11l17 13 7-6.1L48 14V0H0z"
-                                    />
-                                    <path
-                                            clip-path="url(#b)"
-                                            fill="#34A853"
-                                            d="M0 37l30-23 7.9 1L48 0v48H0z"
-                                    />
-                                    <path
-                                            clip-path="url(#b)"
-                                            fill="#4285F4"
-                                            d="M48 48L17 24l-4-3 35-10z"
-                                    />
-                                </svg>
-                                <span class="ml-4" id="googleLogin"
-                                >Log in with Google</span
-                                >
-                            </div>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div id="forgot" style="display: none">
-                <h1
-                        class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
-                        id="forgotTitle"
+              <div class="text-right xl:mt-2 md:mt-1" hidden>
+                <a
+                  href="#"
+                  id="forgotPassword"
+                  class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
+                  onclick="showForgotPassword()"
+                  >Forgot Password?</a
                 >
-                    Forgot Password
-                </h1>
-
-                <form class="xl:mt-6 md:mt-3" action="#" method="POST">
-                    <div class="input-text input-groups">
-                        <label class="block text-gray-700" id="forgotEmailLabel"
-                        >Email Address</label
-                        >
-                        <input
-                                type="email"
-                                placeholder="Enter Email Address"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                    </div>
-
-                    <div class="text-right xl:mt-2 md:mt-1">
-                        <a
-                                href="#"
-                                id="backToLogin"
-                                class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
-                                onclick="showLogin()"
-                        >Back to Login</a
-                        >
-                    </div>
-
-                    <div class="login-groups" data-inviewport="slide-up">
-                        <button
-                                type="submit"
-                                id="resetButton"
-                                class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                        >
-                            Reset
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div id="reset" style="display: none">
-                <h1
-                        class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
-                        id="resetTitle"
+              </div>
+              <div class="login-groups" data-inviewport="slide-up">
+                <button
+                  type="submit"
+                  id="loginButton"
+                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
                 >
-                    Reset Password
-                </h1>
+                  Log In
+                </button>
 
-                <form class="xl:mt-6 md:mt-3" action="#" method="POST">
-                    <div class="xl:mt-4 md:mt-2 input-groups">
-                        <label class="block text-gray-700" id="resetPasswordLabel"
-                        >Password</label
-                        >
-                        <input
-                                type="password"
-                                placeholder="Enter Password"
-                                minlength="6"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                    </div>
+                <hr class="my-6 border-gray-300 w-full" />
 
-                    <div class="xl:mt-4 md:mt-2 input-text">
-                        <label class="block text-gray-700" id="repeatPasswordLabel"
-                        >Repeat Password</label
-                        >
-                        <input
-                                type="password"
-                                placeholder="Enter Password"
-                                minlength="6"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                    </div>
-
-                    <div class="text-right xl:mt-2 md:mt-1">
-                        <a
-                                href="#"
-                                id="backToLoginReset"
-                                class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
-                                onclick="showLogin()"
-                        >Back to Login</a
-                        >
-                    </div>
-                    <div class="login-groups" data-inviewport="slide-up">
-                        <button
-                                type="submit"
-                                id="changePasswordButton"
-                                class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                        >
-                            Change Password
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Aggiungi il div vuoto per lo spazio -->
-            <div id="spacer"></div>
-            <div class="footer">
-                <p
-                        class="text-sm fixed text-gray-500 xl:mt-12 md:mt-6"
-                        style="bottom: 15px"
-                        id="footerText"
+                <button
+                  onclick="doGoogleLogin()"
+                  id="google-btn"
+                  type="button"
+                  class="w-full block bg-white hover:bg-gray-100 focus:bg-gray-100 text-gray-900 font-semibold rounded-lg px-4 py-0 border border-gray-300 input-small"
                 >
-                    &copy; 2024 Access Sphere - All Rights Reserved.
-                </p>
-            </div>
+                  <div class="flex items-center justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="w-6 h-6"
+                      viewBox="0 0 48 48"
+                    >
+                      <defs>
+                        <path
+                          id="a"
+                          d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"
+                        />
+                      </defs>
+                      <clipPath id="b">
+                        <use xlink:href="#a" overflow="visible" />
+                      </clipPath>
+                      <path
+                        clip-path="url(#b)"
+                        fill="#FBBC05"
+                        d="M0 37V11l17 13z"
+                      />
+                      <path
+                        clip-path="url(#b)"
+                        fill="#EA4335"
+                        d="M0 11l17 13 7-6.1L48 14V0H0z"
+                      />
+                      <path
+                        clip-path="url(#b)"
+                        fill="#34A853"
+                        d="M0 37l30-23 7.9 1L48 0v48H0z"
+                      />
+                      <path
+                        clip-path="url(#b)"
+                        fill="#4285F4"
+                        d="M48 48L17 24l-4-3 35-10z"
+                      />
+                    </svg>
+                    <span class="ml-4" id="googleLogin"
+                      >Log in with Google</span
+                    >
+                  </div>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div id="forgot" style="display: none">
+            <h1
+              class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
+              id="forgotTitle"
+            >
+              Forgot Password
+            </h1>
+
+            <form class="xl:mt-6 md:mt-3" action="#" method="POST">
+              <div class="input-text input-groups">
+                <label class="block text-gray-700" id="forgotEmailLabel"
+                  >Email Address</label
+                >
+                <input
+                  type="email"
+                  placeholder="Enter Email Address"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+              </div>
+
+              <div class="text-right xl:mt-2 md:mt-1">
+                <a
+                  href="#"
+                  id="backToLogin"
+                  class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
+                  onclick="showLogin()"
+                  >Back to Login</a
+                >
+              </div>
+
+              <div class="login-groups" data-inviewport="slide-up">
+                <button
+                  type="submit"
+                  id="resetButton"
+                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
+                >
+                  Reset
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div id="reset" style="display: none">
+            <h1
+              class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
+              id="resetTitle"
+            >
+              Reset Password
+            </h1>
+
+            <form class="xl:mt-6 md:mt-3" action="#" method="POST">
+              <div class="xl:mt-4 md:mt-2 input-groups">
+                <label class="block text-gray-700" id="resetPasswordLabel"
+                  >Password</label
+                >
+                <input
+                  type="password"
+                  placeholder="Enter Password"
+                  minlength="6"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+              </div>
+
+              <div class="xl:mt-4 md:mt-2 input-text">
+                <label class="block text-gray-700" id="repeatPasswordLabel"
+                  >Repeat Password</label
+                >
+                <input
+                  type="password"
+                  placeholder="Enter Password"
+                  minlength="6"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+              </div>
+
+              <div class="text-right xl:mt-2 md:mt-1">
+                <a
+                  href="#"
+                  id="backToLoginReset"
+                  class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
+                  onclick="showLogin()"
+                  >Back to Login</a
+                >
+              </div>
+              <div class="login-groups" data-inviewport="slide-up">
+                <button
+                  type="submit"
+                  id="changePasswordButton"
+                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
+                >
+                  Change Password
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Aggiungi il div vuoto per lo spazio -->
+          <div id="spacer"></div>
+          <div class="footer">
+            <p
+              class="text-sm fixed text-gray-500 xl:mt-12 md:mt-6"
+              style="bottom: 15px"
+              id="footerText"
+            >
+              &copy; 2024 Access Sphere - All Rights Reserved.
+            </p>
+          </div>
         </div>
-    </div>
-</section>
-</body>
+      </div>
+    </section>
+  </body>
 </html>
