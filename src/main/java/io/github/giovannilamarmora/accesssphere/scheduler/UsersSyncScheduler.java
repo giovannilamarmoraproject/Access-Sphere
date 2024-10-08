@@ -12,12 +12,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Logged
 @Service
@@ -34,7 +34,9 @@ public class UsersSyncScheduler {
   @Scheduled(cron = "0 0 0 * * *")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncUsers() {
-    MDCUtils.registerDefaultMDC(env).publishOn(Schedulers.parallel()).subscribe();
+    MDCUtils.registerDefaultMDC(env).subscribe();
+    Map<String, String> contextMap = MDC.getCopyOfContextMap();
+
     if (dataService.getIsStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler users sync with Strapi");
       Mono<List<User>> strapiUsers = dataService.getStrapiUsers();
@@ -51,6 +53,8 @@ public class UsersSyncScheduler {
 
       strapiUsers
           .zipWith(dbClientsMono)
+          .contextWrite(MDCUtils.contextViewMDC(env))
+          .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
           .subscribe(
               result -> {
                 List<User> strapiUserList = result.getT1();

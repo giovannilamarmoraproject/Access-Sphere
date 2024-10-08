@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,6 +40,7 @@ public class ClientSyncScheduler {
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void syncClients() {
     MDCUtils.registerDefaultMDC(env).subscribe();
+    Map<String, String> contextMap = MDC.getCopyOfContextMap();
 
     if (clientService.getIsStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler client sync with Strapi");
@@ -56,8 +58,11 @@ public class ClientSyncScheduler {
 
       strapiClientsMono
           .zipWith(dbClientsMono)
+          .contextWrite(MDCUtils.contextViewMDC(env))
+          .doOnEach(signal -> MDCUtils.setContextMap(contextMap))
           .subscribe(
               result -> {
+                // MDC.setContextMap(contextMap);
                 List<ClientCredential> strapiClients = result.getT1();
                 List<ClientCredential> dbClients = result.getT2();
                 syncClients(strapiClients, dbClients);
