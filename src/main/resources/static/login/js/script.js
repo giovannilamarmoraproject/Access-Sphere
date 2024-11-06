@@ -15,3 +15,23 @@ function showResetPassword() {
   document.getElementById("forgot").style.display = "none";
   document.getElementById("reset").style.display = "block";
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Seleziona gli elementi di input e bottone
+  const emailInput = document.getElementById("emailInput");
+  const passwordInput = document.getElementById("passwordInput");
+  const submitButton = document.getElementById("loginButton");
+
+  // Funzione per verificare se entrambi i campi sono pieni
+  function checkInputs() {
+    submitButton.disabled =
+      !emailInput.value.trim() || !passwordInput.value.trim();
+  }
+
+  // Assegna l'evento di input a entrambi i campi
+  emailInput.addEventListener("input", checkInputs);
+  passwordInput.addEventListener("input", checkInputs);
+
+  // Disabilita inizialmente il bottone
+  checkInputs();
+});

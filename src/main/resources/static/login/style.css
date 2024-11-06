@@ -1,5 +1,43 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
+@media screen and (max-width: 780px) {
+  .hidden_mobile {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .hidden_desktop {
+    display: block !important;
+    visibility: visible !important;
+  }
+}
+
+#loginButton:disabled {
+  background-color: #dddddd;
+  cursor: not-allowed;
+}
+
+@media screen and (min-width: 780px) {
+  .hidden_mobile {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .hidden_desktop {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  #google-btn,
+  #loginButton {
+    transition: background-color 0.3s;
+  }
+
+  #google-btn:hover {
+    background-color: #dddddd !important;
+  }
+}
+
 body {
   font-family: "Poppins", sans-serif !important;
   height: 100%;
@@ -24,12 +62,13 @@ body.swal2-shown > [aria-hidden="true"] {
  END Sweetalert2
 */
 
-#login {
-  margin-top: 50px;
-}
+/*#login {
+   margin-top: 50px;
+}*/
 
 #title {
-  font-size: 1.5rem;
+  /*font-size: 1.5rem;*/
+  font-size: 1.8rem;
 }
 
 .footer {
@@ -90,12 +129,18 @@ body.swal2-shown > [aria-hidden="true"] {
   width: 70%;
   padding: 40px;
   height: 100vh;
-  background: radial-gradient(
+  /*background: radial-gradient(
       125% 125% at 50% 10%,
       rgba(0, 0, 0, 0.7) 40%,
       rgba(102, 51, 238, 0.7) 100%
     ),
-    url("./img/auth.jpg") center no-repeat;
+    url("./img/auth.jpg") center no-repeat;*/
+  background: radial-gradient(
+      125% 125% at 50% 10%,
+      rgba(0, 0, 0, 0.3) 40%,
+      rgba(102, 51, 238, 0.5) 100%
+    ),
+    url("./img/Access%20Sphere%20Full.png") center no-repeat;
   background-size: cover;
   display: flex;
   flex-wrap: wrap;
