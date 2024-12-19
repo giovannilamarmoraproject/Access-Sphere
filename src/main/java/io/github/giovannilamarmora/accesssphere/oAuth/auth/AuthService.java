@@ -4,6 +4,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
@@ -77,6 +78,8 @@ public class AuthService {
         .login(username, email, password, clientCredential, request)
         .map(
             tokenResponse -> {
+              OAuthValidator.validateUserRoles(
+                  clientCredential, tokenResponse.getUser().getRoles());
               String message =
                   "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
 

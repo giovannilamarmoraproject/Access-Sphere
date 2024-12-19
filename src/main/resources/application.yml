@@ -1,4 +1,6 @@
 env: Local
+server:
+  port: 8081
 cookie-domain: localhost
 spring:
   thymeleaf:
@@ -55,7 +57,7 @@ rest:
   client:
     strapi:
       active: true
-      baseUrl: https://strapi.giovannilamarmora.com
+      baseUrl: https://stg.strapi.giovannilamarmora.com
       bearer: ${STRAPI_AUTH_TOKEN}
       path:
         clientId: /api/Oauthclientids

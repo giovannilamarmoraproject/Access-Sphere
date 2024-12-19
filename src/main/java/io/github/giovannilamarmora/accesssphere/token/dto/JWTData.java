@@ -2,9 +2,11 @@ package io.github.giovannilamarmora.accesssphere.token.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.Joiner;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -38,6 +40,13 @@ public class JWTData {
 
   public static JWTData generateJWTData(
       User user, ClientCredential clientCredential, ServerHttpRequest request) {
+    AppRole defaultRole =
+        !Utilities.isNullOrEmpty(clientCredential.getAppRoles())
+            ? clientCredential.getAppRoles().stream()
+                .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
+                .toList()
+                .getFirst()
+            : null;
     return new JWTData(
         user.getIdentifier(),
         ObjectUtils.isEmpty(request.getRemoteAddress())
@@ -61,9 +70,7 @@ public class JWTData {
         user.getSurname(),
         null,
         true,
-        ObjectUtils.isEmpty(clientCredential.getDefaultRole())
-            ? null
-            : List.of(clientCredential.getDefaultRole().getRole()),
+        ObjectUtils.isEmpty(defaultRole) ? null : List.of(defaultRole.getRole()),
         //   : clientCredential.getDefaultRoles().stream().map(AppRole::getRole).toList(),
         OAuthType.BEARER,
         null);

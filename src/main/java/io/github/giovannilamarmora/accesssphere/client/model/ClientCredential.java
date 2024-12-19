@@ -41,7 +41,6 @@ public class ClientCredential extends GenericDTO {
   private String jweSecret;
   private Long jweExpiration;
   private String registrationToken;
-  private AppRole defaultRole;
   private List<AppRole> appRoles;
   private Boolean idToken;
   private Boolean accessToken;

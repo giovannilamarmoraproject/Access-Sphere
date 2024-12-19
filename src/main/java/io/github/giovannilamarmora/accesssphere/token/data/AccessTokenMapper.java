@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.token.data;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
@@ -10,6 +11,7 @@ import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,7 @@ public class AccessTokenMapper {
   public static AccessTokenData fromAccessTokenEntityToData(AccessTokenEntity accessTokenEntity) {
     AccessTokenData accessTokenData = new AccessTokenData();
     BeanUtils.copyProperties(accessTokenEntity, accessTokenData);
+    accessTokenData.setRoles(Mapper.readObject(accessTokenEntity.getRoles(), new TypeReference<>() {}));
     try {
       if (!ObjectUtils.isEmpty(accessTokenEntity.getPayload()))
         accessTokenData.setPayload(

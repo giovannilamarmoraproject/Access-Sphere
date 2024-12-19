@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.HashSet;
 import java.util.List;
 import org.slf4j.Logger;
@@ -17,6 +18,51 @@ import org.springframework.util.ObjectUtils;
 public class OAuthValidator {
 
   private static final Logger LOG = LoggerFilter.getLogger(OAuthValidator.class);
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateUserRoles(ClientCredential clientCredential, List<String> userRoles) {
+    if (Utilities.isNullOrEmpty(userRoles)) {
+      LOG.error("The User must have a role to proceed {}", userRoles);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+
+    if (Utilities.isNullOrEmpty(clientCredential.getAppRoles())) {
+      LOG.error("The Client must have a valid role configuration to proceed");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+
+    if (clientCredential.getAppRoles().stream()
+        .noneMatch(appRole -> userRoles.contains(appRole.getRole()))) {
+      LOG.error(
+          "The User must have a valid role as {} to proceed {}",
+          clientCredential.getAppRoles(),
+          userRoles);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static boolean hasValidRoles(ClientCredential clientCredential, List<String> userRoles) {
+    if (Utilities.isNullOrEmpty(userRoles)) {
+      LOG.error("The User must have a role to proceed {}", userRoles);
+      return false;
+    }
+
+    if (Utilities.isNullOrEmpty(clientCredential.getAppRoles())) {
+      LOG.error("The Client must have a valid role configuration to proceed");
+      return false;
+    }
+
+    if (clientCredential.getAppRoles().stream()
+        .noneMatch(appRole -> userRoles.contains(appRole.getRole()))) {
+      LOG.error(
+          "The User must have a valid role as {} to proceed {}",
+          clientCredential.getAppRoles(),
+          userRoles);
+      return false;
+    }
+    return true;
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateClient(

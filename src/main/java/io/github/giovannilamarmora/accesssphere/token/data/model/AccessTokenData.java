@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,4 +31,5 @@ public class AccessTokenData extends GenericDTO {
   private Long accessExpireDate;
   private JsonNode payload;
   private TokenStatus status;
+  private List<String> roles;
 }

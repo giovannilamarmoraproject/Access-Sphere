@@ -56,9 +56,6 @@ public class StrapiUser extends StrapiGeneric {
   private String password;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private List<StrapiAddress> addresses;
-
-  @JsonInclude(JsonInclude.Include.NON_NULL)
   private List<AppRole> app_roles;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)

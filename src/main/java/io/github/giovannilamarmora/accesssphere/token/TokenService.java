@@ -182,6 +182,7 @@ public class TokenService {
         TokenUtils.hashingToken(idToken),
         clientCredential.getClientId(),
         sessionID.getSessionID(),
+        jwtData.getRoles(),
         payload);
 
     return new AuthToken(
@@ -327,6 +328,7 @@ public class TokenService {
         TokenUtils.hashingToken(idToken),
         clientCredential.getClientId(),
         sessionID.getSessionID(),
+        jwtData.getRoles(),
         payload);
 
     return new AuthToken(

@@ -73,4 +73,7 @@ public class AccessTokenEntity extends GenericEntity {
   @Enumerated(EnumType.STRING)
   @Column(name = "STATUS")
   private TokenStatus status;
+
+  @Column(name = "ROLES")
+  private String roles;
 }

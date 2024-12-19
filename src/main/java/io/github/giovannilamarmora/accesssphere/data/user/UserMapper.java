@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
 import com.google.common.base.Joiner;
-import io.github.giovannilamarmora.accesssphere.data.address.entity.AddressEntity;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -53,22 +52,6 @@ public class UserMapper {
     existingUser.setRoles(
         ObjectUtils.isEmpty(user.getRoles()) ? null : Joiner.on(" ").join(user.getRoles()));
     existingUser.setProfilePhoto(user.getProfilePhoto());
-    existingUser.setAddresses(
-        ObjectUtils.isEmpty(user.getAddresses())
-            ? null
-            : user.getAddresses().stream()
-                .map(
-                    address ->
-                        new AddressEntity(
-                            address.getId(),
-                            address.getStreet(),
-                            address.getCity(),
-                            address.getState(),
-                            address.getCountry(),
-                            address.getZipCode(),
-                            true,
-                            existingUser))
-                .toList());
     existingUser.setPhoneNumber(user.getPhoneNumber());
     existingUser.setBirthDate(user.getBirthDate());
     existingUser.setGender(user.getGender());

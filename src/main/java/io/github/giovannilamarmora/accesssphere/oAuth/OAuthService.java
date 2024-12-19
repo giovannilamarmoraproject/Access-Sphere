@@ -25,6 +25,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.net.URI;
@@ -86,6 +87,7 @@ public class OAuthService {
             try {
               AccessTokenData accessTokenData =
                   accessTokenService.getByAccessTokenOrIdToken(bearer);
+              OAuthValidator.validateUserRoles(clientCredential, accessTokenData.getRoles());
               AuthToken token = new AuthToken();
               token.setAccess_token(
                   bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
@@ -114,15 +116,33 @@ public class OAuthService {
 
               return ResponseEntity.status(HttpStatus.OK).body(response);
 
-            } catch (TokenException e) {
+            } catch (TokenException | OAuthException e) {
               LOG.warn("Token validation failed: {}", e.getMessage());
 
-              URI fallbackLocation =
-                  URI.create(clientCredential.getRedirect_uri().get("fallback_uri"));
+              if (!Utilities.isNullOrEmpty(clientCredential.getRedirect_uri())
+                  && !Utilities.isNullOrEmpty(
+                      clientCredential.getRedirect_uri().get("fallback_uri"))) {
+                URI fallbackLocation =
+                    URI.create(clientCredential.getRedirect_uri().get("fallback_uri"));
 
-              return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                  .location(fallbackLocation)
-                  .build();
+                Response response =
+                    new Response(
+                        HttpStatus.TEMPORARY_REDIRECT.value(),
+                        "Token is not valid",
+                        TraceUtils.getSpanID(),
+                        fallbackLocation);
+
+                return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
+                    .location(fallbackLocation)
+                    .body(response);
+              }
+              return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                  .body(
+                      new Response(
+                          HttpStatus.UNAUTHORIZED.value(),
+                          "Token is not valid",
+                          TraceUtils.getSpanID(),
+                          null));
             }
           }
 

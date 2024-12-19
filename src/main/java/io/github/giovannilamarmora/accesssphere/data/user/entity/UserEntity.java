@@ -1,11 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.data.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.giovannilamarmora.accesssphere.data.address.entity.AddressEntity;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -52,10 +50,6 @@ public class UserEntity extends GenericEntity {
   @Lob
   @Column(name = "PROFILE_PHOTO")
   private String profilePhoto;
-
-  @OrderBy(value = "id")
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-  private List<AddressEntity> addresses;
 
   @Column(name = "PHONE_NUMBER")
   private String phoneNumber;

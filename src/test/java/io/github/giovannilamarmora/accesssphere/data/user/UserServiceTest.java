@@ -199,7 +199,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -290,7 +291,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -394,7 +396,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -474,7 +477,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -554,7 +558,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -647,7 +652,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 

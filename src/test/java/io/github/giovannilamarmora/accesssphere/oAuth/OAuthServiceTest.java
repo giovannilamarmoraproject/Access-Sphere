@@ -165,7 +165,7 @@ public class OAuthServiceTest {
     Mockito.when(GoogleGrpcService.getUserInfo(anyString(), anyString())).thenReturn(google);
 
     when(accessTokenService.save(
-            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
+            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any(), any()))
         .thenReturn(new AccessTokenData());
 
     List<StrapiUser> strapiUser =
@@ -239,7 +239,14 @@ public class OAuthServiceTest {
     Mockito.when(GoogleGrpcService.getUserInfo(anyString(), anyString())).thenReturn(google);
 
     when(accessTokenService.save(
-            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
+            any(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            any(),
+            anyString()))
         .thenReturn(new AccessTokenData());
 
     List<StrapiUser> strapiUser =
@@ -310,7 +317,14 @@ public class OAuthServiceTest {
         .thenReturn(Mono.just(ResponseEntity.ok(strapiUser.getFirst())));
 
     when(accessTokenService.save(
-            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
+            any(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            any(),
+            anyString()))
         .thenReturn(new AccessTokenData());
 
     // Act
@@ -375,7 +389,14 @@ public class OAuthServiceTest {
         .thenReturn(Mono.just(ResponseEntity.ok(strapiUser.getFirst())));
 
     when(accessTokenService.save(
-            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
+            any(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            any(),
+            anyString()))
         .thenReturn(new AccessTokenData());
 
     // Act
@@ -474,7 +495,8 @@ public class OAuthServiceTest {
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             mapper.readTree(payload),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenService.getByRefreshToken(anyString())).thenReturn(accessToken);
 
@@ -492,7 +514,14 @@ public class OAuthServiceTest {
         .thenReturn(Mono.just(ResponseEntity.ok(strapiUser.getFirst())));
 
     when(accessTokenService.save(
-            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
+            any(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            any(),
+            anyString()))
         .thenReturn(new AccessTokenData());
 
     // Act
@@ -558,7 +587,8 @@ public class OAuthServiceTest {
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             mapper.readTree(payload),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenService.getByRefreshToken(anyString())).thenReturn(accessToken);
 
@@ -576,7 +606,14 @@ public class OAuthServiceTest {
         .thenReturn(Mono.just(ResponseEntity.ok(strapiUser.getFirst())));
 
     when(accessTokenService.save(
-            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
+            any(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            any(),
+            anyString()))
         .thenReturn(new AccessTokenData());
 
     TokenResponse tokenResponse = new TokenResponse();
@@ -659,7 +696,8 @@ public class OAuthServiceTest {
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             mapper.readTree(payload),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenService.getByRefreshToken(anyString())).thenReturn(accessToken);
 
@@ -677,7 +715,14 @@ public class OAuthServiceTest {
         .thenReturn(Mono.just(ResponseEntity.ok(strapiUser.getFirst())));
 
     when(accessTokenService.save(
-            any(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
+            any(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            any(),
+            anyString()))
         .thenReturn(new AccessTokenData());
 
     TokenResponse tokenResponse = new TokenResponse();
@@ -751,7 +796,8 @@ public class OAuthServiceTest {
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             mapper.readTree(payload),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenData.getClientId()).thenReturn(accessToken.getClientId());
     when(accessTokenData.getIdentifier()).thenReturn(accessToken.getIdentifier());
@@ -810,7 +856,8 @@ public class OAuthServiceTest {
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() + 3600000,
             mapper.readTree(payload),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            List.of("DEFAULT"));
 
     when(accessTokenData.getClientId()).thenReturn(accessToken.getClientId());
     when(accessTokenData.getIdentifier()).thenReturn(accessToken.getIdentifier());

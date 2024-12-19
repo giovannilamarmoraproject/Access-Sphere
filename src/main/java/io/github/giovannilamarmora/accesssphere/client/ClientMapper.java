@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -51,9 +50,6 @@ public class ClientMapper {
               /*ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRoles())
               ? null
               : Arrays.stream(clientCredentialEntity.getDefaultRoles().split(" ")).toList()*/
-              ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRole())
-                  ? null
-                  : mapper.readValue(clientCredentialEntity.getDefaultRole(), AppRole.class),
               ObjectUtils.isEmpty(clientCredentialEntity.getAppRoles())
                   ? null
                   : mapper.readValue(
@@ -90,9 +86,6 @@ public class ClientMapper {
         clientCredential.getJweSecret(),
         clientCredential.getJweExpiration(),
         clientCredential.getRegistrationToken(),
-        ObjectUtils.isEmpty(clientCredential.getDefaultRole())
-            ? null
-            : Mapper.writeObjectToString(clientCredential.getDefaultRole()),
         ObjectUtils.isEmpty(clientCredential.getAppRoles())
             ? null
             : Mapper.writeObjectToString(clientCredential.getAppRoles()),
@@ -123,10 +116,6 @@ public class ClientMapper {
     existingClient.setJweSecret(clientCredential.getJweSecret());
     existingClient.setJweExpiration(clientCredential.getJweExpiration());
     existingClient.setRegistrationToken(clientCredential.getRegistrationToken());
-    existingClient.setDefaultRole(
-        ObjectUtils.isEmpty(clientCredential.getDefaultRole())
-            ? null
-            : Mapper.writeObjectToString(clientCredential.getDefaultRole()));
     existingClient.setAppRoles(
         ObjectUtils.isEmpty(clientCredential.getAppRoles())
             ? null

@@ -108,7 +108,6 @@ public class UsersSyncScheduler {
         && Objects.equals(strapiUser.getUsername(), dbUser.getUsername())
         && Objects.equals(strapiUser.getRoles(), dbUser.getRoles())
         && Objects.equals(strapiUser.getProfilePhoto(), dbUser.getProfilePhoto())
-        && Objects.equals(strapiUser.getAddresses(), dbUser.getAddresses())
         && Objects.equals(strapiUser.getPhoneNumber(), dbUser.getPhoneNumber())
         && Objects.equals(strapiUser.getBirthDate(), dbUser.getBirthDate())
         && Objects.equals(strapiUser.getGender(), dbUser.getGender())

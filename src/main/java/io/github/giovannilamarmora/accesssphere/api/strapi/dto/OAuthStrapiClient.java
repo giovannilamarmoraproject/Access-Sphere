@@ -27,8 +27,7 @@ public class OAuthStrapiClient extends StrapiGeneric {
   private String jweSecret;
   private Long jweExpiration;
   private String registrationToken;
-  private Roles default_role;
-  private Roles app_roles;
+  private List<AppRole> app_roles;
   private Boolean id_token;
   private Boolean access_token;
   private Boolean strapi_token;

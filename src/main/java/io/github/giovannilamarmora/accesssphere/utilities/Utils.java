@@ -83,4 +83,13 @@ public class Utils {
   public static String decodeURLValue(String value) {
     return ObjectUtils.isEmpty(value) ? value : URLDecoder.decode(value, StandardCharsets.UTF_8);
   }
+
+  public static <E extends Enum<E>> boolean isEnumValue(String value, Class<E> enumClass) {
+    try {
+      Enum.valueOf(enumClass, value);
+      return true;
+    } catch (IllegalArgumentException | NullPointerException e) {
+      return false;
+    }
+  }
 }

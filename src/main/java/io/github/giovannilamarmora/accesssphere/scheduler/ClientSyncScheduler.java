@@ -121,7 +121,6 @@ public class ClientSyncScheduler {
         && Objects.equals(strapiClient.getJweSecret(), dbClient.getJweSecret())
         && Objects.equals(strapiClient.getJweExpiration(), dbClient.getJweExpiration())
         && Objects.equals(strapiClient.getRegistrationToken(), dbClient.getRegistrationToken())
-        && Objects.equals(strapiClient.getDefaultRole(), dbClient.getDefaultRole())
         && Objects.equals(strapiClient.getAppRoles(), dbClient.getAppRoles())
         && Objects.equals(strapiClient.getIdToken(), dbClient.getIdToken())
         && Objects.equals(strapiClient.getAccessToken(), dbClient.getAccessToken())
