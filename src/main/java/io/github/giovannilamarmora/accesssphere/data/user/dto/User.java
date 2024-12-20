@@ -60,12 +60,4 @@ public class User extends GenericDTO {
   private String tokenReset;
 
   private Map<String, Object> attributes;
-
-  public User(String identifier, String username, String email, List<String> roles) {
-    super(null, null, null, null);
-    this.identifier = identifier;
-    this.username = username;
-    this.email = email;
-    this.roles = roles;
-  }
 }
