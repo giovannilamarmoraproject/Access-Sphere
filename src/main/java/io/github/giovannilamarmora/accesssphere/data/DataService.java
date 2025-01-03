@@ -435,12 +435,12 @@ public class DataService {
     return Mono.just(saveUserEntityIntoDatabase(userEntity));
   }
 
-  public User saveUserIntoDatabase(User user) {
+  public void saveUserIntoDatabase(User user) {
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
-    return saveUserEntityIntoDatabase(userEntity);
+    saveUserEntityIntoDatabase(userEntity);
   }
 
-  public User updateUserIntoDatabase(User user) {
+  public void updateUserIntoDatabase(User user) {
     UserEntity userSaved = userDataService.findUserEntityByIdentifier(user.getIdentifier());
     if (!ObjectUtils.isEmpty(userSaved)) {
       // Aggiornare i campi dell'entità esistente con i valori del ClientCredential
@@ -450,7 +450,7 @@ public class DataService {
       // Se il client non esiste, possiamo decidere di aggiungerlo o lanciare un'eccezione
       throw new IllegalArgumentException("User not found: " + userSaved.getIdentifier());
     }
-    return UserMapper.mapUserEntityToUser(userSaved);
+    UserMapper.mapUserEntityToUser(userSaved);
   }
 
   @Transactional
@@ -473,7 +473,8 @@ public class DataService {
 
   private void setDataBeforeUpdate(
       UserEntity userEntity, UserEntity userFind, boolean isUpdatePassword) {
-    userEntity.setId(userFind.getId());
+    if (Utilities.isNullOrEmpty(userFind)) return;
+    if (!Utilities.isNullOrEmpty(userFind.getId())) userEntity.setId(userFind.getId());
     userEntity.setIdentifier(userFind.getIdentifier());
     if (!isUpdatePassword) userEntity.setPassword(userFind.getPassword());
     userEntity.setRoles(userFind.getRoles());

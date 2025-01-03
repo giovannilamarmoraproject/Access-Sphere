@@ -289,6 +289,7 @@ public class UserService {
                       .build();
 
               Map<String, String> emailParams = TemplateParam.getTemplateParam(objects.getT1());
+              emailParams.putAll(changePassword.getParams());
 
               if (sendEmail)
                 return emailSenderService
