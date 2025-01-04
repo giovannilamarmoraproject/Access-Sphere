@@ -33,6 +33,14 @@ spring:
 # Level of LOG
 logging:
   config: ${LOGBACK_FILE:}
+  level:
+    io.github.giovannilamarmora: DEBUG
+    web: INFO
+    root: INFO
+    org:
+      springframework:
+        web: INFO
+      hibernate: ERROR
 
 springdoc:
   api-docs:

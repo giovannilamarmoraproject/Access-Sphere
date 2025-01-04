@@ -123,7 +123,7 @@ public class GoogleAuthService {
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
                 userGoogle.setPassword(CookieManager.getCookie(Cookie.COOKIE_TOKEN, request));
                 return dataService
-                    .registerUser(userGoogle, clientCredential)
+                    .registerUser(userGoogle, clientCredential, true)
                     .map(
                         user1 -> {
                           AppRole defaultRole =

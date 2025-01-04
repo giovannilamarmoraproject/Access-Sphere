@@ -144,7 +144,8 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> registerUser(User user, ClientCredential clientCredential) {
+  public Mono<User> registerUser(
+      User user, ClientCredential clientCredential, Boolean assignNewClient) {
     AppRole defaultRole =
         clientCredential.getAppRoles().stream()
             .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
@@ -189,6 +190,28 @@ public class DataService {
                       "Error on strapi, register user into database, message is {}",
                       throwable.getMessage());
                   return Mono.just(saveUserEntityIntoDatabase(userEntity));
+                }
+                if (assignNewClient) {
+                  return strapiService
+                      .getUserByEmail(user.getEmail())
+                      .flatMap(
+                          strapiUser -> {
+                            if (strapiUser.getApp_roles().contains(defaultRole)) {
+                              LOG.error(
+                                  "The current user already has the role for {}",
+                                  clientCredential.getClientId());
+                              return Mono.error(throwable);
+                            }
+                            strapiUser.getApp_roles().add(defaultRole);
+                            User userToUpdate = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
+                            return strapiService
+                                .updateUser(userToUpdate)
+                                .flatMap(
+                                    strapiUser1 ->
+                                        Mono.just(
+                                            StrapiMapper.mapFromStrapiUserToUser(strapiUser)));
+                          })
+                      .onErrorResume(throwable1 -> Mono.error(throwable));
                 }
                 return Mono.error(throwable);
               })

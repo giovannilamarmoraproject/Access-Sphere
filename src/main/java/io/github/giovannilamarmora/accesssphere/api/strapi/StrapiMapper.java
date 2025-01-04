@@ -83,8 +83,11 @@ public class StrapiMapper {
         false,
         user.getUsername(),
         user.getPassword(),
-        // TODO: DA modificare
-        ObjectUtils.isEmpty(clientCredential) ? null : clientCredential.getAppRoles(),
+        ObjectUtils.isEmpty(clientCredential)
+            ? null
+            : clientCredential.getAppRoles().stream()
+                .filter(appRole -> user.getRoles().contains(appRole.getRole()))
+                .toList(),
         user.getProfilePhoto(),
         user.getPhoneNumber(),
         user.getBirthDate(),
