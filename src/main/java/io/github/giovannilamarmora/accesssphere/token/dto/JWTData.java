@@ -70,7 +70,8 @@ public class JWTData {
         user.getSurname(),
         null,
         true,
-        ObjectUtils.isEmpty(defaultRole) ? null : List.of(defaultRole.getRole()),
+        Utilities.isNullOrEmpty(user.getRoles()) ? null : user.getRoles(),
+        // ObjectUtils.isEmpty(defaultRole) ? null : List.of(defaultRole.getRole()),
         //   : clientCredential.getDefaultRoles().stream().map(AppRole::getRole).toList(),
         OAuthType.BEARER,
         null);
