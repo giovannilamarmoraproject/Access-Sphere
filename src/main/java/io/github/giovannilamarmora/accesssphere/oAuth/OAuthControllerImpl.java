@@ -1,7 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
+import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.ExposedHeaders;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -84,6 +86,12 @@ public class OAuthControllerImpl implements OAuthController {
       ServerWebExchange exchange) {
     return oAuthService.tokenOAuth(
         clientId, refresh_token, grant_type, scope, code, prompt, redirectUri, auth, exchange);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> tokenExchange(
+      String bearer, TokenExchange tokenExchange, ServerWebExchange exchange) {
+    return oAuthService.tokenExchange(bearer, tokenExchange, exchange);
   }
 
   @Override

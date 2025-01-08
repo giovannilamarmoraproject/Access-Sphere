@@ -11,10 +11,12 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
+import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
@@ -59,6 +61,7 @@ public class OAuthService {
   @Autowired private GoogleAuthService googleAuthService;
   @Autowired private AccessTokenService accessTokenService;
   @Autowired private AccessTokenData accessTokenData;
+  @Autowired private TokenService tokenService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> authorize(
@@ -117,6 +120,11 @@ public class OAuthService {
               return ResponseEntity.status(HttpStatus.OK).body(response);
 
             } catch (TokenException | OAuthException e) {
+              if (e instanceof OAuthException exception
+                  && exception.getExceptionCode().equals(ExceptionMap.ERR_OAUTH_401))
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+
               LOG.warn("Token validation failed: {}", e.getMessage());
 
               if (!Utilities.isNullOrEmpty(clientCredential.getRedirect_uri())
@@ -209,6 +217,30 @@ public class OAuthService {
         throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid o not supported grant_type!");
       }
     }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> tokenExchange(
+      String bearer, TokenExchange tokenExchange, ServerWebExchange exchange) {
+
+    LOG.info("🔄 Token Exchange process started for client: {}", tokenExchange.getClient_id());
+
+    // Recupera le credenziali del client
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(tokenExchange.getClient_id());
+
+    return clientCredentialMono
+        .flatMap(
+            clientCredential -> {
+              OAuthValidator.validateTokenExchange(bearer, tokenExchange, clientCredential);
+              return authService.exchangeToken(
+                  tokenExchange, accessTokenData, clientCredential, exchange.getRequest());
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info(
+                    "🔄 Token Exchange process completed for client: {}",
+                    tokenExchange.getClient_id()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

@@ -41,6 +41,7 @@ public class GrpcMapper {
         ObjectUtils.isEmpty(defaultRole) ? null : List.of(defaultRole.getRole()),
         //    : clientCredential.getDefaultRole().stream().map(AppRole::getRole).toList(),
         OAuthType.GOOGLE,
+        clientCredential.getClientId(),
         null);
   }
 

@@ -9,6 +9,9 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
+import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -23,7 +26,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -113,19 +115,6 @@ public class AuthService {
             });
   }
 
-  static void setCookieInResponseLocal(
-      String cookieName, String cookieValue, ServerHttpResponse response) {
-    ResponseCookie cookie =
-        ResponseCookie.from(cookieName, cookieValue)
-            .maxAge(360000L)
-            .sameSite("None")
-            .secure(true)
-            .httpOnly(false)
-            .path("/")
-            .build();
-    response.getHeaders().add("Set-Cookie", cookie.toString());
-  }
-
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> refreshToken(
       AccessTokenData accessTokenData,
@@ -188,5 +177,42 @@ public class AuthService {
               SessionID.invalidateSessionID(response);
             })
         .then(Mono.just(responseResponseEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> exchangeToken(
+      TokenExchange tokenExchange,
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    boolean includeUserInfo =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
+    boolean includeUserData =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
+
+    JWTData decryptToken =
+        tokenService.parseToken(tokenExchange.getSubject_token(), clientCredential);
+
+    return dataService
+        .getUserByEmail(decryptToken.getEmail())
+        .map(
+            user -> {
+              AuthToken token =
+                  tokenService.exchangeToken(user, accessTokenData, clientCredential, request);
+              String message =
+                  "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(),
+                      message,
+                      TraceUtils.getSpanID(),
+                      new OAuthTokenResponse(
+                          token,
+                          includeUserInfo ? decryptToken : null,
+                          includeUserData ? user : null));
+              return ResponseEntity.ok(response);
+            });
   }
 }

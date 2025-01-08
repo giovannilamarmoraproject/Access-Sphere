@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.token;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -14,9 +13,12 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
@@ -43,6 +45,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -52,7 +55,6 @@ import org.springframework.util.ObjectUtils;
 public class TokenService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
   private final SessionID sessionID;
   @Autowired private AccessTokenService accessTokenService;
 
@@ -124,6 +126,28 @@ public class TokenService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public AuthToken exchangeToken(
+      User user,
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    // Log per il processo di exchange
+    LOG.info("🔄 Performing token exchange for client: {}", clientCredential.getClientId());
+
+    JWTData exchangeToken = JWTData.generateJWTData(user, clientCredential, request);
+
+    // Esegui la logica per lo scambio del token
+    AuthToken newToken =
+        generateToken(exchangeToken, clientCredential, accessTokenData.getPayload());
+
+    // Log il risultato dell'exchange
+    LOG.info(
+        "🔄 Token exchange completed successfully for client: {}", clientCredential.getClientId());
+
+    return newToken;
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private AuthToken generateJWTToken(
       JWTData jwtData, ClientCredential clientCredential, Object payload) {
     // Access Token
@@ -136,6 +160,7 @@ public class TokenService {
     claims.add(TokenClaims.AT_HASH.claim(), jwtData.getAt_hash());
     claims.add(TokenClaims.ROLE.claim(), jwtData.getRoles());
     claims.add(TokenClaims.AUTH_TYPE.claim(), jwtData.getType());
+    claims.add(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id());
     claims.add(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes());
 
     long jwtExpiration = clientCredential.getJwtExpiration();
@@ -166,6 +191,7 @@ public class TokenService {
     idClaims.add(TokenClaims.AT_HASH.claim(), jwtData.getAt_hash());
     idClaims.add(TokenClaims.ROLE.claim(), jwtData.getRoles());
     idClaims.add(TokenClaims.AUTH_TYPE.claim(), jwtData.getType());
+    idClaims.add(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id());
     idClaims.add(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes());
 
     String idToken =
@@ -199,7 +225,7 @@ public class TokenService {
     Claims body = null;
     SecretKey key = Keys.hmacShaKeyFor(clientCredential.getJwtSecret().getBytes());
     try {
-      String tokenSplit = token.split("Bearer ")[1];
+      String tokenSplit = token.contains("Bearer") ? token.split("Bearer ")[1] : token;
       Jws<Claims> jwt = Jwts.parser().verifyWith(key).build().parseSignedClaims(tokenSplit);
       body = jwt.getPayload();
     } catch (JwtException e) {
@@ -237,6 +263,9 @@ public class TokenService {
         ObjectUtils.isEmpty(body.get(TokenClaims.AUTH_TYPE.claim()))
             ? null
             : OAuthType.valueOf((String) body.get(TokenClaims.AUTH_TYPE.claim())),
+        ObjectUtils.isEmpty(body.get(TokenClaims.CLIENT_ID.claim()))
+            ? clientCredential.getClientId()
+            : (String) body.get(TokenClaims.CLIENT_ID.claim()),
         ObjectUtils.isEmpty(body.get(TokenClaims.ATTRIBUTES.claim()))
             ? null
             : Utils.mapper()
@@ -261,6 +290,7 @@ public class TokenService {
             .claim(TokenClaims.ROLE.claim(), jwtData.getRoles())
             .claim(TokenClaims.AUTH_TYPE.claim(), jwtData.getType())
             .claim(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes())
+            .claim(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id())
             .claim(TokenClaims.IAT.claim(), new Date(now.toInstant().toEpochMilli()))
             .expirationTime(
                 new Date(now.toInstant().toEpochMilli() + clientCredential.getJweExpiration()))
@@ -301,6 +331,7 @@ public class TokenService {
             .claim(TokenClaims.PICTURE.claim(), jwtData.getPicture())
             .claim(TokenClaims.GIVEN_NAME.claim(), jwtData.getGiven_name())
             .claim(TokenClaims.FAMILY_NAME.claim(), jwtData.getFamily_name())
+            .claim(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id())
             .expirationTime(
                 new Date(now.toInstant().toEpochMilli() + clientCredential.getJwtExpiration()))
             .build();
@@ -385,6 +416,9 @@ public class TokenService {
           ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim()))
               ? null
               : OAuthType.valueOf((String) claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim())),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()))
+              ? clientCredential.getClientId()
+              : (String) claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()),
           ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.ATTRIBUTES.claim()))
               ? null
               : Utils.mapper()

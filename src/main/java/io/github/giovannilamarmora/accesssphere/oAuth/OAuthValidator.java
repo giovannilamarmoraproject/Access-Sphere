@@ -4,6 +4,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -18,6 +19,44 @@ import org.springframework.util.ObjectUtils;
 public class OAuthValidator {
 
   private static final Logger LOG = LoggerFilter.getLogger(OAuthValidator.class);
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateTokenExchange(
+      String token, TokenExchange tokenExchange, ClientCredential clientCredential) {
+    if (!token.equalsIgnoreCase("Bearer " + tokenExchange.getSubject_token())) {
+      LOG.error("You must have a valid bearer token to proceed");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid Bearer subject_token!");
+    }
+
+    if (!tokenExchange.getGrant_type().equalsIgnoreCase(GrantType.TOKEN_EXCHANGE.type())) {
+      LOG.error(
+          "You must have a valid grant_type {} to proceed {}",
+          GrantType.TOKEN_EXCHANGE.type(),
+          tokenExchange.getGrant_type());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
+    }
+
+    if (!tokenExchange
+            .getRequested_token_type()
+            .equalsIgnoreCase("urn:ietf:params:oauth:token-type:access_token")
+        && !tokenExchange
+            .getRequested_token_type()
+            .equalsIgnoreCase("urn:ietf:params:oauth:token-type:id_token")) {
+      LOG.error(
+          "You must have a valid requested_token_type like urn:ietf:params:oauth:token-type:access_token or urn:ietf:params:oauth:token-type:id_token to proceed {}",
+          tokenExchange.getGrant_type());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
+    }
+
+    List<String> scopes = List.of(tokenExchange.getScope().split(" "));
+    if (!new HashSet<>(clientCredential.getScopes()).containsAll(scopes)) {
+      LOG.error(
+          "The Scopes provided should be {} instead of {}",
+          clientCredential.getScopes(),
+          tokenExchange.getScope());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid scope provided!");
+    }
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateUserRoles(ClientCredential clientCredential, List<String> userRoles) {
