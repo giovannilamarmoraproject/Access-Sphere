@@ -91,6 +91,8 @@ public class OAuthService {
               AccessTokenData accessTokenData =
                   accessTokenService.getByAccessTokenOrIdToken(bearer);
               OAuthValidator.validateUserRoles(clientCredential, accessTokenData.getRoles());
+              OAuthValidator.validateClientId(
+                  accessTokenData.getClientId(), clientCredential.getClientId());
               AuthToken token = new AuthToken();
               token.setAccess_token(
                   bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
@@ -355,7 +357,8 @@ public class OAuthService {
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
 
-    OAuthValidator.validateClientLogout(accessTokenData, clientId);
+    // OAuthValidator.validateClientLogout(accessTokenData, clientId);
+    OAuthValidator.validateClientId(accessTokenData.getClientId(), clientId);
 
     if (isLogoutAlreadyDone()) {
       return createLogoutSuccessResponse(clientId, redirect_uri, response);
