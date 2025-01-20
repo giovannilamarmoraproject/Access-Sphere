@@ -42,16 +42,21 @@ public class OAuthValidator {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateClientRoles(ClientCredential clientCredential) {
+    if (Utilities.isNullOrEmpty(clientCredential.getAppRoles())) {
+      LOG.error("The Client must have a valid role configuration to proceed");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateUserRoles(ClientCredential clientCredential, List<String> userRoles) {
     if (Utilities.isNullOrEmpty(userRoles)) {
       LOG.error("The User must have a role to proceed {}", userRoles);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    if (Utilities.isNullOrEmpty(clientCredential.getAppRoles())) {
-      LOG.error("The Client must have a valid role configuration to proceed");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
-    }
+    validateClientRoles(clientCredential);
 
     if (clientCredential.getAppRoles().stream()
         .noneMatch(appRole -> userRoles.contains(appRole.getRole()))) {
@@ -164,6 +169,8 @@ public class OAuthValidator {
       String redirect_uri,
       String grantType) {
 
+    validateClientRoles(clientCredential);
+
     validateGrantType(GrantType.AUTHORIZATION_CODE.type(), grantType);
     // if (ObjectUtils.isEmpty(grantType)
     //    || !grantType.equalsIgnoreCase(GrantType.AUTHORIZATION_CODE.type())) {
@@ -243,7 +250,6 @@ public class OAuthValidator {
     }
   }
 
-  /** NEW VALIDATION */
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateGrantType(String expected_grant_type, String actual_grant_type) {
     if (Utilities.isNullOrEmpty(expected_grant_type)

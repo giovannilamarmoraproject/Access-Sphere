@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.token;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -13,9 +14,9 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
@@ -29,6 +30,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -135,10 +137,14 @@ public class TokenService {
     LOG.info("🔄 Performing token exchange for client: {}", clientCredential.getClientId());
 
     JWTData exchangeToken = JWTData.generateJWTData(user, clientCredential, request);
+    JsonNode strapi_token = OAuthMapper.getStrapiToken(accessTokenData.getPayload());
 
     // Esegui la logica per lo scambio del token
     AuthToken newToken =
-        generateToken(exchangeToken, clientCredential, accessTokenData.getPayload());
+        generateToken(
+            exchangeToken,
+            clientCredential,
+            Utilities.isNullOrEmpty(strapi_token) ? accessTokenData.getPayload() : strapi_token);
 
     // Log il risultato dell'exchange
     LOG.info(

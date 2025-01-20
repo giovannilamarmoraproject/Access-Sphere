@@ -1,9 +1,11 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
@@ -19,6 +21,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.net.URI;
 import java.util.Base64;
@@ -184,6 +187,7 @@ public class AuthService {
       TokenExchange tokenExchange,
       AccessTokenData accessTokenData,
       ClientCredential clientCredential,
+      ClientCredential clientCredentialToExchange,
       ServerHttpRequest request) {
     boolean includeUserInfo =
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
@@ -193,7 +197,9 @@ public class AuthService {
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
     JWTData decryptToken =
-        tokenService.parseToken(tokenExchange.getSubject_token(), clientCredential);
+        tokenService.parseToken(tokenExchange.getSubject_token(), clientCredentialToExchange);
+
+    JsonNode strapi_token = OAuthMapper.getStrapiToken(accessTokenData.getPayload());
 
     return dataService
         .getUserByEmail(decryptToken.getEmail())
@@ -210,7 +216,12 @@ public class AuthService {
                       TraceUtils.getSpanID(),
                       new OAuthTokenResponse(
                           token,
-                          includeUserInfo ? decryptToken : null,
+                          Utilities.isNullOrEmpty(strapi_token)
+                              ? accessTokenData.getPayload()
+                              : strapi_token,
+                          includeUserInfo
+                              ? tokenService.parseToken(token.getAccess_token(), clientCredential)
+                              : null,
                           includeUserData ? user : null));
               return ResponseEntity.ok(response);
             });

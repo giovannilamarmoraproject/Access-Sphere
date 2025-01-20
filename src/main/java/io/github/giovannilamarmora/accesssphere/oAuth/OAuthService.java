@@ -231,12 +231,20 @@ public class OAuthService {
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(tokenExchange.getClient_id());
 
+    Mono<ClientCredential> clientCredentialToExchangeMono =
+        clientService.getClientCredentialByClientID(accessTokenData.getClientId());
+
     return clientCredentialMono
+        .zipWith(clientCredentialToExchangeMono)
         .flatMap(
-            clientCredential -> {
-              OAuthValidator.validateTokenExchange(bearer, tokenExchange, clientCredential);
+            objects -> {
+              OAuthValidator.validateTokenExchange(bearer, tokenExchange, objects.getT1());
               return authService.exchangeToken(
-                  tokenExchange, accessTokenData, clientCredential, exchange.getRequest());
+                  tokenExchange,
+                  accessTokenData,
+                  objects.getT1(),
+                  objects.getT2(),
+                  exchange.getRequest());
             })
         .doOnSuccess(
             responseResponseEntity ->
