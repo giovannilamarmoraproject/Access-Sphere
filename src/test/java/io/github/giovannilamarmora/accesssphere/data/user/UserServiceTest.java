@@ -202,7 +202,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            String.valueOf(List.of("DEFAULT")));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -294,7 +294,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            String.valueOf(List.of("DEFAULT")));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -399,7 +399,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            String.valueOf(List.of("DEFAULT")));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -480,7 +480,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            String.valueOf(List.of("DEFAULT")));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -561,7 +561,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            String.valueOf(List.of("DEFAULT")));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -655,7 +655,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            String.valueOf(List.of("DEFAULT")));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 

@@ -23,13 +23,10 @@
     "identifier": "0eceedb7-96ee-4b76-bb4c-7839e7a77b59",
     "app_roles": [
       {
-        "id": 2,
-        "createdAt": "2024-05-20T10:45:13.876Z",
-        "updatedAt": "2024-05-20T10:45:32.090Z",
-        "publishedAt": "2024-05-20T10:45:32.087Z",
-        "role": "DEFAULT_ROLE"
+        "role": "TEST_ROLES",
+        "type": "DEFAULT",
+        "description": "Default token Type"
       }
-    ],
-    "addresses": []
+    ]
   }
 ]
