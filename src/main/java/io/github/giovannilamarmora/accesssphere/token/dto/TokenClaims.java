@@ -13,11 +13,12 @@ public enum TokenClaims {
   PICTURE("picture"),
   AT_HASH("at_hash"),
   EMAIL("email"),
-  ROLE("role"),
+  ROLE("roles"),
   AUTH_TYPE("type"),
   ATTRIBUTES("attributes"),
   GOOGLE_TOKEN("google_token"),
-  STRAPI_TOKEN("strapi_token");
+  STRAPI_TOKEN("strapi_token"),
+  CLIENT_ID("client_id");
 
   private final String claim;
 

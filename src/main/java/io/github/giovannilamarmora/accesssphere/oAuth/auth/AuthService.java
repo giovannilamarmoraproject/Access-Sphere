@@ -1,13 +1,19 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
+import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -15,6 +21,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.net.URI;
 import java.util.Base64;
@@ -22,7 +29,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -77,6 +83,8 @@ public class AuthService {
         .login(username, email, password, clientCredential, request)
         .map(
             tokenResponse -> {
+              OAuthValidator.validateUserRoles(
+                  clientCredential, tokenResponse.getUser().getRoles());
               String message =
                   "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
 
@@ -108,19 +116,6 @@ public class AuthService {
                   serverHttpResponse);
               return ResponseEntity.ok().location(URI.create(redirect_uri)).body(response);
             });
-  }
-
-  static void setCookieInResponseLocal(
-      String cookieName, String cookieValue, ServerHttpResponse response) {
-    ResponseCookie cookie =
-        ResponseCookie.from(cookieName, cookieValue)
-            .maxAge(360000L)
-            .sameSite("None")
-            .secure(true)
-            .httpOnly(false)
-            .path("/")
-            .build();
-    response.getHeaders().add("Set-Cookie", cookie.toString());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -185,5 +180,50 @@ public class AuthService {
               SessionID.invalidateSessionID(response);
             })
         .then(Mono.just(responseResponseEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> exchangeToken(
+      TokenExchange tokenExchange,
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      ClientCredential clientCredentialToExchange,
+      ServerHttpRequest request) {
+    boolean includeUserInfo =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
+    boolean includeUserData =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
+
+    JWTData decryptToken =
+        tokenService.parseToken(tokenExchange.getSubject_token(), clientCredentialToExchange);
+
+    JsonNode strapi_token = OAuthMapper.getStrapiToken(accessTokenData.getPayload());
+
+    return dataService
+        .getUserByEmail(decryptToken.getEmail())
+        .map(
+            user -> {
+              AuthToken token =
+                  tokenService.exchangeToken(user, accessTokenData, clientCredential, request);
+              String message =
+                  "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(),
+                      message,
+                      TraceUtils.getSpanID(),
+                      new OAuthTokenResponse(
+                          token,
+                          Utilities.isNullOrEmpty(strapi_token)
+                              ? accessTokenData.getPayload()
+                              : strapi_token,
+                          includeUserInfo
+                              ? tokenService.parseToken(token.getAccess_token(), clientCredential)
+                              : null,
+                          includeUserData ? user : null));
+              return ResponseEntity.ok(response);
+            });
   }
 }

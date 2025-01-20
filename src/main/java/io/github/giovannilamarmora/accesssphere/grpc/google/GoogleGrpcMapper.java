@@ -24,7 +24,6 @@ public class GoogleGrpcMapper {
         null,
         googleModel.getJwtData().getRoles(),
         getUserInfoValue(googleModel.getUserInfo(), "picture"),
-        null,
         getUserInfoValue(googleModel.getUserInfo(), "phone_number"),
         null,
         null,

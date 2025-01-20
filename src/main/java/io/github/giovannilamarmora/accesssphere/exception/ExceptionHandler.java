@@ -40,6 +40,16 @@ public class ExceptionHandler extends UtilsException {
     response.getError().setException(e.getExceptionCode().exception());
     response.getError().setExceptionMessage(null);
     response.getError().setStackTrace(null);
+    serverHttpResponse
+        .getHeaders()
+        .set("Access-Control-Allow-Origin", request.getHeaders().getFirst("origin"));
+    serverHttpResponse
+        .getHeaders()
+        .set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    serverHttpResponse
+        .getHeaders()
+        .set("Access-Control-Allow-Headers", "Authorization, Content-Type");
+    serverHttpResponse.getHeaders().set("Access-Control-Allow-Credentials", "true");
     serverHttpResponse.setStatusCode(status);
     serverHttpResponse.setRawStatusCode(status.value());
     serverHttpResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);

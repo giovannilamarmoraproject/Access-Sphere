@@ -145,7 +145,10 @@ public interface UserController {
           @Schema(
               description = OpenAPI.Params.Description.REGISTRATION_TOKEN,
               example = OpenAPI.Params.Example.REGISTRATION_TOKEN)
-          String registration_token);
+          String registration_token,
+      @RequestParam(value = "assign_new_client", defaultValue = "false")
+          @Schema(description = OpenAPI.Params.Description.ASSIGN_NEW_CLIENT, example = "false")
+          Boolean assignNewClient);
 
   @PutMapping("/users/update")
   @Operation(

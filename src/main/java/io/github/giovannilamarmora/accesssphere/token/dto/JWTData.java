@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -34,6 +35,7 @@ public class JWTData {
   private boolean email_verified;
   private List<String> roles;
   private OAuthType type;
+  private String client_id;
   private Map<String, Object> attributes;
 
   public static JWTData generateJWTData(
@@ -61,11 +63,11 @@ public class JWTData {
         user.getSurname(),
         null,
         true,
-        ObjectUtils.isEmpty(clientCredential.getDefaultRole())
-            ? null
-            : List.of(clientCredential.getDefaultRole().getRole()),
+        Utilities.isNullOrEmpty(user.getRoles()) ? null : user.getRoles(),
+        // ObjectUtils.isEmpty(defaultRole) ? null : List.of(defaultRole.getRole()),
         //   : clientCredential.getDefaultRoles().stream().map(AppRole::getRole).toList(),
         OAuthType.BEARER,
+        clientCredential.getClientId(),
         null);
   }
 }

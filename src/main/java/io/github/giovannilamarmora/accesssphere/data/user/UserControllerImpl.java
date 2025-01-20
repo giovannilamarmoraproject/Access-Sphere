@@ -38,8 +38,8 @@ public class UserControllerImpl implements UserController {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> registerUser(
-      User user, String clientId, String registration_token) {
-    return userService.register(user, clientId, registration_token);
+      User user, String clientId, String registration_token, Boolean assignNewClient) {
+    return userService.register(user, clientId, registration_token, assignNewClient);
   }
 
   @Override

@@ -113,7 +113,8 @@ public class UserServiceTest {
     userFind.setPassword("Ciccio.2025");
     when(userDAO.saveAndFlush(any())).thenReturn(userFind);
     // Act
-    Mono<ResponseEntity<Response>> result = userService.register(user, clientId, registrationToken);
+    Mono<ResponseEntity<Response>> result =
+        userService.register(user, clientId, registrationToken, false);
 
     // Assert
     StepVerifier.create(result)
@@ -142,7 +143,8 @@ public class UserServiceTest {
         .thenReturn(Mono.just(ResponseEntity.ok(response)));
 
     // Act
-    Mono<ResponseEntity<Response>> result = userService.register(user, clientId, registrationToken);
+    Mono<ResponseEntity<Response>> result =
+        userService.register(user, clientId, registrationToken, false);
 
     // Assert
     StepVerifier.create(result)
@@ -199,7 +201,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            String.valueOf(List.of("DEFAULT")));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -290,7 +293,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            String.valueOf(List.of("DEFAULT")));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -394,7 +398,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            String.valueOf(List.of("DEFAULT")));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -474,7 +479,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            String.valueOf(List.of("DEFAULT")));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -554,7 +560,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            String.valueOf(List.of("DEFAULT")));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -647,7 +654,8 @@ public class UserServiceTest {
             jwtData.getExp(),
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
-            TokenStatus.ISSUED);
+            TokenStatus.ISSUED,
+            String.valueOf(List.of("DEFAULT")));
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -804,7 +812,7 @@ public class UserServiceTest {
     when(userDAO.saveAndFlush(any())).thenReturn(userFind);
 
     Mono<ResponseEntity<Response>> result =
-        userService.register(userToUpdate, clientId, registrationToken);
+        userService.register(userToUpdate, clientId, registrationToken, false);
 
     // Assert
     StepVerifier.create(result)
@@ -825,7 +833,8 @@ public class UserServiceTest {
         .thenReturn(Mono.just(ResponseEntity.ok(strapiUser)));
 
     // Arrange
-    ChangePassword changePassword = new ChangePassword("TEST", userToUpdate.getEmail(), null, null);
+    ChangePassword changePassword =
+        new ChangePassword("TEST", userToUpdate.getEmail(), null, null, null);
 
     when(strapiClient.getUserByEmail(any())).thenReturn(Mono.just(ResponseEntity.ok(strapiUser)));
     StrapiResponse templates =
@@ -905,7 +914,8 @@ public class UserServiceTest {
             "TEST",
             userToUpdate.getEmail(),
             Base64.getEncoder().encodeToString("Ciccio.2025".getBytes()),
-            "token");
+            "token",
+            null);
 
     Mono<ResponseEntity<Response>> result = userService.changePassword(changePassword);
 

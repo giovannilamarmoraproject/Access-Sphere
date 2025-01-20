@@ -1,12 +1,13 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
-import io.github.giovannilamarmora.accesssphere.data.address.entity.AddressEntity;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.BeanUtils;
@@ -23,7 +24,9 @@ public class UserMapper {
     if (!ObjectUtils.isEmpty(user.getRoles()))
       userEntity.setRoles(String.join(" ", user.getRoles()));
 
-    // TODO: Missing attributes
+    if (!Utilities.isNullOrEmpty(user.getAttributes()))
+      userEntity.setAttributes(Mapper.writeObjectToString(user.getAttributes()));
+
     return userEntity;
   }
 
@@ -34,6 +37,9 @@ public class UserMapper {
     if (!ObjectUtils.isEmpty(userEntity.getStrapiId())) user.setId(userEntity.getStrapiId());
     if (!ObjectUtils.isEmpty(userEntity.getRoles()))
       user.setRoles(Arrays.stream(userEntity.getRoles().split(" ")).toList());
+
+    if (!Utilities.isNullOrEmpty(userEntity.getAttributes()))
+      user.setAttributes(Mapper.readObject(userEntity.getAttributes(), new TypeReference<>() {}));
     return user;
   }
 
@@ -53,22 +59,6 @@ public class UserMapper {
     existingUser.setRoles(
         ObjectUtils.isEmpty(user.getRoles()) ? null : Joiner.on(" ").join(user.getRoles()));
     existingUser.setProfilePhoto(user.getProfilePhoto());
-    existingUser.setAddresses(
-        ObjectUtils.isEmpty(user.getAddresses())
-            ? null
-            : user.getAddresses().stream()
-                .map(
-                    address ->
-                        new AddressEntity(
-                            address.getId(),
-                            address.getStreet(),
-                            address.getCity(),
-                            address.getState(),
-                            address.getCountry(),
-                            address.getZipCode(),
-                            true,
-                            existingUser))
-                .toList());
     existingUser.setPhoneNumber(user.getPhoneNumber());
     existingUser.setBirthDate(user.getBirthDate());
     existingUser.setGender(user.getGender());

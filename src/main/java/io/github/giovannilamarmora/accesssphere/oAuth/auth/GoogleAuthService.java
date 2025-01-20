@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -9,6 +10,7 @@ import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleGrpcMapper;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
@@ -62,6 +64,7 @@ public class GoogleAuthService {
         .getUserByEmail(googleModel.getJwtData().getEmail())
         .map(
             user -> {
+              OAuthValidator.validateUserRoles(clientCredential, user.getRoles());
               googleModel.getJwtData().setIdentifier(user.getIdentifier());
               googleModel.getJwtData().setRoles(user.getRoles());
               googleModel.getJwtData().setSub(user.getUsername());
@@ -120,15 +123,20 @@ public class GoogleAuthService {
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
                 userGoogle.setPassword(CookieManager.getCookie(Cookie.COOKIE_TOKEN, request));
                 return dataService
-                    .registerUser(userGoogle, clientCredential)
+                    .registerUser(userGoogle, clientCredential, true)
                     .map(
                         user1 -> {
+                          AppRole defaultRole =
+                              clientCredential.getAppRoles().stream()
+                                  .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
+                                  .toList()
+                                  .getFirst();
                           googleModel
                               .getJwtData()
                               .setRoles(
-                                  ObjectUtils.isEmpty(clientCredential.getDefaultRole())
+                                  ObjectUtils.isEmpty(defaultRole)
                                       ? null
-                                      : List.of(clientCredential.getDefaultRole().getRole()));
+                                      : List.of(defaultRole.getRole()));
                           AuthToken token =
                               tokenService.generateToken(
                                   googleModel.getJwtData(),

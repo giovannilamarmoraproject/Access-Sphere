@@ -1,22 +1,19 @@
 package io.github.giovannilamarmora.accesssphere.data.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.giovannilamarmora.accesssphere.data.address.model.Address;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
-
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -46,8 +43,6 @@ public class User extends GenericDTO {
 
   private String profilePhoto;
 
-  private List<Address> addresses;
-
   private String phoneNumber;
 
   private LocalDate birthDate;
@@ -65,12 +60,4 @@ public class User extends GenericDTO {
   private String tokenReset;
 
   private Map<String, Object> attributes;
-
-  public User(String identifier, String username, String email, List<String> roles) {
-    super(null, null, null, null);
-    this.identifier = identifier;
-    this.username = username;
-    this.email = email;
-    this.roles = roles;
-  }
 }

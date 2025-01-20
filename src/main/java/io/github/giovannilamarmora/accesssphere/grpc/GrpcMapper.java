@@ -7,7 +7,6 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -19,6 +18,11 @@ public class GrpcMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static JWTData fromGoogleDataToJWTData(
       GoogleIdToken.Payload payload, ClientCredential clientCredential) {
+    AppRole defaultRole =
+        clientCredential.getAppRoles().stream()
+            .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
+            .toList()
+            .getFirst();
     return new JWTData(
         UUID.randomUUID().toString(),
         payload.getAudience().toString(),
@@ -34,11 +38,10 @@ public class GrpcMapper {
         getUserInfoValue(payload, "family_name"),
         (String) payload.get("at_hash"),
         payload.getEmailVerified(),
-        ObjectUtils.isEmpty(clientCredential.getDefaultRole())
-            ? null
-            : List.of(clientCredential.getDefaultRole().getRole()),
+        ObjectUtils.isEmpty(defaultRole) ? null : List.of(defaultRole.getRole()),
         //    : clientCredential.getDefaultRole().stream().map(AppRole::getRole).toList(),
         OAuthType.GOOGLE,
+        clientCredential.getClientId(),
         null);
   }
 

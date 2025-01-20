@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -181,6 +182,33 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.BASIC,
               example = OpenAPI.Params.Example.BASIC)
           String auth,
+      ServerWebExchange exchange);
+
+  @PostMapping(value = "/token/exchange", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(
+      description =
+          "API to perform OAuth 2.0 Token Exchange, in order to exchange the token for a new client",
+      summary = "Perform OAuth 2.0 Token Exchange",
+      tags = OpenAPI.Tag.OAUTH)
+  @ApiResponse(
+      responseCode = "200",
+      description = "Successful operation",
+      content = @Content(schema = @Schema(implementation = AuthToken.class)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "Bad Input",
+      content =
+          @Content(
+              schema = @Schema(implementation = ExceptionResponse.class),
+              mediaType = MediaType.APPLICATION_JSON_VALUE))
+  Mono<ResponseEntity<Response>> tokenExchange(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @RequestBody @Valid TokenExchange tokenExchange,
       ServerWebExchange exchange);
 
   @PostMapping(value = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)

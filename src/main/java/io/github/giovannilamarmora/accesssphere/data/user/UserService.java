@@ -187,7 +187,8 @@ public class UserService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> register(
-      User user, String clientId, String registration_token) throws UtilsException {
+      User user, String clientId, String registration_token, Boolean assignNewClient)
+      throws UtilsException {
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F Registration process started, username: {}, email: {}",
         user.getUsername(),
@@ -200,7 +201,7 @@ public class UserService {
             clientCredential -> {
               UserValidator.validateRegistration(registration_token, clientCredential, user);
               return dataService
-                  .registerUser(user, clientCredential)
+                  .registerUser(user, clientCredential, assignNewClient)
                   .map(
                       user1 -> {
                         Response response =
@@ -289,6 +290,7 @@ public class UserService {
                       .build();
 
               Map<String, String> emailParams = TemplateParam.getTemplateParam(objects.getT1());
+              emailParams.putAll(changePassword.getParams());
 
               if (sendEmail)
                 return emailSenderService

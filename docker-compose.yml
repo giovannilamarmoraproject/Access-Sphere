@@ -1,11 +1,11 @@
 version: '3.7'
 services:
   access-sphere:
-    container_name: access-sphere-stg
+    container_name: access-sphere
     image: ${DOCKER_REPOSITORY}:${APP_VERSION}
-    hostname: access.sphere.service.stg
+    hostname: access.sphere.service
     ports:
-      - "8007:8080"
+      - "8008:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=deploy
       - DATABASE_JDBC_URL=${DATABASE_JDBC_URL}
@@ -33,7 +33,7 @@ services:
     networks:
       docker-network:
         aliases:
-          - access.sphere.service.stg
+          - access.sphere.service
 
 networks:
   docker-network:

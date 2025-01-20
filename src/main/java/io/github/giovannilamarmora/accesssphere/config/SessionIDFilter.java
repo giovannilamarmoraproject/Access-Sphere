@@ -219,8 +219,6 @@ public class SessionIDFilter implements WebFilter {
   private boolean isConfiguredGenerateSessionURI(ServerHttpRequest req, String path) {
     return generateSessionURI.stream()
             .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path))
-        // TODO: Se è un authorize senza header authorization crea un nuovo session id, da
-        // controllare per la register
         && !req.getHeaders().containsKey("Authorization");
   }
 

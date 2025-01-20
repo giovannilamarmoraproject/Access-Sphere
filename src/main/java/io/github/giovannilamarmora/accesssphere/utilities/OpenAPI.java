@@ -40,6 +40,7 @@ public final class OpenAPI {
       public static final String INCLUDE_USER_INFO = "(optional): Include UserInfo Response.";
       public static final String INCLUDE_USER_DATA = "(optional): Include UserData Response.";
       public static final String REFRESH_TOKEN = "Refresh token to refresh all tokens.";
+      public static final String ASSIGN_NEW_CLIENT = "(optional): Assign new client default roles.";
     }
 
     public final class Example {

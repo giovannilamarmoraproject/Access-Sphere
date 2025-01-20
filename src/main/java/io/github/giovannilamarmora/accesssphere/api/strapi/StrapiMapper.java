@@ -5,7 +5,6 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.*;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
-import io.github.giovannilamarmora.accesssphere.data.address.model.Address;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -44,7 +43,6 @@ public class StrapiMapper {
 
   private static ClientCredential mapFromOAuthStrapiClientToClientCredential(
       OAuthStrapiClient strapiClient) {
-    List<AppRole> defaultRole = getRoles(strapiClient.getDefault_role());
     return new ClientCredential(
         strapiClient.getClientId(),
         strapiClient.getExternalClientId(),
@@ -67,26 +65,10 @@ public class StrapiMapper {
         strapiClient.getJweSecret(),
         strapiClient.getJweExpiration(),
         strapiClient.getRegistrationToken(),
-        ObjectUtils.isEmpty(defaultRole) ? null : defaultRole.getFirst(),
-        getRoles(strapiClient.getApp_roles()),
+        strapiClient.getApp_roles(),
         strapiClient.getId_token(),
         strapiClient.getAccess_token(),
         strapiClient.getStrapi_token());
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  private static List<AppRole> getRoles(OAuthStrapiClient.Roles defaultRoles) {
-    if (ObjectUtils.isEmpty(defaultRoles) || ObjectUtils.isEmpty(defaultRoles.getData()))
-      return null;
-    return defaultRoles.getData().stream()
-        .map(
-            strapiData ->
-                new AppRole(
-                    ObjectUtils.isEmpty(strapiData.getAttributes().getId())
-                        ? strapiData.getId()
-                        : strapiData.getAttributes().getId(),
-                    strapiData.getAttributes().getRole()))
-        .toList();
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -101,8 +83,11 @@ public class StrapiMapper {
         false,
         user.getUsername(),
         user.getPassword(),
-        fromAddressesToStrapiAddresses(user.getAddresses()),
-        ObjectUtils.isEmpty(clientCredential) ? null : List.of(clientCredential.getDefaultRole()),
+        ObjectUtils.isEmpty(clientCredential)
+            ? null
+            : clientCredential.getAppRoles().stream()
+                .filter(appRole -> user.getRoles().contains(appRole.getRole()))
+                .toList(),
         user.getProfilePhoto(),
         user.getPhoneNumber(),
         user.getBirthDate(),
@@ -126,7 +111,6 @@ public class StrapiMapper {
         null,
         getAppRoles(user.getApp_roles()),
         user.getProfilePhoto(),
-        fromStrapiAddressesToAddresses(user.getAddresses()),
         user.getPhoneNumber(),
         user.getBirthDate(),
         user.getGender(),
@@ -147,40 +131,5 @@ public class StrapiMapper {
   private static List<String> getAppRoles(List<AppRole> appRoles) {
     if (ObjectUtils.isEmpty(appRoles)) return null;
     return appRoles.stream().map(AppRole::getRole).toList();
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static List<StrapiAddress> fromAddressesToStrapiAddresses(List<Address> addresses) {
-    if (ObjectUtils.isEmpty(addresses)) return null;
-    return addresses.stream().map(StrapiMapper::fromAddressToStrapiAddress).toList();
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static StrapiAddress fromAddressToStrapiAddress(Address addresses) {
-    return new StrapiAddress(
-        addresses.getId(),
-        addresses.getStreet(),
-        addresses.getCity(),
-        addresses.getState(),
-        addresses.getCountry(),
-        addresses.getZipCode(),
-        addresses.getPrimary());
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static List<Address> fromStrapiAddressesToAddresses(List<StrapiAddress> addresses) {
-    if (ObjectUtils.isEmpty(addresses)) return null;
-    return addresses.stream().map(StrapiMapper::fromStrapiAddressToAddress).toList();
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static Address fromStrapiAddressToAddress(StrapiAddress addresses) {
-    return new Address(
-        addresses.getStreet(),
-        addresses.getCity(),
-        addresses.getState(),
-        addresses.getCountry(),
-        addresses.getZipCode(),
-        addresses.getPrimary());
   }
 }

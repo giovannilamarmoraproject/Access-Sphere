@@ -13,6 +13,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.util.Date;
+import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class AccessTokenService {
       String idToken,
       String client_id,
       String session_id,
+      List<String> roles,
       Object payload) {
     AccessTokenEntity accessTokenToBeSaved = new AccessTokenEntity();
     try {
@@ -52,7 +54,8 @@ public class AccessTokenService {
               jwtData.getExp() + REFRESH_TOKEN_1D,
               jwtData.getExp(),
               Utils.mapper().writeValueAsString(payload),
-              TokenStatus.ISSUED);
+              TokenStatus.ISSUED,
+              Utils.mapper().writeValueAsString(roles));
     } catch (JsonProcessingException e) {
       LOG.error(
           "An error happen during creating and storing refresh token, message is {}",

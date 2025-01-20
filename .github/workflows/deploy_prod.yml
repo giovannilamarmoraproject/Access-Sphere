@@ -2,7 +2,7 @@ name: Deploy-STG
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ master ]
 
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -65,7 +65,7 @@ jobs:
     name: 🚀 Build & Push Docker Image
     runs-on: ubuntu-latest
     environment:
-      name: access-sphere-stg
+      name: access-sphere
     needs: [ install-test-and-build, docker-login ]
     steps:
       - uses: actions/checkout@v4.2.2
@@ -100,5 +100,5 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
           multiPlatform: true
-          #platform: linux/amd64,linux/arm64
-          platform: linux/arm64
+          platform: linux/amd64,linux/arm64
+          #platform: linux/arm64

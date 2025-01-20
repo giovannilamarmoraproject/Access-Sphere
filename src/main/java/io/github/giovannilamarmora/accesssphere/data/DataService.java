@@ -144,15 +144,21 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> registerUser(User user, ClientCredential clientCredential) {
-    if (ObjectUtils.isEmpty(clientCredential.getDefaultRole())) {
+  public Mono<User> registerUser(
+      User user, ClientCredential clientCredential, Boolean assignNewClient) {
+    AppRole defaultRole =
+        clientCredential.getAppRoles().stream()
+            .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
+            .toList()
+            .getFirst();
+    if (ObjectUtils.isEmpty(defaultRole)) {
       LOG.error(
           "Default roles not present on client configuration under client_id {}",
           clientCredential.getClientId());
       throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
     }
     //  user.setRoles(clientCredential.getDefaultRole().stream().map(AppRole::getRole).toList());
-    user.setRoles(List.of(clientCredential.getDefaultRole().getRole()));
+    user.setRoles(List.of(defaultRole.getRole()));
     // Se l'utente non ha password?
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
     userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
@@ -184,6 +190,28 @@ public class DataService {
                       "Error on strapi, register user into database, message is {}",
                       throwable.getMessage());
                   return Mono.just(saveUserEntityIntoDatabase(userEntity));
+                }
+                if (assignNewClient) {
+                  return strapiService
+                      .getUserByEmail(user.getEmail())
+                      .flatMap(
+                          strapiUser -> {
+                            if (strapiUser.getApp_roles().contains(defaultRole)) {
+                              LOG.error(
+                                  "The current user already has the role for {}",
+                                  clientCredential.getClientId());
+                              return Mono.error(throwable);
+                            }
+                            strapiUser.getApp_roles().add(defaultRole);
+                            User userToUpdate = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
+                            return strapiService
+                                .updateUser(userToUpdate)
+                                .flatMap(
+                                    strapiUser1 ->
+                                        Mono.just(
+                                            StrapiMapper.mapFromStrapiUserToUser(strapiUser)));
+                          })
+                      .onErrorResume(throwable1 -> Mono.error(throwable));
                 }
                 return Mono.error(throwable);
               })
@@ -430,12 +458,12 @@ public class DataService {
     return Mono.just(saveUserEntityIntoDatabase(userEntity));
   }
 
-  public User saveUserIntoDatabase(User user) {
+  public void saveUserIntoDatabase(User user) {
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
-    return saveUserEntityIntoDatabase(userEntity);
+    saveUserEntityIntoDatabase(userEntity);
   }
 
-  public User updateUserIntoDatabase(User user) {
+  public void updateUserIntoDatabase(User user) {
     UserEntity userSaved = userDataService.findUserEntityByIdentifier(user.getIdentifier());
     if (!ObjectUtils.isEmpty(userSaved)) {
       // Aggiornare i campi dell'entità esistente con i valori del ClientCredential
@@ -445,7 +473,7 @@ public class DataService {
       // Se il client non esiste, possiamo decidere di aggiungerlo o lanciare un'eccezione
       throw new IllegalArgumentException("User not found: " + userSaved.getIdentifier());
     }
-    return UserMapper.mapUserEntityToUser(userSaved);
+    UserMapper.mapUserEntityToUser(userSaved);
   }
 
   @Transactional
@@ -468,7 +496,8 @@ public class DataService {
 
   private void setDataBeforeUpdate(
       UserEntity userEntity, UserEntity userFind, boolean isUpdatePassword) {
-    userEntity.setId(userFind.getId());
+    if (Utilities.isNullOrEmpty(userFind)) return;
+    if (!Utilities.isNullOrEmpty(userFind.getId())) userEntity.setId(userFind.getId());
     userEntity.setIdentifier(userFind.getIdentifier());
     if (!isUpdatePassword) userEntity.setPassword(userFind.getPassword());
     userEntity.setRoles(userFind.getRoles());
