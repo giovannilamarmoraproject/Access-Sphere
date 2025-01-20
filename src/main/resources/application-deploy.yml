@@ -29,7 +29,8 @@ rest:
   client:
     strapi:
       active: true
-      baseUrl: http://app.strapi.cms:1337
+      #baseUrl: http://app.strapi.cms:1337
+      baseUrl: ${STRAPI_URL}
     email-sender:
       baseUrl: http://email.sender:8080
 

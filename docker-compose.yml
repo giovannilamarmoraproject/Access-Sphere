@@ -20,6 +20,7 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - CACHE_ENABLE=${CACHE_ENABLE}
       - COOKIE_DOMAIN=${COOKIE_DOMAIN}
+      - STRAPI_URL=http://app.strapi.cms:1337
     deploy:
       replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
       #update_config:
