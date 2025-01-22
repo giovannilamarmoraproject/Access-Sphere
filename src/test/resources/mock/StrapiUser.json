@@ -1,0 +1,32 @@
+[
+  {
+    "id": 30,
+    "username": "test22",
+    "email": "pippo@gmail.com",
+    "provider": "local",
+    "confirmed": true,
+    "blocked": false,
+    "createdAt": "2024-06-10T13:21:40.110Z",
+    "updatedAt": "2024-06-10T14:43:11.255Z",
+    "name": "Giova",
+    "surname": null,
+    "profilePhoto": null,
+    "phoneNumber": "+393471755045",
+    "birthdate": null,
+    "gender": null,
+    "occupation": null,
+    "education": null,
+    "ssn": null,
+    "tokenReset": "token",
+    "attributes": null,
+    "nationality": null,
+    "identifier": "0eceedb7-96ee-4b76-bb4c-7839e7a77b59",
+    "app_roles": [
+      {
+        "role": "TEST_ROLES",
+        "type": "DEFAULT",
+        "description": "Default token Type"
+      }
+    ]
+  }
+]

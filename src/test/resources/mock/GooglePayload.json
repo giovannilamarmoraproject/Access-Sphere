@@ -1,0 +1,15 @@
+{
+  "at_hash": "yu86ggIgUlugYJiH",
+  "aud": "43424636366-aasdffefwe76w6fwfw.apps.googleusercontent.com",
+  "azp": "43424636366-aasdffefwe76w6fwfw.apps.googleusercontent.com",
+  "email": "pippo@gmail.com",
+  "email_verified": true,
+  "exp": null,
+  "iat": null,
+  "iss": "https://accounts.google.com",
+  "sub": "147437382323437643",
+  "name": "Name Surname",
+  "picture": "Picture",
+  "given_name": "Name",
+  "family_name": "Surname"
+}

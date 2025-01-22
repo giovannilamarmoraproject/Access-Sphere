@@ -1,0 +1,61 @@
+env: "Test" # Used for Google Cloud LOG
+cookie-domain: localhost
+spring:
+  application:
+    name: access-sphere
+    starter-log: true # Show Started Application
+  datasource:
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: never
+
+filter:
+  requestResponse:
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**"
+  rate-limiting:
+    shouldFilter: "*/users/change/password,*/users/change/password/request"
+  session-id:
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**"
+    generateSessionURI: "/v1/oAuth/2.0/authorize,*/users/register"
+    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico_old"
+    logoutURI: "*/v1/oAuth/2.0/logout"
+
+rest:
+  client:
+    strapi:
+      active: true
+      baseUrl: http://strapi.app.mock
+      bearer: token
+      path:
+        clientId: /api/Oauthclientids
+        registerUser: /api/auth/local/register
+        getUserByEmail: /api/users
+        login: /api/auth/local
+        getRefreshToken: /api/auth/token/request
+        userInfo: /api/users/me
+        refreshToken: /api/auth/token
+        logout: /api/auth/revoke
+        updateUser: /api/users/:userId
+        getTemplate: /api/email-templates
+    email-sender:
+      baseUrl: https://email-sender.mock
+      path:
+        sendEmailUrl: /v1/send-email
+
+app:
+  version: 1.0.0
+  cache:
+    active: false
+    cron: 0 0 1 * * *
+  shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**"
+  exception:
+    stacktrace: false # Active StackTrace in Response
+  # Cors status
+  cors: # Disabled
+    enabled: false

@@ -1,0 +1,39 @@
+env: ${APP_ENV} # Used for Google Cloud LOG
+server:
+  port: 8080
+cookie-domain: ${COOKIE_DOMAIN} # Used for Cookie
+spring:
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: ${DATABASE_JDBC_URL}/${DATABASE_NAME}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    generate-ddl: true
+    show-sql: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
+# Level of LOG
+logging:
+  level:
+    io.github.giovannilamarmora: ${LOGGING_LEVEL}
+
+rest:
+  client:
+    strapi:
+      active: true
+      #baseUrl: http://app.strapi.cms:1337
+      baseUrl: ${STRAPI_URL}
+    email-sender:
+      baseUrl: http://email.sender:8080
+
+app:
+  cache:
+    active: ${CACHE_ENABLE}

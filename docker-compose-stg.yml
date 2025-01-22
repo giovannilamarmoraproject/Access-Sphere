@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+  access-sphere:
+    container_name: access-sphere-stg
+    image: ${DOCKER_REPOSITORY}:${APP_VERSION}
+    hostname: access.sphere.service.stg
+    ports:
+      - "8007:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=deploy
+      - DATABASE_JDBC_URL=${DATABASE_JDBC_URL}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - APP_ENV=${APP_ENV}
+      - STRAPI_AUTH_TOKEN=${STRAPI_AUTH_TOKEN}
+      - LOGGING_LEVEL=${LOGGING_LEVEL}
+      - LOGBACK_FILE=${LOGBACK_FILE}
+      - GCLOUD_PROJECT=${GCLOUD_PROJECT}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - CACHE_ENABLE=${CACHE_ENABLE}
+      - COOKIE_DOMAIN=${COOKIE_DOMAIN}
+      - STRAPI_URL=http://stg.app.strapi.cms:1337
+    deploy:
+      replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
+      #update_config:
+      #  parallelism: 1
+      #  delay: 10s
+      #restart_policy:
+      #  condition: on-failure
+      #placement:
+      #  constraints:
+      #    - node.role == manager
+    networks:
+      docker-network:
+        aliases:
+          - access.sphere.service.stg
+
+networks:
+  docker-network:
+    external: true
