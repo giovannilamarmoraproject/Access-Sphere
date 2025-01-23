@@ -27,4 +27,14 @@ public class RedirectControllerImpl {
   public String login(Model model) {
     return "login/index";
   }
+
+  @GetMapping("/cookie-policy")
+  public String cookie_policy(Model model) {
+    return "cookie-policy";
+  }
+
+  @GetMapping("/privacy-policy")
+  public String privacy_policy(Model model) {
+    return "privacy-policy";
+  }
 }
