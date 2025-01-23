@@ -87,6 +87,7 @@ public class OAuthService {
     return clientCredentialMono.map(
         clientCredential -> {
           if (!ObjectUtils.isEmpty(bearer)) {
+            LOG.info("Bearer token found {}, starting authorize check token", bearer);
             try {
               AccessTokenData accessTokenData =
                   accessTokenService.getByAccessTokenOrIdToken(bearer);
@@ -118,7 +119,9 @@ public class OAuthService {
                               Mapper.removeField(
                                   accessTokenData.getPayload(),
                                   TokenData.STRAPI_TOKEN.getToken())));
-
+              LOG.info(
+                  "\uD83D\uDD10 Completed endpoint oAuth/2.0/authorize check for bearer: {}",
+                  bearer);
               return ResponseEntity.status(HttpStatus.OK).body(response);
 
             } catch (TokenException | OAuthException e) {
