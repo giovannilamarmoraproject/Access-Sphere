@@ -38,6 +38,18 @@
 
         gtag("config", "G-R4KLC18RH6");
     </script>
+    <script>
+        function navigateToPath(path) {
+        // Ottieni l'origine attuale (es: https://stg.example.com o https://example.com)
+        const origin = window.location.origin;
+
+        // Costruisci l'URL completo aggiungendo il path
+        const fullUrl = `${origin}/${path}`;
+
+        // Reindirizza l'utente al nuovo URL
+        window.location.href = fullUrl;
+    }
+    </script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -64,8 +76,14 @@
                 <div class="links">
                     <ul>
                         <li hidden><a href="#">Features</a></li>
-                        <li style="width:140px"><a style="width:max-content" href="cookie-policy">Cookie Policy</a></li>
-                        <li style="width:140px"><a style="width:max-content" href="privacy-policy">Privacy Policy</a>
+                        <li style="width:140px"><a style="width:max-content"
+                                                   href="https://access.sphere.service.giovannilamarmora.com/cookie-policy"
+                                                   onclick="event.preventDefault(); navigateToPath('cookie-policy')">Cookie
+                            Policy</a></li>
+                        <li style="width:140px"><a style="width:max-content"
+                                                   href="https://access.sphere.service.giovannilamarmora.com/privacy-policy"
+                                                   onclick="event.preventDefault(); navigateToPath('privacy-policy')">Privacy
+                            Policy</a>
                         </li>
                         <li><a href="/login" class="btn">🔐 Login</a></li>
                     </ul>
