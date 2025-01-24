@@ -87,7 +87,7 @@ public class OAuthService {
     return clientCredentialMono.map(
         clientCredential -> {
           if (!ObjectUtils.isEmpty(bearer)) {
-            LOG.info("Bearer token found {}, starting authorize check token", bearer);
+            LOG.info("Bearer token found *******, starting authorize check token");
             try {
               AccessTokenData accessTokenData =
                   accessTokenService.getByAccessTokenOrIdToken(bearer);
