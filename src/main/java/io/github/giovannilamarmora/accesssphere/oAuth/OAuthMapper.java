@@ -1,6 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -28,6 +30,25 @@ public class OAuthMapper {
       String jsonString =
           "{\"" + TokenData.STRAPI_ACCESS_TOKEN.getToken() + "\":\"" + tokenValue + "\"}";
       return Mapper.readTree(jsonString);
+    }
+    return null;
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static JsonNode getStrapiTokenFromUser(User user, GoogleModel googleModel) {
+    JsonNode strapi_token;
+    String tokenValue =
+        Utilities.isNullOrEmpty(user.getAttributes())
+                || Utilities.isNullOrEmpty(
+                    user.getAttributes().get(TokenData.STRAPI_USER_TOKEN.getToken()))
+            ? null
+            : user.getAttributes().get(TokenData.STRAPI_USER_TOKEN.getToken()).toString();
+    if (!Utilities.isNullOrEmpty(tokenValue)) {
+      String jsonString =
+          "{\"" + TokenData.STRAPI_ACCESS_TOKEN.getToken() + "\":\"" + tokenValue + "\"}";
+      strapi_token = Mapper.readTree(jsonString);
+      googleModel.getTokenResponse().setStrapiToken(tokenValue);
+      return strapi_token;
     }
     return null;
   }

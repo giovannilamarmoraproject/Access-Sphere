@@ -10,11 +10,11 @@ import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleGrpcMapper;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -22,7 +22,6 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
-import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.util.List;
 import org.slf4j.Logger;
@@ -69,17 +68,18 @@ public class GoogleAuthService {
               googleModel.getJwtData().setRoles(user.getRoles());
               googleModel.getJwtData().setSub(user.getUsername());
 
-              JsonNode strapi_token = null;
-              String tokenValue =
-                  ObjectUtils.isEmpty(user.getAttributes())
-                      ? null
-                      : user.getAttributes().get("strapi-token").toString();
-              if (!ObjectUtils.isEmpty(tokenValue)) {
-                String jsonString =
-                    "{\"" + TokenData.STRAPI_ACCESS_TOKEN.getToken() + "\":\"" + tokenValue + "\"}";
-                strapi_token = Mapper.readTree(jsonString);
-                googleModel.getTokenResponse().setStrapiToken(tokenValue);
-              }
+              JsonNode strapi_token = OAuthMapper.getStrapiTokenFromUser(user, googleModel);
+              // String tokenValue =
+              //    ObjectUtils.isEmpty(user.getAttributes())
+              //        ? null
+              //        : user.getAttributes().get("strapi-token").toString();
+              // if (!ObjectUtils.isEmpty(tokenValue)) {
+              //  String jsonString =
+              //      "{\"" + TokenData.STRAPI_ACCESS_TOKEN.getToken() + "\":\"" + tokenValue +
+              // "\"}";
+              //  strapi_token = Mapper.readTree(jsonString);
+              //  googleModel.getTokenResponse().setStrapiToken(tokenValue);
+              // }
 
               AuthToken token =
                   tokenService.generateToken(
