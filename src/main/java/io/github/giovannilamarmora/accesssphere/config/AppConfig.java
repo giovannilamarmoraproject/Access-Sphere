@@ -29,7 +29,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     security = {@SecurityRequirement(name = HttpHeaders.AUTHORIZATION)},
     servers = {
       @Server(
-          url = "https://access.sphere.service.stg.giovannilamarmora.com/",
+          url = "https://access.sphere.service.giovannilamarmora.com",
+          description = "Staging Server URL"),
+      @Server(
+          url = "https://access.sphere.service.stg.giovannilamarmora.com",
           description = "Staging Server URL"),
       @Server(url = "http://localhost:8080", description = "Local Server URL")
     })
