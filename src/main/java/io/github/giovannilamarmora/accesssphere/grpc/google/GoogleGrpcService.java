@@ -118,10 +118,8 @@ public class GoogleGrpcService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public static void logout(String accessToken) {
-    // Crea una nuova istanza di GoogleCredential senza token di accesso
     Credential credential = new GoogleCredential.Builder().build();
 
-    // Crea una nuova istanza di HttpRequestFactory
     HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(credential);
 
     HttpRequest request = null;
@@ -129,11 +127,12 @@ public class GoogleGrpcService {
     try {
       request =
           requestFactory.buildGetRequest(
-              new GenericUrl("https://oauth2.googleapis.com/revoke?token=" + accessToken));
+              new GenericUrl("https://accounts.google.com/o/oauth2/revoke?token=" + accessToken));
       response = request.execute();
     } catch (IOException e) {
       LOG.error(
-          "An error happen during get revoke token with google, message is {}", e.getMessage());
+          "An error happened during the revoke token process with Google, message: {}",
+          e.getMessage());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 

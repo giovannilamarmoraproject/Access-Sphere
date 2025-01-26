@@ -159,7 +159,11 @@ public class AuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> logout(
       String redirect_uri, AccessTokenData accessTokenData, ServerHttpResponse response) {
-    String refreshToken = accessTokenData.getPayload().get("refresh_token").textValue();
+    String refreshToken =
+        (!Utilities.isNullOrEmpty(accessTokenData.getPayload())
+                && !Utilities.isNullOrEmpty(accessTokenData.getPayload().get("refresh_token")))
+            ? accessTokenData.getPayload().get("refresh_token").textValue()
+            : null;
 
     if (ObjectUtils.isEmpty(refreshToken)) {
       LOG.info("Strapi refresh_token not found!");
