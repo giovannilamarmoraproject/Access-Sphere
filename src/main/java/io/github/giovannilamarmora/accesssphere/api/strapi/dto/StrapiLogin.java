@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StrapiLogin {
-    private String identifier;
-    private String password;
+  private String identifier;
+  private String password;
+  // private String description;
+  // private String userAgent;
+  // private String ip;
 }
