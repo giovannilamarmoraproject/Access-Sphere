@@ -119,6 +119,7 @@ public class SessionIDFilter implements WebFilter {
 
     AccessTokenData accessTokenDB = new AccessTokenData();
     try {
+      LOG.info("Checking Bearer token for request {}", request.getPath());
       accessTokenDB = accessTokenService.getByAccessTokenOrIdToken(bearer);
     } catch (TokenException e) {
       LOG.error("An error happen during validation of token, message is {}", e.getMessage());
