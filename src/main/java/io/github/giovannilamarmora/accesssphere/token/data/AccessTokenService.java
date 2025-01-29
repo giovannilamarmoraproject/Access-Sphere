@@ -74,8 +74,15 @@ public class AccessTokenService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AccessTokenData getByAccessTokenOrIdToken(String token) {
-    String hashedToken =
-        token.contains("Bearer") ? TokenUtils.hashingToken(token.split("Bearer ")[1]) : token;
+    String extractedToken =
+        token.startsWith("Bearer ") ? token.replaceFirst("Bearer ", "").trim() : token;
+
+    if (extractedToken.isEmpty()) {
+      LOG.error("The current Bearer is empty, please provide a valid token");
+      throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
+    }
+
+    String hashedToken = TokenUtils.hashingToken(extractedToken);
     AccessTokenEntity accessToken = accessTokenDAO.findByTokenHash(hashedToken);
 
     if (ObjectUtils.isEmpty(accessToken)) {

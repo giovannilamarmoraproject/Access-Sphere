@@ -6,6 +6,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -40,19 +41,18 @@ public class JWTData {
 
   public static JWTData generateJWTData(
       User user, ClientCredential clientCredential, ServerHttpRequest request) {
+    String remoteAddress = WebManager.getRemoteAddress(request);
     return new JWTData(
         user.getIdentifier(),
-        ObjectUtils.isEmpty(request.getRemoteAddress())
+        Utilities.isNullOrEmpty(remoteAddress)
             ? null
-            : clientCredential.getClientId() + "." + request.getRemoteAddress().getHostName(),
-        ObjectUtils.isEmpty(request.getRemoteAddress())
+            : clientCredential.getClientId() + "." + remoteAddress,
+        Utilities.isNullOrEmpty(remoteAddress)
             ? null
-            : clientCredential.getClientId() + "." + request.getRemoteAddress().getHostName(),
+            : clientCredential.getClientId() + "." + remoteAddress,
         0,
         System.currentTimeMillis(),
-        ObjectUtils.isEmpty(request.getRemoteAddress())
-            ? null
-            : "https://" + request.getRemoteAddress().getHostName(),
+        Utilities.isNullOrEmpty(remoteAddress) ? null : "https://" + remoteAddress,
         user.getUsername(),
         ObjectUtils.isEmpty(user.getSurname()) || ObjectUtils.isEmpty(user.getName())
             ? null
