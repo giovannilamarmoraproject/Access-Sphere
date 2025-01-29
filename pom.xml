@@ -40,7 +40,7 @@
         <dependency>
             <groupId>io.github.giovannilamarmora.utils</groupId>
             <artifactId>utils-code</artifactId>
-            <version>1.0.50</version>
+            <version>1.0.51</version>
         </dependency>
 
         <dependency>
