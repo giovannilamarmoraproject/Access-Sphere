@@ -735,13 +735,13 @@ public class UserServiceTest {
 
     User userToUpdate = new User();
     userToUpdate.setIdentifier(strapiUser.getFirst().getIdentifier());
-    userToUpdate.setUsername(strapiUser.getFirst().getName());
+    userToUpdate.setUsername(strapiUser.getFirst().getUsername());
     userToUpdate.setEmail(strapiUser.getFirst().getEmail());
     userToUpdate.setPassword("Ciccio.2025");
 
     UserEntity userFind = new UserEntity();
     userFind.setIdentifier(strapiUser.getFirst().getIdentifier());
-    userFind.setUsername(strapiUser.getFirst().getName());
+    userFind.setUsername(strapiUser.getFirst().getUsername());
     userFind.setEmail(strapiUser.getFirst().getEmail());
     userFind.setPassword("Ciccio.2025");
 
