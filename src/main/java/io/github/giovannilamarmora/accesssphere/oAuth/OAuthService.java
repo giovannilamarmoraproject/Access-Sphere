@@ -369,11 +369,12 @@ public class OAuthService {
         clientService.getClientCredentialByClientID(clientId);
 
     // OAuthValidator.validateClientLogout(accessTokenData, clientId);
-    OAuthValidator.validateClientId(accessTokenData.getClientId(), clientId);
 
     if (isLogoutAlreadyDone()) {
       return createLogoutSuccessResponse(clientId, redirect_uri, response);
     }
+
+    OAuthValidator.validateClientId(accessTokenData.getClientId(), clientId);
 
     return clientCredentialMono
         .flatMap(

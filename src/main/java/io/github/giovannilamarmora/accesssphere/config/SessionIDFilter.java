@@ -146,6 +146,7 @@ public class SessionIDFilter implements WebFilter {
   }
 
   public Mono<Void> logoutFilter(ServerWebExchange exchange, WebFilterChain chain) {
+    LOG.info("Logout Filter detect");
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
@@ -208,14 +209,33 @@ public class SessionIDFilter implements WebFilter {
   private boolean isBearerNotRequiredEndpoint(ServerHttpRequest req) {
     String path = req.getPath().value();
     String codeParam = req.getQueryParams().getFirst("code");
+    String refreshTokenParam = req.getQueryParams().getFirst("refresh_token");
 
+    // Se è l'endpoint token e ha il parametro code (authorization code grant)
     boolean isTokenPathWithCode =
         PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path) && codeParam != null;
 
+    // Se è l'endpoint token e ha il parametro refresh_token (refresh token grant)
+    boolean isTokenPathWithRefresh =
+        PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path) && refreshTokenParam != null;
+
     return isTokenPathWithCode
+        || isTokenPathWithRefresh
         || bearerNotFilterURI.stream()
             .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
   }
+
+  // private boolean isBearerNotRequiredEndpoint(ServerHttpRequest req) {
+  //  String path = req.getPath().value();
+  //  String codeParam = req.getQueryParams().getFirst("code");
+  //
+  //  boolean isTokenPathWithCode =
+  //      PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path) && codeParam != null;
+  //
+  //  return isTokenPathWithCode
+  //      || bearerNotFilterURI.stream()
+  //          .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
+  // }
 
   private boolean isConfiguredGenerateSessionURI(ServerHttpRequest req, String path) {
     return generateSessionURI.stream()

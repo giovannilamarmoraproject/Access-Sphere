@@ -417,6 +417,10 @@ public class DataService {
     if (isStrapiEnabled) {
       LOG.debug(
           "Strapi is enabled, updating user with email {} on strapi", userToUpdate.getEmail());
+      /*
+       * The Identifier of the user is already validated so we call strapi to get the strapi id to
+       * let update the user into the strapi, then we get the strapi user in order to update the user into the database
+       */
       return strapiService
           .getUserByIdentifier(userToUpdate.getIdentifier())
           .flatMap(
@@ -434,7 +438,8 @@ public class DataService {
                               userDataService.findUserEntityByIdentifier(
                                   userToUpdate.getIdentifier());
                           setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
-                          return saveUserEntityIntoDatabase(userEntity);
+                          saveUserEntityIntoDatabase(userEntity);
+                          return StrapiMapper.mapFromStrapiUserToUser(strapiUserUpdated);
                         })
                     .onErrorResume(
                         throwable -> {
