@@ -8,7 +8,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -22,8 +22,8 @@ public class OAuthMapper {
   public static JsonNode getStrapiToken(JsonNode payload) {
     JsonNode strapi_token = null;
     String tokenValue =
-        (Utilities.isNullOrEmpty(payload)
-                || Utilities.isNullOrEmpty(payload.get(TokenData.STRAPI_TOKEN.getToken())))
+        (ObjectToolkit.isNullOrEmpty(payload)
+                || ObjectToolkit.isNullOrEmpty(payload.get(TokenData.STRAPI_TOKEN.getToken())))
             ? null
             : payload.get(TokenData.STRAPI_TOKEN.getToken()).asText();
     if (!ObjectUtils.isEmpty(tokenValue)) {
@@ -38,12 +38,12 @@ public class OAuthMapper {
   public static JsonNode getStrapiTokenFromUser(User user, GoogleModel googleModel) {
     JsonNode strapi_token;
     String tokenValue =
-        Utilities.isNullOrEmpty(user.getAttributes())
-                || Utilities.isNullOrEmpty(
+        ObjectToolkit.isNullOrEmpty(user.getAttributes())
+                || ObjectToolkit.isNullOrEmpty(
                     user.getAttributes().get(TokenData.STRAPI_USER_TOKEN.getToken()))
             ? null
             : user.getAttributes().get(TokenData.STRAPI_USER_TOKEN.getToken()).toString();
-    if (!Utilities.isNullOrEmpty(tokenValue)) {
+    if (!ObjectToolkit.isNullOrEmpty(tokenValue)) {
       String jsonString =
           "{\"" + TokenData.STRAPI_ACCESS_TOKEN.getToken() + "\":\"" + tokenValue + "\"}";
       strapi_token = Mapper.readTree(jsonString);

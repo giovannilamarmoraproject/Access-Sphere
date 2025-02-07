@@ -32,7 +32,7 @@ public class UserValidator {
       if (!clientCredential.getAuthType().equals(accessTokenData.getType())) {
         LOG.error("Invalid Authentication Type on client");
         throw new OAuthException(
-            ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+            ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
       }
   }
 
@@ -43,7 +43,7 @@ public class UserValidator {
           "The JWT User {}, is different than the one on google {}",
           decryptToken.getEmail(),
           userInfo.getUserInfo().get("email"));
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 

@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
@@ -44,15 +45,15 @@ public class JWTData {
     String remoteAddress = WebManager.getRemoteAddress(request);
     return new JWTData(
         user.getIdentifier(),
-        Utilities.isNullOrEmpty(remoteAddress)
+        ObjectToolkit.isNullOrEmpty(remoteAddress)
             ? null
             : clientCredential.getClientId() + "." + remoteAddress,
-        Utilities.isNullOrEmpty(remoteAddress)
+        ObjectToolkit.isNullOrEmpty(remoteAddress)
             ? null
             : clientCredential.getClientId() + "." + remoteAddress,
         0,
         System.currentTimeMillis(),
-        Utilities.isNullOrEmpty(remoteAddress) ? null : "https://" + remoteAddress,
+        ObjectToolkit.isNullOrEmpty(remoteAddress) ? null : "https://" + remoteAddress,
         user.getUsername(),
         ObjectUtils.isEmpty(user.getSurname()) || ObjectUtils.isEmpty(user.getName())
             ? null
@@ -63,7 +64,7 @@ public class JWTData {
         user.getSurname(),
         null,
         true,
-        Utilities.isNullOrEmpty(user.getRoles()) ? null : user.getRoles(),
+        ObjectToolkit.isNullOrEmpty(user.getRoles()) ? null : user.getRoles(),
         // ObjectUtils.isEmpty(defaultRole) ? null : List.of(defaultRole.getRole()),
         //   : clientCredential.getDefaultRoles().stream().map(AppRole::getRole).toList(),
         OAuthType.BEARER,

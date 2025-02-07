@@ -27,7 +27,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.net.URI;
@@ -132,8 +132,8 @@ public class OAuthService {
 
               LOG.warn("Token validation failed: {}", e.getMessage());
 
-              if (!Utilities.isNullOrEmpty(clientCredential.getRedirect_uri())
-                  && !Utilities.isNullOrEmpty(
+              if (!ObjectToolkit.isNullOrEmpty(clientCredential.getRedirect_uri())
+                  && !ObjectToolkit.isNullOrEmpty(
                       clientCredential.getRedirect_uri().get("fallback_uri"))) {
                 URI fallbackLocation =
                     URI.create(clientCredential.getRedirect_uri().get("fallback_uri"));

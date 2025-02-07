@@ -26,6 +26,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
@@ -290,7 +291,7 @@ public class UserService {
                       .build();
 
               Map<String, String> emailParams = TemplateParam.getTemplateParam(objects.getT1());
-              if (!Utilities.isNullOrEmpty(changePassword.getParams()))
+              if (!ObjectToolkit.isNullOrEmpty(changePassword.getParams()))
                 emailParams.putAll(changePassword.getParams());
 
               if (sendEmail)

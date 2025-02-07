@@ -136,7 +136,7 @@ public class SessionIDFilter implements WebFilter {
           session_id);
       return ExceptionHandler.handleFilterException(
           new OAuthException(
-              ExceptionMap.ERR_OAUTH_403, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
+              ExceptionMap.ERR_OAUTH_401, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
           exchange);
     }
     addSessionInContext(session_id);
@@ -181,7 +181,7 @@ public class SessionIDFilter implements WebFilter {
             session_id);
         return ExceptionHandler.handleFilterException(
             new OAuthException(
-                ExceptionMap.ERR_OAUTH_403, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
+                ExceptionMap.ERR_OAUTH_401, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
             exchange);
       }
       addSessionInContext(session_id);

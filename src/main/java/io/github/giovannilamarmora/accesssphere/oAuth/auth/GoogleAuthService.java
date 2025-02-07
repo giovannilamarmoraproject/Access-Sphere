@@ -111,13 +111,13 @@ public class GoogleAuthService {
                 if (ObjectUtils.isEmpty(registration_token)) {
                   LOG.error("Missing registration_token");
                   throw new OAuthException(
-                      ExceptionMap.ERR_OAUTH_403,
+                      ExceptionMap.ERR_OAUTH_401,
                       "Missing registration_token, you cannot proceed!");
                 }
                 if (!registration_token.equalsIgnoreCase(clientCredential.getRegistrationToken())) {
                   LOG.error("Invalid registration_token");
                   throw new OAuthException(
-                      ExceptionMap.ERR_OAUTH_403,
+                      ExceptionMap.ERR_OAUTH_401,
                       "Invalid registration_token, you cannot proceed!");
                 }
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);

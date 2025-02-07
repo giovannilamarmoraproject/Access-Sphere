@@ -8,7 +8,7 @@ import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,17 +43,17 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateClientRoles(ClientCredential clientCredential) {
-    if (Utilities.isNullOrEmpty(clientCredential.getAppRoles())) {
+    if (ObjectToolkit.isNullOrEmpty(clientCredential.getAppRoles())) {
       LOG.error("The Client must have a valid role configuration to proceed");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid Roles Configuration!");
     }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateUserRoles(ClientCredential clientCredential, List<String> userRoles) {
-    if (Utilities.isNullOrEmpty(userRoles)) {
+    if (ObjectToolkit.isNullOrEmpty(userRoles)) {
       LOG.error("The User must have a role to proceed {}", userRoles);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
     validateClientRoles(clientCredential);
@@ -64,7 +64,7 @@ public class OAuthValidator {
           "The User must have a valid role as {} to proceed {}",
           clientCredential.getAppRoles(),
           userRoles);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
   }
 
@@ -252,8 +252,8 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateGrantType(String expected_grant_type, String actual_grant_type) {
-    if (Utilities.isNullOrEmpty(expected_grant_type)
-        || Utilities.isNullOrEmpty(actual_grant_type)) {
+    if (ObjectToolkit.isNullOrEmpty(expected_grant_type)
+        || ObjectToolkit.isNullOrEmpty(actual_grant_type)) {
       LOG.error("You must have a valid grant_type {} to proceed", expected_grant_type);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "No grant_type provided!");
     }
@@ -269,7 +269,7 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateScopes(List<String> expected_scopes, String actual_scope) {
-    if (Utilities.isNullOrEmpty(expected_scopes) || Utilities.isNullOrEmpty(actual_scope)) {
+    if (ObjectToolkit.isNullOrEmpty(expected_scopes) || ObjectToolkit.isNullOrEmpty(actual_scope)) {
       LOG.error("You must have a valid scopes {} to proceed", expected_scopes);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "No scopes provided!");
     }
@@ -283,7 +283,8 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateClientId(String expected_client_id, String actual_client_id) {
-    if (Utilities.isNullOrEmpty(expected_client_id) || Utilities.isNullOrEmpty(actual_client_id)) {
+    if (ObjectToolkit.isNullOrEmpty(expected_client_id)
+        || ObjectToolkit.isNullOrEmpty(actual_client_id)) {
       LOG.error("You must have a valid client_id {} to proceed", expected_client_id);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "No client_id provided!");
     }
@@ -300,7 +301,7 @@ public class OAuthValidator {
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateResponseType(
       String expected_responseType, String actual_responseType) {
-    if (Utilities.isNullOrEmpty(actual_responseType)) {
+    if (ObjectToolkit.isNullOrEmpty(actual_responseType)) {
       LOG.error("The Response Type should be a valid response_type");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid response_type provided!");
     }
@@ -316,8 +317,8 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateAccessType(String expected_access_type, String actual_access_type) {
-    if (Utilities.isNullOrEmpty(expected_access_type)
-        || Utilities.isNullOrEmpty(actual_access_type)) {
+    if (ObjectToolkit.isNullOrEmpty(expected_access_type)
+        || ObjectToolkit.isNullOrEmpty(actual_access_type)) {
       LOG.error("You must have a valid access_type {} to proceed", expected_access_type);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "No access_type provided!");
     }
@@ -334,9 +335,9 @@ public class OAuthValidator {
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRedirectUri(
       Map<String, String> expected_redirectUri, String actual_redirectUri, String client_id) {
-    if (Utilities.isNullOrEmpty(expected_redirectUri)
-        || Utilities.isNullOrEmpty(actual_redirectUri)) {
-      if (Utilities.isNullOrEmpty(expected_redirectUri)) {
+    if (ObjectToolkit.isNullOrEmpty(expected_redirectUri)
+        || ObjectToolkit.isNullOrEmpty(actual_redirectUri)) {
+      if (ObjectToolkit.isNullOrEmpty(expected_redirectUri)) {
         LOG.error(
             "Missing configuration for the client {} on the redirect uri, miss match expected {} found {}",
             client_id,
