@@ -44,5 +44,5 @@ networks:
     external: true
 
 volumes:
-  # Il volume "microservice" verrà creato automaticamente se non esiste
   microservice:
+    external: true
