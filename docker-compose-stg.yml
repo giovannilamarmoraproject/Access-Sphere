@@ -21,6 +21,9 @@ services:
       - CACHE_ENABLE=${CACHE_ENABLE}
       - COOKIE_DOMAIN=${COOKIE_DOMAIN}
       - STRAPI_URL=http://stg.app.strapi.cms:1337
+    volumes:
+      # Monta il volume "microservice" nella cartella /secrets (in sola lettura)
+      - microservice:/secrets:ro
     deploy:
       replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
       #update_config:
@@ -39,3 +42,7 @@ services:
 networks:
   docker-network:
     external: true
+
+volumes:
+  # Il volume "microservice" verrà creato automaticamente se non esiste
+  microservice:
