@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -23,6 +24,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.web.CookieManager;
+import java.net.URI;
 import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +53,7 @@ public class GoogleAuthService {
   public Mono<ResponseEntity<Response>> performGoogleLogin(
       GoogleModel googleModel,
       ClientCredential clientCredential,
+      String redirect_uri,
       ServerHttpRequest request,
       ServerHttpResponse serverHttpResponse) {
     boolean includeUserInfo =
@@ -69,17 +72,6 @@ public class GoogleAuthService {
               googleModel.getJwtData().setSub(user.getUsername());
 
               JsonNode strapi_token = OAuthMapper.getStrapiTokenFromUser(user, googleModel);
-              // String tokenValue =
-              //    ObjectUtils.isEmpty(user.getAttributes())
-              //        ? null
-              //        : user.getAttributes().get("strapi-token").toString();
-              // if (!ObjectUtils.isEmpty(tokenValue)) {
-              //  String jsonString =
-              //      "{\"" + TokenData.STRAPI_ACCESS_TOKEN.getToken() + "\":\"" + tokenValue +
-              // "\"}";
-              //  strapi_token = Mapper.readTree(jsonString);
-              //  googleModel.getTokenResponse().setStrapiToken(tokenValue);
-              // }
 
               AuthToken token =
                   tokenService.generateToken(
@@ -90,17 +82,25 @@ public class GoogleAuthService {
                       HttpStatus.OK.value(),
                       "Login successfully, welcome " + user.getUsername() + " !",
                       TraceUtils.getSpanID(),
-                      includeUserInfo
-                          ? new OAuthTokenResponse(token, strapi_token, googleModel.getJwtData())
-                          : (ObjectUtils.isEmpty(strapi_token)
-                              ? token
-                              : new OAuthTokenResponse(token, strapi_token)));
+                      new OAuthTokenResponse(
+                          token,
+                          strapi_token,
+                          includeUserInfo ? googleModel.getJwtData() : null,
+                          includeUserData ? user : null));
+              // includeUserInfo
+              //    ? new OAuthTokenResponse(token, strapi_token, googleModel.getJwtData())
+              //    : (ObjectUtils.isEmpty(strapi_token)
+              //        ? token
+              //        : new OAuthTokenResponse(token, strapi_token)));
               CookieManager.setCookieInResponse(
                   Cookie.COOKIE_ACCESS_TOKEN,
                   token.getAccess_token(),
                   cookieDomain,
                   serverHttpResponse);
-              return ResponseEntity.ok(response);
+              URI finalRedirectURI =
+                  OAuthMapper.getFinalRedirectURI(
+                      clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+              return ResponseEntity.ok().location(finalRedirectURI).body(response);
             })
         .onErrorResume(
             throwable -> {
@@ -147,14 +147,19 @@ public class GoogleAuthService {
                                   HttpStatus.OK.value(),
                                   "Login successfully, welcome " + user1.getUsername() + "!",
                                   TraceUtils.getSpanID(),
-                                  includeUserInfo
-                                      ? new OAuthTokenResponse(
-                                          token,
-                                          googleModel.getJwtData(),
-                                          includeUserData ? user1 : null)
-                                      : includeUserData
-                                          ? new OAuthTokenResponse(token, user1)
-                                          : token);
+                                  new OAuthTokenResponse(
+                                      token,
+                                      null,
+                                      includeUserInfo ? googleModel.getJwtData() : null,
+                                      includeUserData ? user1 : null));
+                          // includeUserInfo
+                          //    ? new OAuthTokenResponse(
+                          //        token,
+                          //        googleModel.getJwtData(),
+                          //        includeUserData ? user1 : null)
+                          //    : includeUserData
+                          //        ? new OAuthTokenResponse(token, user1)
+                          //        : token);
                           return ResponseEntity.ok(response);
                         });
               }

@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -22,7 +23,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.net.URI;
 import java.util.Base64;
@@ -115,7 +115,10 @@ public class AuthService {
                       .asText(),
                   cookieDomain,
                   serverHttpResponse);
-              return ResponseEntity.ok().location(URI.create(redirect_uri)).body(response);
+              URI finalRedirectURI =
+                  OAuthMapper.getFinalRedirectURI(
+                      clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+              return ResponseEntity.ok().location(finalRedirectURI).body(response);
             });
   }
 

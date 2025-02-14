@@ -31,14 +31,6 @@ public class OAuthValidator {
     validateRequestedTokenType(tokenExchange.getRequested_token_type());
 
     validateScopes(clientCredential.getScopes(), tokenExchange.getScope());
-    // List<String> scopes = List.of(tokenExchange.getScope().split(" "));
-    // if (!new HashSet<>(clientCredential.getScopes()).containsAll(scopes)) {
-    //  LOG.error(
-    //      "The Scopes provided should be {} instead of {}",
-    //      clientCredential.getScopes(),
-    //      tokenExchange.getScope());
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid scope provided!");
-    // }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
@@ -77,36 +69,13 @@ public class OAuthValidator {
       String scope) {
 
     validateResponseType("code", responseType);
-    // if (!responseType.equalsIgnoreCase("code")) {
-    //  LOG.error("The Response Type should be code instead of {}", responseType);
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid response_type provided!");
-    // }
+
     validateAccessType(clientCredential.getAccessType().value(), accessType);
-    // if (!accessType.equalsIgnoreCase(clientCredential.getAccessType().value())) {
-    //  LOG.error(
-    //      "The Access Type provided should be {} instead of {}",
-    //      clientCredential.getAccessType().value(),
-    //      accessType);
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid access_type provided!");
-    // }
+
     validateRedirectUri(
         clientCredential.getRedirect_uri(), redirectUri, clientCredential.getClientId());
-    // List<String> redirect_uris =
-    //    List.of(clientCredential.getRedirect_uri().get("redirect_uri").split(" "));
-    // if (!redirect_uris.contains(redirectUri)) {
-    //  LOG.error(
-    //      "The Redirect Uri provided should be {} instead of {}",
-    //      clientCredential.getRedirect_uri(),
-    //      redirectUri);
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid redirect_uri provided!");
-    // }
+
     validateScopes(clientCredential.getScopes(), scope);
-    // List<String> scopes = List.of(scope.split(" "));
-    // if (!new HashSet<>(clientCredential.getScopes()).containsAll(scopes)) {
-    //  LOG.error(
-    //      "The Scopes provided should be {} instead of {}", clientCredential.getScopes(), scope);
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid scope provided!");
-    // }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
@@ -118,34 +87,9 @@ public class OAuthValidator {
     }
 
     validateGrantType(GrantType.PASSWORD.type(), grantType);
-    // if (ObjectUtils.isEmpty(grantType) || !grantType.equalsIgnoreCase(GrantType.PASSWORD.type()))
-    // {
-    //  LOG.error("The Grant Type provided should be password instead of {}", grantType);
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid grant_type provided!");
-    // }
+
     validateRedirectUri(
         clientCredential.getRedirect_uri(), redirect_uri, clientCredential.getClientId());
-    // if (!ObjectUtils.isEmpty(redirect_uri)) {
-    //  if (ObjectUtils.isEmpty(clientCredential.getRedirect_uri())) {
-    //    LOG.error(
-    //        "Missing configuration for the client {} on the redirect uri, miss match expected {}
-    // found {}",
-    //        clientCredential.getClientId(),
-    //        redirect_uri,
-    //        clientCredential.getRedirect_uri());
-    //    throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid redirect_uri provided!");
-    //  }
-    //
-    //  List<String> redirect_uris =
-    //      List.of(clientCredential.getRedirect_uri().get("redirect_uri").split(" "));
-    //  if (!redirect_uris.contains(redirect_uri)) {
-    //    LOG.error(
-    //        "The Redirect URI provided should be {} instead of {}",
-    //        clientCredential.getRedirect_uri(),
-    //        redirect_uri);
-    //    throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid redirect_uri provided!");
-    //  }
-    // }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
@@ -172,11 +116,6 @@ public class OAuthValidator {
     validateClientRoles(clientCredential);
 
     validateGrantType(GrantType.AUTHORIZATION_CODE.type(), grantType);
-    // if (ObjectUtils.isEmpty(grantType)
-    //    || !grantType.equalsIgnoreCase(GrantType.AUTHORIZATION_CODE.type())) {
-    //  LOG.error("The Grant Type provided should be authorization_code instead of {}", grantType);
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid grant_type provided!");
-    // }
 
     if (ObjectUtils.isEmpty(code)) {
       LOG.error("No Code found");
@@ -186,28 +125,7 @@ public class OAuthValidator {
     validateRedirectUri(
         clientCredential.getRedirect_uri(), redirect_uri, clientCredential.getClientId());
 
-    // if (ObjectUtils.isEmpty(redirect_uri)) {
-    //  LOG.error("No Redirect URI found");
-    //  throw new OAuthException(
-    //      ExceptionMap.ERR_OAUTH_400, "The param redirect_uri is a required field!");
-    // }
-    // List<String> redirect_uris =
-    //    List.of(clientCredential.getRedirect_uri().get("redirect_uri").split(" "));
-    // if (!redirect_uris.contains(redirect_uri)) {
-    //  LOG.error(
-    //      "The Redirect URI provided should be {} instead of {}",
-    //      clientCredential.getRedirect_uri(),
-    //      redirect_uri);
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid redirect_uri provided!");
-    // }
-
     validateScopes(clientCredential.getScopes(), scope);
-    // List<String> scopes = List.of(scope.split(" "));
-    // if (!new HashSet<>(clientCredential.getScopes()).containsAll(scopes)) {
-    //  LOG.error("Scopes provided should be {} instead of {}", clientCredential.getScopes(),
-    // scope);
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid scope provided!");
-    // }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
@@ -219,27 +137,12 @@ public class OAuthValidator {
     }
 
     validateGrantType(GrantType.REFRESH_TOKEN.type(), grant_type);
-    // if (ObjectUtils.isEmpty(grant_type)
-    //    || !grant_type.equalsIgnoreCase(GrantType.REFRESH_TOKEN.type())) {
-    //  LOG.error(
-    //      "The grant_type should be {} instead of {}", GrantType.REFRESH_TOKEN.type(),
-    // grant_type);
-    //  throw new OAuthException(
-    //      ExceptionMap.ERR_OAUTH_400, "Invalid request, you must provide a valid grant_type!");
-    // }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRefreshTokenData(
       AccessTokenData accessTokenData, ClientCredential clientCredential) {
     validateClientId(accessTokenData.getClientId(), clientCredential.getClientId());
-    // if (!accessTokenData.getClientId().equalsIgnoreCase(clientCredential.getClientId())) {
-    //  LOG.error(
-    //      "The Client ID should be {} instead of {}",
-    //      accessTokenData.getClientId(),
-    //      clientCredential.getClientId());
-    //  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
-    // }
 
     if (!accessTokenData.getType().equals(clientCredential.getAuthType())) {
       LOG.error(

@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
@@ -31,10 +32,10 @@ import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -74,107 +76,31 @@ public class OAuthService {
       String bearer,
       String state,
       ServerHttpResponse serverHttpResponse) {
+
     LOG.info(
-        "\uD83D\uDD10 Starting endpoint oAuth/2.0/authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
+        "🔐 Starting oAuth/2.0/authorize - clientId: {}, accessType: {}, responseType: {}",
         clientId,
         accessType,
-        responseType,
-        registration_token);
+        responseType);
+
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
+    String finalRedirectUri = Utils.decodeURLValue(redirect_uri);
 
-    String finalRedirect_uri = Utils.decodeURLValue(redirect_uri);
     return clientCredentialMono.map(
         clientCredential -> {
-          if (!ObjectUtils.isEmpty(bearer)) {
-            LOG.info("Bearer token found *******, starting authorize check token");
-            try {
-              AccessTokenData accessTokenData =
-                  accessTokenService.getByAccessTokenOrIdToken(bearer);
-              OAuthValidator.validateUserRoles(clientCredential, accessTokenData.getRoles());
-              OAuthValidator.validateClientId(
-                  accessTokenData.getClientId(), clientCredential.getClientId());
-              AuthToken token = new AuthToken();
-              token.setAccess_token(
-                  bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
-
-              Map<String, Object> strapiToken = null;
-              if (accessTokenData.getPayload().has(TokenData.STRAPI_TOKEN.getToken())) {
-                strapiToken = new HashMap<>();
-                strapiToken.put(
-                    TokenData.STRAPI_ACCESS_TOKEN.getToken(),
-                    accessTokenData.getPayload().get(TokenData.STRAPI_TOKEN.getToken()).asText());
-              }
-
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "Token is valid",
-                      TraceUtils.getSpanID(),
-                      ObjectUtils.isEmpty(strapiToken)
-                          ? new OAuthTokenResponse(token, accessTokenData.getPayload())
-                          : new OAuthTokenResponse(
-                              token,
-                              Mapper.readTree(strapiToken),
-                              Mapper.removeField(
-                                  accessTokenData.getPayload(),
-                                  TokenData.STRAPI_TOKEN.getToken())));
-              LOG.info(
-                  "\uD83D\uDD10 Completed endpoint oAuth/2.0/authorize check for bearer: {}",
-                  bearer);
-              return ResponseEntity.status(HttpStatus.OK).body(response);
-
-            } catch (TokenException | OAuthException e) {
-              if (e instanceof OAuthException exception
-                  && exception.getExceptionCode().equals(ExceptionMap.ERR_OAUTH_401))
-                throw new OAuthException(
-                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
-
-              LOG.warn("Token validation failed: {}", e.getMessage());
-
-              if (!ObjectToolkit.isNullOrEmpty(clientCredential.getRedirect_uri())
-                  && !ObjectToolkit.isNullOrEmpty(
-                      clientCredential.getRedirect_uri().get("fallback_uri"))) {
-                URI fallbackLocation =
-                    URI.create(clientCredential.getRedirect_uri().get("fallback_uri"));
-
-                Response response =
-                    new Response(
-                        HttpStatus.TEMPORARY_REDIRECT.value(),
-                        "Token is not valid",
-                        TraceUtils.getSpanID(),
-                        fallbackLocation);
-
-                return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                    .location(fallbackLocation)
-                    .body(response);
-              }
-              return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                  .body(
-                      new Response(
-                          HttpStatus.UNAUTHORIZED.value(),
-                          "Token is not valid",
-                          TraceUtils.getSpanID(),
-                          null));
-            }
+          if (StringUtils.hasText(bearer)) {
+            return handleBearerToken(bearer, clientCredential);
           }
 
-          OAuthValidator.validateClient(
-              clientCredential, responseType, accessType, finalRedirect_uri, scope);
-          URI location =
-              GrpcService.getGoogleOAuthLocation(
-                  scope, finalRedirect_uri, accessType, clientCredential);
-          CookieManager.setCookieInResponse(
-              Cookie.COOKIE_REDIRECT_URI, finalRedirect_uri, cookieDomain, serverHttpResponse);
-          CookieManager.setCookieInResponse(
-              Cookie.COOKIE_TOKEN, registration_token, cookieDomain, serverHttpResponse);
-          LOG.info(
-              "\uD83D\uDD10 Completed endpoint oAuth/2.0/authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
-              clientId,
-              accessType,
+          return handleOAuthAuthorization(
+              clientCredential,
               responseType,
-              registration_token);
-          return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT).location(location).build();
+              accessType,
+              finalRedirectUri,
+              scope,
+              registration_token,
+              serverHttpResponse);
         });
   }
 
@@ -256,6 +182,105 @@ public class OAuthService {
                     tokenExchange.getClient_id()));
   }
 
+  private ResponseEntity<?> handleBearerToken(String bearer, ClientCredential clientCredential) {
+    LOG.info("✅ Bearer token found *******, starting authorization check");
+
+    try {
+      AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+      OAuthValidator.validateUserRoles(clientCredential, accessTokenData.getRoles());
+      OAuthValidator.validateClientId(
+          accessTokenData.getClientId(), clientCredential.getClientId());
+
+      AuthToken token = new AuthToken();
+      token.setAccess_token(bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
+
+      Map<String, Object> strapiToken = OAuthMapper.extractStrapiToken(accessTokenData);
+
+      Response response =
+          new Response(
+              HttpStatus.OK.value(),
+              "Token is valid",
+              TraceUtils.getSpanID(),
+              strapiToken == null
+                  ? new OAuthTokenResponse(token, accessTokenData.getPayload())
+                  : new OAuthTokenResponse(
+                      token,
+                      Mapper.readTree(strapiToken),
+                      Mapper.removeField(
+                          accessTokenData.getPayload(), TokenData.STRAPI_TOKEN.getToken())));
+
+      LOG.info("✅ Authorization successful for bearer: {}", bearer);
+      return ResponseEntity.ok(response);
+
+    } catch (TokenException | OAuthException e) {
+      return handleInvalidToken(clientCredential, e);
+    }
+  }
+
+  private ResponseEntity<?> handleInvalidToken(ClientCredential clientCredential, Exception e) {
+    LOG.warn("❌ Token validation failed: {}", e.getMessage());
+
+    if (e instanceof OAuthException exception
+        && exception.getExceptionCode().equals(ExceptionMap.ERR_OAUTH_401)) {
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+
+    if (!ObjectToolkit.isNullOrEmpty(clientCredential.getRedirect_uri())
+        && !ObjectToolkit.isNullOrEmpty(
+            clientCredential.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()))) {
+
+      URI fallbackLocation =
+          URI.create(clientCredential.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()));
+
+      Response response =
+          new Response(
+              HttpStatus.FOUND.value(),
+              "Token is not valid",
+              TraceUtils.getSpanID(),
+              fallbackLocation);
+
+      return ResponseEntity.status(HttpStatus.FOUND).location(fallbackLocation).body(response);
+    }
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(
+            new Response(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Token is not valid",
+                TraceUtils.getSpanID(),
+                null));
+  }
+
+  private ResponseEntity<?> handleOAuthAuthorization(
+      ClientCredential clientCredential,
+      String responseType,
+      String accessType,
+      String finalRedirectUri,
+      String scope,
+      String registrationToken,
+      ServerHttpResponse serverHttpResponse) {
+
+    OAuthValidator.validateClient(
+        clientCredential, responseType, accessType, finalRedirectUri, scope);
+    URI location =
+        GrpcService.getGoogleOAuthLocation(scope, finalRedirectUri, accessType, clientCredential);
+
+    CookieManager.setCookieInResponse(
+        Cookie.COOKIE_REDIRECT_URI, finalRedirectUri, cookieDomain, serverHttpResponse);
+    CookieManager.setCookieInResponse(
+        Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, serverHttpResponse);
+
+    LOG.info(
+        "✅ OAuth authorization completed - clientId: {}, accessType: {}, responseType: {}",
+        clientCredential.getClientId(),
+        accessType,
+        responseType);
+
+    return ResponseEntity.status(clientCredential.getAuthorize_redirect_status())
+        .location(location)
+        .build();
+  }
+
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private Mono<ResponseEntity<?>> getToken(
       String clientId,
@@ -279,7 +304,7 @@ public class OAuthService {
         .flatMap(
             clientCredential -> {
               OAuthType authType =
-                  getOAuthType(clientCredential, accessTokenData, grant_type, code);
+                  OAuthMapper.getOAuthType(clientCredential, accessTokenData, grant_type, code);
               // OAuthValidator.validateClientId(clientCredential, clientId);
               switch (authType) {
                 case BEARER -> {
@@ -300,7 +325,8 @@ public class OAuthService {
                   GoogleModel googleModel =
                       GrpcService.authenticateOAuth(code, scope, redirectUri, clientCredential);
                   return googleAuthService
-                      .performGoogleLogin(googleModel, clientCredential, request, response)
+                      .performGoogleLogin(
+                          googleModel, clientCredential, redirect_uri, request, response)
                       .doOnSuccess(
                           responseResponseEntity -> LOG.info("Google oAuth 2.0 Login ended"));
                 }
@@ -374,12 +400,14 @@ public class OAuthService {
       return createLogoutSuccessResponse(clientId, redirect_uri, response);
     }
 
-    OAuthValidator.validateClientId(accessTokenData.getClientId(), clientId);
+    AccessTokenData tokenData = new AccessTokenData();
+    BeanUtils.copyProperties(accessTokenData, tokenData);
+    OAuthValidator.validateClientId(tokenData.getClientId(), clientId);
 
     return clientCredentialMono
         .flatMap(
             clientCredential ->
-                processLogoutByAuthType(accessTokenData, clientCredential, redirect_uri, response))
+                processLogoutByAuthType(tokenData, clientCredential, redirect_uri, response))
         .doOnSuccess(
             responseEntity ->
                 LOG.info(
@@ -411,7 +439,7 @@ public class OAuthService {
       ClientCredential clientCredential,
       String redirect_uri,
       ServerHttpResponse response) {
-    return switch (getOAuthType(clientCredential, accessTokenData, null, null)) {
+    return switch (OAuthMapper.getOAuthType(clientCredential, accessTokenData, null, null)) {
       case BEARER -> authService.logout(redirect_uri, accessTokenData, response);
       case GOOGLE -> googleAuthService.processGoogleLogout(redirect_uri, accessTokenData, response);
       default -> defaultErrorType();
@@ -422,20 +450,5 @@ public class OAuthService {
     LOG.error("Type not configured, miss match on client");
     return Mono.error(
         new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
-  }
-
-  private OAuthType getOAuthType(
-      ClientCredential clientCredential,
-      AccessTokenData accessTokenData,
-      String grant_type,
-      String code) {
-    if (!ObjectUtils.isEmpty(grant_type) || !ObjectUtils.isEmpty(code))
-      return clientCredential.getAuthType().equals(OAuthType.ALL_TYPE) && !ObjectUtils.isEmpty(code)
-          ? OAuthType.GOOGLE
-          : (clientCredential.getAuthType().equals(OAuthType.ALL_TYPE)
-                  && grant_type.equalsIgnoreCase(GrantType.PASSWORD.type())
-              ? OAuthType.BEARER
-              : clientCredential.getAuthType());
-    else return accessTokenData.getType();
   }
 }

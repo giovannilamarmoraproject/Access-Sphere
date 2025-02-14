@@ -56,7 +56,8 @@ public class ClientMapper {
                       clientCredentialEntity.getAppRoles(), new TypeReference<>() {}),
               clientCredentialEntity.getIdToken(),
               clientCredentialEntity.getAccessToken(),
-              clientCredentialEntity.getStrapiToken());
+              clientCredentialEntity.getStrapiToken(),
+              clientCredentialEntity.getAuthorize_redirect_status());
       clientCredential.setId(clientCredentialEntity.getId());
       return clientCredential;
     } catch (JsonProcessingException e) {
@@ -91,7 +92,8 @@ public class ClientMapper {
             : Mapper.writeObjectToString(clientCredential.getAppRoles()),
         clientCredential.getIdToken(),
         clientCredential.getAccessToken(),
-        clientCredential.getStrapiToken());
+        clientCredential.getStrapiToken(),
+        clientCredential.getAuthorize_redirect_status());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -123,6 +125,7 @@ public class ClientMapper {
     existingClient.setIdToken(clientCredential.getIdToken());
     existingClient.setAccessToken(clientCredential.getAccessToken());
     existingClient.setStrapiToken(clientCredential.getStrapiToken());
+    existingClient.setAuthorize_redirect_status(clientCredential.getAuthorize_redirect_status());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

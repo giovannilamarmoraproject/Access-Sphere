@@ -71,9 +71,6 @@ public class SessionIDFilter implements WebFilter {
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
-    // HttpCookie sessionCookie = request.getCookies().getFirst(Cookie.COOKIE_SESSION_ID);
-    // String sessionHeader = request.getHeaders().getFirst(ExposedHeaders.SESSION_ID);
-
     String session_id = RequestManager.getCookieOrHeaderData(Cookie.COOKIE_SESSION_ID, request);
 
     if (isGenerateSessionURI(request) || isAuthorizeCheckWithBearerNull(request)) {
@@ -83,9 +80,6 @@ public class SessionIDFilter implements WebFilter {
       addSessionInContext(session_id);
       return chain.filter(exchange);
     } else if (ObjectUtils.isEmpty(session_id)) {
-      // else if (ObjectUtils.isEmpty(sessionCookie)
-      //    || ObjectUtils.isEmpty(sessionCookie.getValue())) {
-      // if (ObjectUtils.isEmpty(sessionHeader)) {
       LOG.error(
           "Session ID not found for path [{}], with hostname {}, needs login",
           request.getPath().value(),
@@ -94,13 +88,7 @@ public class SessionIDFilter implements WebFilter {
           new UserException(
               ExceptionMap.ERR_OAUTH_401, ExceptionMessage.NO_SESSION_ID.getMessage()),
           exchange);
-      // } else setSessionIDInResponse(session_id, response);
     }
-
-    // session_id =
-    //    ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())
-    //        ? sessionHeader
-    //        : sessionCookie.getValue();
 
     if (isBearerNotRequiredEndpoint(request) || isAuthorizeCheckWithBearer(request)) {
       setSessionIDInResponse(session_id, response);
@@ -150,11 +138,7 @@ public class SessionIDFilter implements WebFilter {
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
-    // HttpCookie sessionCookie = request.getCookies().getFirst(Cookie.COOKIE_SESSION_ID);
     String session_id = RequestManager.getCookieOrHeaderData(Cookie.COOKIE_SESSION_ID, request);
-    // if (ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())) {
-    //  LOG.warn("Session ID not found, already logged out");
-    // } else session_id = sessionCookie.getValue();
 
     if (ObjectUtils.isEmpty(session_id)) {
       LOG.warn("Session ID not found, already logged out");
@@ -224,18 +208,6 @@ public class SessionIDFilter implements WebFilter {
         || bearerNotFilterURI.stream()
             .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
   }
-
-  // private boolean isBearerNotRequiredEndpoint(ServerHttpRequest req) {
-  //  String path = req.getPath().value();
-  //  String codeParam = req.getQueryParams().getFirst("code");
-  //
-  //  boolean isTokenPathWithCode =
-  //      PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path) && codeParam != null;
-  //
-  //  return isTokenPathWithCode
-  //      || bearerNotFilterURI.stream()
-  //          .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
-  // }
 
   private boolean isConfiguredGenerateSessionURI(ServerHttpRequest req, String path) {
     return generateSessionURI.stream()
