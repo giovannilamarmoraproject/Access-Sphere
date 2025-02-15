@@ -162,7 +162,8 @@ public class DataService {
     user.setRoles(List.of(defaultRole.getRole()));
     // Se l'utente non ha password?
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
-    userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+    if (!ObjectToolkit.isNullOrEmpty(user.getPassword()))
+      userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
     String identifier = UUID.randomUUID().toString();
     user.setIdentifier(identifier);
     userEntity.setIdentifier(identifier);

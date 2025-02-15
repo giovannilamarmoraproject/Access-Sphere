@@ -8,7 +8,6 @@ import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -24,7 +23,7 @@ public class GrpcMapper {
             .toList()
             .getFirst();
     return new JWTData(
-        UUID.randomUUID().toString(),
+        null,
         payload.getAudience().toString(),
         payload.getAudience().toString(),
         payload.getExpirationTimeSeconds(),
@@ -43,6 +42,11 @@ public class GrpcMapper {
         OAuthType.GOOGLE,
         clientCredential.getClientId(),
         null);
+  }
+
+  public static JWTData setIdentifier(JWTData jwtData, String identifier) {
+    jwtData.setIdentifier(identifier);
+    return jwtData;
   }
 
   private static String getUserInfoValue(GoogleIdToken.Payload userInfo, String value) {

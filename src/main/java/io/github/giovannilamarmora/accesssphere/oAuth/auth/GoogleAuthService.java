@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.grpc.GrpcMapper;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.GoogleGrpcMapper;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
@@ -24,6 +25,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.web.CookieManager;
+import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.net.URI;
 import java.util.List;
 import org.slf4j.Logger;
@@ -67,7 +69,8 @@ public class GoogleAuthService {
         .map(
             user -> {
               OAuthValidator.validateUserRoles(clientCredential, user.getRoles());
-              googleModel.getJwtData().setIdentifier(user.getIdentifier());
+              googleModel.setJwtData(
+                  GrpcMapper.setIdentifier(googleModel.getJwtData(), user.getIdentifier()));
               googleModel.getJwtData().setRoles(user.getRoles());
               googleModel.getJwtData().setSub(user.getUsername());
 
@@ -107,7 +110,8 @@ public class GoogleAuthService {
               if (throwable
                   .getMessage()
                   .equalsIgnoreCase(ExceptionMap.ERR_STRAPI_404.getMessage())) {
-                String registration_token = CookieManager.getCookie(Cookie.COOKIE_TOKEN, request);
+                String registration_token =
+                    RequestManager.getCookieOrHeaderData(Cookie.COOKIE_TOKEN, request);
                 if (ObjectUtils.isEmpty(registration_token)) {
                   LOG.error("Missing registration_token");
                   throw new OAuthException(
@@ -121,7 +125,7 @@ public class GoogleAuthService {
                       "Invalid registration_token, you cannot proceed!");
                 }
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
-                userGoogle.setPassword(CookieManager.getCookie(Cookie.COOKIE_TOKEN, request));
+                userGoogle.setPassword(registration_token);
                 return dataService
                     .registerUser(userGoogle, clientCredential, true)
                     .map(
@@ -131,6 +135,9 @@ public class GoogleAuthService {
                                   .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
                                   .toList()
                                   .getFirst();
+                          googleModel.setJwtData(
+                              GrpcMapper.setIdentifier(
+                                  googleModel.getJwtData(), user1.getIdentifier()));
                           googleModel
                               .getJwtData()
                               .setRoles(
