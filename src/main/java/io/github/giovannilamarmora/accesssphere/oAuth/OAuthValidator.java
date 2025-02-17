@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
+import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -141,10 +142,10 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRefreshTokenData(
-      AccessTokenData accessTokenData, ClientCredential clientCredential) {
+      AccessTokenData accessTokenData, ClientCredential clientCredential, OAuthType oAuthType) {
     validateClientId(accessTokenData.getClientId(), clientCredential.getClientId());
 
-    if (!accessTokenData.getType().equals(clientCredential.getAuthType())) {
+    if (!accessTokenData.getType().equals(oAuthType)) {
       LOG.error(
           "The OAuthType should be {} instead of {}",
           accessTokenData.getType(),
