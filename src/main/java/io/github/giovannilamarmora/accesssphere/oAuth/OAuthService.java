@@ -364,17 +364,18 @@ public class OAuthService {
     return clientCredentialMono
         .flatMap(
             clientCredential -> {
+              AccessTokenData refreshTokenData =
+                  accessTokenService.getByRefreshToken(refresh_token);
               OAuthType authType =
-                  OAuthMapper.getOAuthType(clientCredential, accessTokenData, null, null);
-              AccessTokenData accessTokenData = accessTokenService.getByRefreshToken(refresh_token);
-              OAuthValidator.validateRefreshTokenData(accessTokenData, clientCredential, authType);
+                  OAuthMapper.getOAuthType(clientCredential, refreshTokenData, null, null);
+              OAuthValidator.validateRefreshTokenData(refreshTokenData, clientCredential, authType);
               switch (authType) {
                 case BEARER -> {
-                  return authService.refreshToken(accessTokenData, clientCredential, request);
+                  return authService.refreshToken(refreshTokenData, clientCredential, request);
                 }
                 case GOOGLE -> {
                   return googleAuthService.refreshGoogleToken(
-                      accessTokenData, clientCredential, request);
+                      refreshTokenData, clientCredential, request);
                 }
                 default -> {
                   return defaultErrorType();

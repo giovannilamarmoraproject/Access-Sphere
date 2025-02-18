@@ -9,8 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.github.giovannilamarmora</groupId>
-    <artifactId>access-sphere</artifactId>
-    <version>1.0.22</version>
+    <artifactId>access-sphere</artifactId>s
+    <version>1.0.23</version>
     <name>access-sphere</name>
     <description>AccessSphere is an identity management and authentication microservice based on OAuth 2.0. It provides
         a secure and scalable infrastructure for user authentication, authorization management, and access to protected

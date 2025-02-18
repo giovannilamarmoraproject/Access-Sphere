@@ -522,7 +522,7 @@ public class OAuthServiceTest {
             anyString(),
             any(),
             anyString()))
-        .thenReturn(new AccessTokenData());
+        .thenReturn(accessToken);
 
     // Act
     Mono<ResponseEntity<?>> result =
@@ -614,7 +614,7 @@ public class OAuthServiceTest {
             anyString(),
             any(),
             anyString()))
-        .thenReturn(new AccessTokenData());
+        .thenReturn(accessToken);
 
     TokenResponse tokenResponse = new TokenResponse();
     tokenResponse.set("id_token", "token");
@@ -723,7 +723,7 @@ public class OAuthServiceTest {
             anyString(),
             any(),
             anyString()))
-        .thenReturn(new AccessTokenData());
+        .thenReturn(accessToken);
 
     TokenResponse tokenResponse = new TokenResponse();
     tokenResponse.set("id_token", "token");
