@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -45,4 +46,5 @@ public class ClientCredential extends GenericDTO {
   private Boolean idToken;
   private Boolean accessToken;
   private Boolean strapiToken;
+  private HttpStatus authorize_redirect_status;
 }

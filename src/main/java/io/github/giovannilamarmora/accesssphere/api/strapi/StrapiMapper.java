@@ -68,7 +68,8 @@ public class StrapiMapper {
         strapiClient.getApp_roles(),
         strapiClient.getId_token(),
         strapiClient.getAccess_token(),
-        strapiClient.getStrapi_token());
+        strapiClient.getStrapi_token(),
+        strapiClient.getAuthorize_redirect_status());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

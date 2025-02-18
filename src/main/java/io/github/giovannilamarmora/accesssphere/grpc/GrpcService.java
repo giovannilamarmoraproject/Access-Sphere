@@ -71,7 +71,7 @@ public class GrpcService {
           GrpcMapper.fromGoogleDataToJWTData(userInfo, clientCredential));
     } catch (IOException | GeneralSecurityException e) {
       LOG.error("An error happen during oAuth Google Login, message is {}", e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 
@@ -85,7 +85,7 @@ public class GrpcService {
       return new GoogleModel(null, userInfo, null);
     } catch (IOException | GeneralSecurityException e) {
       LOG.error("An error happen during oAuth Google UserInfo, message is {}", e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 
@@ -116,7 +116,7 @@ public class GrpcService {
           GrpcMapper.fromGoogleDataToJWTData(userInfo, clientCredential));
     } catch (IOException | GeneralSecurityException e) {
       LOG.error("An error happen during oAuth Google Refresh Token, message is {}", e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 }

@@ -24,6 +24,7 @@ import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.HashMap;
 import java.util.List;
@@ -161,7 +162,8 @@ public class DataService {
     user.setRoles(List.of(defaultRole.getRole()));
     // Se l'utente non ha password?
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
-    userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+    if (!ObjectToolkit.isNullOrEmpty(user.getPassword()))
+      userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
     String identifier = UUID.randomUUID().toString();
     user.setIdentifier(identifier);
     userEntity.setIdentifier(identifier);
@@ -288,7 +290,7 @@ public class DataService {
     boolean matches = bCryptPasswordEncoder.matches(password, userEntity.getPassword());
     if (!matches) {
       LOG.error("An error happen during bCryptPasswordEncoder.matches, the password do not match");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
     User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
     userEntityToUser.setPassword(null);
@@ -501,8 +503,8 @@ public class DataService {
 
   private void setDataBeforeUpdate(
       UserEntity userEntity, UserEntity userFind, boolean isUpdatePassword) {
-    if (Utilities.isNullOrEmpty(userFind)) return;
-    if (!Utilities.isNullOrEmpty(userFind.getId())) userEntity.setId(userFind.getId());
+    if (ObjectToolkit.isNullOrEmpty(userFind)) return;
+    if (!ObjectToolkit.isNullOrEmpty(userFind.getId())) userEntity.setId(userFind.getId());
     userEntity.setIdentifier(userFind.getIdentifier());
     if (!isUpdatePassword) userEntity.setPassword(userFind.getPassword());
     userEntity.setRoles(userFind.getRoles());

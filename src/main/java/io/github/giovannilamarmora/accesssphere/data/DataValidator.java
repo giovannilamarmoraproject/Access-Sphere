@@ -30,7 +30,7 @@ public class DataValidator {
   public static void validateResetToken(LocalDateTime updateDate) {
     if (updateDate.plusDays(1).isBefore(LocalDateTime.now())) {
       LOG.error("Token Expired, last created was at {}", updateDate);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 

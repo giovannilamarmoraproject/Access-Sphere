@@ -10,6 +10,7 @@ import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -38,14 +39,7 @@ public class Utils {
       ClientCredential clientCredential, TokenClaims claim, Object data) {
     Map<String, Object> attributes = new HashMap<>();
     attributes.put(claim.claim(), clientCredential.getAuthType());
-    try {
-      attributes.put(TokenClaims.GOOGLE_TOKEN.claim(), mapper.writeValueAsString(data));
-    } catch (JsonProcessingException e) {
-      LOG.error(
-          "An error happen during oAuth Google Login on parsing User, message is {}",
-          e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
-    }
+    attributes.put(TokenClaims.GOOGLE_TOKEN.claim(), Mapper.writeObjectToString(data));
     return attributes;
   }
 

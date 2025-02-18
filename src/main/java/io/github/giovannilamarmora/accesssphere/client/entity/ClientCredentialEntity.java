@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -81,4 +82,7 @@ public class ClientCredentialEntity extends GenericEntity {
 
   @Column(name = "STRAPI_TOKEN")
   private Boolean strapiToken;
+
+  @Column(name = "AUTHORIZE_REDIRECT_STATUS")
+  private HttpStatus authorize_redirect_status;
 }

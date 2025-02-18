@@ -75,7 +75,7 @@ public class GoogleGrpcService {
                   && !ObjectUtils.isEmpty(e.getDetails().getErrorDescription())
               ? e.getDetails().getErrorDescription()
               : e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 
@@ -112,7 +112,7 @@ public class GoogleGrpcService {
                   && !ObjectUtils.isEmpty(e.getDetails().getErrorDescription())
               ? e.getDetails().getErrorDescription()
               : e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 
@@ -133,7 +133,7 @@ public class GoogleGrpcService {
       LOG.error(
           "An error happened during the revoke token process with Google, message: {}",
           e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
     // Leggi la risposta
@@ -141,7 +141,7 @@ public class GoogleGrpcService {
     if (statusCode != 200) {
       LOG.error(
           "An error happen during get revoke token with google, status code is {}", statusCode);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 

@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -21,7 +22,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.net.URI;
 import java.util.Base64;
@@ -64,7 +65,7 @@ public class AuthService {
       password = decoded[1];
     } catch (Exception e) {
       LOG.error("Error during decoding username and password, message is {}", e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, "Invalid basic provided!");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, "Invalid basic provided!");
     }
     LOG.debug("Login process started for user {}", username);
 
@@ -114,7 +115,10 @@ public class AuthService {
                       .asText(),
                   cookieDomain,
                   serverHttpResponse);
-              return ResponseEntity.ok().location(URI.create(redirect_uri)).body(response);
+              URI finalRedirectURI =
+                  OAuthMapper.getFinalRedirectURI(
+                      clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+              return ResponseEntity.ok().location(finalRedirectURI).body(response);
             });
   }
 
@@ -160,8 +164,8 @@ public class AuthService {
   public Mono<ResponseEntity<?>> logout(
       String redirect_uri, AccessTokenData accessTokenData, ServerHttpResponse response) {
     String refreshToken =
-        (!Utilities.isNullOrEmpty(accessTokenData.getPayload())
-                && !Utilities.isNullOrEmpty(accessTokenData.getPayload().get("refresh_token")))
+        (!ObjectToolkit.isNullOrEmpty(accessTokenData.getPayload())
+                && !ObjectToolkit.isNullOrEmpty(accessTokenData.getPayload().get("refresh_token")))
             ? accessTokenData.getPayload().get("refresh_token").textValue()
             : null;
 
@@ -220,7 +224,7 @@ public class AuthService {
                       TraceUtils.getSpanID(),
                       new OAuthTokenResponse(
                           token,
-                          Utilities.isNullOrEmpty(strapi_token)
+                          ObjectToolkit.isNullOrEmpty(strapi_token)
                               ? accessTokenData.getPayload()
                               : strapi_token,
                           includeUserInfo

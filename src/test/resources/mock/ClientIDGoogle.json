@@ -24,6 +24,7 @@
         "id_token": true,
         "access_token": true,
         "strapi_token": true,
+        "authorize_redirect_status": "TEMPORARY_REDIRECT",
         "app_roles": [
           {
             "role": "TEST_ROLES",

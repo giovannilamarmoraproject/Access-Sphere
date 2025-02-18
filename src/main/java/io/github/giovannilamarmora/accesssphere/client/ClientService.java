@@ -38,7 +38,6 @@ public class ClientService {
   @Autowired private IClientDAO iClientDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  // @Cacheable(value = CLIENT_CREDENTIAL_CACHE, key = "#clientID", condition = "#clientID!=null")
   public Mono<ClientCredential> getClientCredentialByClientID(String clientID) {
     if (isStrapiEnabled) {
       LOG.info(STRAPI_STATUS_LOG);

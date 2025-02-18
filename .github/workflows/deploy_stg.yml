@@ -81,12 +81,12 @@ jobs:
         run: |
           echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
-      - name: create-json
-        uses: jsdaniell/create-json@v1.2.3
-        with:
-          name: "credentials.json"
-          json: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-          dir: "src/main/resources/"
+      #- name: create-json
+      #  uses: jsdaniell/create-json@v1.2.3
+      #  with:
+      #    name: "credentials.json"
+      #    json: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+      #    dir: "src/main/resources/"
 
 
       - name: 🚀 Build & push Docker image

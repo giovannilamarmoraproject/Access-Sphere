@@ -7,7 +7,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.BeanUtils;
@@ -24,7 +24,7 @@ public class UserMapper {
     if (!ObjectUtils.isEmpty(user.getRoles()))
       userEntity.setRoles(String.join(" ", user.getRoles()));
 
-    if (!Utilities.isNullOrEmpty(user.getAttributes()))
+    if (!ObjectToolkit.isNullOrEmpty(user.getAttributes()))
       userEntity.setAttributes(Mapper.writeObjectToString(user.getAttributes()));
 
     return userEntity;
@@ -38,7 +38,7 @@ public class UserMapper {
     if (!ObjectUtils.isEmpty(userEntity.getRoles()))
       user.setRoles(Arrays.stream(userEntity.getRoles().split(" ")).toList());
 
-    if (!Utilities.isNullOrEmpty(userEntity.getAttributes()))
+    if (!ObjectToolkit.isNullOrEmpty(userEntity.getAttributes()))
       user.setAttributes(Mapper.readObject(userEntity.getAttributes(), new TypeReference<>() {}));
     return user;
   }

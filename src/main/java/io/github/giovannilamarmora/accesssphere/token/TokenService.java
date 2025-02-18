@@ -30,7 +30,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -144,7 +144,7 @@ public class TokenService {
         generateToken(
             exchangeToken,
             clientCredential,
-            Utilities.isNullOrEmpty(strapi_token) ? accessTokenData.getPayload() : strapi_token);
+                ObjectToolkit.isNullOrEmpty(strapi_token) ? accessTokenData.getPayload() : strapi_token);
 
     // Log il risultato dell'exchange
     LOG.info(
