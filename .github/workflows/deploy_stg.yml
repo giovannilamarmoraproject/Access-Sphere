@@ -5,9 +5,9 @@ on:
     branches: [ develop ]
 
 env:
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
+  DOCKER_REPOSITORY: ${{ vars.DOCKER_REPOSITORY }}
 
 jobs:
   checkout-and-setup:
@@ -40,15 +40,15 @@ jobs:
 
       - name: ⬇️ Install dependencies
         run: |
-          mvn -X clean install -DGCLOUD_PROJECT=access-sphere
+          mvn -X clean install
 
       - name: 📂 Test with Maven
         run: |
-          mvn test -DGCLOUD_PROJECT=access-sphere
+          mvn test
 
       - name: 📂 Build with Maven
         run: |
-          mvn -B package --file pom.xml -DskipTests -DGCLOUD_PROJECT=access-sphere
+          mvn -B package --file pom.xml -DskipTests
 
   docker-login:
     name: 🐳 Docker Login

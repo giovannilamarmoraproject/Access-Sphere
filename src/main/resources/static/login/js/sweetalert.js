@@ -1,8 +1,8 @@
 function sweetalert(icon, title, message) {
   const customClassSwal = Swal.mixin({
     customClass: {
-      confirmButton: "rounded-pill buttonInput",
-      denyButton: "rounded-pill buttonInput",
+      confirmButton: "rounded-pill buttonInput w-100",
+      denyButton: "rounded-pill buttonInput w-100",
       popup: "border_round blur-effect",
     },
     buttonsStyling: true,

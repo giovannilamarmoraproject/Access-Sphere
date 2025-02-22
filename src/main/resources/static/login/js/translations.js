@@ -46,7 +46,7 @@ function applyTranslations() {
   document.getElementById("changePasswordButton").textContent =
     translations[currentLanguage].changePasswordButton;
   document.getElementById("footerText").innerHTML =
-    translations[currentLanguage].footerText;
+    translations[currentLanguage].footerText.replace("#YEAR#", new Date().getFullYear());
 }
 
 function detectLanguage() {
