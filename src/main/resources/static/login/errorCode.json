@@ -1,0 +1,20 @@
+{
+  "en": {
+    "ERR_OAUTH_400": {
+      "title": "Bad Input Error"
+    },
+    "ERR_OAUTH_401": {
+      "title": "Not Authorized",
+      "message": "You are not authorized to make this request."
+    }
+  },
+  "it": {
+    "ERR_OAUTH_400": {
+      "title": "Errore Input Data"
+    },
+    "ERR_OAUTH_401": {
+      "title": "Non Autorizzato",
+      "message": "Non sei autorizzato ad effettuare questa richiesta."
+    }
+  }
+}

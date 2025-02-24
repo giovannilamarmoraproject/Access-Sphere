@@ -1,4 +1,5 @@
 let translations = {};
+let errorCode = {};
 let currentLanguage = "en"; // Default language
 
 async function loadTranslations() {
@@ -49,9 +50,38 @@ function applyTranslations() {
     translations[currentLanguage].footerText.replace("#YEAR#", new Date().getFullYear());
 }
 
+async function loadErrorCode() {
+  try {
+    const response = await fetch("login/errorCode.json");
+    const error_translations = await response.json();
+    detectLanguage();
+    errorCode = error_translations[currentLanguage];
+    console.log(errorCode);
+  } catch (error) {
+    console.error("Error loading error code:", error);
+  }
+}
+
+function getErrorCode(error){
+    if(errorCode[error.errorCode]) {
+        if (errorCode[error.errorCode].message)
+            return errorCode[error.errorCode];
+        else {
+            return {
+                "title": errorCode[error.errorCode].title,
+                "message": error.message
+            };
+        }
+    }
+    return {
+      "title": error.errorCode
+    };
+}
+
 function detectLanguage() {
   const browserLanguage = navigator.language.slice(0, 2); // Get first 2 chars (e.g., "en", "it")
   currentLanguage = translations[browserLanguage] ? browserLanguage : "en";
 }
 
 document.addEventListener("DOMContentLoaded", loadTranslations);
+document.addEventListener("DOMContentLoaded", loadErrorCode);

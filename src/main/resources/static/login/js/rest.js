@@ -29,12 +29,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     token(url, encode).then(async (data) => {
       const responseData = await data.json();
-      if (responseData.error != null)
+      if (responseData.error != null){
+        const error = getErrorCode(responseData.error);
         return sweetalert(
           "error",
-          responseData.error.status,
-          responseData.error.message
+          error.title,
+          error.message
         );
+      }
       else {
         const redirect_uri = data.headers.get("location");
         if (redirect_uri != null)
@@ -89,25 +91,4 @@ function doGoogleLogin() {
   url.searchParams.set("response_type", "code");
 
   window.location.href = url.toString();
-}
-
-function sweetalert(icon, title, message) {
-  const customClassSwal = Swal.mixin({
-    customClass: {
-      confirmButton: "rounded-pill buttonInput w-100",
-      denyButton: "rounded-pill buttonInput w-100",
-      popup: "border_round blur-effect",
-    },
-    buttonsStyling: true,
-  });
-
-  return customClassSwal.fire({
-    icon: icon,
-    title: title,
-    text: message,
-    color: "#FFFFFF",
-    //background: "rgba(56, 62, 66, 0.8)",
-    //backdrop: "rgba(0, 0, 0, 0.5)",
-    showCancelButton: false,
-  });
 }
