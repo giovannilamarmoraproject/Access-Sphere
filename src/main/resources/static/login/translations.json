@@ -16,7 +16,7 @@
     "resetPasswordLabel": "Password",
     "repeatPasswordLabel": "Repeat Password",
     "changePasswordButton": "Change Password",
-    "footerText": "&copy; 2024 Access Sphere - All Rights Reserved."
+    "footerText": "&copy; #YEAR# Access Sphere - All Rights Reserved."
   },
   "it": {
     "pageTitle": "Access Sphere - Accesso",
@@ -35,6 +35,6 @@
     "resetPasswordLabel": "Password",
     "repeatPasswordLabel": "Ripeti Password",
     "changePasswordButton": "Cambia Password",
-    "footerText": "&copy; 2024 Access Sphere - Tutti i diritti riservati."
+    "footerText": "&copy; #YEAR# Access Sphere - Tutti i diritti riservati."
   }
 }
