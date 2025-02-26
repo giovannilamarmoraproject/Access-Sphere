@@ -56,6 +56,7 @@ async function loadErrorCode() {
     const error_translations = await response.json();
     detectLanguage();
     errorCode = error_translations[currentLanguage];
+    console.log("Language " + currentLanguage);
     console.log(errorCode);
   } catch (error) {
     console.error("Error loading error code:", error);
@@ -63,18 +64,19 @@ async function loadErrorCode() {
 }
 
 function getErrorCode(error){
-    if(errorCode[error.errorCode]) {
-        if (errorCode[error.errorCode].message)
-            return errorCode[error.errorCode];
+    const errorData = errorCode[error.exception];
+    if(errorData) {
+        if (errorData.message)
+            return errorData;
         else {
             return {
-                "title": errorCode[error.errorCode].title,
+                "title": errorData.title,
                 "message": error.message
             };
         }
     }
     return {
-      "title": error.errorCode
+      "title": error.exception
     };
 }
 

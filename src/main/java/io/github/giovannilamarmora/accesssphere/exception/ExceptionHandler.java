@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.exception;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,13 @@ public class ExceptionHandler extends UtilsException {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_OAUTH_400);
     response.getError().setMessage("The params " + e.getName() + " is required!");
-    response.getError().setException(ExceptionMap.ERR_OAUTH_400.exception());
+    ExceptionType exceptionType = ExceptionType.fromParam(e.getName(), false);
+    response
+        .getError()
+        .setException(
+            ObjectToolkit.isNullOrEmpty(exceptionType)
+                ? ExceptionMap.ERR_OAUTH_400.exception()
+                : exceptionType.name());
     response.getError().setExceptionMessage(null);
     response.getError().setStackTrace(null);
     return new ResponseEntity<>(response, status);
