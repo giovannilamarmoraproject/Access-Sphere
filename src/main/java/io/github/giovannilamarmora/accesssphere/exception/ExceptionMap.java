@@ -7,7 +7,7 @@ public enum ExceptionMap implements ExceptionCode {
   /**
    * @oAuth2.0 Exception Map for Authentication
    */
-  ERR_OAUTH_400("BAD_INPUT_ERROR", HttpStatus.BAD_REQUEST, "Input miss match"),
+  ERR_OAUTH_400(ExceptionType.BAD_INPUT_ERROR.name(), HttpStatus.BAD_REQUEST, "Input miss match"),
   ERR_OAUTH_401(
       "OAUTH_NOT_VALID",
       HttpStatus.UNAUTHORIZED,

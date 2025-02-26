@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -49,7 +50,9 @@ public class ClientService {
                     || ObjectUtils.isEmpty(responseEntity.getBody().getData())) {
                   LOG.error("Strapi returned an empty object");
                   throw new StrapiException(
-                      ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
+                      ExceptionMap.ERR_OAUTH_400,
+                      ExceptionType.INVALID_CLIENT_ID,
+                      "Invalid client_id provided!");
                 }
                 return StrapiMapper.mapFromStrapiResponseToClientCredential(
                     responseEntity.getBody());

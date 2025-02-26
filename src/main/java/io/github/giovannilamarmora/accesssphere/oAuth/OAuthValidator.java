@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
@@ -38,7 +39,8 @@ public class OAuthValidator {
   public static void validateClientRoles(ClientCredential clientCredential) {
     if (ObjectToolkit.isNullOrEmpty(clientCredential.getAppRoles())) {
       LOG.error("The Client must have a valid role configuration to proceed");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid Roles Configuration!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, ExceptionType.INVALID_ROLES, "Invalid Roles Configuration!");
     }
   }
 
@@ -84,7 +86,10 @@ public class OAuthValidator {
       String basic, String grantType, String redirect_uri, ClientCredential clientCredential) {
     if (ObjectUtils.isEmpty(basic) || !basic.contains("Basic")) {
       LOG.error("No Basic Auth found");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid basic authorization!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_AUTHORIZATION,
+          "Invalid basic authorization!");
     }
 
     validateGrantType(GrantType.PASSWORD.type(), grantType);
@@ -97,12 +102,14 @@ public class OAuthValidator {
   public static void validateOAuthToken(String client_id, String grant_type) {
     if (ObjectUtils.isEmpty(client_id)) {
       LOG.error("No Client ID found");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "No client_id provided!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, ExceptionType.INVALID_CLIENT_ID, "No client_id provided!");
     }
 
     if (ObjectUtils.isEmpty(grant_type)) {
       LOG.error("No Grant Type found");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "No grant_type provided!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, ExceptionType.INVALID_GRANT_TYPE, "No grant_type provided!");
     }
   }
 
@@ -150,7 +157,10 @@ public class OAuthValidator {
           "The OAuthType should be {} instead of {}",
           accessTokenData.getType(),
           clientCredential.getAuthType());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_CLIENT_ID,
+          "Invalid client_id provided!");
     }
   }
 
@@ -159,7 +169,8 @@ public class OAuthValidator {
     if (ObjectToolkit.isNullOrEmpty(expected_grant_type)
         || ObjectToolkit.isNullOrEmpty(actual_grant_type)) {
       LOG.error("You must have a valid grant_type {} to proceed", expected_grant_type);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "No grant_type provided!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, ExceptionType.INVALID_GRANT_TYPE, "No grant_type provided!");
     }
 
     if (!actual_grant_type.equalsIgnoreCase(expected_grant_type)) {
@@ -167,7 +178,10 @@ public class OAuthValidator {
           "The grant_type provided should be {} instead of {}",
           expected_grant_type,
           actual_grant_type);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid grant_type provided!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_GRANT_TYPE,
+          "Invalid grant_type provided!");
     }
   }
 
@@ -190,7 +204,8 @@ public class OAuthValidator {
     if (ObjectToolkit.isNullOrEmpty(expected_client_id)
         || ObjectToolkit.isNullOrEmpty(actual_client_id)) {
       LOG.error("You must have a valid client_id {} to proceed", expected_client_id);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "No client_id provided!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, ExceptionType.INVALID_CLIENT_ID, "No client_id provided!");
     }
 
     if (!actual_client_id.equalsIgnoreCase(expected_client_id)) {
@@ -198,7 +213,10 @@ public class OAuthValidator {
           "The Client ID provided should be {} instead of {}",
           expected_client_id,
           actual_client_id);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_CLIENT_ID,
+          "Invalid client_id provided!");
     }
   }
 
@@ -247,10 +265,16 @@ public class OAuthValidator {
             client_id,
             actual_redirectUri,
             expected_redirectUri);
-        throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid redirect_uri provided!");
+        throw new OAuthException(
+            ExceptionMap.ERR_OAUTH_400,
+            ExceptionType.INVALID_REDIRECT_URI,
+            "Invalid redirect_uri provided!");
       }
       LOG.error("You must have a valid redirect_uri {} to proceed", expected_redirectUri);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "No redirect_uri provided!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_REDIRECT_URI,
+          "No redirect_uri provided!");
     }
 
     List<String> redirect_uris = List.of(expected_redirectUri.get("redirect_uri").split(" "));
@@ -259,7 +283,10 @@ public class OAuthValidator {
           "The redirect_uri provided should be {} instead of {}",
           expected_redirectUri,
           actual_redirectUri);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid redirect_uri provided!");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_REDIRECT_URI,
+          "Invalid redirect_uri provided!");
     }
   }
 
