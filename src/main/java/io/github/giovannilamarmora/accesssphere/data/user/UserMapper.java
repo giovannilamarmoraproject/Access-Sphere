@@ -2,6 +2,8 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
+import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
+import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -71,5 +73,13 @@ public class UserMapper {
         ObjectUtils.isEmpty(user.getAttributes())
             ? null
             : Mapper.writeObjectToString(user.getAttributes()));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static User getTechUser(String username, ClientCredential clientCredential) {
+    User user = new User();
+    user.setUsername(username);
+    user.setRoles(StrapiMapper.getAppRoles(clientCredential.getAppRoles()));
+    return user;
   }
 }

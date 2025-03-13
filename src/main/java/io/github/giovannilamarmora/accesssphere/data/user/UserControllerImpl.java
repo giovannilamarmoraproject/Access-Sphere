@@ -36,6 +36,11 @@ public class UserControllerImpl implements UserController {
   }
 
   @Override
+  public Mono<ResponseEntity<Response>> userList(String bearer, ServerHttpRequest request) {
+    return userService.getUsers();
+  }
+
+  @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> registerUser(
       User user, String clientId, String registration_token, Boolean assignNewClient) {

@@ -123,9 +123,9 @@ public class StrapiService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<StrapiUser>> getUsers() {
+  public Mono<List<StrapiUser>> getUsers(String bearer) {
     return strapiClient
-        .getUsers()
+        .getUsers(bearer)
         .map(
             listResponseEntity -> {
               if (!listResponseEntity.hasBody()

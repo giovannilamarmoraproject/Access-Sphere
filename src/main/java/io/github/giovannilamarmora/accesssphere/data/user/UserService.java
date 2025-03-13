@@ -9,12 +9,15 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTempla
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
@@ -50,6 +53,7 @@ public class UserService {
   @Autowired private StrapiService strapiService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private AccessTokenData accessTokenData;
+  @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> userInfo(String bearer, ServerHttpRequest request) {
@@ -188,8 +192,7 @@ public class UserService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> register(
-      User user, String clientId, String registration_token, Boolean assignNewClient)
-      throws UtilsException {
+      User user, String clientId, String registration_token, Boolean assignNewClient) {
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F Registration process started, username: {}, email: {}",
         user.getUsername(),
@@ -370,5 +373,36 @@ public class UserService {
         .doOnSuccess(
             responseResponseEntity ->
                 LOG.info("\uD83E\uDD37\u200D♂\uFE0F Change password user process ended"));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> getUsers() {
+    LOG.info("\uD83E\uDD37\u200D♂\uFE0F Get list of user process started");
+
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
+
+    return clientCredentialMono
+        .flatMap(
+            clientCredential -> {
+              OAuthValidator.validateUserRoles(clientCredential, accessTokenData.getRoles());
+              String strapi_token = OAuthMapper.getStrapiAccessToken(accessTokenData);
+              if (ObjectToolkit.isNullOrEmpty(strapi_token)) {
+                LOG.error("Strapi token not found for user {}", accessTokenData.getIdentifier());
+                throw new OAuthException(ExceptionMap.ERR_OAUTH_403);
+              }
+              return dataService
+                  .getStrapiUsers(strapi_token)
+                  .flatMap(
+                      users -> {
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(), "Users list", TraceUtils.getSpanID(), users);
+                        return Mono.just(ResponseEntity.ok(response));
+                      });
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info("\uD83E\uDD37\u200D♂\uFE0F Get list of user process ended"));
   }
 }

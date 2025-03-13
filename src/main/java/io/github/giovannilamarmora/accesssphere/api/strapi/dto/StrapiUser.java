@@ -65,7 +65,7 @@ public class StrapiUser extends StrapiGeneric {
   private String phoneNumber;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private LocalDate birthDate;
+  private LocalDate birthdate;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   @UpperCase

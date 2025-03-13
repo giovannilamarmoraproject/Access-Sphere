@@ -23,11 +23,6 @@ import org.springframework.web.bind.annotation.*;
     })
 public class RedirectControllerImpl {
 
-  @GetMapping("/login")
-  public String login(Model model) {
-    return "login/index";
-  }
-
   @GetMapping("/cookie-policy")
   public String cookie_policy(Model model) {
     return "cookie-policy";
@@ -36,5 +31,20 @@ public class RedirectControllerImpl {
   @GetMapping("/privacy-policy")
   public String privacy_policy(Model model) {
     return "privacy-policy";
+  }
+
+  @GetMapping("/app/login")
+  public String login(Model model) {
+    return "app/login/index";
+  }
+
+  @GetMapping("/app/users")
+  public String users(Model model) {
+    return "app/user/users";
+  }
+
+  @GetMapping("/app/users/details/{identifier}")
+  public String usersDetails(Model model) {
+    return "app/user/user";
   }
 }

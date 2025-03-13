@@ -5,6 +5,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.database.UserDataService;
@@ -49,6 +50,8 @@ public class DataService {
   @Setter
   @Value(value = "${rest.client.strapi.active}")
   private Boolean isStrapiEnabled;
+
+  @Autowired private TechUserService techUserService;
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
@@ -108,11 +111,11 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getStrapiUsers() {
+  public Mono<List<User>> getStrapiUsers(String strapi_bearer) {
     LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting all users in strapi");
 
     return strapiService
-        .getUsers()
+        .getUsers(strapi_bearer)
         .flatMap(strapiUsers -> Mono.just(StrapiMapper.mapFromStrapiUsersToUsers(strapiUsers)));
   }
 
@@ -229,48 +232,53 @@ public class DataService {
       String password,
       ClientCredential clientCredential,
       ServerHttpRequest request) {
-    if (isStrapiEnabled) {
-      LOG.debug(
-          "Strapi is enabled, making login via strapi, using identifier {}",
-          ObjectUtils.isEmpty(email) ? username : email);
-      return strapiService
-          .login(ObjectUtils.isEmpty(email) ? username : email, password)
-          .flatMap(
-              strapiResponse -> {
-                User user = StrapiMapper.mapFromStrapiUserToUser(strapiResponse.getUser());
-                JWTData jwtData = JWTData.generateJWTData(user, clientCredential, request);
-                Map<String, Object> strapiToken = new HashMap<>();
-                strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
-                strapiToken.put(TokenData.STRAPI_ACCESS_TOKEN.getToken(), strapiResponse.getJwt());
-                return getUserInfo(jwtData, strapiResponse.getJwt())
-                    .flatMap(
-                        user1 -> {
-                          jwtData.setRoles(user1.getRoles());
-                          AuthToken token =
-                              tokenService.generateToken(jwtData, clientCredential, strapiToken);
-                          strapiToken.put("expires_at", jwtData.getExp());
-                          return Mono.just(
-                              new OAuthTokenResponse(
-                                  token,
-                                  Utils.mapper().convertValue(strapiToken, JsonNode.class),
-                                  jwtData,
-                                  user1));
-                        });
-              })
-          .onErrorResume(
-              throwable -> {
-                if (!throwable
-                    .getMessage()
-                    .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_401.getMessage())) {
-                  LOG.error("Error on strapi, login via database");
-                  return Mono.just(
-                      performLoginViaDatabase(
-                          username, email, password, clientCredential, request));
-                }
-                return Mono.error(throwable);
-              });
-    }
-    return Mono.just(performLoginViaDatabase(username, email, password, clientCredential, request));
+    if (!techUserService.checkIfTechUser(
+        ObjectToolkit.getOrDefault(username, email), password, clientCredential.getClientId())) {
+      if (isStrapiEnabled) {
+        LOG.debug(
+            "Strapi is enabled, making login via strapi, using identifier {}",
+            ObjectUtils.isEmpty(email) ? username : email);
+        return strapiService
+            .login(ObjectUtils.isEmpty(email) ? username : email, password)
+            .flatMap(
+                strapiResponse -> {
+                  User user = StrapiMapper.mapFromStrapiUserToUser(strapiResponse.getUser());
+                  JWTData jwtData = JWTData.generateJWTData(user, clientCredential, request);
+                  Map<String, Object> strapiToken = new HashMap<>();
+                  strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
+                  strapiToken.put(
+                      TokenData.STRAPI_ACCESS_TOKEN.getToken(), strapiResponse.getJwt());
+                  return getUserInfo(jwtData, strapiResponse.getJwt())
+                      .flatMap(
+                          user1 -> {
+                            jwtData.setRoles(user1.getRoles());
+                            AuthToken token =
+                                tokenService.generateToken(jwtData, clientCredential, strapiToken);
+                            strapiToken.put("expires_at", jwtData.getExp());
+                            return Mono.just(
+                                new OAuthTokenResponse(
+                                    token,
+                                    Utils.mapper().convertValue(strapiToken, JsonNode.class),
+                                    jwtData,
+                                    user1));
+                          });
+                })
+            .onErrorResume(
+                throwable -> {
+                  if (!throwable
+                      .getMessage()
+                      .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_401.getMessage())) {
+                    LOG.error("Error on strapi, login via database");
+                    return Mono.just(
+                        performLoginViaDatabase(
+                            username, email, password, clientCredential, request));
+                  }
+                  return Mono.error(throwable);
+                });
+      }
+      return Mono.just(
+          performLoginViaDatabase(username, email, password, clientCredential, request));
+    } else return techUserService.loginTechUser(username, clientCredential, request);
   }
 
   private OAuthTokenResponse performLoginViaDatabase(

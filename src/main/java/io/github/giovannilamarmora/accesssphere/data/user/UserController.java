@@ -104,6 +104,46 @@ public interface UserController {
           String bearer,
       ServerHttpRequest request);
 
+  @GetMapping("/users")
+  @Operation(
+      description = "Get the full list of users, works only with Tech User or Tech Roles",
+      summary = "User List",
+      tags = OpenAPI.Tag.USERS,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "User list retrieved successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = User.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> userList(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      ServerHttpRequest request);
+
   @PostMapping("/users/register")
   @Operation(
       description = "Register a new user",

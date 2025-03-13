@@ -52,12 +52,14 @@ springdoc:
 filter:
   requestResponse:
     enabled: true
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,/login/*,/cookie-policy,/privacy-policy"
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,/cookie-policy,/privacy-policy,*/favicon.ico,*/app/*,*/img/*,*/js/*,*/css/*"
+    #shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,/login/*,/cookie-policy,/privacy-policy"
   rate-limiting:
     shouldFilter: "*/users/change/password,*/users/change/password/request,**/v1/users/change/**"
   session-id:
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*,/cookie-policy,/privacy-policy"
-    generateSessionURI: "*/v1/oAuth/2.0/authorize,*/users/register,**/v1/users/change/**"
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,/cookie-policy,/privacy-policy,*/favicon.ico,*/app/*,*/img/*,*/js/*,*/css/*"
+    #shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*,/cookie-policy,/privacy-policy"
+    generateSessionURI: "*/v1/oAuth/2.0/authorize,*/users/register,**/v1/users/change/**,*/v1/tech/login"
     bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico"
     logoutURI: "*/v1/oAuth/2.0/logout"
 
@@ -88,5 +90,10 @@ app:
   cache:
     active: false
     cron: 0 0 1 * * *
+  tech-user:
+    username: ${TECH_USERNAME}
+    password: ${TECH_PASSWORD}
+    client-id: ACCESS-SPHERE-TECH
+    strapi: ${STRAPI_AUTH_TOKEN}
   exception:
     stacktrace: true # Active StackTrace in Response
