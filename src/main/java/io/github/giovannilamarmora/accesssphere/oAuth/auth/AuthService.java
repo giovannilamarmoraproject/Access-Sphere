@@ -173,7 +173,7 @@ public class AuthService {
       LOG.info("Strapi refresh_token not found!");
     }
 
-    String message = "Logout Successfully for " + accessTokenData.getEmail() + "!";
+    String message = "Logout Successfully for " + accessTokenData.getSubject() + "!";
     Response res = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), null);
 
     ResponseEntity<Response> responseResponseEntity = ResponseEntity.ok(res);

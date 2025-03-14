@@ -47,4 +47,9 @@ public class RedirectControllerImpl {
   public String usersDetails(Model model) {
     return "app/user/user";
   }
+
+  @GetMapping("/app/users/register")
+  public String register(Model model) {
+    return "app/user/register";
+  }
 }

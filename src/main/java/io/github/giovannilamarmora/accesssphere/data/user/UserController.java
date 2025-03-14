@@ -175,6 +175,12 @@ public interface UserController {
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> registerUser(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
       @RequestBody @Valid @NotNull(message = "User cannot be null") User user,
       @RequestParam(value = "client_id")
           @Schema(

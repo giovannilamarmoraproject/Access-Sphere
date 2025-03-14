@@ -5,8 +5,8 @@ import com.google.common.base.Joiner;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
 import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +28,7 @@ public class JWTData {
   private long iat;
   private String iss;
   private String sub;
+  private SubjectType subject_type;
   private String name;
   private String email;
   private String picture;
@@ -41,7 +42,10 @@ public class JWTData {
   private Map<String, Object> attributes;
 
   public static JWTData generateJWTData(
-      User user, ClientCredential clientCredential, ServerHttpRequest request) {
+      User user,
+      ClientCredential clientCredential,
+      SubjectType subject_type,
+      ServerHttpRequest request) {
     String remoteAddress = WebManager.getRemoteAddress(request);
     return new JWTData(
         user.getIdentifier(),
@@ -55,6 +59,7 @@ public class JWTData {
         System.currentTimeMillis(),
         ObjectToolkit.isNullOrEmpty(remoteAddress) ? null : "https://" + remoteAddress,
         user.getUsername(),
+        subject_type,
         ObjectUtils.isEmpty(user.getSurname()) || ObjectUtils.isEmpty(user.getName())
             ? null
             : Joiner.on(" ").join(user.getSurname(), user.getName()),

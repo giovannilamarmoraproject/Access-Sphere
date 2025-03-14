@@ -18,6 +18,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.IAccessTokenDAO;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.utils.auth.TokenUtils;
@@ -488,6 +489,7 @@ public class OAuthServiceTest {
             clientId,
             SessionID.builder().generate(),
             null,
+            SubjectType.CUSTOMER,
             "email@emial.com",
             "identifier",
             OAuthType.BEARER,
@@ -580,6 +582,7 @@ public class OAuthServiceTest {
             clientId,
             SessionID.builder().generate(),
             null,
+            SubjectType.CUSTOMER,
             "email@emial.com",
             "identifier",
             OAuthType.GOOGLE,
@@ -689,6 +692,7 @@ public class OAuthServiceTest {
             clientId,
             SessionID.builder().generate(),
             null,
+            SubjectType.CUSTOMER,
             "email@emial.com",
             "identifier",
             OAuthType.GOOGLE,
@@ -789,6 +793,7 @@ public class OAuthServiceTest {
             clientId,
             SessionID.builder().generate(),
             null,
+            SubjectType.CUSTOMER,
             "email@emial.com",
             "identifier",
             OAuthType.GOOGLE,
@@ -849,6 +854,7 @@ public class OAuthServiceTest {
             clientId,
             SessionID.builder().generate(),
             null,
+            SubjectType.CUSTOMER,
             "email@emial.com",
             "identifier",
             OAuthType.BEARER,

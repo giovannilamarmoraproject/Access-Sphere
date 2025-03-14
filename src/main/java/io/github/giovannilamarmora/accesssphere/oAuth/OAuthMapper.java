@@ -79,6 +79,7 @@ public class OAuthMapper {
       strapiToken.put(
           TokenData.STRAPI_ACCESS_TOKEN.getToken(),
           accessTokenData.getPayload().get(TokenData.STRAPI_TOKEN.getToken()).asText());
+      strapiToken.put("token_type", "Bearer");
       return strapiToken;
     }
     return null;

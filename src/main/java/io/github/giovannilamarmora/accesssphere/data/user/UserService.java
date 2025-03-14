@@ -24,7 +24,6 @@ import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -192,7 +191,11 @@ public class UserService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> register(
-      User user, String clientId, String registration_token, Boolean assignNewClient) {
+      String bearer,
+      User user,
+      String clientId,
+      String registration_token,
+      Boolean assignNewClient) {
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F Registration process started, username: {}, email: {}",
         user.getUsername(),
@@ -205,7 +208,7 @@ public class UserService {
             clientCredential -> {
               UserValidator.validateRegistration(registration_token, clientCredential, user);
               return dataService
-                  .registerUser(user, clientCredential, assignNewClient)
+                  .registerUser(bearer, user, clientCredential, assignNewClient)
                   .map(
                       user1 -> {
                         Response response =
@@ -227,7 +230,7 @@ public class UserService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> updateUser(
-      User userToUpdate, String bearer, ServerHttpRequest request) throws UtilsException {
+      User userToUpdate, String bearer, ServerHttpRequest request) {
     userToUpdate.setPassword(null);
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F Updating user process started, username: {}, email: {}",
@@ -236,25 +239,30 @@ public class UserService {
 
     // AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
     // Setting UserData
-    UserValidator.validateUpdate(accessTokenData, userToUpdate);
-    return dataService
-        .updateUser(userToUpdate)
+    return techUserService
+        .hasTechUserRoles(accessTokenData, clientService)
         .flatMap(
-            user -> {
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "User " + user.getUsername() + " successfully updated!",
-                      TraceUtils.getSpanID(),
-                      user);
-              return Mono.just(ResponseEntity.ok(response));
-            })
-        .doOnSuccess(
-            responseResponseEntity ->
-                LOG.info(
-                    "\uD83E\uDD37\u200D♂\uFE0F Updating user process ended, username: {}, email: {}",
-                    userToUpdate.getUsername(),
-                    userToUpdate.getEmail()));
+            aBoolean -> {
+              if (!aBoolean) UserValidator.validateUpdate(accessTokenData, userToUpdate);
+              return dataService
+                  .updateUser(userToUpdate)
+                  .flatMap(
+                      user -> {
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(),
+                                "User " + user.getUsername() + " successfully updated!",
+                                TraceUtils.getSpanID(),
+                                user);
+                        return Mono.just(ResponseEntity.ok(response));
+                      })
+                  .doOnSuccess(
+                      responseResponseEntity ->
+                          LOG.info(
+                              "\uD83E\uDD37\u200D♂\uFE0F Updating user process ended, username: {}, email: {}",
+                              userToUpdate.getUsername(),
+                              userToUpdate.getEmail()));
+            });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

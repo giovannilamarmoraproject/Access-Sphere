@@ -1,0 +1,61 @@
+.card {
+  background-color: rgba(240, 248, 255, 0.8) !important;
+  border-radius: 20px !important;
+}
+
+.client {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.form {
+  padding: 20px;
+}
+
+input,
+select {
+  height: 45px;
+  border-radius: 10px !important;
+}
+
+.input-group {
+  border-radius: 10px; /* Arrotonda l'intero gruppo */
+}
+
+.input-group-text {
+  border-top-left-radius: 10px !important;
+  border-bottom-left-radius: 10px !important; /* Arrotonda solo il lato sinistro */
+}
+
+.form-control-group {
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important; /* Arrotonda solo il lato sinistro */
+  /* border-top-right-radius: 10px !important;
+  border-bottom-right-radius: 10px; */
+}
+
+/* Aggiungi anche un bordo completo se necessario */
+.input-group-text,
+.form-control {
+  border: 1px solid #ccc; /* Sostituisci con il colore del bordo che desideri */
+}
+
+/* Regola anche l'input[type="file"] per uniformarlo */
+input[type="file"] {
+  height: 45px; /* Imposta la stessa altezza del form-control */
+  line-height: 1.5; /* Allinea verticalmente */
+  display: inline-block; /* Rende l'input file inline con il suo contenuto */
+}
+
+/* Aggiustamento per il bottone 'Scegli file' */
+input[type="file"]::-webkit-file-upload-button {
+  height: 45px; /* Imposta l'altezza del bottone */
+  border: none; /* Rimuove il bordo */
+  cursor: pointer; /* Aggiungi il cursore pointer per il bottone */
+  font-size: 14px; /* Imposta la dimensione del testo nel bottone */
+}
+
+@media (max-width: 870px) {
+  .form {
+    padding: 10px 0px;
+  }
+}

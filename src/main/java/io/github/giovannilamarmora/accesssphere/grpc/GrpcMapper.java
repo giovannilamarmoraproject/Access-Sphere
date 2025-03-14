@@ -4,6 +4,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -30,6 +31,7 @@ public class GrpcMapper {
         payload.getIssuedAtTimeSeconds(),
         payload.getIssuer(),
         payload.getSubject(),
+        SubjectType.CUSTOMER,
         getUserInfoValue(payload, "name"),
         payload.getEmail(),
         getUserInfoValue(payload, "picture"),

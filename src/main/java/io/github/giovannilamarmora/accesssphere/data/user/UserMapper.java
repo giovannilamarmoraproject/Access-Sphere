@@ -6,6 +6,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
@@ -80,6 +81,20 @@ public class UserMapper {
     User user = new User();
     user.setUsername(username);
     user.setRoles(StrapiMapper.getAppRoles(clientCredential.getAppRoles()));
+    return user;
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static User getTechUser(JWTData jwtData) {
+    User user = new User();
+    user.setIdentifier(jwtData.getIdentifier());
+    user.setUsername(jwtData.getSub());
+    user.setName(jwtData.getGiven_name());
+    user.setSurname(jwtData.getFamily_name());
+    user.setEmail(jwtData.getEmail());
+    user.setRoles(jwtData.getRoles());
+    user.setProfilePhoto(jwtData.getPicture());
+    user.setAttributes(jwtData.getAttributes());
     return user;
   }
 }

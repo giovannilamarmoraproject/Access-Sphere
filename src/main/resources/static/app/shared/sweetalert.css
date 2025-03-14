@@ -1,0 +1,13 @@
+.border_round {
+  border-radius: 30px;
+}
+
+.blur-effect {
+  backdrop-filter: blur(30px);
+  background: rgba(227, 228, 237, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.width-100 {
+  width: 100px !important;
+}
