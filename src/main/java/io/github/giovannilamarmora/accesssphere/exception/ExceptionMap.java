@@ -15,6 +15,7 @@ public enum ExceptionMap implements ExceptionCode {
   ERR_OAUTH_403(
       "OAUTH_ACCESS_DENIED", HttpStatus.FORBIDDEN, "You are not allowed to make this request"),
   ERR_OAUTH_404("DATA_NOT_FOUND", HttpStatus.NOT_FOUND, "Data Not Found"),
+  ERR_OAUTH_423("ACCOUNT_BLOCKED", HttpStatus.LOCKED, "Your account has been blocked."),
   ERR_OAUTH_500("OAUTH_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, "Generic Server Error"),
   /**
    * @Token Exception Map for Token

@@ -25,8 +25,13 @@ $(document).ready(function () {
     // Verifica anche se il checkbox "terms and conditions" è selezionato
     let termsChecked = $termsCheckbox.is(":checked");
 
+    /**
+     *  Verifica se almeno un ruolo è presente
+     */
+    let hasRole = $(".role-card").length > 0;
+
     // Abilita o disabilita il bottone in base alla validità dei campi e al checkbox
-    $submitButton.prop("disabled", !(allFilled && termsChecked));
+    $submitButton.prop("disabled", !(allFilled && termsChecked && hasRole));
   }
 
   // Ascolta gli eventi di input sui campi required
@@ -51,6 +56,20 @@ $(document).ready(function () {
   $passwordConfirmInput.on("input", function () {
     validatePasswords();
   });
+
+  /**
+   * Controllo se i ruoli sono stati cliccati
+   */
+  $("#add_role_btn").on("click", function () {
+    checkRequiredFields();
+  });
+
+  $(document).on("click", ".remove-role", function () {
+    checkRequiredFields();
+  });
+  /**
+   * END Controllo se i ruoli sono stati cliccati
+   */
 
   // Controllo iniziale nel caso in cui alcuni campi siano già compilati
   checkRequiredFields();

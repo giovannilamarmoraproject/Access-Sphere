@@ -59,6 +59,12 @@ public class UserControllerImpl implements UserController {
   }
 
   @Override
+  public Mono<ResponseEntity<Response>> unlockUser(
+      String bearer, String identifier, Boolean block) {
+    return userService.unlockUser(identifier, block);
+  }
+
+  @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> changePasswordRequest(
       ChangePassword changePassword, String locale, boolean sendEmail) {

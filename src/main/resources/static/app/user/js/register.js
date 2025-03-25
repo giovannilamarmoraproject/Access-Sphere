@@ -6,8 +6,9 @@ function refreshClients() {
 
 $(document).ready(function () {
   const clientsJSON = localStorage.getItem(config.client_id + "_clients");
+  let clients;
   if (clientsJSON) {
-    const clients = JSON.parse(clientsJSON);
+    clients = JSON.parse(clientsJSON);
     displayClientData(clients);
   } else getClient();
 
@@ -52,6 +53,9 @@ $(document).ready(function () {
   $(".form").on("submit", function (event) {
     event.preventDefault(); // Evita il ricaricamento della pagina
     // Recupero i valori dai campi del modulo
+    const roles = JSON.parse(localStorage.getItem("selected_roles") || []);
+    const profilePhoto =
+      profileImage || "https://bootdey.com/img/Content/avatar/avatar7.png";
     let userData = {
       firstName: $("#name").val().trim(),
       lastName: $("#surname").val().trim(),
@@ -66,17 +70,21 @@ $(document).ready(function () {
       confirmPassword: $("#confirm_password").val(),
       occupation: $("#occupation").val().trim(),
       education: $("#education").val().trim(),
-      attributes: $("#attributes").val().trim(),
+      attributes:
+        $("#attributes").val().trim() == ""
+          ? null
+          : $("#attributes").val().trim(),
       clientId: $("#client_id_select").val(), // ID Cliente
-      roles: [$("#role_select").val()], // Ruoli
-      profile: profileImage,
+      //roles: [$("#role_select").val()], // Ruoli
+      roles: roles, // Ruoli
+      profile: profilePhoto,
     };
-    console.log(userData);
+    registerUser(userData, clients);
   });
 });
 
 function registerUser(userForm, clients) {
-  const userClient = clients.filter(
+  const userClient = clients.find(
     (client) => client.clientId == userForm.clientId
   );
   const registrationUrl =
@@ -113,7 +121,11 @@ function registerUser(userForm, clients) {
     } else {
       fetchHeader(data.headers);
       localStorage.removeItem(config.client_id + "_usersData");
-      return sweetalert("success", "Saved", responseData.message);
+      return sweetalert(
+        "success",
+        currentTranslations.register_form_confirm,
+        responseData.message
+      );
     }
   });
 }
@@ -129,71 +141,121 @@ function getClient() {
       return sweetalert("error", error.title, error.message);
     } else {
       fetchHeader(data.headers);
-      // ✅ Salva i dati in localStorage come stringa JSON
       localStorage.setItem(
         config.client_id + "_clients",
         JSON.stringify(responseData.data)
       );
-      console.log(responseData.data);
       displayClientData(responseData.data);
     }
   });
 }
 
 function displayClientData(clients) {
-  // Popola il select con i client
   const clientSelect = $("#client_id_select");
-  clientSelect.empty(); // Rimuove le opzioni esistenti (per evitare duplicati)
-  clientSelect.append('<option selected disabled value="">Choose...</option>'); // Prima opzione disabilitata
+  clientSelect.empty();
+  clientSelect.append('<option selected disabled value="">Choose...</option>');
 
   clients.forEach((client) => {
     const option = $("<option>").val(client.clientId).text(client.clientId);
     clientSelect.append(option);
   });
 
-  // Funzione per popolare i ruoli quando viene selezionato un client
   function populateRoles(clientId) {
-    // Trova il client selezionato
     const selectedClient = clients.find(
       (client) => client.clientId === clientId
     );
 
     if (selectedClient && selectedClient.appRoles) {
-      // Popola il select con i ruoli
       const roleSelect = $("#role_select");
-      roleSelect.empty(); // Rimuove tutte le opzioni esistenti
+      roleSelect.empty();
       roleSelect.append(
         '<option selected disabled value="">Choose...</option>'
-      ); // Prima opzione disabilitata
+      );
 
-      // Estrae e popola i ruoli da 'appRoles'
       selectedClient.appRoles.forEach((role) => {
         if (role.role) {
-          // Assicurati che il campo `role` esista
           const option = $("<option>").val(role.role).text(role.role);
           roleSelect.append(option);
         }
       });
-
-      // Abilita il campo ruolo
       roleSelect.prop("disabled", false);
     }
   }
 
-  // Gestisce la selezione del client
   $("#client_id_select").on("change", function () {
     const selectedClientId = $(this).val();
     if (selectedClientId) {
-      // Popola i ruoli per il client selezionato
       populateRoles(selectedClientId);
     } else {
-      // Se nessun client è selezionato, disabilita il selettore dei ruoli
       $("#role_select")
         .prop("disabled", true)
         .empty()
         .append('<option selected disabled value="">Choose...</option>');
     }
   });
+}
+
+function addRole() {
+  $("#role_select").on("change", function () {
+    const selectedRole = $(this).val();
+    const alreadyAdded =
+      $(".role-card span").filter(function () {
+        return $(this).text() === selectedRole;
+      }).length > 0;
+
+    $("#add_role_btn").prop("disabled", !selectedRole || alreadyAdded);
+  });
+
+  const selectedRole = $("#role_select").val();
+  if (!selectedRole) return;
+
+  const alreadyAdded =
+    $(".role-card span").filter(function () {
+      return $(this).text() === selectedRole;
+    }).length > 0;
+
+  if (alreadyAdded) {
+    $("#add_role_btn").prop("disabled", true);
+    return;
+  }
+
+  const roleContainer = $("#role_container");
+  const roleCard = $(`
+      <div class="card m-1 col role-card">
+        <div class="card-body">
+          <span>${selectedRole}</span>
+          <i class="fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
+        </div>
+      </div>
+    `);
+
+  roleCard.find(".remove-role").on("click", function () {
+    roleCard.remove();
+    updateStoredRoles();
+    if ($(".role-card").length === 0) {
+      $("#client_id_select").prop("disabled", false);
+    }
+    $("#role_select option[value='" + selectedRole + "']").prop(
+      "disabled",
+      false
+    );
+    $("#add_role_btn").prop("disabled", false);
+  });
+
+  roleContainer.append(roleCard);
+  updateStoredRoles();
+  $("#client_id_select").prop("disabled", true);
+  $("#role_select option[value='" + selectedRole + "']").prop("disabled", true);
+  $("#add_role_btn").prop("disabled", true);
+}
+
+function updateStoredRoles() {
+  const roles = $(".role-card span")
+    .map(function () {
+      return $(this).text();
+    })
+    .get();
+  localStorage.setItem("selected_roles", JSON.stringify(roles));
 }
 
 const clientID = async (url, bearer) => {

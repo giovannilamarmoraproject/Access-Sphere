@@ -46,7 +46,7 @@ function displayUserData(user) {
               </div>
             </div>
             <div class="col-md-9">
-              <div class="card">
+              <div class="card fade-in">
                 <div class="card-body m-2">
                   <h3>
                     <h3 class="d-inline" id="user_details_title">User Details</h3>
@@ -121,6 +121,25 @@ function generateUserInfoHTML(user) {
       id: "user_details_occupation",
     },
     { label: "Education", value: user.education, id: "user_details_education" },
+    {
+      label: "Status",
+      value: user.blocked
+        ? `<span class='badge text-bg-danger status_blocked'>BLOCKED</span>
+          <button
+            onclick="lockUser(false)"
+            id="unlock_user"
+            style="padding: 5px 20px; border-radius: 10px"
+            class="btn btn-danger float-end"
+          >Unlock</button>`
+        : `<span class='badge text-bg-success status_active'>ACTIVE</span>
+        <button
+            onclick="lockUser(true)"
+            id="lock_user"
+            style="padding: 5px 20px; border-radius: 10px"
+            class="btn btn-danger float-end"
+          >Lock</button>`,
+      id: "user_details_status",
+    },
   ];
 
   // Filtra solo i campi presenti
@@ -195,3 +214,63 @@ function generateAttributesHTML(attributes) {
 $(document).ready(function () {
   getUser();
 });
+
+function lockUser(status) {
+  const urlParams = window.location.href;
+  const identifier = urlParams.split("details/")[1];
+  console.log(identifier);
+  const unlockUrl =
+    window.location.origin + "/v1/users/" + identifier + "?block=" + status;
+  const token = getCookieOrStorage(config.access_token);
+  lock_unlock_user(unlockUrl, token).then(async (data) => {
+    const responseData = await data.json();
+    if (responseData.error != null) {
+      const error = getErrorCode(responseData.error);
+      return sweetalert("error", error.title, error.message);
+    } else {
+      fetchHeader(data.headers);
+      localStorage.removeItem(config.client_id + "_usersData");
+      return sweetalert(
+        "success",
+        status
+          ? currentTranslations.locked_user
+          : currentTranslations.unlocked_user,
+        responseData.message
+      ).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          const origin = window.location.origin;
+
+          // Costruisci l'URL completo aggiungendo il path
+          const fullUrl = `${origin}/app/users`;
+
+          // Reindirizza l'utente al nuovo URL
+          window.location.href = fullUrl;
+        }
+      });
+    }
+  });
+}
+
+const lock_unlock_user = async (url, bearer) => {
+  try {
+    const response = await fetch(url, {
+      method: "PATCH", // *GET, POST, PUT, DELETE, etc.
+      mode: "cors", // no-cors, *cors, same-origin
+      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: "same-origin", // include, *same-origin, omit
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + bearer,
+        ...getSavedHeaders(),
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: "follow", // manual, *follow, error
+      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    });
+    return response;
+  } catch (err) {
+    console.error(err);
+    throw new Error(`Error on users, message is ${err.message}`);
+  }
+};

@@ -206,7 +206,7 @@ public class DataService {
               })
           .onErrorResume(
               throwable -> {
-                if (!throwable.getMessage().contains("Email or Username are already taken")) {
+                if (!OAuthException.isHandleException(throwable)) {
                   LOG.info(
                       "Error on strapi, register user into database, message is {}",
                       throwable.getMessage());
@@ -292,9 +292,7 @@ public class DataService {
                 })
             .onErrorResume(
                 throwable -> {
-                  if (!throwable
-                      .getMessage()
-                      .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_401.getMessage())) {
+                  if (!OAuthException.isHandleException(throwable)) {
                     LOG.error("Error on strapi, login via database");
                     return Mono.just(
                         performLoginViaDatabase(
@@ -346,9 +344,7 @@ public class DataService {
             .flatMap(strapiUser -> Mono.just(StrapiMapper.mapFromStrapiUserToUser(strapiUser)))
             .onErrorResume(
                 throwable -> {
-                  if (!throwable
-                      .getMessage()
-                      .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_401.getMessage())) {
+                  if (!OAuthException.isHandleException(throwable)) {
                     LOG.info(
                         "Error on strapi, getting userInfo into database, message is {}",
                         throwable.getMessage());
@@ -495,7 +491,7 @@ public class DataService {
                         })
                     .onErrorResume(
                         throwable -> {
-                          if (!throwable.getMessage().contains("NotFoundError")) {
+                          if (!OAuthException.isHandleException(throwable)) {
                             LOG.info(
                                 "Error on strapi, update user into database, message is {}",
                                 throwable.getMessage());

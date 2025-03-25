@@ -50,6 +50,12 @@ const users = async (url, bearer) => {
 };
 
 function displayUsersTable(users) {
+  console.log("Displaying Users...");
+  var datatable = $("#users-table").DataTable();
+
+  // Distruggi la DataTable esistente
+  datatable.destroy();
+
   const table = document.getElementById("users-data");
   table.innerHTML = ""; // Pulisce eventuali dati precedenti
 
@@ -67,17 +73,23 @@ function displayUsersTable(users) {
                                 style="width: 50px; height: 50px; object-fit: cover;"
                               />
                             </td>
-                            <td class="hidden-mobile">${user.identifier}</td>
-                            <td>${user.name}</td>
-                            <td>${user.surname}</td>
+                            <td class="hidden-mobile">${user.name}</td>
+                            <td class="hidden-mobile">${user.surname}</td>
                             <td>${user.username}</td>
                             <td class="hidden-mobile">${user.email}</td>
+                            <td>${
+                              user.blocked
+                                ? "<span class='badge text-bg-danger status_blocked'>BLOCKED</span>"
+                                : "<span class='badge text-bg-success status_active'>ACTIVE</span>"
+                            }</td>
                             <td class="text-center" style="width: 100px;">
                               <a class="m-1" href="/app/users/details/${
                                 user.identifier
                               }"><i class="fa-solid fa-eye"></i></a>
                               <a hidden class="m-1" href="index.html"><i class="fa-solid fa-pen-to-square"></i></a>
-                              <a hidden class="m-1" href="roles.html"><i class="fa-solid fa-key"></i></a>
+                              <a class="m-1" href="/app/users/roles/${
+                                user.identifier
+                              }"><i class="fa-solid fa-shield-keyhole"></i></a>
                             </td>
                           </tr>`;
   });
@@ -124,7 +136,6 @@ function setDatatablesStyle(tableId) {
   const lengthSelect = document.querySelector('.dt-input[id*="dt-length"]');
 
   if (lengthSelect) {
-    console.log(lengthSelect);
     lengthSelect.style.borderRadius = "12px";
     lengthSelect.style.padding = "3px 8px";
     lengthSelect.style.fontSize = "14px";

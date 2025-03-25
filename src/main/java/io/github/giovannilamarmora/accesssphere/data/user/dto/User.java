@@ -58,6 +58,8 @@ public class User extends GenericDTO {
   private String ssn; // Social Security Number
 
   private String tokenReset;
+  private Boolean confirmed;
+  private Boolean blocked;
 
   private Map<String, Object> attributes;
 }

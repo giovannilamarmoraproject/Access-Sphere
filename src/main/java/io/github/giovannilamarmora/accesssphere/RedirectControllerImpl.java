@@ -52,4 +52,9 @@ public class RedirectControllerImpl {
   public String register(Model model) {
     return "app/user/register";
   }
+
+  @GetMapping("/app/users/roles/{identifier}")
+  public String roles(Model model) {
+    return "app/user/roles";
+  }
 }

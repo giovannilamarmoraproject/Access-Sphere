@@ -19,4 +19,16 @@ public class OAuthException extends UtilsException {
   public OAuthException(ExceptionCode exceptionCode, ExceptionType exception, String message) {
     super(exceptionCode, exception, message);
   }
+
+  public static Boolean isHandleException(Throwable throwable) {
+    if (throwable instanceof UtilsException) {
+      ExceptionCode errorCode = ((UtilsException) throwable).getExceptionCode();
+      return errorCode.equals(ExceptionMap.ERR_OAUTH_400)
+          || errorCode.equals(ExceptionMap.ERR_OAUTH_401)
+          || errorCode.equals(ExceptionMap.ERR_OAUTH_423);
+    }
+    String message = throwable.getMessage();
+    return message.equalsIgnoreCase(ExceptionMap.ERR_OAUTH_401.getMessage())
+        || message.equalsIgnoreCase(ExceptionMap.ERR_OAUTH_423.getMessage());
+  }
 }

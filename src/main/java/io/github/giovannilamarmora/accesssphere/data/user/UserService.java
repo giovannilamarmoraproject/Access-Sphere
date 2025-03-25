@@ -4,6 +4,7 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderServi
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
+import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
@@ -262,6 +263,46 @@ public class UserService {
                               "\uD83E\uDD37\u200D♂\uFE0F Updating user process ended, username: {}, email: {}",
                               userToUpdate.getUsername(),
                               userToUpdate.getEmail()));
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> unlockUser(String identifier, Boolean block) {
+    LOG.info(
+        "\uD83E\uDD37\u200D♂\uFE0F Unlocking user process started, identifier: {}", identifier);
+    if (!techUserService.isTechUser()) {
+      LOG.error("Only a tech user can unlock the user {}", identifier);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+
+    return strapiService
+        .getUserByIdentifier(identifier)
+        .flatMap(
+            strapiUser -> {
+              User user = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
+              user.setId(strapiUser.getId());
+              user.setBlocked(block);
+              return strapiService
+                  .updateUser(user)
+                  .flatMap(
+                      strapiUser1 -> {
+                        User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(),
+                                "User "
+                                    + user.getUsername()
+                                    + " successfully "
+                                    + (block ? "locked!" : "unlocked!"),
+                                TraceUtils.getSpanID(),
+                                userRes);
+                        return Mono.just(ResponseEntity.ok(response));
+                      })
+                  .doOnSuccess(
+                      responseResponseEntity ->
+                          LOG.info(
+                              "\uD83E\uDD37\u200D♂\uFE0F Unlocking user process ended, identifier: {}",
+                              identifier));
             });
   }
 

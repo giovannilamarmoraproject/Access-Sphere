@@ -23,7 +23,6 @@ async function loadErrorCode() {
     detectLanguage();
     errorCode = error_translations[currentLanguage];
     console.log("Language " + currentLanguage);
-    console.log(errorCode);
   } catch (error) {
     console.error("Error loading error code:", error);
   }
@@ -51,10 +50,32 @@ function detectLanguage() {
   currentLanguage = translations[browserLanguage] ? browserLanguage : "en";
 }
 
-function applyLanguage(id, text, innerHTML = false) {
+function applyLanguageOld(id, text, innerHTML = false) {
   const data = document.getElementById(id);
   if (data && !innerHTML) data.textContent = text;
   else if (data && innerHTML) data.innerHTML = text;
+}
+
+function applyLanguage(selector, text, innerHTML = false) {
+  let elements;
+
+  if (selector.startsWith(".")) {
+    // Se inizia con ".", selezioniamo tutti gli elementi con quella classe
+    elements = document.querySelectorAll(selector);
+  } else {
+    // Altrimenti, assumiamo che sia un ID
+    const element = document.getElementById(selector);
+    elements = element ? [element] : [];
+  }
+
+  // Applichiamo il testo a tutti gli elementi trovati
+  elements.forEach((element) => {
+    if (!innerHTML) {
+      element.textContent = text;
+    } else {
+      element.innerHTML = text;
+    }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", loadTranslations);
@@ -182,6 +203,17 @@ function applyTranslations() {
     "user_details_education",
     translations[currentLanguage].user_details_education
   );
+  applyLanguage(".status_active", translations[currentLanguage].status_active);
+  applyLanguage(
+    ".status_blocked",
+    translations[currentLanguage].status_blocked
+  );
+  applyLanguage("unlock_user", translations[currentLanguage].unlock_user, true);
+  applyLanguage("lock_user", translations[currentLanguage].lock_user, true);
+  applyLanguage(
+    "user_details_status",
+    translations[currentLanguage].user_details_status
+  );
   applyLanguage(
     "user_details_roles",
     translations[currentLanguage].user_details_roles
@@ -279,6 +311,7 @@ function applyTranslations() {
     "register_form_client_choose",
     translations[currentLanguage].register_form_client_choose
   );
+  applyLanguage("add_role_btn", translations[currentLanguage].add_role_btn);
   applyLanguage(
     "register_form_roles",
     translations[currentLanguage].register_form_roles

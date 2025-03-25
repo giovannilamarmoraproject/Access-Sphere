@@ -83,8 +83,8 @@ public class StrapiMapper {
         user.getName(),
         user.getSurname(),
         user.getEmail(),
-        true,
-        false,
+        ObjectToolkit.getOrDefault(user.getConfirmed(), true),
+        ObjectToolkit.getOrDefault(user.getBlocked(), false),
         user.getUsername(),
         user.getPassword(),
         ObjectUtils.isEmpty(clientCredential)
@@ -123,6 +123,8 @@ public class StrapiMapper {
         user.getNationality(),
         user.getSsn(),
         user.getTokenReset(),
+        user.getConfirmed(),
+        user.getBlocked(),
         user.getAttributes());
   }
 

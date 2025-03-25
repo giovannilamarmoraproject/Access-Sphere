@@ -30,6 +30,10 @@
     "OAUTH_ACCESS_DENIED": {
       "title": "Not Allowed",
       "message": "You are not allowed to make this request."
+    },
+    "USERNAME_EMAIL_TAKEN": {
+      "title": "Error",
+      "message": "Email or Username are already taken."
     }
   },
   "it": {
@@ -63,6 +67,10 @@
     "OAUTH_ACCESS_DENIED": {
       "title": "Non consentito",
       "message": "Non ti è consentito effettuare questa richiesta."
+    },
+    "USERNAME_EMAIL_TAKEN": {
+      "title": "Errore",
+      "message": "Email o Username sono già usati."
     }
   }
 }

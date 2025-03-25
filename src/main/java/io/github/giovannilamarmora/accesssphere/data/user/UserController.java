@@ -229,6 +229,47 @@ public interface UserController {
           String bearer,
       ServerHttpRequest request);
 
+  @PatchMapping("/users/{identifier}")
+  @Operation(
+      description = "Unlock a blocked user",
+      summary = "Unlock User",
+      tags = OpenAPI.Tag.USERS)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "User unlocked successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = User.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> unlockUser(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @PathVariable(value = "identifier")
+          @Schema(
+              description = OpenAPI.Params.Description.IDENTIFIER,
+              example = OpenAPI.Params.Example.IDENTIFIER)
+          String identifier,
+      @RequestParam(value = "block")
+          @Schema(
+              description = OpenAPI.Params.Description.UNLOCK,
+              example = OpenAPI.Params.Example.UNLOCK)
+          Boolean block);
+
   @PostMapping("/users/change/password/request")
   @Operation(
       description = "Send Email to change the user password",
