@@ -233,9 +233,9 @@ public class DataService {
                             // Aggiunge tutti i ruoli della lista userRoles a
                             // strapiUser.getApp_roles()
                             strapiUser.getApp_roles().addAll(finalUserRoles);
-                            User userToUpdate = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
+                            // User userToUpdate = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
                             return strapiService
-                                .updateUser(userToUpdate)
+                                .updateUser(strapiUser)
                                 .flatMap(
                                     strapiUser1 ->
                                         Mono.just(

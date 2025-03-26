@@ -7,7 +7,23 @@
     <title>Access Sphere - Roles</title>
     <link rel="stylesheet" href="../../user/css/form.css" />
     <link rel="stylesheet" href="../../user/css/style.css" />
-    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="../../../favicon.ico" type="image/x-icon" />
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- END JQuery -->
+    <!-- Shared Component -->
+    <link rel="stylesheet" href="../../user/css/animation.css" />
+    <script src="../../shared/config.js"></script>
+    <script src="../../shared/utils.js"></script>
+    <script src="../../shared/api/authorize.js"></script>
+    <script src="../../shared/api/logout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="../../shared/sweetalert.css" />
+    <script src="../../shared/sweetalert.js"></script>
+    <script src="../../i18n/translations.js"></script>
+    <script src="../../shared/api/rest.js"></script>
+    <!-- END Shared Component -->
+    <script src="../../user/js/roles.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -73,7 +89,7 @@
 
         <header class="mb-3">
           <div class="container">
-            <a href="/app/users" class="logo">
+            <a href="/app/users" onclick="resetRolesSaved()" class="logo">
               <img
                 hidden
                 src="../../user/img/logo.png"
@@ -91,6 +107,7 @@
               <ul>
                 <li style="width: 140px">
                   <a
+                    onclick="resetRolesSaved()"
                     id="menu_register"
                     style="width: max-content"
                     href="/app/users/register"
@@ -98,7 +115,11 @@
                   >
                 </li>
                 <li style="width: 70px">
-                  <a id="menu_user" style="width: max-content" href="/app/users"
+                  <a
+                    onclick="resetRolesSaved()"
+                    id="menu_user"
+                    style="width: max-content"
+                    href="/app/users"
                     >Users</a
                   >
                 </li>
@@ -124,132 +145,79 @@
 
         <div class="showcase-area">
           <div class="container">
-            <div class="card" id="role">
-              <div class="card-body">
-                <form class="form row g-3">
-                  <h3>User Roles</h3>
-                  <div hidden class="col-12">
-                    <img
-                      src="https://bootdey.com/img/Content/avatar/avatar7.png"
-                      alt="Admin"
-                      class="rounded-circle"
-                      width="150"
-                      style="width: 150px; margin-left: calc(50% - 75px)"
-                    />
-                  </div>
-                  <div class="col-md-4" style="margin-top: 40px">
-                    <div class="card">
-                      <div class="card-body">ACCESS_SPHERE_CLIENT_01</div>
-                    </div>
-                  </div>
-                  <div class="col-md-4" style="margin-top: 40px">
-                    <div class="card">
-                      <div class="card-body">
-                        This is some text within a card body.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-4">
-                    <label for="validationDefault04" class="form-label"
-                      >Roles</label
-                    >
-                    <select
-                      class="form-select"
-                      id="validationDefault04"
-                      required
-                    >
-                      <option selected disabled value="">Choose...</option>
-                      <option>...</option>
-                    </select>
-                  </div>
-
-                  <div class="col-12">
-                    <button
-                      style="padding: 10px 20px; border-radius: 10px"
-                      class="btn btn-primary m-1 float-end"
-                      type="submit"
-                    >
-                      Save
-                    </button>
-                    <button
-                      style="padding: 10px 20px; border-radius: 10px"
-                      class="btn btn-primary m-1 float-end"
-                      type="menu"
-                      onclick="showAddClient()"
-                    >
-                      Add Client Role
-                    </button>
-                    <script>
-                      function showAddClient() {
-                        const role = document.getElementById("role");
-                        if (role) role.style.display = "none";
-                        const client = document.getElementById("client");
-                        if (client) client.style.display = "block";
-                      }
-                    </script>
-                  </div>
-                </form>
-              </div>
-            </div>
             <!--<div id="client" class="card mt-4" style="display: none">-->
-            <div id="client" class="card" style="display: none">
+            <div id="client" class="card fade-in">
               <div class="card-body">
-                <form class="form row g-3">
-                  <h3>Add Client</h3>
+                <div class="form row g-3">
+                  <h3 id="roles_page_title">
+                    <i class="fa-duotone fa-solid fa-shield-keyhole me-1"></i>
+                    Manage User Roles
+                  </h3>
+
+                  <div
+                    id="role_container"
+                    class="row mt-2"
+                    style="margin-left: 0px"
+                  ></div>
+
+                  <hr />
 
                   <div class="col-md-6">
-                    <div class="card">
-                      <div class="card-body">
-                        This is some text within a card body.
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="card">
-                      <div class="card-body">
-                        This is some text within a card body.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-6">
-                    <label for="validationDefault04" class="form-label"
+                    <label for="client_id_select" class="form-label"
                       >Client ID</label
                     >
-                    <select
-                      class="form-select"
-                      id="validationDefault04"
-                      required
-                    >
-                      <option selected disabled value="">Choose...</option>
-                      <option>...</option>
+                    <select class="form-select" id="client_id_select">
+                      <option
+                        id="register_form_client_choose"
+                        selected
+                        disabled
+                        value=""
+                      >
+                        Choose...
+                      </option>
+                      <!-- Client options will be populated dynamically -->
                     </select>
                   </div>
 
                   <div class="col-md-6">
-                    <label for="validationDefault04" class="form-label"
+                    <label
+                      id="register_form_roles"
+                      for="role_select"
+                      class="form-label"
                       >Roles</label
                     >
-                    <select
-                      class="form-select"
-                      id="validationDefault04"
-                      required
-                    >
-                      <option selected disabled value="">Choose...</option>
-                      <option>...</option>
+                    <select class="form-select" id="role_select" disabled>
+                      <option
+                        id="register_form_roles_choose"
+                        selected
+                        disabled
+                        value=""
+                      >
+                        Choose...
+                      </option>
+                      <!-- Roles options will be populated dynamically after selecting a client -->
                     </select>
+                    <div id="validationRoles" class="invalid-feedback"></div>
                   </div>
+
                   <div class="col-12">
                     <button
+                      onclick="changeRoles()"
                       style="padding: 10px 20px; border-radius: 10px"
-                      class="btn btn-primary m-1 float-end"
-                      type="submit"
+                      class="btn btn-primary float-end"
                     >
                       Save
                     </button>
+                    <button
+                      onclick="addRole()"
+                      id="add_role_btn"
+                      style="padding: 10px 20px; border-radius: 10px"
+                      class="btn btn-primary me-2 float-end"
+                    >
+                      Add Role
+                    </button>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
           </div>

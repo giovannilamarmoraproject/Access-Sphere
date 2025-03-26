@@ -272,18 +272,19 @@ public class UserService {
         "\uD83E\uDD37\u200D♂\uFE0F Unlocking user process started, identifier: {}", identifier);
     if (!techUserService.isTechUser()) {
       LOG.error("Only a tech user can unlock the user {}", identifier);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
     return strapiService
         .getUserByIdentifier(identifier)
         .flatMap(
             strapiUser -> {
-              User user = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
-              user.setId(strapiUser.getId());
-              user.setBlocked(block);
+              // User user = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
+              // user.setId(strapiUser.getId());
+              // user.setBlocked(block);
+              strapiUser.setBlocked(block);
               return strapiService
-                  .updateUser(user)
+                  .updateUser(strapiUser)
                   .flatMap(
                       strapiUser1 -> {
                         User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
@@ -291,7 +292,7 @@ public class UserService {
                             new Response(
                                 HttpStatus.OK.value(),
                                 "User "
-                                    + user.getUsername()
+                                    + userRes.getUsername()
                                     + " successfully "
                                     + (block ? "locked!" : "unlocked!"),
                                 TraceUtils.getSpanID(),

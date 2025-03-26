@@ -5,6 +5,21 @@ function refreshClients() {
 }
 
 $(document).ready(function () {
+  // Disabilita il bottone all'inizio
+  $("#add_role_btn").prop("disabled", true);
+
+  // Ascolta il cambiamento del select dei ruoli
+  $("#role_select").on("change", function () {
+    const selectedRole = $(this).val();
+    const alreadyAdded =
+      $(".role-card span").filter(function () {
+        return $(this).text() === selectedRole;
+      }).length > 0;
+
+    // Abilita il bottone solo se il ruolo è stato selezionato e non è già aggiunto
+    $("#add_role_btn").prop("disabled", !selectedRole || alreadyAdded);
+  });
+
   const clientsJSON = localStorage.getItem(config.client_id + "_clients");
   let clients;
   if (clientsJSON) {
@@ -121,6 +136,7 @@ function registerUser(userForm, clients) {
     } else {
       fetchHeader(data.headers);
       localStorage.removeItem(config.client_id + "_usersData");
+      localStorage.removeItem("selected_roles");
       return sweetalert(
         "success",
         currentTranslations.register_form_confirm,
@@ -153,7 +169,11 @@ function getClient() {
 function displayClientData(clients) {
   const clientSelect = $("#client_id_select");
   clientSelect.empty();
-  clientSelect.append('<option selected disabled value="">Choose...</option>');
+  clientSelect.append(
+    '<option id="register_form_client_choose" selected disabled value="">' +
+      currentTranslations.register_form_client_choose +
+      "</option>"
+  );
 
   clients.forEach((client) => {
     const option = $("<option>").val(client.clientId).text(client.clientId);
@@ -169,7 +189,9 @@ function displayClientData(clients) {
       const roleSelect = $("#role_select");
       roleSelect.empty();
       roleSelect.append(
-        '<option selected disabled value="">Choose...</option>'
+        '<option id="register_form_roles_choose" selected disabled value="">' +
+          currentTranslations.register_form_roles_choose +
+          "</option>"
       );
 
       selectedClient.appRoles.forEach((role) => {

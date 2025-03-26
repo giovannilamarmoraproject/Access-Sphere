@@ -1,11 +1,11 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
-import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -85,43 +85,13 @@ public interface OAuthController {
           String state,
       ServerHttpResponse serverHttpResponse);
 
+  @Hidden
   @GetMapping(value = "/login/{client_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(
-      description = "API to perform OAuth 2.0 login",
-      summary = "Perform OAuth 2.0 Login",
-      tags = OpenAPI.Tag.OAUTH)
-  @ApiResponse(
-      responseCode = "200",
-      description = "Successful operation",
-      content = @Content(schema = @Schema(implementation = OAuthTokenResponse.class)))
-  @ApiResponse(
-      responseCode = "400",
-      description = "Bad Input",
-      content =
-          @Content(
-              schema = @Schema(implementation = ExceptionResponse.class),
-              mediaType = MediaType.APPLICATION_JSON_VALUE))
   Mono<ResponseEntity<?>> login(
-      @PathVariable(value = "client_id")
-          @Schema(
-              description = OpenAPI.Params.Description.CLIENT_ID,
-              example = OpenAPI.Params.Example.CLIENT_ID)
-          String clientId,
-      @RequestParam(value = "scope", required = false)
-          @Schema(
-              description = OpenAPI.Params.Description.SCOPE,
-              example = OpenAPI.Params.Example.SCOPE)
-          String scope,
-      @RequestParam(value = "code", required = false)
-          @Schema(
-              description = OpenAPI.Params.Description.CODE,
-              example = OpenAPI.Params.Example.CODE)
-          String code,
-      @RequestParam(value = "prompt", required = false)
-          @Schema(
-              description = OpenAPI.Params.Description.PROMPT,
-              example = OpenAPI.Params.Example.PROMPT)
-          String prompt,
+      @PathVariable(value = "client_id") String clientId,
+      @RequestParam(value = "scope", required = false) String scope,
+      @RequestParam(value = "code", required = false) String code,
+      @RequestParam(value = "prompt", required = false) String prompt,
       ServerWebExchange exchange);
 
   @PostMapping(value = "/token", produces = MediaType.APPLICATION_JSON_VALUE)

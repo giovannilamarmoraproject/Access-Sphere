@@ -237,7 +237,7 @@ public interface UserController {
   @ApiResponses(
       value = {
         @ApiResponse(
-            responseCode = "201",
+            responseCode = "200",
             description = "User unlocked successfully",
             content =
                 @Content(

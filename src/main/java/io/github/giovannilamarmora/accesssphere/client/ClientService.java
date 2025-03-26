@@ -79,9 +79,20 @@ public class ClientService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> getClientCredentials() {
+  public Mono<ResponseEntity<Response>> getClients() {
     Response response =
         new Response(HttpStatus.OK.value(), "Client credential list", TraceUtils.getSpanID(), null);
+
+    return getClientCredentials()
+        .map(
+            client -> {
+              response.setData(client);
+              return ResponseEntity.ok(response);
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<ClientCredential>> getClientCredentials() {
     if (isStrapiEnabled) {
       LOG.info(STRAPI_STATUS_LOG);
       Mono<List<ClientCredential>> clientCredentials = getStrapiClientCredentials();
@@ -89,8 +100,7 @@ public class ClientService {
           .map(
               client -> {
                 techUserService.validateTechClient(client);
-                response.setData(client);
-                return ResponseEntity.ok(response);
+                return client;
               })
           .onErrorResume(
               throwable -> {
@@ -105,8 +115,7 @@ public class ClientService {
                       .map(
                           client -> {
                             techUserService.validateTechClient(client);
-                            response.setData(client);
-                            return ResponseEntity.ok(response);
+                            return client;
                           });
                 }
                 return Mono.error(throwable);
@@ -116,8 +125,7 @@ public class ClientService {
         .map(
             client -> {
               techUserService.validateTechClient(client);
-              response.setData(client);
-              return ResponseEntity.ok(response);
+              return client;
             });
   }
 

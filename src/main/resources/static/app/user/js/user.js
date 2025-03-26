@@ -218,7 +218,6 @@ $(document).ready(function () {
 function lockUser(status) {
   const urlParams = window.location.href;
   const identifier = urlParams.split("details/")[1];
-  console.log(identifier);
   const unlockUrl =
     window.location.origin + "/v1/users/" + identifier + "?block=" + status;
   const token = getCookieOrStorage(config.access_token);

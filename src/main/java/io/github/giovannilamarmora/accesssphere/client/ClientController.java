@@ -30,7 +30,7 @@ public class ClientController {
   public Mono<ResponseEntity<Response>> getClientCredentials(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
       ServerHttpRequest request) {
-    return clientService.getClientCredentials();
+    return clientService.getClients();
   }
 
   /*@GetMapping("/clients/{client_id}")

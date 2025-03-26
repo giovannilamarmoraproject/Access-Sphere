@@ -131,7 +131,7 @@ function applyTranslations() {
   /**
    * users.html
    */
-  applyLanguage("users_title", translations[currentLanguage].users_title);
+  applyLanguage("users_title", translations[currentLanguage].users_title, true);
   applyLanguage(
     "users_table_col_1",
     translations[currentLanguage].users_table_col_1
@@ -165,7 +165,8 @@ function applyTranslations() {
    */
   applyLanguage(
     "user_details_title",
-    translations[currentLanguage].user_details_title
+    translations[currentLanguage].user_details_title,
+    true
   );
   applyLanguage(
     "user_details_name",
@@ -215,17 +216,27 @@ function applyTranslations() {
     translations[currentLanguage].user_details_status
   );
   applyLanguage(
+    "user_details_user_roles",
+    translations[currentLanguage].user_details_user_roles,
+    true
+  );
+  applyLanguage(
     "user_details_roles",
     translations[currentLanguage].user_details_roles
   );
   applyLanguage(
     "user_details_attributes",
-    translations[currentLanguage].user_details_attributes
+    translations[currentLanguage].user_details_attributes,
+    true
   );
   /**
    * Register User Page
    */
-  applyLanguage("register_title", translations[currentLanguage].register_title);
+  applyLanguage(
+    "register_title",
+    translations[currentLanguage].register_title,
+    true
+  );
   applyLanguage(
     "register_form_name",
     translations[currentLanguage].register_form_name
@@ -331,5 +342,13 @@ function applyTranslations() {
   applyLanguage(
     "register_form_submit",
     translations[currentLanguage].register_form_submit
+  );
+  /**
+   * Roles User Page
+   */
+  applyLanguage(
+    "roles_page_title",
+    translations[currentLanguage].roles_page_title,
+    true
   );
 }

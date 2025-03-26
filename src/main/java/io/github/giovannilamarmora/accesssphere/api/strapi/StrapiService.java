@@ -206,6 +206,11 @@ public class StrapiService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<StrapiUser> updateUser(User user) {
     StrapiUser strapiUser = StrapiMapper.mapFromUserToStrapiUser(user, null);
+    return updateUser(strapiUser);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiUser> updateUser(StrapiUser strapiUser) {
     return strapiClient
         .updateUser(strapiUser)
         .flatMap(
