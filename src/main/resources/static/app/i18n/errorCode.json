@@ -26,6 +26,18 @@
     "OAUTH_NOT_VALID": {
       "title": "Not Authorized",
       "message": "You are not authorized to make this request."
+    },
+    "OAUTH_ACCESS_DENIED": {
+      "title": "Not Allowed",
+      "message": "You are not allowed to make this request."
+    },
+    "USERNAME_EMAIL_TAKEN": {
+      "title": "Error",
+      "message": "Email or Username are already taken."
+    },
+    "ACCOUNT_BLOCKED": {
+      "title": "Account Blocked",
+      "message": "Your account has been blocked."
     }
   },
   "it": {
@@ -55,6 +67,18 @@
     "OAUTH_NOT_VALID": {
       "title": "Non Autorizzato",
       "message": "Non sei autorizzato ad effettuare questa richiesta."
+    },
+    "OAUTH_ACCESS_DENIED": {
+      "title": "Non consentito",
+      "message": "Non ti è consentito effettuare questa richiesta."
+    },
+    "USERNAME_EMAIL_TAKEN": {
+      "title": "Errore",
+      "message": "Email o Username sono già usati."
+    },
+    "ACCOUNT_BLOCKED": {
+      "title": "Account Bloccato",
+      "message": "Il tuo account è bloccato."
     }
   }
 }

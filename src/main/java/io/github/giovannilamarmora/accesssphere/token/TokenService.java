@@ -20,6 +20,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
@@ -32,7 +33,6 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.validation.constraints.NotNull;
 import java.security.MessageDigest;
@@ -59,8 +59,6 @@ public class TokenService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   private final SessionID sessionID;
   @Autowired private AccessTokenService accessTokenService;
-
-  private final String testSecret = "flhfEg6QbtVU4f9WgIUVbkTebFBX7O7lQ43ly+uKDg4=";
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken generateToken(
@@ -136,7 +134,8 @@ public class TokenService {
     // Log per il processo di exchange
     LOG.info("🔄 Performing token exchange for client: {}", clientCredential.getClientId());
 
-    JWTData exchangeToken = JWTData.generateJWTData(user, clientCredential, request);
+    JWTData exchangeToken =
+        JWTData.generateJWTData(user, clientCredential, accessTokenData.getSubjectType(), request);
     JsonNode strapi_token = OAuthMapper.getStrapiToken(accessTokenData.getPayload());
 
     // Esegui la logica per lo scambio del token
@@ -144,7 +143,9 @@ public class TokenService {
         generateToken(
             exchangeToken,
             clientCredential,
-                ObjectToolkit.isNullOrEmpty(strapi_token) ? accessTokenData.getPayload() : strapi_token);
+            ObjectToolkit.isNullOrEmpty(strapi_token)
+                ? accessTokenData.getPayload()
+                : strapi_token);
 
     // Log il risultato dell'exchange
     LOG.info(
@@ -158,6 +159,7 @@ public class TokenService {
       JWTData jwtData, ClientCredential clientCredential, Object payload) {
     // Access Token
     ClaimsBuilder claims = Jwts.claims().subject(jwtData.getSub());
+    claims.add(TokenClaims.SUBJECT_TYPE.claim(), jwtData.getSubject_type());
     claims.add(TokenClaims.IDENTIFIER.claim(), jwtData.getIdentifier());
     claims.add(TokenClaims.ISS.claim(), jwtData.getIss());
     claims.add(TokenClaims.AUD.claim(), jwtData.getAud());
@@ -184,6 +186,7 @@ public class TokenService {
 
     // ID Token
     ClaimsBuilder idClaims = Jwts.claims().subject(jwtData.getSub());
+    idClaims.add(TokenClaims.SUBJECT_TYPE.claim(), jwtData.getSubject_type());
     idClaims.add(TokenClaims.IDENTIFIER.claim(), jwtData.getIdentifier());
     idClaims.add(TokenClaims.ISS.claim(), jwtData.getIss());
     idClaims.add(TokenClaims.IAT.claim(), now.toInstant().toEpochMilli());
@@ -247,6 +250,9 @@ public class TokenService {
         (Long) body.get(TokenClaims.IAT.claim()),
         (@NotNull String) body.get(TokenClaims.ISS.claim()),
         body.getSubject(),
+        ObjectUtils.isEmpty(body.get(TokenClaims.SUBJECT_TYPE.claim()))
+            ? null
+            : SubjectType.valueOf((String) body.get(TokenClaims.SUBJECT_TYPE.claim())),
         ObjectUtils.isEmpty(body.get(TokenClaims.NAME.claim()))
             ? null
             : (String) body.get(TokenClaims.NAME.claim()),
@@ -287,6 +293,7 @@ public class TokenService {
     JWTClaimsSet claimsSet =
         new JWTClaimsSet.Builder()
             .subject(jwtData.getSub())
+            .claim(TokenClaims.SUBJECT_TYPE.claim(), jwtData.getSubject_type())
             .claim(TokenClaims.IDENTIFIER.claim(), jwtData.getIdentifier())
             .claim(TokenClaims.ISS.claim(), jwtData.getIss())
             .claim(TokenClaims.AUD.claim(), jwtData.getAud())
@@ -323,6 +330,7 @@ public class TokenService {
     JWTClaimsSet idClaimsSet =
         new JWTClaimsSet.Builder()
             .subject(jwtData.getSub())
+            .claim(TokenClaims.SUBJECT_TYPE.claim(), jwtData.getSubject_type())
             .claim(TokenClaims.IDENTIFIER.claim(), jwtData.getIdentifier())
             .claim(TokenClaims.ISS.claim(), jwtData.getIss())
             .claim(TokenClaims.AUD.claim(), jwtData.getAud())
@@ -399,6 +407,9 @@ public class TokenService {
           ((Date) claimsSet.getClaim(TokenClaims.IAT.claim())).toInstant().toEpochMilli(),
           (@NotNull String) claimsSet.getClaim(TokenClaims.ISS.claim()),
           claimsSet.getSubject(),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim()))
+              ? null
+              : SubjectType.valueOf((String) claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim())),
           ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.NAME.claim()))
               ? null
               : (String) claimsSet.getClaim(TokenClaims.NAME.claim()),
@@ -450,10 +461,5 @@ public class TokenService {
     }
     messageDigest.update(_message.getBytes());
     return Base64.encodeBase64URLSafeString(messageDigest.digest());
-  }
-
-  private SecretKey getSignInKey() {
-    byte[] keyBytes = Decoders.BASE64.decode(testSecret);
-    return Keys.hmacShaKeyFor(keyBytes);
   }
 }

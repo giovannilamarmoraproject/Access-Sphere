@@ -53,11 +53,13 @@ public class User extends GenericDTO {
 
   @UpperCamelCase private String education;
 
-  @UpperCamelCase private String nationality;
+  private String nationality;
 
   private String ssn; // Social Security Number
 
   private String tokenReset;
+  private Boolean confirmed;
+  private Boolean blocked;
 
   private Map<String, Object> attributes;
 }

@@ -27,6 +27,7 @@ import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.IAccessTokenDAO;
 import io.github.giovannilamarmora.accesssphere.token.data.entity.AccessTokenEntity;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
@@ -114,7 +115,7 @@ public class UserServiceTest {
     when(userDAO.saveAndFlush(any())).thenReturn(userFind);
     // Act
     Mono<ResponseEntity<Response>> result =
-        userService.register(user, clientId, registrationToken, false);
+        userService.register(null, user, clientId, registrationToken, false);
 
     // Assert
     StepVerifier.create(result)
@@ -144,7 +145,7 @@ public class UserServiceTest {
 
     // Act
     Mono<ResponseEntity<Response>> result =
-        userService.register(user, clientId, registrationToken, false);
+        userService.register(null, user, clientId, registrationToken, false);
 
     // Assert
     StepVerifier.create(result)
@@ -194,6 +195,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -286,6 +288,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -391,6 +394,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -472,6 +476,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -553,6 +558,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -647,6 +653,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -812,7 +819,7 @@ public class UserServiceTest {
     when(userDAO.saveAndFlush(any())).thenReturn(userFind);
 
     Mono<ResponseEntity<Response>> result =
-        userService.register(userToUpdate, clientId, registrationToken, false);
+        userService.register(null, userToUpdate, clientId, registrationToken, false);
 
     // Assert
     StepVerifier.create(result)

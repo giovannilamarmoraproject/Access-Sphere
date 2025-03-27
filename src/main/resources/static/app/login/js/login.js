@@ -1,3 +1,5 @@
+//const config = getConfig();
+
 document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.getElementById("loginForm");
 
@@ -8,8 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const currentUrl = new URL(window.location.href);
       console.log(currentUrl);
-      const clientId = currentUrl.searchParams.get("client_id");
-      const redirectUri = currentUrl.searchParams.get("redirect_uri");
+      const clientId =
+        currentUrl.searchParams.get("client_id") || config.client_id;
+      const redirectUri =
+        currentUrl.searchParams.get("redirect_uri") || config.redirect_uri;
 
       // Chiama la funzione login con i dati raccolti
       return doLogin(clientId, redirectUri);
@@ -29,15 +33,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     token(url, encode).then(async (data) => {
       const responseData = await data.json();
-      if (responseData.error != null){
+      if (responseData.error != null) {
         const error = getErrorCode(responseData.error);
-        return sweetalert(
-          "error",
-          error.title,
-          error.message
-        );
-      }
-      else {
+        return sweetalert("error", error.title, error.message);
+      } else {
         const redirect_uri = data.headers.get("location");
         if (redirect_uri != null)
           window.location.href =
@@ -76,8 +75,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function doGoogleLogin() {
   const currentUrl = new URL(window.location.href);
+  //const clientId = currentUrl.searchParams.get("client_id") || config.client_id;
+  //const redirectUri =
+  //  currentUrl.searchParams.get("redirect_uri") || config.redirect_uri;
   const clientId = currentUrl.searchParams.get("client_id");
   const redirectUri = currentUrl.searchParams.get("redirect_uri");
+
+  if (!clientId)
+    return sweetalert(
+      "error",
+      currentTranslations.googleLogin_error_title,
+      currentTranslations.googleLogin_error_text
+    );
 
   const url = new URL(window.location.origin + "/v1/oAuth/2.0/authorize");
   url.searchParams.set("access_type", "online");

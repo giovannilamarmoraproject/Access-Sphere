@@ -48,6 +48,7 @@ public class AccessTokenService {
               session_id,
               client_id,
               jwtData.getSub(),
+              jwtData.getSubject_type(),
               jwtData.getEmail(),
               jwtData.getIdentifier(),
               jwtData.getType(),

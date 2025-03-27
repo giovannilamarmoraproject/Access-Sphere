@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.token.dto;
 
 public enum TokenClaims {
+  SUBJECT_TYPE("subject_type"),
   IDENTIFIER("identifier"),
   AUD("aud"),
   EXP("exp"),

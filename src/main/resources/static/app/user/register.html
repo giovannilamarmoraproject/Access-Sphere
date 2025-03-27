@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Access Sphere - Register</title>
+    <link rel="stylesheet" href="../../app/user/css/form.css" />
+    <link rel="stylesheet" href="../../app/user/css/style.css" />
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon" />
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- END JQuery -->
+    <!-- Shared Component -->
+    <link rel="stylesheet" href="../../app/user/css/animation.css" />
+    <script src="../../app/shared/config.js"></script>
+    <script src="../../app/shared/utils.js"></script>
+    <script src="../../app/shared/api/authorize.js"></script>
+    <script src="../../app/shared/api/logout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="../../app/shared/sweetalert.css" />
+    <script src="../../app/shared/sweetalert.js"></script>
+    <script src="../../app/i18n/translations.js"></script>
+    <script src="../../app/shared/api/rest.js"></script>
+    <!-- END Shared Component -->
+    <script src="../../app/user/js/validationForm.js"></script>
+    <script src="../../app/user/js/register.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/Atugatran/FontAwesome6Pro@latest/css/all.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-KLC9VXFF");
+    </script>
+    <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-R4KLC18RH6");
+    </script>
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-KLC9VXFF"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <main>
+      <div class="big-wrapper dark">
+        <img src="../../app/user/img/shape.png" alt="" class="shape" />
+
+        <header class="mb-3">
+          <div class="container">
+            <a href="/app/users" class="logo">
+              <img
+                hidden
+                src="../../app/user/img/logo.png"
+                alt="Access Sphere Logo"
+              />
+              <img
+                src="../../app/user/img/Access%20Sphere%20Transparent%20512x512.png"
+                style="width: 50px"
+                alt="Access Sphere Logo"
+              />
+              <h3 style="margin-bottom: 7px">Access Sphere</h3>
+            </a>
+
+            <div class="links">
+              <ul>
+                <li hidden><a href="#">Features</a></li>
+                <li hidden style="width: 140px">
+                  <a
+                    style="width: max-content"
+                    href="https://access.sphere.service.giovannilamarmora.com/cookie-policy"
+                    onclick="event.preventDefault(); navigateToPath('cookie-policy')"
+                    >Cookie Policy</a
+                  >
+                </li>
+                <li style="width: 70px">
+                  <a id="menu_user" style="width: max-content" href="/app/users"
+                    >Users</a
+                  >
+                </li>
+                <li>
+                  <a
+                    onclick="logout()"
+                    class="button clickable"
+                    style="height: 40px; padding: 0.5rem 1.5rem"
+                    ><i
+                      class="fa-duotone fa-regular fa-right-from-bracket me-1"
+                    ></i>
+                    Logout</a
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <div class="overlay"></div>
+
+            <div class="hamburger-menu">
+              <div class="bar"></div>
+            </div>
+
+            <script>
+              var big_wrapper;
+              var hamburger_menu;
+
+              function declare() {
+                big_wrapper = document.querySelector(".big-wrapper");
+                hamburger_menu = document.querySelector(".hamburger-menu");
+              }
+
+              declare();
+              function events() {
+                hamburger_menu.addEventListener("click", () => {
+                  big_wrapper.classList.toggle("active");
+                });
+              }
+
+              events();
+            </script>
+          </div>
+        </header>
+
+        <div class="showcase-area">
+          <div class="container">
+            <div class="card fade-in">
+              <div class="card-body">
+                <form id="registration_form" class="form row g-3">
+                  <div>
+                    <h3 class="d-inline" id="register_title">Register User</h3>
+                    <a
+                      class="clickable"
+                      onclick="refreshClients()"
+                      style="
+                        vertical-align: 3px;
+                        margin-left: 10px;
+                        color: inherit;
+                      "
+                      ><i class="fa-duotone fa-solid fa-arrows-rotate"></i
+                    ></a>
+                  </div>
+                  <div class="col-12">
+                    <img
+                      id="profile"
+                      alt="Admin"
+                      class="rounded-circle"
+                      width="150"
+                      style="
+                        display: none;
+                        width: 150px;
+                        height: 150px;
+                        object-fit: cover;
+                        margin-left: calc(50% - 75px);
+                      "
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <label id="register_form_name" for="name" class="form-label"
+                      >First name</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <label
+                      id="register_form_surname"
+                      for="surname"
+                      class="form-label"
+                      >Last name</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="surname"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <label
+                      id="register_form_birth"
+                      for="birthdate"
+                      class="form-label"
+                      >Birthdate</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="birthdate"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <label
+                      id="register_form_gender"
+                      for="gender"
+                      class="form-label"
+                      >Gender</label
+                    >
+                    <select class="form-select" id="gender" required>
+                      <option
+                        selected
+                        disabled
+                        value=""
+                        id="register_form_gender_choose"
+                      >
+                        Choose...
+                      </option>
+                      <option value="M" id="register_form_gender_male">
+                        Male
+                      </option>
+                      <option value="F" id="register_form_gender_female">
+                        Female
+                      </option>
+                      <option value="O" id="register_form_gender_other">
+                        Other
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label
+                      id="register_form_nationality"
+                      for="nationality"
+                      class="form-label"
+                      >Nationality</label
+                    >
+                    <select class="form-select" id="nationality" required>
+                      <option
+                        selected
+                        disabled
+                        value=""
+                        id="register_form_nationality_choose"
+                      >
+                        Choose...
+                      </option>
+                      <option value="(AF) Afghan">Afghan</option>
+                      <option value="(AL) Albanian">Albanian</option>
+                      <option value="(DZ) Algerian">Algerian</option>
+                      <option value="(AD) Andorran">Andorran</option>
+                      <option value="(AO) Angolan">Angolan</option>
+                      <option value="(AR) Argentine">Argentine</option>
+                      <option value="(AM) Armenian">Armenian</option>
+                      <option value="(AU) Australian">Australian</option>
+                      <option value="(AT) Austrian">Austrian</option>
+                      <option value="(AZ) Azerbaijani">Azerbaijani</option>
+                      <option value="(BS) Bahamian">Bahamian</option>
+                      <option value="(BH) Bahraini">Bahraini</option>
+                      <option value="(BD) Bangladeshi">Bangladeshi</option>
+                      <option value="(BB) Barbadian">Barbadian</option>
+                      <option value="(BY) Belarusian">Belarusian</option>
+                      <option value="(BE) Belgian">Belgian</option>
+                      <option value="(BZ) Belizean">Belizean</option>
+                      <option value="(BJ) Beninese">Beninese</option>
+                      <option value="(BT) Bhutanese">Bhutanese</option>
+                      <option value="(BO) Bolivian">Bolivian</option>
+                      <option value="(BA) Bosnian">Bosnian</option>
+                      <option value="(BW) Botswanan">Botswanan</option>
+                      <option value="(BR) Brazilian">Brazilian</option>
+                      <option value="(BN) Bruneian">Bruneian</option>
+                      <option value="(BG) Bulgarian">Bulgarian</option>
+                      <option value="(BF) Burkinabe">Burkinabe</option>
+                      <option value="(BI) Burundian">Burundian</option>
+                      <option value="(KH) Cambodian">Cambodian</option>
+                      <option value="(CM) Cameroonian">Cameroonian</option>
+                      <option value="(CA) Canadian">Canadian</option>
+                      <option value="(CV) Cape Verdean">Cape Verdean</option>
+                      <option value="(KY) Caymanian">Caymanian</option>
+                      <option value="(CF) Central African">
+                        Central African
+                      </option>
+                      <option value="(TD) Chadian">Chadian</option>
+                      <option value="(CL) Chilean">Chilean</option>
+                      <option value="(CN) Chinese">Chinese</option>
+                      <option value="(CO) Colombian">Colombian</option>
+                      <option value="(KM) Comorian">Comorian</option>
+                      <option value="(CG) Congolese">Congolese</option>
+                      <option value="(CR) Costa Rican">Costa Rican</option>
+                      <option value="(HR) Croatian">Croatian</option>
+                      <option value="(CU) Cuban">Cuban</option>
+                      <option value="(CY) Cypriot">Cypriot</option>
+                      <option value="(CZ) Czech">Czech</option>
+                      <option value="(DR) Dominican">Dominican</option>
+                      <option value="(DJ) Djiboutian">Djiboutian</option>
+                      <option value="(DM) Dominican">Dominican</option>
+                      <option value="(EC) Ecuadorian">Ecuadorian</option>
+                      <option value="(EG) Egyptian">Egyptian</option>
+                      <option value="(SV) Salvadoran">Salvadoran</option>
+                      <option value="(GQ) Equatorial Guinean">
+                        Equatorial Guinean
+                      </option>
+                      <option value="(ER) Eritrean">Eritrean</option>
+                      <option value="(EE) Estonian">Estonian</option>
+                      <option value="(ET) Ethiopian">Ethiopian</option>
+                      <option value="(FJ) Fijian">Fijian</option>
+                      <option value="(FI) Finnish">Finnish</option>
+                      <option value="(FR) French">French</option>
+                      <option value="(GA) Gabonese">Gabonese</option>
+                      <option value="(GM) Gambian">Gambian</option>
+                      <option value="(GE) Georgian">Georgian</option>
+                      <option value="(DE) German">German</option>
+                      <option value="(GH) Ghanaian">Ghanaian</option>
+                      <option value="(GR) Greek">Greek</option>
+                      <option value="(GD) Grenadian">Grenadian</option>
+                      <option value="(GT) Guatemalan">Guatemalan</option>
+                      <option value="(GN) Guinean">Guinean</option>
+                      <option value="(GW) Guinea-Bissauan">
+                        Guinea-Bissauan
+                      </option>
+                      <option value="(GY) Guyanese">Guyanese</option>
+                      <option value="(HT) Haitian">Haitian</option>
+                      <option value="(HN) Honduran">Honduran</option>
+                      <option value="(HU) Hungarian">Hungarian</option>
+                      <option value="(IS) Icelander">Icelander</option>
+                      <option value="(IN) Indian">Indian</option>
+                      <option value="(ID) Indonesian">Indonesian</option>
+                      <option value="(IR) Iranian">Iranian</option>
+                      <option value="(IQ) Iraqi">Iraqi</option>
+                      <option value="(IE) Irish">Irish</option>
+                      <option value="(IL) Israeli">Israeli</option>
+                      <option value="(IT) Italian">Italian</option>
+                      <option value="(JM) Jamaican">Jamaican</option>
+                      <option value="(JP) Japanese">Japanese</option>
+                      <option value="(JO) Jordanian">Jordanian</option>
+                      <option value="(KZ) Kazakh">Kazakh</option>
+                      <option value="(KE) Kenyan">Kenyan</option>
+                      <option value="(KI) Kiribati">Kiribati</option>
+                      <option value="(KW) Kuwaiti">Kuwaiti</option>
+                      <option value="(KG) Kyrgyz">Kyrgyz</option>
+                      <option value="(LA) Laotian">Laotian</option>
+                      <option value="(LV) Latvian">Latvian</option>
+                      <option value="(LB) Lebanese">Lebanese</option>
+                      <option value="(LS) Lesotho">Lesotho</option>
+                      <option value="(LR) Liberian">Liberian</option>
+                      <option value="(LY) Libyan">Libyan</option>
+                      <option value="(LI) Liechtenstein">Liechtenstein</option>
+                      <option value="(LT) Lithuanian">Lithuanian</option>
+                      <option value="(LU) Luxembourgish">Luxembourgish</option>
+                      <option value="(MK) Macedonian">Macedonian</option>
+                      <option value="(MG) Malagasy">Malagasy</option>
+                      <option value="(MW) Malawian">Malawian</option>
+                      <option value="(MY) Malaysian">Malaysian</option>
+                      <option value="(MV) Maldivian">Maldivian</option>
+                      <option value="(ML) Malian">Malian</option>
+                      <option value="(MT) Maltese">Maltese</option>
+                      <option value="(MH) Marshallese">Marshallese</option>
+                      <option value="(MQ) Martiniquais">Martiniquais</option>
+                      <option value="(MR) Mauritanian">Mauritanian</option>
+                      <option value="(MU) Mauritian">Mauritian</option>
+                      <option value="(YT) Mayotte">Mayotte</option>
+                      <option value="(MX) Mexican">Mexican</option>
+                      <option value="(FM) Micronesian">Micronesian</option>
+                      <option value="(MD) Moldovan">Moldovan</option>
+                      <option value="(MC) Monegasque">Monegasque</option>
+                      <option value="(MN) Mongolian">Mongolian</option>
+                      <option value="(ME) Montenegrin">Montenegrin</option>
+                      <option value="(MA) Moroccan">Moroccan</option>
+                      <option value="(MZ) Mozambican">Mozambican</option>
+                      <option value="(MM) Myanmarese">Myanmarese</option>
+                      <option value="(NA) Namibian">Namibian</option>
+                      <option value="(NR) Nauruan">Nauruan</option>
+                      <option value="(NP) Nepali">Nepali</option>
+                      <option value="(NL) Dutch">Dutch</option>
+                      <option value="(NC) New Caledonian">
+                        New Caledonian
+                      </option>
+                      <option value="(NZ) New Zealander">New Zealander</option>
+                      <option value="(NI) Nicaraguan">Nicaraguan</option>
+                      <option value="(NE) Nigerien">Nigerien</option>
+                      <option value="(NG) Nigerian">Nigerian</option>
+                      <option value="(NO) Norwegian">Norwegian</option>
+                      <option value="(OM) Omani">Omani</option>
+                      <option value="(PK) Pakistani">Pakistani</option>
+                      <option value="(PW) Palauan">Palauan</option>
+                      <option value="(PA) Panamanian">Panamanian</option>
+                      <option value="(PG) Papua New Guinean">
+                        Papua New Guinean
+                      </option>
+                      <option value="(PY) Paraguayan">Paraguayan</option>
+                      <option value="(PE) Peruvian">Peruvian</option>
+                      <option value="(PH) Philippine">Philippine</option>
+                      <option value="(PL) Polish">Polish</option>
+                      <option value="(PT) Portuguese">Portuguese</option>
+                      <option value="(QA) Qatari">Qatari</option>
+                      <option value="(RO) Romanian">Romanian</option>
+                      <option value="(RU) Russian">Russian</option>
+                      <option value="(RW) Rwandan">Rwandan</option>
+                      <option value="(RE) Réunion">Réunion</option>
+                      <option value="(WS) Samoan">Samoan</option>
+                      <option value="(SM) San Marinese">San Marinese</option>
+                      <option value="(ST) Sao Tomean">Sao Tomean</option>
+                      <option value="(SA) Saudi">Saudi</option>
+                      <option value="(SN) Senegalese">Senegalese</option>
+                      <option value="(RS) Serbian">Serbian</option>
+                      <option value="(SC) Seychellois">Seychellois</option>
+                      <option value="(SL) Sierra Leonean">
+                        Sierra Leonean
+                      </option>
+                      <option value="(SG) Singaporean">Singaporean</option>
+                      <option value="(SK) Slovak">Slovak</option>
+                      <option value="(SI) Slovenian">Slovenian</option>
+                      <option value="(SB) Solomon Islander">
+                        Solomon Islander
+                      </option>
+                      <option value="(SO) Somalian">Somalian</option>
+                      <option value="(ZA) South African">South African</option>
+                      <option value="(KR) South Korean">South Korean</option>
+                      <option value="(ES) Spanish">Spanish</option>
+                      <option value="(LK) Sri Lankan">Sri Lankan</option>
+                      <option value="(SD) Sudanese">Sudanese</option>
+                      <option value="(SR) Surinamese">Surinamese</option>
+                      <option value="(SZ) Swazi">Swazi</option>
+                      <option value="(SE) Swedish">Swedish</option>
+                      <option value="(CH) Swiss">Swiss</option>
+                      <option value="(SY) Syrian">Syrian</option>
+                      <option value="(TW) Taiwanese">Taiwanese</option>
+                      <option value="(TJ) Tajik">Tajik</option>
+                      <option value="(TZ) Tanzanian">Tanzanian</option>
+                      <option value="(TH) Thai">Thai</option>
+                      <option value="(TL) Timorese">Timorese</option>
+                      <option value="(TG) Togolese">Togolese</option>
+                      <option value="(TO) Tongan">Tongan</option>
+                      <option value="(TT) Trinidadian">Trinidadian</option>
+                      <option value="(TN) Tunisian">Tunisian</option>
+                      <option value="(TR) Turkish">Turkish</option>
+                      <option value="(TM) Turkmen">Turkmen</option>
+                      <option value="(UG) Ugandan">Ugandan</option>
+                      <option value="(UA) Ukrainian">Ukrainian</option>
+                      <option value="(AE) Emirati">Emirati</option>
+                      <option value="(GB) British">British</option>
+                      <option value="(US) American">American</option>
+                      <option value="(UY) Uruguayan">Uruguayan</option>
+                      <option value="(UZ) Uzbek">Uzbek</option>
+                      <option value="(VU) Vanuatuan">Vanuatuan</option>
+                      <option value="(VE) Venezuelan">Venezuelan</option>
+                      <option value="(VN) Vietnamese">Vietnamese</option>
+                      <option value="(YE) Yemeni">Yemeni</option>
+                      <option value="(ZM) Zambian">Zambian</option>
+                      <option value="(ZW) Zimbabwean">Zimbabwean</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label id="register_form_ssn" for="ssn" class="form-label"
+                      >Fiscal Code / SSN</label
+                    >
+                    <input type="text" class="form-control" id="ssn" required />
+                  </div>
+
+                  <hr class="mt-5" />
+
+                  <div class="col-md-4">
+                    <label for="email" class="form-label">Email</label>
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="email"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-2">
+                    <label
+                      id="register_form_country_code"
+                      for="phone_prefix"
+                      class="form-label"
+                      >Country Code</label
+                    >
+                    <select class="form-select" id="phone_prefix" required>
+                      <option
+                        selected
+                        disabled
+                        value=""
+                        id="register_form_country_code_choose"
+                      >
+                        Choose...
+                      </option>
+                      <option value="+1">+1 (USA, Canada)</option>
+                      <option value="+7">+7 (Russia, Kazakhstan)</option>
+                      <option value="+20">+20 (Egypt)</option>
+                      <option value="+27">+27 (South Africa)</option>
+                      <option value="+30">+30 (Greece)</option>
+                      <option value="+31">+31 (Netherlands)</option>
+                      <option value="+32">+32 (Belgium)</option>
+                      <option value="+33">+33 (France)</option>
+                      <option value="+34">+34 (Spain)</option>
+                      <option value="+36">+36 (Hungary)</option>
+                      <option value="+39">
+                        +39 (Italy, Vatican, San Marino)
+                      </option>
+                      <option value="+40">+40 (Romania)</option>
+                      <option value="+41">+41 (Switzerland)</option>
+                      <option value="+43">+43 (Austria)</option>
+                      <option value="+44">+44 (United Kingdom)</option>
+                      <option value="+45">+45 (Denmark)</option>
+                      <option value="+46">+46 (Sweden)</option>
+                      <option value="+47">+47 (Norway)</option>
+                      <option value="+48">+48 (Poland)</option>
+                      <option value="+49">+49 (Germany)</option>
+                      <option value="+51">+51 (Peru)</option>
+                      <option value="+52">+52 (Mexico)</option>
+                      <option value="+53">+53 (Cuba)</option>
+                      <option value="+54">+54 (Argentina)</option>
+                      <option value="+55">+55 (Brazil)</option>
+                      <option value="+56">+56 (Chile)</option>
+                      <option value="+57">+57 (Colombia)</option>
+                      <option value="+58">+58 (Venezuela)</option>
+                      <option value="+60">+60 (Malaysia)</option>
+                      <option value="+61">+61 (Australia)</option>
+                      <option value="+62">+62 (Indonesia)</option>
+                      <option value="+63">+63 (Philippines)</option>
+                      <option value="+64">+64 (New Zealand)</option>
+                      <option value="+65">+65 (Singapore)</option>
+                      <option value="+66">+66 (Thailand)</option>
+                      <option value="+81">+81 (Japan)</option>
+                      <option value="+82">+82 (South Korea)</option>
+                      <option value="+84">+84 (Vietnam)</option>
+                      <option value="+86">+86 (China)</option>
+                      <option value="+90">+90 (Turkey)</option>
+                      <option value="+91">+91 (India)</option>
+                      <option value="+92">+92 (Pakistan)</option>
+                      <option value="+93">+93 (Afghanistan)</option>
+                      <option value="+94">+94 (Sri Lanka)</option>
+                      <option value="+95">+95 (Myanmar)</option>
+                      <option value="+98">+98 (Iran)</option>
+                      <option value="+211">+211 (South Sudan)</option>
+                      <option value="+212">+212 (Morocco)</option>
+                      <option value="+213">+213 (Algeria)</option>
+                      <option value="+216">+216 (Tunisia)</option>
+                      <option value="+218">+218 (Libya)</option>
+                      <option value="+220">+220 (Gambia)</option>
+                      <option value="+221">+221 (Senegal)</option>
+                      <option value="+222">+222 (Mauritania)</option>
+                      <option value="+223">+223 (Mali)</option>
+                      <option value="+224">+224 (Guinea)</option>
+                      <option value="+225">+225 (Ivory Coast)</option>
+                      <option value="+226">+226 (Burkina Faso)</option>
+                      <option value="+227">+227 (Niger)</option>
+                      <option value="+228">+228 (Togo)</option>
+                      <option value="+229">+229 (Benin)</option>
+                      <option value="+230">+230 (Mauritius)</option>
+                      <option value="+231">+231 (Liberia)</option>
+                      <option value="+232">+232 (Sierra Leone)</option>
+                      <option value="+233">+233 (Ghana)</option>
+                      <option value="+234">+234 (Nigeria)</option>
+                      <option value="+235">+235 (Chad)</option>
+                      <option value="+236">
+                        +236 (Central African Republic)
+                      </option>
+                      <option value="+237">+237 (Cameroon)</option>
+                      <option value="+238">+238 (Cape Verde)</option>
+                      <option value="+239">+239 (São Tomé and Príncipe)</option>
+                      <option value="+240">+240 (Equatorial Guinea)</option>
+                      <option value="+241">+241 (Gabon)</option>
+                      <option value="+242">+242 (Congo-Brazzaville)</option>
+                      <option value="+243">+243 (Congo-Kinshasa)</option>
+                      <option value="+244">+244 (Angola)</option>
+                      <option value="+245">+245 (Guinea-Bissau)</option>
+                      <option value="+246">
+                        +246 (British Indian Ocean Territory)
+                      </option>
+                      <option value="+248">+248 (Seychelles)</option>
+                      <option value="+249">+249 (Sudan)</option>
+                      <option value="+250">+250 (Rwanda)</option>
+                      <option value="+251">+251 (Ethiopia)</option>
+                      <option value="+252">+252 (Somalia)</option>
+                      <option value="+253">+253 (Djibouti)</option>
+                      <option value="+254">+254 (Kenya)</option>
+                      <option value="+255">+255 (Tanzania)</option>
+                      <option value="+256">+256 (Uganda)</option>
+                      <option value="+257">+257 (Burundi)</option>
+                      <option value="+258">+258 (Mozambique)</option>
+                      <option value="+260">+260 (Zambia)</option>
+                      <option value="+261">+261 (Madagascar)</option>
+                      <option value="+263">+263 (Zimbabwe)</option>
+                      <option value="+264">+264 (Namibia)</option>
+                      <option value="+265">+265 (Malawi)</option>
+                      <option value="+266">+266 (Lesotho)</option>
+                      <option value="+267">+267 (Botswana)</option>
+                      <option value="+268">+268 (Eswatini)</option>
+                      <option value="+269">+269 (Comoros)</option>
+                      <option value="+290">+290 (Saint Helena)</option>
+                      <option value="+291">+291 (Eritrea)</option>
+                      <option value="+297">+297 (Aruba)</option>
+                      <option value="+298">+298 (Faroe Islands)</option>
+                      <option value="+299">+299 (Greenland)</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-3">
+                    <label
+                      id="register_form_phone"
+                      for="phone"
+                      class="form-label"
+                      >Phone Number</label
+                    >
+                    <input
+                      type="tel"
+                      class="form-control"
+                      id="phone"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-3">
+                    <label
+                      id="register_form_profile"
+                      for="file"
+                      class="form-label"
+                      >Profile Image</label
+                    >
+                    <input
+                      type="file"
+                      class="form-control"
+                      id="file"
+                      aria-describedby="inputGroupFileAddon04"
+                      aria-label="Upload"
+                    />
+                    <div hidden class="input-group">
+                      <input
+                        type="file"
+                        class="form-control"
+                        id="inputGroupFile04"
+                        aria-describedby="inputGroupFileAddon04"
+                        aria-label="Upload"
+                      />
+                      <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        id="inputGroupFileAddon04"
+                      >
+                        Upload
+                      </button>
+                    </div>
+                  </div>
+
+                  <hr class="mt-5" />
+
+                  <div class="col-md-4">
+                    <label
+                      id="register_form_username"
+                      for="validationDefaultUsername"
+                      class="form-label"
+                      >Username</label
+                    >
+                    <div class="input-group">
+                      <span class="input-group-text" id="inputGroupPrepend2"
+                        >@</span
+                      >
+                      <input
+                        type="text"
+                        class="form-control form-control-group"
+                        id="validationDefaultUsername"
+                        aria-describedby="inputGroupPrepend2"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <label for="password" class="form-label">Password</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="password"
+                      required
+                    />
+                    <div id="validationPassword" class="invalid-feedback">
+                      <!--Attention: Your password must meet the following criteria:
+                      <ul>
+                        <li>Be 8 to 10 characters long.</li>
+                        <li>
+                          Contain at least one uppercase letter and one
+                          lowercase letter.
+                        </li>
+                        <li>
+                          Include at least one number and one special character
+                          (e.g. @$!%*?&.,).
+                        </li>
+                      </ul>
+                      To ensure the security of your account, make sure your
+                      password meets these criteria. A strong password is
+                      essential to protect your personal data and privacy
+                      online.-->
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label
+                      id="register_form_confirm_pass"
+                      for="confirm_password"
+                      class="form-label"
+                      >Confirm Password</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="confirm_password"
+                      required
+                    />
+                    <div
+                      id="validationConfirmPassword"
+                      class="invalid-feedback"
+                    >
+                      <!--Attention: Your password do not match.-->
+                    </div>
+                  </div>
+
+                  <hr class="mt-5" />
+
+                  <div class="col-md-6">
+                    <label
+                      id="register_form_occupation"
+                      for="occupation"
+                      class="form-label"
+                      >Occupation</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="occupation"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label
+                      id="register_form_education"
+                      for="education"
+                      class="form-label"
+                      >Education</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="education"
+                      required
+                    />
+                  </div>
+
+                  <hr class="mt-5" />
+
+                  <div class="col-md-6">
+                    <label for="client_id_select" class="form-label"
+                      >Client ID</label
+                    >
+                    <select class="form-select" id="client_id_select">
+                      <option
+                        id="register_form_client_choose"
+                        selected
+                        disabled
+                        value=""
+                      >
+                        Choose...
+                      </option>
+                      <!-- Client options will be populated dynamically -->
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label
+                      id="register_form_roles"
+                      for="role_select"
+                      class="form-label"
+                      >Roles</label
+                    >
+                    <select class="form-select" id="role_select" disabled>
+                      <option
+                        id="register_form_roles_choose"
+                        selected
+                        disabled
+                        value=""
+                      >
+                        Choose...
+                      </option>
+                      <!-- Roles options will be populated dynamically after selecting a client -->
+                    </select>
+                  </div>
+                  <div
+                    id="role_container"
+                    class="row mt-2"
+                    style="margin-left: 0px"
+                  ></div>
+                  <div class="col-12">
+                    <button
+                      onclick="addRole()"
+                      id="add_role_btn"
+                      style="padding: 10px 20px; border-radius: 10px"
+                      class="btn btn-outline-secondary float-end"
+                    >
+                      Add Role
+                    </button>
+                  </div>
+
+                  <hr class="mt-5" />
+
+                  <div class="col-md-12">
+                    <label
+                      id="register_form_attributes"
+                      for="attributes"
+                      class="form-label"
+                      >Attributes</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="attributes"
+                      rows="5"
+                    ></textarea>
+                    <div
+                      id="validationAttributes"
+                      class="invalid-feedback"
+                    ></div>
+                  </div>
+                  <div class="col-12">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        value="true"
+                        id="invalidCheck2"
+                        required
+                      />
+                      <label
+                        id="register_form_check"
+                        class="form-check-label"
+                        for="invalidCheck2"
+                      >
+                        Agree to terms and conditions
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <button
+                      id="register_form_submit"
+                      style="padding: 10px 20px; border-radius: 10px"
+                      class="btn btn-primary float-end"
+                      type="submit"
+                    >
+                      Register
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

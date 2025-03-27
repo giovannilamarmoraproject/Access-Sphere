@@ -1,7 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.api.strapi;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.*;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
@@ -9,12 +7,10 @@ import io.github.giovannilamarmora.accesssphere.data.DataValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
-import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
@@ -31,6 +27,22 @@ public class StrapiService {
   @Autowired private StrapiClient strapiClient;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<StrapiLocale>> locales() {
+    return strapiClient
+        .getLocale()
+        .flatMap(
+            strapiLocaleResponseEntity -> {
+              if (ObjectUtils.isEmpty(strapiLocaleResponseEntity.getBody())) {
+                LOG.error("Strapi returned an empty body on locales");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              return Mono.just(strapiLocaleResponseEntity.getBody());
+            })
+        .doOnError(StrapiException::handleStrapiException);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<StrapiResponse> registerUserToStrapi(User user, ClientCredential clientCredential) {
     StrapiUser strapiUser = StrapiMapper.mapFromUserToStrapiUser(user, clientCredential);
     return strapiClient
@@ -44,32 +56,7 @@ public class StrapiService {
                   .setApp_roles(strapiUser.getApp_roles());
               return strapiResponseResponseEntity.getBody();
             })
-        .doOnError(
-            throwable -> {
-              String messageBody = throwable.getMessage().split("and body message ")[1];
-              if (ObjectToolkit.isInstanceOf(messageBody, new TypeReference<StrapiError>() {})) {
-                StrapiError response;
-                try {
-                  response = Utils.mapper().readValue(messageBody, StrapiError.class);
-                } catch (JsonProcessingException e) {
-                  LOG.error(
-                      "An error happen during read value from strapi, message is {}",
-                      e.getMessage());
-                  throw new OAuthException(
-                      ExceptionMap.ERR_STRAPI_500, ExceptionMap.ERR_STRAPI_500.getMessage());
-                }
-                if (response
-                    .getError()
-                    .getMessage()
-                    .equalsIgnoreCase("Email or Username are already taken")) {
-                  LOG.error(
-                      "An error happen during registration on strapi, message is {}",
-                      response.getError().getMessage());
-                  throw new OAuthException(
-                      ExceptionMap.ERR_OAUTH_400, response.getError().getMessage());
-                }
-              }
-            });
+        .doOnError(StrapiException::handleStrapiException);
   }
 
   /**
@@ -123,9 +110,9 @@ public class StrapiService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<StrapiUser>> getUsers() {
+  public Mono<List<StrapiUser>> getUsers(String bearer) {
     return strapiClient
-        .getUsers()
+        .getUsers(bearer)
         .map(
             listResponseEntity -> {
               if (!listResponseEntity.hasBody()
@@ -196,14 +183,7 @@ public class StrapiService {
                   .setRefresh_token(strapiResponseRefresh.getBody().getRefresh_token());
               return Mono.just(strapiResponseResponseEntity.getBody());
             })
-        .doOnError(
-            throwable -> {
-              if (throwable.getMessage().contains("Invalid identifier or password")) {
-                LOG.error("Username o password are wrong, error is {}", throwable.getMessage());
-                throw new OAuthException(
-                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
-              }
-            });
+        .doOnError(StrapiException::handleStrapiException);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -219,14 +199,7 @@ public class StrapiService {
               }
               return Mono.just(strapiUserResponseEntity.getBody());
             })
-        .doOnError(
-            throwable -> {
-              if (throwable.getMessage().contains("Missing or invalid credentials")) {
-                LOG.error("Basic token is wrong or not valid, error is {}", throwable.getMessage());
-                throw new OAuthException(
-                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
-              }
-            });
+        .doOnError(StrapiException::handleStrapiException);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -243,20 +216,17 @@ public class StrapiService {
               strapiUserResponseEntity.getBody().setRefresh_token(refresh_token);
               return Mono.just(strapiUserResponseEntity.getBody());
             })
-        .doOnError(
-            throwable -> {
-              if (throwable.getMessage().contains("Refresh Token not found")) {
-                LOG.error(
-                    "Refresh token is wrong or not valid, error is {}", throwable.getMessage());
-                throw new OAuthException(
-                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
-              }
-            });
+        .doOnError(StrapiException::handleStrapiException);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<StrapiUser> updateUser(User user) {
     StrapiUser strapiUser = StrapiMapper.mapFromUserToStrapiUser(user, null);
+    return updateUser(strapiUser);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiUser> updateUser(StrapiUser strapiUser) {
     return strapiClient
         .updateUser(strapiUser)
         .flatMap(
@@ -268,14 +238,7 @@ public class StrapiService {
               }
               return Mono.just(strapiUserResponseEntity.getBody());
             })
-        .doOnError(
-            throwable -> {
-              if (throwable.getMessage().contains("NotFoundError")) {
-                LOG.error("User not found, error is {}", throwable.getMessage());
-                throw new OAuthException(
-                    ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
-              }
-            });
+        .doOnError(StrapiException::handleStrapiException);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
