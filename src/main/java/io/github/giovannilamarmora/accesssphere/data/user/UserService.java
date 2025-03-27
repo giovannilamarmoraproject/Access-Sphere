@@ -391,7 +391,7 @@ public class UserService {
                     .zipWith(updatedUserMono)
                     .flatMap(
                         objects1 -> {
-                          objects1.getT1().setToken(objects1.getT2().getTokenReset());
+                          // objects1.getT1().setToken(objects1.getT2().getTokenReset());
                           String message = "Email Sent! Check your email address!";
 
                           Response response =
