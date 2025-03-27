@@ -64,6 +64,8 @@ public class TechUserService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public boolean isTechUser() {
+    if (ObjectToolkit.isNullOrEmpty(accessTokenData)
+        || ObjectToolkit.fieldsNullOrEmpty(accessTokenData)) return false;
     return accessTokenData.getSubjectType().equals(SubjectType.TECHNICAL);
   }
 

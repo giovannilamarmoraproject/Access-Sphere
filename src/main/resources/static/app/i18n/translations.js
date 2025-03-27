@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", loadErrorCode);
 function applyTranslations() {
   applyLanguage("pageTitle", translations[currentLanguage].pageTitle);
   applyLanguage("title", translations[currentLanguage].title);
-  applyLanguage("loginTitle", translations[currentLanguage].loginTitle);
+  applyLanguage("loginTitle", translations[currentLanguage].loginTitle, true);
   applyLanguage("emailLabel", translations[currentLanguage].emailLabel);
   applyLanguage("passwordLabel", translations[currentLanguage].passwordLabel);
   applyLanguage("forgotPassword", translations[currentLanguage].forgotPassword);
@@ -106,6 +106,10 @@ function applyTranslations() {
   applyLanguage(
     "resetPasswordLabel",
     translations[currentLanguage].resetPasswordLabel
+  );
+  applyLanguage(
+    "resetPasswordCodeLabel",
+    translations[currentLanguage].resetPasswordCodeLabel
   );
   applyLanguage(
     "repeatPasswordLabel",
@@ -274,12 +278,20 @@ function applyTranslations() {
     translations[currentLanguage].register_form_nationality
   );
   applyLanguage(
+    "register_form_nationality_choose",
+    translations[currentLanguage].register_form_nationality_choose
+  );
+  applyLanguage(
     "register_form_ssn",
     translations[currentLanguage].register_form_ssn
   );
   applyLanguage(
     "register_form_country_code",
     translations[currentLanguage].register_form_country_code
+  );
+  applyLanguage(
+    "register_form_country_code_choose",
+    translations[currentLanguage].register_form_country_code_choose
   );
   applyLanguage(
     "register_form_phone",
@@ -350,5 +362,17 @@ function applyTranslations() {
     "roles_page_title",
     translations[currentLanguage].roles_page_title,
     true
+  );
+  /**
+   * Edit User Page
+   */
+  applyLanguage(
+    "edit_user_title",
+    translations[currentLanguage].edit_user_title,
+    true
+  );
+  applyLanguage(
+    "edit_user_button",
+    translations[currentLanguage].edit_user_button
   );
 }

@@ -8,7 +8,7 @@ function getUsers() {
   const url = config.users_url;
   const token = getCookieOrStorage(config.access_token);
 
-  users(url, token).then(async (data) => {
+  GET(url, token).then(async (data) => {
     const responseData = await data.json();
     if (responseData.error != null) {
       const error = getErrorCode(responseData.error);
@@ -24,30 +24,6 @@ function getUsers() {
     }
   });
 }
-
-const users = async (url, bearer) => {
-  try {
-    const response = await fetch(url, {
-      method: "GET", // *GET, POST, PUT, DELETE, etc.
-      mode: "cors", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + bearer,
-        ...getSavedHeaders(),
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      //body: JSON.stringify(data), // body data type must match "Content-Type" header
-    });
-    return response;
-  } catch (err) {
-    console.error(err);
-    throw new Error(`Error on users, message is ${err.message}`);
-  }
-};
 
 function displayUsersTable(users) {
   console.log("Displaying Users...");
@@ -86,7 +62,9 @@ function displayUsersTable(users) {
                               <a class="m-1" href="/app/users/details/${
                                 user.identifier
                               }"><i class="fa-solid fa-eye"></i></a>
-                              <a hidden class="m-1" href="index.html"><i class="fa-solid fa-pen-to-square"></i></a>
+                              <a class="m-1" href="/app/users/edit/${
+                                user.identifier
+                              }"><i class="fa-solid fa-user-pen"></i></a>
                               <a class="m-1" href="/app/users/roles/${
                                 user.identifier
                               }"><i class="fa-solid fa-shield-keyhole"></i></a>
@@ -194,19 +172,6 @@ function setDatatablesStyle(tableId) {
     });
   }
 }
-
-//function waitForTokenAndGetUsers() {
-//  const token = getCookieOrStorage(config.access_token);
-//
-//  if (token) {
-//    getUsers();
-//  } else {
-//    console.log("Token non disponibile, riprovo tra 500ms...");
-//    setTimeout(waitForTokenAndGetUsers, 500); // Riprova dopo 500ms
-//  }
-//}
-
-//waitForTokenAndGetUsers();
 
 $(document).ready(function () {
   const usersJSON = localStorage.getItem(config.client_id + "_usersData");

@@ -50,10 +50,11 @@ function displayUserData(user) {
                 <div class="card-body m-2">
                   <h3>
                     <h3 class="d-inline" id="user_details_title">User Details</h3>
-                    <a hidden
-                      class="btn btn-primary ps-4 pe-4 float-end"
-                      target="__blank"
-                      href="https://www.bootdey.com/snippets/view/profile-edit-data-and-skills"
+                    <a
+                      id="edit_user_title"
+                      class="btn btn-outline-secondary ps-4 pe-4 float-end"
+                      style="padding: 5px 20px; border-radius: 10px"
+                      href="/app/users/edit/${user.identifier}"
                       >Edit</a
                     >
                   </h3>
@@ -82,7 +83,10 @@ function displayUserData(user) {
                       <div class="col-sm-9 text-secondary">
                         <ul>
                           ${user.roles
-                            .map((role) => `<li>${role}</li>`)
+                            .map(
+                              (role) =>
+                                `<li><code style="color: inherit">${role}</code></li>`
+                            )
                             .join("")}
                         </ul>
                       </div>
@@ -129,14 +133,14 @@ function generateUserInfoHTML(user) {
             onclick="lockUser(false)"
             id="unlock_user"
             style="padding: 5px 20px; border-radius: 10px"
-            class="btn btn-danger float-end"
+            class="btn btn-outline-success float-end"
           >Unlock</button>`
         : `<span class='badge text-bg-success status_active'>ACTIVE</span>
         <button
             onclick="lockUser(true)"
             id="lock_user"
             style="padding: 5px 20px; border-radius: 10px"
-            class="btn btn-danger float-end"
+            class="btn btn-outline-danger float-end"
           >Lock</button>`,
       id: "user_details_status",
     },
@@ -221,7 +225,7 @@ function lockUser(status) {
   const unlockUrl =
     window.location.origin + "/v1/users/" + identifier + "?block=" + status;
   const token = getCookieOrStorage(config.access_token);
-  lock_unlock_user(unlockUrl, token).then(async (data) => {
+  PATCH(unlockUrl, token).then(async (data) => {
     const responseData = await data.json();
     if (responseData.error != null) {
       const error = getErrorCode(responseData.error);
@@ -234,7 +238,15 @@ function lockUser(status) {
         status
           ? currentTranslations.locked_user
           : currentTranslations.unlocked_user,
-        responseData.message
+        status
+          ? currentTranslations.locked_user_text.replace(
+              "#NAME#",
+              responseData.data.username
+            )
+          : currentTranslations.unlocked_user_text.replace(
+              "#NAME#",
+              responseData.data.username
+            )
       ).then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
@@ -250,26 +262,3 @@ function lockUser(status) {
     }
   });
 }
-
-const lock_unlock_user = async (url, bearer) => {
-  try {
-    const response = await fetch(url, {
-      method: "PATCH", // *GET, POST, PUT, DELETE, etc.
-      mode: "cors", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + bearer,
-        ...getSavedHeaders(),
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    });
-    return response;
-  } catch (err) {
-    console.error(err);
-    throw new Error(`Error on users, message is ${err.message}`);
-  }
-};

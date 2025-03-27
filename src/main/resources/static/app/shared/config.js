@@ -9,6 +9,9 @@ function getConfig() {
     logout: "/v1/oAuth/2.0/logout",
     client: "/v1/clients",
     register: "/v1/users/register",
+    edit: "/v1/users/update",
+    forgot: "/v1/users/change/password/request",
+    reset: "/v1/users/change/password",
     param: "?",
     divider: "&",
     access_type: "access_type=online",
@@ -47,5 +50,8 @@ function getConfig() {
       urlConfig.client_id,
     client_id_url: urlConfig.baseUrl + urlConfig.client,
     register_user_url: urlConfig.baseUrl + urlConfig.register,
+    forgot_password_url: urlConfig.baseUrl + urlConfig.forgot,
+    reset_password_url: urlConfig.baseUrl + urlConfig.reset,
+    edit_user_url: urlConfig.baseUrl + urlConfig.edit,
   };
 }

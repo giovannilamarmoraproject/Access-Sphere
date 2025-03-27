@@ -12,7 +12,9 @@
   }
 }
 
-#loginButton:disabled {
+#loginButton:disabled,
+#resetButton:disabled,
+#changePasswordButton:disabled {
   background-color: #dddddd;
   cursor: not-allowed;
 }
@@ -29,7 +31,9 @@
   }
 
   #google-btn,
-  #loginButton {
+  #loginButton,
+  #resetButton,
+  #changePasswordButton {
     transition: background-color 0.3s;
   }
 

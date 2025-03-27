@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplatePara
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
@@ -319,6 +320,8 @@ public class UserService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid field email, try again!");
     }
 
+    Mono<List<StrapiLocale>> strapiLocaleMono = strapiService.locales();
+
     Mono<User> userMono =
         dataService
             .getUserByEmail(changePassword.getEmail())
@@ -329,8 +332,43 @@ public class UserService {
                   return user;
                 });
 
+    Mono<String> finalLocaleMono =
+        strapiLocaleMono.map(
+            strapiLocales ->
+                strapiLocales.stream()
+                    .filter(loc -> loc.getCode().equals(locale))
+                    .findFirst()
+                    .map(
+                        foundLocale -> {
+                          LOG.info("Locale found: {}", foundLocale.getCode());
+                          return foundLocale.getCode();
+                        })
+                    .orElseGet(
+                        () ->
+                            strapiLocales.stream()
+                                .filter(loc -> Boolean.TRUE.equals(loc.getIsDefault()))
+                                .findFirst()
+                                .map(
+                                    defaultLocale -> {
+                                      LOG.warn(
+                                          "Locale '{}' not found. Using default locale: {}",
+                                          locale,
+                                          defaultLocale.getCode());
+                                      return defaultLocale.getCode();
+                                    })
+                                .orElseGet(
+                                    () -> {
+                                      LOG.error(
+                                          "Locale '{}' not found and no default locale available. Using fallback: en-GB",
+                                          locale);
+                                      return "en-GB";
+                                    })));
+
     Mono<StrapiEmailTemplate> strapiEmailTemplateMono =
-        strapiService.getTemplateById(changePassword.getTemplateId(), locale);
+        finalLocaleMono.flatMap(
+            finalLocale ->
+                strapiService.getTemplateById(changePassword.getTemplateId(), finalLocale));
+
     return Mono.zip(userMono, strapiEmailTemplateMono)
         .flatMap(
             objects -> {

@@ -22,6 +22,8 @@ services:
       - STRAPI_ACTIVE=${STRAPI_ACTIVE}
       - STRAPI_URL=http://app.strapi.cms:1337
       - STRAPI_AUTH_TOKEN=${STRAPI_AUTH_TOKEN}
+      - TECH_USERNAME=${TECH_USERNAME}
+      - TECH_PASSWORD=${TECH_PASSWORD}
     volumes:
       # Monta il volume "microservice" nella cartella /secrets (in sola lettura)
       - microservice:/secrets:ro

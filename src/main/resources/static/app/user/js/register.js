@@ -5,6 +5,41 @@ function refreshClients() {
 }
 
 $(document).ready(function () {
+  const textarea = $("#attributes");
+
+  // Auto-espansione e auto-formattazione mentre scrivi
+  textarea.on("input", function () {
+    try {
+      const parsedJson = JSON.parse(this.value); // Prova a parsare il JSON
+      this.value = JSON.stringify(parsedJson, null, 2); // Riformatta con indentazione
+      textarea.removeClass("is-invalid");
+      $("#validationAttributes").text("");
+    } catch (e) {
+      // Ignora l'errore finché il JSON non è valido
+      $("#validationAttributes").text(
+        currentTranslations.edit_attributes_valid
+      );
+      textarea.addClass("is-invalid");
+      $("#register_form_submit").prop("disabled", true);
+    }
+
+    // Auto-espansione del campo
+    this.style.height = "auto";
+    this.style.height = this.scrollHeight + "px";
+  });
+
+  // Formatta inizialmente il JSON già presente
+  if (textarea.val().trim() !== "") {
+    try {
+      const parsedJson = JSON.parse(textarea.val());
+      textarea.val(JSON.stringify(parsedJson, null, 2));
+    } catch (e) {
+      // Il JSON iniziale potrebbe essere non valido, quindi lo lasciamo così com'è
+    }
+  }
+});
+
+$(document).ready(function () {
   // Disabilita il bottone all'inizio
   $("#add_role_btn").prop("disabled", true);
 
@@ -71,6 +106,7 @@ $(document).ready(function () {
     const roles = JSON.parse(localStorage.getItem("selected_roles") || []);
     const profilePhoto =
       profileImage || "https://bootdey.com/img/Content/avatar/avatar7.png";
+    const attributes = $("#attributes").val().trim() || null;
     let userData = {
       firstName: $("#name").val().trim(),
       lastName: $("#surname").val().trim(),
@@ -79,16 +115,13 @@ $(document).ready(function () {
       nationality: $("#nationality").val().trim(),
       ssn: $("#ssn").val().trim(),
       email: $("#email").val().trim(),
-      phone: $("#phone_prefix").val() + $("#phone").val().trim(),
+      phone: $("#phone_prefix").val() + " " + $("#phone").val().trim(),
       username: $("#validationDefaultUsername").val().trim(),
       password: $("#password").val(),
       confirmPassword: $("#confirm_password").val(),
       occupation: $("#occupation").val().trim(),
       education: $("#education").val().trim(),
-      attributes:
-        $("#attributes").val().trim() == ""
-          ? null
-          : $("#attributes").val().trim(),
+      attributes: attributes ? JSON.parse(attributes) : null,
       clientId: $("#client_id_select").val(), // ID Cliente
       //roles: [$("#role_select").val()], // Ruoli
       roles: roles, // Ruoli
@@ -128,7 +161,7 @@ function registerUser(userForm, clients) {
     attributes: userForm.attributes,
   };
 
-  registerUserData(registrationUrl, token, user).then(async (data) => {
+  POST(registrationUrl, token, user).then(async (data) => {
     const responseData = await data.json();
     if (responseData.error != null) {
       const error = getErrorCode(responseData.error);
@@ -150,7 +183,7 @@ function getClient() {
   const url = config.client_id_url;
   const token = getCookieOrStorage(config.access_token);
 
-  clientID(url, token).then(async (data) => {
+  GET(url, token).then(async (data) => {
     const responseData = await data.json();
     if (responseData.error != null) {
       const error = getErrorCode(responseData.error);
@@ -245,8 +278,8 @@ function addRole() {
   const roleCard = $(`
       <div class="card m-1 col role-card">
         <div class="card-body">
-          <span>${selectedRole}</span>
-          <i class="fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
+          <span><code style="color: inherit">${selectedRole}</code></span>
+          <i class="fa-duotone fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
         </div>
       </div>
     `);
@@ -279,51 +312,3 @@ function updateStoredRoles() {
     .get();
   localStorage.setItem("selected_roles", JSON.stringify(roles));
 }
-
-const clientID = async (url, bearer) => {
-  try {
-    const response = await fetch(url, {
-      method: "GET", // *GET, POST, PUT, DELETE, etc.
-      mode: "cors", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + bearer,
-        ...getSavedHeaders(),
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      //body: JSON.stringify(data), // body data type must match "Content-Type" header
-    });
-    return response;
-  } catch (err) {
-    console.error(err);
-    throw new Error(`Error on users, message is ${err.message}`);
-  }
-};
-
-const registerUserData = async (url, bearer, data) => {
-  try {
-    const response = await fetch(url, {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
-      mode: "cors", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + bearer,
-        ...getSavedHeaders(),
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      body: JSON.stringify(data), // body data type must match "Content-Type" header
-    });
-    return response;
-  } catch (err) {
-    console.error(err);
-    throw new Error(`Error on users, message is ${err.message}`);
-  }
-};

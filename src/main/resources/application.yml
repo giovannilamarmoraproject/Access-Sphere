@@ -65,7 +65,7 @@ filter:
     bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico"
     logoutURI: "*/v1/oAuth/2.0/logout"
   authorization:
-    shouldFilter: "*/v1/oAuth/2.0/token/exchange,**/v1/users/change/**,**/v1/users/profile"
+    shouldFilter: "*/v1/oAuth/2.0/token/exchange,**/v1/users/profile"
 
 rest:
   client:
@@ -84,6 +84,7 @@ rest:
         logout: /api/auth/revoke
         updateUser: /api/users/:userId
         getTemplate: /api/email-templates
+        locales: /api/i18n/locales
     email-sender:
       baseUrl: https://email-sender.giovannilamarmora.com
       path:

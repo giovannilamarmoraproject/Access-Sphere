@@ -51,3 +51,9 @@ function getOrDefault(data, defaultData) {
   if (data) return data;
   return defaultData;
 }
+
+function encodeBase64(password) {
+  // Prima codifica la stringa in UTF-8 per evitare problemi con caratteri speciali
+  const encodedPassword = btoa(encodeURIComponent(password));
+  return encodedPassword;
+}

@@ -80,7 +80,6 @@ public class StrapiUser extends StrapiGeneric {
   private String education;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  @UpperCamelCase
   private String nationality;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)

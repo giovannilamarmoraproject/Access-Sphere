@@ -27,6 +27,22 @@ public class StrapiService {
   @Autowired private StrapiClient strapiClient;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<StrapiLocale>> locales() {
+    return strapiClient
+        .getLocale()
+        .flatMap(
+            strapiLocaleResponseEntity -> {
+              if (ObjectUtils.isEmpty(strapiLocaleResponseEntity.getBody())) {
+                LOG.error("Strapi returned an empty body on locales");
+                throw new OAuthException(
+                    ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
+              }
+              return Mono.just(strapiLocaleResponseEntity.getBody());
+            })
+        .doOnError(StrapiException::handleStrapiException);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<StrapiResponse> registerUserToStrapi(User user, ClientCredential clientCredential) {
     StrapiUser strapiUser = StrapiMapper.mapFromUserToStrapiUser(user, clientCredential);
     return strapiClient

@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.user.dto;
+package io.github.giovannilamarmora.accesssphere.data.roles.dto;
 
 public enum UserRole {
   SUPER_ADMIN("Super Admin"),

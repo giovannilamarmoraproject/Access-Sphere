@@ -45,6 +45,9 @@ public class StrapiConfig {
   @Value(value = "${rest.client.strapi.path.getTemplate}")
   public String templateUrl;
 
+  @Value(value = "${rest.client.strapi.path.locales}")
+  public String localesUrl;
+
   @Value(value = "${rest.client.strapi.path.logout}")
   public String logoutUrl;
 

@@ -93,7 +93,7 @@ function validateRoleSelection() {
 
   if (alreadyAdded) {
     $("#role_select").addClass("is-invalid");
-    $("#validationRoles").text("Il ruolo selezionato esiste già.");
+    $("#validationRoles").text(currentTranslations.roles_already_added);
     $("#add_role_btn").prop("disabled", true);
   } else {
     $("#role_select").removeClass("is-invalid");
@@ -111,7 +111,7 @@ function addRole() {
       .length > 0
   ) {
     $("#role_select").addClass("is-invalid");
-    $("#validationRoles").text("Il ruolo selezionato esiste già.");
+    $("#validationRoles").text(currentTranslations.roles_already_added);
     $("#add_role_btn").prop("disabled", true);
     return;
   }
@@ -119,8 +119,8 @@ function addRole() {
   const roleCard = $(`
     <div class="card m-1 col role-card" style="min-width:250px">
       <div class="card-body">
-        <span>${selectedRole}</span>
-        <i class="fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
+        <span><code style="color: inherit">${selectedRole}</code></span>
+        <i class="fa-duotone fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
       </div>
     </div>
   `);
@@ -173,8 +173,8 @@ function displayUserData(user) {
       const roleCard = $(`
       <div class="card m-1 col role-card" style="min-width:250px">
         <div class="card-body">
-          <span>${role}</span>
-          <i class="fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
+          <span><code style="color: inherit">${role}</code></span>
+          <i class="fa-duotone fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
         </div>
       </div>
     `);

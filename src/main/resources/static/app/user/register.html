@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="../../app/shared/sweetalert.css" />
     <script src="../../app/shared/sweetalert.js"></script>
     <script src="../../app/i18n/translations.js"></script>
+    <script src="../../app/shared/api/rest.js"></script>
     <!-- END Shared Component -->
     <script src="../../app/user/js/validationForm.js"></script>
     <script src="../../app/user/js/register.js"></script>
@@ -124,7 +125,9 @@
                     onclick="logout()"
                     class="button clickable"
                     style="height: 40px; padding: 0.5rem 1.5rem"
-                    ><i class="fa-solid fa-right-from-bracket me-1"></i>
+                    ><i
+                      class="fa-duotone fa-regular fa-right-from-bracket me-1"
+                    ></i>
                     Logout</a
                   >
                 </li>
@@ -162,14 +165,18 @@
           <div class="container">
             <div class="card fade-in">
               <div class="card-body">
-                <form class="form row g-3">
+                <form id="registration_form" class="form row g-3">
                   <div>
                     <h3 class="d-inline" id="register_title">Register User</h3>
                     <a
                       class="clickable"
                       onclick="refreshClients()"
-                      style="vertical-align: 3px; margin-left: 10px"
-                      ><i class="fa-solid fa-rotate"></i
+                      style="
+                        vertical-align: 3px;
+                        margin-left: 10px;
+                        color: inherit;
+                      "
+                      ><i class="fa-duotone fa-solid fa-arrows-rotate"></i
                     ></a>
                   </div>
                   <div class="col-12">
@@ -261,7 +268,14 @@
                       >Nationality</label
                     >
                     <select class="form-select" id="nationality" required>
-                      <option selected disabled value="">Choose...</option>
+                      <option
+                        selected
+                        disabled
+                        value=""
+                        id="register_form_nationality_choose"
+                      >
+                        Choose...
+                      </option>
                       <option value="(AF) Afghan">Afghan</option>
                       <option value="(AL) Albanian">Albanian</option>
                       <option value="(DZ) Algerian">Algerian</option>
@@ -494,7 +508,14 @@
                       >Country Code</label
                     >
                     <select class="form-select" id="phone_prefix" required>
-                      <option selected disabled value="">Choose...</option>
+                      <option
+                        selected
+                        disabled
+                        value=""
+                        id="register_form_country_code_choose"
+                      >
+                        Choose...
+                      </option>
                       <option value="+1">+1 (USA, Canada)</option>
                       <option value="+7">+7 (Russia, Kazakhstan)</option>
                       <option value="+20">+20 (Egypt)</option>
@@ -803,7 +824,7 @@
                       onclick="addRole()"
                       id="add_role_btn"
                       style="padding: 10px 20px; border-radius: 10px"
-                      class="btn btn-primary float-end"
+                      class="btn btn-outline-secondary float-end"
                     >
                       Add Role
                     </button>
@@ -823,6 +844,10 @@
                       id="attributes"
                       rows="5"
                     ></textarea>
+                    <div
+                      id="validationAttributes"
+                      class="invalid-feedback"
+                    ></div>
                   </div>
                   <div class="col-12">
                     <div class="form-check">

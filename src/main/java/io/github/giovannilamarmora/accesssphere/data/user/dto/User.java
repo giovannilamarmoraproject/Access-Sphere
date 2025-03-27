@@ -53,7 +53,7 @@ public class User extends GenericDTO {
 
   @UpperCamelCase private String education;
 
-  @UpperCamelCase private String nationality;
+  private String nationality;
 
   private String ssn; // Social Security Number
 

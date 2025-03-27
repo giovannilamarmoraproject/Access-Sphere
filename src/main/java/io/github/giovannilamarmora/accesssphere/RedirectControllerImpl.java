@@ -57,4 +57,9 @@ public class RedirectControllerImpl {
   public String roles(Model model) {
     return "app/user/roles";
   }
+
+  @GetMapping("/app/users/edit/{identifier}")
+  public String editUser(Model model) {
+    return "app/user/edit";
+  }
 }

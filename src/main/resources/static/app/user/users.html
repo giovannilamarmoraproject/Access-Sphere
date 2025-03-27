@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="../../app/shared/sweetalert.css" />
     <script src="../../app/shared/sweetalert.js"></script>
     <script src="../../app/i18n/translations.js"></script>
+    <script src="../../app/shared/api/rest.js"></script>
     <!-- END Shared Component -->
     <script src="../../app/user/js/users.js"></script>
     <link
@@ -117,15 +118,6 @@
 
             <div class="links">
               <ul>
-                <li hidden><a href="#">Features</a></li>
-                <li hidden style="width: 140px">
-                  <a
-                    style="width: max-content"
-                    href="https://access.sphere.service.giovannilamarmora.com/cookie-policy"
-                    onclick="event.preventDefault(); navigateToPath('cookie-policy')"
-                    >Cookie Policy</a
-                  >
-                </li>
                 <li style="width: 140px">
                   <a
                     id="menu_register"
@@ -139,7 +131,9 @@
                     onclick="logout()"
                     class="button clickable"
                     style="height: 40px; padding: 0.5rem 1.5rem"
-                    ><i class="fa-solid fa-right-from-bracket me-1"></i>
+                    ><i
+                      class="fa-duotone fa-regular fa-right-from-bracket me-1"
+                    ></i>
                     Logout</a
                   >
                 </li>
@@ -183,8 +177,12 @@
                     <a
                       class="clickable"
                       onclick="refreshUsers()"
-                      style="vertical-align: 3px; margin-left: 10px"
-                      ><i class="fa-solid fa-rotate"></i
+                      style="
+                        vertical-align: 3px;
+                        margin-left: 10px;
+                        color: inherit;
+                      "
+                      ><i class="fa-duotone fa-solid fa-arrows-rotate"></i
                     ></a>
                   </div>
                   <div class="col-md-12">

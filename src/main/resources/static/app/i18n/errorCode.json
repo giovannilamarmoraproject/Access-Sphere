@@ -34,6 +34,10 @@
     "USERNAME_EMAIL_TAKEN": {
       "title": "Error",
       "message": "Email or Username are already taken."
+    },
+    "ACCOUNT_BLOCKED": {
+      "title": "Account Blocked",
+      "message": "Your account has been blocked."
     }
   },
   "it": {
@@ -71,6 +75,10 @@
     "USERNAME_EMAIL_TAKEN": {
       "title": "Errore",
       "message": "Email o Username sono già usati."
+    },
+    "ACCOUNT_BLOCKED": {
+      "title": "Account Bloccato",
+      "message": "Il tuo account è bloccato."
     }
   }
 }
