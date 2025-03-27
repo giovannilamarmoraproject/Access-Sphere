@@ -25,6 +25,8 @@ filter:
     generateSessionURI: "/v1/oAuth/2.0/authorize,*/users/register"
     bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico_old"
     logoutURI: "*/v1/oAuth/2.0/logout"
+  authorization:
+    shouldFilter: "*/v1/oAuth/2.0/token/exchange,**/v1/users/profile"
 
 rest:
   client:
@@ -43,6 +45,7 @@ rest:
         logout: /api/auth/revoke
         updateUser: /api/users/:userId
         getTemplate: /api/email-templates
+        locales: /api/i18n/locales
     email-sender:
       baseUrl: https://email-sender.mock
       path:
@@ -53,6 +56,11 @@ app:
   cache:
     active: false
     cron: 0 0 1 * * *
+  tech-user:
+    username: username
+    password: password
+    client-id: ACCESS-SPHERE-TECH
+    strapi: token
   shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**"
   exception:
     stacktrace: false # Active StackTrace in Response
