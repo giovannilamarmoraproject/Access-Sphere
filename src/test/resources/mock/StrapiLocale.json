@@ -1,0 +1,18 @@
+[
+  {
+    "id": 2,
+    "name": "Italian (Italy) (it-IT)",
+    "code": "it-IT",
+    "createdAt": "2024-04-08T15:25:21.512Z",
+    "updatedAt": "2024-04-08T15:25:27.015Z",
+    "isDefault": false
+  },
+  {
+    "id": 3,
+    "name": "English (United Kingdom) (en-GB)",
+    "code": "en-GB",
+    "createdAt": "2024-06-05T10:00:29.341Z",
+    "updatedAt": "2025-03-27T11:27:11.821Z",
+    "isDefault": true
+  }
+]
