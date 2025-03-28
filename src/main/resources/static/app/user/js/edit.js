@@ -38,6 +38,11 @@ $(document).ready(function () {
     const currentProfilePhoto = $("#profile").attr("src"); // Immagine attuale
     const profilePhoto = profileImage || currentProfilePhoto;
     const attributes = $("#attributes").val().trim() || null;
+    const prefix = $("#phone_prefix").val();
+    const phone = $("#phone").val().trim();
+    let phoneNumber;
+    if (phone && prefix)
+      phoneNumber = $("#phone_prefix").val() + " " + $("#phone").val().trim();
 
     let userData = {
       firstName: $("#name").val().trim(),
@@ -47,7 +52,7 @@ $(document).ready(function () {
       nationality: $("#nationality").val().trim(),
       ssn: $("#ssn").val().trim(),
       email: $("#email").val().trim(),
-      phone: $("#phone_prefix").val() + " " + $("#phone").val().trim(),
+      phone: phoneNumber,
       username: $("#validationDefaultUsername").val().trim(),
       occupation: $("#occupation").val().trim(),
       education: $("#education").val().trim(),
@@ -89,8 +94,10 @@ function populateUserData(user) {
   $("#nationality").val(user.nationality);
   $("#ssn").val(user.ssn);
   $("#email").val(user.email);
-  $("#phone_prefix").val(user.phoneNumber.match(/^\+\d+/)[0]);
-  $("#phone").val(user.phoneNumber.replace(/^\+\d+\s*/, ""));
+  if (user.phoneNumber)
+    $("#phone_prefix").val(user.phoneNumber.match(/^\+\d+/)[0]);
+  if (user.phoneNumber)
+    $("#phone").val(user.phoneNumber.replace(/^\+\d+\s*/, ""));
   $("#validationDefaultUsername").val(user.username);
   $("#occupation").val(user.occupation);
   $("#education").val(user.education);
@@ -169,7 +176,18 @@ function editUser(userForm) {
           "#USER#",
           userToEdit.username
         )
-      );
+      ).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          const origin = window.location.origin;
+
+          // Costruisci l'URL completo aggiungendo il path
+          const fullUrl = `${origin}/app/users`;
+
+          // Reindirizza l'utente al nuovo URL
+          window.location.href = fullUrl;
+        }
+      });
     }
   });
 }

@@ -107,6 +107,12 @@ $(document).ready(function () {
     const profilePhoto =
       profileImage || "https://bootdey.com/img/Content/avatar/avatar7.png";
     const attributes = $("#attributes").val().trim() || null;
+    const prefix = $("#phone_prefix").val();
+    const phone = $("#phone").val().trim();
+    let phoneNumber;
+    if (phone && prefix)
+      phoneNumber = $("#phone_prefix").val() + " " + $("#phone").val().trim();
+
     let userData = {
       firstName: $("#name").val().trim(),
       lastName: $("#surname").val().trim(),
@@ -115,7 +121,7 @@ $(document).ready(function () {
       nationality: $("#nationality").val().trim(),
       ssn: $("#ssn").val().trim(),
       email: $("#email").val().trim(),
-      phone: $("#phone_prefix").val() + " " + $("#phone").val().trim(),
+      phone: phoneNumber,
       username: $("#validationDefaultUsername").val().trim(),
       password: $("#password").val(),
       confirmPassword: $("#confirm_password").val(),
