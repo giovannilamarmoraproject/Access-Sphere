@@ -27,6 +27,17 @@ public class OAuthMapper {
   private static final Logger LOG = LoggerFilter.getLogger(OAuthMapper.class);
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static String getStrapiAccessToken(AccessTokenData accessTokenData) {
+    JsonNode payload = accessTokenData.getPayload();
+    if (accessTokenData.getType().equals(OAuthType.GOOGLE)) {
+      JsonNode strapi_token = getStrapiToken(payload);
+      if (ObjectToolkit.isNullOrEmpty(strapi_token)) return null;
+      return strapi_token.get(TokenData.STRAPI_ACCESS_TOKEN.getToken()).textValue();
+    }
+    return payload.get(TokenData.STRAPI_ACCESS_TOKEN.getToken()).textValue();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static JsonNode getStrapiToken(JsonNode payload) {
     JsonNode strapi_token = null;
     String tokenValue =
@@ -68,6 +79,7 @@ public class OAuthMapper {
       strapiToken.put(
           TokenData.STRAPI_ACCESS_TOKEN.getToken(),
           accessTokenData.getPayload().get(TokenData.STRAPI_TOKEN.getToken()).asText());
+      strapiToken.put("token_type", "Bearer");
       return strapiToken;
     }
     return null;

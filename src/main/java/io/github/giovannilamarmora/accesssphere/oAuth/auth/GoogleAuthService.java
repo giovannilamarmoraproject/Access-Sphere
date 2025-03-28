@@ -127,7 +127,7 @@ public class GoogleAuthService {
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
                 userGoogle.setPassword(registration_token);
                 return dataService
-                    .registerUser(userGoogle, clientCredential, true)
+                    .registerUser(null, userGoogle, clientCredential, true)
                     .map(
                         user1 -> {
                           AppRole defaultRole =

@@ -5,6 +5,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.database.UserDataService;
@@ -16,25 +17,26 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,8 @@ public class DataService {
   @Setter
   @Value(value = "${rest.client.strapi.active}")
   private Boolean isStrapiEnabled;
+
+  @Autowired private TechUserService techUserService;
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
@@ -108,11 +112,11 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getStrapiUsers() {
+  public Mono<List<User>> getStrapiUsers(String strapi_bearer) {
     LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting all users in strapi");
 
     return strapiService
-        .getUsers()
+        .getUsers(strapi_bearer)
         .flatMap(strapiUsers -> Mono.just(StrapiMapper.mapFromStrapiUsersToUsers(strapiUsers)));
   }
 
@@ -146,20 +150,37 @@ public class DataService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> registerUser(
-      User user, ClientCredential clientCredential, Boolean assignNewClient) {
-    AppRole defaultRole =
+      String bearer, User user, ClientCredential clientCredential, Boolean assignNewClient) {
+    List<AppRole> userRoles =
         clientCredential.getAppRoles().stream()
             .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
-            .toList()
-            .getFirst();
-    if (ObjectUtils.isEmpty(defaultRole)) {
+            .toList();
+
+    if (!ObjectToolkit.isNullOrEmpty(bearer)) {
+      LOG.info("Bearer token present, checking technical roles");
+      AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+
+      if (techUserService.hasTechUserRoles(accessTokenData, clientCredential)
+          && !ObjectToolkit.isNullOrEmpty(user.getRoles())) {
+
+        userRoles =
+            clientCredential.getAppRoles().stream()
+                .filter(
+                    appRole ->
+                        user.getRoles().stream()
+                            .anyMatch(role -> role.equalsIgnoreCase(appRole.getRole())))
+                .toList();
+      }
+    }
+
+    if (ObjectUtils.isEmpty(userRoles)) {
       LOG.error(
           "Default roles not present on client configuration under client_id {}",
           clientCredential.getClientId());
       throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
     }
     //  user.setRoles(clientCredential.getDefaultRole().stream().map(AppRole::getRole).toList());
-    user.setRoles(List.of(defaultRole.getRole()));
+    user.setRoles(userRoles.stream().map(AppRole::getRole).toList());
     // Se l'utente non ha password?
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
     if (!ObjectToolkit.isNullOrEmpty(user.getPassword()))
@@ -170,6 +191,7 @@ public class DataService {
 
     if (isStrapiEnabled) {
       LOG.debug("Strapi is enabled, registering user with email {} on strapi", user.getEmail());
+      List<AppRole> finalUserRoles = userRoles;
       return strapiService
           .registerUserToStrapi(user, clientCredential)
           .map(
@@ -187,7 +209,7 @@ public class DataService {
               })
           .onErrorResume(
               throwable -> {
-                if (!throwable.getMessage().contains("Email or Username are already taken")) {
+                if (!OAuthException.isHandleException(throwable)) {
                   LOG.info(
                       "Error on strapi, register user into database, message is {}",
                       throwable.getMessage());
@@ -198,16 +220,25 @@ public class DataService {
                       .getUserByEmail(user.getEmail())
                       .flatMap(
                           strapiUser -> {
-                            if (strapiUser.getApp_roles().contains(defaultRole)) {
+                            // Controlla se almeno un ruolo di userRoles è già presente in
+                            // strapiUser.getApp_roles()
+                            boolean hasRole =
+                                finalUserRoles.stream()
+                                    .anyMatch(role -> strapiUser.getApp_roles().contains(role));
+
+                            if (hasRole) {
                               LOG.error(
-                                  "The current user already has the role for {}",
+                                  "The current user already has one of the roles for {}",
                                   clientCredential.getClientId());
                               return Mono.error(throwable);
                             }
-                            strapiUser.getApp_roles().add(defaultRole);
-                            User userToUpdate = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
+
+                            // Aggiunge tutti i ruoli della lista userRoles a
+                            // strapiUser.getApp_roles()
+                            strapiUser.getApp_roles().addAll(finalUserRoles);
+                            // User userToUpdate = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
                             return strapiService
-                                .updateUser(userToUpdate)
+                                .updateUser(strapiUser)
                                 .flatMap(
                                     strapiUser1 ->
                                         Mono.just(
@@ -229,48 +260,53 @@ public class DataService {
       String password,
       ClientCredential clientCredential,
       ServerHttpRequest request) {
-    if (isStrapiEnabled) {
-      LOG.debug(
-          "Strapi is enabled, making login via strapi, using identifier {}",
-          ObjectUtils.isEmpty(email) ? username : email);
-      return strapiService
-          .login(ObjectUtils.isEmpty(email) ? username : email, password)
-          .flatMap(
-              strapiResponse -> {
-                User user = StrapiMapper.mapFromStrapiUserToUser(strapiResponse.getUser());
-                JWTData jwtData = JWTData.generateJWTData(user, clientCredential, request);
-                Map<String, Object> strapiToken = new HashMap<>();
-                strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
-                strapiToken.put(TokenData.STRAPI_ACCESS_TOKEN.getToken(), strapiResponse.getJwt());
-                return getUserInfo(jwtData, strapiResponse.getJwt())
-                    .flatMap(
-                        user1 -> {
-                          jwtData.setRoles(user1.getRoles());
-                          AuthToken token =
-                              tokenService.generateToken(jwtData, clientCredential, strapiToken);
-                          strapiToken.put("expires_at", jwtData.getExp());
-                          return Mono.just(
-                              new OAuthTokenResponse(
-                                  token,
-                                  Utils.mapper().convertValue(strapiToken, JsonNode.class),
-                                  jwtData,
-                                  user1));
-                        });
-              })
-          .onErrorResume(
-              throwable -> {
-                if (!throwable
-                    .getMessage()
-                    .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_401.getMessage())) {
-                  LOG.error("Error on strapi, login via database");
-                  return Mono.just(
-                      performLoginViaDatabase(
-                          username, email, password, clientCredential, request));
-                }
-                return Mono.error(throwable);
-              });
-    }
-    return Mono.just(performLoginViaDatabase(username, email, password, clientCredential, request));
+    if (!techUserService.checkIfTechUser(
+        ObjectToolkit.getOrDefault(username, email), password, clientCredential.getClientId())) {
+      if (isStrapiEnabled) {
+        LOG.debug(
+            "Strapi is enabled, making login via strapi, using identifier {}",
+            ObjectUtils.isEmpty(email) ? username : email);
+        return strapiService
+            .login(ObjectUtils.isEmpty(email) ? username : email, password)
+            .flatMap(
+                strapiResponse -> {
+                  User user = StrapiMapper.mapFromStrapiUserToUser(strapiResponse.getUser());
+                  JWTData jwtData =
+                      JWTData.generateJWTData(
+                          user, clientCredential, SubjectType.CUSTOMER, request);
+                  Map<String, Object> strapiToken = new HashMap<>();
+                  strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
+                  strapiToken.put(
+                      TokenData.STRAPI_ACCESS_TOKEN.getToken(), strapiResponse.getJwt());
+                  return getUserInfo(jwtData, strapiResponse.getJwt())
+                      .flatMap(
+                          user1 -> {
+                            jwtData.setRoles(user1.getRoles());
+                            AuthToken token =
+                                tokenService.generateToken(jwtData, clientCredential, strapiToken);
+                            strapiToken.put("expires_at", jwtData.getExp());
+                            return Mono.just(
+                                new OAuthTokenResponse(
+                                    token,
+                                    Utils.mapper().convertValue(strapiToken, JsonNode.class),
+                                    jwtData,
+                                    user1));
+                          });
+                })
+            .onErrorResume(
+                throwable -> {
+                  if (!OAuthException.isHandleException(throwable)) {
+                    LOG.error("Error on strapi, login via database");
+                    return Mono.just(
+                        performLoginViaDatabase(
+                            username, email, password, clientCredential, request));
+                  }
+                  return Mono.error(throwable);
+                });
+      }
+      return Mono.just(
+          performLoginViaDatabase(username, email, password, clientCredential, request));
+    } else return techUserService.loginTechUser(username, clientCredential, request);
   }
 
   private OAuthTokenResponse performLoginViaDatabase(
@@ -294,7 +330,8 @@ public class DataService {
     }
     User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
     userEntityToUser.setPassword(null);
-    JWTData jwtData = JWTData.generateJWTData(userEntityToUser, clientCredential, request);
+    JWTData jwtData =
+        JWTData.generateJWTData(userEntityToUser, clientCredential, SubjectType.CUSTOMER, request);
     AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
     LOG.debug("Login process via Database ended for username={} and email={}", username, email);
     return new OAuthTokenResponse(userEntityToUser, jwtData, token);
@@ -302,29 +339,31 @@ public class DataService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> getUserInfo(JWTData jwtData, String token) {
-    if (isStrapiEnabled) {
-      LOG.debug("Strapi is enabled, getting userInfo");
-      return strapiService
-          .userInfo(token)
-          .flatMap(strapiUser -> Mono.just(StrapiMapper.mapFromStrapiUserToUser(strapiUser)))
-          .onErrorResume(
-              throwable -> {
-                if (!throwable
-                    .getMessage()
-                    .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_401.getMessage())) {
-                  LOG.info(
-                      "Error on strapi, getting userInfo into database, message is {}",
-                      throwable.getMessage());
-                  UserEntity userEntity = userDataService.findUserEntityByEmail(jwtData.getEmail());
-                  DataValidator.validateUser(userEntity);
-                  return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
-                }
-                return Mono.error(throwable);
-              });
+    if (!techUserService.isTechUser()) {
+      if (isStrapiEnabled) {
+        LOG.debug("Strapi is enabled, getting userInfo");
+        return strapiService
+            .userInfo(token)
+            .flatMap(strapiUser -> Mono.just(StrapiMapper.mapFromStrapiUserToUser(strapiUser)))
+            .onErrorResume(
+                throwable -> {
+                  if (!OAuthException.isHandleException(throwable)) {
+                    LOG.info(
+                        "Error on strapi, getting userInfo into database, message is {}",
+                        throwable.getMessage());
+                    UserEntity userEntity =
+                        userDataService.findUserEntityByEmail(jwtData.getEmail());
+                    DataValidator.validateUser(userEntity);
+                    return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+                  }
+                  return Mono.error(throwable);
+                });
+      }
+      UserEntity userEntity = userDataService.findUserEntityByEmail(jwtData.getEmail());
+      DataValidator.validateUser(userEntity);
+      return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
     }
-    UserEntity userEntity = userDataService.findUserEntityByEmail(jwtData.getEmail());
-    DataValidator.validateUser(userEntity);
-    return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+    return techUserService.userInfo(jwtData);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -348,7 +387,11 @@ public class DataService {
                     .map(
                         user1 -> {
                           JWTData jwtDataFinal =
-                              JWTData.generateJWTData(user1, clientCredential, request);
+                              JWTData.generateJWTData(
+                                  user1,
+                                  clientCredential,
+                                  accessTokenData.getSubjectType(),
+                                  request);
                           jwtDataFinal.setRoles(user1.getRoles());
                           AuthToken authToken =
                               tokenService.generateToken(
@@ -375,7 +418,11 @@ public class DataService {
                   User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
                   userEntityToUser.setPassword(null);
                   JWTData jwtData =
-                      JWTData.generateJWTData(userEntityToUser, clientCredential, request);
+                      JWTData.generateJWTData(
+                          userEntityToUser,
+                          clientCredential,
+                          accessTokenData.getSubjectType(),
+                          request);
                   AuthToken authToken = tokenService.generateToken(jwtData, clientCredential, null);
                   return Mono.just(new OAuthTokenResponse(userEntityToUser, jwtData, authToken));
                 }
@@ -386,7 +433,9 @@ public class DataService {
     DataValidator.validateUser(userEntity);
     User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
     userEntityToUser.setPassword(null);
-    JWTData jwtData = JWTData.generateJWTData(userEntityToUser, clientCredential, request);
+    JWTData jwtData =
+        JWTData.generateJWTData(
+            userEntityToUser, clientCredential, accessTokenData.getSubjectType(), request);
     AuthToken authToken = tokenService.generateToken(jwtData, clientCredential, null);
     return Mono.just(new OAuthTokenResponse(userEntityToUser, jwtData, authToken));
   }
@@ -445,7 +494,7 @@ public class DataService {
                         })
                     .onErrorResume(
                         throwable -> {
-                          if (!throwable.getMessage().contains("NotFoundError")) {
+                          if (!OAuthException.isHandleException(throwable)) {
                             LOG.info(
                                 "Error on strapi, update user into database, message is {}",
                                 throwable.getMessage());
@@ -463,6 +512,41 @@ public class DataService {
     UserEntity userFind = userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
     setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
     return Mono.just(saveUserEntityIntoDatabase(userEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<Response> deleteUser(String identifier, String strapi_token) {
+    if (isStrapiEnabled) {
+      LOG.debug("Strapi is enabled, deleting user with identifier {} on strapi", identifier);
+
+      return strapiService
+          .getUserByIdentifier(identifier)
+          .flatMap(
+              strapiUser ->
+                  strapiService
+                      .deleteUsers(strapiUser.getId(), strapi_token)
+                      .flatMap(
+                          strapiUser1 -> {
+                            User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                            Response response =
+                                new Response(
+                                    HttpStatus.OK.value(),
+                                    "User " + userRes.getUsername() + " successfully deleted",
+                                    TraceUtils.getSpanID(),
+                                    userRes);
+                            return Mono.just(response);
+                          }))
+          .doOnSuccess(responseResponseEntity -> userDataService.deleteByIdentifier(identifier));
+    } else {
+      userDataService.deleteByIdentifier(identifier);
+      Response response =
+          new Response(
+              HttpStatus.OK.value(),
+              "User " + identifier + " successfully deleted",
+              TraceUtils.getSpanID(),
+              null);
+      return Mono.just(response);
+    }
   }
 
   public void saveUserIntoDatabase(User user) {
@@ -493,7 +577,7 @@ public class DataService {
 
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void deleteClientFromDatabase(User user) {
+  public void deleteUserFromDatabase(User user) {
     // Trovare l'entità esistente nel database
     UserEntity existingUser = userDataService.findUserEntityByIdentifier(user.getIdentifier());
     if (!ObjectUtils.isEmpty(existingUser)) {

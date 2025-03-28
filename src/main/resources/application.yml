@@ -29,6 +29,8 @@ spring:
   sql:
     init:
       mode: always
+  codec:
+    max-in-memory-size: 2MB # Upload of images
 
 # Level of LOG
 logging:
@@ -52,14 +54,18 @@ springdoc:
 filter:
   requestResponse:
     enabled: true
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,/login/*,/cookie-policy,/privacy-policy"
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,/cookie-policy,/privacy-policy,*/favicon.ico,*/app/*,*/img/*,*/js/*,*/css/*"
+    #shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,/login/*,/cookie-policy,/privacy-policy"
   rate-limiting:
     shouldFilter: "*/users/change/password,*/users/change/password/request,**/v1/users/change/**"
   session-id:
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*,/cookie-policy,/privacy-policy"
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,**/actuator,**/actuator/**,*/,/cookie-policy,/privacy-policy,*/favicon.ico,*/app/*,*/img/*,*/js/*,*/css/*"
+    #shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*,/cookie-policy,/privacy-policy"
     generateSessionURI: "*/v1/oAuth/2.0/authorize,*/users/register,**/v1/users/change/**"
     bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico"
     logoutURI: "*/v1/oAuth/2.0/logout"
+  authorization:
+    shouldFilter: "*/v1/oAuth/2.0/token/exchange,**/v1/users/profile"
 
 rest:
   client:
@@ -78,6 +84,8 @@ rest:
         logout: /api/auth/revoke
         updateUser: /api/users/:userId
         getTemplate: /api/email-templates
+        locales: /api/i18n/locales
+        deleteUser: /api/users/:userId
     email-sender:
       baseUrl: https://email-sender.giovannilamarmora.com
       path:
@@ -85,8 +93,10 @@ rest:
 
 app:
   version: @project.version@
-  cache:
-    active: false
-    cron: 0 0 1 * * *
+  tech-user:
+    username: ${TECH_USERNAME}
+    password: ${TECH_PASSWORD}
+    client-id: ACCESS-SPHERE-TECH
+    strapi: ${STRAPI_AUTH_TOKEN}
   exception:
     stacktrace: true # Active StackTrace in Response

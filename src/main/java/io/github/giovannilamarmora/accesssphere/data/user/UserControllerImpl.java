@@ -36,10 +36,19 @@ public class UserControllerImpl implements UserController {
   }
 
   @Override
+  public Mono<ResponseEntity<Response>> userList(String bearer, ServerHttpRequest request) {
+    return userService.getUsers();
+  }
+
+  @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> registerUser(
-      User user, String clientId, String registration_token, Boolean assignNewClient) {
-    return userService.register(user, clientId, registration_token, assignNewClient);
+      String bearer,
+      User user,
+      String clientId,
+      String registration_token,
+      Boolean assignNewClient) {
+    return userService.register(bearer, user, clientId, registration_token, assignNewClient);
   }
 
   @Override
@@ -47,6 +56,18 @@ public class UserControllerImpl implements UserController {
   public Mono<ResponseEntity<Response>> updateUser(
       User user, String bearer, ServerHttpRequest request) {
     return userService.updateUser(user, bearer, request);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> deleteUser(
+      String identifier, String bearer, ServerHttpRequest request) {
+    return userService.deleteUser(identifier);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> unlockUser(
+      String bearer, String identifier, Boolean block) {
+    return userService.unlockUser(identifier, block);
   }
 
   @Override

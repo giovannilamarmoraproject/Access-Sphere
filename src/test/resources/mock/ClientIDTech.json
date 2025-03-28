@@ -1,0 +1,47 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "attributes": {
+        "clientId": "ACCESS-SPHERE-TECH",
+        "createdAt": "2025-03-12T15:59:05.530Z",
+        "updatedAt": "2025-03-13T14:49:53.841Z",
+        "publishedAt": "2025-03-12T15:59:06.162Z",
+        "clientSecret": null,
+        "scopes": "openid email",
+        "accessType": "ONLINE",
+        "externalClientId": null,
+        "tokenType": "BEARER_JWT",
+        "type": "BEARER",
+        "jwtSecret": "${JWT_SECRET}",
+        "jwtExpiration": "3600000",
+        "jweSecret": null,
+        "jweExpiration": null,
+        "registrationToken": "feb89f48-ee28-4d06-9c3d-7b4b719a39f3",
+        "id_token": true,
+        "access_token": true,
+        "strapi_token": true,
+        "redirectUri": {
+          "fallback_uri": "http://localhost:8081/app/login",
+          "redirect_uri": "http://localhost:8081 http://localhost:8081/app/users"
+        },
+        "app_roles": [
+          {
+            "role": "ACCESS_SPHERE_ADMIN",
+            "type": "DEFAULT",
+            "description": "Default token Type"
+          }
+        ],
+        "authorize_redirect_status": "FOUND"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 1,
+      "total": 2
+    }
+  }
+}

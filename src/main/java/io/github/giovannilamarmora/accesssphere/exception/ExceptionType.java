@@ -7,6 +7,7 @@ public enum ExceptionType implements io.github.giovannilamarmora.utils.exception
   /**
    * @ERR_OAUTH_400 ExceptionType
    */
+  USERNAME_EMAIL_TAKEN("username"),
   BAD_INPUT_ERROR("generic"),
   INVALID_ROLES("roles"),
   INVALID_AUTHORIZATION("bearer"),

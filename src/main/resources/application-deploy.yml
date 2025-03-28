@@ -33,7 +33,3 @@ rest:
       baseUrl: ${STRAPI_URL}
     email-sender:
       baseUrl: http://email.sender:8080
-
-app:
-  cache:
-    active: ${CACHE_ENABLE}

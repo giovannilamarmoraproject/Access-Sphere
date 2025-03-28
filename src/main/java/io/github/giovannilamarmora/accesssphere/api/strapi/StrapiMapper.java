@@ -10,6 +10,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -43,13 +44,15 @@ public class StrapiMapper {
 
   private static ClientCredential mapFromOAuthStrapiClientToClientCredential(
       OAuthStrapiClient strapiClient) {
+    List<String> scopes =
+        ObjectToolkit.isNullOrEmpty(strapiClient.getScopes())
+            ? null
+            : List.of(strapiClient.getScopes().split("\\s+"));
     return new ClientCredential(
         strapiClient.getClientId(),
         strapiClient.getExternalClientId(),
         strapiClient.getClientSecret(),
-        ObjectUtils.isEmpty(strapiClient.getScopes())
-            ? null
-            : List.of(strapiClient.getScopes().split(" ")),
+        scopes,
         ObjectUtils.isEmpty(strapiClient.getRedirectUri()) ? null : strapiClient.getRedirectUri(),
         ObjectUtils.isEmpty(strapiClient.getAccessType())
             ? null
@@ -80,8 +83,8 @@ public class StrapiMapper {
         user.getName(),
         user.getSurname(),
         user.getEmail(),
-        true,
-        false,
+        ObjectToolkit.getOrDefault(user.getConfirmed(), true),
+        ObjectToolkit.getOrDefault(user.getBlocked(), false),
         user.getUsername(),
         user.getPassword(),
         ObjectUtils.isEmpty(clientCredential)
@@ -113,13 +116,15 @@ public class StrapiMapper {
         getAppRoles(user.getApp_roles()),
         user.getProfilePhoto(),
         user.getPhoneNumber(),
-        user.getBirthDate(),
+        user.getBirthdate(),
         user.getGender(),
         user.getOccupation(),
         user.getEducation(),
         user.getNationality(),
         user.getSsn(),
         user.getTokenReset(),
+        user.getConfirmed(),
+        user.getBlocked(),
         user.getAttributes());
   }
 
@@ -129,7 +134,7 @@ public class StrapiMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  private static List<String> getAppRoles(List<AppRole> appRoles) {
+  public static List<String> getAppRoles(List<AppRole> appRoles) {
     if (ObjectUtils.isEmpty(appRoles)) return null;
     return appRoles.stream().map(AppRole::getRole).toList();
   }

@@ -39,7 +39,7 @@ public class UsersSyncScheduler {
 
     if (dataService.getIsStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler users sync with Strapi");
-      Mono<List<User>> strapiUsers = dataService.getStrapiUsers();
+      Mono<List<User>> strapiUsers = dataService.getStrapiUsers(null);
       Mono<List<User>> dbClientsMono =
           dataService
               .getUsers()
@@ -75,7 +75,7 @@ public class UsersSyncScheduler {
 
     for (User dbUser : dbUsers) {
       if (!strapiUsersId.contains(dbUser.getIdentifier())) {
-        dataService.deleteClientFromDatabase(dbUser);
+        dataService.deleteUserFromDatabase(dbUser);
       }
     }
 

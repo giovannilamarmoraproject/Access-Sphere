@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Access Sphere - Details</title>
+    <link rel="stylesheet" href="../../user/css/form.css" />
+    <link rel="stylesheet" href="../../user/css/style.css" />
+    <link rel="icon" href="../../../favicon.ico" type="image/x-icon" />
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- END JQuery -->
+    <!-- Shared Component -->
+    <link rel="stylesheet" href="../../user/css/animation.css" />
+    <script src="../../shared/config.js"></script>
+    <script src="../../shared/utils.js"></script>
+    <script src="../../shared/api/authorize.js"></script>
+    <script src="../../shared/api/logout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="../../shared/sweetalert.css" />
+    <script src="../../shared/sweetalert.js"></script>
+    <script src="../../i18n/translations.js"></script>
+    <script src="../../shared/api/rest.js"></script>
+    <!-- END Shared Component -->
+    <script src="../../user/js/delete.js"></script>
+    <script src="../../user/js/user.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../../shared/fontawesome/css/all.min.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-KLC9VXFF");
+    </script>
+    <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-R4KLC18RH6");
+    </script>
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-KLC9VXFF"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <main>
+      <div class="big-wrapper dark" style="justify-content: flex-start">
+        <img src="../../user/img/shape.png" alt="" class="shape" />
+
+        <header class="mb-3">
+          <div class="container">
+            <a href="/app/users" class="logo">
+              <img
+                hidden
+                src="../../user/img/logo.png"
+                alt="Access Sphere Logo"
+              />
+              <img
+                src="../../user/img/Access%20Sphere%20Transparent%20512x512.png"
+                style="width: 50px"
+                alt="Access Sphere Logo"
+              />
+              <h3 style="margin-bottom: 7px">Access Sphere</h3>
+            </a>
+
+            <div class="links">
+              <ul class="ul-list">
+                <li style="width: 140px" class="li-align">
+                  <a
+                    id="menu_register"
+                    class="li-align a-padding"
+                    style="width: max-content"
+                    href="/app/users/register"
+                    >Register User</a
+                  >
+                </li>
+                <li style="width: 70px" class="li-align">
+                  <a
+                    id="menu_user"
+                    class="li-align a-padding"
+                    style="width: max-content"
+                    href="/app/users"
+                    >Users</a
+                  >
+                </li>
+                <li class="li-align">
+                  <a
+                    onclick="logout()"
+                    class="button clickable li-align a-padding"
+                    style="height: 40px; padding: 0.5rem 1.5rem"
+                    ><i
+                      class="fa-duotone fa-regular fa-right-from-bracket me-1"
+                    ></i>
+                    Logout</a
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <div class="overlay"></div>
+
+            <div class="hamburger-menu">
+              <div class="bar"></div>
+            </div>
+
+            <script>
+              var big_wrapper;
+              var hamburger_menu;
+
+              function declare() {
+                big_wrapper = document.querySelector(".big-wrapper");
+                hamburger_menu = document.querySelector(".hamburger-menu");
+              }
+
+              declare();
+              function events() {
+                hamburger_menu.addEventListener("click", () => {
+                  big_wrapper.classList.toggle("active");
+                });
+              }
+
+              events();
+            </script>
+          </div>
+        </header>
+        <div class="container" id="user-data"></div>
+      </div>
+    </main>
+  </body>
+</html>

@@ -90,6 +90,7 @@ public class OAuthService {
     return clientCredentialMono.map(
         clientCredential -> {
           if (StringUtils.hasText(bearer)) {
+            OAuthValidator.validateResponseType("token", responseType);
             return handleBearerToken(bearer, clientCredential);
           }
 
@@ -193,6 +194,8 @@ public class OAuthService {
 
       AuthToken token = new AuthToken();
       token.setAccess_token(bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
+      token.setToken_type("Bearer");
+      token.setExpires_at(accessTokenData.getAccessExpireDate());
 
       Map<String, Object> strapiToken = OAuthMapper.extractStrapiToken(accessTokenData);
 

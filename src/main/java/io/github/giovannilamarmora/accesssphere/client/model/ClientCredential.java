@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
-import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -32,8 +31,8 @@ public class ClientCredential extends GenericDTO {
 
   private String externalClientId;
   private String clientSecret;
-  @LowerCase private List<String> scopes;
-  @LowerCase private Map<String, String> redirect_uri;
+  private List<String> scopes;
+  private Map<String, String> redirect_uri;
   private AccessType accessType;
   private OAuthType authType;
   private TokenType tokenType;

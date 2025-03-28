@@ -13,6 +13,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.server.MissingRequestValueException;
+import org.springframework.web.server.PayloadTooLargeException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -33,6 +34,18 @@ public class ExceptionHandler extends UtilsException {
             ObjectToolkit.isNullOrEmpty(exceptionType)
                 ? ExceptionMap.ERR_OAUTH_400.exception()
                 : exceptionType.name());
+    response.getError().setExceptionMessage(null);
+    response.getError().setStackTrace(null);
+    return new ResponseEntity<>(response, status);
+  }
+
+  @org.springframework.web.bind.annotation.ExceptionHandler(value = PayloadTooLargeException.class)
+  public ResponseEntity<ExceptionResponse> handleException(
+      PayloadTooLargeException e, ServerHttpRequest request) {
+    HttpStatus status = ExceptionMap.ERR_USER_415.getStatus();
+    ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_USER_415);
+    response.getError().setMessage("Data is too large to be uploaded");
+    response.getError().setException(ExceptionMap.ERR_USER_415.exception());
     response.getError().setExceptionMessage(null);
     response.getError().setStackTrace(null);
     return new ResponseEntity<>(response, status);
