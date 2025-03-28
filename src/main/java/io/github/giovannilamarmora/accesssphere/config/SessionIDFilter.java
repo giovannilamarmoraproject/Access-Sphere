@@ -212,9 +212,6 @@ public class SessionIDFilter implements WebFilter {
   }
 
   private boolean isConfiguredGenerateSessionURI(ServerHttpRequest req, String path) {
-    if (path.contains("tech"))
-      return generateSessionURI.stream()
-          .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
     return generateSessionURI.stream()
             .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path))
         && !req.getHeaders().containsKey("Authorization");
@@ -232,11 +229,6 @@ public class SessionIDFilter implements WebFilter {
   private boolean isAuthorizeCheckWithBearer(ServerHttpRequest request) {
     return (request.getPath().value().equalsIgnoreCase("/v1/oAuth/2.0/authorize")
         && request.getHeaders().containsKey("Authorization"));
-  }
-
-  private boolean isTechRequest(ServerHttpRequest request) {
-    return PatternMatchUtils.simpleMatch("/v1/tech/**", request.getPath().value())
-        && request.getHeaders().containsKey("Authorization");
   }
 
   private void addSessionInContext(String session_id) {

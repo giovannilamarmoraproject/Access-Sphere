@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Event listener per il form
   if (loginForm) {
-    localStorage.clear();
     loginForm.addEventListener("submit", function (event) {
       event.preventDefault(); // Previene il comportamento predefinito di invio del form
 
@@ -22,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function doLogin(clientId, redirectUri) {
+    localStorage.clear();
     const email = document.getElementById("emailInput").value;
     const password = document.getElementById("passwordInput").value;
 
