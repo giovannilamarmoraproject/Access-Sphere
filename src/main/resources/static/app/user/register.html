@@ -481,7 +481,7 @@
                     <label id="register_form_ssn" for="ssn" class="form-label"
                       >Fiscal Code / SSN</label
                     >
-                    <input type="text" class="form-control" id="ssn" required />
+                    <input type="text" class="form-control" id="ssn" />
                   </div>
 
                   <hr class="mt-5" />
@@ -502,7 +502,7 @@
                       class="form-label"
                       >Country Code</label
                     >
-                    <select class="form-select" id="phone_prefix" required>
+                    <select class="form-select" id="phone_prefix">
                       <option
                         selected
                         disabled
@@ -630,12 +630,7 @@
                       class="form-label"
                       >Phone Number</label
                     >
-                    <input
-                      type="tel"
-                      class="form-control"
-                      id="phone"
-                      required
-                    />
+                    <input type="tel" class="form-control" id="phone" />
                   </div>
                   <div class="col-md-3">
                     <label
@@ -651,22 +646,6 @@
                       aria-describedby="inputGroupFileAddon04"
                       aria-label="Upload"
                     />
-                    <div hidden class="input-group">
-                      <input
-                        type="file"
-                        class="form-control"
-                        id="inputGroupFile04"
-                        aria-describedby="inputGroupFileAddon04"
-                        aria-label="Upload"
-                      />
-                      <button
-                        class="btn btn-outline-secondary"
-                        type="button"
-                        id="inputGroupFileAddon04"
-                      >
-                        Upload
-                      </button>
-                    </div>
                   </div>
 
                   <hr class="mt-5" />
@@ -699,24 +678,7 @@
                       id="password"
                       required
                     />
-                    <div id="validationPassword" class="invalid-feedback">
-                      <!--Attention: Your password must meet the following criteria:
-                      <ul>
-                        <li>Be 8 to 10 characters long.</li>
-                        <li>
-                          Contain at least one uppercase letter and one
-                          lowercase letter.
-                        </li>
-                        <li>
-                          Include at least one number and one special character
-                          (e.g. @$!%*?&.,).
-                        </li>
-                      </ul>
-                      To ensure the security of your account, make sure your
-                      password meets these criteria. A strong password is
-                      essential to protect your personal data and privacy
-                      online.-->
-                    </div>
+                    <div id="validationPassword" class="invalid-feedback"></div>
                   </div>
 
                   <div class="col-md-4">
@@ -735,9 +697,7 @@
                     <div
                       id="validationConfirmPassword"
                       class="invalid-feedback"
-                    >
-                      <!--Attention: Your password do not match.-->
-                    </div>
+                    ></div>
                   </div>
 
                   <hr class="mt-5" />
@@ -749,12 +709,7 @@
                       class="form-label"
                       >Occupation</label
                     >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="occupation"
-                      required
-                    />
+                    <input type="text" class="form-control" id="occupation" />
                   </div>
                   <div class="col-md-6">
                     <label
@@ -763,12 +718,7 @@
                       class="form-label"
                       >Education</label
                     >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="education"
-                      required
-                    />
+                    <input type="text" class="form-control" id="education" />
                   </div>
 
                   <hr class="mt-5" />
