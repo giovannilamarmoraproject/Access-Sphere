@@ -34,8 +34,13 @@ public class AuthorizationFilter implements WebFilter {
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
-    if (!WebManager.shouldNotFilter(exchange.getRequest(), shouldFilter))
+    if (!WebManager.shouldFilter(exchange.getRequest(), shouldFilter))
       return chain.filter(exchange);
+
+    LOG.info(
+        "Filtering Authorization for {} for method {}",
+        exchange.getRequest().getPath().value(),
+        exchange.getRequest().getMethod());
 
     if (techUserService.isTechUser()) {
       LOG.error("The subject type {} cannot make this request", SubjectType.TECHNICAL);
