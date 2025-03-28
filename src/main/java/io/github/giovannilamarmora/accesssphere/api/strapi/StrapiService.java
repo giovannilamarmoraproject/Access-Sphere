@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -128,6 +129,14 @@ public class StrapiService {
               }
               return listResponseEntity.getBody();
             });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiUser> deleteUsers(Long id, String bearer) {
+    return strapiClient
+        .deleteUser(id, bearer)
+        .map(HttpEntity::getBody)
+        .doOnError(StrapiException::handleStrapiException);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

@@ -38,6 +38,7 @@ function displayUsersTable(users) {
   users.forEach((user) => {
     table.innerHTML += `<tr style="height: 50px; vertical-align: middle">
                             <td class="text-center">
+                            <a href="/app/users/details/${user.identifier}">
                               <img
                                 src="${getOrDefault(
                                   user.profilePhoto,
@@ -47,19 +48,27 @@ function displayUsersTable(users) {
                                 class="rounded-circle"
                                 width="50"
                                 style="width: 50px; height: 50px; object-fit: cover;"
-                              />
+                              /></a>
                             </td>
-                            <td class="hidden-mobile">${user.name}</td>
-                            <td class="hidden-mobile">${user.surname}</td>
-                            <td>${user.username}</td>
-                            <td class="hidden-mobile">${user.email}</td>
+                            <td class="hidden-mobile"><a style="color: inherit;" href="/app/users/details/${
+                              user.identifier
+                            }">${user.name}</a></td>
+                            <td class="hidden-mobile"><a style="color: inherit;" href="/app/users/details/${
+                              user.identifier
+                            }">${user.surname}</a></td>
+                            <td><a style="color: inherit;" href="/app/users/details/${
+                              user.identifier
+                            }">${user.username}</a></td>
+                            <td class="hidden-mobile"><a style="color: inherit;" href="/app/users/details/${
+                              user.identifier
+                            }">${user.email}</a></td>
                             <td>${
                               user.blocked
                                 ? "<span class='badge text-bg-danger status_blocked'>BLOCKED</span>"
                                 : "<span class='badge text-bg-success status_active'>ACTIVE</span>"
                             }</td>
-                            <td class="text-center" style="width: 100px;">
-                              <a class="m-1" href="/app/users/details/${
+                            <td class="text-center" style="min-width: 110px;">
+                              <a hidden class="m-1" href="/app/users/details/${
                                 user.identifier
                               }"><i class="fa-solid fa-eye"></i></a>
                               <a class="m-1" href="/app/users/edit/${
@@ -68,6 +77,11 @@ function displayUsersTable(users) {
                               <a class="m-1" href="/app/users/roles/${
                                 user.identifier
                               }"><i class="fa-solid fa-shield-keyhole"></i></a>
+                              <a class="m-1 clickable" onclick="deleteUser('${
+                                user.identifier
+                              }','${
+      user.username
+    }')"><i class="fa-solid fa-trash-xmark"></i></a>
                             </td>
                           </tr>`;
   });

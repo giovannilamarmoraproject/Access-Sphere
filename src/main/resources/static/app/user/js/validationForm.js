@@ -20,7 +20,6 @@ $(document).ready(function () {
       // Controlla tutti gli input, select e textarea con required
       $("input[required], select[required], textarea[required]").each(
         function () {
-          //console.log($(this), $(this).val());
           if ($(this).val() === null || $(this).val().trim() === "") {
             allFilled = false;
             return false; // Esce dal ciclo se trova un campo vuoto
@@ -139,7 +138,6 @@ $(document).ready(function () {
       // Controlla tutti gli input, select e textarea con required
       $("input[required], select[required], textarea[required]").each(
         function () {
-          //console.log($(this), $(this).val());
           if ($(this).val() === null || $(this).val().trim() === "") {
             allFilled = false;
             return false; // Esce dal ciclo se trova un campo vuoto
@@ -179,7 +177,6 @@ function checkRequiredFields() {
 
   // Controlla tutti gli input, select e textarea con required
   $("input[required], select[required], textarea[required]").each(function () {
-    //console.log($(this), $(this).val());
     if ($(this).val() === null || $(this).val().trim() === "") {
       allFilled = false;
       return false; // Esce dal ciclo se trova un campo vuoto

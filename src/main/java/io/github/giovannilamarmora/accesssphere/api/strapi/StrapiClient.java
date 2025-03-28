@@ -132,6 +132,22 @@ public class StrapiClient extends StrapiConfig {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
+  public Mono<ResponseEntity<StrapiUser>> deleteUser(Long id, String bearer) {
+    Map<String, Object> query = new HashMap<>();
+    query.put("userId", id);
+
+    String deleteUser = UtilsUriBuilder.toBuild().set(deleteUserUrl, query).getStringUri();
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    headers.add(
+        HttpHeaders.AUTHORIZATION, "Bearer " + ObjectToolkit.getOrDefault(bearer, strapiToken));
+
+    return webClientRest.perform(
+        HttpMethod.DELETE, UtilsUriBuilder.buildUri(deleteUser, null), headers, StrapiUser.class);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public Mono<ResponseEntity<StrapiResponse>> login(StrapiLogin login) {
 
     HttpHeaders headers = new HttpHeaders();

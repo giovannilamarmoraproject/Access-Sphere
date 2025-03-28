@@ -101,29 +101,31 @@
             </a>
 
             <div class="links">
-              <ul>
-                <li style="width: 140px">
+              <ul class="ul-list">
+                <li style="width: 140px" class="li-align">
                   <a
                     onclick="resetRolesSaved()"
                     id="menu_register"
+                    class="a-padding li-align"
                     style="width: max-content"
                     href="/app/users/register"
                     >Register User</a
                   >
                 </li>
-                <li style="width: 70px">
+                <li style="width: 70px" class="li-align">
                   <a
                     onclick="resetRolesSaved()"
                     id="menu_user"
+                    class="a-padding li-align"
                     style="width: max-content"
                     href="/app/users"
                     >Users</a
                   >
                 </li>
-                <li>
+                <li class="li-align">
                   <a
                     onclick="logout()"
-                    class="button clickable"
+                    class="button clickable a-padding li-align"
                     style="height: 40px; padding: 0.5rem 1.5rem"
                     ><i
                       class="fa-duotone fa-regular fa-right-from-bracket me-1"
@@ -136,9 +138,28 @@
 
             <div class="overlay"></div>
 
-            <div hidden class="hamburger-menu">
+            <div class="hamburger-menu">
               <div class="bar"></div>
             </div>
+
+            <script>
+              var big_wrapper;
+              var hamburger_menu;
+
+              function declare() {
+                big_wrapper = document.querySelector(".big-wrapper");
+                hamburger_menu = document.querySelector(".hamburger-menu");
+              }
+
+              declare();
+              function events() {
+                hamburger_menu.addEventListener("click", () => {
+                  big_wrapper.classList.toggle("active");
+                });
+              }
+
+              events();
+            </script>
           </div>
         </header>
 
@@ -201,6 +222,8 @@
 
                   <div class="col-12">
                     <button
+                      disabled
+                      id="save_role_btn"
                       onclick="changeRoles()"
                       style="padding: 10px 20px; border-radius: 10px"
                       class="btn btn-primary float-end"

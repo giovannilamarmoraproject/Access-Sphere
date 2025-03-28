@@ -18,3 +18,25 @@ function sweetalert(icon, title, message) {
     showCancelButton: false,
   });
 }
+
+function sweetalertConfirm(icon, title, message, btnConfirm, btnDeny) {
+  const customClassSwal = Swal.mixin({
+    customClass: {
+      confirmButton: "rounded-pill buttonInput width-100 bg-blue-500",
+      denyButton: "rounded-pill buttonInput width-100",
+      popup: "border_round blur-effect",
+    },
+    buttonsStyling: true,
+  });
+
+  return customClassSwal.fire({
+    icon: icon,
+    title: title,
+    text: message,
+    color: "#FFFFFF",
+    showDenyButton: true,
+    showCancelButton: false,
+    confirmButtonText: btnConfirm,
+    denyButtonText: btnDeny,
+  });
+}

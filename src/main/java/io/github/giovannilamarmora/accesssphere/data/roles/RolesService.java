@@ -45,39 +45,40 @@ public class RolesService {
 
     Mono<List<ClientCredential>> getClients = clientService.getClientCredentials();
 
-    return getClients.flatMap(
-        clientCredentials -> {
-          List<AppRole> appRoles =
-              clientCredentials.stream()
-                  .flatMap(clientCredential -> clientCredential.getAppRoles().stream())
-                  .filter(appRole -> roles.getRoles().contains(appRole.getRole()))
-                  .toList();
-          return strapiService
-              .getUserByIdentifier(identifier)
-              .flatMap(
-                  strapiUser -> {
-                    strapiUser.setApp_roles(appRoles);
-                    return strapiService
-                        .updateUser(strapiUser)
-                        .flatMap(
-                            strapiUser1 -> {
-                              User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
-                              Response response =
-                                  new Response(
-                                      HttpStatus.OK.value(),
-                                      "User roles for "
-                                          + userRes.getUsername()
-                                          + " successfully changed!",
-                                      TraceUtils.getSpanID(),
-                                      userRes);
-                              return Mono.just(ResponseEntity.ok(response));
-                            })
-                        .doOnSuccess(
-                            responseResponseEntity ->
-                                LOG.info(
-                                    "\uD83E\uDD37\u200D♂\uFE0F Changing user roles process ended, identifier: {}",
-                                    identifier));
-                  });
-        });
+    return getClients
+        .flatMap(
+            clientCredentials -> {
+              List<AppRole> appRoles =
+                  clientCredentials.stream()
+                      .flatMap(clientCredential -> clientCredential.getAppRoles().stream())
+                      .filter(appRole -> roles.getRoles().contains(appRole.getRole()))
+                      .toList();
+              return strapiService
+                  .getUserByIdentifier(identifier)
+                  .flatMap(
+                      strapiUser -> {
+                        strapiUser.setApp_roles(appRoles);
+                        return strapiService
+                            .updateUser(strapiUser)
+                            .flatMap(
+                                strapiUser1 -> {
+                                  User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                                  Response response =
+                                      new Response(
+                                          HttpStatus.OK.value(),
+                                          "User roles for "
+                                              + userRes.getUsername()
+                                              + " successfully changed!",
+                                          TraceUtils.getSpanID(),
+                                          userRes);
+                                  return Mono.just(ResponseEntity.ok(response));
+                                });
+                      });
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info(
+                    "\uD83E\uDD37\u200D♂\uFE0F Changing user roles process ended, identifier: {}",
+                    identifier));
   }
 }

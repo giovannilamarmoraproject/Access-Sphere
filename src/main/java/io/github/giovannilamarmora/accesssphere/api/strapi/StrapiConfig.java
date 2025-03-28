@@ -51,6 +51,9 @@ public class StrapiConfig {
   @Value(value = "${rest.client.strapi.path.logout}")
   public String logoutUrl;
 
+  @Value(value = "${rest.client.strapi.path.deleteUser}")
+  public String deleteUserUrl;
+
   @Autowired public WebClient.Builder builder;
 
   @PostConstruct

@@ -59,6 +59,12 @@ public class UserControllerImpl implements UserController {
   }
 
   @Override
+  public Mono<ResponseEntity<Response>> deleteUser(
+      String identifier, String bearer, ServerHttpRequest request) {
+    return userService.deleteUser(identifier);
+  }
+
+  @Override
   public Mono<ResponseEntity<Response>> unlockUser(
       String bearer, String identifier, Boolean block) {
     return userService.unlockUser(identifier, block);

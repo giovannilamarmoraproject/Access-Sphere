@@ -22,7 +22,6 @@ async function loadErrorCode() {
     const error_translations = await response.json();
     detectLanguage();
     errorCode = error_translations[currentLanguage];
-    console.log("Language " + currentLanguage);
   } catch (error) {
     console.error("Error loading error code:", error);
   }
@@ -335,6 +334,7 @@ function applyTranslations() {
     translations[currentLanguage].register_form_client_choose
   );
   applyLanguage("add_role_btn", translations[currentLanguage].add_role_btn);
+  applyLanguage("save_role_btn", translations[currentLanguage].save_role_btn);
   applyLanguage(
     "register_form_roles",
     translations[currentLanguage].register_form_roles
@@ -374,5 +374,13 @@ function applyTranslations() {
   applyLanguage(
     "edit_user_button",
     translations[currentLanguage].edit_user_button
+  );
+  /**
+   * Delete User Page
+   */
+  applyLanguage(
+    "delete_user_text",
+    translations[currentLanguage].delete_user_text,
+    true
   );
 }

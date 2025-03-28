@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -99,7 +100,8 @@ public class ClientService {
       return clientCredentials
           .map(
               client -> {
-                techUserService.validateTechClient(client);
+                TechUserValidator.validateTechClient(
+                    client, accessTokenData, techUserService.getTech_client_id());
                 return client;
               })
           .onErrorResume(
@@ -114,7 +116,8 @@ public class ClientService {
                   return getClientsFromDatabase()
                       .map(
                           client -> {
-                            techUserService.validateTechClient(client);
+                            TechUserValidator.validateTechClient(
+                                client, accessTokenData, techUserService.getTech_client_id());
                             return client;
                           });
                 }
@@ -124,7 +127,8 @@ public class ClientService {
     return getClientsFromDatabase()
         .map(
             client -> {
-              techUserService.validateTechClient(client);
+              TechUserValidator.validateTechClient(
+                  client, accessTokenData, techUserService.getTech_client_id());
               return client;
             });
   }

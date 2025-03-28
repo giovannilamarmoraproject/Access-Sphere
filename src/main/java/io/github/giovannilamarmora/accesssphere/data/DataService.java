@@ -23,6 +23,8 @@ import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -34,6 +36,7 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -511,6 +514,41 @@ public class DataService {
     return Mono.just(saveUserEntityIntoDatabase(userEntity));
   }
 
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<Response> deleteUser(String identifier, String strapi_token) {
+    if (isStrapiEnabled) {
+      LOG.debug("Strapi is enabled, deleting user with identifier {} on strapi", identifier);
+
+      return strapiService
+          .getUserByIdentifier(identifier)
+          .flatMap(
+              strapiUser ->
+                  strapiService
+                      .deleteUsers(strapiUser.getId(), strapi_token)
+                      .flatMap(
+                          strapiUser1 -> {
+                            User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                            Response response =
+                                new Response(
+                                    HttpStatus.OK.value(),
+                                    "User " + userRes.getUsername() + " successfully deleted",
+                                    TraceUtils.getSpanID(),
+                                    userRes);
+                            return Mono.just(response);
+                          }))
+          .doOnSuccess(responseResponseEntity -> userDataService.deleteByIdentifier(identifier));
+    } else {
+      userDataService.deleteByIdentifier(identifier);
+      Response response =
+          new Response(
+              HttpStatus.OK.value(),
+              "User " + identifier + " successfully deleted",
+              TraceUtils.getSpanID(),
+              null);
+      return Mono.just(response);
+    }
+  }
+
   public void saveUserIntoDatabase(User user) {
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
     saveUserEntityIntoDatabase(userEntity);
@@ -539,7 +577,7 @@ public class DataService {
 
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void deleteClientFromDatabase(User user) {
+  public void deleteUserFromDatabase(User user) {
     // Trovare l'entità esistente nel database
     UserEntity existingUser = userDataService.findUserEntityByIdentifier(user.getIdentifier());
     if (!ObjectUtils.isEmpty(existingUser)) {

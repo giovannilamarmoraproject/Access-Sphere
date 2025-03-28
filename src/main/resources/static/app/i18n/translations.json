@@ -87,6 +87,7 @@
     "register_form_roles": "Roles",
     "register_form_roles_choose": "Choose...",
     "add_role_btn": "Add Role",
+    "save_role_btn": "Save",
     "register_form_attributes": "JSON Attributes (Optional)",
     "register_form_check": "Agree to terms and conditions",
     "register_form_submit": "Register User",
@@ -97,7 +98,18 @@
     "roles_response_text": "Roles have been successfully changed.",
     "edit_user_title": "<i class='fa-duotone fa-solid fa-user-pen me-1'></i> Edit User",
     "edit_attributes_valid": "It's not a valid JSON.",
-    "edit_user_button": "Edit and Save"
+    "edit_user_button": "Edit and Save",
+    "edit_user_response_title": "User Edited",
+    "edit_user_response_text": "User #USER# has been successfully updated.",
+    "delete_user_question_title": "Delete User",
+    "delete_user_question_text": "Are you sure you want to delete user #USER#? This action cannot be undone.",
+    "delete_user_success_title": "User Deleted",
+    "delete_user_success_text": "User #USER# has been successfully deleted.",
+    "delete_user_btn_confirm": "Delete",
+    "delete_user_btn_deny": "Cancel",
+    "delete_user_deny_title": "Operation Cancelled",
+    "delete_user_deny_text": "The operation was cancelled. The user was not deleted.",
+    "delete_user_text": "<i class='fa-duotone fa-solid fa-trash-xmark me-1'></i> Delete"
   },
   "it": {
     "pageTitle": "Access Sphere - Accesso",
@@ -187,6 +199,7 @@
     "register_form_roles": "Ruoli",
     "register_form_roles_choose": "Scegli...",
     "add_role_btn": "Aggiungi Ruolo",
+    "save_role_btn": "Salva",
     "register_form_attributes": "Attributi JSON (Opzionale)",
     "register_form_check": "Accetto i termini e le condizioni",
     "register_form_submit": "Registra Utente",
@@ -197,6 +210,17 @@
     "roles_response_text": "I ruoli sono stati cambiati con successo.",
     "edit_user_title": "<i class='fa-duotone fa-solid fa-user-pen me-1'></i> Modifica Utente",
     "edit_attributes_valid": "Non è un JSON valido.",
-    "edit_user_button": "Modifica e Salva"
+    "edit_user_button": "Modifica e Salva",
+    "edit_user_response_title": "Modifica Utente",
+    "edit_user_response_text": "L'utente #USER# è stato modificato con successo.",
+    "delete_user_question_title": "Eliminazione Utente",
+    "delete_user_question_text": "Sei sicuro di voler eliminare l'utente #USER#? Questa operazione è irreversibile.",
+    "delete_user_success_title": "Utente Eliminato",
+    "delete_user_success_text": "L'utente #USER# è stato eliminato con successo.",
+    "delete_user_btn_confirm": "Elimina",
+    "delete_user_btn_deny": "Annulla",
+    "delete_user_deny_title": "Operazione Annullata",
+    "delete_user_deny_text": "L'operazione è stata annullata. L'utente non è stato eliminato.",
+    "delete_user_text": "<i class='fa-duotone fa-solid fa-trash-xmark me-1'></i> Elimina"
   }
 }

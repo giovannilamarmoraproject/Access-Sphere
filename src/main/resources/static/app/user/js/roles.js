@@ -45,6 +45,10 @@ function getClient() {
 }
 
 function displayClientData(clients) {
+  //const rolesJSON = localStorage.getItem("selected_roles");
+  //if (!rolesJSON) $("#save_role_btn").prop("disabled", true);
+  //else $("#save_role_btn").prop("disabled", true);
+
   const clientSelect = $("#client_id_select")
     .empty()
     .append(
@@ -148,6 +152,8 @@ function updateStoredRoles() {
     .map((_, el) => $(el).text())
     .get();
   localStorage.setItem("selected_roles", JSON.stringify(roles));
+
+  $("#save_role_btn").prop("disabled", false);
 }
 
 function getUser() {
@@ -163,7 +169,6 @@ function getUser() {
 }
 
 function displayUserData(user) {
-  console.log(user);
   const roleContainer = $("#role_container").empty();
 
   if (!user.roles || user.roles.length === 0) {

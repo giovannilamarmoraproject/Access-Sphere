@@ -85,6 +85,7 @@ rest:
         updateUser: /api/users/:userId
         getTemplate: /api/email-templates
         locales: /api/i18n/locales
+        deleteUser: /api/users/:userId
     email-sender:
       baseUrl: https://email-sender.giovannilamarmora.com
       path:
@@ -92,9 +93,6 @@ rest:
 
 app:
   version: @project.version@
-  cache:
-    active: false
-    cron: 0 0 1 * * *
   tech-user:
     username: ${TECH_USERNAME}
     password: ${TECH_PASSWORD}
