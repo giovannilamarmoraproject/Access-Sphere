@@ -48,15 +48,32 @@ function displayUserData(user) {
             <div class="col-md-9">
               <div class="card fade-in">
                 <div class="card-body m-2">
-                  <h3>
+                  <h3 class="row">
+                    <div class="col-md-6">
                     <h3 class="d-inline" id="user_details_title">User Details</h3>
+                    </div>
+                    <div class="col-md-6">
+                    <a
+                      id="delete_user_text"
+                      class="btn btn-outline-danger ps-4 pe-4 ${
+                        isMobile() ? "mt-2 col-12" : ""
+                      } float-end clickable"
+                      style="padding: 5px 20px; border-radius: 10px"
+                      onclick="deleteUser('${user.identifier}','${
+    user.username
+  }')"
+                      >Delete</a
+                    >
                     <a
                       id="edit_user_title"
-                      class="btn btn-outline-secondary ps-4 pe-4 float-end"
+                      class="btn btn-outline-secondary ps-4 pe-4 ${
+                        isMobile() ? "mt-2 col-12" : "me-1"
+                      } float-end"
                       style="padding: 5px 20px; border-radius: 10px"
                       href="/app/users/edit/${user.identifier}"
                       >Edit</a
                     >
+                    </div>
                   </h3>
                   <div class="row mt-4">
                     <div class="col-sm-3">

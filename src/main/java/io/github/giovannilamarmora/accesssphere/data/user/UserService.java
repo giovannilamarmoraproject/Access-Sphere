@@ -12,6 +12,7 @@ import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.DataService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -19,7 +20,6 @@ import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
-import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
@@ -239,8 +239,6 @@ public class UserService {
         userToUpdate.getUsername(),
         userToUpdate.getEmail());
 
-    // AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
-    // Setting UserData
     return techUserService
         .hasTechUserRoles(accessTokenData, clientService)
         .flatMap(
@@ -276,36 +274,40 @@ public class UserService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
-    return strapiService
-        .getUserByIdentifier(identifier)
-        .flatMap(
-            strapiUser -> {
-              // User user = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
-              // user.setId(strapiUser.getId());
-              // user.setBlocked(block);
-              strapiUser.setBlocked(block);
-              return strapiService
-                  .updateUser(strapiUser)
-                  .flatMap(
-                      strapiUser1 -> {
-                        User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(),
-                                "User "
-                                    + userRes.getUsername()
-                                    + " successfully "
-                                    + (block ? "locked!" : "unlocked!"),
-                                TraceUtils.getSpanID(),
-                                userRes);
-                        return Mono.just(ResponseEntity.ok(response));
-                      })
-                  .doOnSuccess(
-                      responseResponseEntity ->
-                          LOG.info(
-                              "\uD83E\uDD37\u200D♂\uFE0F Unlocking user process ended, identifier: {}",
-                              identifier));
-            });
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
+
+    return clientCredentialMono.flatMap(
+        clientCredential -> {
+          TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
+          return strapiService
+              .getUserByIdentifier(identifier)
+              .flatMap(
+                  strapiUser -> {
+                    strapiUser.setBlocked(block);
+                    return strapiService
+                        .updateUser(strapiUser)
+                        .flatMap(
+                            strapiUser1 -> {
+                              User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                              Response response =
+                                  new Response(
+                                      HttpStatus.OK.value(),
+                                      "User "
+                                          + userRes.getUsername()
+                                          + " successfully "
+                                          + (block ? "locked!" : "unlocked!"),
+                                      TraceUtils.getSpanID(),
+                                      userRes);
+                              return Mono.just(ResponseEntity.ok(response));
+                            });
+                  })
+              .doOnSuccess(
+                  responseResponseEntity ->
+                      LOG.info(
+                          "\uD83E\uDD37\u200D♂\uFE0F Unlocking user process ended, identifier: {}",
+                          identifier));
+        });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -466,6 +468,10 @@ public class UserService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> getUsers() {
     LOG.info("\uD83E\uDD37\u200D♂\uFE0F Get list of user process started");
+    if (!techUserService.isTechUser()) {
+      LOG.error("Only a tech user can get the users");
+      throw new OAuthException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
+    }
 
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
@@ -473,12 +479,8 @@ public class UserService {
     return clientCredentialMono
         .flatMap(
             clientCredential -> {
-              OAuthValidator.validateUserRoles(clientCredential, accessTokenData.getRoles());
+              TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
               String strapi_token = OAuthMapper.getStrapiAccessToken(accessTokenData);
-              if (ObjectToolkit.isNullOrEmpty(strapi_token)) {
-                LOG.error("Strapi token not found for user {}", accessTokenData.getIdentifier());
-                throw new OAuthException(ExceptionMap.ERR_OAUTH_403);
-              }
               return dataService
                   .getStrapiUsers(strapi_token)
                   .flatMap(
@@ -492,5 +494,31 @@ public class UserService {
         .doOnSuccess(
             responseResponseEntity ->
                 LOG.info("\uD83E\uDD37\u200D♂\uFE0F Get list of user process ended"));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> deleteUser(String identifier) {
+    LOG.info("\uD83E\uDD37\u200D♂\uFE0F Deleting user process started, identifier: {}", identifier);
+    if (!techUserService.isTechUser()) {
+      LOG.error("Only a tech user can delete the user {}", identifier);
+      throw new OAuthException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
+    }
+
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
+
+    return clientCredentialMono.flatMap(
+        clientCredential -> {
+          TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
+          String strapi_token = OAuthMapper.getStrapiAccessToken(accessTokenData);
+          return dataService
+              .deleteUser(identifier, strapi_token)
+              .flatMap(response -> Mono.just(ResponseEntity.ok(response)))
+              .doOnSuccess(
+                  responseResponseEntity ->
+                      LOG.info(
+                          "\uD83E\uDD37\u200D♂\uFE0F Delete user process ended, identifier: {}",
+                          identifier));
+        });
   }
 }

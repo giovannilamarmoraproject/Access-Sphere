@@ -57,3 +57,10 @@ function encodeBase64(password) {
   const encodedPassword = btoa(encodeURIComponent(password));
   return encodedPassword;
 }
+
+function isMobile() {
+  return (
+    window.matchMedia("(max-width: 768px)").matches ||
+    /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent)
+  );
+}

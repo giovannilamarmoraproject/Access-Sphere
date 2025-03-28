@@ -316,7 +316,8 @@ header .container {
     max-width: 450px;
     width: 100%;
     height: 100%;
-    background-color: var(--mainColor);
+    /* background-color: var(--mainColor); */
+    background-color: var(--backgroundColor);
     z-index: 95;
     display: flex;
     align-items: center;
@@ -333,6 +334,10 @@ header .container {
     color: #fff;
     margin-left: 0;
     padding: 2rem 0;
+  }
+
+  .links .button {
+    background-color: var(--backgroundColor);
   }
 
   .links .btn {
@@ -363,7 +368,7 @@ header .container {
   }
 
   .showcase-area {
-    padding: 2.5rem 0;
+    /*padding: 2.5rem 0;*/
     max-width: 700px;
     margin: 0 auto;
   }
@@ -455,4 +460,20 @@ header .container {
   opacity: 0;
   animation-name: fadeInUp;
   -webkit-animation-name: fadeInUp;
+}
+
+@media screen and (max-width: 768px) {
+  .ul-list {
+    padding-left: 0rem;
+    text-align: center;
+  }
+
+  .li-align {
+    height: 50px;
+    align-content: center;
+  }
+
+  .a-padding {
+    padding: 0rem 0 !important;
+  }
 }

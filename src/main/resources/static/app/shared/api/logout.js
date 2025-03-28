@@ -1,5 +1,5 @@
 function logout() {
-  console.log("Logout process started");
+  console.log("Logout process started...");
   const token = getCookieOrStorage(config.access_token);
 
   const logoutUrl = config.logout_url;

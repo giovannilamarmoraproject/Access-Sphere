@@ -50,7 +50,6 @@ function forgotPassword() {
       const error = getErrorCode(responseData.error);
       return sweetalert("error", error.title, error.message);
     } else {
-      console.log(responseData);
       fetchHeader(data.headers);
       return sweetalert(
         "success",
@@ -132,7 +131,6 @@ function resetPassword() {
       const error = getErrorCode(responseData.error);
       return sweetalert("error", error.title, error.message);
     } else {
-      console.log(responseData);
       fetchHeader(data.headers);
       return sweetalert(
         "success",

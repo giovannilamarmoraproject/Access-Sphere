@@ -84,7 +84,7 @@ public class UserValidator {
           "Identifier miss match, you should use {} instead of {}",
           accessTokenData.getIdentifier(),
           userToUpdate.getIdentifier());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid identifier!");
     }
   }
 }

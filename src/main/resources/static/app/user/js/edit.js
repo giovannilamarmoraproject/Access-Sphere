@@ -81,7 +81,6 @@ function getUserData() {
 
 // Funzione per recuperare i dati dell'utente e popolare il form
 function populateUserData(user) {
-  console.log(user);
   // Popoliamo i campi del form
   $("#name").val(user.name);
   $("#surname").val(user.surname);
@@ -155,8 +154,6 @@ function editUser(userForm) {
   const user = getUserData();
   const userToEdit = applyUserEdit(user, userForm);
 
-  console.log(userToEdit);
-
   PUT(userUpdateUrl, token, userToEdit).then(async (data) => {
     const responseData = await data.json();
     if (responseData.error != null) {
@@ -167,9 +164,11 @@ function editUser(userForm) {
       localStorage.removeItem(config.client_id + "_usersData");
       return sweetalert(
         "success",
-        "Edit",
-        //currentTranslations.edit_form_confirm,
-        responseData.message
+        currentTranslations.edit_user_response_title,
+        currentTranslations.edit_user_response_text.replace(
+          "#USER#",
+          userToEdit.username
+        )
       );
     }
   });

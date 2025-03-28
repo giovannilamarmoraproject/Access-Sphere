@@ -1,9 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechnicalException;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
@@ -29,7 +29,7 @@ public class AuthorizationFilter implements WebFilter {
   @Value(value = "${filter.authorization.shouldFilter}")
   private List<String> shouldFilter;
 
-  @Autowired private AccessTokenData accessTokenData;
+  @Autowired private TechUserService techUserService;
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -37,7 +37,7 @@ public class AuthorizationFilter implements WebFilter {
     if (!WebManager.shouldNotFilter(exchange.getRequest(), shouldFilter))
       return chain.filter(exchange);
 
-    if (accessTokenData.getSubjectType().equals(SubjectType.TECHNICAL)) {
+    if (techUserService.isTechUser()) {
       LOG.error("The subject type {} cannot make this request", SubjectType.TECHNICAL);
       return ExceptionHandler.handleFilterException(
           new TechnicalException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage()),

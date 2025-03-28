@@ -75,7 +75,7 @@ public class UsersSyncScheduler {
 
     for (User dbUser : dbUsers) {
       if (!strapiUsersId.contains(dbUser.getIdentifier())) {
-        dataService.deleteClientFromDatabase(dbUser);
+        dataService.deleteUserFromDatabase(dbUser);
       }
     }
 

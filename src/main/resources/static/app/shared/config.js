@@ -10,6 +10,7 @@ function getConfig() {
     client: "/v1/clients",
     register: "/v1/users/register",
     edit: "/v1/users/update",
+    delete: "/v1/users",
     forgot: "/v1/users/change/password/request",
     reset: "/v1/users/change/password",
     param: "?",
@@ -53,5 +54,6 @@ function getConfig() {
     forgot_password_url: urlConfig.baseUrl + urlConfig.forgot,
     reset_password_url: urlConfig.baseUrl + urlConfig.reset,
     edit_user_url: urlConfig.baseUrl + urlConfig.edit,
+    delete_user_url: urlConfig.baseUrl + urlConfig.delete,
   };
 }
