@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@CrossOrigin("*")
+// @CrossOrigin("*")
 @Tag(name = OpenAPI.Tag.USERS, description = "API to manage users")
 public class UserControllerImpl implements UserController {
 

@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 @Validated
 @RestController
 @RequestMapping("/v1/oAuth/2.0")
-@CrossOrigin("*")
+// @CrossOrigin("*")
 // @CrossOrigin(
 //    // origins = "*",
 //    // allowedHeaders = "*",

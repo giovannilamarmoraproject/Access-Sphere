@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@CrossOrigin("*")
+// @CrossOrigin("*")
 @Tag(name = OpenAPI.Tag.ROLES, description = "API to manage user roles")
 public class RolesControllerImpl implements RolesController {
 
