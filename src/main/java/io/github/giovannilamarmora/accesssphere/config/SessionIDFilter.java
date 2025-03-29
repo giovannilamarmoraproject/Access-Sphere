@@ -90,9 +90,7 @@ public class SessionIDFilter implements WebFilter {
           exchange);
     }
 
-    if (isBearerNotRequiredEndpoint(request) || isAuthorizeCheckWithBearer(request)
-    // || isTechRequest(request)
-    ) {
+    if (isBearerNotRequiredEndpoint(request) || isAuthorizeCheckWithBearer(request)) {
       setSessionIDInResponse(session_id, response);
       addSessionInContext(session_id);
       return chain.filter(exchange);

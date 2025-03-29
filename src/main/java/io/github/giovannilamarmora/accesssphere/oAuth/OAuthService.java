@@ -270,8 +270,9 @@ public class OAuthService {
 
     CookieManager.setCookieInResponse(
         Cookie.COOKIE_REDIRECT_URI, finalRedirectUri, cookieDomain, serverHttpResponse);
-    CookieManager.setCookieInResponse(
-        Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, serverHttpResponse);
+    if (ObjectToolkit.isNullOrEmpty(registrationToken))
+      CookieManager.setCookieInResponse(
+          Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, serverHttpResponse);
 
     LOG.info(
         "✅ OAuth authorization completed - clientId: {}, accessType: {}, responseType: {}",
