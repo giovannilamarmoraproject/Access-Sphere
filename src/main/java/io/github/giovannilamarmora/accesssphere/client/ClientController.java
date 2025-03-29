@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@CrossOrigin("*")
+// @CrossOrigin("*")
 @Tag(name = OpenAPI.Tag.CLIENT, description = "API to manage clients")
 public class ClientController {
 
