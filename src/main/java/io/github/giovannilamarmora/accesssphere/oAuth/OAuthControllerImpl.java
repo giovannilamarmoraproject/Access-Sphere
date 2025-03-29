@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
-import io.github.giovannilamarmora.accesssphere.utilities.ExposedHeaders;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -21,19 +20,20 @@ import reactor.core.publisher.Mono;
 @Validated
 @RestController
 @RequestMapping("/v1/oAuth/2.0")
-@CrossOrigin(
-    origins = "*",
-    allowedHeaders = "*",
-    exposedHeaders = {
-      ExposedHeaders.LOCATION,
-      ExposedHeaders.SESSION_ID,
-      ExposedHeaders.AUTHORIZATION,
-      ExposedHeaders.TRACE_ID,
-      ExposedHeaders.SPAN_ID,
-      ExposedHeaders.PARENT_ID,
-      ExposedHeaders.REDIRECT_URI,
-      ExposedHeaders.REGISTRATION_TOKEN
-    })
+@CrossOrigin("*")
+// @CrossOrigin(
+//    // origins = "*",
+//    // allowedHeaders = "*",
+//    exposedHeaders = {
+//      ExposedHeaders.LOCATION,
+//      ExposedHeaders.SESSION_ID,
+//      ExposedHeaders.AUTHORIZATION,
+//      ExposedHeaders.TRACE_ID,
+//      ExposedHeaders.SPAN_ID,
+//      ExposedHeaders.PARENT_ID,
+//      ExposedHeaders.REDIRECT_URI,
+//      ExposedHeaders.REGISTRATION_TOKEN
+//    })
 @Tag(name = OpenAPI.Tag.OAUTH, description = OpenAPI.Description.OAUTH)
 public class OAuthControllerImpl implements OAuthController {
 
