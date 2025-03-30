@@ -23,6 +23,11 @@ services:
       - STRAPI_AUTH_TOKEN=${STRAPI_AUTH_TOKEN}
       - TECH_USERNAME=${TECH_USERNAME}
       - TECH_PASSWORD=${TECH_PASSWORD}
+      - CORS_ENABLED=${CORS_ENABLED}
+      - CORS_NOT_FILTER=${CORS_NOT_FILTER}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - CORS_ALLOWED_HEADERS=${CORS_ALLOWED_HEADERS}
+      - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS}
     volumes:
       # Monta il volume "microservice" nella cartella /secrets (in sola lettura)
       - microservice:/secrets:ro

@@ -100,3 +100,9 @@ app:
     strapi: ${STRAPI_AUTH_TOKEN}
   exception:
     stacktrace: true # Active StackTrace in Response
+  cors:
+    enabled: true
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**"
+    allowedOrigins: "*"
+    allowedHeaders: Origin, Content-Type, Accept, Authorization, Location, Trace-ID, Span-ID, Parent-ID, Registration-Token, Session-ID, Redirect-Uri
+    allowCredentials: true
