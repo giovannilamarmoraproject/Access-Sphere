@@ -486,7 +486,7 @@
 
                   <hr class="mt-5" />
 
-                  <div class="col-md-4">
+                  <div class="col-lg-4">
                     <label for="email" class="form-label">Email</label>
                     <input
                       type="email"
@@ -495,7 +495,7 @@
                       required
                     />
                   </div>
-                  <div class="col-md-2">
+                  <div class="col-lg-2 col-md-4">
                     <label
                       id="register_form_country_code"
                       for="phone_prefix"
@@ -623,7 +623,7 @@
                     </select>
                   </div>
 
-                  <div class="col-md-3">
+                  <div class="col-lg-3 col-md-8">
                     <label
                       id="register_form_phone"
                       for="phone"
@@ -632,20 +632,26 @@
                     >
                     <input type="tel" class="form-control" id="phone" />
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-lg-3">
                     <label
                       id="register_form_profile"
                       for="file"
                       class="form-label"
                       >Profile Image</label
                     >
-                    <input
-                      type="file"
-                      class="form-control"
-                      id="file"
-                      aria-describedby="inputGroupFileAddon04"
-                      aria-label="Upload"
-                    />
+                    <div class="input-group">
+                      <input
+                        type="file"
+                        class="form-control"
+                        id="file"
+                        aria-label="Upload"
+                      />
+                      <span
+                        class="input-group-text url-input clickable"
+                        onclick="addImageUrl()"
+                        >URL</span
+                      >
+                    </div>
                   </div>
 
                   <hr class="mt-5" />
@@ -658,7 +664,9 @@
                       >Username</label
                     >
                     <div class="input-group">
-                      <span class="input-group-text" id="inputGroupPrepend2"
+                      <span
+                        class="input-group-text username-input"
+                        id="inputGroupPrepend2"
                         >@</span
                       >
                       <input

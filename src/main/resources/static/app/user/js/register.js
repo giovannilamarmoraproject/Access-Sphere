@@ -318,3 +318,17 @@ function updateStoredRoles() {
     .get();
   localStorage.setItem("selected_roles", JSON.stringify(roles));
 }
+
+function addImageUrl() {
+  return inputSweetAlert(
+    currentTranslations.register_form_profile_image_upload,
+    currentTranslations.inputGroupFileAddon04
+  ).then((result) => {
+    if (result.isConfirmed) {
+      profileImage = result.value;
+      const profileImg = document.getElementById("profile");
+      profileImg.src = profileImage;
+      profileImg.style.display = "block"; // Rendi visibile l'immagine
+    }
+  });
+}
