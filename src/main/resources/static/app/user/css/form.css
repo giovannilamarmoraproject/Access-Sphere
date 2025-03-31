@@ -17,20 +17,28 @@ select {
   border-radius: 10px !important;
 }
 
-.input-group {
-  border-radius: 10px; /* Arrotonda l'intero gruppo */
+.username-input {
+  border-top-left-radius: 10px !important;
+  border-bottom-left-radius: 10px !important;
 }
 
-.input-group-text {
-  border-top-left-radius: 10px !important;
-  border-bottom-left-radius: 10px !important; /* Arrotonda solo il lato sinistro */
+.url-input {
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+  border-top-right-radius: 10px !important;
+  border-bottom-right-radius: 10px !important;
+}
+
+#file {
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
 }
 
 .form-control-group {
-  border-top-left-radius: 0px !important;
-  border-bottom-left-radius: 0px !important; /* Arrotonda solo il lato sinistro */
   /* border-top-right-radius: 10px !important;
   border-bottom-right-radius: 10px; */
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
 }
 
 /* Aggiungi anche un bordo completo se necessario */
@@ -44,6 +52,7 @@ input[type="file"] {
   height: 45px; /* Imposta la stessa altezza del form-control */
   line-height: 1.5; /* Allinea verticalmente */
   display: inline-block; /* Rende l'input file inline con il suo contenuto */
+  font-size: 12px; /* Modifica la dimensione del testo "Nessun file selezionato" */
 }
 
 /* Aggiustamento per il bottone 'Scegli file' */
