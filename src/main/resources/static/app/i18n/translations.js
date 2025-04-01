@@ -372,6 +372,11 @@ function applyTranslations() {
     true
   );
   applyLanguage(
+    "edit_user_title_btn",
+    translations[currentLanguage].edit_user_title_btn,
+    true
+  );
+  applyLanguage(
     "edit_user_button",
     translations[currentLanguage].edit_user_button
   );

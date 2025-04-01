@@ -13,6 +13,24 @@ function displayUserData(user) {
   const container = document.getElementById("user-data");
   container.innerHTML = ""; // Pulisce eventuali dati precedenti
 
+  /*
+  * Vecchia Configurazione img
+  min-width: ${
+      isBelow(1200)
+        ? isBelow(1000)
+          ? "100px"
+          : "150px"
+        : "240px"
+    };
+    min-height: ${
+      isBelow(1200)
+        ? isBelow(1000)
+          ? "100px"
+          : "150px"
+        : "240px"
+    };
+   */
+
   container.innerHTML += `<div class="row">
             <div class="col-md-3">
               <div class="card mb-4 fade-in">
@@ -27,12 +45,10 @@ function displayUserData(user) {
                       )}"
                       style="
                         object-fit: cover;
-                        min-width: 240px;
-                        min-height: 240px;
+                        aspect-ratio: 1 / 1;
                       "
                       alt="Admin"
                       class="rounded-circle"
-                      width="150"
                     />
                     <div class="mt-3">
                       <h4>${user.name} ${getOrDefault(user.surname, "")}</h4>
@@ -49,15 +65,15 @@ function displayUserData(user) {
               <div class="card fade-in">
                 <div class="card-body m-2">
                   <h3 class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                     <h3 class="d-inline" id="user_details_title">User Details</h3>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-7">
                     <a
                       id="delete_user_text"
-                      class="btn btn-outline-danger ps-4 pe-4 ${
-                        isMobile() ? "mt-2 col-12" : ""
-                      } float-end clickable"
+                      class="btn btn-outline-danger ${
+                        isBetween(768, 991) ? "ps-3 pe-3" : "ps-4 pe-4"
+                      } ${isMobile() ? "mt-2 col-12" : ""} float-end clickable"
                       style="padding: 5px 20px; border-radius: 10px"
                       onclick="deleteUser('${user.identifier}','${
     user.username
@@ -65,10 +81,10 @@ function displayUserData(user) {
                       >Delete</a
                     >
                     <a
-                      id="edit_user_title"
-                      class="btn btn-outline-secondary ps-4 pe-4 ${
-                        isMobile() ? "mt-2 col-12" : "me-1"
-                      } float-end"
+                      id="edit_user_title_btn"
+                      class="btn btn-outline-secondary ${
+                        isBetween(768, 991) ? "ps-3 pe-3" : "ps-4 pe-4"
+                      } ${isMobile() ? "mt-2 col-12" : "me-1"} float-end"
                       style="padding: 5px 20px; border-radius: 10px"
                       href="/app/users/edit/${user.identifier}"
                       >Edit</a

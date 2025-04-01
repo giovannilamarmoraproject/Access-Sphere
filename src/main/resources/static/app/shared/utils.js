@@ -59,8 +59,17 @@ function encodeBase64(password) {
 }
 
 function isMobile() {
+  return window.matchMedia("(max-width: 768px)").matches;
+  //|| /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent)
+}
+
+function isBelow(width) {
+  return window.matchMedia("(max-width: " + width + "px)").matches;
+}
+
+function isBetween(minWidth, maxWidth) {
   return (
-    window.matchMedia("(max-width: 768px)").matches ||
-    /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent)
+    window.matchMedia(`(min-width: ${minWidth}px)`).matches &&
+    window.matchMedia(`(max-width: ${maxWidth}px)`).matches
   );
 }
