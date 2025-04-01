@@ -194,7 +194,7 @@ public class TokenService {
     idClaims.add(TokenClaims.EMAIL.claim(), jwtData.getEmail());
     idClaims.add(TokenClaims.AZP.claim(), jwtData.getAzp());
     idClaims.add(TokenClaims.NAME.claim(), jwtData.getName());
-    idClaims.add(TokenClaims.PICTURE.claim(), jwtData.getPicture());
+    // idClaims.add(TokenClaims.PICTURE.claim(), jwtData.getPicture());
     idClaims.add(TokenClaims.GIVEN_NAME.claim(), jwtData.getGiven_name());
     idClaims.add(TokenClaims.FAMILY_NAME.claim(), jwtData.getFamily_name());
     idClaims.add(TokenClaims.AT_HASH.claim(), jwtData.getAt_hash());
@@ -257,9 +257,9 @@ public class TokenService {
             ? null
             : (String) body.get(TokenClaims.NAME.claim()),
         (@NotNull String) body.get(TokenClaims.EMAIL.claim()),
-        ObjectUtils.isEmpty(body.get(TokenClaims.PICTURE.claim()))
-            ? null
-            : (String) body.get(TokenClaims.PICTURE.claim()),
+        // ObjectUtils.isEmpty(body.get(TokenClaims.PICTURE.claim()))
+        //    ? null
+        //    : (String) body.get(TokenClaims.PICTURE.claim()),
         ObjectUtils.isEmpty(body.get(TokenClaims.GIVEN_NAME.claim()))
             ? null
             : (String) body.get(TokenClaims.GIVEN_NAME.claim()),
@@ -342,7 +342,7 @@ public class TokenService {
             .claim(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes())
             .claim(TokenClaims.IAT.claim(), new Date(now.toInstant().toEpochMilli()))
             .claim(TokenClaims.NAME.claim(), jwtData.getName())
-            .claim(TokenClaims.PICTURE.claim(), jwtData.getPicture())
+            // .claim(TokenClaims.PICTURE.claim(), jwtData.getPicture())
             .claim(TokenClaims.GIVEN_NAME.claim(), jwtData.getGiven_name())
             .claim(TokenClaims.FAMILY_NAME.claim(), jwtData.getFamily_name())
             .claim(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id())
@@ -414,9 +414,9 @@ public class TokenService {
               ? null
               : (String) claimsSet.getClaim(TokenClaims.NAME.claim()),
           (@NotNull String) claimsSet.getClaim(TokenClaims.EMAIL.claim()),
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.PICTURE.claim()))
-              ? null
-              : (String) claimsSet.getClaim(TokenClaims.PICTURE.claim()),
+          // ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.PICTURE.claim()))
+          //    ? null
+          //    : (String) claimsSet.getClaim(TokenClaims.PICTURE.claim()),
           ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()))
               ? null
               : (String) claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()),

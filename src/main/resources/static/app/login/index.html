@@ -72,6 +72,22 @@
     <script src="../../app/login/js/script.js" defer></script>
     <script src="../../app/login/js/login.js" defer></script>
     <script src="../../app/login/js/forgot.js"></script>
+    <link rel="manifest" href="/manifest.json" />
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .then(function (registration) {
+            console.log(
+              "Service Worker registered with scope:",
+              registration.scope
+            );
+          })
+          .catch(function (error) {
+            console.log("Service Worker registration failed:", error);
+          });
+      }
+    </script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->

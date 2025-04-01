@@ -93,7 +93,7 @@ public class UserMapper {
     user.setSurname(jwtData.getFamily_name());
     user.setEmail(jwtData.getEmail());
     user.setRoles(jwtData.getRoles());
-    user.setProfilePhoto(jwtData.getPicture());
+    // user.setProfilePhoto(jwtData.getPicture());
     user.setAttributes(jwtData.getAttributes());
     return user;
   }

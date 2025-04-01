@@ -34,7 +34,7 @@ public class GrpcMapper {
         SubjectType.CUSTOMER,
         getUserInfoValue(payload, "name"),
         payload.getEmail(),
-        getUserInfoValue(payload, "picture"),
+        // getUserInfoValue(payload, "picture"),
         getUserInfoValue(payload, "given_name"),
         getUserInfoValue(payload, "family_name"),
         (String) payload.get("at_hash"),

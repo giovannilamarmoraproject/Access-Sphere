@@ -69,6 +69,23 @@
 
       gtag("config", "G-R4KLC18RH6");
     </script>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .then(function (registration) {
+            console.log(
+              "Service Worker registered with scope:",
+              registration.scope
+            );
+          })
+          .catch(function (error) {
+            console.log("Service Worker registration failed:", error);
+          });
+      }
+    </script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
@@ -103,7 +120,7 @@
 
             <div class="links">
               <ul class="ul-list">
-                <li style="width: 140px">
+                <li style="width: 130px" class="text-center">
                   <a
                     class="a-padding li-align"
                     id="menu_register"
@@ -112,13 +129,23 @@
                     >Register User</a
                   >
                 </li>
-                <li style="width: 70px">
+                <li style="width: 70px" class="text-center">
                   <a
                     id="menu_user"
                     class="a-padding li-align"
                     style="width: max-content"
                     href="/app/users"
                     >Users</a
+                  >
+                </li>
+                <li style="width: 110px" class="li-align text-center me-1">
+                  <a
+                    id="menu_version"
+                    class="a-padding li-align clickable"
+                    style="width: max-content"
+                    onclick="getVersion()"
+                    ><i class="fa-duotone fa-regular fa-circle-info"></i>
+                    Version</a
                   >
                 </li>
                 <li>

@@ -10,6 +10,22 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
+    <link rel="manifest" href="/manifest.json" />
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .then(function (registration) {
+            console.log(
+              "Service Worker registered with scope:",
+              registration.scope
+            );
+          })
+          .catch(function (error) {
+            console.log("Service Worker registration failed:", error);
+          });
+      }
+    </script>
     <!-- Meta ag Google Search -->
     <script type="application/ld+json">
       {
