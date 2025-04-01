@@ -1,3 +1,5 @@
+const appVersion = "v1.1.18";
+
 function getConfig() {
   const configClientID = "ACCESS-SPHERE-TECH";
   const configRedirectUri = window.location.origin + "/app/users";
@@ -56,4 +58,8 @@ function getConfig() {
     edit_user_url: urlConfig.baseUrl + urlConfig.edit,
     delete_user_url: urlConfig.baseUrl + urlConfig.delete,
   };
+}
+
+function getVersion() {
+  return sweetalert("info", "Access Sphere - " + appVersion);
 }

@@ -20,20 +20,6 @@ import reactor.core.publisher.Mono;
 @Validated
 @RestController
 @RequestMapping("/v1/oAuth/2.0")
-// @CrossOrigin("*")
-// @CrossOrigin(
-//    // origins = "*",
-//    // allowedHeaders = "*",
-//    exposedHeaders = {
-//      ExposedHeaders.LOCATION,
-//      ExposedHeaders.SESSION_ID,
-//      ExposedHeaders.AUTHORIZATION,
-//      ExposedHeaders.TRACE_ID,
-//      ExposedHeaders.SPAN_ID,
-//      ExposedHeaders.PARENT_ID,
-//      ExposedHeaders.REDIRECT_URI,
-//      ExposedHeaders.REGISTRATION_TOKEN
-//    })
 @Tag(name = OpenAPI.Tag.OAUTH, description = OpenAPI.Description.OAUTH)
 public class OAuthControllerImpl implements OAuthController {
 

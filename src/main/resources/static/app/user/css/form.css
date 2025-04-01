@@ -73,3 +73,45 @@ input[type="file"]::-webkit-file-upload-button {
   font-family: monospace; /* Migliore leggibilità per JSON */
   white-space: pre-wrap; /* Mantiene la formattazione */
 }
+
+/** 
+* ------------------------------------
+* Edit Button Style 
+* ------------------------------------
+*/
+@media screen and (min-width: 992px) {
+  .edit-btn,
+  .delete-btn {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+
+  .delete-btn {
+    margin-right: 0.25rem !important;
+  }
+}
+@media screen and (min-width: 769px) and (max-width: 991px) {
+  /* Stili applicati solo tra 768px e 991px */
+  .edit-btn,
+  .delete-btn {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .delete-btn {
+    margin-right: 0.25rem !important;
+  }
+}
+@media screen and (max-width: 768px) {
+  .edit-btn,
+  .delete-btn {
+    flex: 0 0 auto;
+    width: 100%;
+    margin-top: 0.5rem !important;
+  }
+}
+/** 
+* ------------------------------------
+* END Edit Button Style
+* * ------------------------------------
+*/

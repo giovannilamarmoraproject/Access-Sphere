@@ -131,6 +131,11 @@ function applyTranslations() {
    */
   applyLanguage("menu_user", translations[currentLanguage].menu_user);
   applyLanguage("menu_register", translations[currentLanguage].menu_register);
+  applyLanguage(
+    "menu_version",
+    translations[currentLanguage].menu_version,
+    true
+  );
   /**
    * users.html
    */

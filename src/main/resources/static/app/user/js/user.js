@@ -29,6 +29,16 @@ function displayUserData(user) {
           : "150px"
         : "240px"
     };
+
+    Edit Button
+    class="btn btn-outline-danger edit-btn ${
+      isBetween(768, 991) ? "ps-3 pe-3" : "ps-4 pe-4"
+    } ${isMobile() ? "mt-2 col-12" : ""} float-end clickable"
+
+    Delete Button
+    class="btn btn-outline-secondary delete-btn ${
+      isBetween(768, 991) ? "ps-3 pe-3" : "ps-4 pe-4"
+    } ${isMobile() ? "mt-2 col-12" : "me-1"} float-end"
    */
 
   container.innerHTML += `<div class="row">
@@ -71,9 +81,7 @@ function displayUserData(user) {
                     <div class="col-md-7">
                     <a
                       id="delete_user_text"
-                      class="btn btn-outline-danger ${
-                        isBetween(768, 991) ? "ps-3 pe-3" : "ps-4 pe-4"
-                      } ${isMobile() ? "mt-2 col-12" : ""} float-end clickable"
+                      class="btn btn-outline-danger edit-btn float-end clickable"
                       style="padding: 5px 20px; border-radius: 10px"
                       onclick="deleteUser('${user.identifier}','${
     user.username
@@ -82,9 +90,7 @@ function displayUserData(user) {
                     >
                     <a
                       id="edit_user_title_btn"
-                      class="btn btn-outline-secondary ${
-                        isBetween(768, 991) ? "ps-3 pe-3" : "ps-4 pe-4"
-                      } ${isMobile() ? "mt-2 col-12" : "me-1"} float-end"
+                      class="btn btn-outline-secondary delete-btn float-end"
                       style="padding: 5px 20px; border-radius: 10px"
                       href="/app/users/edit/${user.identifier}"
                       >Edit</a

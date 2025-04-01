@@ -31,7 +31,7 @@ public class JWTData {
   private SubjectType subject_type;
   private String name;
   private String email;
-  private String picture;
+  // private String picture;
   private String given_name;
   private String family_name;
   private String at_hash;
@@ -64,7 +64,7 @@ public class JWTData {
             ? null
             : Joiner.on(" ").join(user.getSurname(), user.getName()),
         user.getEmail(),
-        user.getProfilePhoto(),
+        // user.getProfilePhoto(),
         user.getName(),
         user.getSurname(),
         null,
