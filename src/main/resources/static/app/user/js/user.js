@@ -58,7 +58,7 @@ function displayUserData(user) {
                         aspect-ratio: 1 / 1;
                       "
                       alt="Admin"
-                      class="rounded-circle"
+                      class="rounded-circle zoom_small"
                     />
                     <div class="mt-3">
                       <h4>${user.name} ${getOrDefault(user.surname, "")}</h4>
@@ -132,7 +132,8 @@ function displayUserData(user) {
                         <h6 class="mb-0" id="user_details_roles">App Roles</h6>
                       </div>
                       <div class="col-sm-9 text-secondary">
-                        <ul>
+                        <!--<ul>-->
+                        <ul style="margin-left: -32px">
                           ${user.roles
                             .map(
                               (role) =>

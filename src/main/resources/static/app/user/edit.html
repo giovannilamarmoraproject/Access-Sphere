@@ -25,6 +25,9 @@
     <!-- END Shared Component -->
     <script src="../../user/js/validationForm.js"></script>
     <script src="../../user/js/edit.js"></script>
+    <!-- TailwindCSS: https://tailwindcss.com/ -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- END TailwindCSS -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -99,12 +102,18 @@
     </noscript>
     <!-- End Google Tag Manager (noscript) -->
     <main>
-      <div class="big-wrapper dark">
-        <img src="../../user/img/shape.png" alt="" class="shape" />
+      <div class="big-wrapper dark relative h-full w-full bg-slate-950">
+        <div
+          class="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(255,0,182,.15),rgba(255,255,255,0))]"
+        ></div>
+        <div
+          class="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(255,0,182,.15),rgba(255,255,255,0))]"
+        ></div>
+        <img src="../../user/img/shape.png" alt="" class="shape fade-in" />
 
         <header class="mb-3">
           <div class="container">
-            <a href="/app/users" class="logo">
+            <a href="/app/users" class="logo zoom_smaller">
               <img
                 hidden
                 src="../../user/img/logo.png"

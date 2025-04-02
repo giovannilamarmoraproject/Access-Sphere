@@ -80,7 +80,7 @@ a {
   width: 100%;
   min-height: 100vh;
   overflow: hidden;
-  background-color: var(--backgroundColor);
+  /*background-color: var(--backgroundColor);*/
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -284,7 +284,7 @@ header .container {
   width: 500px;
   bottom: -180px;
   left: -15px;
-  opacity: 0.1;
+  opacity: 0.1 !important;
 }
 
 .copy {

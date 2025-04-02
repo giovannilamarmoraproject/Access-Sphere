@@ -121,3 +121,19 @@
 .zoom_simple:hover {
   transform: scale(1.1); /* ingrandisce il numero al passaggio del mouse */
 }
+
+.zoom_small {
+  transition: transform 0.3s ease; /* transizioni fluide */
+}
+
+.zoom_small:hover {
+  transform: scale(1.05); /* ingrandisce il numero al passaggio del mouse */
+}
+
+.zoom_smaller {
+  transition: transform 0.3s ease; /* transizioni fluide */
+}
+
+.zoom_smaller:hover {
+  transform: scale(1.025); /* ingrandisce il numero al passaggio del mouse */
+}

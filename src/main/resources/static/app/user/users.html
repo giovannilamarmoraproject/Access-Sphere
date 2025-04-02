@@ -57,6 +57,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.2.0/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.2.0/js/buttons.print.min.js"></script>
+    <!-- TailwindCSS: https://tailwindcss.com/ -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- END TailwindCSS -->
     <!-- Google Tag Manager -->
     <script>
       (function (w, d, s, l, i) {
@@ -115,12 +118,26 @@
     </noscript>
     <!-- End Google Tag Manager (noscript) -->
     <main>
-      <div class="big-wrapper dark" style="justify-content: flex-start">
-        <img src="../../app/user/img/shape.png" alt="" class="shape" />
+      <!-- OLD Wallpaper, edit also class big-wrapper
+      div
+        class="big-wrapper dark"
+        style="justify-content: flex-start"
+      >-->
+      <div
+        class="big-wrapper dark relative h-full w-full bg-slate-950"
+        style="justify-content: flex-start"
+      >
+        <div
+          class="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(255,0,182,.15),rgba(255,255,255,0))]"
+        ></div>
+        <div
+          class="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(255,0,182,.15),rgba(255,255,255,0))]"
+        ></div>
+        <img src="../../app/user/img/shape.png" alt="" class="shape fade-in" />
 
         <header class="mb-3">
           <div class="container">
-            <a href="/app/users" class="logo">
+            <a href="/app/users" class="logo zoom_smaller">
               <img
                 hidden
                 src="../../app/user/img/logo.png"
