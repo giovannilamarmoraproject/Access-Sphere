@@ -1,13 +1,44 @@
+:root {
+  /* Colori principali */
+  --background-color: #252936; /* Colore di sfondo principale */
+  --background-color-dark: #1e212b; /* Colore di sfondo più scuro */
+  --border-color: #4a4f68; /* Colore del bordo principale */
+  --border-color-dark: #3a4252; /* Colore del bordo a destra più scuro */
+  --border-color-focus: #5d617a; /* Colore del bordo quando in focus */
+  --border-color-hover: #4a4f68; /* Colore del bordo al passaggio del mouse */
+
+  /* Colori per il focus */
+  --background-color-focus: #2d3140; /* Sfondo durante il focus */
+  --box-shadow-focus: rgba(
+    93,
+    97,
+    122,
+    0.5
+  ); /* Box-shadow per l'input in focus */
+
+  /* Colori per stato disabilitato */
+  --background-color-disabled: #1e212b; /* Colore di background per input disabilitati */
+  --border-color-disabled: #3a3e52; /* Bordo per stato disabilitato */
+  --text-color-disabled: #7a7d8e; /* Colore del testo per stato disabilitato */
+  --opacity-disabled: 0.6; /* Opacità per lo stato disabilitato */
+
+  /* Colori per l'hover sul pulsante file */
+  --background-file-upload: #1e212b; /* Colore background del pulsante file */
+  --background-file-upload-hover: #2d3140; /* Colore del background al passaggio del mouse */
+  --border-file-upload: #3a4252; /* Colore del bordo a destra del pulsante file */
+  --border-file-upload-hover: #4a4f68; /* Colore del bordo a destra durante l'hover */
+}
+
 .card {
-  background-color: rgba(240, 248, 255, 0.8) !important;
+  /*background-color: rgba(240, 248, 255, 0.8) !important;*/
   border-radius: 20px !important;
 
   /**
   * --------------------------------
   * Dark Card Mode
   * --------------------------------
-  */
-  /*background-color: rgba(240, 248, 255, 0.2) !important;
+  */ /**/
+  background-color: rgba(240, 248, 255, 0.2) !important;
 
   .h1,
   .h2,
@@ -25,8 +56,24 @@
   .dt-info,
   .dt-input,
   .dt-paging-button,
-  th {
+  th,
+  .fa-arrows-rotate {
     color: #dee2e6 !important;
+  }
+
+  .table {
+    a {
+      color: #adb5bd !important;
+    }
+
+    tr,
+    th {
+      border-bottom: 1px solid #4a4f68 !important; /* Colore e spessore del bordo tra le righe */
+    }
+  }
+
+  div.dt-container.dt-empty-footer tbody > tr:last-child > * {
+    border-bottom: none;
   }
 
   p {
@@ -39,7 +86,80 @@
 
   .text-muted {
     color: #adb5bd !important;
-  }*/
+  }
+
+  .role-card {
+    background-color: var(--background-color) !important;
+    color: #dee2e6 !important;
+  }
+
+  .form-control,
+  .form-select {
+    background-color: var(--background-color);
+    /*background-color: #1e212d;  Sfondo input */
+    border: 1px solid var(--border-color); /* Bordo */
+    color: #ffffff; /* Testo bianco per contrasto */
+  }
+
+  .form-control:focus {
+    border-color: var(--border-color-focus); /* Bordo più chiaro al focus */
+    background-color: var(
+      --background-color-focus
+    ); /* Sfondo leggermente più chiaro al focus */
+    box-shadow: 0px 0px 8px rgba(93, 97, 122, 0.5); /* Glow morbido */
+  }
+  .form-select:disabled {
+    background-color: var(--background-color-dark); /* Più scuro */
+    border-color: var(--border-color-disabled); /* Bordo meno evidente */
+    color: var(--text-color-disabled); /* Testo più spento */
+    box-shadow: none; /* Nessun effetto di luce */
+    cursor: not-allowed; /* Mostra il cursore di "non disponibile" */
+    opacity: 0.6; /* Leggera trasparenza per rendere evidente la disattivazione */
+  }
+
+  input[type="file"]::-webkit-file-upload-button {
+    background-color: var(--background-color-dark); /* Sfondo scuro */
+    border-right: 1px solid var(--border-color); /* Bordo chiaro */
+    color: white; /* Testo bianco */
+    cursor: pointer; /* Cambia il cursore quando sopra */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  /* Cambia colore quando il mouse è sopra il bottone */
+  input[type="file"]:hover::-webkit-file-upload-button,
+  .url-input:hover,
+  .username-input:hover {
+    background-color: var(--background-file-upload-hover) !important;
+  }
+
+  /* Cambia colore quando l'input file è disabilitato */
+  input[type="file"]:disabled::-webkit-file-upload-button {
+    background-color: var(--background-color-dark);
+    border-color: var(--border-color-disabled);
+    color: var(--text-color-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .url-input,
+  .username-input {
+    background-color: var(--background-color-dark); /* Sfondo scuro */
+    border: 1px solid var(--border-color); /* Bordo chiaro */
+    color: white; /* Testo bianco */
+    cursor: pointer; /* Cambia il cursore quando sopra */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  input[type="date"]:focus {
+    border-color: #5d617a; /* Colore del bordo quando in focus */
+    background-color: #2d3140; /* Colore di sfondo quando in focus */
+    box-shadow: 0px 0px 8px rgba(93, 97, 122, 0.5); /* Box-shadow al focus */
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    background-color: #dee2e6;
+    border-radius: 50%;
+  }
 
   /**
   * --------------------------------
