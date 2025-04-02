@@ -1,6 +1,51 @@
 .card {
   background-color: rgba(240, 248, 255, 0.8) !important;
   border-radius: 20px !important;
+
+  /**
+  * --------------------------------
+  * Dark Card Mode
+  * --------------------------------
+  */
+  /*background-color: rgba(240, 248, 255, 0.2) !important;
+
+  .h1,
+  .h2,
+  .h3,
+  .h4,
+  .h5,
+  .h6,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  label,
+  .dt-info,
+  .dt-input,
+  .dt-paging-button,
+  th {
+    color: #dee2e6 !important;
+  }
+
+  p {
+    color: #adb5bd;
+  }
+
+  .text-secondary {
+    color: #6c757d;
+  }
+
+  .text-muted {
+    color: #adb5bd !important;
+  }*/
+
+  /**
+  * --------------------------------
+  * END Dark Card Mode
+  * --------------------------------
+  */
 }
 
 .client {
