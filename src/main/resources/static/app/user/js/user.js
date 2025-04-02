@@ -114,7 +114,19 @@ function displayUserData(user) {
                   ? `
                 <div class="card mt-4 fade-in">
                   <div class="card-body m-2">
+                  <h3 class="row">
+                  <div class="col-md-5">
                     <h3 id="user_details_user_roles">User Roles</h3>
+                    </div>
+                    <div class="col-md-7">
+                    <a
+                      id="roles_page_title"
+                      class="btn btn-outline-primary edit-btn float-end clickable"
+                      style="padding: 5px 20px; border-radius: 10px"
+                      href="/app/users/roles/${user.identifier}"
+                      >Edit Roles</a
+                    >
+                    </h3>
                     <div class="row mt-4">
                       <div class="col-sm-3">
                         <h6 class="mb-0" id="user_details_roles">App Roles</h6>
