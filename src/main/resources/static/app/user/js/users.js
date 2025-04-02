@@ -69,21 +69,21 @@ function displayUsersTable(users) {
                                 ? "<span class='badge text-bg-danger status_blocked'>BLOCKED</span>"
                                 : "<span class='badge text-bg-success status_active'>ACTIVE</span>"
                             }</td>
-                            <td class="text-center" style="min-width: 110px;">
+                            <td class="text-center hidden-mobile" style="min-width: 110px;">
                               <a hidden class="m-1" href="/app/users/details/${
                                 user.identifier
-                              }"><i class="fa-solid fa-eye"></i></a>
+                              }"><i class="fa-solid fa-eye zoom_simple"></i></a>
                               <a class="m-1" href="/app/users/edit/${
                                 user.identifier
-                              }"><i class="fa-solid fa-user-pen"></i></a>
+                              }"><i class="fa-solid fa-user-pen zoom_simple"></i></a>
                               <a class="m-1" href="/app/users/roles/${
                                 user.identifier
-                              }"><i class="fa-solid fa-shield-keyhole"></i></a>
+                              }"><i class="fa-solid fa-shield-keyhole zoom_simple"></i></a>
                               <a class="m-1 clickable" onclick="deleteUser('${
                                 user.identifier
                               }','${
       user.username
-    }')"><i class="fa-solid fa-trash-xmark"></i></a>
+    }')"><i class="fa-solid fa-trash-xmark zoom_simple"></i></a>
                             </td>
                           </tr>`;
   });
