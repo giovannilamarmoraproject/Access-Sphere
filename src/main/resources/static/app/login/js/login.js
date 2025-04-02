@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Event listener per il form
   if (loginForm) {
-    localStorage.clear();
+    cleanStorageAndCookies();
     loginForm.addEventListener("submit", async function (event) {
       event.preventDefault(); // Previene il comportamento predefinito di invio del form
 

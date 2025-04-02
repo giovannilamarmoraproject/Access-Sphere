@@ -12,19 +12,19 @@ function logout() {
       Authorization: `Bearer ${token}`,
       ...getSavedHeaders(),
     },
-    credentials: "same-origin",
+    credentials: "include",
   })
     .then((response) => {
       fetchHeader(response.headers);
       return response.json();
     })
     .finally((res) => {
-      localStorage.clear();
+      //cleanStorageAndCookies();
       window.location.href = config.login_url;
     })
     .catch((error) => {
       console.error("Logout failed.", error);
-      localStorage.clear();
+      //cleanStorageAndCookies();
       window.location.href = config.login_url;
     });
 }
