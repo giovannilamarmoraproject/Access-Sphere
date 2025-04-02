@@ -1,7 +1,9 @@
 function refreshClients() {
   console.log("Refreshing Clients...");
   localStorage.removeItem(config.client_id + "_clients");
+  refreshAnimation("refresh-icon");
   getClient();
+  refreshAnimation("refresh-icon");
 }
 
 $(document).ready(function () {
@@ -55,12 +57,14 @@ $(document).ready(function () {
     $("#add_role_btn").prop("disabled", !selectedRole || alreadyAdded);
   });
 
+  refreshAnimation("refresh-icon");
   const clientsJSON = localStorage.getItem(config.client_id + "_clients");
   let clients;
   if (clientsJSON) {
     clients = JSON.parse(clientsJSON);
     displayClientData(clients);
   } else getClient();
+  refreshAnimation("refresh-icon");
 
   let profileImage;
 

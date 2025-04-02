@@ -2,61 +2,69 @@
 
 document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.getElementById("loginForm");
+  let isLoggingIn = false; // Flag per prevenire richieste doppie
 
   // Event listener per il form
   if (loginForm) {
     localStorage.clear();
-    loginForm.addEventListener("submit", function (event) {
+    loginForm.addEventListener("submit", async function (event) {
       event.preventDefault(); // Previene il comportamento predefinito di invio del form
 
       const currentUrl = new URL(window.location.href);
-      console.log(currentUrl);
       const clientId =
         currentUrl.searchParams.get("client_id") || config.client_id;
       const redirectUri =
         currentUrl.searchParams.get("redirect_uri") || config.redirect_uri;
 
       // Chiama la funzione login con i dati raccolti
-      return doLogin(clientId, redirectUri);
+      try {
+        await doLogin(clientId, redirectUri);
+      } catch (err) {
+        console.error("Errore nel login:", err);
+      } finally {
+        isLoggingIn = false; // Resetta il flag dopo la richiesta
+      }
     });
   }
 
   async function doLogin(clientId, redirectUri) {
     const email = document.getElementById("emailInput").value;
     const password = document.getElementById("passwordInput").value;
-
-    let encode = btoa(email + ":" + password);
+    const encode = btoa(email + ":" + password);
 
     const url = new URL(window.location.origin + "/v1/oAuth/2.0/token");
     url.searchParams.set("grant_type", "password");
     if (clientId) url.searchParams.set("client_id", clientId);
     if (redirectUri) url.searchParams.set("redirect_uri", redirectUri);
 
-    token(url, encode).then(async (data) => {
-      const responseData = await data.json();
-      if (responseData.error != null) {
+    try {
+      const response = await token(url, encode);
+      const responseData = await response.json();
+
+      if (responseData.error) {
         const error = getErrorCode(responseData.error);
-        return sweetalert("error", error.title, error.message);
+        sweetalert("error", error.title, error.message);
       } else {
-        const redirect_uri = data.headers.get("location");
-        if (redirect_uri != null)
-          window.location.href =
-            redirect_uri +
-            "?access-token=" +
-            responseData.data.token.access_token +
-            "&session-id=" +
-            data.headers.get("Session-ID");
+        const redirect_uri = response.headers.get("location");
+        if (redirect_uri) {
+          window.location.href = `${redirect_uri}?access-token=${
+            responseData.data.token.access_token
+          }&session-id=${response.headers.get("Session-ID")}`;
+        }
       }
-    });
+    } catch (err) {
+      console.error("Errore nel login:", err);
+      throw err;
+    }
   }
 
   const token = async (url, basic) => {
     try {
-      const response = await fetch(url, {
+      return await fetch(url, {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
         mode: "cors", // no-cors, *cors, same-origin
         cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: "same-origin", // include, *same-origin, omit
+        credentials: "include", // include, *same-origin, omit
         headers: {
           "Content-Type": "application/json",
           Authorization: "Basic " + basic,
@@ -66,9 +74,8 @@ document.addEventListener("DOMContentLoaded", function () {
         referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
         //body: JSON.stringify(data), // body data type must match "Content-Type" header
       });
-      return response;
     } catch (err) {
-      console.error(err);
+      console.error("Errore nella richiesta token:", err);
       throw new Error(`Error on login, message is ${err.message}`);
     }
   };
