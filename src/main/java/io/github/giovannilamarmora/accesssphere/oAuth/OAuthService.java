@@ -21,6 +21,7 @@ import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
+import io.github.giovannilamarmora.utils.context.ContextConfig;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -416,10 +417,19 @@ public class OAuthService {
             clientCredential ->
                 processLogoutByAuthType(tokenData, clientCredential, redirect_uri, response))
         .doOnSuccess(
-            responseEntity ->
-                LOG.info(
-                    "\uD83D\uDDDD\uFE0F Ending oAuth/2.0/logout endpoint with client_id={}",
-                    clientId));
+            responseEntity -> {
+              CookieManager.deleteCookie(Cookie.COOKIE_SESSION_ID, response);
+              CookieManager.deleteCookie(Cookie.COOKIE_TOKEN, response);
+              CookieManager.deleteCookie(Cookie.COOKIE_REDIRECT_URI, response);
+              CookieManager.deleteCookie(Cookie.COOKIE_ACCESS_TOKEN, response);
+              CookieManager.deleteCookie(Cookie.COOKIE_STRAPI_TOKEN, response);
+              CookieManager.deleteCookie(ContextConfig.TRACE_ID.getValue(), response);
+              CookieManager.deleteCookie(ContextConfig.SPAN_ID.getValue(), response);
+              CookieManager.deleteCookie(ContextConfig.PARENT_ID.getValue(), response);
+              LOG.info(
+                  "\uD83D\uDDDD\uFE0F Ending oAuth/2.0/logout endpoint with client_id={}",
+                  clientId);
+            });
   }
 
   private boolean isLogoutAlreadyDone() {
