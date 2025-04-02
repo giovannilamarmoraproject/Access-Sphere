@@ -86,3 +86,21 @@ function refreshAnimation(id) {
       icon.classList.remove(animation);
     }, 2000); // Rimuove l'animazione dopo 500ms
 }
+
+function cleanStorageAndCookies() {
+  console.log("Cleaning Storage and Cookies...");
+  localStorage.clear();
+  deleteAllCookies();
+}
+
+// Funzione per cancellare tutti i cookie
+function deleteAllCookies() {
+  var cookies = document.cookie.split(";");
+
+  for (var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i];
+    var cookieName = cookie.split("=")[0].trim();
+    document.cookie =
+      cookieName + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  }
+}

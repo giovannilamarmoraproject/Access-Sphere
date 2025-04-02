@@ -25,6 +25,7 @@ function authorizeRequest() {
     headers: { Authorization: `Bearer ${token}`, ...getSavedHeaders() },
     redirect: "follow",
     mode: "cors", // no-cors, *cors, same-origin
+    credentials: "include",
   })
     .then((response) => {
       fetchHeader(response.headers);
@@ -41,7 +42,7 @@ function authorizeRequest() {
       saveTokens(response);
     })
     .catch((error) => {
-      localStorage.clear();
+      //cleanStorageAndCookies();
       console.error("Authorization check failed.", error);
       window.location.href = config.login_url;
     });
