@@ -1,7 +1,9 @@
 function refreshUsers() {
   console.log("Refreshing Users...");
   localStorage.removeItem(config.client_id + "_usersData");
+  refreshAnimation("refresh-icon");
   getUsers();
+  refreshAnimation("refresh-icon");
 }
 
 function getUsers() {
@@ -188,9 +190,11 @@ function setDatatablesStyle(tableId) {
 }
 
 $(document).ready(function () {
+  refreshAnimation("refresh-icon");
   const usersJSON = localStorage.getItem(config.client_id + "_usersData");
   if (usersJSON) {
     const users = JSON.parse(usersJSON);
     displayUsersTable(users);
   } else getUsers();
+  refreshAnimation("refresh-icon");
 });

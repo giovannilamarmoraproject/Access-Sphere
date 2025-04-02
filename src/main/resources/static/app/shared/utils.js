@@ -73,3 +73,16 @@ function isBetween(minWidth, maxWidth) {
     window.matchMedia(`(max-width: ${maxWidth}px)`).matches
   );
 }
+
+function refreshAnimation(id) {
+  const animation = "fa-spin";
+  const icon = document.getElementById(id);
+
+  if (!icon) return;
+
+  if (!icon.classList.contains(animation)) icon.classList.add(animation);
+  else if (icon.classList.contains(animation))
+    setTimeout(() => {
+      icon.classList.remove(animation);
+    }, 2000); // Rimuove l'animazione dopo 500ms
+}
