@@ -1,5 +1,4 @@
 //const config = getConfig();
-window.isLogginIn = false; // Flag per prevenire richieste doppie
 
 document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.getElementById("loginForm");
@@ -22,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function doLogin(clientId, redirectUri) {
-    if (window.isLogginIn) {
+    if (isLoggingIn()) {
       console.log("Logged already!");
       return;
     }
@@ -44,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const error = getErrorCode(responseData.error);
         sweetalert("error", error.title, error.message);
       } else {
-        window.isLogginIn = true;
+        loggingIn();
         const redirect_uri = response.headers.get("location");
         if (redirect_uri) {
           window.location.href = `${redirect_uri}?access-token=${
