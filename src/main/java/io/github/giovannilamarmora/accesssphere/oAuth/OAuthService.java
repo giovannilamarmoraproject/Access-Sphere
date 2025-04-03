@@ -21,7 +21,6 @@ import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
-import io.github.giovannilamarmora.utils.context.ContextConfig;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -92,7 +91,7 @@ public class OAuthService {
         clientCredential -> {
           if (StringUtils.hasText(bearer)) {
             OAuthValidator.validateResponseType("token", responseType);
-            return handleBearerToken(bearer, clientCredential);
+            return handleBearerToken(bearer, clientCredential, exchange);
           }
 
           return handleOAuthAuthorization(
@@ -184,7 +183,8 @@ public class OAuthService {
                     tokenExchange.getClient_id()));
   }
 
-  private ResponseEntity<?> handleBearerToken(String bearer, ClientCredential clientCredential) {
+  private ResponseEntity<?> handleBearerToken(
+      String bearer, ClientCredential clientCredential, ServerWebExchange exchange) {
     LOG.info("✅ Bearer token found *******, starting authorization check");
 
     try {
@@ -217,12 +217,16 @@ public class OAuthService {
       return ResponseEntity.ok(response);
 
     } catch (TokenException | OAuthException e) {
-      return handleInvalidToken(clientCredential, e);
+      return handleInvalidToken(clientCredential, e, exchange);
     }
   }
 
-  private ResponseEntity<?> handleInvalidToken(ClientCredential clientCredential, Exception e) {
+  private ResponseEntity<?> handleInvalidToken(
+      ClientCredential clientCredential, Exception e, ServerWebExchange exchange) {
     LOG.warn("❌ Token validation failed: {}", e.getMessage());
+
+    /** Deleting all cookie if validation failed */
+    Utils.deleteAllCookie(exchange.getResponse());
 
     if (e instanceof OAuthException exception
         && exception.getExceptionCode().equals(ExceptionMap.ERR_OAUTH_401)) {
@@ -426,14 +430,7 @@ public class OAuthService {
                 processLogoutByAuthType(tokenData, clientCredential, redirect_uri, response))
         .doOnSuccess(
             responseEntity -> {
-              CookieManager.deleteCookie(Cookie.COOKIE_SESSION_ID, response);
-              CookieManager.deleteCookie(Cookie.COOKIE_TOKEN, response);
-              CookieManager.deleteCookie(Cookie.COOKIE_REDIRECT_URI, response);
-              CookieManager.deleteCookie(Cookie.COOKIE_ACCESS_TOKEN, response);
-              CookieManager.deleteCookie(Cookie.COOKIE_STRAPI_TOKEN, response);
-              CookieManager.deleteCookie(ContextConfig.TRACE_ID.getValue(), response);
-              CookieManager.deleteCookie(ContextConfig.SPAN_ID.getValue(), response);
-              CookieManager.deleteCookie(ContextConfig.PARENT_ID.getValue(), response);
+              Utils.deleteAllCookie(response);
               LOG.info(
                   "\uD83D\uDDDD\uFE0F Ending oAuth/2.0/logout endpoint with client_id={}",
                   clientId);

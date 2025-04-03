@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.github.giovannilamarmora</groupId>
     <artifactId>access-sphere</artifactId>
-    <version>1.1.29</version>
+    <version>1.1.31</version>
     <name>access-sphere</name>
     <description>AccessSphere is an identity management and authentication microservice based on OAuth 2.0. It provides
         a secure and scalable infrastructure for user authentication, authorization management, and access to protected
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>io.github.giovannilamarmora.utils</groupId>
             <artifactId>utils-code</artifactId>
-            <version>1.0.68</version>
+            <version>1.0.71</version>
         </dependency>
 
         <dependency>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
-            <version>6.3.0</version>
+            <version>6.4.4</version>
         </dependency>
         <!-- JWT Token -->
         <dependency>
