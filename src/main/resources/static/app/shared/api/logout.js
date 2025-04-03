@@ -7,6 +7,7 @@ function logout() {
   fetch(logoutUrl, {
     method: "POST",
     //mode: "no-cors", // Disabilita il controllo CORS (ma la risposta sarà "opaque")
+    mode: "cors",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

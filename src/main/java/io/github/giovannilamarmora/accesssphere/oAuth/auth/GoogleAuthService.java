@@ -95,11 +95,13 @@ public class GoogleAuthService {
               //    : (ObjectUtils.isEmpty(strapi_token)
               //        ? token
               //        : new OAuthTokenResponse(token, strapi_token)));
+              // CookieManager.setCookieInResponse(
+              //    Cookie.COOKIE_ACCESS_TOKEN,
+              //    token.getAccess_token(),
+              //    cookieDomain,
+              //    serverHttpResponse);
               CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_ACCESS_TOKEN,
-                  token.getAccess_token(),
-                  cookieDomain,
-                  serverHttpResponse);
+                  Cookie.COOKIE_ACCESS_TOKEN, token.getAccess_token(), serverHttpResponse, request);
               URI finalRedirectURI =
                   OAuthMapper.getFinalRedirectURI(
                       clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);

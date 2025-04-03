@@ -36,7 +36,7 @@ public class OAuthControllerImpl implements OAuthController {
       String registration_token,
       String bearer,
       String state,
-      ServerHttpResponse serverHttpResponse) {
+      ServerWebExchange exchange) {
     return oAuthService.authorize(
         responseType,
         accessType,
@@ -46,7 +46,7 @@ public class OAuthControllerImpl implements OAuthController {
         registration_token,
         bearer,
         state,
-        serverHttpResponse);
+        exchange);
   }
 
   @Override

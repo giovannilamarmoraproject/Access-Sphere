@@ -11,9 +11,8 @@ import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.*;
 import io.github.giovannilamarmora.utils.logger.MDCUtils;
-import io.github.giovannilamarmora.utils.web.CookieManager;
-import io.github.giovannilamarmora.utils.web.HeaderManager;
 import io.github.giovannilamarmora.utils.web.RequestManager;
+import io.github.giovannilamarmora.utils.web.ResponseManager;
 import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +75,7 @@ public class SessionIDFilter implements WebFilter {
     if (isGenerateSessionURI(request) || isAuthorizeCheckWithBearerNull(request)) {
       session_id = SessionID.builder().generate();
       LOG.info("Generating new session ID: {}", session_id);
-      setSessionIDInResponse(session_id, response);
+      setSessionIDInResponse(session_id, response, request);
       addSessionInContext(session_id);
       return chain.filter(exchange);
     } else if (ObjectUtils.isEmpty(session_id)) {
@@ -91,7 +90,7 @@ public class SessionIDFilter implements WebFilter {
     }
 
     if (isBearerNotRequiredEndpoint(request) || isAuthorizeCheckWithBearer(request)) {
-      setSessionIDInResponse(session_id, response);
+      setSessionIDInResponse(session_id, response, request);
       addSessionInContext(session_id);
       return chain.filter(exchange);
     }
@@ -128,7 +127,7 @@ public class SessionIDFilter implements WebFilter {
           exchange);
     }
     addSessionInContext(session_id);
-    setSessionIDInResponse(session_id, response);
+    setSessionIDInResponse(session_id, response, request);
     BeanUtils.copyProperties(accessTokenDB, accessTokenData);
     return chain.filter(exchange);
   }
@@ -169,7 +168,7 @@ public class SessionIDFilter implements WebFilter {
             exchange);
       }
       addSessionInContext(session_id);
-      setSessionIDInResponse(session_id, response);
+      setSessionIDInResponse(session_id, response, request);
     } catch (TokenException e) {
       LOG.warn("Access Token not found, already logged out");
     }
@@ -240,8 +239,11 @@ public class SessionIDFilter implements WebFilter {
     return PatternMatchUtils.simpleMatch(logoutURI, path);
   }
 
-  private void setSessionIDInResponse(String sessionId, ServerHttpResponse response) {
-    CookieManager.setCookieInResponse(Cookie.COOKIE_SESSION_ID, sessionId, cookieDomain, response);
-    HeaderManager.addHeaderInResponse(ExposedHeaders.SESSION_ID, sessionId, response);
+  private void setSessionIDInResponse(
+      String sessionId, ServerHttpResponse response, ServerHttpRequest request) {
+    // CookieManager.setCookieInResponse(Cookie.COOKIE_SESSION_ID, sessionId, cookieDomain,
+    // response);
+    // HeaderManager.addHeaderInResponse(ExposedHeaders.SESSION_ID, sessionId, response);
+    ResponseManager.setCookieAndHeaderData(ExposedHeaders.SESSION_ID, sessionId, response, request);
   }
 }
