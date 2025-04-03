@@ -8,9 +8,9 @@ function getCookie(name) {
 
 function getCookieOrStorage(data) {
   return (
-    getCookie(data) ||
     localStorage.getItem(config.client_id + "_" + data) ||
-    localStorage.getItem(data)
+    localStorage.getItem(data) ||
+    getCookie(data)
   );
 }
 
