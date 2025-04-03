@@ -90,7 +90,7 @@ function refreshAnimation(id) {
 function cleanStorageAndCookies() {
   console.log("Cleaning Storage and Cookies...");
   localStorage.clear();
-  deleteAllCookies();
+  deleteSelectedCookies();
 }
 
 // Funzione per cancellare tutti i cookie
@@ -102,5 +102,30 @@ function deleteAllCookies() {
     var cookieName = cookie.split("=")[0].trim();
     document.cookie =
       cookieName + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  }
+}
+
+function deleteSelectedCookies() {
+  var cookies = document.cookie.split(";");
+
+  // Lista dei cookie da eliminare
+  var cookiesToDelete = [
+    "Session-ID",
+    "Span-ID",
+    "Parent-ID",
+    "Trace-ID",
+    "access-token",
+    "strapi-token",
+    "Redirect-Uri",
+    "Registration-Token",
+  ];
+
+  for (var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i].split("=")[0].trim();
+
+    if (cookiesToDelete.includes(cookie)) {
+      document.cookie =
+        cookie + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    }
   }
 }
