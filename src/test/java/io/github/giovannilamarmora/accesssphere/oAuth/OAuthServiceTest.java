@@ -111,7 +111,7 @@ public class OAuthServiceTest {
             registrationToken,
             null,
             state,
-            exchange.getResponse());
+            exchange);
 
     // Assert
     StepVerifier.create(result)
