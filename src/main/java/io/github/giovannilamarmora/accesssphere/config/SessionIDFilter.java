@@ -10,8 +10,6 @@ import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.*;
-import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
-import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.MDCUtils;
 import io.github.giovannilamarmora.utils.web.*;
 import java.util.List;
@@ -23,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -245,60 +242,6 @@ public class SessionIDFilter implements WebFilter {
     // CookieManager.setCookieInResponse(Cookie.COOKIE_SESSION_ID, sessionId, cookieDomain,
     // response);
     // HeaderManager.addHeaderInResponse(ExposedHeaders.SESSION_ID, sessionId, response);
-    // ResponseManager.setCookieAndHeaderData(ExposedHeaders.SESSION_ID, sessionId, response,
-    // request);
-    setCookieAndHeaderData(ExposedHeaders.SESSION_ID, sessionId, response, request);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
-  static void setCookieAndHeaderData(
-      String headerName,
-      String headerValue,
-      ServerHttpResponse response,
-      ServerHttpRequest request) {
-
-    // Set the specified header in the response
-    HeaderManager.addOrSetHeaderInResponse(headerName, headerValue, response);
-
-    // Set the corresponding cookie with domain handling based on Referer, Origin, or Host
-    CookieManager.setCookieInResponse(headerName, headerValue, response, request);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
-  static void setCookieInResponse(
-      String cookieName,
-      String cookieValue,
-      ServerHttpResponse response,
-      ServerHttpRequest request) {
-
-    String redirectUri = request.getQueryParams().getFirst("redirect_uri");
-    // Extract domain from Referer or Origin (keeping URL handling as before)
-    String referer = request.getHeaders().getFirst(HttpHeaders.REFERER);
-    String origin = request.getHeaders().getFirst(HttpHeaders.ORIGIN);
-    String host = request.getHeaders().getFirst(HttpHeaders.HOST);
-    String url =
-        (redirectUri != null)
-            ? redirectUri
-            : (origin != null && !origin.equals("*") ? origin : (host != null ? host : referer));
-    String domain = WebManager.extractDomain(url);
-
-    // Create the cookie with security attributes
-    ResponseCookie.ResponseCookieBuilder cookieBuilder =
-        ResponseCookie.from(cookieName, cookieValue)
-            .maxAge(360000)
-            .sameSite("None")
-            .secure(true)
-            .httpOnly(true)
-            .path("/");
-
-    // Set domain if available
-    if (domain != null) {
-      cookieBuilder.domain(domain);
-    }
-
-    // Add cookie to response
-    response.getHeaders().add(HttpHeaders.SET_COOKIE, cookieBuilder.build().toString());
-
-    LOG.debug("Set Cookie {}, with value {}, successfully in Response", cookieName, cookieValue);
+    ResponseManager.setCookieAndHeaderData(ExposedHeaders.SESSION_ID, sessionId, response, request);
   }
 }
