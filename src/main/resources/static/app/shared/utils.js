@@ -122,7 +122,6 @@ function deleteSelectedCookies() {
 
   for (var i = 0; i < cookies.length; i++) {
     var cookie = cookies[i].split("=")[0].trim();
-    console.log(cookie);
 
     if (cookiesToDelete.includes(cookie)) {
       document.cookie =

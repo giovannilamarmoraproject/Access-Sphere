@@ -55,7 +55,6 @@
   label,
   .dt-info,
   .dt-input,
-  .dt-paging-button,
   th,
   .fa-arrows-rotate {
     color: #dee2e6 !important;
@@ -72,9 +71,48 @@
     }
   }
 
+  /**
+  * Datatables
+  */
+  .dt-input {
+    option {
+      background-color: #323746 !important;
+    }
+  }
   div.dt-container.dt-empty-footer tbody > tr:last-child > * {
     border-bottom: none;
   }
+
+  /* Stato disabilitato */
+  div.dt-container .dt-paging .dt-paging-button.disabled {
+    color: #6c757d !important; /* Colore del testo disabilitato */
+    cursor: not-allowed; /* Indica che l'elemento è disabilitato */
+    /* Background rimane invariato, quindi non modificato */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  /* Stato disabilitato in hover */
+  div.dt-container .dt-paging .dt-paging-button.disabled:hover {
+    color: #adb5bd !important; /* Colore del testo più chiaro durante hover */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  /* Stato attivo (current) */
+  div.dt-container .dt-paging .dt-paging-button.current {
+    color: #dee2e6 !important; /* Colore del testo */
+    border-color: #adb5bd; /* Un grigio più scuro per il bordo */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  /* Hover dello stato attivo */
+  div.dt-container .dt-paging .dt-paging-button.current:hover {
+    color: #6c757d !important; /* Un grigio più scuro per l'hover */
+    border-color: #6c757d; /* Bordo leggermente più scuro */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+  /**
+  * END Datatables
+  */
 
   p {
     color: #adb5bd;
