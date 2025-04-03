@@ -131,9 +131,9 @@ function deleteSelectedCookies() {
 }
 
 function isLoggingIn() {
-  return localStorage.getItem("ACCESS-SPHERE_loggingIn");
+  return localStorage.getItem("ACCESS-SPHERE_logged_in");
 }
 
 function loggingIn() {
-  localStorage.setItem("ACCESS-SPHERE_loggingIn", true);
+  localStorage.setItem("ACCESS-SPHERE_logged_in", true);
 }
