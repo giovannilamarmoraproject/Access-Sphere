@@ -1,4 +1,4 @@
-const appVersion = "v1.1.26";
+const appVersion = "v1.1.29";
 
 function getConfig() {
   const configClientID = "ACCESS-SPHERE-TECH";
