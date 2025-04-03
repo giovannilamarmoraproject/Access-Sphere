@@ -129,3 +129,11 @@ function deleteSelectedCookies() {
     }
   }
 }
+
+function isLoggingIn() {
+  return localStorage.getItem("ACCESS-SPHERE_loggingIn");
+}
+
+function loggingIn() {
+  localStorage.setItem("ACCESS-SPHERE_loggingIn", true);
+}
