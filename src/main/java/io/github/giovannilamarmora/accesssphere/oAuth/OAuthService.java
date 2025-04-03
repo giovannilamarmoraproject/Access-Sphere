@@ -76,7 +76,7 @@ public class OAuthService {
       String registration_token,
       String bearer,
       String state,
-      ServerHttpResponse serverHttpResponse) {
+      ServerWebExchange exchange) {
 
     LOG.info(
         "🔐 Starting oAuth/2.0/authorize - clientId: {}, accessType: {}, responseType: {}",
@@ -102,7 +102,7 @@ public class OAuthService {
               finalRedirectUri,
               scope,
               registration_token,
-              serverHttpResponse);
+              exchange);
         });
   }
 
@@ -262,18 +262,26 @@ public class OAuthService {
       String finalRedirectUri,
       String scope,
       String registrationToken,
-      ServerHttpResponse serverHttpResponse) {
+      ServerWebExchange exchange) {
+
+    ServerHttpRequest request = exchange.getRequest();
+    ServerHttpResponse response = exchange.getResponse();
 
     OAuthValidator.validateClient(
         clientCredential, responseType, accessType, finalRedirectUri, scope);
     URI location =
         GrpcService.getGoogleOAuthLocation(scope, finalRedirectUri, accessType, clientCredential);
 
-    CookieManager.setCookieInResponse(
-        Cookie.COOKIE_REDIRECT_URI, finalRedirectUri, cookieDomain, serverHttpResponse);
-    if (ObjectToolkit.isNullOrEmpty(registrationToken))
+    // CookieManager.setCookieInResponse(
+    //    Cookie.COOKIE_REDIRECT_URI, finalRedirectUri, cookieDomain, serverHttpResponse);
+    // if (!ObjectToolkit.isNullOrEmpty(registrationToken))
+    //  CookieManager.setCookieInResponse(
+    //      Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, serverHttpResponse);
+    if (!ObjectToolkit.isNullOrEmpty(finalRedirectUri))
       CookieManager.setCookieInResponse(
-          Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, serverHttpResponse);
+          Cookie.COOKIE_REDIRECT_URI, finalRedirectUri, response, request);
+    if (!ObjectToolkit.isNullOrEmpty(registrationToken))
+      CookieManager.setCookieInResponse(Cookie.COOKIE_TOKEN, registrationToken, response, request);
 
     LOG.info(
         "✅ OAuth authorization completed - clientId: {}, accessType: {}, responseType: {}",

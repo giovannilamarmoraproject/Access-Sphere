@@ -83,7 +83,7 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.STATE,
               example = OpenAPI.Params.Example.STATE)
           String state,
-      ServerHttpResponse serverHttpResponse);
+      ServerWebExchange exchange);
 
   @Hidden
   @GetMapping(value = "/login/{client_id}", produces = MediaType.APPLICATION_JSON_VALUE)
