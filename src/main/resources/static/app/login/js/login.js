@@ -7,10 +7,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // Event listener per il form
   if (loginForm) {
     //cleanStorageAndCookies();
-    //loginForm.addEventListener("submit", async function (event) {
-    //  event.preventDefault(); // Previene il comportamento predefinito di invio del form
-    //  await login();
-    //});
+    loginForm.addEventListener("submit", async function (event) {
+      event.preventDefault(); // Previene il comportamento predefinito di invio del form
+      await login();
+    });
   }
 });
 
