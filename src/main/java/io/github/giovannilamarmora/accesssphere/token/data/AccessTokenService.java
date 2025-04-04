@@ -100,7 +100,9 @@ public class AccessTokenService {
         || accessToken.getStatus().equals(TokenStatus.EXPIRED)
         || accessToken.getStatus().equals(TokenStatus.REVOKED)) {
       LOG.error(
-          "The current access token is expired on {}", new Date(accessToken.getAccessExpireDate()));
+          "The current access token is expired on {} with status {}",
+          new Date(accessToken.getAccessExpireDate()),
+          accessToken.getStatus());
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
@@ -126,8 +128,9 @@ public class AccessTokenService {
         || accessToken.getStatus().equals(TokenStatus.EXPIRED)
         || accessToken.getStatus().equals(TokenStatus.REVOKED)) {
       LOG.error(
-          "The current refresh token is expired on {}",
-          new Date(accessToken.getRefreshExpireDate()));
+          "The current refresh token is expired on {} with status {}",
+          new Date(accessToken.getRefreshExpireDate()),
+          accessToken.getStatus());
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
