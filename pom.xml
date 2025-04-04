@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.github.giovannilamarmora</groupId>
     <artifactId>access-sphere</artifactId>
-    <version>1.1.40</version>
+    <version>1.1.41</version>
     <name>access-sphere</name>
     <description>AccessSphere is an identity management and authentication microservice based on OAuth 2.0. It provides
         a secure and scalable infrastructure for user authentication, authorization management, and access to protected
@@ -19,7 +19,6 @@
     </description>
     <properties>
         <java.version>22</java.version>
-        <project.version>${project.version}</project.version>
     </properties>
 
     <developers>
@@ -114,16 +113,6 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
-        <!-- Configurazione versione su JS -->
-        <resources>
-            <resource>
-                <directory>src/main/resources/static/app/shared</directory>
-                <includes>
-                    <include>config.js</include>
-                </includes>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
         <finalName>access-sphere</finalName>
     </build>
     <repositories>
