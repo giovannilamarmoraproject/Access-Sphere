@@ -1,5 +1,4 @@
-const oldAppVersion = "v1.1.40";
-const appVersion = "${project.version}";
+const appVersion = "v1.1.41";
 
 function getConfig() {
   const configClientID = "ACCESS-SPHERE-TECH";
@@ -62,10 +61,5 @@ function getConfig() {
 }
 
 function getVersion() {
-  return sweetalert(
-    "info",
-    "Access Sphere - " + appVersion.includes("project.version")
-      ? oldAppVersion
-      : appVersion
-  );
+  return sweetalert("info", "Access Sphere - " + appVersion);
 }
