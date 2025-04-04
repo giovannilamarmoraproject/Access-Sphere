@@ -1,7 +1,7 @@
 env: ${APP_ENV} # Used for Google Cloud LOG
 server:
   port: 8080
-cookie-domain: ${COOKIE_DOMAIN} # Used for Cookie
+cookie-domain: ${COOKIE_DOMAIN:} # Used for Cookie
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver

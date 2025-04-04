@@ -42,7 +42,7 @@ public class AuthService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Value("${cookie-domain}")
+  @Value("${cookie-domain:}")
   private String cookieDomain;
 
   @Autowired private TokenService tokenService;
@@ -102,32 +102,21 @@ public class AuthService {
 
               LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
               if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
-              // CookieManager.setCookieInResponse(
-              //    Cookie.COOKIE_ACCESS_TOKEN,
-              //    tokenResponse.getToken().getAccess_token(),
-              //    cookieDomain,
-              //    serverHttpResponse);
-              // CookieManager.setCookieInResponse(
-              //    Cookie.COOKIE_STRAPI_TOKEN,
-              //    tokenResponse
-              //        .getStrapiToken()
-              //        .get(TokenData.STRAPI_ACCESS_TOKEN.getToken())
-              //        .asText(),
-              //    cookieDomain,
-              //    serverHttpResponse);
+
               CookieManager.setCookieInResponse(
                   Cookie.COOKIE_ACCESS_TOKEN,
                   tokenResponse.getToken().getAccess_token(),
-                  serverHttpResponse,
-                  request);
+                  cookieDomain,
+                  serverHttpResponse);
               CookieManager.setCookieInResponse(
                   Cookie.COOKIE_STRAPI_TOKEN,
                   tokenResponse
                       .getStrapiToken()
                       .get(TokenData.STRAPI_ACCESS_TOKEN.getToken())
                       .asText(),
-                  serverHttpResponse,
-                  request);
+                  cookieDomain,
+                  serverHttpResponse);
+
               URI finalRedirectURI =
                   OAuthMapper.getFinalRedirectURI(
                       clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
