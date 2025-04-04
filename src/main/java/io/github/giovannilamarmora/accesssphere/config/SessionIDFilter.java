@@ -50,7 +50,7 @@ public class SessionIDFilter implements WebFilter {
   @Value(value = "${filter.session-id.bearerNotFilter}")
   private List<String> bearerNotFilterURI;
 
-  @Value("${cookie-domain}")
+  @Value("${cookie-domain:}")
   private String cookieDomain;
 
   private final SessionID sessionID;
@@ -239,9 +239,7 @@ public class SessionIDFilter implements WebFilter {
 
   private void setSessionIDInResponse(
       String sessionId, ServerHttpResponse response, ServerHttpRequest request) {
-    // CookieManager.setCookieInResponse(Cookie.COOKIE_SESSION_ID, sessionId, cookieDomain,
-    // response);
-    // HeaderManager.addHeaderInResponse(ExposedHeaders.SESSION_ID, sessionId, response);
-    ResponseManager.setCookieAndHeaderData(ExposedHeaders.SESSION_ID, sessionId, response, request);
+    ResponseManager.setCookieAndHeaderData(
+        ExposedHeaders.SESSION_ID, sessionId, cookieDomain, response);
   }
 }

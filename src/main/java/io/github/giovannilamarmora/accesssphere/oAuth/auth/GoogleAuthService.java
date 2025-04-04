@@ -44,7 +44,7 @@ public class GoogleAuthService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Value("${cookie-domain}")
+  @Value("${cookie-domain:}")
   private String cookieDomain;
 
   @Autowired private TokenService tokenService;
@@ -90,18 +90,13 @@ public class GoogleAuthService {
                           strapi_token,
                           includeUserInfo ? googleModel.getJwtData() : null,
                           includeUserData ? user : null));
-              // includeUserInfo
-              //    ? new OAuthTokenResponse(token, strapi_token, googleModel.getJwtData())
-              //    : (ObjectUtils.isEmpty(strapi_token)
-              //        ? token
-              //        : new OAuthTokenResponse(token, strapi_token)));
-              // CookieManager.setCookieInResponse(
-              //    Cookie.COOKIE_ACCESS_TOKEN,
-              //    token.getAccess_token(),
-              //    cookieDomain,
-              //    serverHttpResponse);
+
               CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_ACCESS_TOKEN, token.getAccess_token(), serverHttpResponse, request);
+                  Cookie.COOKIE_ACCESS_TOKEN,
+                  token.getAccess_token(),
+                  cookieDomain,
+                  serverHttpResponse);
+
               URI finalRedirectURI =
                   OAuthMapper.getFinalRedirectURI(
                       clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);

@@ -137,3 +137,7 @@ function isLoggingIn() {
 function loggingIn() {
   localStorage.setItem("ACCESS-SPHERE_logged_in", true);
 }
+
+function loggingOut() {
+  localStorage.setItem("ACCESS-SPHERE_logged_in", false);
+}

@@ -55,7 +55,7 @@ public class OAuthService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Value("${cookie-domain}")
+  @Value("${cookie-domain:}")
   private String cookieDomain;
 
   @Autowired private ClientService clientService;
@@ -276,16 +276,12 @@ public class OAuthService {
     URI location =
         GrpcService.getGoogleOAuthLocation(scope, finalRedirectUri, accessType, clientCredential);
 
-    // CookieManager.setCookieInResponse(
-    //    Cookie.COOKIE_REDIRECT_URI, finalRedirectUri, cookieDomain, serverHttpResponse);
-    // if (!ObjectToolkit.isNullOrEmpty(registrationToken))
-    //  CookieManager.setCookieInResponse(
-    //      Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, serverHttpResponse);
     if (!ObjectToolkit.isNullOrEmpty(finalRedirectUri))
       CookieManager.setCookieInResponse(
-          Cookie.COOKIE_REDIRECT_URI, finalRedirectUri, response, request);
+          Cookie.COOKIE_REDIRECT_URI, finalRedirectUri, cookieDomain, response);
     if (!ObjectToolkit.isNullOrEmpty(registrationToken))
-      CookieManager.setCookieInResponse(Cookie.COOKIE_TOKEN, registrationToken, response, request);
+      CookieManager.setCookieInResponse(
+          Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, response);
 
     LOG.info(
         "✅ OAuth authorization completed - clientId: {}, accessType: {}, responseType: {}",
