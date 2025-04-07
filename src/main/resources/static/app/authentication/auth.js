@@ -292,7 +292,7 @@
    */
 
   function checkResponse(response, eventType) {
-    if (response.data) {
+    if (response && response.data) {
       const token = response.data.token;
       const strapiToken = response.data.strapiToken;
       if (token && strapiToken) {
