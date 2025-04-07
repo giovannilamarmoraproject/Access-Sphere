@@ -1,4 +1,4 @@
-const config = getConfig();
+const config = typeof getConfig === "function" ? getConfig() : {};
 
 function getCookie(name) {
   const value = `; ${document.cookie}`;
@@ -7,8 +7,12 @@ function getCookie(name) {
 }
 
 function getCookieOrStorage(data) {
+  const client_id = localStorage.getItem("Client-ID") || "";
+  const configClientId = config?.client_id || "";
+
   return (
-    localStorage.getItem(config.client_id + "_" + data) ||
+    localStorage.getItem(client_id ? client_id + "_" + data : null) ||
+    localStorage.getItem(configClientId ? configClientId + "_" + data : null) ||
     localStorage.getItem(data) ||
     getCookie(data)
   );
@@ -131,7 +135,9 @@ function deleteSelectedCookies() {
 }
 
 function isLoggingIn() {
-  return localStorage.getItem("ACCESS-SPHERE_logged_in");
+  var logged = localStorage.getItem("ACCESS-SPHERE_logged_in");
+  if (logged) logged = JSON.parse(logged);
+  return logged;
 }
 
 function loggingIn() {

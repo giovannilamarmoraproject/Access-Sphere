@@ -1,4 +1,4 @@
-const appVersion = "v1.1.42";
+const appVersion = "v1.2.0";
 
 function getConfig() {
   const configClientID = "ACCESS-SPHERE-TECH";
@@ -7,6 +7,7 @@ function getConfig() {
   const urlConfig = {
     baseUrl: window.location.origin,
     authorize: "/v1/oAuth/2.0/authorize",
+    token: "/v1/oAuth/2.0/token",
     users: "/v1/users",
     logout: "/v1/oAuth/2.0/logout",
     client: "/v1/clients",
@@ -45,6 +46,7 @@ function getConfig() {
       urlConfig.scope +
       urlConfig.divider +
       urlConfig.response_type,
+    token_url: window.location.origin + urlConfig.token,
     users_url: urlConfig.baseUrl + urlConfig.users,
     logout_url:
       urlConfig.baseUrl +

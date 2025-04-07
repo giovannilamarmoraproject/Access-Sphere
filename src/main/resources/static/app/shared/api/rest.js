@@ -4,7 +4,8 @@ const GET = async (url, bearer) => {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       mode: "cors", // no-cors, *cors, same-origin
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
+      credentials: "include", // include, *same-origin, omit
+      //credentials: "same-origin", // include, *same-origin, omit
       headers: getHeaders(bearer),
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
@@ -17,14 +18,15 @@ const GET = async (url, bearer) => {
   }
 };
 
-const POST = async (url, bearer, data) => {
+const POST = async (url, bearer, data, token_type = "Bearer ") => {
   try {
     const response = await fetch(url, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       mode: "cors", // no-cors, *cors, same-origin
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
-      headers: getHeaders(bearer),
+      credentials: "include", // include, *same-origin, omit
+      //credentials: "same-origin", // include, *same-origin, omit
+      headers: getHeaders(bearer, token_type),
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: getBody(data), // body data type must match "Content-Type" header
@@ -42,7 +44,8 @@ const PUT = async (url, bearer, data) => {
       method: "PUT", // *GET, POST, PUT, DELETE, etc.
       mode: "cors", // no-cors, *cors, same-origin
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
+      credentials: "include", // include, *same-origin, omit
+      //credentials: "same-origin", // include, *same-origin, omit
       headers: getHeaders(bearer),
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
@@ -61,7 +64,8 @@ const PATCH = async (url, bearer, data) => {
       method: "PATCH", // *GET, POST, PUT, DELETE, etc.
       mode: "cors", // no-cors, *cors, same-origin
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
+      credentials: "include", // include, *same-origin, omit
+      //credentials: "same-origin", // include, *same-origin, omit
       headers: getHeaders(bearer),
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
@@ -80,7 +84,8 @@ const DELETE = async (url, bearer) => {
       method: "DELETE", // *GET, POST, PUT, DELETE, etc.
       mode: "cors", // no-cors, *cors, same-origin
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
+      credentials: "include", // include, *same-origin, omit
+      //credentials: "same-origin", // include, *same-origin, omit
       headers: getHeaders(bearer),
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
@@ -92,11 +97,11 @@ const DELETE = async (url, bearer) => {
   }
 };
 
-const getHeaders = (bearer) => {
+const getHeaders = (bearer, type = "Bearer ") => {
   const headers = bearer
     ? {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + bearer,
+        Authorization: type + bearer,
         ...getSavedHeaders(),
         // 'Content-Type': 'application/x-www-form-urlencoded',
       }

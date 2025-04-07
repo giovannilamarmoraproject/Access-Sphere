@@ -89,7 +89,7 @@ public class OAuthService {
 
     return clientCredentialMono.map(
         clientCredential -> {
-          if (StringUtils.hasText(bearer)) {
+          if (StringUtils.hasText(bearer) || responseType.equalsIgnoreCase("token")) {
             OAuthValidator.validateResponseType("token", responseType);
             return handleBearerToken(bearer, clientCredential, exchange);
           }
