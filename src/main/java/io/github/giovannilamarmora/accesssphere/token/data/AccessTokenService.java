@@ -76,6 +76,11 @@ public class AccessTokenService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AccessTokenData getByAccessTokenOrIdToken(String token) {
+    if (ObjectToolkit.isNullOrEmpty(token)) {
+      LOG.error("Token not found, please provide a valid token");
+      throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
+    }
+
     String extractedToken =
         token.startsWith("Bearer ") ? token.replaceFirst("Bearer ", "").trim() : token;
 

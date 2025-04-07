@@ -36,24 +36,24 @@ async function doLogin(clientId, redirectUri) {
   const password = document.getElementById("passwordInput").value;
   const encode = btoa(email + ":" + password);
 
-  const url = new URL(window.location.origin + "/v1/oAuth/2.0/token");
+  const url = new URL(config.token_url);
   url.searchParams.set("grant_type", "password");
   if (clientId) url.searchParams.set("client_id", clientId);
   if (redirectUri) url.searchParams.set("redirect_uri", redirectUri);
 
   try {
-    const response = await token(url, encode);
-    const responseData = await response.json();
+    const token = await POST(url, encode, null, "Basic ");
+    const responseData = await token.json();
 
     if (responseData.error) {
       const error = getErrorCode(responseData.error);
-      sweetalert("error", error.title, error.message);
+      return sweetalert("error", error.title, error.message);
     } else {
-      const redirect_uri = response.headers.get("location");
+      const redirect_uri = token.headers.get("location");
       if (redirect_uri) {
-        window.location.href = `${redirect_uri}?access-token=${
+        window.location.href = `${redirect_uri}?client-id=${clientId}&access-token=${
           responseData.data.token.access_token
-        }&session-id=${response.headers.get("Session-ID")}`;
+        }&session-id=${token.headers.get("Session-ID")}`;
       }
     }
   } catch (err) {
@@ -63,28 +63,6 @@ async function doLogin(clientId, redirectUri) {
     loggingOut(); // Reset dello stato per permettere nuovi login
   }
 }
-
-const token = async (url, basic) => {
-  try {
-    return await fetch(url, {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
-      mode: "cors", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "include", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Basic " + basic,
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      //body: JSON.stringify(data), // body data type must match "Content-Type" header
-    });
-  } catch (err) {
-    console.error("Errore nella richiesta token:", err);
-    throw new Error(`Error on login, message is ${err.message}`);
-  }
-};
 
 function doGoogleLogin() {
   const currentUrl = new URL(window.location.href);
