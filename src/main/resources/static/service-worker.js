@@ -1,5 +1,5 @@
 self.addEventListener("install", (event) => {
-  console.log("Service Worker installato.");
+  console.log("📱 Service Worker installato.");
   event.waitUntil(
     caches
       .open("v1")
@@ -40,7 +40,7 @@ self.addEventListener("install", (event) => {
         ]);
       })
       .catch((error) => {
-        console.error("Errore durante il caching dei file:", error);
+        console.error("❌ Errore durante il caching dei file:", error);
       })
   );
 });
@@ -51,7 +51,7 @@ self.addEventListener("activate", (event) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== "v1") {
-            console.log("Eliminazione della vecchia cache:", cache);
+            console.log("🗑️ Eliminazione della vecchia cache:", cache);
             return caches.delete(cache);
           }
         })
@@ -65,7 +65,7 @@ self.addEventListener("fetch", (event) => {
 
   // Se la richiesta è per l'v1, non la intercettiamo
   if (url.pathname.startsWith("/v1/")) {
-    console.log("Bypassing Service Worker for:", event.request.url);
+    console.log("🚧 Bypassing Service Worker for:", event.request.url);
     return;
   }
 
@@ -88,7 +88,7 @@ self.addEventListener("fetch", (event) => {
       return (
         response ||
         fetch(event.request).catch((error) => {
-          console.error("Fetch fallito per:", event.request.url, error);
+          console.error("❌ Fetch fallito per:", event.request.url, error);
 
           // Costruzione del contenuto HTML
           const htmlContent = `

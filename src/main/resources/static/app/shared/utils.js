@@ -92,7 +92,7 @@ function refreshAnimation(id) {
 }
 
 function cleanStorageAndCookies() {
-  console.log("Cleaning Storage and Cookies...");
+  console.log("🧹 Cleaning Storage and Cookies...");
   localStorage.clear();
   deleteSelectedCookies();
 }

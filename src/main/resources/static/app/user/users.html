@@ -97,12 +97,12 @@
           .register("/service-worker.js")
           .then(function (registration) {
             console.log(
-              "Service Worker registered with scope:",
+              "📱 Service Worker registered with scope:",
               registration.scope
             );
           })
           .catch(function (error) {
-            console.log("Service Worker registration failed:", error);
+            console.log("❌ Service Worker registration failed:", error);
           });
       }
     </script>
@@ -237,6 +237,7 @@
                   </div>
                   <div class="col-md-12">
                     <div class="table-responsive">
+                      <!--<div>-->
                       <table
                         id="users-table"
                         class="table table-hover"
