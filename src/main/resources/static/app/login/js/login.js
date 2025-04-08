@@ -26,12 +26,12 @@ async function login() {
 
 async function doLogin(clientId, redirectUri) {
   if (isLoggingIn()) {
-    console.log("Already logging in...");
+    console.log("🔓 Already logging in...");
     return;
   }
   loggingIn();
 
-  console.log("Executing Login...");
+  console.log("🚀 Executing Login...");
   const email = document.getElementById("emailInput").value;
   const password = document.getElementById("passwordInput").value;
   const encode = btoa(email + ":" + password);
@@ -57,7 +57,7 @@ async function doLogin(clientId, redirectUri) {
       }
     }
   } catch (err) {
-    console.error("Errore nel login:", err);
+    console.error("❌ Errore nel login:", err);
     throw err;
   } finally {
     loggingOut(); // Reset dello stato per permettere nuovi login

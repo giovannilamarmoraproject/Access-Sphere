@@ -75,56 +75,78 @@
 
   /**
    * ---------------------------------
-   * Caricamento dello Script REST
+   * Caricamento degli Script
    * ---------------------------------
    */
-  let scriptLoaded = false;
+  let restScriptLoaded = false;
+  let utilsScriptLoaded = false;
 
   // Funzione per caricare lo script solo la prima volta
   function ensureScriptLoaded(callback) {
-    if (scriptLoaded) {
+    if (restScriptLoaded && utilsScriptLoaded) {
       callback();
       return;
     }
 
-    loadScript(
-      authConfig.accessSphereUrl + "/app/shared/api/rest.js",
-      function () {
-        api.GET = GET;
-        api.POST = POST;
-        api.PUT = PUT;
-        api.PATCH = PATCH;
-        api.DELETE = DELETE;
-        scriptLoaded = true;
-        callback();
-      }
-    );
+    /**
+     * ---------------------------------
+     * Caricamento dello Script Utils (prima)
+     * ---------------------------------
+     */
+    if (!utilsScriptLoaded) {
+      loadScript(
+        authConfig.accessSphereUrl + "/app/shared/utils.js",
+        function () {
+          utils.fetchHeader = fetchHeader;
+          utils.getSavedHeaders = getSavedHeaders;
+          utils.getCookie = getCookie;
+          utilsScriptLoaded = true;
+          callback();
+        }
+      );
+      /**
+       * ---------------------------------
+       * Caricamento dello Script REST Dopo il primo
+       * ---------------------------------
+       */
+      //if (!restScriptLoaded)
+      loadScript(
+        authConfig.accessSphereUrl + "/app/shared/api/rest.js",
+        function () {
+          api.GET = GET;
+          api.POST = POST;
+          api.PUT = PUT;
+          api.PATCH = PATCH;
+          api.DELETE = DELETE;
+          restScriptLoaded = true;
+          callback();
+        }
+      );
+    }
   }
   /**
    * ---------------------------------
-   * END Caricamento dello Script REST
+   * END Caricamento degli Script
    * ---------------------------------
    */
 
-  document.addEventListener("DOMContentLoaded", function () {
-    /**
-     * ---------------------------------
-     * Caricamento dello Script Utils
-     * ---------------------------------
-     */
-    loadScript(
-      authConfig.accessSphereUrl + "/app/shared/utils.js",
-      function () {
-        utils.fetchHeader = fetchHeader;
-        utils.getSavedHeaders = getSavedHeaders;
-        utils.getCookie = getCookie;
-      }
-    );
-    /**
-     * ---------------------------------
-     * END Caricamento dello Script Utils
-     * ---------------------------------
-     */
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () {
+      console.log("✅ DOMContentLoaded event");
+      startAuthenticationFlow();
+    });
+  } else {
+    console.log("🔍 DOM already loaded");
+    startAuthenticationFlow();
+  }
+
+  /**
+   * ---------------------------------
+   * Authentication Flow
+   * ---------------------------------
+   */
+  function startAuthenticationFlow() {
+    console.log("🚀 Starting authentication flow...");
 
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
@@ -145,7 +167,12 @@
       }
       authorizeToken();
     }
-  });
+  }
+  /**
+   * ---------------------------------
+   * END Authentication Flow
+   * ---------------------------------
+   */
 
   /**
    * ---------------------------------
@@ -172,6 +199,15 @@
       urlParams.toString();
 
     ensureScriptLoaded(() => {
+      if (typeof api.GET !== "function") {
+        return;
+      }
+
+      if (typeof utils.getSavedHeaders !== "function") {
+        return;
+      }
+      console.log("🔍 Scripts available now, proceding with the 🔐 /authorize");
+
       api
         .GET(url, token)
         .then((response) => {
@@ -193,7 +229,7 @@
           checkResponse(response, events.ACCESS_SPHERE_AUTH);
         })
         .catch((error) => {
-          console.error("Authorize Fetch error:", error);
+          console.error("❌ Authorize Fetch error:", error);
         });
     });
   }
@@ -227,6 +263,15 @@
     window.history.replaceState(null, "", cleanUrl);
 
     ensureScriptLoaded(() => {
+      if (typeof api.POST !== "function") {
+        return;
+      }
+
+      if (typeof utils.getSavedHeaders !== "function") {
+        return;
+      }
+      console.log("🔍 Scripts available now, proceding with the 🗝️ /token");
+
       api
         .POST(url, null, null)
         .then((response) => {
@@ -237,7 +282,7 @@
           checkResponse(data, events.ACCESS_SPHERE_TOKEN);
         })
         .catch((error) => {
-          console.error("Token Fetch error:", error);
+          console.error("❌ Token Fetch error:", error);
         });
     });
   }
@@ -281,7 +326,7 @@
           location.reload();
         })
         .catch((error) => {
-          console.error("Logout Fetch error:", error);
+          console.error("❌ Logout Fetch error:", error);
         });
     });
   }
@@ -322,7 +367,7 @@
   }
 
   function checkAndHandleError(response, eventType) {
-    if (response.error) {
+    if (response && response.error) {
       localStorage.clear();
       const event = new CustomEvent(eventType.value, {
         bubbles: true, // Importante per far propagare l'evento
