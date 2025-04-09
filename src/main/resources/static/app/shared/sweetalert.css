@@ -17,3 +17,11 @@
 .swal2-success-fix {
   background-color: transparent !important;
 }
+
+body > * {
+  transition: 0.15s filter all;
+}
+
+body.swal2-shown > [aria-hidden="true"] {
+  filter: blur(5px);
+}
