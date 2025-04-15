@@ -30,14 +30,47 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Access Sphere",
-        "alternateName": [
-          "Access Sphere",
-          "Security",
-          "Access Sphere Security"
-        ],
-        "url": "https://access-sphere.giovannilamarmora.com"
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://access-sphere.giovannilamarmora.com/#organization",
+            "name": "Access Sphere",
+            "alternateName": [
+              "Access Sphere",
+              "Security",
+              "Access Sphere Security"
+            ],
+            "url": "https://access-sphere.giovannilamarmora.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://access-sphere.giovannilamarmora.com/#website",
+            "url": "https://access-sphere.giovannilamarmora.com",
+            "name": "Access Sphere",
+            "publisher": {
+              "@id": "https://access-sphere.giovannilamarmora.com/#organization"
+            },
+            "inLanguage": "it"
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://access-sphere.giovannilamarmora.com/#webpage",
+            "url": "https://access-sphere.giovannilamarmora.com",
+            "name": "Access Sphere - Soluzioni di Sicurezza e Accesso",
+            "description": "Access Sphere offre soluzioni avanzate per la gestione sicura degli accessi digitali.",
+            "inLanguage": "it",
+            "isPartOf": {
+              "@id": "https://access-sphere.giovannilamarmora.com/#website"
+            },
+            "about": {
+              "@id": "https://access-sphere.giovannilamarmora.com/#organization"
+            }
+          }
+        ]
       }
     </script>
     <meta
@@ -55,7 +88,7 @@
     />
     <meta
       property="og:image"
-      content="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      content="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
     />
     <meta
       property="og:url"
@@ -65,56 +98,56 @@
     <link
       title="Access Sphere"
       rel="icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       type="image/x-icon"
       sizes="72x72"
     />
     <link
       title="Access Sphere"
       rel="icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       type="image/x-icon"
       sizes="96x96"
     />
     <link
       title="Access Sphere"
       rel="icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       type="image/x-icon"
       sizes="128x128"
     />
     <link
       title="Access Sphere"
       rel="icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       type="image/x-icon"
       sizes="144x144"
     />
     <link
       title="Access Sphere"
       rel="icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       type="image/x-icon"
       sizes="152x152"
     />
     <link
       title="Access Sphere"
       rel="icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       type="image/x-icon"
       sizes="192x192"
     />
     <link
       title="Access Sphere"
       rel="icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       type="image/x-icon"
       sizes="384x384"
     />
     <link
       title="Access Sphere"
       rel="icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       type="image/x-icon"
       sizes="512x512"
     />
@@ -122,26 +155,26 @@
     <link
       title="Access Sphere"
       rel="shortcut icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       sizes="192x192"
     />
     <!-- Favicon - iOS -->
     <link
       title="Access Sphere"
       rel="apple-touch-icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       sizes="128x128"
     />
     <link
       title="Access Sphere"
       rel="apple-touch-icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       sizes="152x152"
     />
     <link
       title="Access Sphere"
       rel="apple-touch-icon"
-      href="https://github.com/giovannilamarmoraproject/Access-Sphere/blob/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png?raw=true"
+      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
       sizes="192x192"
     />
     <!-- Google Tag Manager -->
