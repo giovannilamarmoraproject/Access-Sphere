@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://access-sphere.giovannilamarmora.com/sitemap.xml
