@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @Component
-public class DataValidator {
+public class UserDataValidator {
 
-  private static final Logger LOG = LoggerFilter.getLogger(DataValidator.class);
+  private static final Logger LOG = LoggerFilter.getLogger(UserDataValidator.class);
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateUser(UserEntity userEntity) {

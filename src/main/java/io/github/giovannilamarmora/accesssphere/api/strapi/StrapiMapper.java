@@ -101,7 +101,8 @@ public class StrapiMapper {
         user.getNationality(),
         user.getSsn(),
         user.getTokenReset(),
-        user.getAttributes());
+        user.getAttributes(),
+        user.getMfaSettings());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -125,7 +126,8 @@ public class StrapiMapper {
         user.getTokenReset(),
         user.getConfirmed(),
         user.getBlocked(),
-        user.getAttributes());
+        user.getAttributes(),
+        user.getMfa_settings());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

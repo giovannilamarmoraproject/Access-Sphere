@@ -3,7 +3,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
-import io.github.giovannilamarmora.accesssphere.data.DataService;
+import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
@@ -46,7 +46,7 @@ public class AuthService {
   private String cookieDomain;
 
   @Autowired private TokenService tokenService;
-  @Autowired private DataService dataService;
+  @Autowired private UserDataService dataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> makeClassicLogin(

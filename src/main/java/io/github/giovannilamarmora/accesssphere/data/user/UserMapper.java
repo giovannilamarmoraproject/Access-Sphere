@@ -30,6 +30,9 @@ public class UserMapper {
     if (!ObjectToolkit.isNullOrEmpty(user.getAttributes()))
       userEntity.setAttributes(Mapper.writeObjectToString(user.getAttributes()));
 
+    if (!ObjectToolkit.isNullOrEmpty(user.getMfaSettings()))
+      userEntity.setMfaSettings(Mapper.writeObjectToString(user.getMfaSettings()));
+
     return userEntity;
   }
 
@@ -43,6 +46,9 @@ public class UserMapper {
 
     if (!ObjectToolkit.isNullOrEmpty(userEntity.getAttributes()))
       user.setAttributes(Mapper.readObject(userEntity.getAttributes(), new TypeReference<>() {}));
+
+    if (!ObjectToolkit.isNullOrEmpty(userEntity.getMfaSettings()))
+      user.setMfaSettings(Mapper.readObject(userEntity.getMfaSettings(), new TypeReference<>() {}));
     return user;
   }
 
@@ -74,6 +80,10 @@ public class UserMapper {
         ObjectUtils.isEmpty(user.getAttributes())
             ? null
             : Mapper.writeObjectToString(user.getAttributes()));
+    existingUser.setMfaSettings(
+        ObjectUtils.isEmpty(user.getMfaSettings())
+            ? null
+            : Mapper.writeObjectToString(user.getMfaSettings()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

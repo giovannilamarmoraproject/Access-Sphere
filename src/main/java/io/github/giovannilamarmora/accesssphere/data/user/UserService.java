@@ -10,7 +10,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTempla
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.DataService;
+import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
@@ -29,6 +29,7 @@ import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
@@ -44,11 +45,12 @@ import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 @Service
+@Logged
 @RequiredArgsConstructor
 public class UserService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  @Autowired private DataService dataService;
+  @Autowired private UserDataService dataService;
   @Autowired private ClientService clientService;
   @Autowired private TokenService tokenService;
   @Autowired private StrapiService strapiService;

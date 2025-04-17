@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.utilities;
 public final class OpenAPI {
   public final class Tag {
     public static final String OAUTH = "oAuth";
+    public static final String MFA = "Multi factor Authentication";
     public static final String TOKEN = "Token";
     public static final String USERS = "Users";
     public static final String ROLES = "Roles";
@@ -11,6 +12,7 @@ public final class OpenAPI {
 
   public final class Description {
     public static final String OAUTH = "API to handle authorization";
+    public static final String MFA = "API to handle Multi factor Authentication";
   }
 
   public final class Params {
