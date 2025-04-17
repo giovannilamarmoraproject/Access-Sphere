@@ -217,6 +217,10 @@ function applyTranslations() {
     ".status_blocked",
     translations[currentLanguage].status_blocked
   );
+  applyLanguage(
+    ".status_not_active",
+    translations[currentLanguage].status_not_active
+  );
   applyLanguage("unlock_user", translations[currentLanguage].unlock_user, true);
   applyLanguage("lock_user", translations[currentLanguage].lock_user, true);
   applyLanguage(
@@ -226,6 +230,11 @@ function applyTranslations() {
   applyLanguage(
     "user_details_user_roles",
     translations[currentLanguage].user_details_user_roles,
+    true
+  );
+  applyLanguage(
+    "user_details_mfa",
+    translations[currentLanguage].user_details_mfa,
     true
   );
   applyLanguage(

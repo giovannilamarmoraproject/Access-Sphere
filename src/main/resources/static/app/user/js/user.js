@@ -148,6 +148,7 @@ function displayUserData(user) {
                 `
                   : ""
               }
+              ${user.mfaSettings ? generateMFAHTML(user.mfaSettings) : ""}
               ${
                 user.attributes ? generateAttributesHTML(user.attributes) : ""
               }`;
@@ -216,6 +217,106 @@ function generateUserInfoHTML(user) {
     `
     )
     .join("");
+}
+
+function generateMFAHTML(mfa_settings) {
+  if (!mfa_settings || Object.keys(mfa_settings).length === 0) {
+    return ""; // Se non ci sono attributi, non generare nulla
+  }
+
+  const entries = Object.entries(mfa_settings);
+  return `
+  <div class="card mt-4 fade-in">
+    <div class="card-body m-2">
+      <h3 class="row">
+        <div class="col-md-5">
+          <h3 id="user_details_mfa"><i class="fa-duotone fa-solid fa-shield-quartered me-1"></i> MFA Methods</h3>
+        </div>
+        <div class="col-md-7">
+          ${
+            mfa_settings.enabled
+              ? "<a id='roles_page_title' class='btn btn-outline-danger edit-btn float-end clickable' style='padding: 5px 20px; border-radius: 10px' href='#'><i class='fa-solid fa-shield-plus me-1'></i> Disable</a>"
+              : "<a id='roles_page_title' class='btn btn-outline-success edit-btn float-end clickable' style='padding: 5px 20px; border-radius: 10px' href='#'><i class='fa-duotone fa-solid fa-shield-xmark me-1'></i> Enable</a>"
+          }
+          
+        </div>
+      </h3>
+      ${entries
+        .map(([key, value], index) => {
+          let content = "";
+
+          if (Array.isArray(value)) {
+            // Se il valore è un array, iteriamo ogni elemento
+            //content += `<h5>${key}</h5>`;
+            value.forEach((item, i) => {
+              content += `<div class="border rounded p-3 mb-3" style="border-color: #2d323e !important;">
+                <h6>MFA Method ${i + 1}</h6><hr />`;
+              Object.entries(item).forEach(([itemKey, itemValue]) => {
+                content += `
+                  <div class="row mt-2">
+                    <div class="col-sm-3" style="align-content: center;"><strong><h6 class="mb-0">${itemKey}</h6></strong></div>
+                    <div class="col-sm-9 text-secondary">${checkValue(
+                      itemValue
+                    )}</div>
+                  </div>`;
+              });
+              content += `</div>`;
+            });
+          } else if (typeof value === "object" && value !== null) {
+            // Se il valore è un oggetto (ma non un array)
+            const subEntries = Object.entries(value);
+            content += `<h5>${key}</h5>`;
+            content += subEntries
+              .map(
+                ([subKey, subValue]) => `
+                <div class="row mt-4">
+                  <div class="col-sm-3"><h6 class="mb-0">${subKey}</h6></div>
+                  <div class="col-sm-9 text-secondary"><code>${subValue}</code></div>
+                </div>
+              `
+              )
+              .join("");
+          } else {
+            // Se il valore è una stringa, numero o booleano
+            content += `
+              <div class="row mt-4 mb-3">
+                <div class="col-sm-3" style='align-content: center;'><h6 class="mb-0">${key}</h6></div>
+                ${
+                  value
+                    ? "<div class='col-sm-9 text-secondary'><span class='badge text-bg-success status_active' style='vertical-align: 2px;'>ACTIVE</span></div>"
+                    : "<div class='col-sm-9 text-secondary'><span class='badge text-bg-danger status_not_active' style='vertical-align: 2px;'>NOT ACTIVE</span></div>"
+                }
+                
+              </div>
+            `;
+          }
+
+          //if (index < entries.length - 1) {
+          //  content += `<hr />`;
+          //}
+
+          return content;
+        })
+        .join("")}
+    </div>
+  </div>`;
+}
+
+function checkValue(value) {
+  // 1. Booleano
+  if (typeof value === "boolean") {
+    return value
+      ? "<div class='col-sm-9 text-secondary'><span class='badge text-bg-success status_active' style='vertical-align: 2px;'>ACTIVE</span></div>"
+      : "<div class='col-sm-9 text-secondary'><span class='badge text-bg-danger status_not_active' style='vertical-align: 2px;'>NOT ACTIVE</span></div>";
+  }
+
+  // 2. Stringa che sembra una data ISO (es. 2025-04-17T19:07:59.3415269)
+  if (typeof value === "string" && !isNaN(Date.parse(value))) {
+    return "<code style='color: inherit'>" + formatDateIntl(value) + "</code>"; // formatDateIntl si aspetta dd/mm/yyyy
+  }
+
+  // 3. Altro tipo (numeri, stringhe, ecc.)
+  return "<code style='color: inherit'>" + value + "</code>";
 }
 
 function generateAttributesHTML(attributes) {

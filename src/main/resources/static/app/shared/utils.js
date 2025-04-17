@@ -147,3 +147,17 @@ function loggingIn() {
 function loggingOut() {
   localStorage.setItem("ACCESS-SPHERE_logged_in", false);
 }
+
+const formatDateIntl = (inputDate) => {
+  const date = new Date(inputDate);
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false, // se vuoi orario in formato 24h
+  }).format(date);
+};
