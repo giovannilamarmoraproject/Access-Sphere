@@ -6,7 +6,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;

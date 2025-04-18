@@ -17,8 +17,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Table(name = "MFA_TOKEN")
-public class MFATokenEntity extends GenericEntity {
+@Table(name = "MFA_TOKEN_DATA")
+public class MFATokenDataEntity extends GenericEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID", nullable = false)

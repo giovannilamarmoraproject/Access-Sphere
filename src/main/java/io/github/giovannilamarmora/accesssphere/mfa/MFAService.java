@@ -11,8 +11,8 @@ import io.github.giovannilamarmora.accesssphere.mfa.dto.MfaVerificationRequest;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategy;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenService;
-import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFAToken;
+import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenDataService;
+import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -36,7 +36,7 @@ public class MFAService {
   @Autowired private UserDataService dataService;
   @Autowired private MFAStrategyFactory strategyFactory;
   @Autowired private AccessTokenData accessTokenData;
-  @Autowired private MFATokenService mfaTokenService;
+  @Autowired private MFATokenDataService mfaTokenDataService;
   @Autowired private MFAAuthenticationService mfaAuthenticationService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -99,11 +99,11 @@ public class MFAService {
       MfaVerificationRequest mfaRequest, String bearer, ServerWebExchange exchange) {
     LOG.info("🔑 MFA OTP Verification for method: {} process started.", mfaRequest.mfaMethod());
 
-    MFAToken mfaToken = mfaTokenService.getByTempTokenOrDeviceToken(bearer);
+    MFATokenData mfaTokenData = mfaTokenDataService.getByTempToken(bearer);
 
-    MFAValidator.validateMFAMethods(mfaRequest.mfaMethod(), mfaToken.getMfaMethods());
+    MFAValidator.validateMFAMethods(mfaRequest.mfaMethod(), mfaTokenData.getMfaMethods());
 
-    Mono<User> userMono = dataService.getUserByIdentifier(mfaToken.getIdentifier(), true);
+    Mono<User> userMono = dataService.getUserByIdentifier(mfaTokenData.getIdentifier(), true);
 
     MFAStrategy strategy = strategyFactory.getStrategy(mfaRequest.mfaMethod());
 
@@ -114,7 +114,7 @@ public class MFAService {
                   user.getMfaSettings().getMfaMethods(), mfaRequest.otp(), user.getIdentifier());
 
               return mfaAuthenticationService.verifyMfaAndGenerateToken(
-                  mfaRequest, mfaToken, user, exchange, dataService);
+                  mfaRequest, mfaTokenData, user, exchange, dataService);
             })
         .doOnSuccess(
             _ ->

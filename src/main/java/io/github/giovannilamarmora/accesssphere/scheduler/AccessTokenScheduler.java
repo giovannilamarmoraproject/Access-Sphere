@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.scheduler;
 
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
+import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenDataService;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -23,14 +24,18 @@ public class AccessTokenScheduler {
   private static final Logger LOG = LoggerFactory.getLogger(AccessTokenScheduler.class);
 
   @Autowired private AccessTokenService accessTokenService;
+  @Autowired private MFATokenDataService mfaTokenDataService;
 
   // @Scheduled(initialDelay = 1000)
   @Scheduled(cron = "0 0 1 * * SUN")
   @LogInterceptor(type = LogTimeTracker.ActionType.SCHEDULER)
   public void deleteAccessTokenExpired() {
     MDCUtils.registerDefaultMDC(env).subscribe();
-    LOG.info("\uD83D\uDE80 Starting Scheduler to clean the Database AccessToken");
+    LOG.info("\uD83D\uDE80 Starting Scheduler to clean the Database AccessTokenData");
     accessTokenService.deleteAccessTokenExpired();
-    LOG.info("\uD83D\uDE80 Finished Scheduler to clean the Database AccessToken");
+    LOG.info("\uD83D\uDE80 Finished Scheduler to clean the Database AccessTokenData");
+    LOG.info("\uD83D\uDE80 Starting Scheduler to clean the Database MFATokenData");
+    mfaTokenDataService.deleteMFATokenExpired();
+    LOG.info("\uD83D\uDE80 Finished Scheduler to clean the Database MFATokenData");
   }
 }

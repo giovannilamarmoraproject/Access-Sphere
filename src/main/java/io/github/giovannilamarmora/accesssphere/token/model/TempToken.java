@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.token.dto;
+package io.github.giovannilamarmora.accesssphere.token.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RefreshToken {
-  private String accessToken;
+public class TempToken {
+  private String access_token;
+  private Long expires_at;
+  private String token_type;
 }

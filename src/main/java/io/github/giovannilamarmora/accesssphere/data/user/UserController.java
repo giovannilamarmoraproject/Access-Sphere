@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;

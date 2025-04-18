@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.token.dto;
+package io.github.giovannilamarmora.accesssphere.token.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;

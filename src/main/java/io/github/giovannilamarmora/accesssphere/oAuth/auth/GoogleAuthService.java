@@ -17,7 +17,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;

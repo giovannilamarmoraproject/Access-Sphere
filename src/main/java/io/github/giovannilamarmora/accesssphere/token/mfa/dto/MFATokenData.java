@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MFAToken extends GenericDTO {
+public class MFATokenData extends GenericDTO {
 
   private String tempToken;
 

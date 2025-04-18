@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.token.dto;
+package io.github.giovannilamarmora.accesssphere.token.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
@@ -13,8 +13,6 @@ import lombok.NoArgsConstructor;
 public class AuthToken {
 
   private String id_token;
-  private String identifier;
-  private String subject;
   private TempToken temp_token;
   private String access_token;
   private String refresh_token;
@@ -22,6 +20,8 @@ public class AuthToken {
   private Long expires;
   private String token_type;
   private List<String> mfa_methods;
+  private String identifier;
+  private String subject;
 
   public AuthToken(
       String id_token,
