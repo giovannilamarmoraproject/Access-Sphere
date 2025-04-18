@@ -20,6 +20,10 @@ public class OAuthTokenResponse {
   private JWTData userInfo;
   private User user;
 
+  public OAuthTokenResponse(AuthToken token) {
+    this.token = token;
+  }
+
   public OAuthTokenResponse(AuthToken token, JWTData userInfo) {
     this.token = token;
     this.userInfo = userInfo;

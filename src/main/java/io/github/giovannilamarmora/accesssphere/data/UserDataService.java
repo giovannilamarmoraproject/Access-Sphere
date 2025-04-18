@@ -14,6 +14,10 @@ import reactor.core.publisher.Mono;
 
 public interface UserDataService {
 
+  Boolean isStrapiEnabled();
+
+  void setStrapiEnabled(boolean status);
+
   /**
    * Retrieves a {@link User} by its unique identifier, checking the configured source.
    *

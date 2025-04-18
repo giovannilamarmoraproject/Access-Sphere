@@ -20,7 +20,7 @@ public class MFAStrategyFactory {
       case TOTP:
         return totpStrategy;
       default:
-        throw new MFAException(ExceptionMap.ERR_MFA_400, "Unsupported MFA type: " + mfaType);
+        throw new MFAException(ExceptionMap.ERR_MFA_400, "Unsupported MFA mfaMethod: " + mfaType);
     }
   }
 }

@@ -9,7 +9,7 @@ public enum GrantType {
   AUTHORIZATION_CODE("authorization_code"),
   PASSWORD("password"),
   REFRESH_TOKEN("refresh_token"),
-  TOKEN_EXCHANGE("urn:ietf:params:oauth:grant-type:token-exchange");
+  TOKEN_EXCHANGE("urn:ietf:params:oauth:grant-mfaMethod:token-exchange");
 
   private final String type;
 

@@ -16,6 +16,7 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
@@ -23,7 +24,10 @@ import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData
 import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.dto.TempToken;
 import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
+import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenService;
+import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFAToken;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.auth.TokenUtils;
@@ -56,9 +60,26 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class TokenService {
 
-  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  private final SessionID sessionID;
   @Autowired private AccessTokenService accessTokenService;
+  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+  @Autowired private SessionID sessionID;
+  @Autowired private MFATokenService mfaTokenService;
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public AuthToken generateMFAToken(User user, ClientCredential clientCredential, Object payload) {
+    List<String> mfaMethods =
+        user.getMfaSettings().getMfaMethods().stream()
+            .filter(MFAMethod::isConfirmed)
+            .map(mfaMethod1 -> mfaMethod1.getType().name())
+            .toList();
+    MFAToken mfaToken =
+        mfaTokenService.save(
+            user, mfaMethods, clientCredential.getClientId(), sessionID.getSessionID(), payload);
+
+    TempToken tempToken =
+        new TempToken(mfaToken.getTempToken(), mfaToken.getExpireDate(), "Bearer");
+    return new AuthToken(user.getIdentifier(), mfaToken.getSubject(), tempToken, mfaMethods);
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken generateToken(
@@ -91,7 +112,7 @@ public class TokenService {
         return generateJWEToken(jwtData, clientCredential, payload);
       }
       default -> {
-        LOG.error("Token type is not defined, please define them into the client");
+        LOG.error("Token mfaMethod is not defined, please define them into the client");
         throw new TokenException(
             ExceptionMap.ERR_TOKEN_400, "Invalid token_type in client configuration");
       }
@@ -118,7 +139,7 @@ public class TokenService {
         return parseJWEToken(token, clientCredential);
       }
       default -> {
-        LOG.error("Token type is not defined, please define them into the client");
+        LOG.error("Token mfaMethod is not defined, please define them into the client");
         throw new TokenException(
             ExceptionMap.ERR_TOKEN_400, "Invalid token_type in client configuration");
       }

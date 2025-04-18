@@ -13,7 +13,12 @@ public enum ExceptionType implements io.github.giovannilamarmora.utils.exception
   INVALID_AUTHORIZATION("bearer"),
   INVALID_CLIENT_ID("client_id"),
   INVALID_GRANT_TYPE("grant_type"),
-  INVALID_REDIRECT_URI("redirect_uri");
+  INVALID_REDIRECT_URI("redirect_uri"),
+
+  /**
+   * @ERR_MFA_400 ExceptionType
+   */
+  INVALID_MFA_METHOD("mfa_method");
 
   private final String param;
 

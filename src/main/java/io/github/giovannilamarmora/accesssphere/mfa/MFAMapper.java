@@ -29,7 +29,7 @@ public class MFAMapper {
     MFASetting current = user.getMfaSettings();
     MFAMethod method =
         new MFAMethod(
-            setupRequest.type(),
+            setupRequest.mfaMethod(),
             ObjectToolkit.getOrDefault(setupRequest.label(), null),
             secret,
             false,
@@ -68,7 +68,7 @@ public class MFAMapper {
     return mfaSetting.getMfaMethods().stream()
         .filter(
             method ->
-                method.getType() == confirmationRequest.type()
+                method.getType() == confirmationRequest.mfaMethod()
                     && method.getLabel()
                         == confirmationRequest.label()) // Usa il tipo di MFA dinamico
         .findFirst()

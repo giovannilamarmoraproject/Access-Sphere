@@ -19,6 +19,16 @@ public class UserDataServiceImpl implements UserDataService {
 
   @Autowired private UserLogicService logicService;
 
+  @Override
+  public Boolean isStrapiEnabled() {
+    return logicService.getIsStrapiEnabled();
+  }
+
+  @Override
+  public void setStrapiEnabled(boolean status) {
+    logicService.setIsStrapiEnabled(status);
+  }
+
   /**
    * Retrieves a {@link User} by its unique identifier, checking the configured source.
    *

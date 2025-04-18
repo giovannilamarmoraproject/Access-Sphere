@@ -48,4 +48,15 @@ public class UserDataValidator {
           ExceptionMap.ERR_STRAPI_400, ExceptionMap.ERR_STRAPI_400.getMessage());
     }
   }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateIdentifier(String actual_identifier, String expected_identifier) {
+    if (!actual_identifier.equalsIgnoreCase(expected_identifier)) {
+      LOG.error(
+          "Identifier validation failed: expected='{}', but got='{}'",
+          expected_identifier,
+          actual_identifier);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+  }
 }

@@ -18,7 +18,7 @@ public class TokenExchange {
   @NotBlank(message = "Subject token cannot be blank")
   private String subject_token;
 
-  @NotBlank(message = "Requested token type cannot be blank")
+  @NotBlank(message = "Requested token mfaMethod cannot be blank")
   private String requested_token_type;
 
   @NotBlank(message = "Client ID must be provided")

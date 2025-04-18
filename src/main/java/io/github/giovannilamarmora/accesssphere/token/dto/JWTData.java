@@ -55,7 +55,7 @@ public class JWTData {
         ObjectToolkit.isNullOrEmpty(remoteAddress)
             ? null
             : clientCredential.getClientId() + "." + remoteAddress,
-        0,
+        clientCredential.getJwtExpiration(),
         System.currentTimeMillis(),
         ObjectToolkit.isNullOrEmpty(remoteAddress) ? null : "https://" + remoteAddress,
         user.getUsername(),

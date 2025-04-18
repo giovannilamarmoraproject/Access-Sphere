@@ -23,16 +23,4 @@ public class MFAUtils {
     return String.format(
         "otpauth://totp/%s:%s?secret=%s&issuer=%s", issuer, userIdentifier, secret, issuer);
   }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
-  public static boolean verifyCode(String secret, String code) {
-    GoogleAuthenticator gAuth = new GoogleAuthenticator();
-    return gAuth.authorize(secret, Integer.parseInt(code)); // Verifica il codice OTP generato
-  }
-
-  // public static boolean verifyCode(String secret, String code) {
-  //     // Usa lib TOTP come Google Authenticator o passcode-java
-  //     TimeBasedOneTimePasswordGenerator totp = ...;
-  //     return totp.verify(code);
-  // }
 }

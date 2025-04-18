@@ -300,10 +300,10 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRequestedTokenType(String actual_token_type) {
-    if (!actual_token_type.equalsIgnoreCase("urn:ietf:params:oauth:token-type:access_token")
-        && !actual_token_type.equalsIgnoreCase("urn:ietf:params:oauth:token-type:id_token")) {
+    if (!actual_token_type.equalsIgnoreCase("urn:ietf:params:oauth:token-mfaMethod:access_token")
+        && !actual_token_type.equalsIgnoreCase("urn:ietf:params:oauth:token-mfaMethod:id_token")) {
       LOG.error(
-          "You must have a valid requested_token_type like urn:ietf:params:oauth:token-type:access_token or urn:ietf:params:oauth:token-type:id_token to proceed {}",
+          "You must have a valid requested_token_type like urn:ietf:params:oauth:token-mfaMethod:access_token or urn:ietf:params:oauth:token-mfaMethod:id_token to proceed {}",
           actual_token_type);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage());
     }

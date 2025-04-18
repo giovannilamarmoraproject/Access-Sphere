@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.mfa;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAConfirmationRequest;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupResponse;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MfaVerificationRequest;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,7 +34,7 @@ public interface MFAController {
    *
    * @param bearer Bearer JWT token used to authenticate the user. Must be passed in the
    *     Authorization header.
-   * @param mfaSetupRequest The request payload containing the MFA type, user identifier, and
+   * @param mfaSetupRequest The request payload containing the MFA mfaMethod, user identifier, and
    *     whether to generate a QR code.
    * @param exchange The {@link ServerWebExchange} used to access request details.
    * @return A {@link ResponseEntity} wrapping a {@link Response} object with the operation status,
@@ -81,5 +82,32 @@ public interface MFAController {
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
       @RequestBody @Valid MFAConfirmationRequest mfaConfirmationRequest,
+      ServerWebExchange exchange);
+
+  /**
+   * Endpoint to verify the MFA code for a specific user during login.
+   *
+   * <p>This method checks the provided OTP code against all active MFA methods registered for the
+   * user. The verification is considered successful if at least one method validates the code.
+   * Otherwise, an error is returned indicating that the code is invalid.
+   *
+   * <p>The user is identified via the {@code identifier} field in the request body.
+   *
+   * @param mfaVerifyRequest The request payload containing the user identifier and OTP code.
+   * @param exchange The {@link ServerWebExchange} used to access request details.
+   * @return A {@link ResponseEntity} wrapping a {@link Response} object with the operation status
+   *     and message.
+   * @see MfaVerificationRequest
+   * @see Response
+   */
+  @PostMapping("/verify")
+  Mono<ResponseEntity<Response>> verifyMfaCode(
+      @RequestBody @Valid MfaVerificationRequest mfaVerifyRequest,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
       ServerWebExchange exchange);
 }

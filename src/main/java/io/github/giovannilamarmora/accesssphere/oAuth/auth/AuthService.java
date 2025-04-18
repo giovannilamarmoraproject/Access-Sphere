@@ -86,6 +86,16 @@ public class AuthService {
             tokenResponse -> {
               OAuthValidator.validateUserRoles(
                   clientCredential, tokenResponse.getUser().getRoles());
+
+              if (!ObjectToolkit.isNullOrEmpty(tokenResponse.getToken().getTemp_token())) {
+                return ResponseEntity.status(HttpStatus.OK)
+                    .body(
+                        new Response(
+                            HttpStatus.OK.value(),
+                            "MFA Verification Required",
+                            TraceUtils.getSpanID(),
+                            new OAuthTokenResponse(tokenResponse.getToken())));
+              }
               String message =
                   "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
 

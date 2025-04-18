@@ -12,6 +12,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.database.UserDataServi
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
@@ -60,6 +61,7 @@ public class UserLogicService {
   @Autowired private StrapiService strapiService;
   @Autowired private TokenService tokenService;
   @Autowired private AccessTokenService accessTokenService;
+  @Autowired private MFAAuthenticationService mfaAuthenticationService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   protected Mono<User> getUserByIdentifier(String identifier, boolean getStrapiId) {
@@ -314,20 +316,26 @@ public class UserLogicService {
                   strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
                   strapiToken.put(
                       TokenData.STRAPI_ACCESS_TOKEN.getToken(), strapiResponse.getJwt());
-                  return getUserInfo(jwtData, strapiResponse.getJwt())
-                      .flatMap(
-                          user1 -> {
-                            jwtData.setRoles(user1.getRoles());
-                            AuthToken token =
-                                tokenService.generateToken(jwtData, clientCredential, strapiToken);
-                            strapiToken.put("expires_at", jwtData.getExp());
-                            return Mono.just(
-                                new OAuthTokenResponse(
-                                    token,
-                                    Utils.mapper().convertValue(strapiToken, JsonNode.class),
-                                    jwtData,
-                                    user1));
-                          });
+
+                  return mfaAuthenticationService
+                      .checkMFAAndMakeLogin(strapiToken, jwtData, user, clientCredential, request)
+                      .switchIfEmpty(
+                          getUserInfo(jwtData, strapiResponse.getJwt())
+                              .flatMap(
+                                  user1 -> {
+                                    jwtData.setRoles(user1.getRoles());
+                                    AuthToken token =
+                                        tokenService.generateToken(
+                                            jwtData, clientCredential, strapiToken);
+                                    strapiToken.put("expires_at", jwtData.getExp());
+                                    return Mono.just(
+                                        new OAuthTokenResponse(
+                                            token,
+                                            Utils.mapper()
+                                                .convertValue(strapiToken, JsonNode.class),
+                                            jwtData,
+                                            user1));
+                                  }));
                 })
             .onErrorResume(
                 throwable -> {

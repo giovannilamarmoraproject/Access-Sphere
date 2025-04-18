@@ -14,6 +14,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.util.Base64;
+import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -71,27 +72,30 @@ public class TotpStrategy implements MFAStrategy {
   }
 
   @Override
-  public Mono<ResponseEntity<Response>> verifyCode(
-      User user, MFAMethod mfaMethod, MFAConfirmationRequest confirmationRequest) {
+  public void verifyCode(List<MFAMethod> mfaMethods, String otp, String identifier) {
     GoogleAuthenticator gAuth = new GoogleAuthenticator();
-    boolean isValid =
-        gAuth.authorize(mfaMethod.getSecretKey(), Integer.parseInt(confirmationRequest.otp()));
 
-    if (!isValid) {
-      LOG.error("❌ Invalid OTP code for user: {}", confirmationRequest.userID());
+    boolean atLeastOneValid =
+        mfaMethods.stream()
+            .filter(mfaMethod -> mfaMethod.getType().equals(MFAType.TOTP))
+            .anyMatch(
+                method -> {
+                  try {
+                    return gAuth.authorize(method.getSecretKey(), Integer.parseInt(otp));
+                  } catch (Exception e) {
+                    LOG.warn(
+                        "⚠️ OTP verification failed for method {} - {}",
+                        method.getType(),
+                        e.getMessage());
+                    return false;
+                  }
+                });
+
+    if (!atLeastOneValid) {
+      LOG.error("❌ Invalid OTP code for all MFA methods for user: {}", identifier);
       throw new MFAException(ExceptionMap.ERR_MFA_400, "Invalid OTP code");
     }
 
-    user.setMfaSettings(MFAMapper.generateFinalMFA(user, mfaMethod));
-
-    return dataService
-        .updateUser(false, user)
-        .map(
-            updatedUser -> {
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(), "MFA Confirmed", TraceUtils.getSpanID(), null);
-              return ResponseEntity.ok(response);
-            });
+    LOG.info("✅ OTP code verified successfully for user: {}", identifier);
   }
 }
