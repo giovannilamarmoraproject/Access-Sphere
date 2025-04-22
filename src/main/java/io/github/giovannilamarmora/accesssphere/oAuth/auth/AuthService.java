@@ -40,7 +40,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class AuthService {
 
-  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+  private static final Logger LOG = LoggerFilter.getLogger(AuthService.class);
 
   @Value("${cookie-domain:}")
   private String cookieDomain;
@@ -96,42 +96,94 @@ public class AuthService {
                             TraceUtils.getSpanID(),
                             new OAuthTokenResponse(tokenResponse.getToken())));
               }
-              String message =
-                  "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
-
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      message,
-                      TraceUtils.getSpanID(),
-                      new OAuthTokenResponse(
-                          tokenResponse.getToken(),
-                          clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() : null,
-                          includeUserInfo ? tokenResponse.getUserInfo() : null,
-                          includeUserData ? tokenResponse.getUser() : null));
-
-              LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
-              if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
-
-              CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_ACCESS_TOKEN,
-                  tokenResponse.getToken().getAccess_token(),
+              return setLoginResponse(
+                  tokenResponse,
+                  clientCredential,
+                  includeUserInfo,
+                  includeUserData,
+                  redirect_uri,
                   cookieDomain,
                   serverHttpResponse);
-              CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_STRAPI_TOKEN,
-                  tokenResponse
-                      .getStrapiToken()
-                      .get(TokenData.STRAPI_ACCESS_TOKEN.getToken())
-                      .asText(),
-                  cookieDomain,
-                  serverHttpResponse);
-
-              URI finalRedirectURI =
-                  OAuthMapper.getFinalRedirectURI(
-                      clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
-              return ResponseEntity.ok().location(finalRedirectURI).body(response);
+              // String message =
+              //    "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() +
+              // "!";
+              //
+              // Response response =
+              //    new Response(
+              //        HttpStatus.OK.value(),
+              //        message,
+              //        TraceUtils.getSpanID(),
+              //        new OAuthTokenResponse(
+              //            tokenResponse.getToken(),
+              //            clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() :
+              // null,
+              //            includeUserInfo ? tokenResponse.getUserInfo() : null,
+              //            includeUserData ? tokenResponse.getUser() : null));
+              //
+              // LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
+              // if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
+              //
+              // CookieManager.setCookieInResponse(
+              //    Cookie.COOKIE_ACCESS_TOKEN,
+              //    tokenResponse.getToken().getAccess_token(),
+              //    cookieDomain,
+              //    serverHttpResponse);
+              // CookieManager.setCookieInResponse(
+              //    Cookie.COOKIE_STRAPI_TOKEN,
+              //    tokenResponse
+              //        .getStrapiToken()
+              //        .get(TokenData.STRAPI_ACCESS_TOKEN.getToken())
+              //        .asText(),
+              //    cookieDomain,
+              //    serverHttpResponse);
+              //
+              // URI finalRedirectURI =
+              //    OAuthMapper.getFinalRedirectURI(
+              //        clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+              // return ResponseEntity.ok().location(finalRedirectURI).body(response);
             });
+  }
+
+  public static ResponseEntity<Response> setLoginResponse(
+      OAuthTokenResponse tokenResponse,
+      ClientCredential clientCredential,
+      boolean includeUserInfo,
+      boolean includeUserData,
+      String redirect_uri,
+      String cookieDomain,
+      ServerHttpResponse httpResponse) {
+    String message =
+        "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
+
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            message,
+            TraceUtils.getSpanID(),
+            new OAuthTokenResponse(
+                tokenResponse.getToken(),
+                clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() : null,
+                includeUserInfo ? tokenResponse.getUserInfo() : null,
+                includeUserData ? tokenResponse.getUser() : null));
+
+    LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
+    if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
+
+    CookieManager.setCookieInResponse(
+        Cookie.COOKIE_ACCESS_TOKEN,
+        tokenResponse.getToken().getAccess_token(),
+        cookieDomain,
+        httpResponse);
+    CookieManager.setCookieInResponse(
+        Cookie.COOKIE_STRAPI_TOKEN,
+        tokenResponse.getStrapiToken().get(TokenData.STRAPI_ACCESS_TOKEN.getToken()).asText(),
+        cookieDomain,
+        httpResponse);
+
+    URI finalRedirectURI =
+        OAuthMapper.getFinalRedirectURI(
+            clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+    return ResponseEntity.ok().location(finalRedirectURI).body(response);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

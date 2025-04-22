@@ -38,6 +38,10 @@
     "ACCOUNT_BLOCKED": {
       "title": "Account Blocked",
       "message": "Your account has been blocked."
+    },
+    "INVALID_OTP_CODE": {
+      "title": "Invalid OTP",
+      "message": "The OTP you entered is either expired or incorrect. Please try again."
     }
   },
   "it": {
@@ -79,6 +83,10 @@
     "ACCOUNT_BLOCKED": {
       "title": "Account Bloccato",
       "message": "Il tuo account è bloccato."
+    },
+    "INVALID_OTP_CODE": {
+      "title": "OTP non valido",
+      "message": "Il codice OTP inserito è scaduto o non è corretto. Riprova."
     }
   }
 }

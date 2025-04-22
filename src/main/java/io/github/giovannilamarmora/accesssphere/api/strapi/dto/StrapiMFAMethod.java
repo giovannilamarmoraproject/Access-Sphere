@@ -1,7 +1,8 @@
-package io.github.giovannilamarmora.accesssphere.mfa.dto;
+package io.github.giovannilamarmora.accesssphere.api.strapi.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFALabel;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -14,15 +15,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MFAMethod extends GenericDTO {
+public class StrapiMFAMethod extends GenericDTO {
   private MFAType type;
   private MFALabel label;
 
-  @JsonIgnore private String secretKey;
+  // @JsonIgnore
+  // @Convert(converter = SecretKeyConverter.class)
+  private String secretKey;
 
   private boolean confirmed;
 
-  public MFAMethod(
+  public StrapiMFAMethod(
       MFAType type,
       MFALabel label,
       String secretKey,
@@ -35,4 +38,12 @@ public class MFAMethod extends GenericDTO {
     this.secretKey = secretKey;
     this.confirmed = confirmed;
   }
+
+  // public String getSecretKey() {
+  //  return CryptoUtils.decrypt(secretKey);
+  // }
+
+  // public void setSecretKey(String secretKey) {
+  //  this.secretKey = CryptoUtils.encrypt(secretKey);
+  // }
 }

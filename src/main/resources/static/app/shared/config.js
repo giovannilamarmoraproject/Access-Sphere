@@ -16,6 +16,7 @@ function getConfig() {
     delete: "/v1/users",
     forgot: "/v1/users/change/password/request",
     reset: "/v1/users/change/password",
+    verifyOTP: "/v1/mfa/verify?include_user_data=true",
     param: "?",
     divider: "&",
     access_type: "access_type=online",
@@ -59,6 +60,7 @@ function getConfig() {
     reset_password_url: urlConfig.baseUrl + urlConfig.reset,
     edit_user_url: urlConfig.baseUrl + urlConfig.edit,
     delete_user_url: urlConfig.baseUrl + urlConfig.delete,
+    verify_otp_url: urlConfig.baseUrl + urlConfig.verifyOTP,
   };
 }
 

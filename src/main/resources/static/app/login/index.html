@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title id="pageTitle">Access Sphere - Login</title>
-    <link rel="stylesheet" href="../../app/login/css/style.css"/>
-    <link rel="stylesheet" href="../../app/login/css/sliding-animations.css"/>
+    <link rel="stylesheet" href="../../app/login/css/style.css" />
+    <link rel="stylesheet" href="../../app/login/css/sliding-animations.css" />
     <script src="../../app/shared/config.js"></script>
-    <link rel="icon" href="../favicon.ico" type="image/x-icon"/>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon" />
     <!-- Google Tag Manager -->
     <script>
-        (function (w, d, s, l, i) {
-          w[l] = w[l] || [];
-          w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-          var f = d.getElementsByTagName(s)[0],
-            j = d.createElement(s),
-            dl = l != "dataLayer" ? "&l=" + l : "";
-          j.async = true;
-          j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-          f.parentNode.insertBefore(j, f);
-        })(window, document, "script", "dataLayer", "GTM-KLC9VXFF");
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-KLC9VXFF");
     </script>
     <!-- End Google Tag Manager -->
     <!-- Google tag (gtag.js) -->
     <script
-            async
-            src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"
     ></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {
-          dataLayer.push(arguments);
-        }
-        gtag("js", new Date());
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
-        gtag("config", "G-R4KLC18RH6");
+      gtag("config", "G-R4KLC18RH6");
     </script>
     <!--<link
       rel="stylesheet"
@@ -46,148 +46,150 @@
       href="https://cdn.jsdelivr.net/gh/Atugatran/FontAwesome6Pro@latest/css/all.min.css"
     />-->
     <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-            crossorigin="anonymous"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
     />
     <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-            crossorigin="anonymous"
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
     ></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
-            rel="stylesheet"
-            href="../../app/shared/fontawesome/css/all.min.css"
+      rel="stylesheet"
+      href="../../app/shared/fontawesome/css/all.min.css"
     />
     <script src="../../app/shared/sweetalert.js"></script>
-    <link rel="stylesheet" href="../../app/shared/sweetalert.css"/>
+    <link rel="stylesheet" href="../../app/shared/sweetalert.css" />
     <script src="../../app/i18n/translations.js"></script>
     <script src="../../app/shared/utils.js"></script>
     <script src="../../app/shared/api/rest.js"></script>
+    <link rel="stylesheet" href="../../app/user/css/animation.css" />
     <!-- END Shared Component -->
     <script src="../../app/login/js/script.js" defer></script>
     <script src="../../app/login/js/login.js" defer></script>
     <script src="../../app/login/js/forgot.js"></script>
-    <link rel="manifest" href="/manifest.json"/>
+    <link rel="manifest" href="/manifest.json" />
     <script>
-        if ("serviceWorker" in navigator) {
-          navigator.serviceWorker
-            .register("/service-worker.js")
-            .then(function (registration) {
-              console.log(
-                "📱 Service Worker registered with scope:",
-                registration.scope
-              );
-            })
-            .catch(function (error) {
-              console.log("❌ Service Worker registration failed:", error);
-            });
-        }
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .then(function (registration) {
+            console.log(
+              "📱 Service Worker registered with scope:",
+              registration.scope
+            );
+          })
+          .catch(function (error) {
+            console.log("❌ Service Worker registration failed:", error);
+          });
+      }
     </script>
-</head>
-<body>
-<!-- Google Tag Manager (noscript) -->
-<noscript>
-    <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-KLC9VXFF"
-            height="0"
-            width="0"
-            style="display: none; visibility: hidden"
-    ></iframe>
-</noscript>
-<!-- End Google Tag Manager (noscript) -->
-<section class="flex flex-col flex-row h-screen items-center">
-    <div
-            class="background bg-blue-600 hidden lg:block md:block w-full md:w-2/3 xl:w-2/3 sm:w-0/3 h-screen"
-    >
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-KLC9VXFF"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <section class="flex flex-col flex-row h-screen items-center">
+      <div
+        class="background bg-blue-600 hidden lg:block md:block w-full md:w-2/3 xl:w-2/3 sm:w-0/3 h-screen"
+      >
         <!--<img src="3837559.jpg" alt="" class="w-full h-full object-cover" />-->
-    </div>
+      </div>
 
-    <div
-            id="form-login"
-            class="max-w bg-white w-full md:max-w-md lg:max-w-full md:mx-auto md:mx-0 md:w-1/3 sm:w-3/3 xl:w-1/3 h-screen px-6 lg:px-16 xl:px-12 flex items-center justify-center"
-    >
+      <div
+        id="form-login"
+        class="max-w bg-white w-full md:max-w-md lg:max-w-full md:mx-auto md:mx-0 md:w-1/3 sm:w-3/3 xl:w-1/3 h-screen px-6 lg:px-16 xl:px-12 flex items-center justify-center"
+      >
         <div class="w-full h-100 pt-4">
-            <a
-                    class="website_url"
-                    target="_blank"
-                    href="https://access-sphere.giovannilamarmora.com"
+          <a
+            id="website_url"
+            class="website_url"
+            target="_blank"
+            href="https://access-sphere.giovannilamarmora.com"
+          >
+            <img
+              width="60"
+              class="header-logo-image logo-images hidden_mobile"
+              src="https://raw.githubusercontent.com/giovannilamarmora/giovannilamarmora.github.io/0f58a355856d25a7154482951a3220899ee59d10/assets/icons/svg/rounded_white.svg"
+              alt="Logo"
+            />
+            <img
+              width="60"
+              class="header-logo-image logo-images hidden_desktop"
+              src="../img/Access%20Sphere%20Transparent%20512x512.png"
+              alt="Logo"
+            />
+          </a>
+
+          <h1 class="text-xl font-bold" id="title">Access Sphere</h1>
+
+          <div id="login" class="fade-in">
+            <h1
+              class="text-xl md:text-xl font-bold leading-tight xl:mt-10 md:mt-8"
+              id="loginTitle"
             >
-                <img
-                        width="60"
-                        class="header-logo-image logo-images hidden_mobile"
-                        src="https://raw.githubusercontent.com/giovannilamarmora/giovannilamarmora.github.io/0f58a355856d25a7154482951a3220899ee59d10/assets/icons/svg/rounded_white.svg"
-                        alt="Logo"
-                />
-                <img
-                        width="60"
-                        class="header-logo-image logo-images hidden_desktop"
-                        src="../img/Access%20Sphere%20Transparent%20512x512.png"
-                        alt="Logo"
-                />
-            </a>
+              Log in to your account
+            </h1>
 
-            <h1 class="text-xl font-bold" id="title">Access Sphere</h1>
-
-            <div id="login">
-                <h1
-                        class="text-xl md:text-xl font-bold leading-tight xl:mt-10 md:mt-8"
-                        id="loginTitle"
+            <form class="xl:mt-6 md:mt-3" id="loginForm">
+              <div class="input-groups">
+                <label class="block text-gray-700" id="emailLabel"
+                  >Email Address</label
                 >
-                    Log in to your account
-                </h1>
+                <input
+                  id="emailInput"
+                  type="text"
+                  placeholder="Enter Email Address"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+              </div>
 
-                <form class="xl:mt-6 md:mt-3" id="loginForm">
-                    <div class="input-groups">
-                        <label class="block text-gray-700" id="emailLabel"
-                        >Email Address</label
-                        >
-                        <input
-                                id="emailInput"
-                                type="text"
-                                placeholder="Enter Email Address"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                    </div>
+              <div class="xl:mt-4 md:mt-2 input-groups">
+                <label class="block text-gray-700" id="passwordLabel"
+                  >Password</label
+                >
+                <input
+                  id="passwordInput"
+                  type="password"
+                  placeholder="Enter Password"
+                  minlength="6"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+              </div>
 
-                    <div class="xl:mt-4 md:mt-2 input-groups">
-                        <label class="block text-gray-700" id="passwordLabel"
-                        >Password</label
-                        >
-                        <input
-                                id="passwordInput"
-                                type="password"
-                                placeholder="Enter Password"
-                                minlength="6"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                    </div>
-
-                    <div class="text-right xl:mt-2 md:mt-1">
-                        <a
-                                href="#"
-                                id="forgotPassword"
-                                class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
-                                onclick="showForgotPassword()"
-                        >Forgot Password?</a
-                        >
-                    </div>
-                    <div class="login-groups" data-inviewport="slide-up">
-                        <button
-                                type="submit"
-                                id="loginButton"
-                                class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                                disabled
-                        >
-                            Log In
-                        </button>
-                        <!--<button
+              <div class="text-right xl:mt-2 md:mt-1">
+                <a
+                  href="#"
+                  id="forgotPassword"
+                  class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
+                  onclick="showForgotPassword()"
+                  >Forgot Password?</a
+                >
+              </div>
+              <div class="login-groups" data-inviewport="slide-up">
+                <button
+                  type="submit"
+                  id="loginButton"
+                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
+                  disabled
+                >
+                  Log In
+                </button>
+                <!--<button
                           onclick="login()"
                           mfaMethod="button"
                           id="loginButton"
@@ -197,196 +199,411 @@
                           Log In
                         </button>-->
 
-                        <hr class="my-6 border-gray-300 w-full"/>
+                <hr class="my-6 border-gray-300 w-full" />
 
-                        <button
-                                onclick="doGoogleLogin()"
-                                id="google-btn"
-                                type="button"
-                                class="w-full block bg-white hover:bg-gray-100 focus:bg-gray-100 text-gray-900 font-semibold rounded-lg px-4 py-0 border border-gray-300 input-small"
-                        >
-                            <div class="flex items-center justify-center">
-                                <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-6 h-6"
-                                        viewBox="0 0 48 48"
-                                >
-                                    <defs>
-                                        <path
-                                                id="a"
-                                                d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"
-                                        />
-                                    </defs>
-                                    <clipPath id="b">
-                                        <use xlink:href="#a" overflow="visible"/>
-                                    </clipPath>
-                                    <path
-                                            clip-path="url(#b)"
-                                            fill="#FBBC05"
-                                            d="M0 37V11l17 13z"
-                                    />
-                                    <path
-                                            clip-path="url(#b)"
-                                            fill="#EA4335"
-                                            d="M0 11l17 13 7-6.1L48 14V0H0z"
-                                    />
-                                    <path
-                                            clip-path="url(#b)"
-                                            fill="#34A853"
-                                            d="M0 37l30-23 7.9 1L48 0v48H0z"
-                                    />
-                                    <path
-                                            clip-path="url(#b)"
-                                            fill="#4285F4"
-                                            d="M48 48L17 24l-4-3 35-10z"
-                                    />
-                                </svg>
-                                <span class="ml-4" id="googleLogin"
-                                >Log in with Google</span
-                                >
-                            </div>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div id="forgot" style="display: none">
-                <h1
-                        class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
-                        id="forgotTitle"
+                <button
+                  onclick="doGoogleLogin()"
+                  id="google-btn"
+                  type="button"
+                  class="w-full block bg-white hover:bg-gray-100 focus:bg-gray-100 text-gray-900 font-semibold rounded-lg px-4 py-0 border border-gray-300 input-small"
                 >
-                    Forgot Password
-                </h1>
-
-                <form class="xl:mt-6 md:mt-3">
-                    <div class="input-text input-groups">
-                        <label class="block text-gray-700" id="forgotEmailLabel"
-                        >Email Address</label
-                        >
-                        <input
-                                type="email"
-                                id="forgotEmailInput"
-                                placeholder="Enter Email Address"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
+                  <div
+                    class="flex items-center justify-center"
+                    style="height: 50px"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="w-6 h-6"
+                      viewBox="0 0 48 48"
+                    >
+                      <defs>
+                        <path
+                          id="a"
+                          d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"
                         />
-                    </div>
+                      </defs>
+                      <clipPath id="b">
+                        <use xlink:href="#a" overflow="visible" />
+                      </clipPath>
+                      <path
+                        clip-path="url(#b)"
+                        fill="#FBBC05"
+                        d="M0 37V11l17 13z"
+                      />
+                      <path
+                        clip-path="url(#b)"
+                        fill="#EA4335"
+                        d="M0 11l17 13 7-6.1L48 14V0H0z"
+                      />
+                      <path
+                        clip-path="url(#b)"
+                        fill="#34A853"
+                        d="M0 37l30-23 7.9 1L48 0v48H0z"
+                      />
+                      <path
+                        clip-path="url(#b)"
+                        fill="#4285F4"
+                        d="M48 48L17 24l-4-3 35-10z"
+                      />
+                    </svg>
+                    <span class="ml-4" id="googleLogin"
+                      >Log in with Google</span
+                    >
+                  </div>
+                </button>
+              </div>
+            </form>
+          </div>
 
-                    <div class="text-right xl:mt-2 md:mt-1">
-                        <a
-                                href="#"
-                                id="backToLogin"
-                                class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
-                                onclick="showLogin()"
-                        >Back to Login</a
-                        >
-                    </div>
+          <div id="forgot" class="fade-in" style="display: none">
+            <h1
+              class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
+              id="forgotTitle"
+            >
+              Forgot Password
+            </h1>
 
-                    <div class="login-groups" data-inviewport="slide-up">
-                        <button
-                                disabled
-                                onclick="forgotPassword()"
-                                id="resetButton"
-                                class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                        >
-                            Reset
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div id="reset" style="display: none">
-                <h1
-                        class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
-                        id="resetTitle"
+            <form class="xl:mt-6 md:mt-3">
+              <div class="input-text input-groups">
+                <label class="block text-gray-700" id="forgotEmailLabel"
+                  >Email Address</label
                 >
-                    Reset Password
-                </h1>
+                <input
+                  type="email"
+                  id="forgotEmailInput"
+                  placeholder="Enter Email Address"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+              </div>
 
-                <form class="xl:mt-6 md:mt-3">
-                    <div class="xl:mt-4 md:mt-2 input-groups">
-                        <label class="block text-gray-700" id="resetPasswordCodeLabel"
-                        >Reset Code</label
-                        >
-                        <input
-                                id="resetPasswordCode"
-                                type="text"
-                                placeholder="Enter Code"
-                                minlength="6"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                    </div>
-
-                    <div class="xl:mt-4 md:mt-2 input-groups">
-                        <label class="block text-gray-700" id="resetPasswordLabel"
-                        >Password</label
-                        >
-                        <input
-                                id="resetPasswordInput"
-                                type="password"
-                                placeholder="Enter Password"
-                                minlength="6"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                        <div id="validationPassword" class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="xl:mt-4 md:mt-2 input-text">
-                        <label class="block text-gray-700" id="repeatPasswordLabel"
-                        >Repeat Password</label
-                        >
-                        <input
-                                id="repeatPasswordInput"
-                                type="password"
-                                placeholder="Enter Password"
-                                minlength="6"
-                                class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                                required
-                        />
-                        <div
-                                id="validationConfirmPassword"
-                                class="invalid-feedback"
-                        ></div>
-                    </div>
-
-                    <div class="text-right xl:mt-2 md:mt-1">
-                        <a
-                                href="#"
-                                id="backToLoginReset"
-                                class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
-                                onclick="showLogin()"
-                        >Back to Login</a
-                        >
-                    </div>
-                    <div class="login-groups" data-inviewport="slide-up">
-                        <button
-                                disabled
-                                onclick="resetPassword()"
-                                type="submit"
-                                id="changePasswordButton"
-                                class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                        >
-                            Change Password
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Aggiungi il div vuoto per lo spazio -->
-            <div id="spacer"></div>
-            <div class="footer">
-                <p
-                        class="text-sm fixed text-gray-500 xl:mt-12 md:mt-6"
-                        style="bottom: 15px"
-                        id="footerText"
+              <div class="text-right xl:mt-2 md:mt-1">
+                <a
+                  href="#"
+                  id="backToLogin"
+                  class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
+                  onclick="showLogin()"
+                  >Back to Login</a
                 >
-                    &copy; 2024 Access Sphere - All Rights Reserved.
-                </p>
-            </div>
+              </div>
+
+              <div class="login-groups" data-inviewport="slide-up">
+                <button
+                  disabled
+                  onclick="forgotPassword()"
+                  id="resetButton"
+                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
+                >
+                  Reset
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div id="reset" class="fade-in" style="display: none">
+            <h1
+              class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
+              id="resetTitle"
+            >
+              Reset Password
+            </h1>
+
+            <form class="xl:mt-6 md:mt-3">
+              <div class="xl:mt-4 md:mt-2 input-groups">
+                <label class="block text-gray-700" id="resetPasswordCodeLabel"
+                  >Reset Code</label
+                >
+                <input
+                  id="resetPasswordCode"
+                  type="text"
+                  placeholder="Enter Code"
+                  minlength="6"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+              </div>
+
+              <div class="xl:mt-4 md:mt-2 input-groups">
+                <label class="block text-gray-700" id="resetPasswordLabel"
+                  >Password</label
+                >
+                <input
+                  id="resetPasswordInput"
+                  type="password"
+                  placeholder="Enter Password"
+                  minlength="6"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+                <div id="validationPassword" class="invalid-feedback"></div>
+              </div>
+
+              <div class="xl:mt-4 md:mt-2 input-text">
+                <label class="block text-gray-700" id="repeatPasswordLabel"
+                  >Repeat Password</label
+                >
+                <input
+                  id="repeatPasswordInput"
+                  type="password"
+                  placeholder="Enter Password"
+                  minlength="6"
+                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
+                  required
+                />
+                <div
+                  id="validationConfirmPassword"
+                  class="invalid-feedback"
+                ></div>
+              </div>
+
+              <div class="text-right xl:mt-2 md:mt-1">
+                <a
+                  href="#"
+                  id="backToLoginReset"
+                  class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
+                  onclick="showLogin()"
+                  >Back to Login</a
+                >
+              </div>
+              <div class="login-groups" data-inviewport="slide-up">
+                <button
+                  disabled
+                  onclick="resetPassword()"
+                  type="submit"
+                  id="changePasswordButton"
+                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
+                >
+                  Change Password
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <section
+            id="otp-page"
+            style="display: none; height: 95%"
+            class="text-center mx-auto fade-in"
+          >
+            <form id="otp-form">
+              <h3 class="title mt-2">
+                <strong
+                  ><i class="fa-duotone fa-solid fa-key-skeleton me-1"></i>
+                  OTP</strong
+                >
+              </h3>
+
+              <div style="margin-top: calc(50% - 150px)">
+                <svg
+                  class="mx-auto"
+                  width="250"
+                  height="200"
+                  viewBox="0 0 292 208"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g clip-path="url(#clip0_1_45)">
+                    <path
+                      d="M152.106 208C201.536 208 241.606 167.93 241.606 118.5C241.606 69.0706 201.536 29 152.106 29C102.676 29 62.6058 69.0706 62.6058 118.5C62.6058 167.93 102.676 208 152.106 208Z"
+                      fill="#C5FFFF"
+                    />
+                    <path
+                      d="M117.144 64.4241C113.81 64.4241 111.108 67.1261 111.108 70.46V167.057C111.108 170.391 113.81 173.093 117.144 173.093H186.572C189.906 173.093 192.608 170.391 192.608 167.057V92.382L163.507 64.4241H117.144Z"
+                      fill="#91E4FF"
+                    />
+                    <path
+                      d="M192.608 92.382H169.544C166.21 92.382 163.508 89.68 163.508 86.3461V64.4241L192.608 92.382Z"
+                      fill="#0CB4EA"
+                    />
+                    <path
+                      d="M162.304 131.646C162.304 135.494 159.185 138.613 155.339 138.613H104.483C100.635 138.613 97.5186 135.494 97.5186 131.646V110.363C97.5186 106.515 100.635 103.397 104.483 103.397H155.339C159.185 103.397 162.304 106.515 162.304 110.363V131.646Z"
+                      fill="#0CB4EA"
+                    />
+                    <path
+                      d="M117.094 114.409C118.563 114.409 119.825 114.707 120.876 115.302C121.93 115.897 122.728 116.745 123.267 117.843C123.807 118.941 124.079 120.23 124.079 121.712C124.079 122.808 123.932 123.803 123.635 124.697C123.338 125.592 122.894 126.369 122.302 127.025C121.71 127.681 120.981 128.184 120.119 128.532C119.257 128.879 118.266 129.053 117.153 129.053C116.044 129.053 115.054 128.875 114.178 128.518C113.302 128.16 112.571 127.657 111.985 127.005C111.398 126.354 110.956 125.572 110.656 124.658C110.358 123.744 110.208 122.755 110.208 121.692C110.208 120.604 110.364 119.604 110.676 118.697C110.99 117.788 111.442 117.017 112.034 116.378C112.627 115.739 113.349 115.253 114.198 114.914C115.047 114.574 116.012 114.409 117.094 114.409ZM121.17 121.692C121.17 120.655 121.003 119.756 120.669 118.997C120.334 118.238 119.856 117.663 119.233 117.273C118.612 116.883 117.899 116.688 117.093 116.688C116.521 116.688 115.991 116.795 115.504 117.012C115.017 117.228 114.599 117.542 114.247 117.954C113.897 118.367 113.621 118.893 113.416 119.534C113.214 120.176 113.113 120.895 113.113 121.694C113.113 122.499 113.214 123.226 113.416 123.877C113.621 124.527 113.907 125.067 114.277 125.495C114.647 125.923 115.073 126.244 115.552 126.456C116.031 126.668 116.558 126.775 117.131 126.775C117.866 126.775 118.54 126.592 119.154 126.224C119.77 125.857 120.259 125.29 120.623 124.524C120.988 123.757 121.17 122.813 121.17 121.692Z"
+                      fill="white"
+                    />
+                    <path
+                      d="M134.976 117.018H131.846V127.306C131.846 127.898 131.713 128.338 131.45 128.625C131.187 128.912 130.844 129.054 130.425 129.054C130 129.054 129.654 128.909 129.388 128.619C129.121 128.33 128.987 127.892 128.987 127.305V117.017H125.856C125.366 117.017 125.003 116.909 124.765 116.693C124.528 116.477 124.408 116.192 124.408 115.838C124.408 115.47 124.532 115.181 124.779 114.969C125.028 114.757 125.387 114.649 125.858 114.649H134.977C135.473 114.649 135.842 114.76 136.082 114.977C136.326 115.196 136.446 115.483 136.446 115.836C136.446 116.189 136.323 116.475 136.078 116.691C135.834 116.907 135.466 117.018 134.976 117.018Z"
+                      fill="white"
+                    />
+                    <path
+                      d="M143.642 123.297H141.015V127.306C141.015 127.879 140.879 128.313 140.609 128.61C140.339 128.907 139.997 129.054 139.584 129.054C139.152 129.054 138.804 128.907 138.542 128.614C138.279 128.322 138.146 127.891 138.146 127.324V116.409C138.146 115.777 138.291 115.326 138.581 115.056C138.871 114.786 139.331 114.65 139.963 114.65H143.643C144.733 114.65 145.568 114.734 146.154 114.902C146.734 115.063 147.235 115.33 147.657 115.703C148.079 116.077 148.399 116.534 148.619 117.076C148.84 117.617 148.947 118.224 148.947 118.901C148.947 120.344 148.503 121.437 147.615 122.182C146.726 122.926 145.4 123.297 143.642 123.297ZM142.945 116.804H141.014V121.133H142.945C143.622 121.133 144.188 121.062 144.64 120.921C145.095 120.78 145.44 120.548 145.678 120.226C145.917 119.904 146.036 119.483 146.036 118.959C146.036 118.335 145.853 117.826 145.485 117.433C145.074 117.013 144.228 116.804 142.945 116.804Z"
+                      fill="white"
+                    />
+                    <rect
+                      x="233.582"
+                      y="79"
+                      width="10"
+                      height="10"
+                      rx="1"
+                      transform="rotate(27.2727 233.582 79)"
+                      fill="#91A3FF"
+                    />
+                    <circle cx="74" cy="139" r="5" fill="#FF91B9" />
+                    <circle cx="79" cy="43" r="5" fill="#91E5FF" />
+                    <circle cx="188" cy="203" r="5" fill="#FF9191" />
+                  </g>
+                  <circle cx="220" cy="15" r="5" fill="#FFC691" />
+                  <circle cx="119.606" cy="5" r="5" fill="#91FFAF" />
+                  <rect
+                    x="250.606"
+                    y="163"
+                    width="10"
+                    height="10"
+                    rx="1"
+                    fill="#E991FF"
+                  />
+                  <rect
+                    x="274"
+                    y="47.0925"
+                    width="10"
+                    height="10"
+                    rx="1"
+                    transform="rotate(-24.1576 274 47.0925)"
+                    fill="#FF9191"
+                  />
+                  <rect
+                    y="68.5666"
+                    width="10"
+                    height="10"
+                    rx="1"
+                    transform="rotate(-27.1716 0 68.5666)"
+                    fill="#91A3FF"
+                  />
+                  <path
+                    d="M33.0121 175.265L40.7499 180.821L32.0689 184.744L33.0121 175.265Z"
+                    fill="#FF9191"
+                  />
+                  <path
+                    d="M15.077 128.971L16.567 138.38L7.67356 134.966L15.077 128.971Z"
+                    fill="#FD91FF"
+                  />
+                  <path
+                    d="M286.447 120.204L287.505 129.672L278.777 125.854L286.447 120.204Z"
+                    fill="#FF91BF"
+                  />
+                  <defs>
+                    <clipPath id="clip0_1_45">
+                      <rect
+                        width="179"
+                        height="179"
+                        fill="white"
+                        transform="translate(62.6058 29)"
+                      />
+                    </clipPath>
+                  </defs>
+                </svg>
+                <div id="show-login-method"></div>
+                <div id="totp-method" style="display: none">
+                  <div class="mt-2" style="width: 100%">
+                    <h4 class="title" id="totp_verification_code_title">
+                      Verification Code
+                    </h4>
+                    <p
+                      id="totp_verification_code_text"
+                      class="text-center otp-verify"
+                    >
+                      We have sent a verification code to your mobile number
+                    </p>
+                  </div>
+                  <div class="flex items-center justify-center gap-2 mt-5">
+                    <input
+                      required
+                      type="text"
+                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      pattern="\d*"
+                      id="otp-1"
+                      onchange="enableVerifyBtn()"
+                      maxlength="1"
+                    />
+                    <input
+                      required
+                      type="text"
+                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      maxlength="1"
+                      onchange="enableVerifyBtn()"
+                      id="otp-2"
+                    />
+                    <input
+                      required
+                      type="text"
+                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      maxlength="1"
+                      onchange="enableVerifyBtn()"
+                      id="otp-3"
+                    />
+                    <input
+                      required
+                      type="text"
+                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      maxlength="1"
+                      onchange="enableVerifyBtn()"
+                      id="otp-4"
+                    />
+                    <input
+                      required
+                      type="text"
+                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      maxlength="1"
+                      onchange="enableVerifyBtn()"
+                      id="otp-5"
+                    />
+                    <input
+                      required
+                      type="text"
+                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      maxlength="1"
+                      onchange="enableVerifyBtn()"
+                      id="otp-6"
+                    />
+                  </div>
+                  <div class="mt-3 form-check text-start">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="rememberDevice"
+                    />
+                    <label
+                      id="totp_verification_code_check"
+                      class="form-check-label"
+                      for="rememberDevice"
+                      >Remember the login method</label
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div
+                id="otp-button"
+                style="display: none; width: 100%"
+                class="otp-button"
+                data-inviewport="slide-up"
+              >
+                <button
+                  disabled
+                  type="submit"
+                  id="verifyOTP"
+                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
+                >
+                  Verify OTP
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- Aggiungi il div vuoto per lo spazio -->
+          <div id="spacer"></div>
+          <div class="footer">
+            <p
+              class="text-sm fixed text-gray-500 xl:mt-12 md:mt-6"
+              style="bottom: 15px"
+              id="footerText"
+            >
+              &copy; 2024 Access Sphere - All Rights Reserved.
+            </p>
+          </div>
         </div>
-    </div>
-</section>
-</body>
+      </div>
+    </section>
+  </body>
 </html>

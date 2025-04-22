@@ -6,12 +6,16 @@ import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.utilities.CryptoUtils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -102,7 +106,23 @@ public class StrapiMapper {
         user.getSsn(),
         user.getTokenReset(),
         user.getAttributes(),
-        user.getMfaSettings());
+        mapMFASettingsIntoStrapiMFASettings(user.getMfaSettings()));
+  }
+
+  public static StrapiMFASetting mapMFASettingsIntoStrapiMFASettings(MFASetting mfaSetting) {
+    StrapiMFASetting strapiMFASetting = new StrapiMFASetting();
+    BeanUtils.copyProperties(mfaSetting, strapiMFASetting);
+    strapiMFASetting.setMfaMethods(
+        mfaSetting.getMfaMethods().stream()
+            .map(
+                mfaMethod -> {
+                  StrapiMFAMethod method = new StrapiMFAMethod();
+                  BeanUtils.copyProperties(mfaMethod, method);
+                  method.setSecretKey(CryptoUtils.encrypt(mfaMethod.getSecretKey()));
+                  return method;
+                })
+            .toList());
+    return strapiMFASetting;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -127,7 +147,25 @@ public class StrapiMapper {
         user.getConfirmed(),
         user.getBlocked(),
         user.getAttributes(),
-        user.getMfa_settings());
+        mapStrapiMFASettingsIntoMFASettings(user.getMfa_settings()));
+  }
+
+  public static MFASetting mapStrapiMFASettingsIntoMFASettings(StrapiMFASetting strapiMFASetting) {
+    if (ObjectToolkit.isNullOrEmpty(strapiMFASetting)) return null;
+    MFASetting mfaSetting = new MFASetting();
+    BeanUtils.copyProperties(strapiMFASetting, mfaSetting);
+    mfaSetting.setMfaMethods(
+        strapiMFASetting.getMfaMethods().stream()
+            .map(
+                strapiMFAMethod -> {
+                  MFAMethod method = new MFAMethod();
+                  if (ObjectToolkit.isNullOrEmpty(strapiMFAMethod)) return null;
+                  BeanUtils.copyProperties(strapiMFAMethod, method);
+                  method.setSecretKey(CryptoUtils.decrypt(strapiMFAMethod.getSecretKey()));
+                  return method;
+                })
+            .toList());
+    return mfaSetting;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

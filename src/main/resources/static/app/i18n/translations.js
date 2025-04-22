@@ -127,6 +127,34 @@ function applyTranslations() {
     true
   );
   /**
+   * OTP
+   */
+  applyLanguage(
+    "otp_verification_code_title",
+    translations[currentLanguage].otp_verification_code_title
+  );
+  applyLanguage(
+    "otp_verification_code_text",
+    translations[currentLanguage].otp_verification_code_text
+  );
+  applyLanguage(
+    "otp_verification_code_button",
+    translations[currentLanguage].otp_verification_code_button
+  );
+  applyLanguage(
+    "totp_verification_code_title",
+    translations[currentLanguage].totp_verification_code_title
+  );
+  applyLanguage(
+    "totp_verification_code_text",
+    translations[currentLanguage].totp_verification_code_text
+  );
+  applyLanguage(
+    "totp_verification_code_check",
+    translations[currentLanguage].totp_verification_code_check
+  );
+  applyLanguage("verifyOTP", translations[currentLanguage].verifyOTP);
+  /**
    * Menu
    */
   applyLanguage("menu_user", translations[currentLanguage].menu_user);

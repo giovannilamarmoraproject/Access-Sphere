@@ -1,13 +1,12 @@
 package io.github.giovannilamarmora.accesssphere.mfa;
 
+import static io.github.giovannilamarmora.accesssphere.mfa.dto.MFAManageRequest.Action.DISABLE;
+
 import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.data.UserDataValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAConfirmationRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MfaVerificationRequest;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategy;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
@@ -121,5 +120,23 @@ public class MFAService {
                 LOG.info(
                     "✅ MFA OTP Verification for method: {} process ended.",
                     mfaRequest.mfaMethod()));
+  }
+
+  public Mono<ResponseEntity<Response>> manageMFA(MFAManageRequest request) {
+    switch (request.action()) {
+      case ENABLE -> {
+        return mfaAuthenticationService.enableMethods(request.identifier(), dataService);
+      }
+      case DISABLE -> {
+        return mfaAuthenticationService.disableMethods(request.identifier(), dataService);
+      }
+      case DELETE -> {
+        return mfaAuthenticationService.deleteMethods(
+            request.identifier(), request.mfaLabel(), dataService);
+      }
+      default -> {
+        return Mono.empty();
+      }
+    }
   }
 }

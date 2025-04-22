@@ -1,9 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.mfa;
 
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAConfirmationRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupResponse;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MfaVerificationRequest;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -109,5 +106,38 @@ public interface MFAController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
+      ServerWebExchange exchange);
+
+  /**
+   * Endpoint to manage MFA methods for a specific user.
+   *
+   * <p>This method allows enabling, disabling, or deleting one or more MFA methods for the user
+   * identified by the {@code identifier} field in the request body.
+   *
+   * <p>The request must include a list of MFA methods, each identified by its {@code type} and
+   * {@code label}, and an {@code action} field indicating the desired operation: ENABLE, DISABLE,
+   * or DELETE.
+   *
+   * <p>The user must be authenticated via a Bearer JWT token.
+   *
+   * @param bearer Bearer JWT token used to authenticate the user. Must be passed in the
+   *     Authorization header.
+   * @param mfaManageRequest The request payload containing the user identifier, action, and methods
+   *     to manage.
+   * @param exchange The {@link ServerWebExchange} used to access request details.
+   * @return A {@link ResponseEntity} wrapping a {@link Response} object with the operation status
+   *     and message.
+   * @see MFAManageRequest
+   * @see Response
+   */
+  @PostMapping("/manage")
+  Mono<ResponseEntity<Response>> manageMfa(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @RequestBody @Valid MFAManageRequest mfaManageRequest,
       ServerWebExchange exchange);
 }

@@ -18,7 +18,8 @@ public enum ExceptionType implements io.github.giovannilamarmora.utils.exception
   /**
    * @ERR_MFA_400 ExceptionType
    */
-  INVALID_MFA_METHOD("mfa_method");
+  INVALID_MFA_METHOD("mfa_method"),
+  INVALID_OTP_CODE("otp-code");
 
   private final String param;
 

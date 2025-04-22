@@ -4,6 +4,7 @@ import com.warrenstrange.googleauth.GoogleAuthenticator;
 import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAMapper;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAUtils;
@@ -93,7 +94,8 @@ public class TotpStrategy implements MFAStrategy {
 
     if (!atLeastOneValid) {
       LOG.error("❌ Invalid OTP code for all MFA methods for user: {}", identifier);
-      throw new MFAException(ExceptionMap.ERR_MFA_400, "Invalid OTP code");
+      throw new MFAException(
+          ExceptionMap.ERR_MFA_400, ExceptionType.INVALID_OTP_CODE, "Invalid OTP code");
     }
 
     LOG.info("✅ OTP code verified successfully for user: {}", identifier);

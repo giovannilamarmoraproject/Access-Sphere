@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.api.strapi.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
@@ -92,5 +91,5 @@ public class StrapiUser extends StrapiGeneric {
   private Map<String, Object> attributes;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private MFASetting mfa_settings;
+  private StrapiMFASetting mfa_settings;
 }

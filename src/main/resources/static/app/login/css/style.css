@@ -18,7 +18,9 @@
 
 #loginButton:disabled,
 #resetButton:disabled,
-#changePasswordButton:disabled {
+#changePasswordButton:disabled,
+#otp_verification_code_button:disabled,
+#verifyOTP:disabled {
   background-color: #dddddd;
   cursor: not-allowed;
 }
@@ -37,7 +39,9 @@
   #google-btn,
   #loginButton,
   #resetButton,
-  #changePasswordButton {
+  #changePasswordButton,
+  #otp_verification_code_button,
+  #verifyOTP {
     transition: background-color 0.3s;
   }
 
@@ -173,12 +177,28 @@ body {
 }
 
 @media (max-width: 767px) {
+  #login,
+  #forgot,
+  #reset {
+    height: 76vh;
+  }
+
   .footer {
     display: none;
   }
 
   .input-text {
     margin-bottom: 10px;
+  }
+
+  .otp-button {
+    bottom: 25px !important;
+  }
+
+  .otp-input {
+    opacity: 0.7;
+    --tw-bg-opacity: 1;
+    background-color: rgb(241 245 249 / var(--tw-bg-opacity, 1));
   }
 
   .input-groups {
@@ -194,6 +214,16 @@ body {
     }
     label {
       color: #999;
+    }
+  }
+
+  #otp-selected {
+    border: 1px solid #262936 !important;
+    background-color: #262936;
+    color: #dddddd;
+    &:focus {
+      outline: 0;
+      background-color: #262936;
     }
   }
 
@@ -228,6 +258,8 @@ body {
   }
 
   h1,
+  h3,
+  h4,
   p,
   a,
   label {
@@ -258,8 +290,10 @@ body {
 
   .login-groups {
     position: absolute;
-    right: 25px;
-    left: 25px;
+    right: 0px;
+    left: 0px;
+    /* right: 25px;
+    left: 25px;*/
     bottom: 25px;
   }
 
@@ -268,4 +302,27 @@ body {
     font-size: 26px;
     /*text-transform: uppercase;*/
   }
+}
+
+svg {
+  margin: 16px 0;
+}
+title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.otp-verify {
+  color: #a3a3a3;
+  font-size: 14px;
+  width: 250px;
+  margin-top: 4px;
+  justify-self: center;
+}
+
+.otp-button {
+  position: absolute;
+  /*right: 25px;
+  left: 25px;*/
+  bottom: 45px;
 }
