@@ -220,6 +220,8 @@ function generateUserInfoHTML(user) {
 }
 
 function generateMFAHTML(mfa_settings) {
+  const urlParams = window.location.href;
+  const identifier = urlParams.split("details/")[1];
   if (!mfa_settings || Object.keys(mfa_settings).length === 0) {
     return ""; // Se non ci sono attributi, non generare nulla
   }
@@ -235,10 +237,10 @@ function generateMFAHTML(mfa_settings) {
         <div class="col-md-7">
           ${
             mfa_settings.enabled
-              ? "<a id='roles_page_title' class='btn btn-outline-danger edit-btn float-end clickable' style='padding: 5px 20px; border-radius: 10px' href='#'><i class='fa-solid fa-shield-plus me-1'></i> Disable</a>"
-              : "<a id='roles_page_title' class='btn btn-outline-success edit-btn float-end clickable' style='padding: 5px 20px; border-radius: 10px' href='#'><i class='fa-duotone fa-solid fa-shield-xmark me-1'></i> Enable</a>"
+              ? `<a id='user_details_mfa_disable' onclick="manageMFA('DISABLE')" class='btn btn-outline-warning edit-btn float-end clickable' style='padding: 5px 20px; border-radius: 10px'><i class='fa-solid fa-shield-plus me-1'></i> Disable</a>`
+              : `<a id='user_details_mfa_enable' onclick="manageMFA('ENABLE')" class='btn btn-outline-success edit-btn float-end clickable' style='padding: 5px 20px; border-radius: 10px'></a>`
           }
-          
+          <a id='user_details_mfa_new' href="/app/mfa/${identifier}" class='btn btn-outline-primary delete-btn float-end clickable' style='padding: 5px 20px; border-radius: 10px'><i class='fa-solid fa-shield-plus me-1'></i> Confiure New MFA</a>
         </div>
       </h3>
       ${entries
@@ -249,8 +251,23 @@ function generateMFAHTML(mfa_settings) {
             // Se il valore è un array, iteriamo ogni elemento
             //content += `<h5>${key}</h5>`;
             value.forEach((item, i) => {
+              console.log(item);
               content += `<div class="border rounded p-3 mb-3" style="border-color: #2d323e !important;">
-                <h6>MFA Method ${i + 1}</h6><hr />`;
+                <h6 class="row">
+                <div class="col-md-5 col-6">
+                <h6 class="mfa_methods" style="padding-top: 8px">MFA Method ${
+                  i + 1
+                }</h6>
+                </div>
+                <div class="col-md-7 col-6">
+                <button
+            onclick="deleteMFA('${item.label}')"
+            style="padding: 5px 20px; border-radius: 10px"
+            class="btn btn-outline-danger float-end user_details_mfa_delete"
+          >Delete</button>
+                </div>
+                </h6>
+                <hr />`;
               Object.entries(item).forEach(([itemKey, itemValue]) => {
                 content += `
                   <div class="row mt-2">
@@ -302,6 +319,11 @@ function generateMFAHTML(mfa_settings) {
   </div>`;
 }
 
+const totpLabel = {
+  GOOGLE_AUTHENTICATION: "google-authenticator",
+  MICROSOFT_AUTHENTICATOR: "microsoft-authenticator",
+};
+
 function checkValue(value) {
   // 1. Booleano
   if (typeof value === "boolean") {
@@ -313,6 +335,22 @@ function checkValue(value) {
   // 2. Stringa che sembra una data ISO (es. 2025-04-17T19:07:59.3415269)
   if (typeof value === "string" && !isNaN(Date.parse(value))) {
     return "<code style='color: inherit'>" + formatDateIntl(value) + "</code>"; // formatDateIntl si aspetta dd/mm/yyyy
+  }
+
+  // 2. Stringa che è un label
+  if (typeof value === "string") {
+    const matchedLabel = Object.values(totpLabel).find(
+      (label) => label === value
+    );
+
+    if (matchedLabel) {
+      // Capitalizza il nome visualizzato (opzionale)
+      const formattedLabel = matchedLabel
+        .replace("-", " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+
+      return `<code class="text-primary"><strong>${formattedLabel}</strong></code>`;
+    }
   }
 
   // 3. Altro tipo (numeri, stringhe, ecc.)
@@ -400,6 +438,113 @@ function lockUser(status) {
               "#NAME#",
               responseData.data.username
             )
+      ).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          const origin = window.location.origin;
+
+          // Costruisci l'URL completo aggiungendo il path
+          const fullUrl = `${origin}/app/users`;
+
+          // Reindirizza l'utente al nuovo URL
+          window.location.href = fullUrl;
+        }
+      });
+    }
+  });
+}
+
+/**
+ * ----------------------------------------------
+ * @MFA_Methods
+ * ----------------------------------------------
+ */
+function manageMFA(status) {
+  if (status != "ENABLE")
+    sweetalertConfirm(
+      "question",
+      currentTranslations.user_details_disable_question_title,
+      currentTranslations.user_details_disable_question_text,
+      currentTranslations.delete_user_btn_confirm,
+      currentTranslations.delete_user_btn_deny
+    ).then((result) => {
+      /* Read more about isConfirmed, isDenied below */
+      if (result.isConfirmed) {
+        return manageMFAStatus(status);
+      } else if (result.isDenied) {
+        return sweetalert(
+          "info",
+          currentTranslations.user_details_disable_question_deny_title,
+          currentTranslations.user_details_disable_question_deny_text
+        );
+      }
+    });
+  else return manageMFAStatus(status);
+}
+
+function manageMFAStatus(status) {
+  const urlParams = window.location.href;
+  const identifier = urlParams.split("details/")[1];
+  const manageUrl = window.location.origin + "/v1/mfa/manage";
+  const token = getCookieOrStorage(config.access_token);
+  const body = {
+    identifier: identifier,
+    action: status,
+  };
+  POST(manageUrl, token, body).then(async (data) => {
+    const responseData = await data.json();
+    if (responseData.error != null) {
+      const error = getErrorCode(responseData.error);
+      return sweetalert("error", error.title, error.message);
+    } else {
+      fetchHeader(data.headers);
+      localStorage.removeItem(config.client_id + "_usersData");
+      return sweetalert(
+        "success",
+        status == "ENABLE"
+          ? currentTranslations.user_details_enable_title
+          : currentTranslations.user_details_disable_title,
+        status == "ENABLE"
+          ? currentTranslations.user_details_enable_text
+          : currentTranslations.user_details_disable_text
+      ).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          const origin = window.location.origin;
+
+          // Costruisci l'URL completo aggiungendo il path
+          const fullUrl = `${origin}/app/users`;
+
+          // Reindirizza l'utente al nuovo URL
+          window.location.href = fullUrl;
+        }
+      });
+    }
+  });
+}
+
+function deleteMFA(label) {
+  const urlParams = window.location.href;
+  const identifier = urlParams.split("details/")[1];
+  const manageUrl = window.location.origin + "/v1/mfa/manage";
+  const token = getCookieOrStorage(config.access_token);
+  const body = {
+    identifier: identifier,
+    action: "DELETE",
+    label: label,
+  };
+  POST(manageUrl, token, body).then(async (data) => {
+    const responseData = await data.json();
+    if (responseData.error != null) {
+      const error = getErrorCode(responseData.error);
+      return sweetalert("error", error.title, error.message);
+    } else {
+      fetchHeader(data.headers);
+      localStorage.removeItem(config.client_id + "_usersData");
+      return sweetalert(
+        "success",
+        currentTranslations.user_details_delete_title,
+        currentTranslations.user_details_delete_text
       ).then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {

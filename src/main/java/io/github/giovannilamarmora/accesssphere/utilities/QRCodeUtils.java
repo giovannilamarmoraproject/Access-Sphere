@@ -124,7 +124,7 @@ public class QRCodeUtils {
       // Genera il QR code base
       QRCodeWriter qrCodeWriter = new QRCodeWriter();
       Map<EncodeHintType, Object> hints = new HashMap<>();
-      hints.put(EncodeHintType.MARGIN, 5);
+      hints.put(EncodeHintType.MARGIN, 3);
       hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
 
       BitMatrix bitMatrix =
@@ -145,8 +145,8 @@ public class QRCodeUtils {
 
       // Calcola dimensione e posizione del logo
       // Modifica del calcolo della dimensione del logo per ridurlo ulteriormente
-      int logoWidth = width / 5; // Riduci da 5 a 10 per un logo più piccolo
-      int logoHeight = height / 5; // Riduci da 5 a 10 per un logo più piccolo
+      int logoWidth = width / 4; // Riduci da 5 a 10 per un logo più piccolo
+      int logoHeight = height / 4; // Riduci da 5 a 10 per un logo più piccolo
 
       int logoX = (width - logoWidth) / 2;
       int logoY = (height - logoHeight) / 2;

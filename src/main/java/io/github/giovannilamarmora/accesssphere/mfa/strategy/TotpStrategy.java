@@ -33,7 +33,7 @@ public class TotpStrategy implements MFAStrategy {
   public Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest setupRequest) {
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F Generate TOTP MFA for user: {} process started.",
-        setupRequest.userID());
+        setupRequest.identifier());
     String secret = MFAUtils.generateSecret();
     String otpAuth = MFAUtils.getOtpAuthUrl(user.getEmail(), secret, "Access-Sphere");
 
@@ -69,7 +69,7 @@ public class TotpStrategy implements MFAStrategy {
             response ->
                 LOG.info(
                     "\uD83E\uDD37\u200D♂\uFE0F Generate TOTP MFA for user: {} process ended.",
-                    setupRequest.userID()));
+                    setupRequest.identifier()));
   }
 
   @Override

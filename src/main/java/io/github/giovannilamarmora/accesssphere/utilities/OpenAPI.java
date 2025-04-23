@@ -18,9 +18,9 @@ public final class OpenAPI {
   public final class Params {
     public final class Description {
       public static final String RESPONSE_TYPE =
-          "Specifies the mfaMethod of response desired from the authorization server.";
+          "Specifies the type of response desired from the authorization server.";
       public static final String ACCESS_TYPE =
-          "Indicates the mfaMethod of access requested. This can be either \"online\" or \"offline\". \"offline\" is used when a refresh token is needed.";
+          "Indicates the type of access requested. This can be either \"online\" or \"offline\". \"offline\" is used when a refresh token is needed.";
       public static final String CLIENT_ID =
           "The unique identifier of the client application making the request.";
       public static final String REDIRECT_URI =
@@ -32,7 +32,7 @@ public final class OpenAPI {
       public static final String STATE =
           "(optional): An opaque value used to maintain state between the request and callback. It is also used to prevent cross-site request forgery (CSRF) attacks.";
       public static final String GRANT_TYPE =
-          "Specifies the mfaMethod of grant being used. Common values are authorization_code, password, client_credentials, and refresh_token";
+          "Specifies the type of grant being used. Common values are authorization_code, password, client_credentials, and refresh_token";
       public static final String CODE =
           "The authorization code that was previously obtained from the authorization server. This code is used to exchange for an access token.";
       public static final String PROMPT =

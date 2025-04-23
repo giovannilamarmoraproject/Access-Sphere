@@ -24,14 +24,14 @@ public interface MFAController {
    * authenticator app.
    *
    * <p>The user must be authenticated via a Bearer JWT token, and identified through the {@code
-   * userID} field in the request body.
+   * identifier} field in the request body.
    *
    * <p>If {@code generateImage} is set to true in the request, the response will include the QR
    * code image.
    *
    * @param bearer Bearer JWT token used to authenticate the user. Must be passed in the
    *     Authorization header.
-   * @param mfaSetupRequest The request payload containing the MFA mfaMethod, user identifier, and
+   * @param mfaSetupRequest The request payload containing the MFA type, user identifier, and
    *     whether to generate a QR code.
    * @param exchange The {@link ServerWebExchange} used to access request details.
    * @return A {@link ResponseEntity} wrapping a {@link Response} object with the operation status,
@@ -59,7 +59,7 @@ public interface MFAController {
    * user.
    *
    * <p>The user must be authenticated via a Bearer JWT token, and identified through the {@code
-   * userID} field in the request body.
+   * identifier} field in the request body.
    *
    * @param bearer Bearer JWT token used to authenticate the user. Must be passed in the
    *     Authorization header.

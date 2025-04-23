@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.mfa;
 
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -9,6 +10,7 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import org.slf4j.Logger;
@@ -29,7 +31,7 @@ public class MFAMapper {
     MFASetting current = user.getMfaSettings();
     MFAMethod method =
         new MFAMethod(
-            setupRequest.mfaMethod(),
+            setupRequest.type(),
             ObjectToolkit.getOrDefault(setupRequest.label(), null),
             secret,
             false,
@@ -38,22 +40,29 @@ public class MFAMapper {
     if (!ObjectToolkit.isNullOrEmpty(current)) {
       if (!ObjectToolkit.isNullOrEmpty(current.getMfaMethods())) {
         // Predicate<MFAMethod> removeUnverified =
-        //    mfaMethod ->
-        //        !mfaMethod.isConfirmed()
+        //    type ->
+        //        !type.isConfirmed()
         //            && Duration.between(
         //
-        // mfaMethod.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant(),
+        // type.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant(),
         //                        Instant.now())
         //                    .toHours()
         //                >= 24;
-        Predicate<MFAMethod> removeUnverified = mfaMethod -> !mfaMethod.isConfirmed();
-        current.getMfaMethods().removeIf(removeUnverified);
+
         if (current.getMfaMethods().stream()
             .anyMatch(mfaMethod -> mfaMethod.getLabel().equals(setupRequest.label()))) {
           LOG.error("TOTP already configured for this provider.");
           throw new MFAException(
-              ExceptionMap.ERR_MFA_400, "TOTP already configured for this provider.");
+              ExceptionMap.ERR_MFA_400,
+              ExceptionType.OTP_ALREADY_CONFIGURED,
+              "TOTP already configured for this provider.");
         }
+
+        Predicate<MFAMethod> removeUnverified = mfaMethod -> !mfaMethod.isConfirmed();
+        List<MFAMethod> mfaMethods = new ArrayList<>(current.getMfaMethods());
+        mfaMethods.removeIf(removeUnverified);
+        current.setMfaMethods(mfaMethods);
+
         current.getMfaMethods().add(method);
       } else current.setMfaMethods(List.of(method));
       return current;

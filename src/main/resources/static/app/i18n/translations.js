@@ -266,12 +266,32 @@ function applyTranslations() {
     true
   );
   applyLanguage(
+    "user_details_mfa_enable",
+    translations[currentLanguage].user_details_mfa_enable,
+    true
+  );
+  applyLanguage(
+    "user_details_mfa_disable",
+    translations[currentLanguage].user_details_mfa_disable,
+    true
+  );
+  applyLanguage(
+    ".user_details_mfa_delete",
+    translations[currentLanguage].user_details_mfa_delete,
+    true
+  );
+  applyLanguage(
     "user_details_roles",
     translations[currentLanguage].user_details_roles
   );
   applyLanguage(
     "user_details_attributes",
     translations[currentLanguage].user_details_attributes,
+    true
+  );
+  applyLanguage(
+    "user_details_mfa_new",
+    translations[currentLanguage].user_details_mfa_new,
     true
   );
   /**
@@ -429,5 +449,51 @@ function applyTranslations() {
     "delete_user_text",
     translations[currentLanguage].delete_user_text,
     true
+  );
+  /**
+   * MFA User Page
+   */
+  applyLanguage(
+    "mfa_page_description_title",
+    translations[currentLanguage].mfa_page_description_title
+  );
+  applyLanguage(
+    "mfa_page_description_text_1",
+    translations[currentLanguage].mfa_page_description_text_1,
+    true
+  );
+  applyLanguage(
+    "mfa_page_description_text_2",
+    translations[currentLanguage].mfa_page_description_text_2,
+    true
+  );
+  applyLanguage(
+    "mfa_page_description_button",
+    translations[currentLanguage].mfa_page_description_button
+  );
+  applyLanguage(
+    "mfa_page_back_button",
+    translations[currentLanguage].mfa_page_back_button,
+    true
+  );
+  applyLanguage(
+    "mfa_page_setup_title",
+    translations[currentLanguage].mfa_page_setup_title
+  );
+  applyLanguage(
+    "mfa_page_setup_card_title",
+    translations[currentLanguage].mfa_page_setup_card_title
+  );
+  applyLanguage(
+    "mfa_page_setup_card_text",
+    translations[currentLanguage].mfa_page_setup_card_text
+  );
+  applyLanguage(
+    "mfa_page_setup_select_choose",
+    translations[currentLanguage].mfa_page_setup_select_choose
+  );
+  applyLanguage(
+    "mfa_page_setup_select_proceed",
+    translations[currentLanguage].mfa_page_setup_select_proceed
   );
 }

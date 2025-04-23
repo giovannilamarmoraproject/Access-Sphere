@@ -1,9 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.mfa;
 
-import static io.github.giovannilamarmora.accesssphere.mfa.dto.MFAManageRequest.Action.DISABLE;
-
 import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.data.UserDataValidator;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
@@ -37,30 +36,36 @@ public class MFAService {
   @Autowired private AccessTokenData accessTokenData;
   @Autowired private MFATokenDataService mfaTokenDataService;
   @Autowired private MFAAuthenticationService mfaAuthenticationService;
+  @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> generateSecretForUser(MFASetupRequest setupRequest) {
     LOG.info(
-        "\uD83E\uDD37\u200D♂\uFE0F Setup MFA for user: {} process started.", setupRequest.userID());
-    UserDataValidator.validateIdentifier(setupRequest.userID(), accessTokenData.getIdentifier());
-    Mono<User> userMono = dataService.getUserByIdentifier(setupRequest.userID(), true);
+        "\uD83E\uDD37\u200D♂\uFE0F Setup MFA for user: {} process started.",
+        setupRequest.identifier());
+    if (!techUserService.isTechUser())
+      UserDataValidator.validateIdentifier(
+          setupRequest.identifier(), accessTokenData.getIdentifier());
+    Mono<User> userMono = dataService.getUserByIdentifier(setupRequest.identifier(), true);
     return userMono
         .flatMap(
             user -> {
-              MFAStrategy strategy = strategyFactory.getStrategy(setupRequest.mfaMethod());
+              MFAStrategy strategy = strategyFactory.getStrategy(setupRequest.type());
               return strategy.generateSecret(user, setupRequest);
             })
         .doOnSuccess(
-            response -> LOG.info("✅ Setup MFA for user: {} process ended.", setupRequest.userID()));
+            response ->
+                LOG.info("✅ Setup MFA for user: {} process ended.", setupRequest.identifier()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> confirmMFA(MFAConfirmationRequest confirmationRequest) {
-    LOG.info("🔑 MFA OTP Confirmation for user: {} process started.", confirmationRequest.userID());
+    LOG.info(
+        "🔑 MFA OTP Confirmation for user: {} process started.", confirmationRequest.identifier());
 
     UserDataValidator.validateIdentifier(
-        confirmationRequest.userID(), accessTokenData.getIdentifier());
-    Mono<User> userMono = dataService.getUserByIdentifier(confirmationRequest.userID(), true);
+        confirmationRequest.identifier(), accessTokenData.getIdentifier());
+    Mono<User> userMono = dataService.getUserByIdentifier(confirmationRequest.identifier(), true);
     return userMono
         .flatMap(
             user -> {
@@ -91,7 +96,7 @@ public class MFAService {
             response ->
                 LOG.info(
                     "✅ MFA OTP Confirmation for user: {} process ended.",
-                    confirmationRequest.userID()));
+                    confirmationRequest.identifier()));
   }
 
   public Mono<ResponseEntity<Response>> verifyMfa(
@@ -132,7 +137,7 @@ public class MFAService {
       }
       case DELETE -> {
         return mfaAuthenticationService.deleteMethods(
-            request.identifier(), request.mfaLabel(), dataService);
+            request.identifier(), request.label(), dataService);
       }
       default -> {
         return Mono.empty();

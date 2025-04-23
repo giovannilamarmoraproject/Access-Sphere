@@ -42,6 +42,10 @@
     "INVALID_OTP_CODE": {
       "title": "Invalid OTP",
       "message": "The OTP you entered is either expired or incorrect. Please try again."
+    },
+    "OTP_ALREADY_CONFIGURED": {
+      "title": "Invalid Method",
+      "message": "The method you entered is already used. Please try another one."
     }
   },
   "it": {
@@ -87,6 +91,10 @@
     "INVALID_OTP_CODE": {
       "title": "OTP non valido",
       "message": "Il codice OTP inserito è scaduto o non è corretto. Riprova."
+    },
+    "OTP_ALREADY_CONFIGURED": {
+      "title": "Metodo invalido",
+      "message": "Il metodo di OTP selezionato è già stato configurato. Riprova."
     }
   }
 }

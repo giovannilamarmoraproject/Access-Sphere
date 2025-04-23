@@ -26,7 +26,7 @@ public enum MFAType {
     throw new MFAException(
         ExceptionMap.ERR_MFA_400,
         String.format(
-            "Invalid MFA setup: Unknown or unsupported mfaMethod '%s'. Please check the request parameters.",
+            "Invalid MFA setup: Unknown or unsupported type '%s'. Please check the request parameters.",
             type));
   }
 

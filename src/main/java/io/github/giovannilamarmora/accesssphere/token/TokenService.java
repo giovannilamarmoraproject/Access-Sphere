@@ -112,7 +112,7 @@ public class TokenService {
         return generateJWEToken(jwtData, clientCredential, payload);
       }
       default -> {
-        LOG.error("Token mfaMethod is not defined, please define them into the client");
+        LOG.error("Token type is not defined, please define them into the client");
         throw new TokenException(
             ExceptionMap.ERR_TOKEN_400, "Invalid token_type in client configuration");
       }
@@ -139,7 +139,7 @@ public class TokenService {
         return parseJWEToken(token, clientCredential);
       }
       default -> {
-        LOG.error("Token mfaMethod is not defined, please define them into the client");
+        LOG.error("Token type is not defined, please define them into the client");
         throw new TokenException(
             ExceptionMap.ERR_TOKEN_400, "Invalid token_type in client configuration");
       }

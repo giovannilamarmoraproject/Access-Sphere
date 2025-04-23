@@ -31,10 +31,7 @@ import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.RequestManager;
 import io.github.giovannilamarmora.utils.web.ResponseManager;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -297,7 +294,7 @@ public class MFAAuthenticationService {
                 throw new MFAException(ExceptionMap.ERR_MFA_400, "MFA Methods are not defined");
               }
 
-              List<MFAMethod> methods = mfaSetting.getMfaMethods();
+              List<MFAMethod> methods = new ArrayList<>(mfaSetting.getMfaMethods());
 
               boolean removed = methods.removeIf(method -> method.getLabel().equals(label));
 
@@ -310,7 +307,7 @@ public class MFAAuthenticationService {
               if (methods.isEmpty()) {
                 mfaSetting.setEnabled(false);
               }
-
+              mfaSetting.setMfaMethods(methods);
               user.setMfaSettings(mfaSetting);
 
               return userDataService

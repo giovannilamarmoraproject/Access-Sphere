@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record MfaVerificationRequest(
-    @NotNull(message = "The MFA mfaMethod (e.g., TOTP, SMS) must be specified.") MFAType mfaMethod,
+    @NotNull(message = "The MFA type (e.g., TOTP, SMS) must be specified.") MFAType mfaMethod,
     @NotBlank(message = "The OTP code is required to complete the verification.") String otp,
     String redirectUri,
     Boolean rememberDevice) {}
