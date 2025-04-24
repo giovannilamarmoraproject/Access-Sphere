@@ -49,7 +49,11 @@ public class MFAMapper {
         //                    .toHours()
         //                >= 24;
 
-        if (current.getMfaMethods().stream()
+        Predicate<MFAMethod> removeUnverified = mfaMethod -> !mfaMethod.isConfirmed();
+        List<MFAMethod> mfaMethods = new ArrayList<>(current.getMfaMethods());
+        mfaMethods.removeIf(removeUnverified);
+
+        if (mfaMethods.stream()
             .anyMatch(mfaMethod -> mfaMethod.getLabel().equals(setupRequest.label()))) {
           LOG.error("TOTP already configured for this provider.");
           throw new MFAException(
@@ -58,9 +62,6 @@ public class MFAMapper {
               "TOTP already configured for this provider.");
         }
 
-        Predicate<MFAMethod> removeUnverified = mfaMethod -> !mfaMethod.isConfirmed();
-        List<MFAMethod> mfaMethods = new ArrayList<>(current.getMfaMethods());
-        mfaMethods.removeIf(removeUnverified);
         current.setMfaMethods(mfaMethods);
 
         current.getMfaMethods().add(method);
@@ -77,7 +78,7 @@ public class MFAMapper {
     return mfaSetting.getMfaMethods().stream()
         .filter(
             method ->
-                method.getType() == confirmationRequest.mfaMethod()
+                method.getType() == confirmationRequest.type()
                     && method.getLabel()
                         == confirmationRequest.label()) // Usa il tipo di MFA dinamico
         .findFirst()

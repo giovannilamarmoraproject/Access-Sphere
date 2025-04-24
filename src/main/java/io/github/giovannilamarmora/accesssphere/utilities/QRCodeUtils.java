@@ -124,7 +124,7 @@ public class QRCodeUtils {
       // Genera il QR code base
       QRCodeWriter qrCodeWriter = new QRCodeWriter();
       Map<EncodeHintType, Object> hints = new HashMap<>();
-      hints.put(EncodeHintType.MARGIN, 3);
+      hints.put(EncodeHintType.MARGIN, 2);
       hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
 
       BitMatrix bitMatrix =

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MFAMethod extends GenericDTO {
   private MFAType type;
-  private MFALabel label;
+  private TOTPLabel label;
 
   @JsonIgnore private String secretKey;
 
@@ -24,7 +24,7 @@ public class MFAMethod extends GenericDTO {
 
   public MFAMethod(
       MFAType type,
-      MFALabel label,
+      TOTPLabel label,
       String secretKey,
       boolean confirmed,
       LocalDateTime creationDate,

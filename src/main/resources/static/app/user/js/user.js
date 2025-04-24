@@ -148,7 +148,15 @@ function displayUserData(user) {
                 `
                   : ""
               }
-              ${user.mfaSettings ? generateMFAHTML(user.mfaSettings) : ""}
+              ${
+                user.mfaSettings
+                  ? generateMFAHTML(user.mfaSettings)
+                  : `<div class="d-flex justify-content-center fade-in ${
+                      isMobile() ? "mt-3" : "mt-4"
+                    }"><a id='user_details_mfa_new' href="/app/mfa/${
+                      user.identifier
+                    }" class='btn btn-outline-primary delete-btn float-end clickable' style='padding: 5px 20px; border-radius: 10px'><i class='fa-solid fa-shield-plus me-1'></i> Confiure New MFA</a></div>`
+              }
               ${
                 user.attributes ? generateAttributesHTML(user.attributes) : ""
               }`;
@@ -319,11 +327,6 @@ function generateMFAHTML(mfa_settings) {
   </div>`;
 }
 
-const totpLabel = {
-  GOOGLE_AUTHENTICATION: "google-authenticator",
-  MICROSOFT_AUTHENTICATOR: "microsoft-authenticator",
-};
-
 function checkValue(value) {
   // 1. Booleano
   if (typeof value === "boolean") {
@@ -465,7 +468,7 @@ function manageMFA(status) {
       "question",
       currentTranslations.user_details_disable_question_title,
       currentTranslations.user_details_disable_question_text,
-      currentTranslations.delete_user_btn_confirm,
+      currentTranslations.user_details_disable_question_deny_btn,
       currentTranslations.delete_user_btn_deny
     ).then((result) => {
       /* Read more about isConfirmed, isDenied below */
@@ -524,39 +527,56 @@ function manageMFAStatus(status) {
 }
 
 function deleteMFA(label) {
-  const urlParams = window.location.href;
-  const identifier = urlParams.split("details/")[1];
-  const manageUrl = window.location.origin + "/v1/mfa/manage";
-  const token = getCookieOrStorage(config.access_token);
-  const body = {
-    identifier: identifier,
-    action: "DELETE",
-    label: label,
-  };
-  POST(manageUrl, token, body).then(async (data) => {
-    const responseData = await data.json();
-    if (responseData.error != null) {
-      const error = getErrorCode(responseData.error);
-      return sweetalert("error", error.title, error.message);
-    } else {
-      fetchHeader(data.headers);
-      localStorage.removeItem(config.client_id + "_usersData");
-      return sweetalert(
-        "success",
-        currentTranslations.user_details_delete_title,
-        currentTranslations.user_details_delete_text
-      ).then((result) => {
-        /* Read more about isConfirmed, isDenied below */
-        if (result.isConfirmed) {
-          const origin = window.location.origin;
+  sweetalertConfirm(
+    "question",
+    currentTranslations.user_details_disable_question_delete_title,
+    currentTranslations.user_details_disable_question_delete_text,
+    currentTranslations.delete_user_btn_confirm,
+    currentTranslations.delete_user_btn_deny
+  ).then((result) => {
+    /* Read more about isConfirmed, isDenied below */
+    if (result.isConfirmed) {
+      const urlParams = window.location.href;
+      const identifier = urlParams.split("details/")[1];
+      const manageUrl = window.location.origin + "/v1/mfa/manage";
+      const token = getCookieOrStorage(config.access_token);
+      const body = {
+        identifier: identifier,
+        action: "DELETE",
+        label: label,
+      };
+      POST(manageUrl, token, body).then(async (data) => {
+        const responseData = await data.json();
+        if (responseData.error != null) {
+          const error = getErrorCode(responseData.error);
+          return sweetalert("error", error.title, error.message);
+        } else {
+          fetchHeader(data.headers);
+          localStorage.removeItem(config.client_id + "_usersData");
+          return sweetalert(
+            "success",
+            currentTranslations.user_details_delete_title,
+            currentTranslations.user_details_delete_text
+          ).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+              const origin = window.location.origin;
 
-          // Costruisci l'URL completo aggiungendo il path
-          const fullUrl = `${origin}/app/users`;
+              // Costruisci l'URL completo aggiungendo il path
+              const fullUrl = `${origin}/app/users`;
 
-          // Reindirizza l'utente al nuovo URL
-          window.location.href = fullUrl;
+              // Reindirizza l'utente al nuovo URL
+              window.location.href = fullUrl;
+            }
+          });
         }
       });
+    } else if (result.isDenied) {
+      return sweetalert(
+        "info",
+        currentTranslations.user_details_disable_deny_delete_title,
+        currentTranslations.user_details_disable_deny_delete_text
+      );
     }
   });
 }

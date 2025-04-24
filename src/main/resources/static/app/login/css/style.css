@@ -199,6 +199,8 @@ body {
     opacity: 0.7;
     --tw-bg-opacity: 1;
     background-color: rgb(241 245 249 / var(--tw-bg-opacity, 1));
+    max-width: 50px;
+    border-radius: 15px;
   }
 
   .input-groups {
@@ -325,4 +327,13 @@ title {
   /*right: 25px;
   left: 25px;*/
   bottom: 45px;
+}
+
+.otp-input {
+  max-width: 50px;
+  border-radius: 15px;
+}
+
+#rememberDevice {
+  border-radius: 50%;
 }

@@ -7,21 +7,32 @@ import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import lombok.Getter;
 
 @Getter
-public enum MFALabel {
+public enum TOTPLabel {
   GOOGLE_AUTHENTICATOR("google-authenticator"),
-  MICROSOFT_AUTHENTICATOR("microsoft-authenticator");
+  MICROSOFT_AUTHENTICATOR("microsoft-authenticator"),
+  AUTHY("authy"),
+  LASTPASS_AUTHENTICATOR("lastpass-authenticator"),
+  DUO_MOBILE("duo-mobile"),
+  FREE_OTP("free-otp"),
+  AEGIS("aegis"),
+  AND_OTP("and-otp"),
+  ONE_PASSWORD("1password"),
+  BIT_WARDEN("bitwarden"),
+  KEEPASS("keepass"),
+  EN_PASS("enpass"),
+  DASH_LANE("dashlane");
 
   private final String label;
 
-  MFALabel(String label) {
+  TOTPLabel(String label) {
     this.label = label;
   }
 
   @JsonCreator
-  public static MFALabel fromString(String label) {
-    for (MFALabel mfaLabel : MFALabel.values()) {
-      if (mfaLabel.label.equalsIgnoreCase(label)) {
-        return mfaLabel;
+  public static TOTPLabel fromString(String label) {
+    for (TOTPLabel totpLabel : TOTPLabel.values()) {
+      if (totpLabel.label.equalsIgnoreCase(label)) {
+        return totpLabel;
       }
     }
     throw new MFAException(

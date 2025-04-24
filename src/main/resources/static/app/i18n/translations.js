@@ -472,7 +472,7 @@ function applyTranslations() {
     translations[currentLanguage].mfa_page_description_button
   );
   applyLanguage(
-    "mfa_page_back_button",
+    ".mfa_page_back_button",
     translations[currentLanguage].mfa_page_back_button,
     true
   );

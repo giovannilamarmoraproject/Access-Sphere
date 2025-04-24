@@ -63,8 +63,9 @@ public class MFAService {
     LOG.info(
         "🔑 MFA OTP Confirmation for user: {} process started.", confirmationRequest.identifier());
 
-    UserDataValidator.validateIdentifier(
-        confirmationRequest.identifier(), accessTokenData.getIdentifier());
+    if (!techUserService.isTechUser())
+      UserDataValidator.validateIdentifier(
+          confirmationRequest.identifier(), accessTokenData.getIdentifier());
     Mono<User> userMono = dataService.getUserByIdentifier(confirmationRequest.identifier(), true);
     return userMono
         .flatMap(

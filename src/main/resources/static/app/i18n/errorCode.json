@@ -46,6 +46,10 @@
     "OTP_ALREADY_CONFIGURED": {
       "title": "Invalid Method",
       "message": "The method you entered is already used. Please try another one."
+    },
+    "OTP_NOT_CONFIGURED": {
+      "title": "OTP Method Not Configured",
+      "message": "This account does not have a configured OTP method. Please set up your authenticator before proceeding."
     }
   },
   "it": {
@@ -95,6 +99,10 @@
     "OTP_ALREADY_CONFIGURED": {
       "title": "Metodo invalido",
       "message": "Il metodo di OTP selezionato è già stato configurato. Riprova."
+    },
+    "OTP_NOT_CONFIGURED": {
+      "title": "Metodo OTP non configurato",
+      "message": "Questo account non ha un metodo OTP configurato. Configura l'autenticatore prima di procedere."
     }
   }
 }

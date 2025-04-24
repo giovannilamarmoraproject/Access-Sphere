@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
@@ -223,10 +224,13 @@ public class MFAAuthenticationService {
         .flatMap(
             user -> {
               MFASetting mfaSetting = user.getMfaSettings();
-              if (ObjectToolkit.isNullOrEmpty(mfaSetting)) {
-                LOG.error("MFA is not yet defined");
+              if (ObjectToolkit.isNullOrEmpty(mfaSetting)
+                  || mfaSetting.getMfaMethods().stream().noneMatch(MFAMethod::isConfirmed)) {
+                LOG.error("MFA is not yet defined or not confirmed");
                 throw new MFAException(
-                    ExceptionMap.ERR_MFA_400, "MFA Method are not defined to enable");
+                    ExceptionMap.ERR_MFA_400,
+                    ExceptionType.OTP_NOT_CONFIGURED,
+                    "MFA Method are not defined to enable");
               }
               Response response =
                   new Response(HttpStatus.OK.value(), "MFA Enabled", TraceUtils.getSpanID(), null);
@@ -278,7 +282,7 @@ public class MFAAuthenticationService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> deleteMethods(
-      String identifier, MFALabel label, UserDataService userDataService) {
+      String identifier, TOTPLabel label, UserDataService userDataService) {
     LOG.info("🔐 [MFA DELETE] - Process started for user '{}', label '{}'", identifier, label);
 
     Mono<User> userMono = userDataService.getUserByIdentifier(identifier, true);

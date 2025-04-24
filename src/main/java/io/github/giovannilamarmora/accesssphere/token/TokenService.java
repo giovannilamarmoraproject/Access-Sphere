@@ -71,6 +71,7 @@ public class TokenService {
         user.getMfaSettings().getMfaMethods().stream()
             .filter(MFAMethod::isConfirmed)
             .map(mfaMethod1 -> mfaMethod1.getType().name())
+            .distinct()
             .toList();
     MFATokenData mfaTokenData =
         mfaTokenDataService.save(

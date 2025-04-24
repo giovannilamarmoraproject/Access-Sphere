@@ -20,6 +20,7 @@ public enum ExceptionType implements io.github.giovannilamarmora.utils.exception
    */
   INVALID_MFA_METHOD("mfa_method"),
   INVALID_OTP_CODE("otp-code"),
+  OTP_NOT_CONFIGURED("otp-not-configured"),
   OTP_ALREADY_CONFIGURED("otp-configured");
 
   private final String param;
