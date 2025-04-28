@@ -457,7 +457,7 @@ public class UserLogicService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  protected Mono<User> updateUser(
+  protected Mono<User> updateUserOld(
       User userToUpdate, boolean isUpdatePassword, boolean callStrapiUserByIdentifier) {
     UserEntity userEntity = UserMapper.mapUserToUserEntity(userToUpdate);
 
@@ -519,6 +519,75 @@ public class UserLogicService {
                 });
       return updateUserMono;
     }
+    UserEntity userFind = userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
+    setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
+    return Mono.just(saveUserEntityIntoDatabase(userEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  protected Mono<User> updateUser(
+      User userToUpdate, boolean isUpdatePassword, boolean callStrapiUserByIdentifier) {
+    UserEntity userEntity = UserMapper.mapUserToUserEntity(userToUpdate);
+
+    if (isUpdatePassword) {
+      if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
+        if (!Utilities.isCharacterAndRegexValid(
+            userToUpdate.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
+          LOG.error("Invalid regex for field password for user {}", userToUpdate.getUsername());
+          throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
+        }
+        userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
+      }
+    }
+
+    if (isStrapiEnabled) {
+      LOG.debug(
+          "Strapi is enabled, updating user with email {} on strapi", userToUpdate.getEmail());
+
+      Mono<User> buildUpdateMono =
+          Mono.defer(
+              () ->
+                  strapiService
+                      .updateUser(userToUpdate)
+                      .map(
+                          strapiUserUpdated -> {
+                            userEntity.setStrapiId(strapiUserUpdated.getId());
+                            UserEntity userFind =
+                                userDataService.findUserEntityByIdentifier(
+                                    userToUpdate.getIdentifier());
+                            setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
+                            saveUserEntityIntoDatabase(userEntity);
+                            return StrapiMapper.mapFromStrapiUserToUser(strapiUserUpdated);
+                          })
+                      .onErrorResume(
+                          throwable -> {
+                            if (!OAuthException.isHandleException(throwable)) {
+                              LOG.info(
+                                  "Error on strapi, update user into database, message is {}",
+                                  throwable.getMessage());
+                              UserEntity userFind =
+                                  userDataService.findUserEntityByIdentifier(
+                                      userToUpdate.getIdentifier());
+                              setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
+                              return Mono.just(saveUserEntityIntoDatabase(userEntity));
+                            }
+                            return Mono.error(throwable);
+                          })
+                      .doOnSuccess(user1 -> LOG.info("User {} updated", user1.getUsername())));
+
+      if (callStrapiUserByIdentifier) {
+        return strapiService
+            .getUserByIdentifier(userToUpdate.getIdentifier())
+            .flatMap(
+                strapiUser -> {
+                  userToUpdate.setId(strapiUser.getId());
+                  return buildUpdateMono;
+                });
+      }
+
+      return buildUpdateMono;
+    }
+
     UserEntity userFind = userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
     setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
     return Mono.just(saveUserEntityIntoDatabase(userEntity));

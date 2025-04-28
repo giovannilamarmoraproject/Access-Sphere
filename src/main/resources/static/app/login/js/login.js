@@ -1,6 +1,7 @@
 //const config = getConfig();
 
 document.addEventListener("DOMContentLoaded", function () {
+  disableLoader();
   cleanStorageAndCookies();
   const loginForm = document.getElementById("loginForm");
   const verifyOTPForm = document.getElementById("otp-form");

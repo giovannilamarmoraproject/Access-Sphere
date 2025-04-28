@@ -43,7 +43,7 @@ function displayUserData(user) {
 
   container.innerHTML += `<div class="row">
             <div class="col-md-3">
-              <div class="card mb-4 fade-in">
+              <div data-inviewport="fade-in" class="card mb-4 fade-in">
                 <div class="card-body m-3">
                   <div
                     class="d-flex flex-column align-items-center text-center"
@@ -72,7 +72,7 @@ function displayUserData(user) {
               </div>
             </div>
             <div class="col-md-9">
-              <div class="card fade-in">
+              <div data-inviewport="fade-in" class="card fade-in">
                 <div class="card-body m-2">
                   <h3 class="row">
                     <div class="col-md-5">
@@ -112,7 +112,7 @@ function displayUserData(user) {
               ${
                 user.roles && user.roles.length > 0
                   ? `
-                <div class="card mt-4 fade-in">
+                <div data-inviewport="fade-in" class="card mt-4 fade-in">
                   <div class="card-body m-2">
                   <h3 class="row">
                   <div class="col-md-5">
@@ -151,7 +151,7 @@ function displayUserData(user) {
               ${
                 user.mfaSettings
                   ? generateMFAHTML(user.mfaSettings)
-                  : `<div class="d-flex justify-content-center fade-in ${
+                  : `<div data-inviewport="fade-in" class="d-flex justify-content-center fade-in ${
                       isMobile() ? "mt-3" : "mt-4"
                     }"><a id='user_details_mfa_new' href="/app/mfa/${
                       user.identifier
@@ -236,7 +236,7 @@ function generateMFAHTML(mfa_settings) {
 
   const entries = Object.entries(mfa_settings);
   return `
-  <div class="card mt-4 fade-in">
+  <div data-inviewport="fade-in" class="card mt-4 fade-in">
     <div class="card-body m-2">
       <h3 class="row">
         <div class="col-md-5">
@@ -367,7 +367,7 @@ function generateAttributesHTML(attributes) {
 
   const entries = Object.entries(attributes);
   return `
-  <div class="card mt-4 fade-in">
+  <div data-inviewport="fade-in" class="card mt-4 fade-in">
     <div class="card-body m-2">
       <h3 id="user_details_attributes">Attributes</h3>
       ${entries

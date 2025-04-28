@@ -33,6 +33,7 @@ public class OAuthStrapiClient extends StrapiGeneric {
   private Boolean access_token;
   private Boolean strapi_token;
   private HttpStatus authorize_redirect_status;
+  private Boolean mfa_enabled;
 
   @Builder
   @Data

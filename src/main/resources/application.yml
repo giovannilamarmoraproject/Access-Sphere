@@ -1,5 +1,5 @@
 env: Local
-sensitiveData: "password|token|authorization|bearer|basic|access[_-]?token|refresh[_-]?token|jwt"
+sensitiveData: password|token|Authorization|Bearer|Basic|access[_-]?token|refresh[_-]?token|jwt|jwtSecret|jweSecret
 
 server:
   port: 8081

@@ -213,7 +213,7 @@ public class OAuthService {
                       Mapper.removeField(
                           accessTokenData.getPayload(), TokenData.STRAPI_TOKEN.getToken())));
 
-      LOG.info("✅ Authorization successful for bearer: {}", bearer);
+      LOG.info("✅ Authorization successful for {}", bearer);
       return ResponseEntity.ok(response);
 
     } catch (TokenException | OAuthException e) {

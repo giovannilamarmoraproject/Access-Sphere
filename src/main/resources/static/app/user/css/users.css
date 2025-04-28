@@ -1,8 +1,21 @@
 @media screen and (max-width: 768px) {
   td {
     padding: 0;
+    text-align: center;
     a {
       font-size: small;
     }
+  }
+  th {
+    text-align: center !important;
+    padding-right: 10px !important;
+    padding-left: 10px;
+  }
+}
+
+@media screen and (max-width: 870px) {
+  table.dataTable {
+    margin: 0 auto;
+    width: 50% !important;
   }
 }

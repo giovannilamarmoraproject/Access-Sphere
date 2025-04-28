@@ -59,6 +59,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../app/shared/loader.js"></script>
+    <link rel="stylesheet" href="../../app/shared/loader.css" />
     <link
       rel="stylesheet"
       href="../../app/shared/fontawesome/css/all.min.css"
@@ -68,7 +70,8 @@
     <script src="../../app/i18n/translations.js"></script>
     <script src="../../app/shared/utils.js"></script>
     <script src="../../app/shared/api/rest.js"></script>
-    <link rel="stylesheet" href="../../app/user/css/animation.css" />
+    <link rel="stylesheet" href="../../app/shared/animations/animation.css" />
+    <script src="../../app/shared/animations/animation.js"></script>
     <!-- END Shared Component -->
     <script src="../../app/login/js/script.js" defer></script>
     <script src="../../app/login/js/login.js" defer></script>
@@ -100,6 +103,7 @@
         style="display: none; visibility: hidden"
       ></iframe>
     </noscript>
+    <div id="loader" class="loader"></div>
     <!-- End Google Tag Manager (noscript) -->
     <section class="flex flex-col flex-row h-screen items-center">
       <div
@@ -135,7 +139,7 @@
 
           <h1 class="text-xl font-bold" id="title">Access Sphere</h1>
 
-          <div id="login" class="fade-in">
+          <div id="login" data-inviewport="fade-in" class="fade-in">
             <h1
               class="text-xl md:text-xl font-bold leading-tight xl:mt-10 md:mt-8"
               id="loginTitle"

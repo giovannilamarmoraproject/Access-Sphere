@@ -46,4 +46,5 @@ public class ClientCredential extends GenericDTO {
   private Boolean accessToken;
   private Boolean strapiToken;
   private HttpStatus authorize_redirect_status;
+  private Boolean mfaEnabled;
 }

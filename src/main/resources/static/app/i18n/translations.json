@@ -151,7 +151,9 @@
     "mfa_page_setup_card_title": "Authenticator App (TOTP)",
     "mfa_page_setup_card_text": "Choose one of the available apps to generate time-based codes. You can use whichever you prefer!",
     "mfa_page_setup_select_choose": "Choose a method",
-    "mfa_page_setup_select_proceed": "Proceed"
+    "mfa_page_setup_select_proceed": "Proceed",
+    "mfa_page_setup_success_title": "MFA Method Added Successfully",
+    "mfa_page_setup_success_text": "You have successfully added a new multi-factor authentication method. You can now use it to enhance the security of your account during login."
   },
   "it": {
     "pageTitle": "Access Sphere - Accesso",
@@ -305,6 +307,8 @@
     "mfa_page_setup_card_title": "App di Autenticazione (TOTP)",
     "mfa_page_setup_card_text": "Scegli una delle applicazioni disponibili per generare i codici temporanei. Puoi usare quella che preferisci!",
     "mfa_page_setup_select_choose": "Seleziona un metodo",
-    "mfa_page_setup_select_proceed": "Continua"
+    "mfa_page_setup_select_proceed": "Continua",
+    "mfa_page_setup_success_title": "Metodo MFA aggiunto con successo",
+    "mfa_page_setup_success_text": "Hai aggiunto correttamente un nuovo metodo di autenticazione a più fattori. Ora potrai utilizzarlo per proteggere ulteriormente il tuo account durante l’accesso."
   }
 }

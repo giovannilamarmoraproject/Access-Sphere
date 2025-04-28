@@ -44,7 +44,6 @@ function setupMFA() {
       return sweetalert("error", error.title, error.message);
     } else {
       fetchHeader(data.headers);
-      console.log(responseData);
       const setupCard = document.getElementById("mfa_page_setup_card");
       if (setupCard) setupCard.style.display = "none";
       const confirmCard = document.getElementById("mfa_page_confirm_card");
@@ -78,17 +77,12 @@ function confirmMFA() {
       const error = getErrorCode(responseData.error);
       return sweetalert("error", error.title, error.message);
     } else {
-      console.log(responseData);
       fetchHeader(data.headers);
       localStorage.removeItem(config.client_id + "_usersData");
       return sweetalert(
         "success",
-        status == "ENABLE"
-          ? currentTranslations.user_details_enable_title
-          : currentTranslations.user_details_disable_title,
-        status == "ENABLE"
-          ? currentTranslations.user_details_enable_text
-          : currentTranslations.user_details_disable_text
+        currentTranslations.mfa_page_setup_success_title,
+        currentTranslations.mfa_page_setup_success_text
       ).then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {

@@ -76,7 +76,8 @@ public class StrapiMapper {
         strapiClient.getId_token(),
         strapiClient.getAccess_token(),
         strapiClient.getStrapi_token(),
-        strapiClient.getAuthorize_redirect_status());
+        strapiClient.getAuthorize_redirect_status(),
+        strapiClient.getMfa_enabled());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -110,6 +111,7 @@ public class StrapiMapper {
   }
 
   public static StrapiMFASetting mapMFASettingsIntoStrapiMFASettings(MFASetting mfaSetting) {
+    if (ObjectToolkit.isNullOrEmpty(mfaSetting)) return null;
     StrapiMFASetting strapiMFASetting = new StrapiMFASetting();
     BeanUtils.copyProperties(mfaSetting, strapiMFASetting);
     strapiMFASetting.setMfaMethods(

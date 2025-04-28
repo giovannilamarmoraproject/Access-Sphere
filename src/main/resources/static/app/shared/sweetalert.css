@@ -23,7 +23,7 @@ body > * {
 }
 
 body.swal2-shown > [aria-hidden="true"] {
-  filter: blur(5px);
+  filter: blur(2px);
 }
 
 html,

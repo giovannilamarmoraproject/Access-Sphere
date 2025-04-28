@@ -58,10 +58,20 @@ public class MFAAuthenticationService {
   @Autowired private MFATokenDataService mfaTokenDataService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public static boolean isMfaEnabled(User user) {
-    return !ObjectToolkit.isNullOrEmpty(user.getMfaSettings())
-        && user.getMfaSettings().getEnabled()
-        && !ObjectToolkit.isNullOrEmpty(user.getMfaSettings().getMfaMethods());
+  public static boolean isMfaEnabled(User user, ClientCredential clientCredential) {
+    boolean isEnabled =
+        !ObjectToolkit.isNullOrEmpty(user.getMfaSettings())
+            && user.getMfaSettings().getEnabled()
+            && !ObjectToolkit.isNullOrEmpty(user.getMfaSettings().getMfaMethods())
+            && !ObjectToolkit.isNullOrEmpty(clientCredential.getMfaEnabled())
+            && clientCredential.getMfaEnabled();
+    if (!isEnabled)
+      LOG.info(
+          "🔐 No MFA found for user {} and client {} (Config is {})",
+          user.getIdentifier(),
+          clientCredential.getClientId(),
+          clientCredential.getMfaEnabled());
+    return isEnabled;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -72,7 +82,7 @@ public class MFAAuthenticationService {
       ClientCredential clientCredential,
       ServerHttpRequest request) {
 
-    if (MFAAuthenticationService.isMfaEnabled(user)) {
+    if (MFAAuthenticationService.isMfaEnabled(user, clientCredential)) {
       String deviceToken =
           RequestManager.getCookieOrHeaderData(ExposedHeaders.DEVICE_TOKEN, request);
 

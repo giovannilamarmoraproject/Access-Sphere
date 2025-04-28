@@ -49,6 +49,7 @@ function enableVerifyBtn() {
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("mfa-config-form");
+  if (!form) return;
   const inputs = [...form.querySelectorAll("input[type=text]")];
   const submit = form.querySelector("button[type=submit]");
 
