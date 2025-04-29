@@ -10,6 +10,7 @@ import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.utilities.CryptoUtils;
+import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
@@ -77,7 +78,8 @@ public class StrapiMapper {
         strapiClient.getAccess_token(),
         strapiClient.getStrapi_token(),
         strapiClient.getAuthorize_redirect_status(),
-        strapiClient.getMfa_enabled());
+        strapiClient.getMfa_enabled(),
+        mapFromStrapiWebhooksToWebhooks(strapiClient.getWebhooks()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -179,5 +181,18 @@ public class StrapiMapper {
   public static List<String> getAppRoles(List<AppRole> appRoles) {
     if (ObjectUtils.isEmpty(appRoles)) return null;
     return appRoles.stream().map(AppRole::getRole).toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<Webhook> mapFromStrapiWebhooksToWebhooks(List<StrapiWebhook> strapiWebhooks) {
+    return strapiWebhooks.stream().map(StrapiMapper::mapStrapiWebhookIntoWebhook).toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static Webhook mapStrapiWebhookIntoWebhook(StrapiWebhook strapiWebhook) {
+    if (ObjectToolkit.isNullOrEmpty(strapiWebhook)) return null;
+    Webhook webhook = new Webhook();
+    BeanUtils.copyProperties(strapiWebhook, webhook);
+    return webhook;
   }
 }

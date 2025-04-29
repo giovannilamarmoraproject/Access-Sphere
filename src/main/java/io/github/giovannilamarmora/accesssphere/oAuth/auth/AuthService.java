@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.UserDataService;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
@@ -47,6 +49,7 @@ public class AuthService {
 
   @Autowired private TokenService tokenService;
   @Autowired private UserDataService dataService;
+  @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> makeClassicLogin(
@@ -273,29 +276,80 @@ public class AuthService {
 
     JsonNode strapi_token = OAuthMapper.getStrapiToken(accessTokenData.getPayload());
 
+    if (techUserService.isTechUser()) {
+      return Mono.just(
+          exchangeTokenBuildResponse(
+              tokenExchange,
+              new User(),
+              accessTokenData,
+              clientCredential,
+              strapi_token,
+              includeUserInfo,
+              includeUserData,
+              request));
+    }
     return dataService
         .getUserByEmail(decryptToken.getEmail())
         .map(
             user -> {
-              AuthToken token =
-                  tokenService.exchangeToken(user, accessTokenData, clientCredential, request);
-              String message =
-                  "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      message,
-                      TraceUtils.getSpanID(),
-                      new OAuthTokenResponse(
-                          token,
-                          ObjectToolkit.isNullOrEmpty(strapi_token)
-                              ? accessTokenData.getPayload()
-                              : strapi_token,
-                          includeUserInfo
-                              ? tokenService.parseToken(token.getAccess_token(), clientCredential)
-                              : null,
-                          includeUserData ? user : null));
-              return ResponseEntity.ok(response);
+              return exchangeTokenBuildResponse(
+                  tokenExchange,
+                  user,
+                  accessTokenData,
+                  clientCredential,
+                  strapi_token,
+                  includeUserInfo,
+                  includeUserData,
+                  request);
+              // AuthToken token =
+              //    tokenService.exchangeToken(user, accessTokenData, clientCredential, request);
+              // String message =
+              //    "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
+              // Response response =
+              //    new Response(
+              //        HttpStatus.OK.value(),
+              //        message,
+              //        TraceUtils.getSpanID(),
+              //        new OAuthTokenResponse(
+              //            token,
+              //            ObjectToolkit.isNullOrEmpty(strapi_token)
+              //                ? accessTokenData.getPayload()
+              //                : strapi_token,
+              //            includeUserInfo
+              //                ? tokenService.parseToken(token.getAccess_token(), clientCredential)
+              //                : null,
+              //            includeUserData ? user : null));
+              // return ResponseEntity.ok(response);
             });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  private ResponseEntity<Response> exchangeTokenBuildResponse(
+      TokenExchange tokenExchange,
+      User user,
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      JsonNode strapi_token,
+      boolean includeUserInfo,
+      boolean includeUserData,
+      ServerHttpRequest request) {
+    AuthToken token = tokenService.exchangeToken(user, accessTokenData, clientCredential, request);
+    String message =
+        "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            message,
+            TraceUtils.getSpanID(),
+            new OAuthTokenResponse(
+                token,
+                ObjectToolkit.isNullOrEmpty(strapi_token)
+                    ? accessTokenData.getPayload()
+                    : strapi_token,
+                includeUserInfo
+                    ? tokenService.parseToken(token.getAccess_token(), clientCredential)
+                    : null,
+                includeUserData ? user : null));
+    return ResponseEntity.ok(response);
   }
 }

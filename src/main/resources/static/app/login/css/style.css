@@ -207,6 +207,7 @@ body {
     margin-top: 10px;
     margin-bottom: 10px;
     input {
+      color: #dddddd;
       border: 1px solid #262936 !important;
       background-color: #262936;
       &:focus {

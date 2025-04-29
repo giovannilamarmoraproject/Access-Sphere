@@ -10,14 +10,16 @@ import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Service
 public class UserDataServiceImpl implements UserDataService {
 
-  @Autowired private UserLogicService logicService;
+  @Autowired @Lazy private UserLogicService logicService;
 
   @Override
   public Boolean isStrapiEnabled() {
@@ -263,8 +265,9 @@ public class UserDataServiceImpl implements UserDataService {
    *     operation
    */
   @Override
-  public Mono<Response> deleteUser(String identifier, String strapi_token) {
-    return logicService.deleteUser(identifier, strapi_token);
+  public Mono<Response> deleteUser(
+      String identifier, String strapi_token, String bearer, ServerWebExchange exchange) {
+    return logicService.deleteUser(identifier, strapi_token, bearer, exchange);
   }
 
   /**

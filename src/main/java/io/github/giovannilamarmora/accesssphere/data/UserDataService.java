@@ -10,6 +10,7 @@ import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 public interface UserDataService {
@@ -215,7 +216,8 @@ public interface UserDataService {
    * @return a {@link Mono} emitting a {@link Response} indicating the outcome of the delete
    *     operation
    */
-  Mono<Response> deleteUser(String identifier, String strapi_token);
+  Mono<Response> deleteUser(
+      String identifier, String strapi_token, String bearer, ServerWebExchange exchange);
 
   /**
    * Refreshes the JWT token using the provided access token data and client credentials.

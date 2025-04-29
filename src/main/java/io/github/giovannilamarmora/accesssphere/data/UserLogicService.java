@@ -24,6 +24,8 @@ import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
+import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
+import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -43,6 +45,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -62,6 +65,7 @@ public class UserLogicService {
   @Autowired private TokenService tokenService;
   @Autowired private AccessTokenService accessTokenService;
   @Autowired private MFAAuthenticationService mfaAuthenticationService;
+  @Autowired private WebhookService webhookService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   protected Mono<User> getUserByIdentifier(String identifier, boolean getStrapiId) {
@@ -594,7 +598,9 @@ public class UserLogicService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  protected Mono<Response> deleteUser(String identifier, String strapi_token) {
+  protected Mono<Response> deleteUser(
+      String identifier, String strapi_token, String bearer, ServerWebExchange exchange) {
+
     if (isStrapiEnabled) {
       LOG.debug("Strapi is enabled, deleting user with identifier {} on strapi", identifier);
 
@@ -605,26 +611,33 @@ public class UserLogicService {
                   strapiService
                       .deleteUsers(strapiUser.getId(), strapi_token)
                       .flatMap(
-                          strapiUser1 -> {
-                            User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                          deletedUser -> {
+                            User userRes = StrapiMapper.mapFromStrapiUserToUser(deletedUser);
                             Response response =
                                 new Response(
                                     HttpStatus.OK.value(),
                                     "User " + userRes.getUsername() + " successfully deleted",
                                     TraceUtils.getSpanID(),
                                     userRes);
-                            return Mono.just(response);
-                          }))
-          .doOnSuccess(responseResponseEntity -> userDataService.deleteByIdentifier(identifier));
+
+                            return Mono.fromRunnable(
+                                    () -> userDataService.deleteByIdentifier(identifier))
+                                .then(
+                                    webhookService.checkAndExecuteWebhook(
+                                        WebhookAction.DELETE_USER, bearer, identifier, exchange))
+                                .thenReturn(response);
+                          }));
     } else {
-      userDataService.deleteByIdentifier(identifier);
-      Response response =
-          new Response(
-              HttpStatus.OK.value(),
-              "User " + identifier + " successfully deleted",
-              TraceUtils.getSpanID(),
-              null);
-      return Mono.just(response);
+      return Mono.fromRunnable(() -> userDataService.deleteByIdentifier(identifier))
+          .then(
+              webhookService.checkAndExecuteWebhook(
+                  WebhookAction.DELETE_USER, bearer, identifier, exchange))
+          .thenReturn(
+              new Response(
+                  HttpStatus.OK.value(),
+                  "User " + identifier + " successfully deleted",
+                  TraceUtils.getSpanID(),
+                  null));
     }
   }
 

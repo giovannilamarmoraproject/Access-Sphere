@@ -42,6 +42,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -499,7 +500,8 @@ public class UserService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> deleteUser(String identifier) {
+  public Mono<ResponseEntity<Response>> deleteUser(
+      String identifier, String bearer, ServerWebExchange exchange) {
     LOG.info("\uD83E\uDD37\u200D♂\uFE0F Deleting user process started, identifier: {}", identifier);
     if (!techUserService.isTechUser()) {
       LOG.error("Only a tech user can delete the user {}", identifier);
@@ -514,7 +516,7 @@ public class UserService {
           TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
           String strapi_token = OAuthMapper.getStrapiAccessToken(accessTokenData);
           return dataService
-              .deleteUser(identifier, strapi_token)
+              .deleteUser(identifier, strapi_token, bearer, exchange)
               .flatMap(response -> Mono.just(ResponseEntity.ok(response)))
               .doOnSuccess(
                   responseResponseEntity ->

@@ -88,4 +88,8 @@ public class ClientCredentialEntity extends GenericEntity {
 
   @Column(name = "MFA_ENABLED")
   private Boolean mfaEnabled;
+
+  @Lob
+  @Column(name = "WEBHOOKS", columnDefinition = "TEXT")
+  private String webhooks;
 }
