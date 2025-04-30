@@ -146,7 +146,11 @@ function displayUserData(user) {
                   </div>
                 </div>
                 `
-                  : ""
+                  : `<div data-inviewport="fade-in" class="d-flex justify-content-center fade-in ${
+                      isMobile() ? "mt-3" : "mt-4"
+                    }"><a id='roles_page_title' href="/app/users/roles/${
+                      user.identifier
+                    }" class='btn btn-outline-primary delete-btn float-end clickable' style='padding: 5px 20px; border-radius: 10px'><i class='fa-solid fa-shield-plus me-1'></i> Edit Roles</a></div>`
               }
               ${
                 user.mfaSettings
@@ -277,10 +281,12 @@ function generateMFAHTML(mfa_settings) {
                 </h6>
                 <hr />`;
               Object.entries(item).forEach(([itemKey, itemValue]) => {
+                let translation_key = "user_details_mfa_" + itemKey;
                 content += `
                   <div class="row mt-2">
-                    <div class="col-sm-3" style="align-content: center;"><strong><h6 class="mb-0">${itemKey}</h6></strong></div>
+                    <div class="col-sm-3" style="align-content: center;"><strong><h6 class="mb-0 ${translation_key}">${itemKey}</h6></strong></div>
                     <div class="col-sm-9 text-secondary">${checkValue(
+                      itemKey,
                       itemValue
                     )}</div>
                   </div>`;
@@ -303,13 +309,18 @@ function generateMFAHTML(mfa_settings) {
               .join("");
           } else {
             // Se il valore è una stringa, numero o booleano
+            let translation_key = "user_details_mfa_" + key;
             content += `
               <div class="row mt-4 mb-3">
-                <div class="col-sm-3" style='align-content: center;'><h6 class="mb-0">${key}</h6></div>
+                <div class="col-sm-3 col-6" style='align-content: center;'><h6 class="mb-0 ${translation_key}">${key}</h6></div>
                 ${
                   value
-                    ? "<div class='col-sm-9 text-secondary'><span class='badge text-bg-success status_active' style='vertical-align: 2px;'>ACTIVE</span></div>"
-                    : "<div class='col-sm-9 text-secondary'><span class='badge text-bg-danger status_not_active' style='vertical-align: 2px;'>NOT ACTIVE</span></div>"
+                    ? `<div class='col-sm-9 col-6 ${
+                        isMobile() ? "text-end" : ""
+                      } text-secondary'><span class='badge text-bg-success status_active' style='vertical-align: 2px;'>ACTIVE</span></div>`
+                    : `<div class='col-sm-9 col-6 ${
+                        isMobile() ? "text-end" : ""
+                      } text-secondary'><span class='badge text-bg-danger status_not_active' style='vertical-align: 2px;'>NOT ACTIVE</span></div>`
                 }
                 
               </div>
@@ -327,12 +338,13 @@ function generateMFAHTML(mfa_settings) {
   </div>`;
 }
 
-function checkValue(value) {
+function checkValue(key, value) {
+  let translation_key = "user_details_mfa_" + key + "_" + value;
   // 1. Booleano
   if (typeof value === "boolean") {
     return value
-      ? "<div class='col-sm-9 text-secondary'><span class='badge text-bg-success status_active' style='vertical-align: 2px;'>ACTIVE</span></div>"
-      : "<div class='col-sm-9 text-secondary'><span class='badge text-bg-danger status_not_active' style='vertical-align: 2px;'>NOT ACTIVE</span></div>";
+      ? `<div class='col-sm-9 text-secondary'><span class='badge text-bg-success status_active ${translation_key}' style='vertical-align: 2px;'>ACTIVE</span></div>`
+      : `<div class='col-sm-9 text-secondary'><span class='badge text-bg-danger status_not_active ${translation_key}' style='vertical-align: 2px;'>NOT ACTIVE</span></div>"`;
   }
 
   // 2. Stringa che sembra una data ISO (es. 2025-04-17T19:07:59.3415269)
@@ -372,28 +384,32 @@ function generateAttributesHTML(attributes) {
       <h3 id="user_details_attributes">Attributes</h3>
       ${entries
         .map(([key, value], index) => {
+          let translation_key = "user_details_attributes_" + key;
           let content = "";
           if (typeof value === "object" && value !== null) {
             // Se il valore è un oggetto, generiamo una sezione con titolo e iteriamo i suoi valori
             const subEntries = Object.entries(value);
             content += `
-              <h5>${key}</h5>
+              <h5 class="${translation_key}">${key}</h5>
               ${subEntries
-                .map(
-                  ([subKey, subValue]) => `
+                .map(([subKey, subValue]) => {
+                  let translation_subkey =
+                    "user_details_attributes_" + key + "_" + subKey;
+                  return `
                   <div class="row mt-4">
-                    <div class="col-sm-3"><h6 class="mb-0">${subKey}</h6></div>
+                    <div class="col-sm-3"><h6 class="mb-0 ${translation_subkey}">${subKey}</h6></div>
                     <div class="col-sm-9 text-secondary"><code>${subValue}</code></div>
                   </div>
-                `
-                )
+                `;
+                })
                 .join("")}
             `;
           } else {
+            let translation_key = "user_details_attributes_" + key;
             // Se il valore è una stringa o un numero, lo stampiamo direttamente
             content += `
               <div class="row mt-4">
-                <div class="col-sm-3"><h6 class="mb-0">${key}</h6></div>
+                <div class="col-sm-3"><h6 class="mb-0 ${translation_key}">${key}</h6></div>
                 <div class="col-sm-9 text-secondary"><code>${value}</code></div>
               </div>
             `;

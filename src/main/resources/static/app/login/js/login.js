@@ -102,6 +102,7 @@ async function verifyOTP() {
       const error = getErrorCode(response.error);
       return sweetalert("error", error.title, error.message);
     } else {
+      fetchHeader(verifyOtp.headers);
       const redirect_uri = verifyOtp.headers.get("location");
       if (redirect_uri) {
         window.location.href = `${redirect_uri}?client-id=${client_id}&access-token=${

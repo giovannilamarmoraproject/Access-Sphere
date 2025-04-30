@@ -26,12 +26,14 @@ function getSavedHeaders() {
   const sessionId = getCookieOrStorage("Session-ID");
   const spanId = getCookieOrStorage("Span-ID");
   const traceId = getCookieOrStorage("Trace-ID");
+  const deviceToken = getCookieOrStorage("Device-Token");
 
   if (parentId) headers["Parent-ID"] = parentId;
   if (redirectUri) headers["redirect-uri"] = redirectUri;
   if (sessionId) headers["Session-ID"] = sessionId;
   if (spanId) headers["Span-ID"] = spanId;
   if (traceId) headers["Trace-ID"] = traceId;
+  if (deviceToken) headers["Device-Token"] = deviceToken;
 
   return headers;
 }
@@ -42,6 +44,7 @@ function fetchHeader(headers) {
   const sessionId = headers.get("Session-ID");
   const spanId = headers.get("Span-ID");
   const traceId = headers.get("Trace-ID");
+  const deviceToken = headers.get("Device-Token");
 
   // Save the headers in localStorage
   if (parentId) localStorage.setItem("Parent-ID", parentId);
@@ -49,6 +52,7 @@ function fetchHeader(headers) {
   if (sessionId) localStorage.setItem("Session-ID", sessionId);
   if (spanId) localStorage.setItem("Span-ID", spanId);
   if (traceId) localStorage.setItem("Trace-ID", traceId);
+  if (deviceToken) localStorage.setItem("Device-Token", deviceToken);
 }
 
 function getOrDefault(data, defaultData) {

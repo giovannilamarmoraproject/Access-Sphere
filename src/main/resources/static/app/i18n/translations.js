@@ -284,10 +284,86 @@ function applyTranslations() {
     "user_details_roles",
     translations[currentLanguage].user_details_roles
   );
+  /**
+   * MFA Dettagli into User Details
+   */
+  applyLanguage(
+    ".user_details_mfa_enabled",
+    translations[currentLanguage].user_details_mfa_enabled
+  );
+  applyLanguage(
+    ".user_details_mfa_creationDate",
+    translations[currentLanguage].user_details_mfa_creationDate
+  );
+  applyLanguage(
+    ".user_details_mfa_updateDate",
+    translations[currentLanguage].user_details_mfa_updateDate
+  );
+  applyLanguage(
+    ".user_details_mfa_type",
+    translations[currentLanguage].user_details_mfa_type
+  );
+  applyLanguage(
+    ".user_details_mfa_label",
+    translations[currentLanguage].user_details_mfa_label
+  );
+  applyLanguage(
+    ".user_details_mfa_confirmed",
+    translations[currentLanguage].user_details_mfa_confirmed
+  );
+  applyLanguage(
+    ".user_details_mfa_confirmed_true",
+    translations[currentLanguage].user_details_mfa_confirmed_true
+  );
+  applyLanguage(
+    ".user_details_mfa_confirmed_false",
+    translations[currentLanguage].user_details_mfa_confirmed_false
+  );
+  /**
+   * MFA Dettagli into User Details
+   */
   applyLanguage(
     "user_details_attributes",
     translations[currentLanguage].user_details_attributes,
     true
+  );
+  applyLanguage(
+    ".user_details_attributes_strapi-token",
+    translations[currentLanguage].user_details_attributes_strapi_token
+  );
+  applyLanguage(
+    ".user_details_attributes_money_stats_settings",
+    translations[currentLanguage].user_details_attributes_money_stats_settings
+  );
+  applyLanguage(
+    ".user_details_attributes_money_stats_settings_currency",
+    translations[currentLanguage]
+      .user_details_attributes_money_stats_settings_currency
+  );
+  applyLanguage(
+    ".user_details_attributes_money_stats_settings_liveWallets",
+    translations[currentLanguage]
+      .user_details_attributes_money_stats_settings_liveWallets
+  );
+  applyLanguage(
+    ".user_details_attributes_money_stats_settings_cryptoCurrency",
+    translations[currentLanguage]
+      .user_details_attributes_money_stats_settings_cryptoCurrency
+  );
+  applyLanguage(
+    ".user_details_attributes_money_stats_settings_currencySymbol",
+    translations[currentLanguage]
+      .user_details_attributes_money_stats_settings_currencySymbol
+  );
+  applyLanguage(
+    ".user_details_attributes_money_stats_settings_completeRequirement",
+    translations[currentLanguage]
+      .user_details_attributes_money_stats_settings_completeRequirement
+  );
+  applyLanguage(
+    ".user_details_attributes_money_stats_settings_cryptoCurrencySymbol",
+    translations[currentLanguage]
+      .user_details_attributes_money_stats_settings_cryptoCurrencySymbol
   );
   applyLanguage(
     "user_details_mfa_new",
