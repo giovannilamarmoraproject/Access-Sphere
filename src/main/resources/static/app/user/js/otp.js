@@ -16,7 +16,6 @@ const totpLabel = {
 
 document.addEventListener("DOMContentLoaded", function () {
   const otpMethod = document.getElementById("mfa_label");
-  console.log(otpMethod);
   if (otpMethod) {
     Object.values(totpLabel).forEach((label) => {
       const formattedLabel = label

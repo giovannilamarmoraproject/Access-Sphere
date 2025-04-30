@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const button = document.getElementById("mfa_page_setup_select_proceed");
 
   mfaMethod.addEventListener("change", function () {
-    console.log(mfaMethod);
     if (mfaMethod.value) {
       button.removeAttribute("disabled");
     } else {
