@@ -177,6 +177,20 @@ body {
 }
 
 @media (max-width: 767px) {
+  @media (min-height: 800px) {
+    #login,
+    #forgot,
+    #reset {
+      height: 75vh !important;
+    }
+  }
+  @media (max-height: 800px) {
+    #login,
+    #forgot,
+    #reset {
+      height: 70vh !important;
+    }
+  }
   #login,
   #forgot,
   #reset {
