@@ -263,7 +263,6 @@ function generateMFAHTML(mfa_settings) {
             // Se il valore è un array, iteriamo ogni elemento
             //content += `<h5>${key}</h5>`;
             value.forEach((item, i) => {
-              console.log(item);
               content += `<div class="border rounded p-3 mb-3" style="border-color: #2d323e !important;">
                 <h6 class="row">
                 <div class="col-md-5 col-6">
