@@ -16,7 +16,7 @@ public class AESKeyGenerator {
   public static void main(String[] args) throws Exception {
     String base64Key = CryptoUtils.generateBase64Key();
     System.out.println("🔐 AES Secret Key (Base64): " + base64Key + "\n");
-    String encoded = CryptoUtils.encrypt("DFQ4OCVXHGDXKJQJ6V2IYAPG5W3JJWPZ");
-    System.out.println("🔐 AES Secret Key Encoded (Base64): " + encoded + "\n");
+    // String encoded = CryptoUtils.encrypt("DFQ4OCVXHGDXKJQJ6V2IYAPG5W3JJWPZ");
+    // System.out.println("🔐 AES Secret Key Encoded (Base64): " + encoded + "\n");
   }
 }
