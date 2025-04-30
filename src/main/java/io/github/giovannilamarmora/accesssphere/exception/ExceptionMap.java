@@ -48,7 +48,11 @@ public enum ExceptionMap implements ExceptionCode {
    * @TechnicalUser ExceptionMap for TechUser
    */
   ERR_TECH_403(
-      "TECHNICAL_EXCEPTION", HttpStatus.FORBIDDEN, "You are not allowed to make this request");
+      "TECHNICAL_EXCEPTION", HttpStatus.FORBIDDEN, "You are not allowed to make this request"),
+  /**
+   * @MFA ExceptionMap for MFA
+   */
+  ERR_MFA_400("BAD_INPUT_ERROR", HttpStatus.BAD_REQUEST, "Invalid input");
 
   private final HttpStatus status;
   private final String message;

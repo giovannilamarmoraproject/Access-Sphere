@@ -3,7 +3,7 @@ package io.github.giovannilamarmora.accesssphere.api.strapi;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.*;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.DataValidator;
+import io.github.giovannilamarmora.accesssphere.data.UserDataValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -50,7 +50,7 @@ public class StrapiService {
         .saveUser(strapiUser)
         .map(
             strapiResponseResponseEntity -> {
-              DataValidator.validateStrapiResponse(strapiResponseResponseEntity);
+              UserDataValidator.validateStrapiResponse(strapiResponseResponseEntity);
               strapiResponseResponseEntity
                   .getBody()
                   .getUser()
@@ -107,7 +107,8 @@ public class StrapiService {
                     ExceptionMap.ERR_STRAPI_404, ExceptionMap.ERR_STRAPI_404.getMessage());
               }
               return Mono.just(listResponseEntity.getBody().getFirst());
-            });
+            })
+        .doOnError(StrapiException::handleStrapiException);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

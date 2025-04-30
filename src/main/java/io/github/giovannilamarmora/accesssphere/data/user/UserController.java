@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 public interface UserController {
@@ -264,7 +265,7 @@ public interface UserController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      ServerHttpRequest request);
+      ServerWebExchange exchange);
 
   @PatchMapping("/users/{identifier}")
   @Operation(

@@ -3,8 +3,8 @@ package io.github.giovannilamarmora.accesssphere.oAuth.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +19,10 @@ public class OAuthTokenResponse {
   private JsonNode googleToken;
   private JWTData userInfo;
   private User user;
+
+  public OAuthTokenResponse(AuthToken token) {
+    this.token = token;
+  }
 
   public OAuthTokenResponse(AuthToken token, JWTData userInfo) {
     this.token = token;

@@ -6,7 +6,7 @@ import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.entity.AccessTokenEntity;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.auth.TokenUtils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;

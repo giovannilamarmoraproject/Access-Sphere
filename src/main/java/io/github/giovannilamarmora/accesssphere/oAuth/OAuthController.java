@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
-import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;

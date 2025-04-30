@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.token.dto;
+package io.github.giovannilamarmora.accesssphere.token.model;
 
 public enum TokenClaims {
   SUBJECT_TYPE("subject_type"),

@@ -36,7 +36,7 @@ self.addEventListener("install", (event) => {
           "app/shared/user/img/Access Sphere Transparent 512x512.png",
           "app/shared/user/css/style.css",
           "app/shared/user/css/form.css",
-          "app/shared/user/css/animation.css",
+          "app/shared/shared/animations/animation.css",
         ]);
       })
       .catch((error) => {

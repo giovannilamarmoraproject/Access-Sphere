@@ -1,4 +1,6 @@
 env: Local
+sensitiveData: password|token|Authorization|Bearer|Basic|access[_-]?token|refresh[_-]?token|jwt|jwtSecret|jweSecret
+
 server:
   port: 8081
 cookie-domain: localhost
@@ -62,7 +64,7 @@ filter:
     shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,**/actuator,**/actuator/**,*/,/cookie-policy,/privacy-policy,*/favicon.ico,*/app/*,*/img/*,*/js/*,*/css/*,/manifest.json,/service-worker.js,/robots.txt,/sitemap.xml"
     #shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*,/cookie-policy,/privacy-policy"
     generateSessionURI: "*/v1/oAuth/2.0/authorize,*/users/register,**/v1/users/change/**"
-    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico"
+    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/v1/mfa/verify,*/favicon.ico"
     logoutURI: "*/v1/oAuth/2.0/logout"
   authorization:
     shouldFilter: "*/v1/oAuth/2.0/token/exchange,**/v1/users/profile"
@@ -73,6 +75,7 @@ rest:
       active: true
       baseUrl: https://stg.strapi.giovannilamarmora.com
       bearer: ${STRAPI_AUTH_TOKEN}
+      aesKey: QueSuqsMqNkPt5TtIbwWwMVhgXVb5lqzNvN3M68Hjog=
       path:
         clientId: /api/Oauthclientids
         registerUser: /api/auth/local/register

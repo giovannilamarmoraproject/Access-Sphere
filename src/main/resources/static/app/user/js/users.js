@@ -96,6 +96,7 @@ function displayUsersTable(users) {
     pageLength: 15, // Numero di righe di default
     responsive: true,
     lengthMenu: [10, 15, 25, 50, 100], // Opzioni della select
+    //columnDefs: [{ className: "dt-center", targets: "_all" }],
     //dom: '<"top"lfB>rt<"bottom"ip>', // Separazione logica degli elementi
     //layout: {
     //  bottom: {
@@ -197,4 +198,5 @@ $(document).ready(function () {
     displayUsersTable(users);
   } else getUsers();
   refreshAnimation("refresh-icon");
+  disableLoader();
 });

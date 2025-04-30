@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.token.dto;
+package io.github.giovannilamarmora.accesssphere.token.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.Joiner;
@@ -55,7 +55,7 @@ public class JWTData {
         ObjectToolkit.isNullOrEmpty(remoteAddress)
             ? null
             : clientCredential.getClientId() + "." + remoteAddress,
-        0,
+        clientCredential.getJwtExpiration(),
         System.currentTimeMillis(),
         ObjectToolkit.isNullOrEmpty(remoteAddress) ? null : "https://" + remoteAddress,
         user.getUsername(),

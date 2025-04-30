@@ -22,7 +22,7 @@ function sweetalert(icon, title, message) {
 function sweetalertConfirm(icon, title, message, btnConfirm, btnDeny) {
   const customClassSwal = Swal.mixin({
     customClass: {
-      confirmButton: "rounded-pill buttonInput width-100 bg-blue-500",
+      confirmButton: "rounded-pill buttonInput bg-blue-500",
       denyButton: "rounded-pill buttonInput width-100",
       popup: "border_round blur-effect",
     },

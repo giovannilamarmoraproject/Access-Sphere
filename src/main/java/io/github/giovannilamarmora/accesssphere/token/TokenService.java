@@ -16,14 +16,18 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
-import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
+import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenDataService;
+import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.TempToken;
+import io.github.giovannilamarmora.accesssphere.token.model.TokenClaims;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.auth.TokenUtils;
@@ -56,9 +60,27 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class TokenService {
 
-  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  private final SessionID sessionID;
   @Autowired private AccessTokenService accessTokenService;
+  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+  @Autowired private SessionID sessionID;
+  @Autowired private MFATokenDataService mfaTokenDataService;
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public AuthToken generateMFAToken(User user, ClientCredential clientCredential, Object payload) {
+    List<String> mfaMethods =
+        user.getMfaSettings().getMfaMethods().stream()
+            .filter(MFAMethod::isConfirmed)
+            .map(mfaMethod1 -> mfaMethod1.getType().name())
+            .distinct()
+            .toList();
+    MFATokenData mfaTokenData =
+        mfaTokenDataService.save(
+            user, mfaMethods, clientCredential.getClientId(), sessionID.getSessionID(), payload);
+
+    TempToken tempToken =
+        new TempToken(mfaTokenData.getTempToken(), mfaTokenData.getExpireDate(), "Bearer");
+    return new AuthToken(user.getIdentifier(), mfaTokenData.getSubject(), tempToken, mfaMethods);
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken generateToken(

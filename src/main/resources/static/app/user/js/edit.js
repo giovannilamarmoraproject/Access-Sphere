@@ -206,6 +206,7 @@ function applyUserEdit(userToEdit, userForm) {
   userToEdit.occupation = userForm.occupation;
   userToEdit.nationality = userForm.nationality;
   userToEdit.attributes = userForm.attributes;
+  userToEdit.mfaSettings = undefined;
   return userToEdit;
 }
 

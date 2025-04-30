@@ -48,4 +48,9 @@ public class RedirectControllerImpl {
   public String editUser(Model model) {
     return "app/user/edit";
   }
+
+  @GetMapping("/app/mfa/{identifier}")
+  public String mfa(Model model) {
+    return "app/user/mfa";
+  }
 }

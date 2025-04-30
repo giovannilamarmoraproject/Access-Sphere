@@ -16,8 +16,8 @@ import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
-import io.github.giovannilamarmora.accesssphere.token.dto.TokenExchange;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
@@ -213,7 +213,7 @@ public class OAuthService {
                       Mapper.removeField(
                           accessTokenData.getPayload(), TokenData.STRAPI_TOKEN.getToken())));
 
-      LOG.info("✅ Authorization successful for bearer: {}", bearer);
+      LOG.info("✅ Authorization successful for {}", bearer);
       return ResponseEntity.ok(response);
 
     } catch (TokenException | OAuthException e) {
