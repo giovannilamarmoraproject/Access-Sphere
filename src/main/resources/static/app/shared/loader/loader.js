@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>
           <div class="loader--spinner">
             <img
-              src="https://samherbert.net/svg-loaders/svg-loaders/oval.svg"
+              src="../../app/shared/loader/oval.svg"
               alt=""
             />
           </div>`;
