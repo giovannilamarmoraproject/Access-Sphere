@@ -1,5 +1,5 @@
 env: Local
-sensitiveData: password|token|Authorization|Bearer|Basic|access[_-]?token|refresh[_-]?token|jwt|jwtSecret|jweSecret
+sensitiveData: password|token|Authorization|Bearer|Basic|access[_-]?token|refresh[_-]?token|strapi[_-]?token|jwt|jwtSecret|jweSecret|registrationToken|secretKey|tokenReset
 
 server:
   port: 8081
@@ -75,7 +75,7 @@ rest:
       active: true
       baseUrl: https://stg.strapi.giovannilamarmora.com
       bearer: ${STRAPI_AUTH_TOKEN}
-      aesKey: QueSuqsMqNkPt5TtIbwWwMVhgXVb5lqzNvN3M68Hjog=
+      aes-key: ${AES_KEY}
       path:
         clientId: /api/Oauthclientids
         registerUser: /api/auth/local/register

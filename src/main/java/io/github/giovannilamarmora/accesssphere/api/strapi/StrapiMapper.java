@@ -185,6 +185,7 @@ public class StrapiMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<Webhook> mapFromStrapiWebhooksToWebhooks(List<StrapiWebhook> strapiWebhooks) {
+    if (ObjectToolkit.isNullOrEmpty(strapiWebhooks)) return null;
     return strapiWebhooks.stream().map(StrapiMapper::mapStrapiWebhookIntoWebhook).toList();
   }
 
