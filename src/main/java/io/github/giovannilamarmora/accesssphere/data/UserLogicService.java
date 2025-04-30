@@ -12,6 +12,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.database.UserDataServi
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
@@ -19,10 +20,12 @@ import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
+import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
+import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -42,10 +45,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Service
-public class DataService {
+public class UserLogicService {
 
   @Getter
   @Setter
@@ -60,36 +64,74 @@ public class DataService {
   @Autowired private StrapiService strapiService;
   @Autowired private TokenService tokenService;
   @Autowired private AccessTokenService accessTokenService;
+  @Autowired private MFAAuthenticationService mfaAuthenticationService;
+  @Autowired private WebhookService webhookService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> getUserByEmail(String email) {
+  protected Mono<User> getUserByIdentifier(String identifier, boolean getStrapiId) {
+    if (isStrapiEnabled) {
+      LOG.debug("Strapi is enabled, finding user, using identifier: {}", identifier);
+      return strapiService
+          .getUserByIdentifier(identifier)
+          .flatMap(
+              strapiUser -> {
+                User userToReturn = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
+                if (getStrapiId) userToReturn.setId(strapiUser.getId());
+                return Mono.just(userToReturn);
+              })
+          .onErrorResume(
+              throwable -> {
+                if (!OAuthException.isHandleException(throwable)) {
+                  LOG.info(
+                      "Error on strapi, finding user by identifier into database, message is {}",
+                      throwable.getMessage());
+                  UserEntity userEntity = userDataService.findUserEntityByIdentifier(identifier);
+                  UserDataValidator.validateUser(userEntity);
+                  return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+                }
+                return Mono.error(throwable);
+              });
+    }
+    UserEntity userEntity = userDataService.findUserEntityByIdentifier(identifier);
+    UserDataValidator.validateUser(userEntity);
+    return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  protected Mono<User> getUserByEmail(String email, boolean getStrapiId) {
     if (isStrapiEnabled) {
       LOG.debug("Strapi is enabled, finding user, using email {}", email);
       return strapiService
           .getUserByEmail(email)
-          .flatMap(strapiUser -> Mono.just(StrapiMapper.mapFromStrapiUserToUser(strapiUser)))
+          .flatMap(
+              strapiUser -> {
+                User userToReturn = StrapiMapper.mapFromStrapiUserToUser(strapiUser);
+                if (getStrapiId) userToReturn.setId(strapiUser.getId());
+                return Mono.just(userToReturn);
+              })
           .onErrorResume(
               throwable -> {
-                if (!throwable
-                    .getMessage()
-                    .equalsIgnoreCase(ExceptionMap.ERR_STRAPI_404.getMessage())) {
+                // if (!throwable
+                //    .getMessage()
+                //    .equalsIgnoreCase(ExceptionMap.ERR_STRAPI_404.getMessage())) {
+                if (!OAuthException.isHandleException(throwable)) {
                   LOG.info(
-                      "Error on strapi, finding user into database, message is {}",
+                      "Error on strapi, finding user by email into database, message is {}",
                       throwable.getMessage());
                   UserEntity userEntity = userDataService.findUserEntityByEmail(email);
-                  DataValidator.validateUser(userEntity);
+                  UserDataValidator.validateUser(userEntity);
                   return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
                 }
                 return Mono.error(throwable);
               });
     }
     UserEntity userEntity = userDataService.findUserEntityByEmail(email);
-    DataValidator.validateUser(userEntity);
+    UserDataValidator.validateUser(userEntity);
     return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<Void> logout(String refresh_token, AccessTokenData accessTokenData) {
+  protected Mono<Void> logout(String refresh_token, AccessTokenData accessTokenData) {
     if (isStrapiEnabled && !ObjectUtils.isEmpty(refresh_token)) {
       LOG.debug("Strapi is enabled, logout user");
       return strapiService
@@ -105,14 +147,14 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getUsers() {
+  protected Mono<List<User>> getUsers() {
     LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting all users in database");
     List<UserEntity> userEntities = userDataService.findAll();
     return Mono.just(UserMapper.mapUserEntitiesToUsers(userEntities));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getStrapiUsers(String strapi_bearer) {
+  protected Mono<List<User>> getStrapiUsers(String strapi_bearer) {
     LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting all users in strapi");
 
     return strapiService
@@ -121,7 +163,7 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> getUserByTokenReset(String tokenReset) {
+  protected Mono<User> getUserByTokenReset(String tokenReset) {
     if (isStrapiEnabled) {
       LOG.debug("Strapi is enabled, finding user, using token {}", tokenReset);
       return strapiService
@@ -136,20 +178,20 @@ public class DataService {
                       "Error on strapi, finding user into database, message is {}",
                       throwable.getMessage());
                   UserEntity userEntity = userDataService.findUserEntityByTokenReset(tokenReset);
-                  DataValidator.validateUser(userEntity);
-                  DataValidator.validateResetToken(userEntity.getUpdateDate());
+                  UserDataValidator.validateUser(userEntity);
+                  UserDataValidator.validateResetToken(userEntity.getUpdateDate());
                   return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
                 }
               });
     }
     UserEntity userEntity = userDataService.findUserEntityByTokenReset(tokenReset);
-    DataValidator.validateUser(userEntity);
-    DataValidator.validateResetToken(userEntity.getUpdateDate());
+    UserDataValidator.validateUser(userEntity);
+    UserDataValidator.validateResetToken(userEntity.getUpdateDate());
     return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> registerUser(
+  protected Mono<User> registerUser(
       String bearer, User user, ClientCredential clientCredential, Boolean assignNewClient) {
     List<AppRole> userRoles =
         clientCredential.getAppRoles().stream()
@@ -254,7 +296,7 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<OAuthTokenResponse> login(
+  protected Mono<OAuthTokenResponse> login(
       String username,
       String email,
       String password,
@@ -278,20 +320,26 @@ public class DataService {
                   strapiToken.put("refresh_token", strapiResponse.getRefresh_token());
                   strapiToken.put(
                       TokenData.STRAPI_ACCESS_TOKEN.getToken(), strapiResponse.getJwt());
-                  return getUserInfo(jwtData, strapiResponse.getJwt())
-                      .flatMap(
-                          user1 -> {
-                            jwtData.setRoles(user1.getRoles());
-                            AuthToken token =
-                                tokenService.generateToken(jwtData, clientCredential, strapiToken);
-                            strapiToken.put("expires_at", jwtData.getExp());
-                            return Mono.just(
-                                new OAuthTokenResponse(
-                                    token,
-                                    Utils.mapper().convertValue(strapiToken, JsonNode.class),
-                                    jwtData,
-                                    user1));
-                          });
+
+                  return mfaAuthenticationService
+                      .checkMFAAndMakeLogin(strapiToken, jwtData, user, clientCredential, request)
+                      .switchIfEmpty(
+                          getUserInfo(jwtData, strapiResponse.getJwt())
+                              .flatMap(
+                                  user1 -> {
+                                    jwtData.setRoles(user1.getRoles());
+                                    AuthToken token =
+                                        tokenService.generateToken(
+                                            jwtData, clientCredential, strapiToken);
+                                    strapiToken.put("expires_at", jwtData.getExp());
+                                    return Mono.just(
+                                        new OAuthTokenResponse(
+                                            token,
+                                            Utils.mapper()
+                                                .convertValue(strapiToken, JsonNode.class),
+                                            jwtData,
+                                            user1));
+                                  }));
                 })
             .onErrorResume(
                 throwable -> {
@@ -309,36 +357,8 @@ public class DataService {
     } else return techUserService.loginTechUser(username, clientCredential, request);
   }
 
-  private OAuthTokenResponse performLoginViaDatabase(
-      String username,
-      String email,
-      String password,
-      ClientCredential clientCredential,
-      ServerHttpRequest request) {
-    LOG.debug("Login process via Database started for username={} and email={}", username, email);
-    UserEntity userEntity = userDataService.findUserEntityByUsernameOrEmail(username, email);
-
-    if (ObjectUtils.isEmpty(userEntity)) {
-      LOG.error("No data where found od database for the user {}, with email {}", username, email);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
-    }
-
-    boolean matches = bCryptPasswordEncoder.matches(password, userEntity.getPassword());
-    if (!matches) {
-      LOG.error("An error happen during bCryptPasswordEncoder.matches, the password do not match");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
-    }
-    User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
-    userEntityToUser.setPassword(null);
-    JWTData jwtData =
-        JWTData.generateJWTData(userEntityToUser, clientCredential, SubjectType.CUSTOMER, request);
-    AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
-    LOG.debug("Login process via Database ended for username={} and email={}", username, email);
-    return new OAuthTokenResponse(userEntityToUser, jwtData, token);
-  }
-
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> getUserInfo(JWTData jwtData, String token) {
+  protected Mono<User> getUserInfo(JWTData jwtData, String token) {
     if (!techUserService.isTechUser()) {
       if (isStrapiEnabled) {
         LOG.debug("Strapi is enabled, getting userInfo");
@@ -353,21 +373,21 @@ public class DataService {
                         throwable.getMessage());
                     UserEntity userEntity =
                         userDataService.findUserEntityByEmail(jwtData.getEmail());
-                    DataValidator.validateUser(userEntity);
+                    UserDataValidator.validateUser(userEntity);
                     return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
                   }
                   return Mono.error(throwable);
                 });
       }
       UserEntity userEntity = userDataService.findUserEntityByEmail(jwtData.getEmail());
-      DataValidator.validateUser(userEntity);
+      UserDataValidator.validateUser(userEntity);
       return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
     }
     return techUserService.userInfo(jwtData);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<OAuthTokenResponse> refreshJWTToken(
+  protected Mono<OAuthTokenResponse> refreshJWTToken(
       AccessTokenData accessTokenData,
       ClientCredential clientCredential,
       String token,
@@ -414,7 +434,7 @@ public class DataService {
                       throwable.getMessage());
                   UserEntity userEntity =
                       userDataService.findUserEntityByEmail(accessTokenData.getEmail());
-                  DataValidator.validateUser(userEntity);
+                  UserDataValidator.validateUser(userEntity);
                   User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
                   userEntityToUser.setPassword(null);
                   JWTData jwtData =
@@ -430,7 +450,7 @@ public class DataService {
               });
     }
     UserEntity userEntity = userDataService.findUserEntityByEmail(accessTokenData.getEmail());
-    DataValidator.validateUser(userEntity);
+    UserDataValidator.validateUser(userEntity);
     User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
     userEntityToUser.setPassword(null);
     JWTData jwtData =
@@ -441,17 +461,8 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(User userToUpdate, boolean isUpdatePassword) {
-    return updateUserProcess(userToUpdate, isUpdatePassword);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(User userToUpdate) {
-    return updateUserProcess(userToUpdate, false);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  private Mono<User> updateUserProcess(User userToUpdate, boolean isUpdatePassword) {
+  protected Mono<User> updateUserOld(
+      User userToUpdate, boolean isUpdatePassword, boolean callStrapiUserByIdentifier) {
     UserEntity userEntity = UserMapper.mapUserToUserEntity(userToUpdate);
 
     if (isUpdatePassword) {
@@ -472,42 +483,45 @@ public class DataService {
        * The Identifier of the user is already validated so we call strapi to get the strapi id to
        * let update the user into the strapi, then we get the strapi user in order to update the user into the database
        */
-      return strapiService
-          .getUserByIdentifier(userToUpdate.getIdentifier())
-          .flatMap(
-              strapiUser -> {
-                userToUpdate.setId(strapiUser.getId());
-                return strapiService
-                    .updateUser(userToUpdate)
-                    .map(
-                        strapiUserUpdated -> {
-                          userEntity.setStrapiId(strapiUserUpdated.getId());
-                          // if (!ObjectUtils.isEmpty(userToUpdate.getRoles()))
-                          //  userEntity.setRoles(String.join(" ", userToUpdate.getRoles()));
-                          // Registro l'utente a prescindere che strapi funzioni o meno
-                          UserEntity userFind =
-                              userDataService.findUserEntityByIdentifier(
-                                  userToUpdate.getIdentifier());
-                          setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
-                          saveUserEntityIntoDatabase(userEntity);
-                          return StrapiMapper.mapFromStrapiUserToUser(strapiUserUpdated);
-                        })
-                    .onErrorResume(
-                        throwable -> {
-                          if (!OAuthException.isHandleException(throwable)) {
-                            LOG.info(
-                                "Error on strapi, update user into database, message is {}",
-                                throwable.getMessage());
-                            UserEntity userFind =
-                                userDataService.findUserEntityByIdentifier(
-                                    userToUpdate.getIdentifier());
-                            setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
-                            return Mono.just(saveUserEntityIntoDatabase(userEntity));
-                          }
-                          return Mono.error(throwable);
-                        })
-                    .doOnSuccess(user1 -> LOG.info("User {} updated", user1.getUsername()));
-              });
+      Mono<User> updateUserMono =
+          strapiService
+              .updateUser(userToUpdate)
+              .map(
+                  strapiUserUpdated -> {
+                    userEntity.setStrapiId(strapiUserUpdated.getId());
+                    // if (!ObjectUtils.isEmpty(userToUpdate.getRoles()))
+                    //  userEntity.setRoles(String.join(" ", userToUpdate.getRoles()));
+                    // Registro l'utente a prescindere che strapi funzioni o meno
+                    UserEntity userFind =
+                        userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
+                    setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
+                    saveUserEntityIntoDatabase(userEntity);
+                    return StrapiMapper.mapFromStrapiUserToUser(strapiUserUpdated);
+                  })
+              .onErrorResume(
+                  throwable -> {
+                    if (!OAuthException.isHandleException(throwable)) {
+                      LOG.info(
+                          "Error on strapi, update user into database, message is {}",
+                          throwable.getMessage());
+                      UserEntity userFind =
+                          userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
+                      setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
+                      return Mono.just(saveUserEntityIntoDatabase(userEntity));
+                    }
+                    return Mono.error(throwable);
+                  })
+              .doOnSuccess(user1 -> LOG.info("User {} updated", user1.getUsername()));
+
+      if (callStrapiUserByIdentifier)
+        return strapiService
+            .getUserByIdentifier(userToUpdate.getIdentifier())
+            .flatMap(
+                strapiUser -> {
+                  userToUpdate.setId(strapiUser.getId());
+                  return updateUserMono;
+                });
+      return updateUserMono;
     }
     UserEntity userFind = userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
     setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
@@ -515,7 +529,78 @@ public class DataService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<Response> deleteUser(String identifier, String strapi_token) {
+  protected Mono<User> updateUser(
+      User userToUpdate, boolean isUpdatePassword, boolean callStrapiUserByIdentifier) {
+    UserEntity userEntity = UserMapper.mapUserToUserEntity(userToUpdate);
+
+    if (isUpdatePassword) {
+      if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
+        if (!Utilities.isCharacterAndRegexValid(
+            userToUpdate.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
+          LOG.error("Invalid regex for field password for user {}", userToUpdate.getUsername());
+          throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
+        }
+        userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
+      }
+    }
+
+    if (isStrapiEnabled) {
+      LOG.debug(
+          "Strapi is enabled, updating user with email {} on strapi", userToUpdate.getEmail());
+
+      Mono<User> buildUpdateMono =
+          Mono.defer(
+              () ->
+                  strapiService
+                      .updateUser(userToUpdate)
+                      .map(
+                          strapiUserUpdated -> {
+                            userEntity.setStrapiId(strapiUserUpdated.getId());
+                            UserEntity userFind =
+                                userDataService.findUserEntityByIdentifier(
+                                    userToUpdate.getIdentifier());
+                            setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
+                            saveUserEntityIntoDatabase(userEntity);
+                            return StrapiMapper.mapFromStrapiUserToUser(strapiUserUpdated);
+                          })
+                      .onErrorResume(
+                          throwable -> {
+                            if (!OAuthException.isHandleException(throwable)) {
+                              LOG.info(
+                                  "Error on strapi, update user into database, message is {}",
+                                  throwable.getMessage());
+                              UserEntity userFind =
+                                  userDataService.findUserEntityByIdentifier(
+                                      userToUpdate.getIdentifier());
+                              setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
+                              return Mono.just(saveUserEntityIntoDatabase(userEntity));
+                            }
+                            return Mono.error(throwable);
+                          })
+                      .doOnSuccess(user1 -> LOG.info("User {} updated", user1.getUsername())));
+
+      if (callStrapiUserByIdentifier) {
+        return strapiService
+            .getUserByIdentifier(userToUpdate.getIdentifier())
+            .flatMap(
+                strapiUser -> {
+                  userToUpdate.setId(strapiUser.getId());
+                  return buildUpdateMono;
+                });
+      }
+
+      return buildUpdateMono;
+    }
+
+    UserEntity userFind = userDataService.findUserEntityByIdentifier(userToUpdate.getIdentifier());
+    setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
+    return Mono.just(saveUserEntityIntoDatabase(userEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  protected Mono<Response> deleteUser(
+      String identifier, String strapi_token, String bearer, ServerWebExchange exchange) {
+
     if (isStrapiEnabled) {
       LOG.debug("Strapi is enabled, deleting user with identifier {} on strapi", identifier);
 
@@ -526,35 +611,42 @@ public class DataService {
                   strapiService
                       .deleteUsers(strapiUser.getId(), strapi_token)
                       .flatMap(
-                          strapiUser1 -> {
-                            User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                          deletedUser -> {
+                            User userRes = StrapiMapper.mapFromStrapiUserToUser(deletedUser);
                             Response response =
                                 new Response(
                                     HttpStatus.OK.value(),
                                     "User " + userRes.getUsername() + " successfully deleted",
                                     TraceUtils.getSpanID(),
                                     userRes);
-                            return Mono.just(response);
-                          }))
-          .doOnSuccess(responseResponseEntity -> userDataService.deleteByIdentifier(identifier));
+
+                            return Mono.fromRunnable(
+                                    () -> userDataService.deleteByIdentifier(identifier))
+                                .then(
+                                    webhookService.checkAndExecuteWebhook(
+                                        WebhookAction.DELETE_USER, bearer, identifier, exchange))
+                                .thenReturn(response);
+                          }));
     } else {
-      userDataService.deleteByIdentifier(identifier);
-      Response response =
-          new Response(
-              HttpStatus.OK.value(),
-              "User " + identifier + " successfully deleted",
-              TraceUtils.getSpanID(),
-              null);
-      return Mono.just(response);
+      return Mono.fromRunnable(() -> userDataService.deleteByIdentifier(identifier))
+          .then(
+              webhookService.checkAndExecuteWebhook(
+                  WebhookAction.DELETE_USER, bearer, identifier, exchange))
+          .thenReturn(
+              new Response(
+                  HttpStatus.OK.value(),
+                  "User " + identifier + " successfully deleted",
+                  TraceUtils.getSpanID(),
+                  null));
     }
   }
 
-  public void saveUserIntoDatabase(User user) {
+  protected void saveUserIntoDatabase(User user) {
     UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
     saveUserEntityIntoDatabase(userEntity);
   }
 
-  public void updateUserIntoDatabase(User user) {
+  protected void updateUserIntoDatabase(User user) {
     UserEntity userSaved = userDataService.findUserEntityByIdentifier(user.getIdentifier());
     if (!ObjectUtils.isEmpty(userSaved)) {
       // Aggiornare i campi dell'entità esistente con i valori del ClientCredential
@@ -568,21 +660,49 @@ public class DataService {
   }
 
   @Transactional
-  private User saveUserEntityIntoDatabase(UserEntity userEntity) {
-    UserEntity userSaved = userDataService.saveAndFlush(userEntity);
-    userSaved.setPassword(null);
-    DataValidator.validateUser(userSaved);
-    return UserMapper.mapUserEntityToUser(userSaved);
-  }
-
-  @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void deleteUserFromDatabase(User user) {
+  protected void deleteUserFromDatabase(User user) {
     // Trovare l'entità esistente nel database
     UserEntity existingUser = userDataService.findUserEntityByIdentifier(user.getIdentifier());
     if (!ObjectUtils.isEmpty(existingUser)) {
       userDataService.delete(existingUser);
     }
+  }
+
+  private OAuthTokenResponse performLoginViaDatabase(
+      String username,
+      String email,
+      String password,
+      ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    LOG.debug("Login process via Database started for username={} and email={}", username, email);
+    UserEntity userEntity = userDataService.findUserEntityByUsernameOrEmail(username, email);
+
+    if (ObjectUtils.isEmpty(userEntity)) {
+      LOG.error("No data where found od database for the user {}, with email {}", username, email);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+
+    boolean matches = bCryptPasswordEncoder.matches(password, userEntity.getPassword());
+    if (!matches) {
+      LOG.error("An error happen during bCryptPasswordEncoder.matches, the password do not match");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+    User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
+    userEntityToUser.setPassword(null);
+    JWTData jwtData =
+        JWTData.generateJWTData(userEntityToUser, clientCredential, SubjectType.CUSTOMER, request);
+    AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
+    LOG.debug("Login process via Database ended for username={} and email={}", username, email);
+    return new OAuthTokenResponse(userEntityToUser, jwtData, token);
+  }
+
+  @Transactional
+  private User saveUserEntityIntoDatabase(UserEntity userEntity) {
+    UserEntity userSaved = userDataService.saveAndFlush(userEntity);
+    userSaved.setPassword(null);
+    UserDataValidator.validateUser(userSaved);
+    return UserMapper.mapUserEntityToUser(userSaved);
   }
 
   private void setDataBeforeUpdate(

@@ -10,7 +10,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTempla
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.DataService;
+import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
@@ -23,12 +23,13 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
@@ -41,14 +42,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Service
+@Logged
 @RequiredArgsConstructor
 public class UserService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  @Autowired private DataService dataService;
+  @Autowired private UserDataService dataService;
   @Autowired private ClientService clientService;
   @Autowired private TokenService tokenService;
   @Autowired private StrapiService strapiService;
@@ -497,7 +500,8 @@ public class UserService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> deleteUser(String identifier) {
+  public Mono<ResponseEntity<Response>> deleteUser(
+      String identifier, String bearer, ServerWebExchange exchange) {
     LOG.info("\uD83E\uDD37\u200D♂\uFE0F Deleting user process started, identifier: {}", identifier);
     if (!techUserService.isTechUser()) {
       LOG.error("Only a tech user can delete the user {}", identifier);
@@ -512,7 +516,7 @@ public class UserService {
           TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
           String strapi_token = OAuthMapper.getStrapiAccessToken(accessTokenData);
           return dataService
-              .deleteUser(identifier, strapi_token)
+              .deleteUser(identifier, strapi_token, bearer, exchange)
               .flatMap(response -> Mono.just(ResponseEntity.ok(response)))
               .doOnSuccess(
                   responseResponseEntity ->

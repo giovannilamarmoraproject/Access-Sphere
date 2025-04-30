@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.scheduler;
 
-import io.github.giovannilamarmora.accesssphere.data.DataService;
+import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -28,7 +28,7 @@ public class UsersSyncScheduler {
 
   private static final Logger LOG = LoggerFactory.getLogger(UsersSyncScheduler.class);
 
-  @Autowired private DataService dataService;
+  @Autowired private UserDataService dataService;
 
   // @Scheduled(initialDelay = 1000)
   @Scheduled(cron = "0 0 0 * * *")
@@ -37,12 +37,12 @@ public class UsersSyncScheduler {
     MDCUtils.registerDefaultMDC(env).subscribe();
     Map<String, String> contextMap = MDC.getCopyOfContextMap();
 
-    if (dataService.getIsStrapiEnabled()) {
+    if (dataService.isStrapiEnabled()) {
       LOG.info("\uD83D\uDE80 Starting Scheduler users sync with Strapi");
       Mono<List<User>> strapiUsers = dataService.getStrapiUsers(null);
       Mono<List<User>> dbClientsMono =
           dataService
-              .getUsers()
+              .getUsersFromDatabase()
               .onErrorResume(
                   throwable -> {
                     if (throwable instanceof OAuthException) {
@@ -116,6 +116,7 @@ public class UsersSyncScheduler {
         && Objects.equals(strapiUser.getNationality(), dbUser.getNationality())
         && Objects.equals(strapiUser.getSsn(), dbUser.getSsn())
         && Objects.equals(strapiUser.getTokenReset(), dbUser.getTokenReset())
-        && Objects.equals(strapiUser.getAttributes(), dbUser.getAttributes());
+        && Objects.equals(strapiUser.getAttributes(), dbUser.getAttributes())
+        && Objects.equals(strapiUser.getMfaSettings(), dbUser.getMfaSettings());
   }
 }

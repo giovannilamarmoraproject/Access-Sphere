@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.utilities;
 
 public interface ExposedHeaders {
+  String DEVICE_TOKEN = Cookie.COOKIE_DEVICE_TOKEN;
   String SESSION_ID = Cookie.COOKIE_SESSION_ID;
   String AUTHORIZATION = "Authorization";
   String LOCATION = "Location";

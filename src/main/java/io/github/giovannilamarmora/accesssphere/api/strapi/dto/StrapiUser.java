@@ -89,4 +89,7 @@ public class StrapiUser extends StrapiGeneric {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private Map<String, Object> attributes;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private StrapiMFASetting mfa_settings;
 }

@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @Component
-public class DataValidator {
+public class UserDataValidator {
 
-  private static final Logger LOG = LoggerFilter.getLogger(DataValidator.class);
+  private static final Logger LOG = LoggerFilter.getLogger(UserDataValidator.class);
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateUser(UserEntity userEntity) {
@@ -46,6 +46,17 @@ public class DataValidator {
       LOG.error("Strapi response on user is null");
       throw new OAuthException(
           ExceptionMap.ERR_STRAPI_400, ExceptionMap.ERR_STRAPI_400.getMessage());
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateIdentifier(String actual_identifier, String expected_identifier) {
+    if (!actual_identifier.equalsIgnoreCase(expected_identifier)) {
+      LOG.error(
+          "Identifier validation failed: expected='{}', but got='{}'",
+          expected_identifier,
+          actual_identifier);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 }

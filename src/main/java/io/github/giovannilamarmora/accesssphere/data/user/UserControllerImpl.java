@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Logged
@@ -59,8 +60,8 @@ public class UserControllerImpl implements UserController {
 
   @Override
   public Mono<ResponseEntity<Response>> deleteUser(
-      String identifier, String bearer, ServerHttpRequest request) {
-    return userService.deleteUser(identifier);
+      String identifier, String bearer, ServerWebExchange exchange) {
+    return userService.deleteUser(identifier, bearer, exchange);
   }
 
   @Override

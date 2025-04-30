@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.github.giovannilamarmora</groupId>
     <artifactId>access-sphere</artifactId>
-    <version>1.2.13</version>
+    <version>1.5.0</version>
     <name>access-sphere</name>
     <description>AccessSphere is an identity management and authentication microservice based on OAuth 2.0. It provides
         a secure and scalable infrastructure for user authentication, authorization management, and access to protected
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>io.github.giovannilamarmora.utils</groupId>
             <artifactId>utils-code</artifactId>
-            <version>1.0.75</version>
+            <version>1.0.75.57</version>
         </dependency>
 
         <dependency>
@@ -103,6 +103,29 @@
             <artifactId>bucket4j-core</artifactId>
             <version>8.10.1</version>
         </dependency>
+
+        <!-- QRCODE Generation -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+        <!-- END QRCODE Generation -->
+
+        <!-- MFA -->
+        <!-- https://mvnrepository.com/artifact/com.warrenstrange/googleauth -->
+        <dependency>
+            <groupId>com.warrenstrange</groupId>
+            <artifactId>googleauth</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+        <!-- END MFA -->
+
 
     </dependencies>
 

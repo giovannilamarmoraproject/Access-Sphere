@@ -6,12 +6,17 @@ import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.utilities.CryptoUtils;
+import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -72,7 +77,9 @@ public class StrapiMapper {
         strapiClient.getId_token(),
         strapiClient.getAccess_token(),
         strapiClient.getStrapi_token(),
-        strapiClient.getAuthorize_redirect_status());
+        strapiClient.getAuthorize_redirect_status(),
+        strapiClient.getMfa_enabled(),
+        mapFromStrapiWebhooksToWebhooks(strapiClient.getWebhooks()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -101,7 +108,25 @@ public class StrapiMapper {
         user.getNationality(),
         user.getSsn(),
         user.getTokenReset(),
-        user.getAttributes());
+        user.getAttributes(),
+        mapMFASettingsIntoStrapiMFASettings(user.getMfaSettings()));
+  }
+
+  public static StrapiMFASetting mapMFASettingsIntoStrapiMFASettings(MFASetting mfaSetting) {
+    if (ObjectToolkit.isNullOrEmpty(mfaSetting)) return null;
+    StrapiMFASetting strapiMFASetting = new StrapiMFASetting();
+    BeanUtils.copyProperties(mfaSetting, strapiMFASetting);
+    strapiMFASetting.setMfaMethods(
+        mfaSetting.getMfaMethods().stream()
+            .map(
+                mfaMethod -> {
+                  StrapiMFAMethod method = new StrapiMFAMethod();
+                  BeanUtils.copyProperties(mfaMethod, method);
+                  method.setSecretKey(CryptoUtils.encrypt(mfaMethod.getSecretKey()));
+                  return method;
+                })
+            .toList());
+    return strapiMFASetting;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -125,7 +150,26 @@ public class StrapiMapper {
         user.getTokenReset(),
         user.getConfirmed(),
         user.getBlocked(),
-        user.getAttributes());
+        user.getAttributes(),
+        mapStrapiMFASettingsIntoMFASettings(user.getMfa_settings()));
+  }
+
+  public static MFASetting mapStrapiMFASettingsIntoMFASettings(StrapiMFASetting strapiMFASetting) {
+    if (ObjectToolkit.isNullOrEmpty(strapiMFASetting)) return null;
+    MFASetting mfaSetting = new MFASetting();
+    BeanUtils.copyProperties(strapiMFASetting, mfaSetting);
+    mfaSetting.setMfaMethods(
+        strapiMFASetting.getMfaMethods().stream()
+            .map(
+                strapiMFAMethod -> {
+                  MFAMethod method = new MFAMethod();
+                  if (ObjectToolkit.isNullOrEmpty(strapiMFAMethod)) return null;
+                  BeanUtils.copyProperties(strapiMFAMethod, method);
+                  method.setSecretKey(CryptoUtils.decrypt(strapiMFAMethod.getSecretKey()));
+                  return method;
+                })
+            .toList());
+    return mfaSetting;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -137,5 +181,18 @@ public class StrapiMapper {
   public static List<String> getAppRoles(List<AppRole> appRoles) {
     if (ObjectUtils.isEmpty(appRoles)) return null;
     return appRoles.stream().map(AppRole::getRole).toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<Webhook> mapFromStrapiWebhooksToWebhooks(List<StrapiWebhook> strapiWebhooks) {
+    return strapiWebhooks.stream().map(StrapiMapper::mapStrapiWebhookIntoWebhook).toList();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static Webhook mapStrapiWebhookIntoWebhook(StrapiWebhook strapiWebhook) {
+    if (ObjectToolkit.isNullOrEmpty(strapiWebhook)) return null;
+    Webhook webhook = new Webhook();
+    BeanUtils.copyProperties(strapiWebhook, webhook);
+    return webhook;
   }
 }
