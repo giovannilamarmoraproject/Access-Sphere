@@ -1,4 +1,6 @@
 env: "Test" # Used for Google Cloud LOG
+sensitiveData: password|token|Authorization|Bearer|Basic|access[_-]?token|refresh[_-]?token|strapi[_-]?token|jwt|jwtSecret|jweSecret|registrationToken|secretKey|tokenReset
+
 cookie-domain: localhost
 spring:
   application:
@@ -34,6 +36,7 @@ rest:
       active: true
       baseUrl: http://strapi.app.mock
       bearer: token
+      aes-key: aesKey
       path:
         clientId: /api/Oauthclientids
         registerUser: /api/auth/local/register
