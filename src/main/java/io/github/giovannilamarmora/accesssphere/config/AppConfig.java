@@ -25,8 +25,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     security = {@SecurityRequirement(name = HttpHeaders.AUTHORIZATION)},
     servers = {
       @Server(
-          url = "https://access.sphere.service.giovannilamarmora.com",
-          description = "Staging Server URL"),
+          url = "https://access-sphere.giovannilamarmora.com",
+          description = "Production Server URL"),
       @Server(
           url = "https://access.sphere.service.stg.giovannilamarmora.com",
           description = "Staging Server URL"),
@@ -38,8 +38,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     in = SecuritySchemeIn.HEADER)
 public class AppConfig {
 
-  //@Bean
-  //public OpenApiCustomizer applyStandardOpenAPIModifications() {
+  // @Bean
+  // public OpenApiCustomizer applyStandardOpenAPIModifications() {
   //  return openApi -> {
   //    Paths paths = new Paths();
   //    openApi.getPaths().entrySet().stream()
@@ -48,10 +48,11 @@ public class AppConfig {
   //            entry ->
   //                paths.addPathItem(
   //                    entry.getKey(),
-  //                    OpenAPIConfig.addJSONExamplesOnResource(entry.getValue(), AppConfig.class)));
+  //                    OpenAPIConfig.addJSONExamplesOnResource(entry.getValue(),
+  // AppConfig.class)));
   //    openApi.setPaths(paths);
   //  };
-  //}
+  // }
 
   @Bean
   public SessionID sessionID() {
