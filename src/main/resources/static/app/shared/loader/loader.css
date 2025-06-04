@@ -4,7 +4,7 @@
   left: 0;
   height: 100%;
   width: 100%;
-  z-index: 9999; /* Assicurati che sia sopra tutti */
+  z-index: 9999;
 }
 
 .loader--spinner {
@@ -470,5 +470,209 @@
   100% {
     transform: skew(12deg) translateY(-100%);
     opacity: 0.1;
+  }
+}
+
+:root {
+  --white: #e3e4e8;
+  --grey: #454954;
+}
+
+body {
+  background: #000;
+  overflow: hidden;
+}
+
+.animation-loader {
+  position: absolute;
+  div {
+    position: absolute;
+  }
+}
+
+.animation-loader {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: donwAnimation 0.75s infinite;
+  scale: 0.7;
+}
+
+.watch,
+.pc {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc {
+  transform: translateY(-20px);
+  animation: pcAnimation 3s infinite;
+}
+
+.inner-sq {
+  width: 40px;
+  height: 115px;
+  border: 10px solid var(--white);
+  border-radius: 12px;
+  background: var(--grey);
+  animation: hideWatch 3s infinite;
+}
+
+.outer-sq {
+  width: 60px;
+  height: 60px;
+  border: 10px solid var(--white);
+  border-radius: 12px;
+  background: var(--grey);
+  animation: watchAnimation 3s infinite;
+}
+
+.circle {
+  background: var(--white);
+  width: 10px;
+  height: 30px;
+  transform: translate(40px);
+  border-radius: 12px;
+  animation: watchCircle 3s infinite;
+}
+
+.base-one {
+  background: var(--white);
+  width: 10px;
+  height: 30px;
+  transform: translateY(70px);
+}
+
+.base-two {
+  background: var(--white);
+  width: 90px;
+  height: 10px;
+  transform: translateY(85px);
+  border-radius: 12px;
+}
+
+.ipad {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.line {
+  background: var(--white);
+  width: 43px;
+  height: 8px;
+  z-index: 2;
+  border-radius: 12px;
+  transform: translateY(30px);
+  animation: ipad 3s infinite;
+}
+
+@keyframes donwAnimation {
+  20% {
+    transform: translateY(15px);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes watchAnimation {
+  0% {
+    width: 90px;
+    height: 150px;
+  }
+
+  25% {
+    width: 75px;
+    height: 75px;
+  }
+
+  50%,
+  75% {
+    width: 170px;
+    height: 105px;
+  }
+
+  100% {
+    width: 90px;
+    height: 150px;
+  }
+}
+
+@keyframes hideWatch {
+  0%,
+  25% {
+    scale: 1;
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+    scale: 0;
+  }
+}
+
+@keyframes watchCircle {
+  0% {
+    transform: translate(20px);
+    opacity: 1;
+  }
+
+  25% {
+    opacity: 1;
+    transform: translate(45px);
+  }
+
+  26%,
+  100% {
+    opacity: 0;
+    transform: translate(20px);
+  }
+}
+
+@keyframes pcAnimation {
+  0%,
+  25% {
+    visibility: hidden;
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  51%,
+  55%,
+  75%,
+  100% {
+    scale: 1;
+    transform: translateY(-40px);
+  }
+}
+
+@keyframes ipad {
+  0%,
+  50% {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+
+  75% {
+    opacity: 1;
+    transform: translateY(30px);
+    width: 43px;
+  }
+
+  100% {
+    width: 9px;
+    transform: translateY(40px);
   }
 }
