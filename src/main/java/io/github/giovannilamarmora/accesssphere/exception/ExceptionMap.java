@@ -7,14 +7,15 @@ public enum ExceptionMap implements ExceptionCode {
   /**
    * @oAuth2.0 Exception Map for Authentication
    */
-  ERR_OAUTH_400("BAD_INPUT_ERROR", HttpStatus.BAD_REQUEST, "Input miss match"),
+  ERR_OAUTH_400(ExceptionType.BAD_INPUT_ERROR.name(), HttpStatus.BAD_REQUEST, "Input miss match"),
   ERR_OAUTH_401(
-      "OAUTH_NOT_AUTHORIZED", HttpStatus.UNAUTHORIZED, "You are not allowed to make this request"),
-  ERR_OAUTH_403(
       "OAUTH_NOT_VALID",
-      HttpStatus.FORBIDDEN,
+      HttpStatus.UNAUTHORIZED,
       "You cannot make this request cause the auth-token is invalid"),
+  ERR_OAUTH_403(
+      "OAUTH_ACCESS_DENIED", HttpStatus.FORBIDDEN, "You are not allowed to make this request"),
   ERR_OAUTH_404("DATA_NOT_FOUND", HttpStatus.NOT_FOUND, "Data Not Found"),
+  ERR_OAUTH_423("ACCOUNT_BLOCKED", HttpStatus.LOCKED, "Your account has been blocked."),
   ERR_OAUTH_500("OAUTH_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, "Generic Server Error"),
   /**
    * @Token Exception Map for Token
@@ -39,9 +40,19 @@ public enum ExceptionMap implements ExceptionCode {
       "TOKEN_NOT_VALID",
       HttpStatus.UNAUTHORIZED,
       "You cannot make this request cause the auth-token is invalid"),
+  ERR_USER_415(
+      "PAYLOAD_TOO_LARGE", HttpStatus.PAYLOAD_TOO_LARGE, "Data is too large to be uploaded"),
   ERR_USER_429("TOO_MANY_REQUEST", HttpStatus.TOO_MANY_REQUESTS, "Too many requests"),
   ERR_EMAIL_SEND_001("CLIENT_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on client: "),
-  ;
+  /**
+   * @TechnicalUser ExceptionMap for TechUser
+   */
+  ERR_TECH_403(
+      "TECHNICAL_EXCEPTION", HttpStatus.FORBIDDEN, "You are not allowed to make this request"),
+  /**
+   * @MFA ExceptionMap for MFA
+   */
+  ERR_MFA_400("BAD_INPUT_ERROR", HttpStatus.BAD_REQUEST, "Invalid input");
 
   private final HttpStatus status;
   private final String message;

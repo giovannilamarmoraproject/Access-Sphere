@@ -3,12 +3,16 @@ package io.github.giovannilamarmora.accesssphere.utilities;
 public final class OpenAPI {
   public final class Tag {
     public static final String OAUTH = "oAuth";
+    public static final String MFA = "Multi factor Authentication";
     public static final String TOKEN = "Token";
     public static final String USERS = "Users";
+    public static final String ROLES = "Roles";
+    public static final String CLIENT = "Client";
   }
 
   public final class Description {
     public static final String OAUTH = "API to handle authorization";
+    public static final String MFA = "API to handle Multi factor Authentication";
   }
 
   public final class Params {
@@ -40,6 +44,9 @@ public final class OpenAPI {
       public static final String INCLUDE_USER_INFO = "(optional): Include UserInfo Response.";
       public static final String INCLUDE_USER_DATA = "(optional): Include UserData Response.";
       public static final String REFRESH_TOKEN = "Refresh token to refresh all tokens.";
+      public static final String ASSIGN_NEW_CLIENT = "(optional): Assign new client default roles.";
+      public static final String IDENTIFIER = "Identifier of the user.";
+      public static final String UNLOCK = "Status of the user.";
     }
 
     public final class Example {
@@ -58,6 +65,8 @@ public final class OpenAPI {
       public static final String INCLUDE_USER_INFO = "true";
       public static final String INCLUDE_USER_DATA = "true";
       public static final String REFRESH_TOKEN = "Bearer dGVzdDpzZWNyZXQ.....";
+      public static final String IDENTIFIER = "d18124b1-ba15-4b51-a344-78e5a6c0a205";
+      public static final String UNLOCK = "true";
     }
   }
 }

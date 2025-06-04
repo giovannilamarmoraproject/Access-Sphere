@@ -6,12 +6,13 @@ import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.token.data.entity.AccessTokenEntity;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.auth.TokenUtils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ public class AccessTokenService {
               session_id,
               client_id,
               jwtData.getSub(),
+              jwtData.getSubject_type(),
               jwtData.getEmail(),
               jwtData.getIdentifier(),
               jwtData.getType(),
@@ -74,20 +76,38 @@ public class AccessTokenService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AccessTokenData getByAccessTokenOrIdToken(String token) {
-    String hashedToken =
-        token.contains("Bearer") ? TokenUtils.hashingToken(token.split("Bearer ")[1]) : token;
-    AccessTokenEntity accessToken = accessTokenDAO.findByTokenHash(hashedToken);
+    if (ObjectToolkit.isNullOrEmpty(token)) {
+      LOG.error("Token not found, please provide a valid token");
+      throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
+    }
 
-    if (ObjectUtils.isEmpty(accessToken)) {
+    String extractedToken =
+        token.startsWith("Bearer ") ? token.replaceFirst("Bearer ", "").trim() : token;
+
+    if (extractedToken.isEmpty()) {
+      LOG.error("The current Bearer is empty, please provide a valid token");
+      throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
+    }
+
+    String hashedToken = TokenUtils.hashingToken(extractedToken);
+    List<AccessTokenEntity> accessTokens = accessTokenDAO.findByTokenHash(hashedToken);
+
+    if (ObjectToolkit.isNullOrEmpty(accessTokens)
+        || ObjectToolkit.isNullOrEmpty(accessTokens.getFirst())) {
       LOG.error("Access token data not found on Database");
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
+
+    AccessTokenEntity accessToken = accessTokens.getFirst();
+
     Date now = new Date();
     if (now.after(new Date(accessToken.getAccessExpireDate()))
         || accessToken.getStatus().equals(TokenStatus.EXPIRED)
         || accessToken.getStatus().equals(TokenStatus.REVOKED)) {
       LOG.error(
-          "The current access token is expired on {}", new Date(accessToken.getAccessExpireDate()));
+          "The current access token is expired on {} with status {}",
+          new Date(accessToken.getAccessExpireDate()),
+          accessToken.getStatus());
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
@@ -98,19 +118,24 @@ public class AccessTokenService {
   public AccessTokenData getByRefreshToken(String token) {
     String hashedToken =
         token.contains("Bearer") ? TokenUtils.hashingToken(token.split("Bearer ")[1]) : token;
-    AccessTokenEntity accessToken = accessTokenDAO.findByTokenHash(hashedToken);
+    List<AccessTokenEntity> accessTokens = accessTokenDAO.findByTokenHash(hashedToken);
 
-    if (ObjectUtils.isEmpty(accessToken)) {
+    if (ObjectToolkit.isNullOrEmpty(accessTokens)
+        || ObjectToolkit.isNullOrEmpty(accessTokens.getFirst())) {
       LOG.error("Refresh token data not found on Database");
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
+
+    AccessTokenEntity accessToken = accessTokens.getFirst();
+
     Date now = new Date();
     if (now.after(new Date(accessToken.getRefreshExpireDate()))
         || accessToken.getStatus().equals(TokenStatus.EXPIRED)
         || accessToken.getStatus().equals(TokenStatus.REVOKED)) {
       LOG.error(
-          "The current refresh token is expired on {}",
-          new Date(accessToken.getRefreshExpireDate()));
+          "The current refresh token is expired on {} with status {}",
+          new Date(accessToken.getRefreshExpireDate()),
+          accessToken.getStatus());
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 

@@ -1,4 +1,6 @@
 env: Local
+sensitiveData: password|token|Authorization|Bearer|Basic|access[_-]?token|refresh[_-]?token|strapi[_-]?token|jwt|jwtSecret|jweSecret|registrationToken|secretKey|tokenReset
+
 server:
   port: 8081
 cookie-domain: localhost
@@ -29,10 +31,20 @@ spring:
   sql:
     init:
       mode: always
+  codec:
+    max-in-memory-size: 2MB # Upload of images
 
 # Level of LOG
 logging:
   config: ${LOGBACK_FILE:}
+  level:
+    io.github.giovannilamarmora: DEBUG
+    web: INFO
+    root: INFO
+    org:
+      springframework:
+        web: INFO
+      hibernate: ERROR
 
 springdoc:
   api-docs:
@@ -44,14 +56,18 @@ springdoc:
 filter:
   requestResponse:
     enabled: true
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,/login/*"
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,/cookie-policy,/privacy-policy,*/favicon.ico,*/app/*,*/img/*,*/js/*,*/css/*,/manifest.json,/service-worker.js,/robots.txt,/sitemap.xml"
+    #shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,/login/*,/cookie-policy,/privacy-policy"
   rate-limiting:
-    shouldFilter: "*/users/change/password,*/users/change/password/request"
+    shouldFilter: "*/users/change/password,*/users/change/password/request,**/v1/users/change/**"
   session-id:
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*"
-    generateSessionURI: "*/v1/oAuth/2.0/authorize,*/users/register"
-    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico"
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,**/actuator,**/actuator/**,*/,/cookie-policy,/privacy-policy,*/favicon.ico,*/app/*,*/img/*,*/js/*,*/css/*,/manifest.json,/service-worker.js,/robots.txt,/sitemap.xml"
+    #shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*,/cookie-policy,/privacy-policy"
+    generateSessionURI: "*/v1/oAuth/2.0/authorize,*/users/register,**/v1/users/change/**"
+    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/v1/mfa/verify,*/favicon.ico"
     logoutURI: "*/v1/oAuth/2.0/logout"
+  authorization:
+    shouldFilter: "*/v1/oAuth/2.0/token/exchange,**/v1/users/profile"
 
 rest:
   client:
@@ -59,6 +75,7 @@ rest:
       active: true
       baseUrl: https://stg.strapi.giovannilamarmora.com
       bearer: ${STRAPI_AUTH_TOKEN}
+      aes-key: ${AES_KEY}
       path:
         clientId: /api/Oauthclientids
         registerUser: /api/auth/local/register
@@ -70,6 +87,8 @@ rest:
         logout: /api/auth/revoke
         updateUser: /api/users/:userId
         getTemplate: /api/email-templates
+        locales: /api/i18n/locales
+        deleteUser: /api/users/:userId
     email-sender:
       baseUrl: https://email-sender.giovannilamarmora.com
       path:
@@ -77,8 +96,16 @@ rest:
 
 app:
   version: @project.version@
-  cache:
-    active: false
-    cron: 0 0 1 * * *
+  tech-user:
+    username: ${TECH_USERNAME}
+    password: ${TECH_PASSWORD}
+    client-id: ACCESS-SPHERE-TECH
+    strapi: ${STRAPI_AUTH_TOKEN}
   exception:
     stacktrace: true # Active StackTrace in Response
+  cors:
+    enabled: true
+    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**"
+    allowedOrigins: "*"
+    allowedHeaders: Origin, Content-Type, Accept, Authorization, Location, Trace-ID, Span-ID, Parent-ID, Registration-Token, Session-ID, Redirect-Uri
+    allowCredentials: true

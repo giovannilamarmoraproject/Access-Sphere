@@ -48,7 +48,7 @@ public class UserEntity extends GenericEntity {
   private String roles;
 
   @Lob
-  @Column(name = "PROFILE_PHOTO")
+  @Column(name = "PROFILE_PHOTO", columnDefinition = "LONGTEXT")
   private String profilePhoto;
 
   @Column(name = "PHONE_NUMBER")
@@ -79,4 +79,8 @@ public class UserEntity extends GenericEntity {
   @Lob
   @Column(name = "ATTRIBUTES", columnDefinition = "TEXT")
   private String attributes;
+
+  @Lob
+  @Column(name = "MFA_SETTINGS", columnDefinition = "TEXT")
+  private String mfaSettings;
 }

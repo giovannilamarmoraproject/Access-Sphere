@@ -12,12 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Logged
 @RestController
 @RequestMapping("/v1")
-@CrossOrigin("*")
 @Tag(name = OpenAPI.Tag.USERS, description = "API to manage users")
 public class UserControllerImpl implements UserController {
 
@@ -36,10 +36,19 @@ public class UserControllerImpl implements UserController {
   }
 
   @Override
+  public Mono<ResponseEntity<Response>> userList(String bearer, ServerHttpRequest request) {
+    return userService.getUsers();
+  }
+
+  @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> registerUser(
-      User user, String clientId, String registration_token) {
-    return userService.register(user, clientId, registration_token);
+      String bearer,
+      User user,
+      String clientId,
+      String registration_token,
+      Boolean assignNewClient) {
+    return userService.register(bearer, user, clientId, registration_token, assignNewClient);
   }
 
   @Override
@@ -47,6 +56,18 @@ public class UserControllerImpl implements UserController {
   public Mono<ResponseEntity<Response>> updateUser(
       User user, String bearer, ServerHttpRequest request) {
     return userService.updateUser(user, bearer, request);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> deleteUser(
+      String identifier, String bearer, ServerWebExchange exchange) {
+    return userService.deleteUser(identifier, bearer, exchange);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> unlockUser(
+      String bearer, String identifier, Boolean block) {
+    return userService.unlockUser(identifier, block);
   }
 
   @Override

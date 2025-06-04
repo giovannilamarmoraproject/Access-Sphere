@@ -11,10 +11,7 @@ import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.*;
 import io.github.giovannilamarmora.utils.logger.MDCUtils;
-import io.github.giovannilamarmora.utils.web.CookieManager;
-import io.github.giovannilamarmora.utils.web.HeaderManager;
-import io.github.giovannilamarmora.utils.web.RequestManager;
-import io.github.giovannilamarmora.utils.web.WebManager;
+import io.github.giovannilamarmora.utils.web.*;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -53,7 +50,7 @@ public class SessionIDFilter implements WebFilter {
   @Value(value = "${filter.session-id.bearerNotFilter}")
   private List<String> bearerNotFilterURI;
 
-  @Value("${cookie-domain}")
+  @Value("${cookie-domain:}")
   private String cookieDomain;
 
   private final SessionID sessionID;
@@ -71,21 +68,15 @@ public class SessionIDFilter implements WebFilter {
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
-    // HttpCookie sessionCookie = request.getCookies().getFirst(Cookie.COOKIE_SESSION_ID);
-    // String sessionHeader = request.getHeaders().getFirst(ExposedHeaders.SESSION_ID);
-
     String session_id = RequestManager.getCookieOrHeaderData(Cookie.COOKIE_SESSION_ID, request);
 
     if (isGenerateSessionURI(request) || isAuthorizeCheckWithBearerNull(request)) {
       session_id = SessionID.builder().generate();
       LOG.info("Generating new session ID: {}", session_id);
-      setSessionIDInResponse(session_id, response);
+      setSessionIDInResponse(session_id, response, request);
       addSessionInContext(session_id);
       return chain.filter(exchange);
     } else if (ObjectUtils.isEmpty(session_id)) {
-      // else if (ObjectUtils.isEmpty(sessionCookie)
-      //    || ObjectUtils.isEmpty(sessionCookie.getValue())) {
-      // if (ObjectUtils.isEmpty(sessionHeader)) {
       LOG.error(
           "Session ID not found for path [{}], with hostname {}, needs login",
           request.getPath().value(),
@@ -94,16 +85,10 @@ public class SessionIDFilter implements WebFilter {
           new UserException(
               ExceptionMap.ERR_OAUTH_401, ExceptionMessage.NO_SESSION_ID.getMessage()),
           exchange);
-      // } else setSessionIDInResponse(session_id, response);
     }
 
-    // session_id =
-    //    ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())
-    //        ? sessionHeader
-    //        : sessionCookie.getValue();
-
     if (isBearerNotRequiredEndpoint(request) || isAuthorizeCheckWithBearer(request)) {
-      setSessionIDInResponse(session_id, response);
+      setSessionIDInResponse(session_id, response, request);
       addSessionInContext(session_id);
       return chain.filter(exchange);
     }
@@ -119,6 +104,7 @@ public class SessionIDFilter implements WebFilter {
 
     AccessTokenData accessTokenDB = new AccessTokenData();
     try {
+      LOG.info("Checking Bearer token for request {}", request.getPath());
       accessTokenDB = accessTokenService.getByAccessTokenOrIdToken(bearer);
     } catch (TokenException e) {
       LOG.error("An error happen during validation of token, message is {}", e.getMessage());
@@ -135,24 +121,21 @@ public class SessionIDFilter implements WebFilter {
           session_id);
       return ExceptionHandler.handleFilterException(
           new OAuthException(
-              ExceptionMap.ERR_OAUTH_403, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
+              ExceptionMap.ERR_OAUTH_401, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
           exchange);
     }
     addSessionInContext(session_id);
-    setSessionIDInResponse(session_id, response);
+    setSessionIDInResponse(session_id, response, request);
     BeanUtils.copyProperties(accessTokenDB, accessTokenData);
     return chain.filter(exchange);
   }
 
   public Mono<Void> logoutFilter(ServerWebExchange exchange, WebFilterChain chain) {
+    LOG.info("Logout Filter detect");
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
-    // HttpCookie sessionCookie = request.getCookies().getFirst(Cookie.COOKIE_SESSION_ID);
     String session_id = RequestManager.getCookieOrHeaderData(Cookie.COOKIE_SESSION_ID, request);
-    // if (ObjectUtils.isEmpty(sessionCookie) || ObjectUtils.isEmpty(sessionCookie.getValue())) {
-    //  LOG.warn("Session ID not found, already logged out");
-    // } else session_id = sessionCookie.getValue();
 
     if (ObjectUtils.isEmpty(session_id)) {
       LOG.warn("Session ID not found, already logged out");
@@ -179,11 +162,11 @@ public class SessionIDFilter implements WebFilter {
             session_id);
         return ExceptionHandler.handleFilterException(
             new OAuthException(
-                ExceptionMap.ERR_OAUTH_403, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
+                ExceptionMap.ERR_OAUTH_401, ExceptionMessage.INVALID_SESSION_ID.getMessage()),
             exchange);
       }
       addSessionInContext(session_id);
-      setSessionIDInResponse(session_id, response);
+      setSessionIDInResponse(session_id, response, request);
     } catch (TokenException e) {
       LOG.warn("Access Token not found, already logged out");
     }
@@ -207,11 +190,18 @@ public class SessionIDFilter implements WebFilter {
   private boolean isBearerNotRequiredEndpoint(ServerHttpRequest req) {
     String path = req.getPath().value();
     String codeParam = req.getQueryParams().getFirst("code");
+    String refreshTokenParam = req.getQueryParams().getFirst("refresh_token");
 
+    // Se è l'endpoint token e ha il parametro code (authorization code grant)
     boolean isTokenPathWithCode =
         PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path) && codeParam != null;
 
+    // Se è l'endpoint token e ha il parametro refresh_token (refresh token grant)
+    boolean isTokenPathWithRefresh =
+        PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path) && refreshTokenParam != null;
+
     return isTokenPathWithCode
+        || isTokenPathWithRefresh
         || bearerNotFilterURI.stream()
             .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path));
   }
@@ -219,8 +209,6 @@ public class SessionIDFilter implements WebFilter {
   private boolean isConfiguredGenerateSessionURI(ServerHttpRequest req, String path) {
     return generateSessionURI.stream()
             .anyMatch(endpoint -> PatternMatchUtils.simpleMatch(endpoint, path))
-        // TODO: Se è un authorize senza header authorization crea un nuovo session id, da
-        // controllare per la register
         && !req.getHeaders().containsKey("Authorization");
   }
 
@@ -249,8 +237,9 @@ public class SessionIDFilter implements WebFilter {
     return PatternMatchUtils.simpleMatch(logoutURI, path);
   }
 
-  private void setSessionIDInResponse(String sessionId, ServerHttpResponse response) {
-    CookieManager.setCookieInResponse(Cookie.COOKIE_SESSION_ID, sessionId, cookieDomain, response);
-    HeaderManager.addHeaderInResponse(ExposedHeaders.SESSION_ID, sessionId, response);
+  private void setSessionIDInResponse(
+      String sessionId, ServerHttpResponse response, ServerHttpRequest request) {
+    ResponseManager.setCookieAndHeaderData(
+        ExposedHeaders.SESSION_ID, sessionId, cookieDomain, response);
   }
 }

@@ -65,7 +65,7 @@ public class StrapiUser extends StrapiGeneric {
   private String phoneNumber;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private LocalDate birthDate;
+  private LocalDate birthdate;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   @UpperCase
@@ -80,7 +80,6 @@ public class StrapiUser extends StrapiGeneric {
   private String education;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  @UpperCamelCase
   private String nationality;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -90,4 +89,7 @@ public class StrapiUser extends StrapiGeneric {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private Map<String, Object> attributes;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private StrapiMFASetting mfa_settings;
 }

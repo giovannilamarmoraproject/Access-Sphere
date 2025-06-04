@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.data.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,4 +15,5 @@ public class ChangePassword {
   private String email;
   private String password;
   private String token;
+  private Map<String, String> params;
 }

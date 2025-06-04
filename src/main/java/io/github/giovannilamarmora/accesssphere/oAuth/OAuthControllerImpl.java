@@ -1,7 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
-import io.github.giovannilamarmora.accesssphere.utilities.ExposedHeaders;
+import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -19,19 +20,6 @@ import reactor.core.publisher.Mono;
 @Validated
 @RestController
 @RequestMapping("/v1/oAuth/2.0")
-@CrossOrigin(
-    origins = "*",
-    allowedHeaders = "*",
-    exposedHeaders = {
-      ExposedHeaders.LOCATION,
-      ExposedHeaders.SESSION_ID,
-      ExposedHeaders.AUTHORIZATION,
-      ExposedHeaders.TRACE_ID,
-      ExposedHeaders.SPAN_ID,
-      ExposedHeaders.PARENT_ID,
-      ExposedHeaders.REDIRECT_URI,
-      ExposedHeaders.REGISTRATION_TOKEN
-    })
 @Tag(name = OpenAPI.Tag.OAUTH, description = OpenAPI.Description.OAUTH)
 public class OAuthControllerImpl implements OAuthController {
 
@@ -48,7 +36,7 @@ public class OAuthControllerImpl implements OAuthController {
       String registration_token,
       String bearer,
       String state,
-      ServerHttpResponse serverHttpResponse) {
+      ServerWebExchange exchange) {
     return oAuthService.authorize(
         responseType,
         accessType,
@@ -58,7 +46,7 @@ public class OAuthControllerImpl implements OAuthController {
         registration_token,
         bearer,
         state,
-        serverHttpResponse);
+        exchange);
   }
 
   @Override
@@ -84,6 +72,12 @@ public class OAuthControllerImpl implements OAuthController {
       ServerWebExchange exchange) {
     return oAuthService.tokenOAuth(
         clientId, refresh_token, grant_type, scope, code, prompt, redirectUri, auth, exchange);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> tokenExchange(
+      String bearer, TokenExchange tokenExchange, ServerWebExchange exchange) {
+    return oAuthService.tokenExchange(bearer, tokenExchange, exchange);
   }
 
   @Override

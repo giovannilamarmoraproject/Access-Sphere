@@ -7,7 +7,7 @@ import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -32,7 +32,7 @@ public class UserValidator {
       if (!clientCredential.getAuthType().equals(accessTokenData.getType())) {
         LOG.error("Invalid Authentication Type on client");
         throw new OAuthException(
-            ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+            ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
       }
   }
 
@@ -43,7 +43,7 @@ public class UserValidator {
           "The JWT User {}, is different than the one on google {}",
           decryptToken.getEmail(),
           userInfo.getUserInfo().get("email"));
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 
@@ -57,15 +57,6 @@ public class UserValidator {
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRegistration(
       String registration_token, ClientCredential clientCredential, User user) {
-    if (ObjectUtils.isEmpty(registration_token)) {
-      LOG.error("Missing registration_token");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Missing registration_token!");
-    }
-    if (!registration_token.equalsIgnoreCase(clientCredential.getRegistrationToken())) {
-      LOG.error("Invalid registration_token");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid registration_token!");
-    }
-
     if (!Utilities.isCharacterAndRegexValid(user.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
       LOG.error("Invalid regex for field password for user {}", user.getUsername());
       throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
@@ -74,6 +65,15 @@ public class UserValidator {
     if (!Utilities.isCharacterAndRegexValid(user.getEmail(), RegEx.EMAIL.getValue())) {
       LOG.error("Invalid regex for field email for user {}", user.getUsername());
       throw new UserException(ExceptionMap.ERR_USER_400, "Invalid email provided!");
+    }
+
+    if (ObjectUtils.isEmpty(registration_token)) {
+      LOG.error("Missing registration_token");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Missing registration_token!");
+    }
+    if (!registration_token.equalsIgnoreCase(clientCredential.getRegistrationToken())) {
+      LOG.error("Invalid registration_token");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid registration_token!");
     }
   }
 
@@ -84,7 +84,7 @@ public class UserValidator {
           "Identifier miss match, you should use {} instead of {}",
           accessTokenData.getIdentifier(),
           userToUpdate.getIdentifier());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid identifier!");
     }
   }
 }

@@ -4,28 +4,34 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderServi
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
+import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.DataService;
+import io.github.giovannilamarmora.accesssphere.data.UserDataService;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
@@ -36,19 +42,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Service
+@Logged
 @RequiredArgsConstructor
 public class UserService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  @Autowired private DataService dataService;
+  @Autowired private UserDataService dataService;
   @Autowired private ClientService clientService;
   @Autowired private TokenService tokenService;
   @Autowired private StrapiService strapiService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private AccessTokenData accessTokenData;
+  @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> userInfo(String bearer, ServerHttpRequest request) {
@@ -187,7 +196,11 @@ public class UserService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> register(
-      User user, String clientId, String registration_token) throws UtilsException {
+      String bearer,
+      User user,
+      String clientId,
+      String registration_token,
+      Boolean assignNewClient) {
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F Registration process started, username: {}, email: {}",
         user.getUsername(),
@@ -200,7 +213,7 @@ public class UserService {
             clientCredential -> {
               UserValidator.validateRegistration(registration_token, clientCredential, user);
               return dataService
-                  .registerUser(user, clientCredential)
+                  .registerUser(bearer, user, clientCredential, assignNewClient)
                   .map(
                       user1 -> {
                         Response response =
@@ -222,34 +235,82 @@ public class UserService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> updateUser(
-      User userToUpdate, String bearer, ServerHttpRequest request) throws UtilsException {
+      User userToUpdate, String bearer, ServerHttpRequest request) {
     userToUpdate.setPassword(null);
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F Updating user process started, username: {}, email: {}",
         userToUpdate.getUsername(),
         userToUpdate.getEmail());
 
-    // AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
-    // Setting UserData
-    UserValidator.validateUpdate(accessTokenData, userToUpdate);
-    return dataService
-        .updateUser(userToUpdate)
+    return techUserService
+        .hasTechUserRoles(accessTokenData, clientService)
         .flatMap(
-            user -> {
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "User " + user.getUsername() + " successfully updated!",
-                      TraceUtils.getSpanID(),
-                      user);
-              return Mono.just(ResponseEntity.ok(response));
-            })
-        .doOnSuccess(
-            responseResponseEntity ->
-                LOG.info(
-                    "\uD83E\uDD37\u200D♂\uFE0F Updating user process ended, username: {}, email: {}",
-                    userToUpdate.getUsername(),
-                    userToUpdate.getEmail()));
+            aBoolean -> {
+              if (!aBoolean) UserValidator.validateUpdate(accessTokenData, userToUpdate);
+              return dataService
+                  .updateUser(userToUpdate)
+                  .flatMap(
+                      user -> {
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(),
+                                "User " + user.getUsername() + " successfully updated!",
+                                TraceUtils.getSpanID(),
+                                user);
+                        return Mono.just(ResponseEntity.ok(response));
+                      })
+                  .doOnSuccess(
+                      responseResponseEntity ->
+                          LOG.info(
+                              "\uD83E\uDD37\u200D♂\uFE0F Updating user process ended, username: {}, email: {}",
+                              userToUpdate.getUsername(),
+                              userToUpdate.getEmail()));
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> unlockUser(String identifier, Boolean block) {
+    LOG.info(
+        "\uD83E\uDD37\u200D♂\uFE0F Unlocking user process started, identifier: {}", identifier);
+    if (!techUserService.isTechUser()) {
+      LOG.error("Only a tech user can unlock the user {}", identifier);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+    }
+
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
+
+    return clientCredentialMono.flatMap(
+        clientCredential -> {
+          TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
+          return strapiService
+              .getUserByIdentifier(identifier)
+              .flatMap(
+                  strapiUser -> {
+                    strapiUser.setBlocked(block);
+                    return strapiService
+                        .updateUser(strapiUser)
+                        .flatMap(
+                            strapiUser1 -> {
+                              User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                              Response response =
+                                  new Response(
+                                      HttpStatus.OK.value(),
+                                      "User "
+                                          + userRes.getUsername()
+                                          + " successfully "
+                                          + (block ? "locked!" : "unlocked!"),
+                                      TraceUtils.getSpanID(),
+                                      userRes);
+                              return Mono.just(ResponseEntity.ok(response));
+                            });
+                  })
+              .doOnSuccess(
+                  responseResponseEntity ->
+                      LOG.info(
+                          "\uD83E\uDD37\u200D♂\uFE0F Unlocking user process ended, identifier: {}",
+                          identifier));
+        });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -264,6 +325,8 @@ public class UserService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid field email, try again!");
     }
 
+    Mono<List<StrapiLocale>> strapiLocaleMono = strapiService.locales();
+
     Mono<User> userMono =
         dataService
             .getUserByEmail(changePassword.getEmail())
@@ -274,8 +337,43 @@ public class UserService {
                   return user;
                 });
 
+    Mono<String> finalLocaleMono =
+        strapiLocaleMono.map(
+            strapiLocales ->
+                strapiLocales.stream()
+                    .filter(loc -> loc.getCode().equals(locale))
+                    .findFirst()
+                    .map(
+                        foundLocale -> {
+                          LOG.info("Locale found: {}", foundLocale.getCode());
+                          return foundLocale.getCode();
+                        })
+                    .orElseGet(
+                        () ->
+                            strapiLocales.stream()
+                                .filter(loc -> Boolean.TRUE.equals(loc.getIsDefault()))
+                                .findFirst()
+                                .map(
+                                    defaultLocale -> {
+                                      LOG.warn(
+                                          "Locale '{}' not found. Using default locale: {}",
+                                          locale,
+                                          defaultLocale.getCode());
+                                      return defaultLocale.getCode();
+                                    })
+                                .orElseGet(
+                                    () -> {
+                                      LOG.error(
+                                          "Locale '{}' not found and no default locale available. Using fallback: en-GB",
+                                          locale);
+                                      return "en-GB";
+                                    })));
+
     Mono<StrapiEmailTemplate> strapiEmailTemplateMono =
-        strapiService.getTemplateById(changePassword.getTemplateId(), locale);
+        finalLocaleMono.flatMap(
+            finalLocale ->
+                strapiService.getTemplateById(changePassword.getTemplateId(), finalLocale));
+
     return Mono.zip(userMono, strapiEmailTemplateMono)
         .flatMap(
             objects -> {
@@ -289,6 +387,8 @@ public class UserService {
                       .build();
 
               Map<String, String> emailParams = TemplateParam.getTemplateParam(objects.getT1());
+              if (!ObjectToolkit.isNullOrEmpty(changePassword.getParams()))
+                emailParams.putAll(changePassword.getParams());
 
               if (sendEmail)
                 return emailSenderService
@@ -296,7 +396,7 @@ public class UserService {
                     .zipWith(updatedUserMono)
                     .flatMap(
                         objects1 -> {
-                          objects1.getT1().setToken(objects1.getT2().getTokenReset());
+                          // objects1.getT1().setToken(objects1.getT2().getTokenReset());
                           String message = "Email Sent! Check your email address!";
 
                           Response response =
@@ -366,5 +466,63 @@ public class UserService {
         .doOnSuccess(
             responseResponseEntity ->
                 LOG.info("\uD83E\uDD37\u200D♂\uFE0F Change password user process ended"));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> getUsers() {
+    LOG.info("\uD83E\uDD37\u200D♂\uFE0F Get list of user process started");
+    if (!techUserService.isTechUser()) {
+      LOG.error("Only a tech user can get the users");
+      throw new OAuthException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
+    }
+
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
+
+    return clientCredentialMono
+        .flatMap(
+            clientCredential -> {
+              TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
+              String strapi_token = OAuthMapper.getStrapiAccessToken(accessTokenData);
+              return dataService
+                  .getStrapiUsers(strapi_token)
+                  .flatMap(
+                      users -> {
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(), "Users list", TraceUtils.getSpanID(), users);
+                        return Mono.just(ResponseEntity.ok(response));
+                      });
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info("\uD83E\uDD37\u200D♂\uFE0F Get list of user process ended"));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> deleteUser(
+      String identifier, String bearer, ServerWebExchange exchange) {
+    LOG.info("\uD83E\uDD37\u200D♂\uFE0F Deleting user process started, identifier: {}", identifier);
+    if (!techUserService.isTechUser()) {
+      LOG.error("Only a tech user can delete the user {}", identifier);
+      throw new OAuthException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
+    }
+
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
+
+    return clientCredentialMono.flatMap(
+        clientCredential -> {
+          TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
+          String strapi_token = OAuthMapper.getStrapiAccessToken(accessTokenData);
+          return dataService
+              .deleteUser(identifier, strapi_token, bearer, exchange)
+              .flatMap(response -> Mono.just(ResponseEntity.ok(response)))
+              .doOnSuccess(
+                  responseResponseEntity ->
+                      LOG.info(
+                          "\uD83E\uDD37\u200D♂\uFE0F Delete user process ended, identifier: {}",
+                          identifier));
+        });
   }
 }

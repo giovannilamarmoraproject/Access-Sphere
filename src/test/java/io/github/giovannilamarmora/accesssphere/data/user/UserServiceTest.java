@@ -14,6 +14,7 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderClien
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiClient;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
@@ -27,9 +28,10 @@ import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.IAccessTokenDAO;
 import io.github.giovannilamarmora.accesssphere.token.data.entity.AccessTokenEntity;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -113,7 +115,8 @@ public class UserServiceTest {
     userFind.setPassword("Ciccio.2025");
     when(userDAO.saveAndFlush(any())).thenReturn(userFind);
     // Act
-    Mono<ResponseEntity<Response>> result = userService.register(user, clientId, registrationToken);
+    Mono<ResponseEntity<Response>> result =
+        userService.register(null, user, clientId, registrationToken, false);
 
     // Assert
     StepVerifier.create(result)
@@ -142,7 +145,8 @@ public class UserServiceTest {
         .thenReturn(Mono.just(ResponseEntity.ok(response)));
 
     // Act
-    Mono<ResponseEntity<Response>> result = userService.register(user, clientId, registrationToken);
+    Mono<ResponseEntity<Response>> result =
+        userService.register(null, user, clientId, registrationToken, false);
 
     // Assert
     StepVerifier.create(result)
@@ -192,6 +196,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -200,7 +205,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            List.of("DEFAULT"));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -284,6 +289,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -292,7 +298,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            List.of("DEFAULT"));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -389,6 +395,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -397,7 +404,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            List.of("DEFAULT"));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -470,6 +477,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -478,7 +486,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            List.of("DEFAULT"));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -551,6 +559,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -559,7 +568,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            List.of("DEFAULT"));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -645,6 +654,7 @@ public class UserServiceTest {
             "session_id",
             "client_id",
             jwtData.getSub(),
+            SubjectType.CUSTOMER,
             jwtData.getEmail(),
             jwtData.getIdentifier(),
             jwtData.getType(),
@@ -653,7 +663,7 @@ public class UserServiceTest {
             jwtData.getExp(),
             Utils.mapper().writeValueAsString(jwtData),
             TokenStatus.ISSUED,
-            List.of("DEFAULT"));
+            "[\"TEST_ROLES\"]");
 
     when(accessTokenDAO.save(any())).thenReturn(accessTokenToBeSaved);
 
@@ -733,13 +743,13 @@ public class UserServiceTest {
 
     User userToUpdate = new User();
     userToUpdate.setIdentifier(strapiUser.getFirst().getIdentifier());
-    userToUpdate.setUsername(strapiUser.getFirst().getName());
+    userToUpdate.setUsername(strapiUser.getFirst().getUsername());
     userToUpdate.setEmail(strapiUser.getFirst().getEmail());
     userToUpdate.setPassword("Ciccio.2025");
 
     UserEntity userFind = new UserEntity();
     userFind.setIdentifier(strapiUser.getFirst().getIdentifier());
-    userFind.setUsername(strapiUser.getFirst().getName());
+    userFind.setUsername(strapiUser.getFirst().getUsername());
     userFind.setEmail(strapiUser.getFirst().getEmail());
     userFind.setPassword("Ciccio.2025");
 
@@ -747,8 +757,15 @@ public class UserServiceTest {
 
     when(accessTokenData.getClientId()).thenReturn(clientId);
     when(accessTokenData.getType()).thenReturn(OAuthType.BEARER);
+    when(accessTokenData.getSubjectType()).thenReturn(SubjectType.CUSTOMER);
 
     when(accessTokenData.getIdentifier()).thenReturn(userToUpdate.getIdentifier());
+    StrapiResponse response =
+        mapper.readValue(
+            new ClassPathResource("mock/ClientIDTech.json").getInputStream(), StrapiResponse.class);
+
+    when(strapiClient.getClientByClientID("ACCESS-SPHERE-TECH"))
+        .thenReturn(Mono.just(ResponseEntity.ok(response)));
     when(strapiClient.getUserByIdentifier(any()))
         .thenReturn(Mono.just(ResponseEntity.ok(strapiUser)));
     when(strapiClient.updateUser(any()))
@@ -810,7 +827,7 @@ public class UserServiceTest {
     when(userDAO.saveAndFlush(any())).thenReturn(userFind);
 
     Mono<ResponseEntity<Response>> result =
-        userService.register(userToUpdate, clientId, registrationToken);
+        userService.register(null, userToUpdate, clientId, registrationToken, false);
 
     // Assert
     StepVerifier.create(result)
@@ -825,13 +842,15 @@ public class UserServiceTest {
 
     when(accessTokenData.getClientId()).thenReturn(clientId);
     when(accessTokenData.getType()).thenReturn(OAuthType.BEARER);
+    when(accessTokenData.getSubjectType()).thenReturn(SubjectType.CUSTOMER);
 
     when(accessTokenData.getIdentifier()).thenReturn(userToUpdate.getIdentifier());
     when(strapiClient.getUserByIdentifier(any()))
         .thenReturn(Mono.just(ResponseEntity.ok(strapiUser)));
 
     // Arrange
-    ChangePassword changePassword = new ChangePassword("TEST", userToUpdate.getEmail(), null, null);
+    ChangePassword changePassword =
+        new ChangePassword("TEST", userToUpdate.getEmail(), null, null, null);
 
     when(strapiClient.getUserByEmail(any())).thenReturn(Mono.just(ResponseEntity.ok(strapiUser)));
     StrapiResponse templates =
@@ -839,6 +858,12 @@ public class UserServiceTest {
             new ClassPathResource("mock/Template.json").getInputStream(), new TypeReference<>() {});
     when(strapiClient.getTemplateById(any(), anyString()))
         .thenReturn(Mono.just(ResponseEntity.ok(templates)));
+
+    List<StrapiLocale> locales =
+        mapper.readValue(
+            new ClassPathResource("mock/StrapiLocale.json").getInputStream(),
+            new TypeReference<>() {});
+    when(strapiClient.getLocale()).thenReturn(Mono.just(ResponseEntity.ok(locales)));
 
     when(strapiClient.updateUser(any()))
         .thenReturn(Mono.just(ResponseEntity.ok(strapiUser.getFirst())));
@@ -911,7 +936,8 @@ public class UserServiceTest {
             "TEST",
             userToUpdate.getEmail(),
             Base64.getEncoder().encodeToString("Ciccio.2025".getBytes()),
-            "token");
+            "token",
+            null);
 
     Mono<ResponseEntity<Response>> result = userService.changePassword(changePassword);
 

@@ -1,0 +1,45 @@
+body {
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.card {
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.mfa-option:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.btn-gradient {
+  background: linear-gradient(to right, #4facfe, #00f2fe);
+  border: none;
+  color: white;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(to right, #00f2fe, #4facfe);
+}
+
+#mfa-label::placeholder {
+  color: #888888; /* Cambia qui il colore */
+  opacity: 1; /* Assicurati che sia visibile */
+}
+
+.otp-input {
+  border-radius: 15px;
+  opacity: 0.7;
+  --tw-bg-opacity: 1;
+  background-color: rgb(241 245 249 / var(--tw-bg-opacity, 1));
+  max-width: 40px;
+}
+
+#mfa_page_setup_select_proceed:disabled,
+#mfa_page_setup_confirm_proceed:disabled {
+  background-color: #dddddd;
+  cursor: not-allowed;
+  pointer-events: auto;
+}

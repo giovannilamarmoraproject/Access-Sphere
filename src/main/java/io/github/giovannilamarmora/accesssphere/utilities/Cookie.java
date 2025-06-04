@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.utilities;
 
 public interface Cookie {
+  String COOKIE_DEVICE_TOKEN = "Device-Token";
   String COOKIE_SESSION_ID = "Session-ID";
   String COOKIE_TOKEN = "Registration-Token";
   String COOKIE_REDIRECT_URI = "Redirect-Uri";

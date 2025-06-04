@@ -4,11 +4,11 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -24,16 +24,17 @@ public class GrpcMapper {
             .toList()
             .getFirst();
     return new JWTData(
-        UUID.randomUUID().toString(),
+        null,
         payload.getAudience().toString(),
         payload.getAudience().toString(),
         payload.getExpirationTimeSeconds(),
         payload.getIssuedAtTimeSeconds(),
         payload.getIssuer(),
         payload.getSubject(),
+        SubjectType.CUSTOMER,
         getUserInfoValue(payload, "name"),
         payload.getEmail(),
-        getUserInfoValue(payload, "picture"),
+        // getUserInfoValue(payload, "picture"),
         getUserInfoValue(payload, "given_name"),
         getUserInfoValue(payload, "family_name"),
         (String) payload.get("at_hash"),
@@ -41,7 +42,13 @@ public class GrpcMapper {
         ObjectUtils.isEmpty(defaultRole) ? null : List.of(defaultRole.getRole()),
         //    : clientCredential.getDefaultRole().stream().map(AppRole::getRole).toList(),
         OAuthType.GOOGLE,
+        clientCredential.getClientId(),
         null);
+  }
+
+  public static JWTData setIdentifier(JWTData jwtData, String identifier) {
+    jwtData.setIdentifier(identifier);
+    return jwtData;
   }
 
   private static String getUserInfoValue(GoogleIdToken.Payload userInfo, String value) {

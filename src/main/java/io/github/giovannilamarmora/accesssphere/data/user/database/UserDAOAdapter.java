@@ -53,4 +53,9 @@ public class UserDAOAdapter implements UserDataService {
   public void delete(UserEntity userEntity) {
     userDAO.delete(userEntity);
   }
+
+  @Override
+  public void deleteByIdentifier(String identifier) {
+    userDAO.deleteUserEntityByIdentifier(identifier);
+  }
 }

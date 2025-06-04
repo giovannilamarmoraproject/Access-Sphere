@@ -1,0 +1,320 @@
+:root {
+  /* Colori principali */
+  --background-color: #252936; /* Colore di sfondo principale */
+  --background-color-dark: #1e212b; /* Colore di sfondo più scuro */
+  --border-color: #4a4f68; /* Colore del bordo principale */
+  --border-color-dark: #3a4252; /* Colore del bordo a destra più scuro */
+  --border-color-focus: #5d617a; /* Colore del bordo quando in focus */
+  --border-color-hover: #4a4f68; /* Colore del bordo al passaggio del mouse */
+
+  /* Colori per il focus */
+  --background-color-focus: #2d3140; /* Sfondo durante il focus */
+  --box-shadow-focus: rgba(
+    93,
+    97,
+    122,
+    0.5
+  ); /* Box-shadow per l'input in focus */
+
+  /* Colori per stato disabilitato */
+  --background-color-disabled: #1e212b; /* Colore di background per input disabilitati */
+  --border-color-disabled: #3a3e52; /* Bordo per stato disabilitato */
+  --text-color-disabled: #7a7d8e; /* Colore del testo per stato disabilitato */
+  --opacity-disabled: 0.6; /* Opacità per lo stato disabilitato */
+
+  /* Colori per l'hover sul pulsante file */
+  --background-file-upload: #1e212b; /* Colore background del pulsante file */
+  --background-file-upload-hover: #2d3140; /* Colore del background al passaggio del mouse */
+  --border-file-upload: #3a4252; /* Colore del bordo a destra del pulsante file */
+  --border-file-upload-hover: #4a4f68; /* Colore del bordo a destra durante l'hover */
+}
+
+.card {
+  /*background-color: rgba(240, 248, 255, 0.8) !important;*/
+  border-radius: 20px !important;
+
+  /**
+  * --------------------------------
+  * Dark Card Mode
+  * --------------------------------
+  */ /**/
+  background-color: rgba(240, 248, 255, 0.2) !important;
+
+  .h1,
+  .h2,
+  .h3,
+  .h4,
+  .h5,
+  .h6,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  label,
+  .dt-info,
+  .dt-input,
+  th,
+  .fa-arrows-rotate {
+    color: #dee2e6 !important;
+  }
+
+  .table {
+    a {
+      color: #adb5bd !important;
+    }
+
+    tr,
+    th {
+      border-bottom: 1px solid #4a4f68 !important; /* Colore e spessore del bordo tra le righe */
+    }
+  }
+
+  /**
+  * Datatables
+  */
+  .dt-input {
+    option {
+      background-color: #323746 !important;
+    }
+  }
+  div.dt-container.dt-empty-footer tbody > tr:last-child > * {
+    border-bottom: none;
+  }
+
+  /* Stato disabilitato */
+  div.dt-container .dt-paging .dt-paging-button.disabled {
+    color: #6c757d !important; /* Colore del testo disabilitato */
+    cursor: not-allowed; /* Indica che l'elemento è disabilitato */
+    /* Background rimane invariato, quindi non modificato */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  /* Stato disabilitato in hover */
+  div.dt-container .dt-paging .dt-paging-button.disabled:hover {
+    color: #adb5bd !important; /* Colore del testo più chiaro durante hover */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  /* Stato attivo (current) */
+  div.dt-container .dt-paging .dt-paging-button.current {
+    color: #dee2e6 !important; /* Colore del testo */
+    border-color: #adb5bd; /* Un grigio più scuro per il bordo */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  /* Hover dello stato attivo */
+  div.dt-container .dt-paging .dt-paging-button.current:hover {
+    color: #6c757d !important; /* Un grigio più scuro per l'hover */
+    border-color: #6c757d; /* Bordo leggermente più scuro */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+  /**
+  * END Datatables
+  */
+
+  p {
+    color: #adb5bd;
+  }
+
+  .text-secondary {
+    color: #6c757d;
+  }
+
+  .text-muted {
+    color: #adb5bd !important;
+  }
+
+  .role-card {
+    background-color: var(--background-color) !important;
+    color: #dee2e6 !important;
+  }
+
+  .form-control,
+  .form-select {
+    background-color: var(--background-color);
+    /*background-color: #1e212d;  Sfondo input */
+    border: 1px solid var(--border-color); /* Bordo */
+    color: #ffffff; /* Testo bianco per contrasto */
+  }
+
+  .form-control:focus {
+    border-color: var(--border-color-focus); /* Bordo più chiaro al focus */
+    background-color: var(
+      --background-color-focus
+    ); /* Sfondo leggermente più chiaro al focus */
+    box-shadow: 0px 0px 8px rgba(93, 97, 122, 0.5); /* Glow morbido */
+  }
+  .form-select:disabled {
+    background-color: var(--background-color-dark); /* Più scuro */
+    border-color: var(--border-color-disabled); /* Bordo meno evidente */
+    color: var(--text-color-disabled); /* Testo più spento */
+    box-shadow: none; /* Nessun effetto di luce */
+    cursor: not-allowed; /* Mostra il cursore di "non disponibile" */
+    opacity: 0.6; /* Leggera trasparenza per rendere evidente la disattivazione */
+  }
+
+  input[type="file"]::-webkit-file-upload-button {
+    background-color: var(--background-color-dark); /* Sfondo scuro */
+    border-right: 1px solid var(--border-color); /* Bordo chiaro */
+    color: white; /* Testo bianco */
+    cursor: pointer; /* Cambia il cursore quando sopra */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  /* Cambia colore quando il mouse è sopra il bottone */
+  input[type="file"]:hover::-webkit-file-upload-button,
+  .url-input:hover,
+  .username-input:hover {
+    background-color: var(--background-file-upload-hover) !important;
+  }
+
+  /* Cambia colore quando l'input file è disabilitato */
+  input[type="file"]:disabled::-webkit-file-upload-button {
+    background-color: var(--background-color-dark);
+    border-color: var(--border-color-disabled);
+    color: var(--text-color-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .url-input,
+  .username-input {
+    background-color: var(--background-color-dark); /* Sfondo scuro */
+    border: 1px solid var(--border-color); /* Bordo chiaro */
+    color: white; /* Testo bianco */
+    cursor: pointer; /* Cambia il cursore quando sopra */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transizione per hover */
+  }
+
+  input[type="date"]:focus {
+    border-color: #5d617a; /* Colore del bordo quando in focus */
+    background-color: #2d3140; /* Colore di sfondo quando in focus */
+    box-shadow: 0px 0px 8px rgba(93, 97, 122, 0.5); /* Box-shadow al focus */
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    background-color: #dee2e6;
+    border-radius: 50%;
+  }
+
+  /**
+  * --------------------------------
+  * END Dark Card Mode
+  * --------------------------------
+  */
+}
+
+.client {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.form {
+  padding: 20px;
+}
+
+input,
+select {
+  height: 45px;
+  border-radius: 10px !important;
+}
+
+.username-input {
+  border-top-left-radius: 10px !important;
+  border-bottom-left-radius: 10px !important;
+}
+
+.url-input {
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+  border-top-right-radius: 10px !important;
+  border-bottom-right-radius: 10px !important;
+}
+
+#file {
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+}
+
+.form-control-group {
+  /* border-top-right-radius: 10px !important;
+  border-bottom-right-radius: 10px; */
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+}
+
+/* Aggiungi anche un bordo completo se necessario */
+.input-group-text,
+.form-control {
+  border: 1px solid #ccc; /* Sostituisci con il colore del bordo che desideri */
+}
+
+/* Regola anche l'input[type="file"] per uniformarlo */
+input[type="file"] {
+  height: 45px; /* Imposta la stessa altezza del form-control */
+  line-height: 1.5; /* Allinea verticalmente */
+  display: inline-block; /* Rende l'input file inline con il suo contenuto */
+  font-size: 12px; /* Modifica la dimensione del testo "Nessun file selezionato" */
+}
+
+/* Aggiustamento per il bottone 'Scegli file' */
+input[type="file"]::-webkit-file-upload-button {
+  height: 45px; /* Imposta l'altezza del bottone */
+  border: none; /* Rimuove il bordo */
+  cursor: pointer; /* Aggiungi il cursore pointer per il bottone */
+  font-size: 14px; /* Imposta la dimensione del testo nel bottone */
+}
+
+@media (max-width: 870px) {
+  .form {
+    padding: 10px 0px;
+  }
+}
+
+#attributes {
+  font-family: monospace; /* Migliore leggibilità per JSON */
+  white-space: pre-wrap; /* Mantiene la formattazione */
+}
+
+/** 
+* ------------------------------------
+* Edit Button Style 
+* ------------------------------------
+*/
+@media screen and (min-width: 992px) {
+  .edit-btn,
+  .delete-btn {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+
+  .delete-btn {
+    margin-right: 0.25rem !important;
+  }
+}
+@media screen and (min-width: 769px) and (max-width: 991px) {
+  /* Stili applicati solo tra 768px e 991px */
+  .edit-btn,
+  .delete-btn {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .delete-btn {
+    margin-right: 0.25rem !important;
+  }
+}
+@media screen and (max-width: 768px) {
+  .edit-btn,
+  .delete-btn {
+    flex: 0 0 auto;
+    width: 100%;
+    margin-top: 0.5rem !important;
+  }
+}
+/** 
+* ------------------------------------
+* END Edit Button Style
+* * ------------------------------------
+*/

@@ -39,7 +39,7 @@ public class RedirectFilter implements WebFilter {
           ExposedHeaders.REGISTRATION_TOKEN,
           request.getQueryParams().getFirst("registration_token"),
           exchange.getResponse());
-      // LOG.info("Filtering Redirect for path {}", exchange.getRequest().getPath());
+      LOG.debug("Filtering Redirect for path {}", exchange.getRequest().getPath());
     }
     return chain.filter(exchange);
   }

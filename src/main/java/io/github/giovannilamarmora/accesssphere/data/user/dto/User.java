@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.data.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
@@ -53,11 +54,16 @@ public class User extends GenericDTO {
 
   @UpperCamelCase private String education;
 
-  @UpperCamelCase private String nationality;
+  private String nationality;
 
   private String ssn; // Social Security Number
 
   private String tokenReset;
+  private Boolean confirmed;
+  private Boolean blocked;
 
   private Map<String, Object> attributes;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private MFASetting mfaSettings;
 }

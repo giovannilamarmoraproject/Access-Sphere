@@ -10,7 +10,7 @@
   "given_name": "Giova",
   "email_verified": true,
   "roles": [
-    "DEFAULT_ROLE"
+    "TEST_ROLES"
   ],
   "type": "GOOGLE"
 }

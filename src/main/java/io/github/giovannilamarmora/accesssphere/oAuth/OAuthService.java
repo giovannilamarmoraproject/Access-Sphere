@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
@@ -11,10 +12,12 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
+import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
@@ -25,14 +28,14 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
-import io.github.giovannilamarmora.utils.utilities.Utilities;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -41,6 +44,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -51,7 +55,7 @@ public class OAuthService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Value("${cookie-domain}")
+  @Value("${cookie-domain:}")
   private String cookieDomain;
 
   @Autowired private ClientService clientService;
@@ -59,6 +63,7 @@ public class OAuthService {
   @Autowired private GoogleAuthService googleAuthService;
   @Autowired private AccessTokenService accessTokenService;
   @Autowired private AccessTokenData accessTokenData;
+  @Autowired private TokenService tokenService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> authorize(
@@ -70,98 +75,33 @@ public class OAuthService {
       String registration_token,
       String bearer,
       String state,
-      ServerHttpResponse serverHttpResponse) {
+      ServerWebExchange exchange) {
+
     LOG.info(
-        "\uD83D\uDD10 Starting endpoint oAuth/2.0/authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
+        "🔐 Starting oAuth/2.0/authorize - clientId: {}, accessType: {}, responseType: {}",
         clientId,
         accessType,
-        responseType,
-        registration_token);
+        responseType);
+
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
+    String finalRedirectUri = Utils.decodeURLValue(redirect_uri);
 
-    String finalRedirect_uri = Utils.decodeURLValue(redirect_uri);
     return clientCredentialMono.map(
         clientCredential -> {
-          if (!ObjectUtils.isEmpty(bearer)) {
-            try {
-              AccessTokenData accessTokenData =
-                  accessTokenService.getByAccessTokenOrIdToken(bearer);
-              OAuthValidator.validateUserRoles(clientCredential, accessTokenData.getRoles());
-              AuthToken token = new AuthToken();
-              token.setAccess_token(
-                  bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
-
-              Map<String, Object> strapiToken = null;
-              if (accessTokenData.getPayload().has(TokenData.STRAPI_TOKEN.getToken())) {
-                strapiToken = new HashMap<>();
-                strapiToken.put(
-                    TokenData.STRAPI_ACCESS_TOKEN.getToken(),
-                    accessTokenData.getPayload().get(TokenData.STRAPI_TOKEN.getToken()).asText());
-              }
-
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "Token is valid",
-                      TraceUtils.getSpanID(),
-                      ObjectUtils.isEmpty(strapiToken)
-                          ? new OAuthTokenResponse(token, accessTokenData.getPayload())
-                          : new OAuthTokenResponse(
-                              token,
-                              Mapper.readTree(strapiToken),
-                              Mapper.removeField(
-                                  accessTokenData.getPayload(),
-                                  TokenData.STRAPI_TOKEN.getToken())));
-
-              return ResponseEntity.status(HttpStatus.OK).body(response);
-
-            } catch (TokenException | OAuthException e) {
-              LOG.warn("Token validation failed: {}", e.getMessage());
-
-              if (!Utilities.isNullOrEmpty(clientCredential.getRedirect_uri())
-                  && !Utilities.isNullOrEmpty(
-                      clientCredential.getRedirect_uri().get("fallback_uri"))) {
-                URI fallbackLocation =
-                    URI.create(clientCredential.getRedirect_uri().get("fallback_uri"));
-
-                Response response =
-                    new Response(
-                        HttpStatus.TEMPORARY_REDIRECT.value(),
-                        "Token is not valid",
-                        TraceUtils.getSpanID(),
-                        fallbackLocation);
-
-                return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                    .location(fallbackLocation)
-                    .body(response);
-              }
-              return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                  .body(
-                      new Response(
-                          HttpStatus.UNAUTHORIZED.value(),
-                          "Token is not valid",
-                          TraceUtils.getSpanID(),
-                          null));
-            }
+          if (StringUtils.hasText(bearer) || responseType.equalsIgnoreCase("token")) {
+            OAuthValidator.validateResponseType("token", responseType);
+            return handleBearerToken(bearer, clientCredential, exchange);
           }
 
-          OAuthValidator.validateClient(
-              clientCredential, responseType, accessType, finalRedirect_uri, scope);
-          URI location =
-              GrpcService.getGoogleOAuthLocation(
-                  scope, finalRedirect_uri, accessType, clientCredential);
-          CookieManager.setCookieInResponse(
-              Cookie.COOKIE_REDIRECT_URI, finalRedirect_uri, cookieDomain, serverHttpResponse);
-          CookieManager.setCookieInResponse(
-              Cookie.COOKIE_TOKEN, registration_token, cookieDomain, serverHttpResponse);
-          LOG.info(
-              "\uD83D\uDD10 Completed endpoint oAuth/2.0/authorize with client id: {}, access_type: {}, response_type: {} and registration_token: {}",
-              clientId,
-              accessType,
+          return handleOAuthAuthorization(
+              clientCredential,
               responseType,
-              registration_token);
-          return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT).location(location).build();
+              accessType,
+              finalRedirectUri,
+              scope,
+              registration_token,
+              exchange);
         });
   }
 
@@ -212,6 +152,149 @@ public class OAuthService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> tokenExchange(
+      String bearer, TokenExchange tokenExchange, ServerWebExchange exchange) {
+
+    LOG.info("🔄 Token Exchange process started for client: {}", tokenExchange.getClient_id());
+
+    // Recupera le credenziali del client
+    Mono<ClientCredential> clientCredentialMono =
+        clientService.getClientCredentialByClientID(tokenExchange.getClient_id());
+
+    Mono<ClientCredential> clientCredentialToExchangeMono =
+        clientService.getClientCredentialByClientID(accessTokenData.getClientId());
+
+    return clientCredentialMono
+        .zipWith(clientCredentialToExchangeMono)
+        .flatMap(
+            objects -> {
+              OAuthValidator.validateTokenExchange(bearer, tokenExchange, objects.getT1());
+              return authService.exchangeToken(
+                  tokenExchange,
+                  accessTokenData,
+                  objects.getT1(),
+                  objects.getT2(),
+                  exchange.getRequest());
+            })
+        .doOnSuccess(
+            responseResponseEntity ->
+                LOG.info(
+                    "🔄 Token Exchange process completed for client: {}",
+                    tokenExchange.getClient_id()));
+  }
+
+  private ResponseEntity<?> handleBearerToken(
+      String bearer, ClientCredential clientCredential, ServerWebExchange exchange) {
+    LOG.info("✅ Bearer token found *******, starting authorization check");
+
+    try {
+      AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+      OAuthValidator.validateUserRoles(clientCredential, accessTokenData.getRoles());
+      OAuthValidator.validateClientId(
+          accessTokenData.getClientId(), clientCredential.getClientId());
+
+      AuthToken token = new AuthToken();
+      token.setAccess_token(bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
+      token.setToken_type("Bearer");
+      token.setExpires_at(accessTokenData.getAccessExpireDate());
+
+      Map<String, Object> strapiToken = OAuthMapper.extractStrapiToken(accessTokenData);
+
+      Response response =
+          new Response(
+              HttpStatus.OK.value(),
+              "Token is valid",
+              TraceUtils.getSpanID(),
+              strapiToken == null
+                  ? new OAuthTokenResponse(token, accessTokenData.getPayload())
+                  : new OAuthTokenResponse(
+                      token,
+                      Mapper.readTree(strapiToken),
+                      Mapper.removeField(
+                          accessTokenData.getPayload(), TokenData.STRAPI_TOKEN.getToken())));
+
+      LOG.info("✅ Authorization successful for {}", bearer);
+      return ResponseEntity.ok(response);
+
+    } catch (TokenException | OAuthException e) {
+      return handleInvalidToken(clientCredential, e, exchange);
+    }
+  }
+
+  private ResponseEntity<?> handleInvalidToken(
+      ClientCredential clientCredential, Exception e, ServerWebExchange exchange) {
+    LOG.warn("❌ Token validation failed: {}", e.getMessage());
+
+    /** Deleting all cookie if validation failed */
+    Utils.deleteAllCookie(exchange.getResponse());
+
+    if (e instanceof OAuthException exception
+        && exception.getExceptionCode().equals(ExceptionMap.ERR_OAUTH_401)) {
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
+    }
+
+    if (!ObjectToolkit.isNullOrEmpty(clientCredential.getRedirect_uri())
+        && !ObjectToolkit.isNullOrEmpty(
+            clientCredential.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()))) {
+
+      URI fallbackLocation =
+          URI.create(clientCredential.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()));
+
+      Response response =
+          new Response(
+              HttpStatus.FOUND.value(),
+              "Token is not valid",
+              TraceUtils.getSpanID(),
+              fallbackLocation);
+
+      return ResponseEntity.status(HttpStatus.FOUND).location(fallbackLocation).body(response);
+    }
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(
+            new Response(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Token is not valid",
+                TraceUtils.getSpanID(),
+                null));
+  }
+
+  private ResponseEntity<?> handleOAuthAuthorization(
+      ClientCredential clientCredential,
+      String responseType,
+      String accessType,
+      String finalRedirectUri,
+      String scope,
+      String registrationToken,
+      ServerWebExchange exchange) {
+
+    ServerHttpRequest request = exchange.getRequest();
+    ServerHttpResponse response = exchange.getResponse();
+
+    OAuthValidator.validateClient(
+        clientCredential, responseType, accessType, finalRedirectUri, scope);
+    URI location =
+        GrpcService.getGoogleOAuthLocation(scope, finalRedirectUri, accessType, clientCredential);
+
+    if (!ObjectToolkit.isNullOrEmpty(finalRedirectUri))
+      CookieManager.setCookieInResponse(
+          Cookie.COOKIE_REDIRECT_URI, finalRedirectUri, cookieDomain, response);
+    if (!ObjectToolkit.isNullOrEmpty(registrationToken))
+      CookieManager.setCookieInResponse(
+          Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, response);
+
+    LOG.info(
+        "✅ OAuth authorization completed - clientId: {}, accessType: {}, responseType: {}",
+        clientCredential.getClientId(),
+        accessType,
+        responseType);
+
+    return ResponseEntity.status(clientCredential.getAuthorize_redirect_status())
+        .location(location)
+        .build();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private Mono<ResponseEntity<?>> getToken(
       String clientId,
       String grant_type,
@@ -234,7 +317,7 @@ public class OAuthService {
         .flatMap(
             clientCredential -> {
               OAuthType authType =
-                  getOAuthType(clientCredential, accessTokenData, grant_type, code);
+                  OAuthMapper.getOAuthType(clientCredential, accessTokenData, grant_type, code);
               // OAuthValidator.validateClientId(clientCredential, clientId);
               switch (authType) {
                 case BEARER -> {
@@ -255,7 +338,8 @@ public class OAuthService {
                   GoogleModel googleModel =
                       GrpcService.authenticateOAuth(code, scope, redirectUri, clientCredential);
                   return googleAuthService
-                      .performGoogleLogin(googleModel, clientCredential, request, response)
+                      .performGoogleLogin(
+                          googleModel, clientCredential, redirect_uri, request, response)
                       .doOnSuccess(
                           responseResponseEntity -> LOG.info("Google oAuth 2.0 Login ended"));
                 }
@@ -293,15 +377,18 @@ public class OAuthService {
     return clientCredentialMono
         .flatMap(
             clientCredential -> {
-              AccessTokenData accessTokenData = accessTokenService.getByRefreshToken(refresh_token);
-              OAuthValidator.validateRefreshTokenData(accessTokenData, clientCredential);
-              switch (clientCredential.getAuthType()) {
+              AccessTokenData refreshTokenData =
+                  accessTokenService.getByRefreshToken(refresh_token);
+              OAuthType authType =
+                  OAuthMapper.getOAuthType(clientCredential, refreshTokenData, null, null);
+              OAuthValidator.validateRefreshTokenData(refreshTokenData, clientCredential, authType);
+              switch (authType) {
                 case BEARER -> {
-                  return authService.refreshToken(accessTokenData, clientCredential, request);
+                  return authService.refreshToken(refreshTokenData, clientCredential, request);
                 }
                 case GOOGLE -> {
                   return googleAuthService.refreshGoogleToken(
-                      accessTokenData, clientCredential, request);
+                      refreshTokenData, clientCredential, request);
                 }
                 default -> {
                   return defaultErrorType();
@@ -323,21 +410,27 @@ public class OAuthService {
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
 
-    OAuthValidator.validateClientLogout(accessTokenData, clientId);
+    // OAuthValidator.validateClientLogout(accessTokenData, clientId);
 
     if (isLogoutAlreadyDone()) {
       return createLogoutSuccessResponse(clientId, redirect_uri, response);
     }
 
+    AccessTokenData tokenData = new AccessTokenData();
+    BeanUtils.copyProperties(accessTokenData, tokenData);
+    OAuthValidator.validateClientId(tokenData.getClientId(), clientId);
+
     return clientCredentialMono
         .flatMap(
             clientCredential ->
-                processLogoutByAuthType(accessTokenData, clientCredential, redirect_uri, response))
+                processLogoutByAuthType(tokenData, clientCredential, redirect_uri, response))
         .doOnSuccess(
-            responseEntity ->
-                LOG.info(
-                    "\uD83D\uDDDD\uFE0F Ending oAuth/2.0/logout endpoint with client_id={}",
-                    clientId));
+            responseEntity -> {
+              Utils.deleteAllCookie(response);
+              LOG.info(
+                  "\uD83D\uDDDD\uFE0F Ending oAuth/2.0/logout endpoint with client_id={}",
+                  clientId);
+            });
   }
 
   private boolean isLogoutAlreadyDone() {
@@ -364,7 +457,7 @@ public class OAuthService {
       ClientCredential clientCredential,
       String redirect_uri,
       ServerHttpResponse response) {
-    return switch (getOAuthType(clientCredential, accessTokenData, null, null)) {
+    return switch (OAuthMapper.getOAuthType(clientCredential, accessTokenData, null, null)) {
       case BEARER -> authService.logout(redirect_uri, accessTokenData, response);
       case GOOGLE -> googleAuthService.processGoogleLogout(redirect_uri, accessTokenData, response);
       default -> defaultErrorType();
@@ -375,20 +468,5 @@ public class OAuthService {
     LOG.error("Type not configured, miss match on client");
     return Mono.error(
         new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
-  }
-
-  private OAuthType getOAuthType(
-      ClientCredential clientCredential,
-      AccessTokenData accessTokenData,
-      String grant_type,
-      String code) {
-    if (!ObjectUtils.isEmpty(grant_type) || !ObjectUtils.isEmpty(code))
-      return clientCredential.getAuthType().equals(OAuthType.ALL_TYPE) && !ObjectUtils.isEmpty(code)
-          ? OAuthType.GOOGLE
-          : (clientCredential.getAuthType().equals(OAuthType.ALL_TYPE)
-                  && grant_type.equalsIgnoreCase(GrantType.PASSWORD.type())
-              ? OAuthType.BEARER
-              : clientCredential.getAuthType());
-    else return accessTokenData.getType();
   }
 }

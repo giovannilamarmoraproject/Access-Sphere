@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 import java.util.Map;
 import lombok.*;
+import org.springframework.http.HttpStatus;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -31,6 +32,9 @@ public class OAuthStrapiClient extends StrapiGeneric {
   private Boolean id_token;
   private Boolean access_token;
   private Boolean strapi_token;
+  private HttpStatus authorize_redirect_status;
+  private Boolean mfa_enabled;
+  private List<StrapiWebhook> webhooks;
 
   @Builder
   @Data

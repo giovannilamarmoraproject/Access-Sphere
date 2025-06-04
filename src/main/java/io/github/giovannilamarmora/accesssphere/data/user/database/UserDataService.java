@@ -18,4 +18,6 @@ public interface UserDataService {
   List<UserEntity> findAll();
 
   void delete(UserEntity userEntity);
+
+  void deleteByIdentifier(String identifier);
 }

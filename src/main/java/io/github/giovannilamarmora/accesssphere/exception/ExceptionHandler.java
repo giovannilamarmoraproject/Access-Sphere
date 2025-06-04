@@ -1,8 +1,12 @@
 package io.github.giovannilamarmora.accesssphere.exception;
 
+import io.github.giovannilamarmora.utils.exception.ExceptionCode;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.core.codec.DecodingException;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpStatus;
@@ -11,8 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.MissingRequestValueException;
+import org.springframework.web.server.PayloadTooLargeException;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 
 @ControllerAdvice
@@ -25,7 +32,52 @@ public class ExceptionHandler extends UtilsException {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_OAUTH_400);
     response.getError().setMessage("The params " + e.getName() + " is required!");
-    response.getError().setException(ExceptionMap.ERR_OAUTH_400.exception());
+    ExceptionType exceptionType = ExceptionType.fromParam(e.getName(), false);
+    response
+        .getError()
+        .setException(
+            ObjectToolkit.isNullOrEmpty(exceptionType)
+                ? ExceptionMap.ERR_OAUTH_400.exception()
+                : exceptionType.name());
+    response.getError().setExceptionMessage(null);
+    response.getError().setStackTrace(null);
+    return new ResponseEntity<>(response, status);
+  }
+
+  @org.springframework.web.bind.annotation.ExceptionHandler(value = PayloadTooLargeException.class)
+  public ResponseEntity<ExceptionResponse> handleException(
+      PayloadTooLargeException e, ServerHttpRequest request) {
+    HttpStatus status = ExceptionMap.ERR_USER_415.getStatus();
+    ExceptionResponse response = getExceptionResponse(e, request, ExceptionMap.ERR_USER_415);
+    response.getError().setMessage("Data is too large to be uploaded");
+    response.getError().setException(ExceptionMap.ERR_USER_415.exception());
+    response.getError().setExceptionMessage(null);
+    response.getError().setStackTrace(null);
+    return new ResponseEntity<>(response, status);
+  }
+
+  @org.springframework.web.bind.annotation.ExceptionHandler(value = ServerWebInputException.class)
+  public ResponseEntity<ExceptionResponse> handleServerWebInputException(
+      ServerWebInputException e, ServerHttpRequest request) {
+    HttpStatus status = (HttpStatus) e.getStatusCode();
+    ExceptionCode code = ExceptionMap.ERR_OAUTH_400;
+    if (request.getPath().value().contains("mfa")) {
+      code = ExceptionMap.ERR_MFA_400;
+    }
+    String message = null;
+    if (e instanceof WebExchangeBindException)
+      message =
+          ((WebExchangeBindException) e)
+              .getBindingResult().getAllErrors().stream()
+                  .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                  .toList()
+                  .getFirst();
+    else if (e.getCause() != null && e.getCause() instanceof DecodingException) {
+      message = e.getCause().getCause().getCause().getMessage();
+    }
+    ExceptionResponse response = getExceptionResponse(e, request, code);
+    response.getError().setMessage(ObjectToolkit.getOrDefault(message, e.getMessage()));
+    response.getError().setException(code.exception());
     response.getError().setExceptionMessage(null);
     response.getError().setStackTrace(null);
     return new ResponseEntity<>(response, status);

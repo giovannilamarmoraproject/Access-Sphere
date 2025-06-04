@@ -1,14 +1,22 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.DataService;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
+import io.github.giovannilamarmora.accesssphere.data.UserDataService;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -16,6 +24,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.net.URI;
 import java.util.Base64;
@@ -23,7 +32,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -34,13 +42,14 @@ import reactor.core.publisher.Mono;
 @Service
 public class AuthService {
 
-  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+  private static final Logger LOG = LoggerFilter.getLogger(AuthService.class);
 
-  @Value("${cookie-domain}")
+  @Value("${cookie-domain:}")
   private String cookieDomain;
 
   @Autowired private TokenService tokenService;
-  @Autowired private DataService dataService;
+  @Autowired private UserDataService dataService;
+  @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> makeClassicLogin(
@@ -59,7 +68,7 @@ public class AuthService {
       password = decoded[1];
     } catch (Exception e) {
       LOG.error("Error during decoding username and password, message is {}", e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, "Invalid basic provided!");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, "Invalid basic provided!");
     }
     LOG.debug("Login process started for user {}", username);
 
@@ -80,50 +89,104 @@ public class AuthService {
             tokenResponse -> {
               OAuthValidator.validateUserRoles(
                   clientCredential, tokenResponse.getUser().getRoles());
-              String message =
-                  "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
 
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      message,
-                      TraceUtils.getSpanID(),
-                      new OAuthTokenResponse(
-                          tokenResponse.getToken(),
-                          clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() : null,
-                          includeUserInfo ? tokenResponse.getUserInfo() : null,
-                          includeUserData ? tokenResponse.getUser() : null));
-
-              LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
-              if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
-              CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_ACCESS_TOKEN,
-                  tokenResponse.getToken().getAccess_token(),
+              if (!ObjectToolkit.isNullOrEmpty(tokenResponse.getToken().getTemp_token())) {
+                return ResponseEntity.status(HttpStatus.OK)
+                    .body(
+                        new Response(
+                            HttpStatus.OK.value(),
+                            "MFA Verification Required",
+                            TraceUtils.getSpanID(),
+                            new OAuthTokenResponse(tokenResponse.getToken())));
+              }
+              return setLoginResponse(
+                  tokenResponse,
+                  clientCredential,
+                  includeUserInfo,
+                  includeUserData,
+                  redirect_uri,
                   cookieDomain,
                   serverHttpResponse);
-              CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_STRAPI_TOKEN,
-                  tokenResponse
-                      .getStrapiToken()
-                      .get(TokenData.STRAPI_ACCESS_TOKEN.getToken())
-                      .asText(),
-                  cookieDomain,
-                  serverHttpResponse);
-              return ResponseEntity.ok().location(URI.create(redirect_uri)).body(response);
+              // String message =
+              //    "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() +
+              // "!";
+              //
+              // Response response =
+              //    new Response(
+              //        HttpStatus.OK.value(),
+              //        message,
+              //        TraceUtils.getSpanID(),
+              //        new OAuthTokenResponse(
+              //            tokenResponse.getToken(),
+              //            clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() :
+              // null,
+              //            includeUserInfo ? tokenResponse.getUserInfo() : null,
+              //            includeUserData ? tokenResponse.getUser() : null));
+              //
+              // LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
+              // if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
+              //
+              // CookieManager.setCookieInResponse(
+              //    Cookie.COOKIE_ACCESS_TOKEN,
+              //    tokenResponse.getToken().getAccess_token(),
+              //    cookieDomain,
+              //    serverHttpResponse);
+              // CookieManager.setCookieInResponse(
+              //    Cookie.COOKIE_STRAPI_TOKEN,
+              //    tokenResponse
+              //        .getStrapiToken()
+              //        .get(TokenData.STRAPI_ACCESS_TOKEN.getToken())
+              //        .asText(),
+              //    cookieDomain,
+              //    serverHttpResponse);
+              //
+              // URI finalRedirectURI =
+              //    OAuthMapper.getFinalRedirectURI(
+              //        clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+              // return ResponseEntity.ok().location(finalRedirectURI).body(response);
             });
   }
 
-  static void setCookieInResponseLocal(
-      String cookieName, String cookieValue, ServerHttpResponse response) {
-    ResponseCookie cookie =
-        ResponseCookie.from(cookieName, cookieValue)
-            .maxAge(360000L)
-            .sameSite("None")
-            .secure(true)
-            .httpOnly(false)
-            .path("/")
-            .build();
-    response.getHeaders().add("Set-Cookie", cookie.toString());
+  public static ResponseEntity<Response> setLoginResponse(
+      OAuthTokenResponse tokenResponse,
+      ClientCredential clientCredential,
+      boolean includeUserInfo,
+      boolean includeUserData,
+      String redirect_uri,
+      String cookieDomain,
+      ServerHttpResponse httpResponse) {
+    String message =
+        "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
+
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            message,
+            TraceUtils.getSpanID(),
+            new OAuthTokenResponse(
+                tokenResponse.getToken(),
+                clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() : null,
+                includeUserInfo ? tokenResponse.getUserInfo() : null,
+                includeUserData ? tokenResponse.getUser() : null));
+
+    LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
+    if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
+
+    CookieManager.setCookieInResponse(
+        Cookie.COOKIE_ACCESS_TOKEN,
+        tokenResponse.getToken().getAccess_token(),
+        cookieDomain,
+        httpResponse);
+    CookieManager.setCookieInResponse(
+        Cookie.COOKIE_STRAPI_TOKEN,
+        tokenResponse.getStrapiToken().get(TokenData.STRAPI_ACCESS_TOKEN.getToken()).asText(),
+        cookieDomain,
+        httpResponse);
+
+    URI finalRedirectURI =
+        OAuthMapper.getFinalRedirectURI(
+            clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+    return ResponseEntity.ok().location(finalRedirectURI).body(response);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -167,13 +230,17 @@ public class AuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> logout(
       String redirect_uri, AccessTokenData accessTokenData, ServerHttpResponse response) {
-    String refreshToken = accessTokenData.getPayload().get("refresh_token").textValue();
+    String refreshToken =
+        (!ObjectToolkit.isNullOrEmpty(accessTokenData.getPayload())
+                && !ObjectToolkit.isNullOrEmpty(accessTokenData.getPayload().get("refresh_token")))
+            ? accessTokenData.getPayload().get("refresh_token").textValue()
+            : null;
 
     if (ObjectUtils.isEmpty(refreshToken)) {
       LOG.info("Strapi refresh_token not found!");
     }
 
-    String message = "Logout Successfully for " + accessTokenData.getEmail() + "!";
+    String message = "Logout Successfully for " + accessTokenData.getSubject() + "!";
     Response res = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), null);
 
     ResponseEntity<Response> responseResponseEntity = ResponseEntity.ok(res);
@@ -188,5 +255,101 @@ public class AuthService {
               SessionID.invalidateSessionID(response);
             })
         .then(Mono.just(responseResponseEntity));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> exchangeToken(
+      TokenExchange tokenExchange,
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      ClientCredential clientCredentialToExchange,
+      ServerHttpRequest request) {
+    boolean includeUserInfo =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
+    boolean includeUserData =
+        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
+
+    JWTData decryptToken =
+        tokenService.parseToken(tokenExchange.getSubject_token(), clientCredentialToExchange);
+
+    JsonNode strapi_token = OAuthMapper.getStrapiToken(accessTokenData.getPayload());
+
+    if (techUserService.isTechUser()) {
+      return Mono.just(
+          exchangeTokenBuildResponse(
+              tokenExchange,
+              new User(),
+              accessTokenData,
+              clientCredential,
+              strapi_token,
+              includeUserInfo,
+              includeUserData,
+              request));
+    }
+    return dataService
+        .getUserByEmail(decryptToken.getEmail())
+        .map(
+            user -> {
+              return exchangeTokenBuildResponse(
+                  tokenExchange,
+                  user,
+                  accessTokenData,
+                  clientCredential,
+                  strapi_token,
+                  includeUserInfo,
+                  includeUserData,
+                  request);
+              // AuthToken token =
+              //    tokenService.exchangeToken(user, accessTokenData, clientCredential, request);
+              // String message =
+              //    "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
+              // Response response =
+              //    new Response(
+              //        HttpStatus.OK.value(),
+              //        message,
+              //        TraceUtils.getSpanID(),
+              //        new OAuthTokenResponse(
+              //            token,
+              //            ObjectToolkit.isNullOrEmpty(strapi_token)
+              //                ? accessTokenData.getPayload()
+              //                : strapi_token,
+              //            includeUserInfo
+              //                ? tokenService.parseToken(token.getAccess_token(), clientCredential)
+              //                : null,
+              //            includeUserData ? user : null));
+              // return ResponseEntity.ok(response);
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  private ResponseEntity<Response> exchangeTokenBuildResponse(
+      TokenExchange tokenExchange,
+      User user,
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      JsonNode strapi_token,
+      boolean includeUserInfo,
+      boolean includeUserData,
+      ServerHttpRequest request) {
+    AuthToken token = tokenService.exchangeToken(user, accessTokenData, clientCredential, request);
+    String message =
+        "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            message,
+            TraceUtils.getSpanID(),
+            new OAuthTokenResponse(
+                token,
+                ObjectToolkit.isNullOrEmpty(strapi_token)
+                    ? accessTokenData.getPayload()
+                    : strapi_token,
+                includeUserInfo
+                    ? tokenService.parseToken(token.getAccess_token(), clientCredential)
+                    : null,
+                includeUserData ? user : null));
+    return ResponseEntity.ok(response);
   }
 }

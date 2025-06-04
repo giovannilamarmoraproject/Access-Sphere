@@ -1,15 +1,15 @@
 package io.github.giovannilamarmora.accesssphere.utilities;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
+import io.github.giovannilamarmora.accesssphere.token.model.TokenClaims;
+import io.github.giovannilamarmora.utils.context.ContextConfig;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.web.CookieManager;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.util.ObjectUtils;
 
 public class Utils {
@@ -38,14 +39,7 @@ public class Utils {
       ClientCredential clientCredential, TokenClaims claim, Object data) {
     Map<String, Object> attributes = new HashMap<>();
     attributes.put(claim.claim(), clientCredential.getAuthType());
-    try {
-      attributes.put(TokenClaims.GOOGLE_TOKEN.claim(), mapper.writeValueAsString(data));
-    } catch (JsonProcessingException e) {
-      LOG.error(
-          "An error happen during oAuth Google Login on parsing User, message is {}",
-          e.getMessage());
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
-    }
+    attributes.put(TokenClaims.GOOGLE_TOKEN.claim(), Mapper.writeObjectToString(data));
     return attributes;
   }
 
@@ -91,5 +85,16 @@ public class Utils {
     } catch (IllegalArgumentException | NullPointerException e) {
       return false;
     }
+  }
+
+  public static void deleteAllCookie(ServerHttpResponse response) {
+    CookieManager.deleteCookie(Cookie.COOKIE_SESSION_ID, response);
+    CookieManager.deleteCookie(Cookie.COOKIE_TOKEN, response);
+    CookieManager.deleteCookie(Cookie.COOKIE_REDIRECT_URI, response);
+    CookieManager.deleteCookie(Cookie.COOKIE_ACCESS_TOKEN, response);
+    CookieManager.deleteCookie(Cookie.COOKIE_STRAPI_TOKEN, response);
+    CookieManager.deleteCookie(ContextConfig.TRACE_ID.getValue(), response);
+    CookieManager.deleteCookie(ContextConfig.SPAN_ID.getValue(), response);
+    CookieManager.deleteCookie(ContextConfig.PARENT_ID.getValue(), response);
   }
 }

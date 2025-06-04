@@ -13,33 +13,36 @@ services:
       - DATABASE_USERNAME=${DATABASE_USERNAME}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - APP_ENV=${APP_ENV}
-      - STRAPI_AUTH_TOKEN=${STRAPI_AUTH_TOKEN}
       - LOGGING_LEVEL=${LOGGING_LEVEL}
       - LOGBACK_FILE=${LOGBACK_FILE}
       - GCLOUD_PROJECT=${GCLOUD_PROJECT}
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
-      - CACHE_ENABLE=${CACHE_ENABLE}
       - COOKIE_DOMAIN=${COOKIE_DOMAIN}
+      - STRAPI_ACTIVE=${STRAPI_ACTIVE}
+      - STRAPI_URL=http://stg.app.strapi.cms:1337
+      - STRAPI_AUTH_TOKEN=${STRAPI_AUTH_TOKEN}
+      - TECH_USERNAME=${TECH_USERNAME}
+      - TECH_PASSWORD=${TECH_PASSWORD}
+      - CORS_ENABLED=${CORS_ENABLED}
+      - CORS_NOT_FILTER=${CORS_NOT_FILTER}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - CORS_ALLOWED_HEADERS=${CORS_ALLOWED_HEADERS}
+      - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS}
+      - AES_KEY=${AES_KEY}
+    volumes:
+      # Monta il volume "microservice" nella cartella /secrets (in sola lettura)
+      - microservice:/secrets:ro
     deploy:
       replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
-      #update_config:
-      #  parallelism: 1
-      #  delay: 10s
-      #restart_policy:
-      #  condition: on-failure
-      #placement:
-      #  constraints:
-      #    - node.role == manager
     networks:
       docker-network:
         aliases:
           - access.sphere.service.stg
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.access-sphere.rule=Host(`access.sphere.service.stg.giovannilamarmora.com`)"
-      - "traefik.http.services.access-sphere.loadbalancer.server.port=8080"
-      - "traefik.http.routers.access-sphere.middlewares=geoblock@file"
 
 networks:
   docker-network:
+    external: true
+
+volumes:
+  microservice:
     external: true

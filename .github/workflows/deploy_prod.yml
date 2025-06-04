@@ -1,0 +1,104 @@
+name: Deploy-PROD
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKER_REPOSITORY: ${{ vars.DOCKER_REPOSITORY }}
+
+jobs:
+  checkout-and-setup:
+    name: 🔧 Checkout and Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: "☁️ Checkout Repository"
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up JDK and Maven
+        id: setup
+        uses: actions/setup-java@v4.6.0
+        with:
+          java-version: '22'
+          distribution: 'corretto'
+
+  install-test-and-build:
+    name: 🌱 Install, Test and Build
+    runs-on: ubuntu-latest
+    needs: checkout-and-setup
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Set up JDK and Maven
+        id: setup
+        uses: actions/setup-java@v4.6.0
+        with:
+          java-version: '22'
+          distribution: 'corretto'
+
+      - name: ⬇️ Install dependencies
+        run: |
+          mvn -X clean install
+
+      - name: 📂 Test with Maven
+        run: |
+          mvn test
+
+      - name: 📂 Build with Maven
+        run: |
+          mvn -B package --file pom.xml -DskipTests
+
+  docker-login:
+    name: 🐳 Docker Login
+    runs-on: ubuntu-latest
+    needs: install-test-and-build
+    steps:
+      - name: 🐳 Log in to Docker Hub
+        uses: docker/login-action@v3.3.0
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+  build-and-push-docker:
+    name: 🚀 Build & Push Docker Image
+    runs-on: ubuntu-latest
+    environment:
+      name: access-sphere
+    needs: [ install-test-and-build, docker-login ]
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Set up JDK and Maven
+        id: setup
+        uses: actions/setup-java@v4.6.0
+        with:
+          java-version: '22'
+          distribution: 'corretto'
+
+      - name: 📝 Set Release Version
+        run: |
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      #- name: create-json
+      #  uses: jsdaniell/create-json@v1.2.3
+      #  with:
+      #    name: "credentials.json"
+      #    json: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+      #    dir: "src/main/resources/"
+
+
+      - name: 🚀 Build & push Docker image
+        uses: mr-smithers-excellent/docker-build-push@v6.4
+        with:
+          image: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}
+          #tags: latest
+          tags: ${{ env.RELEASE_VERSION }}, latest
+          registry: docker.io
+          dockerfile: Dockerfile
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+          multiPlatform: true
+          platform: linux/amd64,linux/arm64
+          #platform: linux/arm64

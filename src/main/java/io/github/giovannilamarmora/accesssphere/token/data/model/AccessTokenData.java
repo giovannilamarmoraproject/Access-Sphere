@@ -23,6 +23,7 @@ public class AccessTokenData extends GenericDTO {
   private String clientId;
   private String sessionId;
   private String subject;
+  private SubjectType subjectType;
   private String email;
   private String identifier;
   private OAuthType type;

@@ -1,0 +1,20 @@
+{
+  "name": "Access Sphere",
+  "short_name": "Access Sphere",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#192e3a",
+  "theme_color": "#192e3a",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/giovannilamarmoraproject/Access-Sphere/refs/heads/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/giovannilamarmoraproject/Access-Sphere/refs/heads/master/Access%20Sphere%20Logo/Access%20Sphere%20Transparent%20512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

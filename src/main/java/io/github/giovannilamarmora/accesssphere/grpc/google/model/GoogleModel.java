@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.grpc.google.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

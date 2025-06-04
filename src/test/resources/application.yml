@@ -1,4 +1,6 @@
 env: "Test" # Used for Google Cloud LOG
+sensitiveData: password|token|Authorization|Bearer|Basic|access[_-]?token|refresh[_-]?token|strapi[_-]?token|jwt|jwtSecret|jweSecret|registrationToken|secretKey|tokenReset
+
 cookie-domain: localhost
 spring:
   application:
@@ -25,6 +27,8 @@ filter:
     generateSessionURI: "/v1/oAuth/2.0/authorize,*/users/register"
     bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico_old"
     logoutURI: "*/v1/oAuth/2.0/logout"
+  authorization:
+    shouldFilter: "*/v1/oAuth/2.0/token/exchange,**/v1/users/profile"
 
 rest:
   client:
@@ -32,6 +36,7 @@ rest:
       active: true
       baseUrl: http://strapi.app.mock
       bearer: token
+      aes-key: aesKey
       path:
         clientId: /api/Oauthclientids
         registerUser: /api/auth/local/register
@@ -43,6 +48,8 @@ rest:
         logout: /api/auth/revoke
         updateUser: /api/users/:userId
         getTemplate: /api/email-templates
+        locales: /api/i18n/locales
+        deleteUser: /api/users/:userId
     email-sender:
       baseUrl: https://email-sender.mock
       path:
@@ -50,9 +57,11 @@ rest:
 
 app:
   version: 1.0.0
-  cache:
-    active: false
-    cron: 0 0 1 * * *
+  tech-user:
+    username: username
+    password: password
+    client-id: ACCESS-SPHERE-TECH
+    strapi: token
   shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**"
   exception:
     stacktrace: false # Active StackTrace in Response

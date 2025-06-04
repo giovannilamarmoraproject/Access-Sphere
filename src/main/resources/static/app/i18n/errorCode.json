@@ -1,0 +1,108 @@
+{
+  "en": {
+    "BAD_INPUT_ERROR": {
+      "title": "Bad Input Error"
+    },
+    "INVALID_ROLES": {
+      "title": "Invalid Roles",
+      "message": "The assigned roles are not valid for this operation."
+    },
+    "INVALID_AUTHORIZATION": {
+      "title": "Invalid Authorization",
+      "message": "The authorization header is missing or incorrect."
+    },
+    "INVALID_CLIENT_ID": {
+      "title": "Invalid Client ID",
+      "message": "The client ID is either missing or invalid."
+    },
+    "INVALID_GRANT_TYPE": {
+      "title": "Invalid Grant Type",
+      "message": "The grant type is either missing or not supported."
+    },
+    "INVALID_REDIRECT_URI": {
+      "title": "Invalid Redirect URI",
+      "message": "The provided redirect URI is not registered or allowed."
+    },
+    "OAUTH_NOT_VALID": {
+      "title": "Not Authorized",
+      "message": "You are not authorized to make this request."
+    },
+    "OAUTH_ACCESS_DENIED": {
+      "title": "Not Allowed",
+      "message": "You are not allowed to make this request."
+    },
+    "USERNAME_EMAIL_TAKEN": {
+      "title": "Error",
+      "message": "Email or Username are already taken."
+    },
+    "ACCOUNT_BLOCKED": {
+      "title": "Account Blocked",
+      "message": "Your account has been blocked."
+    },
+    "INVALID_OTP_CODE": {
+      "title": "Invalid OTP",
+      "message": "The OTP you entered is either expired or incorrect. Please try again."
+    },
+    "OTP_ALREADY_CONFIGURED": {
+      "title": "Invalid Method",
+      "message": "The method you entered is already used. Please try another one."
+    },
+    "OTP_NOT_CONFIGURED": {
+      "title": "OTP Method Not Configured",
+      "message": "This account does not have a configured OTP method. Please set up your authenticator before proceeding."
+    }
+  },
+  "it": {
+    "BAD_INPUT_ERROR": {
+      "title": "Errore di Input"
+    },
+    "INVALID_ROLES": {
+      "title": "Ruoli Non Validi",
+      "message": "I ruoli assegnati non sono validi per questa operazione."
+    },
+    "INVALID_AUTHORIZATION": {
+      "title": "Autorizzazione Non Valida",
+      "message": "L'header di autorizzazione è mancante o non corretto."
+    },
+    "INVALID_CLIENT_ID": {
+      "title": "Client ID Non Valido",
+      "message": "Il client ID è mancante o non valido."
+    },
+    "INVALID_GRANT_TYPE": {
+      "title": "Grant Type Non Valido",
+      "message": "Il tipo di grant è mancante o non supportato."
+    },
+    "INVALID_REDIRECT_URI": {
+      "title": "Redirect URI Non Valido",
+      "message": "Il redirect URI fornito non è registrato o consentito."
+    },
+    "OAUTH_NOT_VALID": {
+      "title": "Non Autorizzato",
+      "message": "Non sei autorizzato ad effettuare questa richiesta."
+    },
+    "OAUTH_ACCESS_DENIED": {
+      "title": "Non consentito",
+      "message": "Non ti è consentito effettuare questa richiesta."
+    },
+    "USERNAME_EMAIL_TAKEN": {
+      "title": "Errore",
+      "message": "Email o Username sono già usati."
+    },
+    "ACCOUNT_BLOCKED": {
+      "title": "Account Bloccato",
+      "message": "Il tuo account è bloccato."
+    },
+    "INVALID_OTP_CODE": {
+      "title": "OTP non valido",
+      "message": "Il codice OTP inserito è scaduto o non è corretto. Riprova."
+    },
+    "OTP_ALREADY_CONFIGURED": {
+      "title": "Metodo invalido",
+      "message": "Il metodo di OTP selezionato è già stato configurato. Riprova."
+    },
+    "OTP_NOT_CONFIGURED": {
+      "title": "Metodo OTP non configurato",
+      "message": "Questo account non ha un metodo OTP configurato. Configura l'autenticatore prima di procedere."
+    }
+  }
+}

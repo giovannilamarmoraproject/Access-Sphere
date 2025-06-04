@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.token.data.entity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;
@@ -45,6 +46,10 @@ public class AccessTokenEntity extends GenericEntity {
 
   @Column(name = "SUBJECT")
   private String subject;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "SUBJECT_TYPE")
+  private SubjectType subjectType;
 
   @Column(name = "EMAIL")
   private String email;

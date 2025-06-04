@@ -1,11 +1,8 @@
 env: ${APP_ENV} # Used for Google Cloud LOG
-cookie-domain: ${COOKIE_DOMAIN} # Used for Cookie
+server:
+  port: 8080
+cookie-domain: ${COOKIE_DOMAIN:} # Used for Cookie
 spring:
-  thymeleaf:
-    prefix: classpath:/static/
-  application:
-    name: access-sphere
-    starter-log: true # Show Started Application
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: ${DATABASE_JDBC_URL}/${DATABASE_NAME}
@@ -25,61 +22,23 @@ spring:
 
 # Level of LOG
 logging:
-  config: ${LOGBACK_FILE:}
   level:
     io.github.giovannilamarmora: ${LOGGING_LEVEL}
-    web: INFO
-    root: INFO
-    org:
-      springframework:
-        web: INFO
-      hibernate: ERROR
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    disable-swagger-default-url: true
-
-filter:
-  requestResponse:
-    enabled: true
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*"
-  rate-limiting:
-    shouldFilter: "*/users/change/password,*/users/change/password/request"
-  session-id:
-    shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*"
-    generateSessionURI: "*/v1/oAuth/2.0/authorize,*/users/register"
-    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/favicon.ico"
-    logoutURI: "*/v1/oAuth/2.0/logout"
 
 rest:
   client:
     strapi:
-      active: true
-      baseUrl: http://app.strapi.cms:1337
-      bearer: ${STRAPI_AUTH_TOKEN}
-      path:
-        clientId: /api/Oauthclientids
-        registerUser: /api/auth/local/register
-        getUserByEmail: /api/users
-        login: /api/auth/local
-        getRefreshToken: /api/auth/token/request
-        userInfo: /api/users/me
-        refreshToken: /api/auth/token
-        logout: /api/auth/revoke
-        updateUser: /api/users/:userId
-        getTemplate: /api/email-templates
+      active: ${STRAPI_ACTIVE}
+      #baseUrl: http://app.strapi.cms:1337
+      baseUrl: ${STRAPI_URL}
     email-sender:
       baseUrl: http://email.sender:8080
-      path:
-        sendEmailUrl: /v1/send-email
 
 app:
   version: @project.version@
-  cache:
-    active: ${CACHE_ENABLE}
-    cron: 0 0 1 * * *
-  exception:
-    stacktrace: true # Active StackTrace in Response
+  cors:
+    enabled: ${CORS_ENABLED}
+    shouldNotFilter: ${CORS_NOT_FILTER}
+    allowedOrigins: ${CORS_ALLOWED_ORIGINS}
+    allowedHeaders: ${CORS_ALLOWED_HEADERS}
+    allowCredentials: ${CORS_ALLOW_CREDENTIALS}

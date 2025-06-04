@@ -1,11 +1,16 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
+import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
+import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.BeanUtils;
@@ -22,7 +27,12 @@ public class UserMapper {
     if (!ObjectUtils.isEmpty(user.getRoles()))
       userEntity.setRoles(String.join(" ", user.getRoles()));
 
-    // TODO: Missing attributes
+    if (!ObjectToolkit.isNullOrEmpty(user.getAttributes()))
+      userEntity.setAttributes(Mapper.writeObjectToString(user.getAttributes()));
+
+    if (!ObjectToolkit.isNullOrEmpty(user.getMfaSettings()))
+      userEntity.setMfaSettings(Mapper.writeObjectToString(user.getMfaSettings()));
+
     return userEntity;
   }
 
@@ -33,6 +43,12 @@ public class UserMapper {
     if (!ObjectUtils.isEmpty(userEntity.getStrapiId())) user.setId(userEntity.getStrapiId());
     if (!ObjectUtils.isEmpty(userEntity.getRoles()))
       user.setRoles(Arrays.stream(userEntity.getRoles().split(" ")).toList());
+
+    if (!ObjectToolkit.isNullOrEmpty(userEntity.getAttributes()))
+      user.setAttributes(Mapper.readObject(userEntity.getAttributes(), new TypeReference<>() {}));
+
+    if (!ObjectToolkit.isNullOrEmpty(userEntity.getMfaSettings()))
+      user.setMfaSettings(Mapper.readObject(userEntity.getMfaSettings(), new TypeReference<>() {}));
     return user;
   }
 
@@ -64,5 +80,31 @@ public class UserMapper {
         ObjectUtils.isEmpty(user.getAttributes())
             ? null
             : Mapper.writeObjectToString(user.getAttributes()));
+    existingUser.setMfaSettings(
+        ObjectUtils.isEmpty(user.getMfaSettings())
+            ? null
+            : Mapper.writeObjectToString(user.getMfaSettings()));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static User getTechUser(String username, ClientCredential clientCredential) {
+    User user = new User();
+    user.setUsername(username);
+    user.setRoles(StrapiMapper.getAppRoles(clientCredential.getAppRoles()));
+    return user;
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static User getTechUser(JWTData jwtData) {
+    User user = new User();
+    user.setIdentifier(jwtData.getIdentifier());
+    user.setUsername(jwtData.getSub());
+    user.setName(jwtData.getGiven_name());
+    user.setSurname(jwtData.getFamily_name());
+    user.setEmail(jwtData.getEmail());
+    user.setRoles(jwtData.getRoles());
+    // user.setProfilePhoto(jwtData.getPicture());
+    user.setAttributes(jwtData.getAttributes());
+    return user;
   }
 }

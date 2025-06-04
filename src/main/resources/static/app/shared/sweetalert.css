@@ -1,0 +1,34 @@
+.border_round {
+  border-radius: 30px;
+}
+
+.blur-effect {
+  backdrop-filter: blur(30px);
+  background: rgba(227, 228, 237, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.width-100 {
+  width: 100px !important;
+}
+
+.swal2-success-circular-line-left,
+.swal2-success-circular-line-right,
+.swal2-success-fix {
+  background-color: transparent !important;
+}
+
+body > * {
+  transition: 0.15s filter all;
+}
+
+body.swal2-shown > [aria-hidden="true"] {
+  filter: blur(2px);
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}

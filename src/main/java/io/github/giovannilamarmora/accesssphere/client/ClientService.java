@@ -6,8 +6,14 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -17,6 +23,7 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,11 +41,12 @@ public class ClientService {
   @Value(value = "${rest.client.strapi.active}")
   private Boolean isStrapiEnabled;
 
+  @Autowired private AccessTokenData accessTokenData;
   @Autowired private StrapiClient strapiClient;
   @Autowired private IClientDAO iClientDAO;
+  @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  // @Cacheable(value = CLIENT_CREDENTIAL_CACHE, key = "#clientID", condition = "#clientID!=null")
   public Mono<ClientCredential> getClientCredentialByClientID(String clientID) {
     if (isStrapiEnabled) {
       LOG.info(STRAPI_STATUS_LOG);
@@ -50,7 +58,9 @@ public class ClientService {
                     || ObjectUtils.isEmpty(responseEntity.getBody().getData())) {
                   LOG.error("Strapi returned an empty object");
                   throw new StrapiException(
-                      ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
+                      ExceptionMap.ERR_OAUTH_400,
+                      ExceptionType.INVALID_CLIENT_ID,
+                      "Invalid client_id provided!");
                 }
                 return StrapiMapper.mapFromStrapiResponseToClientCredential(
                     responseEntity.getBody());
@@ -67,6 +77,60 @@ public class ClientService {
               });
     }
     return getClientFromDatabaseByClientID(clientID);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> getClients() {
+    Response response =
+        new Response(HttpStatus.OK.value(), "Client credential list", TraceUtils.getSpanID(), null);
+
+    return getClientCredentials()
+        .map(
+            client -> {
+              response.setData(client);
+              return ResponseEntity.ok(response);
+            });
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<ClientCredential>> getClientCredentials() {
+    if (isStrapiEnabled) {
+      LOG.info(STRAPI_STATUS_LOG);
+      Mono<List<ClientCredential>> clientCredentials = getStrapiClientCredentials();
+      return clientCredentials
+          .map(
+              client -> {
+                TechUserValidator.validateTechClient(
+                    client, accessTokenData, techUserService.getTech_client_id());
+                return client;
+              })
+          .onErrorResume(
+              throwable -> {
+                if (!throwable.getMessage().contains("Invalid client_id provided!")
+                    && !throwable
+                        .getMessage()
+                        .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_403.getMessage())) {
+                  LOG.info(
+                      "Error on strapi, getting data from database, message is {}",
+                      throwable.getMessage());
+                  return getClientsFromDatabase()
+                      .map(
+                          client -> {
+                            TechUserValidator.validateTechClient(
+                                client, accessTokenData, techUserService.getTech_client_id());
+                            return client;
+                          });
+                }
+                return Mono.error(throwable);
+              });
+    }
+    return getClientsFromDatabase()
+        .map(
+            client -> {
+              TechUserValidator.validateTechClient(
+                  client, accessTokenData, techUserService.getTech_client_id());
+              return client;
+            });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

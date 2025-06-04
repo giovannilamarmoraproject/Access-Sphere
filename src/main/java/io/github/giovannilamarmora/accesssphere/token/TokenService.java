@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.token;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -14,12 +14,20 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
-import io.github.giovannilamarmora.accesssphere.token.dto.AuthToken;
-import io.github.giovannilamarmora.accesssphere.token.dto.JWTData;
-import io.github.giovannilamarmora.accesssphere.token.dto.TokenClaims;
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
+import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenDataService;
+import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
+import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.TempToken;
+import io.github.giovannilamarmora.accesssphere.token.model.TokenClaims;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.auth.TokenUtils;
@@ -27,8 +35,8 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.validation.constraints.NotNull;
 import java.security.MessageDigest;
@@ -43,6 +51,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -51,12 +60,27 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class TokenService {
 
-  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
-  private final SessionID sessionID;
   @Autowired private AccessTokenService accessTokenService;
+  private final Logger LOG = LoggerFilter.getLogger(this.getClass());
+  @Autowired private SessionID sessionID;
+  @Autowired private MFATokenDataService mfaTokenDataService;
 
-  private final String testSecret = "flhfEg6QbtVU4f9WgIUVbkTebFBX7O7lQ43ly+uKDg4=";
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public AuthToken generateMFAToken(User user, ClientCredential clientCredential, Object payload) {
+    List<String> mfaMethods =
+        user.getMfaSettings().getMfaMethods().stream()
+            .filter(MFAMethod::isConfirmed)
+            .map(mfaMethod1 -> mfaMethod1.getType().name())
+            .distinct()
+            .toList();
+    MFATokenData mfaTokenData =
+        mfaTokenDataService.save(
+            user, mfaMethods, clientCredential.getClientId(), sessionID.getSessionID(), payload);
+
+    TempToken tempToken =
+        new TempToken(mfaTokenData.getTempToken(), mfaTokenData.getExpireDate(), "Bearer");
+    return new AuthToken(user.getIdentifier(), mfaTokenData.getSubject(), tempToken, mfaMethods);
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken generateToken(
@@ -124,10 +148,40 @@ public class TokenService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public AuthToken exchangeToken(
+      User user,
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    // Log per il processo di exchange
+    LOG.info("🔄 Performing token exchange for client: {}", clientCredential.getClientId());
+
+    JWTData exchangeToken =
+        JWTData.generateJWTData(user, clientCredential, accessTokenData.getSubjectType(), request);
+    JsonNode strapi_token = OAuthMapper.getStrapiToken(accessTokenData.getPayload());
+
+    // Esegui la logica per lo scambio del token
+    AuthToken newToken =
+        generateToken(
+            exchangeToken,
+            clientCredential,
+            ObjectToolkit.isNullOrEmpty(strapi_token)
+                ? accessTokenData.getPayload()
+                : strapi_token);
+
+    // Log il risultato dell'exchange
+    LOG.info(
+        "🔄 Token exchange completed successfully for client: {}", clientCredential.getClientId());
+
+    return newToken;
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private AuthToken generateJWTToken(
       JWTData jwtData, ClientCredential clientCredential, Object payload) {
     // Access Token
     ClaimsBuilder claims = Jwts.claims().subject(jwtData.getSub());
+    claims.add(TokenClaims.SUBJECT_TYPE.claim(), jwtData.getSubject_type());
     claims.add(TokenClaims.IDENTIFIER.claim(), jwtData.getIdentifier());
     claims.add(TokenClaims.ISS.claim(), jwtData.getIss());
     claims.add(TokenClaims.AUD.claim(), jwtData.getAud());
@@ -136,6 +190,7 @@ public class TokenService {
     claims.add(TokenClaims.AT_HASH.claim(), jwtData.getAt_hash());
     claims.add(TokenClaims.ROLE.claim(), jwtData.getRoles());
     claims.add(TokenClaims.AUTH_TYPE.claim(), jwtData.getType());
+    claims.add(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id());
     claims.add(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes());
 
     long jwtExpiration = clientCredential.getJwtExpiration();
@@ -153,6 +208,7 @@ public class TokenService {
 
     // ID Token
     ClaimsBuilder idClaims = Jwts.claims().subject(jwtData.getSub());
+    idClaims.add(TokenClaims.SUBJECT_TYPE.claim(), jwtData.getSubject_type());
     idClaims.add(TokenClaims.IDENTIFIER.claim(), jwtData.getIdentifier());
     idClaims.add(TokenClaims.ISS.claim(), jwtData.getIss());
     idClaims.add(TokenClaims.IAT.claim(), now.toInstant().toEpochMilli());
@@ -160,12 +216,13 @@ public class TokenService {
     idClaims.add(TokenClaims.EMAIL.claim(), jwtData.getEmail());
     idClaims.add(TokenClaims.AZP.claim(), jwtData.getAzp());
     idClaims.add(TokenClaims.NAME.claim(), jwtData.getName());
-    idClaims.add(TokenClaims.PICTURE.claim(), jwtData.getPicture());
+    // idClaims.add(TokenClaims.PICTURE.claim(), jwtData.getPicture());
     idClaims.add(TokenClaims.GIVEN_NAME.claim(), jwtData.getGiven_name());
     idClaims.add(TokenClaims.FAMILY_NAME.claim(), jwtData.getFamily_name());
     idClaims.add(TokenClaims.AT_HASH.claim(), jwtData.getAt_hash());
     idClaims.add(TokenClaims.ROLE.claim(), jwtData.getRoles());
     idClaims.add(TokenClaims.AUTH_TYPE.claim(), jwtData.getType());
+    idClaims.add(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id());
     idClaims.add(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes());
 
     String idToken =
@@ -199,7 +256,7 @@ public class TokenService {
     Claims body = null;
     SecretKey key = Keys.hmacShaKeyFor(clientCredential.getJwtSecret().getBytes());
     try {
-      String tokenSplit = token.split("Bearer ")[1];
+      String tokenSplit = token.contains("Bearer") ? token.split("Bearer ")[1] : token;
       Jws<Claims> jwt = Jwts.parser().verifyWith(key).build().parseSignedClaims(tokenSplit);
       body = jwt.getPayload();
     } catch (JwtException e) {
@@ -215,13 +272,16 @@ public class TokenService {
         (Long) body.get(TokenClaims.IAT.claim()),
         (@NotNull String) body.get(TokenClaims.ISS.claim()),
         body.getSubject(),
+        ObjectUtils.isEmpty(body.get(TokenClaims.SUBJECT_TYPE.claim()))
+            ? null
+            : SubjectType.valueOf((String) body.get(TokenClaims.SUBJECT_TYPE.claim())),
         ObjectUtils.isEmpty(body.get(TokenClaims.NAME.claim()))
             ? null
             : (String) body.get(TokenClaims.NAME.claim()),
         (@NotNull String) body.get(TokenClaims.EMAIL.claim()),
-        ObjectUtils.isEmpty(body.get(TokenClaims.PICTURE.claim()))
-            ? null
-            : (String) body.get(TokenClaims.PICTURE.claim()),
+        // ObjectUtils.isEmpty(body.get(TokenClaims.PICTURE.claim()))
+        //    ? null
+        //    : (String) body.get(TokenClaims.PICTURE.claim()),
         ObjectUtils.isEmpty(body.get(TokenClaims.GIVEN_NAME.claim()))
             ? null
             : (String) body.get(TokenClaims.GIVEN_NAME.claim()),
@@ -237,6 +297,9 @@ public class TokenService {
         ObjectUtils.isEmpty(body.get(TokenClaims.AUTH_TYPE.claim()))
             ? null
             : OAuthType.valueOf((String) body.get(TokenClaims.AUTH_TYPE.claim())),
+        ObjectUtils.isEmpty(body.get(TokenClaims.CLIENT_ID.claim()))
+            ? clientCredential.getClientId()
+            : (String) body.get(TokenClaims.CLIENT_ID.claim()),
         ObjectUtils.isEmpty(body.get(TokenClaims.ATTRIBUTES.claim()))
             ? null
             : Utils.mapper()
@@ -252,6 +315,7 @@ public class TokenService {
     JWTClaimsSet claimsSet =
         new JWTClaimsSet.Builder()
             .subject(jwtData.getSub())
+            .claim(TokenClaims.SUBJECT_TYPE.claim(), jwtData.getSubject_type())
             .claim(TokenClaims.IDENTIFIER.claim(), jwtData.getIdentifier())
             .claim(TokenClaims.ISS.claim(), jwtData.getIss())
             .claim(TokenClaims.AUD.claim(), jwtData.getAud())
@@ -261,6 +325,7 @@ public class TokenService {
             .claim(TokenClaims.ROLE.claim(), jwtData.getRoles())
             .claim(TokenClaims.AUTH_TYPE.claim(), jwtData.getType())
             .claim(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes())
+            .claim(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id())
             .claim(TokenClaims.IAT.claim(), new Date(now.toInstant().toEpochMilli()))
             .expirationTime(
                 new Date(now.toInstant().toEpochMilli() + clientCredential.getJweExpiration()))
@@ -287,6 +352,7 @@ public class TokenService {
     JWTClaimsSet idClaimsSet =
         new JWTClaimsSet.Builder()
             .subject(jwtData.getSub())
+            .claim(TokenClaims.SUBJECT_TYPE.claim(), jwtData.getSubject_type())
             .claim(TokenClaims.IDENTIFIER.claim(), jwtData.getIdentifier())
             .claim(TokenClaims.ISS.claim(), jwtData.getIss())
             .claim(TokenClaims.AUD.claim(), jwtData.getAud())
@@ -298,9 +364,10 @@ public class TokenService {
             .claim(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes())
             .claim(TokenClaims.IAT.claim(), new Date(now.toInstant().toEpochMilli()))
             .claim(TokenClaims.NAME.claim(), jwtData.getName())
-            .claim(TokenClaims.PICTURE.claim(), jwtData.getPicture())
+            // .claim(TokenClaims.PICTURE.claim(), jwtData.getPicture())
             .claim(TokenClaims.GIVEN_NAME.claim(), jwtData.getGiven_name())
             .claim(TokenClaims.FAMILY_NAME.claim(), jwtData.getFamily_name())
+            .claim(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id())
             .expirationTime(
                 new Date(now.toInstant().toEpochMilli() + clientCredential.getJwtExpiration()))
             .build();
@@ -362,13 +429,16 @@ public class TokenService {
           ((Date) claimsSet.getClaim(TokenClaims.IAT.claim())).toInstant().toEpochMilli(),
           (@NotNull String) claimsSet.getClaim(TokenClaims.ISS.claim()),
           claimsSet.getSubject(),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim()))
+              ? null
+              : SubjectType.valueOf((String) claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim())),
           ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.NAME.claim()))
               ? null
               : (String) claimsSet.getClaim(TokenClaims.NAME.claim()),
           (@NotNull String) claimsSet.getClaim(TokenClaims.EMAIL.claim()),
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.PICTURE.claim()))
-              ? null
-              : (String) claimsSet.getClaim(TokenClaims.PICTURE.claim()),
+          // ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.PICTURE.claim()))
+          //    ? null
+          //    : (String) claimsSet.getClaim(TokenClaims.PICTURE.claim()),
           ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()))
               ? null
               : (String) claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()),
@@ -385,6 +455,9 @@ public class TokenService {
           ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim()))
               ? null
               : OAuthType.valueOf((String) claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim())),
+          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()))
+              ? clientCredential.getClientId()
+              : (String) claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()),
           ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.ATTRIBUTES.claim()))
               ? null
               : Utils.mapper()
@@ -410,10 +483,5 @@ public class TokenService {
     }
     messageDigest.update(_message.getBytes());
     return Base64.encodeBase64URLSafeString(messageDigest.digest());
-  }
-
-  private SecretKey getSignInKey() {
-    byte[] keyBytes = Decoders.BASE64.decode(testSecret);
-    return Keys.hmacShaKeyFor(keyBytes);
   }
 }
