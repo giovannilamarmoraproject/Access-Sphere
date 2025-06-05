@@ -1,76 +1,4 @@
-/*
- * -----------------------------
- * Login Form Validation
- * -----------------------------
- */
-document.addEventListener("DOMContentLoaded", () => {
-  // Seleziona gli elementi di input e bottone
-  const emailInput = document.getElementById("emailInput");
-  const passwordInput = document.getElementById("passwordInput");
-  const submitButton = document.getElementById("loginButton");
-
-  // Funzione per verificare se entrambi i campi sono pieni
-  function checkInputs() {
-    submitButton.disabled =
-      !emailInput.value.trim() || !passwordInput.value.trim();
-  }
-
-  // Assegna l'evento di input a entrambi i campi
-  emailInput.addEventListener("input", checkInputs);
-  passwordInput.addEventListener("input", checkInputs);
-
-  // Disabilita inizialmente il bottone
-  checkInputs();
-});
-
-function togglePassword() {
-  const input = document.getElementById("passwordInput");
-  const icon = document.getElementById("eyeIcon");
-
-  const isPassword = input.type === "password";
-  input.type = isPassword ? "text" : "password";
-
-  // Cambia l'icona
-  if (isPassword) {
-    icon.classList.remove("fa-eye");
-    icon.classList.add("fa-eye-slash");
-    icon.style.marginRight = "-2.5px";
-  } else {
-    icon.classList.remove("fa-eye-slash");
-    icon.classList.add("fa-eye");
-    icon.style.marginRight = "0px";
-  }
-}
-
-function registerPopup() {
-  return sweetalert(
-    "error",
-    currentTranslations.login_page_sign_up_block_title,
-    currentTranslations.login_page_sign_up_block_text,
-    true
-  );
-}
-/*
- * -----------------------------
- * END Login Form Validation
- * -----------------------------
- */
-
 function showForgotPassword() {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("forgot").style.display = "flex";
-  document.getElementById("reset").style.display = "none";
-  document.getElementById("otp-page").style.display = "none";
-}
-
-function showLogin() {
-  document.getElementById("forgot").style.display = "none";
-  document.getElementById("login").style.display = "flex";
-  document.getElementById("reset").style.display = "none";
-  document.getElementById("otp-page").style.display = "none";
-}
-
-function showForgotPasswordOld() {
   document.getElementById("login").style.display = "none";
   document.getElementById("forgot").style.display = "block";
   document.getElementById("reset").style.display = "none";
@@ -79,7 +7,7 @@ function showForgotPasswordOld() {
   document.getElementById("title").style.textAlign = "left";
 }
 
-function showLoginOld() {
+function showLogin() {
   document.getElementById("forgot").style.display = "none";
   document.getElementById("login").style.display = "block";
   document.getElementById("reset").style.display = "none";
@@ -105,6 +33,26 @@ function showOTP() {
   document.getElementById("title").style.textAlign = "center";
   document.getElementById("otp-page").style.display = "block";
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Seleziona gli elementi di input e bottone
+  const emailInput = document.getElementById("emailInput");
+  const passwordInput = document.getElementById("passwordInput");
+  const submitButton = document.getElementById("loginButton");
+
+  // Funzione per verificare se entrambi i campi sono pieni
+  function checkInputs() {
+    submitButton.disabled =
+      !emailInput.value.trim() || !passwordInput.value.trim();
+  }
+
+  // Assegna l'evento di input a entrambi i campi
+  emailInput.addEventListener("input", checkInputs);
+  passwordInput.addEventListener("input", checkInputs);
+
+  // Disabilita inizialmente il bottone
+  checkInputs();
+});
 
 /*
  * --------------------------------------------------------------

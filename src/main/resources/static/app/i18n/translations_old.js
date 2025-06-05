@@ -86,20 +86,14 @@ document.addEventListener("DOMContentLoaded", loadErrorCode);
  *----------------------------------------------------------
  */
 function applyTranslations() {
-  applyLanguage(
-    "login_page_tab_title",
-    translations[currentLanguage].login_page_tab_title
-  );
-  applyLanguage(
-    "login_page_forgot_password",
-    translations[currentLanguage].login_page_forgot_password
-  );
+  applyLanguage("pageTitle", translations[currentLanguage].pageTitle);
+  applyLanguage("title", translations[currentLanguage].title);
+  applyLanguage("loginTitle", translations[currentLanguage].loginTitle, true);
+  applyLanguage("emailLabel", translations[currentLanguage].emailLabel);
+  applyLanguage("passwordLabel", translations[currentLanguage].passwordLabel);
+  applyLanguage("forgotPassword", translations[currentLanguage].forgotPassword);
   applyLanguage("loginButton", translations[currentLanguage].loginButton);
-  applyLanguage(".googleLogin", translations[currentLanguage].googleLogin);
-  applyLanguage(
-    "login_page_sign_up_text",
-    translations[currentLanguage].login_page_sign_up_text
-  );
+  applyLanguage("googleLogin", translations[currentLanguage].googleLogin);
   applyLanguage("forgotTitle", translations[currentLanguage].forgotTitle);
   applyLanguage(
     "forgotEmailLabel",

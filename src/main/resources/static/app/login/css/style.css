@@ -1,7 +1,33 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-.rounded-lg {
-  border-radius: 15px !important;
+body {
+  font-family: "Poppins", sans-serif !important;
+  /*height: 100%;*/
+  height: 100vh;
+}
+
+.clickable {
+  pointer-events: visible;
+  cursor: pointer;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+}
+
+/* global.css o dove metti il tuo CSS custom */
+.fullscreen-fix {
+  height: 100vh; /* fallback */
+}
+
+@supports (height: 100dvh) {
+  .fullscreen-fix {
+    height: 100dvh;
+  }
+
+  body {
+    height: 100dvh;
+  }
 }
 
 @media screen and (max-width: 780px) {
@@ -14,15 +40,11 @@
     display: block !important;
     visibility: visible !important;
   }
-}
 
-#loginButton:disabled,
-#resetButton:disabled,
-#changePasswordButton:disabled,
-#otp_verification_code_button:disabled,
-#verifyOTP:disabled {
-  background-color: #dddddd;
-  cursor: not-allowed;
+  .header-logo-image {
+    width: 130px;
+    opacity: 1;
+  }
 }
 
 @media screen and (min-width: 780px) {
@@ -36,85 +58,16 @@
     visibility: hidden !important;
   }
 
-  #google-btn,
-  #loginButton,
-  #resetButton,
-  #changePasswordButton,
-  #otp_verification_code_button,
-  #verifyOTP {
-    transition: background-color 0.3s;
-  }
-
-  #google-btn:hover {
-    background-color: #dddddd !important;
+  .header-logo-image {
+    width: 100px;
+    align-items: center !important;
+    margin-left: calc(50% - 50px) !important;
+    margin-top: 30px;
+    /*margin-bottom: 20px;*/
   }
 }
 
-body {
-  font-family: "Poppins", sans-serif !important;
-  height: 100%;
-}
-
-#title {
-  /*font-size: 1.5rem;*/
-  font-size: 1.8rem;
-}
-
-.footer {
-  height: 35px;
-  width: 100%;
-  background: #fff;
-  bottom: 0px;
-  position: fixed;
-}
-
-#footerText {
-  background: #fff;
-}
-
-#form-login {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 1055;
-  overflow-x: hidden;
-  overflow-y: auto;
-  outline: 0;
-  height: 100%;
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-#form-login::-webkit-scrollbar {
-  display: none;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-#form-login {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-#spacer {
-  height: 50px; /* Puoi modificare l'altezza per aggiungere più spazio */
-}
-
-.blur {
-  background-color: rgb(255 255 255 / 50%);
-  backdrop-filter: saturate(180%) blur(1px);
-  border: 2px solid rgb(0 246 253 / 0%);
-  box-shadow: rgb(0 0 0 / 10%) 0px 10px 15px -3px,
-    rgb(0 0 0 / 5%) 0px 4px 6px -2px;
-}
-
-.card-body {
-  box-shadow: rgb(0 0 0 / 45%) 0px 25px 20px -20px;
-}
-
-.border_round {
-  border-radius: 30px;
-}
-
-.background {
+.left-background {
   width: 70%;
   padding: 40px;
   height: 100vh;
@@ -138,217 +91,166 @@ body {
   align-content: center;
   flex-direction: row;
 }
-.background h1 {
-  max-width: 420px;
-  color: #fff;
-  text-align: right;
-  padding: 0;
-  margin: 0;
-}
-.background p {
-  max-width: 650px;
-  color: #1a1a1a;
-  font-size: 15px;
-  text-align: right;
-  padding: 0;
-  margin: 15px 0 0 0;
+
+/* Autofill fix per sfondo e colore coerente */
+input:-webkit-autofill {
+  box-shadow: 0 0 0px 1000px #2c3035 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
+  transition: background-color 9999s ease-out, color 9999s ease-out;
 }
 
-.input-small {
-  height: 50px;
+/*
+* ---------------------------
+* Login Button
+* ---------------------------
+*/
+#loginButton:disabled,
+#resetButton:disabled,
+#changePasswordButton:disabled,
+#otp_verification_code_button:disabled,
+#verifyOTP:disabled {
+  background-color: #dddddd;
+  cursor: not-allowed;
 }
+/*
+* ---------------------------
+* Login Button
+* ---------------------------
+*/
 
-@media (min-width: 1280px) {
-  .logo-images {
-    width: 120px;
-    margin-bottom: 10px;
-  }
-}
-
-@media (min-width: 780px) and (max-width: 1280px) {
-  .input-small {
-    height: 40px;
-  }
-
-  .max-w {
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
-  }
-}
-
-@media (max-width: 767px) {
-  @media (min-height: 800px) {
-    #login,
-    #forgot,
-    #reset {
-      height: 75vh !important;
-    }
-  }
-  @media (max-height: 800px) {
-    #login,
-    #forgot,
-    #reset {
-      height: 70vh !important;
-    }
-  }
-  #login,
-  #forgot,
-  #reset {
-    height: 76vh;
-  }
-
-  .footer {
-    display: none;
-  }
-
-  .input-text {
-    margin-bottom: 10px;
-  }
-
-  .otp-button {
-    bottom: 25px !important;
-  }
-
-  .otp-input {
-    opacity: 0.7;
-    --tw-bg-opacity: 1;
-    background-color: rgb(241 245 249 / var(--tw-bg-opacity, 1));
-    max-width: 50px;
-    border-radius: 15px;
-  }
-
-  .input-groups {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    input {
-      color: #dddddd;
-      border: 1px solid #262936 !important;
-      background-color: #262936;
-      &:focus {
-        outline: 0;
-        background-color: #262936;
-      }
-    }
-    label {
-      color: #999;
-    }
-  }
-
-  #otp-selected {
-    border: 1px solid #262936 !important;
-    background-color: #262936;
-    color: #dddddd;
-    &:focus {
-      outline: 0;
-      background-color: #262936;
-    }
-  }
-
-  #google-btn {
-    border: 1px solid #262936 !important;
-    background-color: #262936 !important;
-    &:focus {
-      outline: 0;
-      background-color: #262936 !important;
-    }
-    span {
-      color: #999;
-    }
-  }
-
-  .max-w {
-    /*background: radial-gradient(
-      125% 125% at 50% 10%,
-      rgba(1, 1, 1, 1) 50%,
-      rgba(102, 51, 238, 1) 100%
-    );*/
-    background: radial-gradient(
-      125% 125% at 50% 10%,
-      rgba(11, 9, 10, 1) 50%,
-      rgba(60, 9, 108, 1) 100%
-    );
-    /*background: radial-gradient(
-      125% 125% at 50% 10%,
-      rgba(11, 9, 10, 1) 50%,
-      rgba(0, 53, 102, 1) 100%
-    );*/
-  }
-
-  h1,
-  h3,
-  h4,
-  p,
-  a,
-  label {
-    color: #fff !important;
-  }
-
-  .header-logo-image {
-    width: 100px;
-    align-items: center !important;
-    margin-left: calc(50% - 50px) !important;
-    margin-top: 20px;
-    margin-bottom: 20px;
-  }
-
-  #footerText {
-    display: none;
-  }
-
-  #loginTitle,
-  #forgotTitle,
-  #resetTitle {
-    margin-top: 30px;
-  }
-
-  form {
-    margin-top: 20px;
-  }
-
-  .login-groups {
-    position: absolute;
-    right: 0px;
-    left: 0px;
-    /* right: 25px;
-    left: 25px;*/
-    bottom: 25px;
-  }
-
-  #title {
-    text-align: center;
-    font-size: 26px;
-    /*text-transform: uppercase;*/
-  }
-}
-
-svg {
-  margin: 16px 0;
-}
-title {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.otp-verify {
-  color: #a3a3a3;
+/*
+* ----------------------------
+* Google Button
+* ----------------------------
+*/
+.gsi-material-button {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #2c3035;
+  background-image: none;
+  border: 1px solid #5a5a5a; /* Bordo più scuro */
+  -webkit-border-radius: 20px;
+  border-radius: 20px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #e3e3e3;
+  cursor: pointer;
   font-size: 14px;
-  width: 250px;
-  margin-top: 4px;
-  justify-self: center;
+  height: 40px;
+  letter-spacing: 0.25px;
+  outline: none;
+  overflow: hidden;
+  padding: 0 12px;
+  position: relative;
+  text-align: center;
+  -webkit-transition: background-color 0.218s, border-color 0.218s,
+    box-shadow 0.218s;
+  transition: background-color 0.218s, border-color 0.218s, box-shadow 0.218s;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: auto;
+  max-width: 400px;
+  min-width: min-content;
+  border-color: #5a5a5a67;
+  display: flex;
+  align-items: center;
 }
 
-.otp-button {
-  position: absolute;
-  /*right: 25px;
-  left: 25px;*/
-  bottom: 45px;
+.gsi-material-button .gsi-material-button-icon {
+  height: 20px;
+  min-width: 20px;
+  width: 20px;
 }
 
-.otp-input {
-  max-width: 50px;
-  border-radius: 15px;
-}
-
-#rememberDevice {
+/* Contenitore dell'icona Google con sfondo bianco */
+.gsi-material-button-icon-container {
+  background-color: white;
   border-radius: 50%;
+  width: 30px; /* Dimensione cerchio */
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+  margin-left: -8px;
 }
+
+.gsi-material-button .gsi-material-button-content-wrapper {
+  -webkit-align-items: center;
+  align-items: center;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  height: 100%;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+}
+
+.gsi-material-button .gsi-material-button-contents {
+  -webkit-flex-grow: 1;
+  flex-grow: 1;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.gsi-material-button .gsi-material-button-state {
+  -webkit-transition: opacity 0.218s;
+  transition: opacity 0.218s;
+  bottom: 0;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.gsi-material-button:disabled {
+  cursor: default;
+  background-color: #13131461;
+  border-color: #8e918f1f;
+}
+
+.gsi-material-button:disabled .gsi-material-button-state {
+  background-color: #e3e3e31f;
+}
+
+.gsi-material-button:disabled .gsi-material-button-contents {
+  opacity: 38%;
+}
+
+.gsi-material-button:disabled .gsi-material-button-icon {
+  opacity: 38%;
+}
+
+.gsi-material-button:not(:disabled):active .gsi-material-button-state,
+.gsi-material-button:not(:disabled):focus .gsi-material-button-state {
+  background-color: white;
+  opacity: 12%;
+}
+
+.gsi-material-button:not(:disabled):hover {
+  -webkit-box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.gsi-material-button:not(:disabled):hover .gsi-material-button-state {
+  background-color: white;
+  opacity: 8%;
+}
+/*
+* ----------------------------
+* END Google Button
+* ----------------------------
+*/
