@@ -8,7 +8,8 @@ import lombok.Getter;
 
 @Getter
 public enum MFAType {
-  TOTP("totp");
+  TOTP("totp"),
+  EMAIL("email");
 
   private final String type;
 
