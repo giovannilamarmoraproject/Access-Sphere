@@ -98,6 +98,18 @@ body {
   }
 }
 
+@media (min-width: 380px) {
+  .otp-gap {
+    gap: 0.75rem; /* gap-3 */
+  }
+}
+
+@media (max-width: 380px) {
+  .otp-gap {
+    gap: 0.5rem; /* gap-2 */
+  }
+}
+
 .left-background {
   width: 70%;
   padding: 40px;
