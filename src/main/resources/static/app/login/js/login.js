@@ -292,15 +292,39 @@ function showOTPPage(mfa_methods) {
 }
 
 function enableVerifyBtn() {
-  const otp1 = document.getElementById("otp-1").value;
-  const otp2 = document.getElementById("otp-2").value;
-  const otp3 = document.getElementById("otp-3").value;
-  const otp4 = document.getElementById("otp-4").value;
-  const otp5 = document.getElementById("otp-5").value;
-  const otp6 = document.getElementById("otp-6").value;
-  if (otp1 && otp2 && otp3 && otp4 && otp5 && otp6) {
-    const verifyBtn = document.getElementById("verifyOTP");
-    if (verifyBtn) verifyBtn.removeAttribute("disabled");
-    return otp1 + otp2 + otp3 + otp4 + otp5 + otp6;
+  const digits = [
+    document.getElementById("otp-1").value,
+    document.getElementById("otp-2").value,
+    document.getElementById("otp-3").value,
+    document.getElementById("otp-4").value,
+    document.getElementById("otp-5").value,
+    document.getElementById("otp-6").value,
+  ];
+
+  const verifyBtn = document.getElementById("verifyOTP");
+
+  const allValid = digits.every((d) => /^\d$/.test(d)); // ogni campo ha 1 cifra
+
+  if (verifyBtn) {
+    verifyBtn.disabled = !allValid;
   }
+
+  return allValid ? digits.join("") : undefined;
 }
+
+//function enableVerifyBtn() {
+//  const otp1 = document.getElementById("otp-1").value;
+//  const otp2 = document.getElementById("otp-2").value;
+//  const otp3 = document.getElementById("otp-3").value;
+//  const otp4 = document.getElementById("otp-4").value;
+//  const otp5 = document.getElementById("otp-5").value;
+//  const otp6 = document.getElementById("otp-6").value;
+//  const verifyBtn = document.getElementById("verifyOTP");
+//  console.log("OTP ", otp1, otp2, otp3, otp4, otp5, otp6);
+//  if (otp1 && otp2 && otp3 && otp4 && otp5 && otp6) {
+//    if (verifyBtn) verifyBtn.removeAttribute("disabled");
+//    return otp1 + otp2 + otp3 + otp4 + otp5 + otp6;
+//  } else {
+//    if (verifyBtn) verifyBtn.setAttribute("disabled");
+//  }
+//}

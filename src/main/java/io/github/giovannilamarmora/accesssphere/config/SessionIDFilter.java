@@ -95,7 +95,10 @@ public class SessionIDFilter implements WebFilter {
 
     String bearer = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     if (ObjectUtils.isEmpty(bearer)) {
-      LOG.error(ExceptionMessage.AUTHORIZATION_HEADER.getMessage());
+      LOG.error(
+          "Error on SessionIDFilter for request {}, message is {}",
+          request.getPath().value(),
+          ExceptionMessage.AUTHORIZATION_HEADER.getMessage());
       return ExceptionHandler.handleFilterException(
           new OAuthException(
               ExceptionMap.ERR_OAUTH_401, ExceptionMessage.AUTHORIZATION_HEADER.getMessage()),

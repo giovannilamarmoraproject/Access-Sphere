@@ -176,28 +176,62 @@ document.addEventListener("DOMContentLoaded", () => {
   const submit = form.querySelector("button[type=submit]");
 
   const handleKeyDown = (e) => {
-    // Consenti copia/incolla: Ctrl+V / Cmd+V / Shift+Insert
     if ((e.ctrlKey || e.metaKey) && (e.key === "v" || e.key === "V")) return;
     if (e.shiftKey && e.key === "Insert") return;
 
-    // Consenti solo numeri e alcuni tasti di controllo
     const allowed =
       /^[0-9]$/.test(e.key) ||
       ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key);
 
     if (!allowed) {
       e.preventDefault();
+      return;
     }
 
-    // Gestione Backspace/Delete per tornare indietro
+    const index = inputs.indexOf(e.target);
+
     if (e.key === "Backspace" || e.key === "Delete") {
-      const index = inputs.indexOf(e.target);
-      if (index > 0) {
+      // Se l’input ha un valore, lo cancello
+      if (e.target.value !== "") {
+        e.target.value = "";
+      } else if (index > 0) {
+        // Se è già vuoto, passo al precedente e lo svuoto
         inputs[index - 1].value = "";
         inputs[index - 1].focus();
       }
+
+      // 🔄 Aggiorna lo stato del bottone
+      if (typeof enableVerifyBtn === "function") {
+        enableVerifyBtn();
+      }
+
+      e.preventDefault();
     }
   };
+
+  //const handleKeyDown = (e) => {
+  //  // Consenti copia/incolla: Ctrl+V / Cmd+V / Shift+Insert
+  //  if ((e.ctrlKey || e.metaKey) && (e.key === "v" || e.key === "V")) return;
+  //  if (e.shiftKey && e.key === "Insert") return;
+  //
+  //  // Consenti solo numeri e alcuni tasti di controllo
+  //  const allowed =
+  //    /^[0-9]$/.test(e.key) ||
+  //    ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key);
+  //
+  //  if (!allowed) {
+  //    e.preventDefault();
+  //  }
+  //
+  //  // Gestione Backspace/Delete per tornare indietro
+  //  if (e.key === "Backspace" || e.key === "Delete") {
+  //    const index = inputs.indexOf(e.target);
+  //    if (index > 0) {
+  //      inputs[index - 1].value = "";
+  //      inputs[index - 1].focus();
+  //    }
+  //  }
+  //};
 
   //const handleKeyDown = (e) => {
   //  if (
