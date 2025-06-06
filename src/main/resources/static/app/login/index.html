@@ -4,11 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title id="pageTitle">Access Sphere - Login</title>
+    <meta name="theme-color" content="#121416" />
+    <title id="login_page_tab_title">Access Sphere - Login</title>
     <link rel="stylesheet" href="../../app/login/css/style.css" />
     <link rel="stylesheet" href="../../app/login/css/sliding-animations.css" />
     <script src="../../app/shared/config.js"></script>
-    <link rel="icon" href="../favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon" />
     <!-- Google Tag Manager -->
     <script>
       (function (w, d, s, l, i) {
@@ -227,510 +228,669 @@
         style="display: none; visibility: hidden"
       ></iframe>
     </noscript>
-    <div id="loader" class="loader"></div>
     <!-- End Google Tag Manager (noscript) -->
-    <section class="flex flex-col flex-row h-screen items-center">
+    <div id="loader" class="loader"></div>
+    <!--<section class="flex flex-col flex-row h-screen items-center">-->
+    <section class="flex flex-col flex-row fullscreen-fix items-center">
       <div
-        class="background bg-blue-600 hidden lg:block md:block w-full md:w-2/3 xl:w-2/3 sm:w-0/3 h-screen"
-      >
-        <!--<img src="3837559.jpg" alt="" class="w-full h-full object-cover" />-->
-      </div>
-
+        class="left-background bg-blue-600 hidden lg:block md:block w-full md:w-2/3 xl:w-2/3 sm:w-0/3 h-screen"
+      ></div>
+      <!-- Login Section -->
+      <!-- COLONNA DESTRA ------------------------------------------------------>
       <div
-        id="form-login"
-        class="max-w bg-white w-full md:max-w-md lg:max-w-full md:mx-auto md:mx-0 md:w-1/3 sm:w-3/3 xl:w-1/3 h-screen px-6 lg:px-16 xl:px-12 flex items-center justify-center"
+        class="right-panel relative md:w-1/3 sm:w-full xl:w-1/3 h-full overflow-hidden"
       >
-        <div class="w-full h-screen pt-4">
-          <a
-            id="website_url"
-            class="website_url"
-            target="_blank"
-            href="https://access-sphere.giovannilamarmora.com"
-          >
-            <img
-              width="60"
-              class="header-logo-image logo-images hidden_mobile"
-              src="https://raw.githubusercontent.com/giovannilamarmora/giovannilamarmora.github.io/0f58a355856d25a7154482951a3220899ee59d10/assets/icons/svg/rounded_white.svg"
-              alt="Logo"
-            />
-            <img
-              width="60"
-              class="header-logo-image logo-images hidden_desktop"
-              src="../img/Access%20Sphere%20Transparent%20512x512.png"
-              alt="Logo"
-            />
-          </a>
-
-          <h1 class="text-xl font-bold" id="title">Access Sphere</h1>
-
-          <div id="login" data-inviewport="fade-in" class="fade-in">
-            <h1
-              class="text-xl md:text-xl font-bold leading-tight xl:mt-10 md:mt-8"
-              id="loginTitle"
+        <div
+          id="login_section"
+          class="page page--current flex size-full flex-col bg-[#121416] dark justify-between group/design-root overflow-x-hidden"
+        >
+          <div>
+            <a
+              target="_blank"
+              href="https://access.sphere.service.stg.giovannilamarmora.com"
             >
-              Log in to your account
-            </h1>
-
-            <form class="xl:mt-6 md:mt-3" id="loginForm">
-              <div class="input-groups">
-                <label class="block text-gray-700" id="emailLabel"
-                  >Email Address</label
+              <img
+                width="60"
+                class="header-logo-image logo-images hidden_mobile"
+                src="https://raw.githubusercontent.com/giovannilamarmora/giovannilamarmora.github.io/0f58a355856d25a7154482951a3220899ee59d10/assets/icons/svg/rounded_white.svg"
+                alt="Logo"
+              />
+            </a>
+            <div class="@container hidden_desktop">
+              <div class="@[480px]:px-4 @[480px]:py-3">
+                <div
+                  class="relative w-full bg-center bg-no-repeat bg-cover overflow-hidden @[480px]:rounded-xl min-h-[218px]"
+                  style="background-image: url('../app/login/img/login.jpg')"
                 >
-                <input
-                  id="emailInput"
-                  type="text"
-                  placeholder="Enter Email Address"
-                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                  required
-                />
+                  <!-- Overlay semitrasparente -->
+                  <div
+                    class="absolute inset-0 bg-black opacity-40"
+                    style="opacity: 0.4"
+                  ></div>
+
+                  <!-- Logo centrato orizzontalmente e verticalmente -->
+                  <div
+                    class="relative flex items-center justify-center min-h-[218px]"
+                  >
+                    <img
+                      width="100"
+                      class="header-logo-image hidden_desktop"
+                      src="../img/Access%20Sphere%20Transparent%20512x512.png"
+                      alt="Logo"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h2
+              style="padding-top: 2rem !important"
+              class="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3"
+            >
+              Access Sphere
+            </h2>
+            <div class="flex px-4 py-3 justify-center">
+              <button
+                onclick="doGoogleLogin()"
+                type="button"
+                class="gsi-material-button"
+              >
+                <div class="gsi-material-button-state"></div>
+                <div class="gsi-material-button-content-wrapper">
+                  <div class="gsi-material-button-icon-container">
+                    <div class="gsi-material-button-icon">
+                      <svg
+                        version="1.1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 48 48"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        style="display: block"
+                      >
+                        <path
+                          fill="#EA4335"
+                          d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                        ></path>
+                        <path
+                          fill="#4285F4"
+                          d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                        ></path>
+                        <path
+                          fill="#FBBC05"
+                          d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                        ></path>
+                        <path
+                          fill="#34A853"
+                          d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                        ></path>
+                        <path fill="none" d="M0 0h48v48H0z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                  <span class="googleLogin gsi-material-button-contents"
+                    >Continue with Google</span
+                  >
+                  <span class="googleLogin" style="display: none"
+                    >Continue with Google</span
+                  >
+                </div>
+              </button>
+            </div>
+            <form id="loginForm" data-inviewport="fade-in" class="fade-in">
+              <div class="flex flex-wrap items-end gap-4 px-4 py-3">
+                <label class="flex flex-col min-w-40 flex-1">
+                  <input
+                    type="text"
+                    id="emailInput"
+                    placeholder="Email / Username"
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#2c3035] focus:border-none h-14 placeholder:text-[#a2aab3] p-3 text-base font-normal leading-normal"
+                    value=""
+                    required
+                  />
+                </label>
               </div>
 
-              <div class="xl:mt-4 md:mt-2 input-groups">
-                <label class="block text-gray-700" id="passwordLabel"
-                  >Password</label
-                >
-                <input
-                  id="passwordInput"
-                  type="password"
-                  placeholder="Enter Password"
-                  minlength="6"
-                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                  required
-                />
+              <div class="flex flex-wrap items-end gap-4 px-4 py-3">
+                <label class="relative flex flex-col min-w-40 flex-1">
+                  <input
+                    id="passwordInput"
+                    type="password"
+                    placeholder="Password"
+                    class="form-input w-full min-w-0 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#2c3035] focus:border-none h-14 placeholder:text-[#a2aab3] pr-12 p-3 text-base font-normal leading-normal"
+                    value=""
+                    style="height: 57px"
+                    required
+                  />
+                  <!-- Icona occhio -->
+                  <button
+                    type="button"
+                    onclick="togglePassword('passwordInput')"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-[#a2aab3] hover:text-gray-300 transition-colors duration-300"
+                  >
+                    <i class="eyeIcon fa-duotone fa-eye text-xl"></i>
+                  </button>
+                </label>
               </div>
 
-              <div class="text-right xl:mt-2 md:mt-1">
-                <a
-                  href="#"
-                  id="forgotPassword"
-                  class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
+              <div class="align-content-end">
+                <p
                   onclick="showForgotPassword()"
-                  >Forgot Password?</a
+                  id="login_page_forgot_password"
+                  class="transition-colors duration-200 hover:text-white focus:text-white float-end text-[#a2aab3] text-sm font-normal leading-normal pb-3 pt-1 px-4 clickable"
+                  style="width: fit-content"
                 >
+                  Forgot password?
+                </p>
               </div>
-              <div class="login-groups" data-inviewport="slide-up">
+              <div class="flex px-4 py-3">
                 <button
+                  disabled
                   type="submit"
                   id="loginButton"
-                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                  disabled
+                  style="height: 50px"
+                  class="flex min-w-[84px] items-center justify-center overflow-hidden rounded-full px-5 flex-1 bg-[#3f7bbf] hover:bg-[#518dde] text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors duration-200"
                 >
-                  Log In
-                </button>
-                <!--<button
-                                  onclick="login()"
-                                  type="button"
-                                  id="loginButton"
-                                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                                  disabled
-                                >
-                                  Log In
-                                </button>-->
-
-                <hr class="my-6 border-gray-300 w-full" />
-
-                <button
-                  onclick="doGoogleLogin()"
-                  id="google-btn"
-                  type="button"
-                  class="w-full block bg-white hover:bg-gray-100 focus:bg-gray-100 text-gray-900 font-semibold rounded-lg px-4 py-0 border border-gray-300 input-small"
-                >
-                  <div
-                    class="flex items-center justify-center"
-                    style="height: 50px"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="w-6 h-6"
-                      viewBox="0 0 48 48"
-                    >
-                      <defs>
-                        <path
-                          id="a"
-                          d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"
-                        />
-                      </defs>
-                      <clipPath id="b">
-                        <use xlink:href="#a" overflow="visible" />
-                      </clipPath>
-                      <path
-                        clip-path="url(#b)"
-                        fill="#FBBC05"
-                        d="M0 37V11l17 13z"
-                      />
-                      <path
-                        clip-path="url(#b)"
-                        fill="#EA4335"
-                        d="M0 11l17 13 7-6.1L48 14V0H0z"
-                      />
-                      <path
-                        clip-path="url(#b)"
-                        fill="#34A853"
-                        d="M0 37l30-23 7.9 1L48 0v48H0z"
-                      />
-                      <path
-                        clip-path="url(#b)"
-                        fill="#4285F4"
-                        d="M48 48L17 24l-4-3 35-10z"
-                      />
-                    </svg>
-                    <span class="ml-4" id="googleLogin"
-                      >Log in with Google</span
-                    >
-                  </div>
+                  <span class="truncate">Log In</span>
                 </button>
               </div>
             </form>
           </div>
-
-          <div id="forgot" class="fade-in" style="display: none">
-            <h1
-              class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
-              id="forgotTitle"
+          <!--<div class="fixed bottom-0 left-0 w-full z-50 md:relative md:mt-auto">-->
+          <div>
+            <p
+              onclick="registerPopup()"
+              id="login_page_sign_up_text"
+              class="text-[#a2aab3] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center underline clickable"
             >
-              Forgot Password
-            </h1>
-
-            <form class="xl:mt-6 md:mt-3">
-              <div class="input-text input-groups">
-                <label class="block text-gray-700" id="forgotEmailLabel"
-                  >Email Address</label
-                >
-                <input
-                  type="email"
-                  id="forgotEmailInput"
-                  placeholder="Enter Email Address"
-                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                  required
-                />
-              </div>
-
-              <div class="text-right xl:mt-2 md:mt-1">
-                <a
-                  href="#"
-                  id="backToLogin"
-                  class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
-                  onclick="showLogin()"
-                  >Back to Login</a
-                >
-              </div>
-
-              <div class="login-groups" data-inviewport="slide-up">
-                <button
-                  disabled
-                  onclick="forgotPassword()"
-                  id="resetButton"
-                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                >
-                  Reset
-                </button>
-              </div>
-            </form>
+              Don't have an account? Sign up
+            </p>
+            <p
+              class="footer_copyright_text text-[#a2aab3] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center"
+            >
+              © 2025 Access Sphere - All rights reserved
+            </p>
+            <div class="h-5 bg-[#121416]"></div>
           </div>
-
-          <div id="reset" class="fade-in" style="display: none">
-            <h1
-              class="text-xl md:text-xl font-bold leading-tight xl:mt-12 md:mt-6"
-              id="resetTitle"
-            >
-              Reset Password
-            </h1>
-
-            <form class="xl:mt-6 md:mt-3">
-              <div class="xl:mt-4 md:mt-2 input-groups">
-                <label class="block text-gray-700" id="resetPasswordCodeLabel"
-                  >Reset Code</label
-                >
-                <input
-                  id="resetPasswordCode"
-                  type="text"
-                  placeholder="Enter Code"
-                  minlength="6"
-                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                  required
-                />
-              </div>
-
-              <div class="xl:mt-4 md:mt-2 input-groups">
-                <label class="block text-gray-700" id="resetPasswordLabel"
-                  >Password</label
-                >
-                <input
-                  id="resetPasswordInput"
-                  type="password"
-                  placeholder="Enter Password"
-                  minlength="6"
-                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                  required
-                />
-                <div id="validationPassword" class="invalid-feedback"></div>
-              </div>
-
-              <div class="xl:mt-4 md:mt-2 input-text">
-                <label class="block text-gray-700" id="repeatPasswordLabel"
-                  >Repeat Password</label
-                >
-                <input
-                  id="repeatPasswordInput"
-                  type="password"
-                  placeholder="Enter Password"
-                  minlength="6"
-                  class="w-full px-4 py-0 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none input-small"
-                  required
-                />
+        </div>
+        <!-- END Login Section -->
+        <!-- Select OTP Section -->
+        <div
+          id="select_method_section"
+          class="page flex size-full flex-col bg-[#121416] dark justify-between group/design-root overflow-x-hidden"
+          style="
+            --radio-dot-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27rgb(255,255,255)%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle cx=%278%27 cy=%278%27 r=%273%27/%3e%3c/svg%3e');
+          "
+        >
+          <div>
+            <div class="@container">
+              <div class="@[480px]:px-4 @[480px]:py-3">
                 <div
-                  id="validationConfirmPassword"
-                  class="invalid-feedback"
+                  class="opacity-40 w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden bg-[#121416] @[480px]:rounded-xl min-h-[218px]"
+                  style="
+                    background-image: url('../app/login/img/select_otp.jpg');
+                  "
                 ></div>
               </div>
-
-              <div class="text-right xl:mt-2 md:mt-1">
-                <a
-                  href="#"
-                  id="backToLoginReset"
-                  class="text-sm font-semibold text-gray-700 hover:text-blue-700 focus:text-blue-700"
-                  onclick="showLogin()"
-                  >Back to Login</a
+            </div>
+            <div
+              class="flex items-center bg-[#121416] p-4 pb-2 justify-between"
+            >
+              <div
+                onclick="showLogin()"
+                class="text-white flex size-12 shrink-0 items-center clickable"
+                data-icon="ArrowLeft"
+                data-size="24px"
+                data-weight="regular"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24px"
+                  height="24px"
+                  fill="currentColor"
+                  viewBox="0 0 256 256"
                 >
+                  <path
+                    d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"
+                  ></path>
+                </svg>
               </div>
-              <div class="login-groups" data-inviewport="slide-up">
-                <button
-                  disabled
-                  onclick="resetPassword()"
-                  type="submit"
-                  id="changePasswordButton"
-                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
-                >
-                  Change Password
-                </button>
-              </div>
+              <h2
+                id="otp_select_method_page_nav_title"
+                class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12"
+              >
+                Verifica la tua identità
+              </h2>
+            </div>
+            <form
+              id="select_otp_form"
+              data-inviewport="fade-in"
+              class="fade-in"
+            >
+              <p
+                id="otp_select_method_page_subtitle"
+                class="text-white text-base font-normal leading-normal pb-3 pt-1 px-4 text-center"
+              >
+                Scegli come ricevere il codice di verifica.
+              </p>
+              <div class="flex flex-col gap-3 p-4" id="show-login-method"></div>
             </form>
           </div>
-
-          <section
-            id="otp-page"
-            style="display: none; height: 95%"
-            class="text-center mx-auto fade-in"
+          <div>
+            <p
+              class="footer_copyright_text text-[#a2aab3] text-sm font-normal leading-normal pb-2 pt-1 px-4 text-center"
+            >
+              © 2025 Access Sphere - Tutti i diritti riservati
+            </p>
+            <div class="flex px-4 py-3">
+              <button
+                disabled
+                type="submit"
+                style="height: 50px"
+                id="otp_verification_code_button"
+                class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 flex-1 bg-[#3f7bbf] hover:bg-[#518dde] text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors duration-200"
+              >
+                <span class="truncate">Continua</span>
+              </button>
+            </div>
+            <div class="h-5 bg-[#121416]"></div>
+          </div>
+        </div>
+        <!-- END Select OTP Section -->
+        <!-- OTP Section -->
+        <form id="otp-form">
+          <div
+            id="otp_section"
+            class="page flex size-full flex-col bg-[#121416] dark justify-between group/design-root overflow-x-hidden"
           >
-            <form id="otp-form">
-              <h3 class="title mt-2">
-                <strong
-                  ><i class="fa-duotone fa-solid fa-key-skeleton me-1"></i>
-                  OTP</strong
+            <div>
+              <div class="@container">
+                <div class="@[480px]:px-4 @[480px]:py-3">
+                  <div
+                    class="opacity-40 w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden bg-[#121416] @[480px]:rounded-xl min-h-[218px]"
+                    style="background-image: url('../app/login/img/otp.jpg')"
+                  ></div>
+                </div>
+              </div>
+              <div
+                class="flex items-center bg-[#121416] p-4 pb-2 justify-between"
+              >
+                <div
+                  onclick="showLogin()"
+                  class="text-white flex size-12 shrink-0 items-center clickable"
+                  data-icon="ArrowLeft"
+                  data-size="24px"
+                  data-weight="regular"
                 >
-              </h3>
-
-              <div style="margin-top: calc(50% - 150px)">
-                <svg
-                  class="mx-auto"
-                  width="250"
-                  height="200"
-                  viewBox="0 0 292 208"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24px"
+                    height="24px"
+                    fill="currentColor"
+                    viewBox="0 0 256 256"
+                  >
+                    <path
+                      d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"
+                    ></path>
+                  </svg>
+                </div>
+                <h2
+                  id="totp_verification_code_title"
+                  class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12"
                 >
-                  <g clip-path="url(#clip0_1_45)">
-                    <path
-                      d="M152.106 208C201.536 208 241.606 167.93 241.606 118.5C241.606 69.0706 201.536 29 152.106 29C102.676 29 62.6058 69.0706 62.6058 118.5C62.6058 167.93 102.676 208 152.106 208Z"
-                      fill="#C5FFFF"
-                    />
-                    <path
-                      d="M117.144 64.4241C113.81 64.4241 111.108 67.1261 111.108 70.46V167.057C111.108 170.391 113.81 173.093 117.144 173.093H186.572C189.906 173.093 192.608 170.391 192.608 167.057V92.382L163.507 64.4241H117.144Z"
-                      fill="#91E4FF"
-                    />
-                    <path
-                      d="M192.608 92.382H169.544C166.21 92.382 163.508 89.68 163.508 86.3461V64.4241L192.608 92.382Z"
-                      fill="#0CB4EA"
-                    />
-                    <path
-                      d="M162.304 131.646C162.304 135.494 159.185 138.613 155.339 138.613H104.483C100.635 138.613 97.5186 135.494 97.5186 131.646V110.363C97.5186 106.515 100.635 103.397 104.483 103.397H155.339C159.185 103.397 162.304 106.515 162.304 110.363V131.646Z"
-                      fill="#0CB4EA"
-                    />
-                    <path
-                      d="M117.094 114.409C118.563 114.409 119.825 114.707 120.876 115.302C121.93 115.897 122.728 116.745 123.267 117.843C123.807 118.941 124.079 120.23 124.079 121.712C124.079 122.808 123.932 123.803 123.635 124.697C123.338 125.592 122.894 126.369 122.302 127.025C121.71 127.681 120.981 128.184 120.119 128.532C119.257 128.879 118.266 129.053 117.153 129.053C116.044 129.053 115.054 128.875 114.178 128.518C113.302 128.16 112.571 127.657 111.985 127.005C111.398 126.354 110.956 125.572 110.656 124.658C110.358 123.744 110.208 122.755 110.208 121.692C110.208 120.604 110.364 119.604 110.676 118.697C110.99 117.788 111.442 117.017 112.034 116.378C112.627 115.739 113.349 115.253 114.198 114.914C115.047 114.574 116.012 114.409 117.094 114.409ZM121.17 121.692C121.17 120.655 121.003 119.756 120.669 118.997C120.334 118.238 119.856 117.663 119.233 117.273C118.612 116.883 117.899 116.688 117.093 116.688C116.521 116.688 115.991 116.795 115.504 117.012C115.017 117.228 114.599 117.542 114.247 117.954C113.897 118.367 113.621 118.893 113.416 119.534C113.214 120.176 113.113 120.895 113.113 121.694C113.113 122.499 113.214 123.226 113.416 123.877C113.621 124.527 113.907 125.067 114.277 125.495C114.647 125.923 115.073 126.244 115.552 126.456C116.031 126.668 116.558 126.775 117.131 126.775C117.866 126.775 118.54 126.592 119.154 126.224C119.77 125.857 120.259 125.29 120.623 124.524C120.988 123.757 121.17 122.813 121.17 121.692Z"
-                      fill="white"
-                    />
-                    <path
-                      d="M134.976 117.018H131.846V127.306C131.846 127.898 131.713 128.338 131.45 128.625C131.187 128.912 130.844 129.054 130.425 129.054C130 129.054 129.654 128.909 129.388 128.619C129.121 128.33 128.987 127.892 128.987 127.305V117.017H125.856C125.366 117.017 125.003 116.909 124.765 116.693C124.528 116.477 124.408 116.192 124.408 115.838C124.408 115.47 124.532 115.181 124.779 114.969C125.028 114.757 125.387 114.649 125.858 114.649H134.977C135.473 114.649 135.842 114.76 136.082 114.977C136.326 115.196 136.446 115.483 136.446 115.836C136.446 116.189 136.323 116.475 136.078 116.691C135.834 116.907 135.466 117.018 134.976 117.018Z"
-                      fill="white"
-                    />
-                    <path
-                      d="M143.642 123.297H141.015V127.306C141.015 127.879 140.879 128.313 140.609 128.61C140.339 128.907 139.997 129.054 139.584 129.054C139.152 129.054 138.804 128.907 138.542 128.614C138.279 128.322 138.146 127.891 138.146 127.324V116.409C138.146 115.777 138.291 115.326 138.581 115.056C138.871 114.786 139.331 114.65 139.963 114.65H143.643C144.733 114.65 145.568 114.734 146.154 114.902C146.734 115.063 147.235 115.33 147.657 115.703C148.079 116.077 148.399 116.534 148.619 117.076C148.84 117.617 148.947 118.224 148.947 118.901C148.947 120.344 148.503 121.437 147.615 122.182C146.726 122.926 145.4 123.297 143.642 123.297ZM142.945 116.804H141.014V121.133H142.945C143.622 121.133 144.188 121.062 144.64 120.921C145.095 120.78 145.44 120.548 145.678 120.226C145.917 119.904 146.036 119.483 146.036 118.959C146.036 118.335 145.853 117.826 145.485 117.433C145.074 117.013 144.228 116.804 142.945 116.804Z"
-                      fill="white"
-                    />
-                    <rect
-                      x="233.582"
-                      y="79"
-                      width="10"
-                      height="10"
-                      rx="1"
-                      transform="rotate(27.2727 233.582 79)"
-                      fill="#91A3FF"
-                    />
-                    <circle cx="74" cy="139" r="5" fill="#FF91B9" />
-                    <circle cx="79" cy="43" r="5" fill="#91E5FF" />
-                    <circle cx="188" cy="203" r="5" fill="#FF9191" />
-                  </g>
-                  <circle cx="220" cy="15" r="5" fill="#FFC691" />
-                  <circle cx="119.606" cy="5" r="5" fill="#91FFAF" />
-                  <rect
-                    x="250.606"
-                    y="163"
-                    width="10"
-                    height="10"
-                    rx="1"
-                    fill="#E991FF"
-                  />
-                  <rect
-                    x="274"
-                    y="47.0925"
-                    width="10"
-                    height="10"
-                    rx="1"
-                    transform="rotate(-24.1576 274 47.0925)"
-                    fill="#FF9191"
-                  />
-                  <rect
-                    y="68.5666"
-                    width="10"
-                    height="10"
-                    rx="1"
-                    transform="rotate(-27.1716 0 68.5666)"
-                    fill="#91A3FF"
-                  />
-                  <path
-                    d="M33.0121 175.265L40.7499 180.821L32.0689 184.744L33.0121 175.265Z"
-                    fill="#FF9191"
-                  />
-                  <path
-                    d="M15.077 128.971L16.567 138.38L7.67356 134.966L15.077 128.971Z"
-                    fill="#FD91FF"
-                  />
-                  <path
-                    d="M286.447 120.204L287.505 129.672L278.777 125.854L286.447 120.204Z"
-                    fill="#FF91BF"
-                  />
-                  <defs>
-                    <clipPath id="clip0_1_45">
-                      <rect
-                        width="179"
-                        height="179"
-                        fill="white"
-                        transform="translate(62.6058 29)"
-                      />
-                    </clipPath>
-                  </defs>
-                </svg>
-                <div id="show-login-method"></div>
-                <div id="totp-method" class="fade-in" style="display: none">
-                  <div class="mt-2" style="width: 100%">
-                    <h4 class="title" id="totp_verification_code_title">
-                      Verification Code
-                    </h4>
-                    <p
-                      id="totp_verification_code_text"
-                      class="text-center otp-verify"
-                    >
-                      We have sent a verification code to your mobile number
-                    </p>
-                  </div>
-                  <div class="flex items-center justify-center gap-1 mt-5">
+                  Enter code
+                </h2>
+              </div>
+              <div id="otp_form" data-inviewport="fade-in" class="fade-in">
+                <h1
+                  id="totp_verification_code_text"
+                  class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 text-center pb-3 pt-5"
+                >
+                  Enter the 6-digit code we sent to +1 555-123-4567
+                </h1>
+                <div class="flex justify-center px-4 py-3">
+                  <fieldset class="relative flex gap-3">
                     <input
                       required
-                      type="text"
-                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                      pattern="\d*"
+                      type="number"
+                      maxlength="1"
+                      max="9"
+                      min="0"
+                      class="flex h-14 w-12 text-center [appearance:textfield] focus:outline-0 focus:ring-0 [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none rounded-xl border-2 border-transparent bg-[#2c3035] focus:border-2 focus:border-[#40474f] text-2xl font-extrabold text-white leading-normal"
+                      pattern="/^\d$/"
                       id="otp-1"
                       onchange="enableVerifyBtn()"
-                      maxlength="1"
                     />
                     <input
                       required
-                      type="text"
-                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      type="number"
                       maxlength="1"
+                      max="9"
+                      min="0"
+                      class="flex h-14 w-12 text-center [appearance:textfield] focus:outline-0 focus:ring-0 [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none rounded-xl border-2 border-transparent bg-[#2c3035] focus:border-2 focus:border-[#40474f] text-2xl font-extrabold text-white leading-normal"
                       onchange="enableVerifyBtn()"
                       id="otp-2"
                     />
                     <input
                       required
-                      type="text"
-                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      type="number"
                       maxlength="1"
+                      max="9"
+                      min="0"
+                      class="flex h-14 w-12 text-center [appearance:textfield] focus:outline-0 focus:ring-0 [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none rounded-xl border-2 border-transparent bg-[#2c3035] focus:border-2 focus:border-[#40474f] text-2xl font-extrabold text-white leading-normal"
                       onchange="enableVerifyBtn()"
                       id="otp-3"
                     />
                     <input
                       required
-                      type="text"
-                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      type="number"
                       maxlength="1"
+                      max="9"
+                      min="0"
+                      class="flex h-14 w-12 text-center [appearance:textfield] focus:outline-0 focus:ring-0 [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none rounded-xl border-2 border-transparent bg-[#2c3035] focus:border-2 focus:border-[#40474f] text-2xl font-extrabold text-white leading-normal"
                       onchange="enableVerifyBtn()"
                       id="otp-4"
                     />
                     <input
                       required
-                      type="text"
-                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      type="number"
                       maxlength="1"
+                      max="9"
+                      min="0"
+                      class="flex h-14 w-12 text-center [appearance:textfield] focus:outline-0 focus:ring-0 [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none rounded-xl border-2 border-transparent bg-[#2c3035] focus:border-2 focus:border-[#40474f] text-2xl font-extrabold text-white leading-normal"
                       onchange="enableVerifyBtn()"
                       id="otp-5"
                     />
                     <input
                       required
-                      type="text"
-                      class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      type="number"
                       maxlength="1"
+                      max="9"
+                      min="0"
+                      class="flex h-14 w-12 text-center [appearance:textfield] focus:outline-0 focus:ring-0 [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none rounded-xl border-2 border-transparent bg-[#2c3035] focus:border-2 focus:border-[#40474f] text-2xl font-extrabold text-white leading-normal"
                       onchange="enableVerifyBtn()"
                       id="otp-6"
                     />
-                  </div>
-                  <div class="mt-3 form-check text-start">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="rememberDevice"
-                    />
-                    <label
-                      id="totp_verification_code_check"
-                      class="form-check-label"
-                      for="rememberDevice"
-                      >Remember the login method</label
-                    >
-                  </div>
+                  </fieldset>
+                </div>
+                <div
+                  class="flex items-center gap-3 px-4 py-4 text-sm text-[#a2aab3]"
+                >
+                  <input
+                    type="radio"
+                    id="rememberDevice"
+                    class="h-5 w-5 accent-white bg-[#2c3035] border border-[#40474f] rounded-xl focus:ring-0 focus:outline-none clickable"
+                  />
+                  <label
+                    for="rememberDevice"
+                    id="totp_verification_code_check"
+                    class="select-none"
+                  >
+                    Remember the login method
+                  </label>
                 </div>
               </div>
-
-              <div
-                id="otp-button"
-                style="display: none; width: 100%"
-                class="otp-button"
-                data-inviewport="slide-up"
+            </div>
+            <div>
+              <p
+                class="footer_copyright_text text-[#a2aab3] text-sm font-normal leading-normal pb-2 pt-1 px-4 text-center"
               >
+                © 2025 Access Sphere - Tutti i diritti riservati
+              </p>
+              <div class="flex px-4 py-3">
                 <button
                   disabled
                   type="submit"
                   id="verifyOTP"
-                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
+                  style="height: 50px"
+                  class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 flex-1 bg-[#3f7bbf] hover:bg-[#518dde] text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors duration-200"
                 >
-                  Verify OTP
+                  <span class="truncate">Next</span>
                 </button>
               </div>
-            </form>
-          </section>
-
-          <!-- Aggiungi il div vuoto per lo spazio -->
-          <div id="spacer" class="hidden_mobile"></div>
-          <div class="footer">
-            <p
-              class="text-sm fixed text-gray-500 xl:mt-12 md:mt-6"
-              style="bottom: 15px"
-              id="footerText"
+              <div class="h-5 bg-[#121416]"></div>
+            </div>
+          </div>
+        </form>
+        <!-- END OTP Section -->
+        <!-- Forgot Section -->
+        <div
+          id="forgot_section"
+          class="page flex size-full flex-col bg-[#121416] dark justify-between group/design-root overflow-x-hidden"
+        >
+          <div>
+            <div class="@container">
+              <div class="@[480px]:px-4 @[480px]:py-3">
+                <div
+                  class="opacity-40 w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden bg-[#121416] @[480px]:rounded-xl min-h-[218px]"
+                  style="background-image: url('../app/login/img/forgot.jpg')"
+                ></div>
+              </div>
+            </div>
+            <div
+              class="flex items-center bg-[#121416] p-4 pb-2 justify-between"
             >
-              &copy; 2024 Access Sphere - All Rights Reserved.
+              <div
+                onclick="showLogin()"
+                class="text-white flex size-12 shrink-0 items-center clickable"
+                data-icon="ArrowLeft"
+                data-size="24px"
+                data-weight="regular"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24px"
+                  height="24px"
+                  fill="currentColor"
+                  viewBox="0 0 256 256"
+                >
+                  <path
+                    d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"
+                  ></path>
+                </svg>
+              </div>
+              <h2
+                id="forgot_page_nav_title"
+                class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12"
+              >
+                Reimposta Password
+              </h2>
+            </div>
+            <form
+              id="forgot_password_form"
+              data-inviewport="fade-in"
+              class="fade-in"
+            >
+              <h2
+                id="forgot_page_title"
+                class="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5"
+              >
+                Password dimenticata?
+              </h2>
+              <p
+                id="forgot_page_subtitle"
+                class="text-white text-base font-normal leading-normal pb-3 pt-1 px-4 text-center"
+              >
+                Inserisci l'email associata al tuo account e ti invieremo
+                un'email con le istruzioni per reimpostare la password.
+              </p>
+              <div class="flex flex-wrap items-end gap-4 px-4 py-3">
+                <label class="flex flex-col min-w-40 flex-1">
+                  <input
+                    type="email"
+                    id="forgotEmailInput"
+                    placeholder="Email"
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#2c3035] focus:border-none h-14 placeholder:text-[#a2aab3] p-3 text-base font-normal leading-normal"
+                    value=""
+                    required
+                  />
+                </label>
+              </div>
+            </form>
+          </div>
+          <div>
+            <p
+              class="footer_copyright_text text-[#a2aab3] text-sm font-normal leading-normal pb-2 pt-1 px-4 text-center"
+            >
+              © 2025 Access Sphere - Tutti i diritti riservati
             </p>
+            <div class="flex px-4 py-3">
+              <button
+                disabled
+                type="submit"
+                onclick="forgotPassword()"
+                id="resetButton"
+                style="height: 50px"
+                class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 flex-1 bg-[#3f7bbf] hover:bg-[#518dde] text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors duration-200"
+              >
+                <span id="forgot_page_reset_button" class="truncate"
+                  >Invia Email di Reimpostazione</span
+                >
+              </button>
+            </div>
+            <div class="h-5 bg-[#121416]"></div>
           </div>
         </div>
+        <!-- END Forgot Section -->
+        <!-- Reset Password Section -->
+        <div
+          id="reset_section"
+          class="page flex size-full flex-col bg-[#121416] dark justify-between group/design-root overflow-x-hidden"
+        >
+          <div>
+            <div class="@container">
+              <div class="@[480px]:px-4 @[480px]:py-3">
+                <div
+                  class="opacity-40 w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden bg-[#121416] @[480px]:rounded-xl min-h-[218px]"
+                  style="background-image: url('../app/login/img/reset.jpg')"
+                ></div>
+              </div>
+            </div>
+            <div
+              class="flex items-center bg-[#121416] p-4 pb-2 justify-between"
+            >
+              <div
+                onclick="showLogin()"
+                class="text-white flex size-12 shrink-0 items-center clickable"
+                data-icon="ArrowLeft"
+                data-size="24px"
+                data-weight="regular"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24px"
+                  height="24px"
+                  fill="currentColor"
+                  viewBox="0 0 256 256"
+                >
+                  <path
+                    d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"
+                  ></path>
+                </svg>
+              </div>
+              <h2
+                id="reset_page_nav_title"
+                class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12"
+              >
+                Crea nuova password
+              </h2>
+            </div>
+            <form
+              id="reset_password_form"
+              data-inviewport="fade-in"
+              class="fade-in"
+            >
+              <h1
+                id="reset_page_title"
+                class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 text-center pb-3 pt-5"
+              >
+                Imposta una nuova password
+              </h1>
+              <p
+                id="reset_page_subtitle"
+                class="text-white text-base font-normal leading-normal pb-3 pt-1 px-4 text-center"
+              >
+                La tua nuova password deve essere diversa dalle precedenti
+              </p>
+              <div class="flex flex-wrap items-end gap-4 px-4 py-3">
+                <label class="flex flex-col min-w-40 flex-1">
+                  <input
+                    type="text"
+                    id="resetPasswordCode"
+                    placeholder="Reset Code"
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#2c3035] focus:border-none h-14 placeholder:text-[#a2aab3] p-3 text-base font-normal leading-normal"
+                    value=""
+                    required
+                  />
+                </label>
+              </div>
+              <div class="flex flex-wrap items-end gap-4 px-4 py-3">
+                <label class="relative flex flex-col min-w-40 flex-1">
+                  <input
+                    id="resetPasswordInput"
+                    type="password"
+                    minlength="6"
+                    placeholder="Nuova password"
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#2c3035] focus:border-none h-14 placeholder:text-[#a2aab3] p-3 text-base font-normal leading-normal"
+                    value=""
+                    required
+                  />
+                  <button
+                    type="button"
+                    onclick="togglePassword('resetPasswordInput')"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-[#a2aab3] hover:text-gray-300 transition-colors duration-300"
+                  >
+                    <i class="eyeIcon fa-duotone fa-eye text-xl"></i>
+                  </button>
+                </label>
+                <div id="validationPassword" class="invalid-feedback"></div>
+              </div>
+              <div class="flex flex-wrap items-end gap-4 px-4 py-3">
+                <label class="relative flex flex-col min-w-40 flex-1">
+                  <input
+                    id="repeatPasswordInput"
+                    type="password"
+                    minlength="6"
+                    placeholder="Conferma nuova password"
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#2c3035] focus:border-none h-14 placeholder:text-[#a2aab3] p-3 text-base font-normal leading-normal"
+                    value=""
+                    required
+                  />
+                  <button
+                    type="button"
+                    onclick="togglePassword('repeatPasswordInput')"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-[#a2aab3] hover:text-gray-300 transition-colors duration-300"
+                  >
+                    <i class="eyeIcon fa-duotone fa-eye text-xl"></i>
+                  </button>
+                </label>
+                <div
+                  id="validationConfirmPassword"
+                  class="invalid-feedback"
+                ></div>
+              </div>
+            </form>
+          </div>
+          <div>
+            <p
+              class="footer_copyright_text text-[#a2aab3] text-sm font-normal leading-normal pb-2 pt-1 px-4 text-center"
+            >
+              © 2025 Access Sphere - Tutti i diritti riservati
+            </p>
+            <div class="flex px-4 py-3">
+              <button
+                disabled
+                onclick="resetPassword()"
+                id="changePasswordButton"
+                type="submit"
+                style="height: 50px"
+                class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 flex-1 bg-[#3f7bbf] hover:bg-[#518dde] text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors duration-200"
+              >
+                <span class="truncate">Reimposta password</span>
+              </button>
+            </div>
+            <div class="h-5 bg-[#121416]"></div>
+          </div>
+        </div>
+        <!-- END Reset Password Section -->
       </div>
     </section>
   </body>

@@ -24,6 +24,11 @@ public class RedirectControllerImpl {
     return "app/login/index";
   }
 
+  @GetMapping("/app/login_old")
+  public String loginOld(Model model) {
+    return "app/login/index_old";
+  }
+
   @GetMapping("/app/users")
   public String users(Model model) {
     return "app/user/users";

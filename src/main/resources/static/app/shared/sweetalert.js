@@ -1,4 +1,4 @@
-function sweetalert(icon, title, message) {
+function sweetalert(icon, title, message, html = false) {
   const customClassSwal = Swal.mixin({
     customClass: {
       confirmButton: "rounded-pill buttonInput width-100 bg-blue-500",
@@ -7,6 +7,17 @@ function sweetalert(icon, title, message) {
     },
     buttonsStyling: true,
   });
+
+  if (html)
+    return customClassSwal.fire({
+      icon: icon,
+      title: title,
+      html: message,
+      color: "#FFFFFF",
+      //background: "rgba(56, 62, 66, 0.8)",
+      //backdrop: "rgba(0, 0, 0, 0.5)",
+      showCancelButton: false,
+    });
 
   return customClassSwal.fire({
     icon: icon,
