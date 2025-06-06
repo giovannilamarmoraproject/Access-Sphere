@@ -6,7 +6,7 @@ let currentTranslations = {};
 
 async function loadTranslations() {
   try {
-    const response = await fetch("/app/i18n/translations.json");
+    const response = await fetch("/app/i18n/translations_old.json");
     translations = await response.json();
     detectLanguage();
     currentTranslations = translations[currentLanguage];

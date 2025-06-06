@@ -148,92 +148,6 @@ function doGoogleLogin() {
 }
 
 function checkMFAAndSetupOTP(response, client_id) {
-  // Verifica che esista il token MFA
-  if (response?.data?.token?.mfa_methods) {
-    // Salvo dati temporanei
-    localStorage.setItem("Client-ID", client_id);
-    localStorage.setItem(
-      client_id + "_temp_token",
-      response.data.token.temp_token.access_token
-    );
-
-    showSelectOTPMethod(); // Mostra la sezione di scelta OTP
-
-    const methods = response.data.token.mfa_methods;
-    const loginMethod = document.getElementById("show-login-method");
-    const otpButton = document.getElementById("otp_verification_code_button");
-
-    if (!loginMethod || !otpButton) return; // elementi non trovati
-
-    // Se ci sono più di un metodo → mostra i radio
-    if (methods.length > 1) {
-      loginMethod.innerHTML = ""; // pulisco eventuali elementi precedenti
-
-      methods.forEach((method, idx) => {
-        loginMethod.insertAdjacentHTML(
-          "beforeend",
-          `<label
-             style="border-color: rgb(64 71 79 / var(--tw-border-opacity, 1)) !important;"
-             class="flex items-center gap-4 rounded-xl border border-solid border-[#40474f] p-[15px] flex-row-reverse clickable"
-           >
-             <input
-               type="radio"
-               class="h-5 w-5 accent-white border-2 bg-[#2c3035] border-[#40474f] text-transparent
-                      checked:border-white checked:bg-[image:--radio-dot-svg]
-                      focus:outline-none focus:ring-0 checked:focus:border-white"
-               name="mfa_method"
-               value="${method}"
-               ${idx === 0 ? "checked" : ""}
-               required
-             />
-             <div class="flex grow flex-col">
-               <p class="text-white text-sm font-medium leading-normal">
-                 ${method}
-               </p>
-               <p class="text-[#a2aab3] text-sm font-normal leading-normal">
-                 ${OTPType(method)}
-               </p>
-             </div>
-           </label>`
-        );
-      });
-
-      /* ---------- GESTIONE SELEZIONE RADIO & BOTTONE ---------- */
-
-      // Funzione che abilita/disabilita il bottone e salva il metodo scelto
-      const updateButtonState = () => {
-        const selected = loginMethod.querySelector(
-          'input[name="mfa_method"]:checked'
-        );
-        otpButton.disabled = !selected; // abilita se c’è qualcosa di selezionato
-        if (selected) {
-          localStorage.setItem(client_id + "_mfa_methods", selected.value);
-        }
-      };
-
-      // Imposta lo stato iniziale (il primo è già "checked")
-      updateButtonState();
-
-      // Delego l’ascolto al container: un solo listener per tutti i radio
-      loginMethod.addEventListener("change", updateButtonState);
-
-      // Quando l’utente preme il bottone, apro la pagina OTP col metodo selezionato
-      otpButton.addEventListener("click", () => {
-        const selected = loginMethod.querySelector(
-          'input[name="mfa_method"]:checked'
-        );
-        if (selected) showOTPPage(selected.value);
-      });
-    } else {
-      /* -------- Se c’è un solo metodo MFA: salto direttamente alla pagina OTP -------- */
-      const singleMethod = methods[0];
-      localStorage.setItem(client_id + "_mfa_methods", singleMethod);
-      showOTPPage(singleMethod);
-    }
-  }
-}
-
-function checkMFAAndSetupOTPNew(response, client_id) {
   if (response.data.token && response.data.token.mfa_methods) {
     localStorage.setItem("Client-ID", client_id);
     localStorage.setItem(
@@ -241,43 +155,61 @@ function checkMFAAndSetupOTPNew(response, client_id) {
       response.data.token.temp_token.access_token
     );
 
-    showSelectOTPMethod();
+    showOTP();
 
     if (response.data.token.mfa_methods.length > 1) {
       const loginMethod = document.getElementById("show-login-method");
       if (loginMethod) {
-        const firstElement = response.data.token.mfa_methods[0];
+        let select = "";
         response.data.token.mfa_methods.forEach((element) => {
-          loginMethod.innerHTML += `<label
-                style="
-                  border-color: rgb(
-                    64 71 79 / var(--tw-border-opacity, 1)
-                  ) !important;
-                "
-                class="flex items-center gap-4 rounded-xl border border-solid border-[#40474f] p-[15px] flex-row-reverse clickable"
-              >
-                <input
-                  type="radio"
-                  class="h-5 w-5 border-2 border-[#40474f] bg-transparent text-transparent checked:border-white checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-white"
-                  ${element == firstElement ? "checked" : ""}
-                  value="${element}"
-                  name="e4d946d7-bb41-4aac-9923-be1af497aa07"
-                  required
-                />
-                <div class="flex grow flex-col">
-                  <p class="text-white text-sm font-medium leading-normal">
-                    ${element}
-                  </p>
-                  <p class="text-[#a2aab3] text-sm font-normal leading-normal">
-                    ${OTPType(element)}
-                  </p>
-                </div>
-              </label>`;
+          select += "<option value='" + element + "'>" + element + "</option>";
         });
+        loginMethod.innerHTML =
+          `<div class="mt-2" style="width: 100%">
+                    <h4 class="title">${currentTranslations.otp_verification_code_title}</h4>
+                    <p class="text-center otp-verify">
+                      ${currentTranslations.otp_verification_code_text}
+                    </p>
+                  </div>
+                  <select
+                  id="otp-selected"
+                    class="form-select mx-auto mt-4"
+                    style="width: fit-content; border-radius: 20px; height: 50px; padding-left: 30px; padding-right:40px"
+                    aria-label="Select login method"
+                  >
+                    <option selected disabled>${currentTranslations.otp_verification_code_select}</option>` +
+          select +
+          `
+                  </select>
+                  <div
+                style="width: 100%"
+                class="otp-button"
+                data-inviewport="slide-up"
+              >
+                <button
+                  disabled
+                  id="otp_verification_code_button"
+                  type="button"
+                  onclick="showOTPPage(null)"
+                  class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-0 xl:mt-6 md:mt-3 input-small"
+                >
+                ${currentTranslations.otp_verification_code_button}
+                </button>
+              </div>`;
         localStorage.setItem(
           client_id + "_mfa_methods",
           response.data.token.temp_token.mfa_methods
         );
+        const selectOtp = document.getElementById("otp-selected");
+        const button = document.getElementById("otp_verification_code_button");
+
+        selectOtp.addEventListener("change", function () {
+          if (selectOtp.value) {
+            button.removeAttribute("disabled");
+          } else {
+            // button.setAttribute("disabled", "true");
+          }
+        });
       }
     } else {
       showOTPPage(response.data.token.mfa_methods[0]);
@@ -286,9 +218,21 @@ function checkMFAAndSetupOTPNew(response, client_id) {
 }
 
 function showOTPPage(mfa_methods) {
-  showOTP();
+  if (!mfa_methods) {
+    mfa_methods = document.getElementById("otp-selected").value;
+    const loginMethod = document.getElementById("show-login-method");
+    if (loginMethod) loginMethod.style.display = "none";
+  }
   const client_id = localStorage.getItem("Client-ID");
-  localStorage.setItem(client_id + "_mfa_methods", mfa_methods);
+  const otp = document.getElementById("totp-method");
+  const otpButton = document.getElementById("otp-button");
+  if (otp) {
+    otp.style.display = "block";
+    localStorage.setItem(client_id + "_mfa_methods", mfa_methods);
+  }
+  if (otpButton) {
+    otpButton.style.display = "block";
+  }
 }
 
 function enableVerifyBtn() {

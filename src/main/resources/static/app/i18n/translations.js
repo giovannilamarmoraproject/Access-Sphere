@@ -77,6 +77,24 @@ function applyLanguage(selector, text, innerHTML = false) {
   });
 }
 
+function applyLanguageInputPlaceholder(selector, text) {
+  let elements;
+
+  if (selector.startsWith(".")) {
+    // Se inizia con ".", selezioniamo tutti gli elementi con quella classe
+    elements = document.querySelectorAll(selector);
+  } else {
+    // Altrimenti, assumiamo che sia un ID
+    const element = document.getElementById(selector);
+    elements = element ? [element] : [];
+  }
+
+  // Applichiamo il testo a tutti gli elementi trovati
+  elements.forEach((element) => {
+    element.placeholder = text;
+  });
+}
+
 document.addEventListener("DOMContentLoaded", loadTranslations);
 document.addEventListener("DOMContentLoaded", loadErrorCode);
 
@@ -86,6 +104,11 @@ document.addEventListener("DOMContentLoaded", loadErrorCode);
  *----------------------------------------------------------
  */
 function applyTranslations() {
+  /*
+   *----------------------------------------------------------
+   * Login Page Section
+   *----------------------------------------------------------
+   */
   applyLanguage(
     "login_page_tab_title",
     translations[currentLanguage].login_page_tab_title
@@ -100,48 +123,86 @@ function applyTranslations() {
     "login_page_sign_up_text",
     translations[currentLanguage].login_page_sign_up_text
   );
-  applyLanguage("forgotTitle", translations[currentLanguage].forgotTitle);
   applyLanguage(
-    "forgotEmailLabel",
-    translations[currentLanguage].forgotEmailLabel
-  );
-  applyLanguage("backToLogin", translations[currentLanguage].backToLogin);
-  applyLanguage("resetButton", translations[currentLanguage].resetButton);
-  applyLanguage("resetTitle", translations[currentLanguage].resetTitle);
-  applyLanguage(
-    "resetPasswordLabel",
-    translations[currentLanguage].resetPasswordLabel
-  );
-  applyLanguage(
-    "resetPasswordCodeLabel",
-    translations[currentLanguage].resetPasswordCodeLabel
-  );
-  applyLanguage(
-    "repeatPasswordLabel",
-    translations[currentLanguage].repeatPasswordLabel
-  );
-  applyLanguage(
-    "changePasswordButton",
-    translations[currentLanguage].changePasswordButton
-  );
-  applyLanguage(
-    "footerText",
-    translations[currentLanguage].footerText.replace(
+    ".footer_copyright_text",
+    translations[currentLanguage].footer_copyright_text.replace(
       "#YEAR#",
       new Date().getFullYear()
     ),
     true
   );
+  /*
+   *----------------------------------------------------------
+   * Forgot Page Section
+   *----------------------------------------------------------
+   */
+  applyLanguage(
+    "forgot_page_nav_title",
+    translations[currentLanguage].forgot_page_nav_title
+  );
+  applyLanguage(
+    "forgot_page_title",
+    translations[currentLanguage].forgot_page_title
+  );
+  applyLanguage(
+    "forgot_page_subtitle",
+    translations[currentLanguage].forgot_page_subtitle
+  );
+  applyLanguage(
+    "forgot_page_reset_button",
+    translations[currentLanguage].forgot_page_reset_button
+  );
+  /*
+   *----------------------------------------------------------
+   * Reset Password Page Section
+   *----------------------------------------------------------
+   */
+  applyLanguage(
+    "reset_page_title",
+    translations[currentLanguage].reset_page_title
+  );
+  applyLanguage(
+    "reset_page_nav_title",
+    translations[currentLanguage].reset_page_nav_title
+  );
+  applyLanguage(
+    "reset_page_subtitle",
+    translations[currentLanguage].reset_page_subtitle
+  );
+  applyLanguage(
+    "reset_page_input_code",
+    translations[currentLanguage].reset_page_input_code
+  );
+  applyLanguage(
+    "reset_page_input_code",
+    translations[currentLanguage].reset_page_input_code
+  );
+  applyLanguageInputPlaceholder(
+    "resetPasswordCode",
+    translations[currentLanguage].resetPasswordCode
+  );
+  applyLanguageInputPlaceholder(
+    "resetPasswordInput",
+    translations[currentLanguage].resetPasswordInput
+  );
+  applyLanguageInputPlaceholder(
+    "repeatPasswordInput",
+    translations[currentLanguage].repeatPasswordInput
+  );
+  applyLanguage(
+    "changePasswordButton",
+    translations[currentLanguage].changePasswordButton
+  );
   /**
    * OTP
    */
   applyLanguage(
-    "otp_verification_code_title",
-    translations[currentLanguage].otp_verification_code_title
+    "otp_select_method_page_nav_title",
+    translations[currentLanguage].otp_select_method_page_nav_title
   );
   applyLanguage(
-    "otp_verification_code_text",
-    translations[currentLanguage].otp_verification_code_text
+    "otp_select_method_page_subtitle",
+    translations[currentLanguage].otp_select_method_page_subtitle
   );
   applyLanguage(
     "otp_verification_code_button",

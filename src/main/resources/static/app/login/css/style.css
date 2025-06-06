@@ -30,7 +30,38 @@ body {
   }
 }
 
+/* PAGINE SOVRAPPOSTE ---------------------------------------------------*/
+.page {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.4, 0.01, 0.2, 1);
+  will-change: transform;
+  transform: translateX(100%);
+  z-index: 0;
+}
+
+.page--current {
+  transform: translateX(0);
+  z-index: 2;
+}
+
+.page--toLeft {
+  transform: translateX(-100%);
+  z-index: 1;
+}
+
+.page--toRight {
+  transform: translateX(100%);
+  z-index: 1;
+}
+
 @media screen and (max-width: 780px) {
+  .page {
+    position: fixed;
+  }
+
   .hidden_mobile {
     display: none !important;
     visibility: hidden !important;
