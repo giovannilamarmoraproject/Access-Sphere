@@ -8,16 +8,19 @@ function sweetalert(icon, title, message, html = false) {
     buttonsStyling: true,
   });
 
-  if (html)
-    return customClassSwal.fire({
-      icon: icon,
-      title: title,
-      html: message,
-      color: "#FFFFFF",
-      //background: "rgba(56, 62, 66, 0.8)",
-      //backdrop: "rgba(0, 0, 0, 0.5)",
-      showCancelButton: false,
+  if (html) {
+    return disableLoader().then(() => {
+      return customClassSwal.fire({
+        icon: icon,
+        title: title,
+        html: message,
+        color: "#FFFFFF",
+        //background: "rgba(56, 62, 66, 0.8)",
+        //backdrop: "rgba(0, 0, 0, 0.5)",
+        showCancelButton: false,
+      });
     });
+  }
 
   return disableLoader().then(() => {
     return customClassSwal.fire({
@@ -42,15 +45,17 @@ function sweetalertConfirm(icon, title, message, btnConfirm, btnDeny) {
     buttonsStyling: true,
   });
 
-  return customClassSwal.fire({
-    icon: icon,
-    title: title,
-    text: message,
-    color: "#FFFFFF",
-    showDenyButton: true,
-    showCancelButton: false,
-    confirmButtonText: btnConfirm,
-    denyButtonText: btnDeny,
+  return disableLoader().then(() => {
+    return customClassSwal.fire({
+      icon: icon,
+      title: title,
+      text: message,
+      color: "#FFFFFF",
+      showDenyButton: true,
+      showCancelButton: false,
+      confirmButtonText: btnConfirm,
+      denyButtonText: btnDeny,
+    });
   });
 }
 
@@ -65,19 +70,21 @@ function inputSweetAlert(title, confirm) {
     buttonsStyling: true,
   });
 
-  return customClassSwal.fire({
-    title: title,
-    input: "text",
-    color: "#FFFFFF",
-    inputAttributes: {
-      autocapitalize: "off",
-    },
-    //background: "rgba(56, 62, 66, 0.8)",
-    //backdrop: "rgba(0, 0, 0, 0.5)",
-    showCancelButton: true,
-    confirmButtonText: confirm,
-    preConfirm: async (text) => {
-      return text;
-    },
+  return disableLoader().then(() => {
+    return customClassSwal.fire({
+      title: title,
+      input: "text",
+      color: "#FFFFFF",
+      inputAttributes: {
+        autocapitalize: "off",
+      },
+      //background: "rgba(56, 62, 66, 0.8)",
+      //backdrop: "rgba(0, 0, 0, 0.5)",
+      showCancelButton: true,
+      confirmButtonText: confirm,
+      preConfirm: async (text) => {
+        return text;
+      },
+    });
   });
 }
