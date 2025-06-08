@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function forgotPassword() {
+  enableLoader();
   const email = document.getElementById("forgotEmailInput").value;
   const browserLanguage = navigator.language;
   const body = {
@@ -111,6 +112,7 @@ function validatePasswords() {
 }
 
 function resetPassword() {
+  enableLoader();
   const resetCode = document.getElementById("resetPasswordCode").value;
   const password = document.getElementById("resetPasswordInput").value;
   const confirmPassword = document.getElementById("repeatPasswordInput").value;

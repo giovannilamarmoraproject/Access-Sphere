@@ -23,25 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
   checkInputs();
 });
 
-function togglePassword() {
-  const input = document.getElementById("passwordInput");
-  const icon = document.getElementById("eyeIcon");
-
-  const isPassword = input.type === "password";
-  input.type = isPassword ? "text" : "password";
-
-  // Cambia l'icona
-  if (isPassword) {
-    icon.classList.remove("fa-eye");
-    icon.classList.add("fa-eye-slash");
-    icon.style.marginRight = "-2.5px";
-  } else {
-    icon.classList.remove("fa-eye-slash");
-    icon.classList.add("fa-eye");
-    icon.style.marginRight = "0px";
-  }
-}
-
 function togglePassword(inputId) {
   const input = document.getElementById(inputId);
   const icon = input.parentElement.querySelector(".eyeIcon");
@@ -126,35 +107,43 @@ function showForgotPassword() {
 }
 
 function showLogin() {
-  navigate("login_section", true);
-  const form = document.querySelector("#loginForm");
-  form.classList.remove("fade-in");
-  void form.offsetWidth; // forza reflow
-  form.classList.add("fade-in");
+  disableLoader().then(() => {
+    navigate("login_section", true);
+    const form = document.querySelector("#loginForm");
+    form.classList.remove("fade-in");
+    void form.offsetWidth; // forza reflow
+    form.classList.add("fade-in");
+  });
 }
 
 function showResetPassword() {
-  navigate("reset_section");
-  const form = document.querySelector("#reset_password_form");
-  form.classList.remove("fade-in");
-  void form.offsetWidth; // forza reflow
-  form.classList.add("fade-in");
+  disableLoader().then(() => {
+    navigate("reset_section");
+    const form = document.querySelector("#reset_password_form");
+    form.classList.remove("fade-in");
+    void form.offsetWidth; // forza reflow
+    form.classList.add("fade-in");
+  });
 }
 
 function showSelectOTPMethod() {
-  navigate("select_method_section");
-  const form = document.querySelector("#select_otp_form");
-  form.classList.remove("fade-in");
-  void form.offsetWidth; // forza reflow
-  form.classList.add("fade-in");
+  disableLoader().then(() => {
+    navigate("select_method_section");
+    const form = document.querySelector("#select_otp_form");
+    form.classList.remove("fade-in");
+    void form.offsetWidth; // forza reflow
+    form.classList.add("fade-in");
+  });
 }
 
 function showOTP() {
-  navigate("otp_section");
-  const form = document.querySelector("#otp_form");
-  form.classList.remove("fade-in");
-  void form.offsetWidth; // forza reflow
-  form.classList.add("fade-in");
+  disableLoader().then(() => {
+    navigate("otp_section");
+    const form = document.querySelector("#otp_form");
+    form.classList.remove("fade-in");
+    void form.offsetWidth; // forza reflow
+    form.classList.add("fade-in");
+  });
 }
 
 function OTPType(otp) {

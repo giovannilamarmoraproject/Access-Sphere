@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 async function login() {
+  enableLoader();
   const currentUrl = new URL(window.location.href);
   const clientId = currentUrl.searchParams.get("client_id") || config.client_id;
   const redirectUri =
@@ -37,6 +38,7 @@ async function login() {
 async function doLogin(clientId, redirectUri) {
   if (isLoggingIn()) {
     console.log("🔓 Already logging in...");
+    disableLoader();
     return;
   }
   loggingIn();
@@ -76,6 +78,7 @@ async function doLogin(clientId, redirectUri) {
 }
 
 async function verifyOTP() {
+  enableLoader();
   console.log("🚀 Executing Verify OTP...");
   const url = new URL(config.verify_otp_url);
 
@@ -119,6 +122,7 @@ async function verifyOTP() {
 }
 
 function doGoogleLogin() {
+  enableLoader();
   const currentUrl = new URL(window.location.href);
   //const clientId = currentUrl.searchParams.get("client_id") || config.client_id;
   //const redirectUri =
@@ -126,12 +130,14 @@ function doGoogleLogin() {
   const clientId = currentUrl.searchParams.get("client_id");
   const redirectUri = currentUrl.searchParams.get("redirect_uri");
 
-  if (!clientId)
+  if (!clientId) {
+    disableLoader();
     return sweetalert(
       "error",
       currentTranslations.googleLogin_error_title,
       currentTranslations.googleLogin_error_text
     );
+  }
 
   const url = new URL(window.location.origin + "/v1/oAuth/2.0/authorize");
   url.searchParams.set("access_type", "online");
@@ -145,6 +151,7 @@ function doGoogleLogin() {
   url.searchParams.set("response_type", "code");
 
   window.location.href = url.toString();
+  disableLoader();
 }
 
 function checkMFAAndSetupOTP(response, client_id) {
