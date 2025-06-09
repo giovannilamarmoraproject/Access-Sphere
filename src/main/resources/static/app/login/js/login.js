@@ -164,8 +164,6 @@ function checkMFAAndSetupOTP(response, client_id) {
       response.data.token.temp_token.access_token
     );
 
-    showSelectOTPMethod(); // Mostra la sezione di scelta OTP
-
     const methods = response.data.token.mfa_methods;
     const loginMethod = document.getElementById("show-login-method");
     const otpButton = document.getElementById("otp_verification_code_button");
@@ -174,6 +172,7 @@ function checkMFAAndSetupOTP(response, client_id) {
 
     // Se ci sono più di un metodo → mostra i radio
     if (methods.length > 1) {
+      showSelectOTPMethod(); // Mostra la sezione di scelta OTP
       loginMethod.innerHTML = ""; // pulisco eventuali elementi precedenti
 
       methods.forEach((method, idx) => {
