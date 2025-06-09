@@ -325,8 +325,6 @@ public class UserService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid field email, try again!");
     }
 
-    Mono<List<StrapiLocale>> strapiLocaleMono = strapiService.locales();
-
     Mono<User> userMono =
         dataService
             .getUserByEmail(changePassword.getEmail())
@@ -336,6 +334,8 @@ public class UserService {
                   user.setTokenReset(token);
                   return user;
                 });
+
+    Mono<List<StrapiLocale>> strapiLocaleMono = strapiService.locales();
 
     Mono<String> finalLocaleMono =
         strapiLocaleMono.map(

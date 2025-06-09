@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record MFASetupRequest(
+    String locale,
     @NotBlank(message = "The user ID must be provided to identify the account.") String identifier,
     @NotNull(message = "The MFA label indicates which method is being used and is required.")
         TOTPLabel label,

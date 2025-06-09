@@ -19,6 +19,8 @@ public class MFAMethod extends GenericDTO {
   private TOTPLabel label;
 
   @JsonIgnore private String secretKey;
+  @JsonIgnore private String hashedOTP;
+  @JsonIgnore private Long expiry;
 
   private boolean confirmed;
 
@@ -33,6 +35,22 @@ public class MFAMethod extends GenericDTO {
     this.type = type;
     this.label = label;
     this.secretKey = secretKey;
+    this.confirmed = confirmed;
+  }
+
+  public MFAMethod(
+      MFAType type,
+      TOTPLabel label,
+      String hashedOTP,
+      Long expiry,
+      boolean confirmed,
+      LocalDateTime creationDate,
+      LocalDateTime updateDate) {
+    super(null, creationDate, updateDate, null);
+    this.type = type;
+    this.label = label;
+    this.hashedOTP = hashedOTP;
+    this.expiry = expiry;
     this.confirmed = confirmed;
   }
 }

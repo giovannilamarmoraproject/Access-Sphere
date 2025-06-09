@@ -37,7 +37,7 @@ public class TotpStrategy implements MFAStrategy {
     String secret = MFAUtils.generateSecret();
     String otpAuth = MFAUtils.getOtpAuthUrl(user.getEmail(), secret, "Access-Sphere");
 
-    MFASetting mfaSetting = MFAMapper.generateTempMFA(user, setupRequest, secret);
+    MFASetting mfaSetting = MFAMapper.generateOTPMFA(user, setupRequest, secret);
 
     user.setMfaSettings(mfaSetting);
     return dataService
