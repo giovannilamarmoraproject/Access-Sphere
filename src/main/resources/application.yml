@@ -64,7 +64,7 @@ filter:
     shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,**/actuator,**/actuator/**,*/,/cookie-policy,/privacy-policy,*/favicon.ico,*/app/*,*/img/*,*/js/*,*/css/*,/manifest.json,/service-worker.js,/robots.txt,/sitemap.xml"
     #shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*,/cookie-policy,/privacy-policy"
     generateSessionURI: "*/v1/oAuth/2.0/authorize,*/users/register,**/v1/users/change/**"
-    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/v1/mfa/verify,*/favicon.ico"
+    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/users/register,*/v1/users/change/password/*,*/v1/users/change/password,*/v1/mfa/verify,*/v1/mfa/challenge,*/favicon.ico"
     logoutURI: "*/v1/oAuth/2.0/logout"
   authorization:
     shouldFilter: "*/v1/oAuth/2.0/token/exchange,**/v1/users/profile"
@@ -91,6 +91,7 @@ rest:
         deleteUser: /api/users/:userId
     email-sender:
       baseUrl: https://email-sender.giovannilamarmora.com
+      mfaTemplateID: ACCESS_SPHERE_EMAIL_OTP
       path:
         sendEmailUrl: /v1/send-email
 

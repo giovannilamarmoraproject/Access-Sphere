@@ -17,6 +17,7 @@ function getConfig() {
     forgot: "/v1/users/change/password/request",
     reset: "/v1/users/change/password",
     verifyOTP: "/v1/mfa/verify?include_user_data=true",
+    challengeMFA: "/v1/mfa/challenge",
     param: "?",
     divider: "&",
     access_type: "access_type=online",
@@ -61,6 +62,7 @@ function getConfig() {
     edit_user_url: urlConfig.baseUrl + urlConfig.edit,
     delete_user_url: urlConfig.baseUrl + urlConfig.delete,
     verify_otp_url: urlConfig.baseUrl + urlConfig.verifyOTP,
+    challenge_mfa_url: urlConfig.challengeMFA,
   };
 }
 

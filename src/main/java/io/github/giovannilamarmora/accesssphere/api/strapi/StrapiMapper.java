@@ -122,7 +122,8 @@ public class StrapiMapper {
                 mfaMethod -> {
                   StrapiMFAMethod method = new StrapiMFAMethod();
                   BeanUtils.copyProperties(mfaMethod, method);
-                  method.setSecretKey(CryptoUtils.encrypt(mfaMethod.getSecretKey()));
+                  if (!ObjectToolkit.isNullOrEmpty(mfaMethod.getSecretKey()))
+                    method.setSecretKey(CryptoUtils.encrypt(mfaMethod.getSecretKey()));
                   return method;
                 })
             .toList());
@@ -165,7 +166,8 @@ public class StrapiMapper {
                   MFAMethod method = new MFAMethod();
                   if (ObjectToolkit.isNullOrEmpty(strapiMFAMethod)) return null;
                   BeanUtils.copyProperties(strapiMFAMethod, method);
-                  method.setSecretKey(CryptoUtils.decrypt(strapiMFAMethod.getSecretKey()));
+                  if (!ObjectToolkit.isNullOrEmpty(strapiMFAMethod.getSecretKey()))
+                    method.setSecretKey(CryptoUtils.decrypt(strapiMFAMethod.getSecretKey()));
                   return method;
                 })
             .toList());

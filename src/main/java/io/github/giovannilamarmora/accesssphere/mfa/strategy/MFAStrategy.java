@@ -12,4 +12,6 @@ public interface MFAStrategy {
   Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest setupRequest);
 
   void verifyCode(List<MFAMethod> mfaMethods, String otp, String identifier);
+
+  Mono<ResponseEntity<Response>> mfaChallenge(User user, MFASetupRequest setupRequest);
 }

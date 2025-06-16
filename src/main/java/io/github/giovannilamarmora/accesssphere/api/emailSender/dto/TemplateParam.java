@@ -7,7 +7,8 @@ import lombok.Getter;
 
 @Getter
 public enum TemplateParam {
-  USER_RESET_TOKEN("USER.RESET_TOKEN");
+  USER_RESET_TOKEN("USER.RESET_TOKEN"),
+  USER_EMAIL_OTP("USER.OTP_CODE");
 
   private final String value;
 
@@ -20,7 +21,13 @@ public enum TemplateParam {
     param.put("USER.NAME", user.getName());
     param.put("USER.SURNAME", user.getSurname());
     param.put("USER.EMAIL", user.getEmail());
-    param.put("USER.RESET_TOKEN", user.getTokenReset());
+    param.put(USER_RESET_TOKEN.getValue(), user.getTokenReset());
+    return param;
+  }
+
+  public static Map<String, String> getOTPTemplateParam(User user, String otp) {
+    Map<String, String> param = getTemplateParam(user);
+    param.put(USER_EMAIL_OTP.getValue(), otp);
     return param;
   }
 }

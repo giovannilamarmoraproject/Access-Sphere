@@ -22,6 +22,8 @@ public class StrapiMFAMethod extends GenericDTO {
   // @JsonIgnore
   // @Convert(converter = SecretKeyConverter.class)
   private String secretKey;
+  private String hashedOTP;
+  private Long expiry;
 
   private boolean confirmed;
 
@@ -37,6 +39,22 @@ public class StrapiMFAMethod extends GenericDTO {
     this.label = label;
     this.secretKey = secretKey;
     this.confirmed = confirmed;
+  }
+
+  public StrapiMFAMethod(
+      MFAType type,
+      TOTPLabel label,
+      String hashedOTP,
+      Long expiry,
+      boolean confirmed,
+      LocalDateTime creationDate,
+      LocalDateTime updateDate) {
+    super(null, creationDate, updateDate, null);
+    this.confirmed = confirmed;
+    this.expiry = expiry;
+    this.hashedOTP = hashedOTP;
+    this.label = label;
+    this.type = type;
   }
 
   // public String getSecretKey() {

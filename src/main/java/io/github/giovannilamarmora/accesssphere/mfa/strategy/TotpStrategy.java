@@ -100,4 +100,17 @@ public class TotpStrategy implements MFAStrategy {
 
     LOG.info("✅ OTP code verified successfully for user: {}", identifier);
   }
+
+  /**
+   * @param user
+   * @param setupRequest
+   * @return
+   */
+  @Override
+  public Mono<ResponseEntity<Response>> mfaChallenge(User user, MFASetupRequest setupRequest) {
+    return Mono.just(
+        new ResponseEntity<>(
+            new Response(HttpStatus.OK.value(), "MFA Generated", TraceUtils.getSpanID(), null),
+            HttpStatus.OK));
+  }
 }

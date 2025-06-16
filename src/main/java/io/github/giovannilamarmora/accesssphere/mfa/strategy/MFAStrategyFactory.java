@@ -14,11 +14,14 @@ public class MFAStrategyFactory {
   private static final Logger LOG = LoggerFilter.getLogger(MFAStrategyFactory.class);
 
   private final TotpStrategy totpStrategy;
+  private final EmailOtpStrategy emailOtpStrategy;
 
   public MFAStrategy getStrategy(MFAType mfaType) {
     switch (mfaType) {
       case TOTP:
         return totpStrategy;
+      case EMAIL:
+        return emailOtpStrategy;
       default:
         throw new MFAException(ExceptionMap.ERR_MFA_400, "Unsupported MFA type: " + mfaType);
     }

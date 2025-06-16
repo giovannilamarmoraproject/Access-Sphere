@@ -4,6 +4,7 @@ import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.data.UserDataValidator;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategy;
@@ -17,6 +18,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,13 @@ public class MFAService {
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F Setup MFA for user: {} process started.",
         setupRequest.identifier());
+    if (ObjectToolkit.isNullOrEmpty(setupRequest.label())) {
+      LOG.error(
+          "The MFA label indicates which method is being used and is required, Label is required.");
+      throw new MFAException(
+          ExceptionMap.ERR_MFA_400,
+          "The MFA label indicates which method is being used and is required.");
+    }
     if (!techUserService.isTechUser())
       UserDataValidator.validateIdentifier(
           setupRequest.identifier(), accessTokenData.getIdentifier());
@@ -56,6 +65,29 @@ public class MFAService {
         .doOnSuccess(
             response ->
                 LOG.info("✅ Setup MFA for user: {} process ended.", setupRequest.identifier()));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> mfaChallenge(String bearer, MFASetupRequest setupRequest) {
+    LOG.info(
+        "\uD83E\uDD37\u200D♂\uFE0F Setup MFA Challenge for user: {} process started.",
+        setupRequest.identifier());
+    MFATokenData mfaTokenData = mfaTokenDataService.getByTempToken(bearer);
+    MFAValidator.validateMFAMethods(setupRequest.type(), mfaTokenData.getMfaMethods());
+    if (!techUserService.isTechUser())
+      UserDataValidator.validateIdentifier(setupRequest.identifier(), mfaTokenData.getIdentifier());
+    Mono<User> userMono = dataService.getUserByIdentifier(setupRequest.identifier(), true);
+    return userMono
+        .flatMap(
+            user -> {
+              MFAStrategy strategy = strategyFactory.getStrategy(setupRequest.type());
+              return strategy.generateSecret(user, setupRequest);
+            })
+        .doOnSuccess(
+            response ->
+                LOG.info(
+                    "✅ Setup MFA Challenge for user: {} process ended.",
+                    setupRequest.identifier()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

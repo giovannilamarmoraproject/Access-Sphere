@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.mfa.strategy;
 
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderService;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
+import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
@@ -20,22 +21,25 @@ import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
-
-import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 @Service
 @Logged
 public class EmailOtpStrategy implements MFAStrategy {
+
+  @Value(value = "${rest.client.email-sender.mfaTemplateID}")
+  private String otpTemplate;
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
@@ -45,11 +49,11 @@ public class EmailOtpStrategy implements MFAStrategy {
 
   /** Attivazione (invio del primo codice) */
   public Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest req) {
-    LOG.info("🔑  Generazione EMAIL-OTP per {}", req.identifier());
+    LOG.info("🔑 Generate EMAIL-OTP for {}", req.identifier());
 
     String otp = OneTimeCodeUtils.generateNumericCode(6);
     String hashedOtp = OneTimeCodeUtils.hash(otp);
-    long ttlSeconds = 300; // 5 min
+    long ttlSeconds = 900; // 5 min
     long expiry = Instant.now().plusSeconds(ttlSeconds).toEpochMilli();
 
     MFASetting setting = MFAMapper.generateEmailMFA(user, req, hashedOtp, expiry);
@@ -57,60 +61,75 @@ public class EmailOtpStrategy implements MFAStrategy {
     user.setMfaSettings(setting);
 
     Mono<List<StrapiLocale>> strapiLocaleMono = strapiService.locales();
-String locale = ObjectToolkit.getOrDefault(req.locale(), "en-GB");
+    String locale = ObjectToolkit.getOrDefault(req.locale(), "en-GB");
     Mono<String> finalLocaleMono =
-            strapiLocaleMono.map(
-                    strapiLocales ->
+        strapiLocaleMono.map(
+            strapiLocales ->
+                strapiLocales.stream()
+                    .filter(loc -> loc.getCode().equals(locale))
+                    .findFirst()
+                    .map(
+                        foundLocale -> {
+                          LOG.info("Locale found: {}", foundLocale.getCode());
+                          return foundLocale.getCode();
+                        })
+                    .orElseGet(
+                        () ->
                             strapiLocales.stream()
-                                    .filter(loc -> loc.getCode().equals(locale))
-                                    .findFirst()
-                                    .map(
-                                            foundLocale -> {
-                                              LOG.info("Locale found: {}", foundLocale.getCode());
-                                              return foundLocale.getCode();
-                                            })
-                                    .orElseGet(
-                                            () ->
-                                                    strapiLocales.stream()
-                                                            .filter(loc -> Boolean.TRUE.equals(loc.getIsDefault()))
-                                                            .findFirst()
-                                                            .map(
-                                                                    defaultLocale -> {
-                                                                      LOG.warn(
-                                                                              "Locale '{}' not found. Using default locale: {}",
-                                                                              locale,
-                                                                              defaultLocale.getCode());
-                                                                      return defaultLocale.getCode();
-                                                                    })
-                                                            .orElseGet(
-                                                                    () -> {
-                                                                      LOG.error(
-                                                                              "Locale '{}' not found and no default locale available. Using fallback: en-GB",
-                                                                              locale);
-                                                                      return "en-GB";
-                                                                    })));
+                                .filter(loc -> Boolean.TRUE.equals(loc.getIsDefault()))
+                                .findFirst()
+                                .map(
+                                    defaultLocale -> {
+                                      LOG.warn(
+                                          "Locale '{}' not found. Using default locale: {}",
+                                          locale,
+                                          defaultLocale.getCode());
+                                      return defaultLocale.getCode();
+                                    })
+                                .orElseGet(
+                                    () -> {
+                                      LOG.error(
+                                          "Locale '{}' not found and no default locale available. Using fallback: en-GB",
+                                          locale);
+                                      return "en-GB";
+                                    })));
 
     Mono<StrapiEmailTemplate> strapiEmailTemplateMono =
-            finalLocaleMono.flatMap(
-                    finalLocale ->
-                            strapiService.getTemplateById(changePassword.getTemplateId(), finalLocale));
+        finalLocaleMono.flatMap(
+            finalLocale -> strapiService.getTemplateById(otpTemplate, finalLocale));
 
     return dataService
         .updateUser(false, user)
-        .map(
-            user1 -> {
+        .zipWith(strapiEmailTemplateMono)
+        .flatMap(
+            objects -> {
+              User user1 = objects.getT1();
+              StrapiEmailTemplate emailTemplate = objects.getT2();
+
+              Map<String, String> emailParams =
+                  TemplateParam.getOTPTemplateParam(objects.getT1(), otp);
+              if (!ObjectToolkit.isNullOrEmpty(otp)) emailParams.put("OTP_CODE", otp);
+
               EmailContent emailContent =
                   EmailContent.builder()
-                      .subject(user1..getSubject())
-                      .to(changePassword.getEmail())
+                      .subject(emailTemplate.getSubject())
+                      .to(user1.getEmail())
                       .sentDate(new Date())
                       .build();
-              emailSenderService.sendEmail(
-                  user.getEmail(), "Il tuo codice di verifica", buildMailBody(otp, ttlSeconds));
+              return emailSenderService
+                  .sendEmail(objects.getT2(), emailParams, emailContent)
+                  .flatMap(
+                      emailResponse -> {
+                        // objects1.getT1().setToken(objects1.getT2().getTokenReset());
+                        String message = "OTP Sent! Check your email address!";
+
+                        Response response =
+                            new Response(
+                                HttpStatus.OK.value(), message, TraceUtils.getSpanID(), null);
+
+                        return Mono.just(ResponseEntity.ok(response));
+                      });
             })
-        .thenReturn(
-            ResponseEntity.ok(
-                new Response(HttpStatus.OK.value(), "OTP inviato", TraceUtils.getSpanID(), null)))
         .doOnSuccess(r -> LOG.info("📧  OTP e-mail inviato a {}", user.getEmail()));
   }
 
@@ -120,12 +139,12 @@ String locale = ObjectToolkit.getOrDefault(req.locale(), "en-GB");
 
     boolean ok =
         methods.stream()
-            .filter(m -> m.getType() == MFAType.EMAIL_OTP)
+            .filter(m -> m.getType() == MFAType.EMAIL)
             .anyMatch(
                 m -> {
                   boolean notExpired =
-                      m.getExpiresAt() != null && m.getExpiresAt() > System.currentTimeMillis();
-                  return notExpired && OneTimeCodeUtils.matches(otp, m.getHashedCode());
+                      m.getExpiry() != null && m.getExpiry() > System.currentTimeMillis();
+                  return notExpired && OneTimeCodeUtils.matches(otp, m.getHashedOTP());
                 });
 
     if (!ok) {
@@ -136,15 +155,17 @@ String locale = ObjectToolkit.getOrDefault(req.locale(), "en-GB");
     LOG.info("✅ OTP e-mail verificato per {}", identifier);
   }
 
-  /** Corpo HTML minimal dell’e-mail */
-  private String buildMailBody(String code, long ttlSeconds) {
-    return """
-          <p>Ciao,</p>
-          <p>ecco il tuo codice di verifica:</p>
-          <h2 style="letter-spacing:3px;">%s</h2>
-          <p>Scade tra %d minuti.</p>
-          <p>Se non hai richiesto questo codice ignora la mail.</p>
-          """
-        .formatted(code, ttlSeconds / 60);
+  /**
+   * @param user
+   * @param setupRequest
+   * @return
+   */
+  @Override
+  public Mono<ResponseEntity<Response>> mfaChallenge(User user, MFASetupRequest setupRequest) {
+    LOG.info(
+        "🔑 MFA Challenge Process started for type: {} and identifier for {}",
+        setupRequest.type(),
+        setupRequest.identifier());
+    return generateSecret(user, setupRequest);
   }
 }

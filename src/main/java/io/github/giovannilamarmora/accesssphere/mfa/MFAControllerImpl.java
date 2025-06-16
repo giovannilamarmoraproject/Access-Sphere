@@ -127,4 +127,30 @@ public class MFAControllerImpl implements MFAController {
       String bearer, MFAManageRequest mfaManageRequest, ServerWebExchange exchange) {
     return mfaService.manageMFA(mfaManageRequest);
   }
+
+  /**
+   * Endpoint to trigger an MFA challenge by sending an OTP to the user.
+   *
+   * <p>This method generates a One-Time Password (OTP) for the specified MFA method and sends it to
+   * the user via the corresponding channel (e.g., email or SMS).
+   *
+   * <p>The request must specify the {@code identifier} of the user and the {@code type} and {@code
+   * label} of the MFA method to be challenged.
+   *
+   * <p>The user must be authenticated via a Bearer JWT token.
+   *
+   * @param bearer Bearer JWT token used to authenticate the user. Must be passed in the
+   *     Authorization header.
+   * @param request The request payload containing the user identifier and method to challenge.
+   * @param exchange The {@link ServerWebExchange} used to access request details.
+   * @return A {@link ResponseEntity} wrapping a {@link Response} object indicating success or
+   *     failure.
+   * @see MFASetupRequest
+   * @see Response
+   */
+  @Override
+  public Mono<ResponseEntity<Response>> challengeMfa(
+      String bearer, MFASetupRequest request, ServerWebExchange exchange) {
+    return mfaService.mfaChallenge(bearer, request);
+  }
 }

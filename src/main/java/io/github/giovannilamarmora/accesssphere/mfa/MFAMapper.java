@@ -67,7 +67,10 @@ public class MFAMapper {
         mfaMethods.removeIf(removeUnverified);
 
         if (mfaMethods.stream()
-            .anyMatch(mfaMethod -> mfaMethod.getLabel().equals(setupRequest.label()))) {
+            .anyMatch(
+                mfaMethod ->
+                    mfaMethod.getType().equals(setupRequest.type())
+                        && mfaMethod.getLabel().equals(setupRequest.label()))) {
           MFAMethod methodMatch =
               mfaMethods.stream()
                   .filter(mfaMethod -> mfaMethod.getLabel().equals(setupRequest.label()))
@@ -85,17 +88,17 @@ public class MFAMapper {
                 mfaMethod -> mfaMethod.getType().equals(MFAType.EMAIL);
             mfaMethods = new ArrayList<>(current.getMfaMethods());
             mfaMethods.removeIf(removeEmail);
-            method =
-                new MFAMethod(
-                    setupRequest.type(),
-                    ObjectToolkit.getOrDefault(setupRequest.label(), null),
-                    hashedOTP,
-                    expiry,
-                    false,
-                    LocalDateTime.now(),
-                    LocalDateTime.now());
           }
         }
+        method =
+            new MFAMethod(
+                setupRequest.type(),
+                ObjectToolkit.getOrDefault(setupRequest.label(), null),
+                hashedOTP,
+                expiry,
+                false,
+                LocalDateTime.now(),
+                LocalDateTime.now());
 
         current.setMfaMethods(mfaMethods);
 
@@ -128,7 +131,12 @@ public class MFAMapper {
     current.setEnabled(true);
 
     current.getMfaMethods().stream()
-        .filter(method -> method.getSecretKey().equals(mfaMethod.getSecretKey()))
+        .filter(
+            method ->
+                (!ObjectToolkit.isNullOrEmpty(method.getSecretKey())
+                        && method.getSecretKey().equals(mfaMethod.getSecretKey()))
+                    || (!ObjectToolkit.isNullOrEmpty(method.getHashedOTP())
+                        && method.getHashedOTP().equals(mfaMethod.getHashedOTP())))
         .findFirst()
         .ifPresent(
             method -> {

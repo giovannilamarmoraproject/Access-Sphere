@@ -165,6 +165,10 @@ function checkMFAAndSetupOTP(response, client_id) {
     );
 
     const methods = response.data.token.mfa_methods;
+
+    const identifier = response.data.token.identifier;
+    localStorage.setItem(client_id + "_identifier", identifier);
+
     const loginMethod = document.getElementById("show-login-method");
     const otpButton = document.getElementById("otp_verification_code_button");
 
@@ -228,7 +232,25 @@ function checkMFAAndSetupOTP(response, client_id) {
         const selected = loginMethod.querySelector(
           'input[name="mfa_method"]:checked'
         );
-        if (selected) showOTPPage(selected.value);
+        const mfaMethod = localStorage.getItem(client_id + "_mfa_methods");
+        const temp_token = localStorage.getItem(client_id + "_temp_token");
+        console.log("DENTRO CLICK ", mfaMethod);
+        if (selected && mfaMethod == "EMAIL") {
+          console.log("DENTRO EMAIL");
+          enableLoader();
+          const body = {
+            locale: translations.currentLanguage,
+            identifier: identifier,
+            type: mfaMethod,
+          };
+          const challengeMFA = config.challenge_mfa_url;
+          POST(challengeMFA, temp_token, body).then(async (data) => {
+            const responseData = await data.json();
+            console.log(responseData);
+          });
+          disableLoader();
+        }
+        showOTPPage(selected.value);
       });
     } else {
       /* -------- Se c’è un solo metodo MFA: salto direttamente alla pagina OTP -------- */
