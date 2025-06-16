@@ -37,6 +37,7 @@ body {
   max-width: 40px;
 }
 
+#mfa_page_select_method_button:disabled,
 #mfa_page_setup_select_proceed:disabled,
 #mfa_page_setup_confirm_proceed:disabled {
   background-color: #dddddd;

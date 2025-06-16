@@ -1,8 +1,85 @@
-function showOTPLabelSelect() {
-  const otp = document.getElementById("mfa-config-section");
+function showMethodOTPSelect() {
+  const otp = document.getElementById("mfa-select-method-card");
   if (otp) otp.style.display = "block";
+
+  const otpMethods = getOTP();
+  const selectOtpMethod = document.getElementById("show-select-method");
+  Object.entries(otpMethods).forEach(([key, value]) => {
+    const firstElement = Object.keys(otpMethods)[0];
+    selectOtpMethod.innerHTML += `<label
+                    style="
+                      border-color: rgb(
+                        64 71 79 / var(--tw-border-opacity, 1)
+                      ) !important;
+                      padding: 15px 15px 0px 15px;
+                    "
+                    class="flex items-center gap-4 rounded-xl border border-solid border-[#40474f] flex-row-reverse clickable"
+                  >
+                    <input
+                      type="radio"
+                      class="float-end h-5 w-5 accent-white border-2 bg-[#2c3035] border-[#40474f] text-transparent checked:border-white checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 checked:focus:border-white"
+                      name="mfa_method"
+                      ${key == firstElement ? "checked" : ""}
+                      value="${key}"
+                      required=""
+                    />
+                    <div class="flex grow flex-col">
+                      <p class="text-white text-sm font-medium leading-normal">
+                        ${key}
+                      </p>
+                      <p
+                        class="text-[#a2aab3] text-sm font-normal leading-normal"
+                      >
+                        ${OTPType(key)}
+                      </p>
+                    </div> </label
+                  >`;
+  });
+
   const description = document.getElementById("mfa-description-card");
   if (description) description.style.display = "none";
+
+  /* ---------- GESTIONE SELEZIONE RADIO & BOTTONE ---------- */
+
+  // Funzione che abilita/disabilita il bottone e salva il metodo scelto
+  const updateButtonState = () => {
+    const selected = selectOtpMethod.querySelector(
+      'input[name="mfa_method"]:checked'
+    );
+    const confirmSelectBtn = document.getElementById(
+      "mfa_page_select_method_button"
+    );
+    const client_id = localStorage.getItem("Client-ID");
+    confirmSelectBtn.disabled = !selected; // abilita se c’è qualcosa di selezionato
+    if (selected) {
+      localStorage.setItem(client_id + "_mfa_methods", selected.value);
+    }
+  };
+
+  // Imposta lo stato iniziale (il primo è già "checked")
+  updateButtonState();
+
+  // Delego l’ascolto al container: un solo listener per tutti i radio
+  selectOtpMethod.addEventListener("change", updateButtonState);
+}
+
+function showOTPLabelSelect() {
+  const client_id = localStorage.getItem("Client-ID");
+  const mfaMethod = localStorage.getItem(client_id + "_mfa_methods");
+
+  const otp = document.getElementById("mfa-config-section");
+  if (otp) otp.style.display = "block";
+  const otpConfig = document.getElementById("mfa-select-method-card");
+  if (otpConfig) otpConfig.style.display = "none";
+  const description = document.getElementById("mfa-description-card");
+  if (description) description.style.display = "none";
+
+  if (mfaMethod && mfaMethod == "EMAIL") {
+    const setupCard = document.getElementById("mfa_page_setup_card");
+    if (setupCard) setupCard.style.display = "none";
+    const confirmCard = document.getElementById("mfa_page_confirm_card");
+    if (confirmCard) confirmCard.style.display = "block";
+  }
 }
 
 function goBack() {

@@ -597,7 +597,7 @@ function applyTranslations() {
    * MFA User Page
    */
   applyLanguage(
-    "mfa_page_description_title",
+    ".mfa_page_description_title",
     translations[currentLanguage].mfa_page_description_title
   );
   applyLanguage(
@@ -613,6 +613,10 @@ function applyTranslations() {
   applyLanguage(
     "mfa_page_description_button",
     translations[currentLanguage].mfa_page_description_button
+  );
+  applyLanguage(
+    "mfa_page_select_method_button",
+    translations[currentLanguage].mfa_page_select_method_button
   );
   applyLanguage(
     ".mfa_page_back_button",

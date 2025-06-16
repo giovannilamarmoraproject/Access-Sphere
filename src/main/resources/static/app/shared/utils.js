@@ -165,3 +165,24 @@ const formatDateIntl = (inputDate) => {
     hour12: false, // se vuoi orario in formato 24h
   }).format(date);
 };
+
+function vibrate() {
+  if ("vibrate" in navigator) {
+    navigator.vibrate([200]);
+  } else {
+    console.log("Vibration API not supported on this device.");
+  }
+}
+
+const otpName = {
+  TOTP: "Google Authenticator, Microsoft Authenticator...",
+  EMAIL: "marco.rossi@email.com",
+};
+
+function OTPType(otp) {
+  return otpName[otp] || "Unknown OTP type";
+}
+
+function getOTP() {
+  return otpName;
+}

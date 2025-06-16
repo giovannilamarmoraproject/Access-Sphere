@@ -8,8 +8,11 @@ function sweetalert(icon, title, message, html = false) {
     buttonsStyling: true,
   });
 
+  const maybeDisableLoader =
+    typeof disableLoader === "function" ? disableLoader() : Promise.resolve();
+
   if (html) {
-    return disableLoader().then(() => {
+    return maybeDisableLoader.then(() => {
       return customClassSwal.fire({
         icon: icon,
         title: title,
@@ -22,7 +25,7 @@ function sweetalert(icon, title, message, html = false) {
     });
   }
 
-  return disableLoader().then(() => {
+  return maybeDisableLoader.then(() => {
     return customClassSwal.fire({
       icon: icon,
       title: title,
@@ -45,7 +48,10 @@ function sweetalertConfirm(icon, title, message, btnConfirm, btnDeny) {
     buttonsStyling: true,
   });
 
-  return disableLoader().then(() => {
+  const maybeDisableLoader =
+    typeof disableLoader === "function" ? disableLoader() : Promise.resolve();
+
+  return maybeDisableLoader.then(() => {
     return customClassSwal.fire({
       icon: icon,
       title: title,
@@ -70,7 +76,10 @@ function inputSweetAlert(title, confirm) {
     buttonsStyling: true,
   });
 
-  return disableLoader().then(() => {
+  const maybeDisableLoader =
+    typeof disableLoader === "function" ? disableLoader() : Promise.resolve();
+
+  return maybeDisableLoader.then(() => {
     return customClassSwal.fire({
       title: title,
       input: "text",

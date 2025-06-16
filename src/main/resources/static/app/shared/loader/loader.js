@@ -69,11 +69,9 @@ function disableLoader() {
       (loader.classList.contains("loader--finish") &&
         spinner.style.display == "none")
     ) {
-      console.log("Loader nor ", loader, spinner);
       if (spinner) spinner.style.display = "none";
       return resolve();
     }
-    console.log("Loader", loader, spinner);
     // avvia l'animazione di uscita
     if (!loader.classList.contains("loader--finish"))
       loader.classList.add("loader--finish");

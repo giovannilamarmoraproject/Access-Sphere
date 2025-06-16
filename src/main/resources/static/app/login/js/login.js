@@ -234,9 +234,7 @@ function checkMFAAndSetupOTP(response, client_id) {
         );
         const mfaMethod = localStorage.getItem(client_id + "_mfa_methods");
         const temp_token = localStorage.getItem(client_id + "_temp_token");
-        console.log("DENTRO CLICK ", mfaMethod);
         if (selected && mfaMethod == "EMAIL") {
-          console.log("DENTRO EMAIL");
           enableLoader();
           const body = {
             locale: translations.currentLanguage,

@@ -211,7 +211,7 @@
             class="card p-5 w-100 fade-in"
             style="max-width: 1000px"
           >
-            <h2 class="text-center mb-4" id="mfa_page_description_title">
+            <h2 class="text-center mb-4 mfa_page_description_title">
               🔐 Configure Multi-Factor Authentication
             </h2>
             <div id="description-mfa">
@@ -270,6 +270,22 @@
                   />
                 </div>
 
+                <div
+                  class="rounded-full p-2"
+                  style="
+                    background-color: white;
+                    opacity: 0.8;
+                    width: fit-content;
+                  "
+                >
+                  <img
+                    src="https://images.icon-icons.com/2631/PNG/512/gmail_new_logo_icon_159149.png"
+                    class="card-img-top"
+                    alt="Email"
+                    style="max-width: 50px"
+                  />
+                </div>
+
                 <!-- Pallino destra -->
                 <div
                   style="
@@ -310,7 +326,7 @@
 
               <button
                 id="mfa_page_description_button"
-                onclick="showOTPLabelSelect()"
+                onclick="showMethodOTPSelect()"
                 style="padding: 10px 20px; border-radius: 10px; width: 100%"
                 class="btn btn-outline-primary mt-3"
               >
@@ -326,6 +342,123 @@
               </a>
             </div>
           </div>
+          <div
+            id="mfa-select-method-card"
+            class="card p-5 w-100 fade-in"
+            style="max-width: 1000px; display: none"
+          >
+            <h2 class="text-center mb-4 mfa_page_description_title">
+              🔐 Configure Multi-Factor Authentication
+            </h2>
+            <div id="description-mfa">
+              <div
+                class="mx-auto"
+                style="
+                  width: fit-content;
+                  margin-top: 5%;
+                  margin-bottom: 5%;
+                  display: flex;
+                  align-items: center;
+                  gap: 2rem;
+                "
+              >
+                <!-- Left Dot -->
+                <div
+                  style="
+                    width: 20px;
+                    height: 20px;
+                    background-color: #ccc;
+                    border-radius: 50%;
+                  "
+                ></div>
+
+                <!-- Google Authenticator -->
+                <div
+                  class="rounded-full p-2"
+                  style="
+                    background-color: white;
+                    opacity: 0.8;
+                    width: fit-content;
+                  "
+                >
+                  <img
+                    src="https://cdn.worldvectorlogo.com/logos/google-authenticator-3.svg"
+                    class="card-img-top"
+                    alt="Google Authentication"
+                    style="max-width: 50px"
+                  />
+                </div>
+
+                <!-- Microsoft Authenticator -->
+                <div
+                  class="rounded-full p-2"
+                  style="
+                    background-color: white;
+                    opacity: 0.8;
+                    width: fit-content;
+                  "
+                >
+                  <img
+                    src="https://mecdata.it/wp-content/uploads/2024/12/Microsoft_Authenticator_iOS_icon.webp"
+                    class="card-img-top"
+                    alt="Microsoft Authentication"
+                    style="max-width: 50px"
+                  />
+                </div>
+
+                <div
+                  class="rounded-full p-2"
+                  style="
+                    background-color: white;
+                    opacity: 0.8;
+                    width: fit-content;
+                  "
+                >
+                  <img
+                    src="https://images.icon-icons.com/2631/PNG/512/gmail_new_logo_icon_159149.png"
+                    class="card-img-top"
+                    alt="Email"
+                    style="max-width: 50px"
+                  />
+                </div>
+
+                <!-- Right Dot -->
+                <div
+                  style="
+                    width: 20px;
+                    height: 20px;
+                    background-color: #ccc;
+                    border-radius: 50%;
+                  "
+                ></div>
+              </div>
+
+              <div class="mb-4">
+                <div
+                  class="flex flex-col gap-3 p-4"
+                  id="show-select-method"
+                ></div>
+
+                <button
+                  id="mfa_page_select_method_button"
+                  onclick="showOTPLabelSelect()"
+                  style="padding: 10px 20px; border-radius: 10px; width: 100%"
+                  class="btn btn-outline-primary mt-3 w-100"
+                >
+                  <strong>Continue</strong>
+                </button>
+              </div>
+              <div class="text-center mt-4">
+                <a
+                  class="text-decoration-none text-secondary clickable mfa_page_back_button"
+                  onclick="goBack()"
+                >
+                  <i class="bi bi-arrow-left"></i> Back to Account Settings
+                </a>
+              </div>
+            </div>
+          </div>
+
           <div id="mfa-config-section" style="display: none">
             <h2
               id="mfa_page_setup_title"

@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function togglePassword(inputId) {
+  vibrate();
   const input = document.getElementById(inputId);
   const icon = input.parentElement.querySelector(".eyeIcon");
 
@@ -99,6 +100,7 @@ function navigate(toId, backwards = false, backpage = "login_section") {
 }
 
 function showForgotPassword() {
+  vibrate();
   navigate("forgot_section");
   const form = document.querySelector("#forgot_password_form");
   form.classList.remove("fade-in");
@@ -144,14 +146,6 @@ function showOTP() {
     void form.offsetWidth; // forza reflow
     form.classList.add("fade-in");
   });
-}
-
-function OTPType(otp) {
-  const otpName = {
-    TOTP: "Google Authenticator, Microsoft Authenticator...",
-    EMAIL: "marco.rossi@email.com",
-  };
-  return otpName[otp] || "Unknown OTP type";
 }
 
 /*
