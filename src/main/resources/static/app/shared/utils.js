@@ -176,7 +176,7 @@ function vibrate() {
 
 const otpName = {
   TOTP: "Google Authenticator, Microsoft Authenticator...",
-  EMAIL: "marco.rossi@email.com",
+  EMAIL: "@gmail.com, @icloud.com...",
 };
 
 function OTPType(otp) {

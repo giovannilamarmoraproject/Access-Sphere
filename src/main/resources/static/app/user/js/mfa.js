@@ -79,6 +79,7 @@ function showOTPLabelSelect() {
     if (setupCard) setupCard.style.display = "none";
     const confirmCard = document.getElementById("mfa_page_confirm_card");
     if (confirmCard) confirmCard.style.display = "block";
+    setupMFA();
   }
 }
 
@@ -102,7 +103,13 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function setupMFA() {
-  const label = document.getElementById("mfa-method").value;
+  const client_id = localStorage.getItem("Client-ID");
+  const mfaMethod = localStorage.getItem(client_id + "_mfa_methods");
+
+  const label =
+    mfaMethod == "EMAIL"
+      ? getOTP().EMAIL
+      : document.getElementById("mfa-method").value;
   const urlParams = window.location.href;
   const identifier = urlParams.split("mfa/")[1];
   const setupMFAUrl = window.location.origin + "/v1/mfa/setup";
@@ -110,8 +117,8 @@ function setupMFA() {
   const body = {
     identifier: identifier,
     label: label,
-    type: "totp",
-    generateImage: true,
+    type: mfaMethod,
+    generateImage: mfaMethod == "EMAIL" ? false : true,
   };
   POST(setupMFAUrl, token, body).then(async (data) => {
     const responseData = await data.json();
@@ -136,7 +143,14 @@ function setupMFA() {
 }
 
 function confirmMFA() {
-  const label = document.getElementById("mfa-method").value;
+  const client_id = localStorage.getItem("Client-ID");
+  const mfaMethod = localStorage.getItem(client_id + "_mfa_methods");
+
+  const label =
+    mfaMethod == "EMAIL"
+      ? getOTP().EMAIL
+      : document.getElementById("mfa-method").value;
+
   const urlParams = window.location.href;
   const identifier = urlParams.split("mfa/")[1];
   const setupMFAUrl = window.location.origin + "/v1/mfa/confirm";
@@ -144,7 +158,7 @@ function confirmMFA() {
   const body = {
     identifier: identifier,
     label: label,
-    type: "totp",
+    type: mfaMethod,
     otp: enableVerifyBtn(),
   };
   POST(setupMFAUrl, token, body).then(async (data) => {

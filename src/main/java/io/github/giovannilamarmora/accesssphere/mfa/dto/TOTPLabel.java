@@ -20,7 +20,8 @@ public enum TOTPLabel {
   BIT_WARDEN("bitwarden"),
   KEEPASS("keepass"),
   EN_PASS("enpass"),
-  DASH_LANE("dashlane");
+  DASH_LANE("dashlane"),
+  EMAIL("@gmail.com, @icloud.com...");
 
   private final String label;
 

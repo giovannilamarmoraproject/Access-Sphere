@@ -14,6 +14,7 @@ import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.Base64;
 import java.util.List;
 import org.slf4j.Logger;
@@ -31,6 +32,13 @@ public class TotpStrategy implements MFAStrategy {
   @Autowired private UserDataService dataService;
 
   public Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest setupRequest) {
+    if (ObjectToolkit.isNullOrEmpty(setupRequest.label())) {
+      LOG.error(
+          "The MFA label indicates which method is being used and is required, Label is required.");
+      throw new MFAException(
+          ExceptionMap.ERR_MFA_400,
+          "The MFA label indicates which method is being used and is required.");
+    }
     LOG.info(
         "\uD83E\uDD37\u200D♂\uFE0F Generate TOTP MFA for user: {} process started.",
         setupRequest.identifier());
