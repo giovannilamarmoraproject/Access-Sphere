@@ -73,7 +73,7 @@ rest:
   client:
     strapi:
       active: true
-      baseUrl: https://stg.strapi.giovannilamarmora.com
+      baseUrl: https://strapi.giovannilamarmora.com
       bearer: ${STRAPI_AUTH_TOKEN}
       aes-key: ${AES_KEY}
       path:

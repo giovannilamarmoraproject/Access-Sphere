@@ -1,4 +1,4 @@
-name: Deploy-STG
+name: 🚀 Deploy Staging
 
 on:
   push:
@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "☁️ Checkout Repository"
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v7.0.1
 
       - name: Set up JDK and Maven
         id: setup
-        uses: actions/setup-java@v4.6.0
+        uses: actions/setup-java@v6.0.0
         with:
           java-version: '22'
           distribution: 'corretto'
@@ -29,11 +29,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: checkout-and-setup
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up JDK and Maven
         id: setup
-        uses: actions/setup-java@v4.6.0
+        uses: actions/setup-java@v6.0.0
         with:
           java-version: '22'
           distribution: 'corretto'
@@ -56,7 +56,7 @@ jobs:
     needs: install-test-and-build
     steps:
       - name: 🐳 Log in to Docker Hub
-        uses: docker/login-action@v3.3.0
+        uses: docker/login-action@v4
         with:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
@@ -65,14 +65,14 @@ jobs:
     name: 🚀 Build & Push Docker Image
     runs-on: ubuntu-latest
     environment:
-      name: access-sphere-stg
+      name: Develop
     needs: [ install-test-and-build, docker-login ]
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up JDK and Maven
         id: setup
-        uses: actions/setup-java@v4.6.0
+        uses: actions/setup-java@v6.0.0
         with:
           java-version: '22'
           distribution: 'corretto'
@@ -90,11 +90,11 @@ jobs:
 
 
       - name: 🚀 Build & push Docker image
-        uses: mr-smithers-excellent/docker-build-push@v6.4
+        uses: mr-smithers-excellent/docker-build-push@v7.0
         with:
           image: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}
           #tags: latest
-          tags: ${{ env.RELEASE_VERSION }}, latest
+          tags: ${{ env.RELEASE_VERSION }}-dev, develop
           registry: docker.io
           dockerfile: Dockerfile
           username: ${{ env.DOCKER_USERNAME }}

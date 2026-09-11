@@ -1,25 +1,27 @@
-version: '3.7'
+name: access-sphere
+
+version: '3.9'
 services:
   access-sphere:
     container_name: access-sphere-stg
-    image: ${DOCKER_REPOSITORY}:${APP_VERSION}
+    image: ${DOCKER_REPOSITORY:-giovannilamarmora/access-sphere}:${APP_VERSION:-develop}
     hostname: access.sphere.service.stg
     ports:
-      - "8007:8080"
+      - ${PORT:-8007:8080}
     environment:
-      - SPRING_PROFILES_ACTIVE=deploy
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-deploy}
       - DATABASE_JDBC_URL=${DATABASE_JDBC_URL}
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - APP_ENV=${APP_ENV}
-      - LOGGING_LEVEL=${LOGGING_LEVEL}
-      - LOGBACK_FILE=${LOGBACK_FILE}
+      - APP_ENV=${APP_ENV:-Staging}
+      - LOGGING_LEVEL=${LOGGING_LEVEL:-INFO}
+      - LOGBACK_FILE=${LOGBACK_FILE:-classpath:logback-spring.xml}
       - GCLOUD_PROJECT=${GCLOUD_PROJECT}
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - COOKIE_DOMAIN=${COOKIE_DOMAIN}
       - STRAPI_ACTIVE=${STRAPI_ACTIVE}
-      - STRAPI_URL=http://stg.app.strapi.cms:1337
+      - STRAPI_BASE_URL=${STRAPI_BASE_URL:-http://stg.app.strapi.cms:1337}
       - STRAPI_AUTH_TOKEN=${STRAPI_AUTH_TOKEN}
       - TECH_USERNAME=${TECH_USERNAME}
       - TECH_PASSWORD=${TECH_PASSWORD}
