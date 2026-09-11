@@ -97,20 +97,11 @@ jobs:
           echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
           echo "image_name=${IMAGE_NAME_LOWER}" >> $GITHUB_OUTPUT
 
-      #- name: create-json
-      #  uses: jsdaniell/create-json@v1.2.3
-      #  with:
-      #    name: "credentials.json"
-      #    json: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-      #    dir: "src/main/resources/"
-
-
       - name: 🚀 Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v7.0
         with:
           image: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}
-          #tags: latest
-          tags: ${{ env.RELEASE_VERSION }}, latest
+          tags: ${{ steps.meta.outputs.release_version }}, latest
           registry: docker.io
           dockerfile: Dockerfile
           username: ${{ env.DOCKER_USERNAME }}
@@ -148,23 +139,23 @@ jobs:
 
           cat <<EOF > release_notes.md
           # Material Home Assistant ${TAG_NAME}
-
-          Nuova versione di **Material Home Assistant** compilata e distribuita con successo su GitHub Container Registry.
-
-          ### 📦 Dettagli Rilascio
-          - **Versione:** \`${VERSION}\`
+          
+          New version of **Material Home Assistant** successfully built and deployed to Docker Hub.
+          
+          ### 📦 Release Details
+          - **Version:** \`${VERSION}\`
           - **Tag:** \`${TAG_NAME}\`
-          - **Immagine Docker:** \`${IMAGE_NAME}:${VERSION}\`
-
-          ### 🛠️ Modifiche incluse
+          - **Docker Image:** \`${IMAGE_NAME}:${VERSION}\`
+          
+          ### 🛠️ Included Changes
           ${COMMITS}
           EOF
 
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ needs.build-and-push-ghcr.outputs.tag_name }}
-          name: ${{ needs.build-and-push-ghcr.outputs.tag_name }}
+          tag_name: ${{ needs.build-and-push-docker.outputs.tag_name }}
+          name: ${{ needs.build-and-push-docker.outputs.tag_name }}
           body_path: release_notes.md
           draft: false
           prerelease: false
