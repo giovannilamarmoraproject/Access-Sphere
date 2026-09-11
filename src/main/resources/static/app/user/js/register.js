@@ -1,3 +1,5 @@
+let cachedClientsData = [];
+
 function refreshClients() {
   console.log("Refreshing Clients...");
   localStorage.removeItem(config.client_id + "_clients");
@@ -9,15 +11,13 @@ function refreshClients() {
 $(document).ready(function () {
   const textarea = $("#attributes");
 
-  // Auto-espansione e auto-formattazione mentre scrivi
   textarea.on("input", function () {
     try {
-      const parsedJson = JSON.parse(this.value); // Prova a parsare il JSON
-      this.value = JSON.stringify(parsedJson, null, 2); // Riformatta con indentazione
+      const parsedJson = JSON.parse(this.value);
+      this.value = JSON.stringify(parsedJson, null, 2);
       textarea.removeClass("is-invalid");
       $("#validationAttributes").text("");
     } catch (e) {
-      // Ignora l'errore finché il JSON non è valido
       $("#validationAttributes").text(
         currentTranslations.edit_attributes_valid
       );
@@ -25,27 +25,21 @@ $(document).ready(function () {
       $("#register_form_submit").prop("disabled", true);
     }
 
-    // Auto-espansione del campo
     this.style.height = "auto";
     this.style.height = this.scrollHeight + "px";
   });
 
-  // Formatta inizialmente il JSON già presente
-  if (textarea.val().trim() !== "") {
+  if (textarea.val() && textarea.val().trim() !== "") {
     try {
       const parsedJson = JSON.parse(textarea.val());
       textarea.val(JSON.stringify(parsedJson, null, 2));
-    } catch (e) {
-      // Il JSON iniziale potrebbe essere non valido, quindi lo lasciamo così com'è
-    }
+    } catch (e) {}
   }
 });
 
 $(document).ready(function () {
-  // Disabilita il bottone all'inizio
   $("#add_role_btn").prop("disabled", true);
 
-  // Ascolta il cambiamento del select dei ruoli
   $("#role_select").on("change", function () {
     const selectedRole = $(this).val();
     const alreadyAdded =
@@ -53,69 +47,68 @@ $(document).ready(function () {
         return $(this).text() === selectedRole;
       }).length > 0;
 
-    // Abilita il bottone solo se il ruolo è stato selezionato e non è già aggiunto
     $("#add_role_btn").prop("disabled", !selectedRole || alreadyAdded);
   });
 
   refreshAnimation("refresh-icon");
   const clientsJSON = localStorage.getItem(config.client_id + "_clients");
-  let clients;
   if (clientsJSON) {
-    clients = JSON.parse(clientsJSON);
-    displayClientData(clients);
-  } else getClient();
+    try {
+      cachedClientsData = JSON.parse(clientsJSON);
+      displayClientData(cachedClientsData);
+    } catch(e) {
+      getClient();
+    }
+  } else {
+    getClient();
+  }
   refreshAnimation("refresh-icon");
 
   let profileImage;
 
-  document.getElementById("file").addEventListener("change", function (event) {
-    const file = event.target.files[0]; // Ottieni il file selezionato
+  const fileInput = document.getElementById("file");
+  if (fileInput) {
+    fileInput.addEventListener("change", function (event) {
+      const file = event.target.files[0];
 
-    if (file) {
-      // Verifica il tipo di file
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-      if (!allowedTypes.includes(file.type)) {
-        //sweetalert(
-        //  "error",
-        //  "Invalid Image",
-        //  "Invalid file type. Please upload a JPEG, PNG, or WEBP image."
-        //);
-        sweetalert(
-          "error",
-          currentTranslations.register_form_profile_invalid_title,
-          currentTranslations.register_form_profile_invalid_text
-        );
-        event.target.value = ""; // Resetta l'input file
-        return;
+      if (file) {
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+        if (!allowedTypes.includes(file.type)) {
+          sweetalert(
+            "error",
+            currentTranslations.register_form_profile_invalid_title,
+            currentTranslations.register_form_profile_invalid_text
+          );
+          event.target.value = "";
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function () {
+          const base64String = reader.result;
+          const profileImg = document.getElementById("profile");
+          if (profileImg) {
+            profileImg.src = base64String;
+            profileImg.style.display = "block";
+          }
+          profileImage = base64String;
+        };
+        reader.readAsDataURL(file);
       }
-
-      // Converte il file in Base64
-      const reader = new FileReader();
-      reader.onload = function () {
-        const base64String = reader.result; // Il risultato include già il prefisso corretto
-
-        // Mostra l'anteprima dell'immagine
-        const profileImg = document.getElementById("profile");
-        profileImg.src = base64String;
-        profileImg.style.display = "block"; // Rendi visibile l'immagine
-        profileImage = base64String;
-      };
-      reader.readAsDataURL(file);
-    }
-  });
+    });
+  }
 
   $(".form").on("submit", function (event) {
-    event.preventDefault(); // Evita il ricaricamento della pagina
-    // Recupero i valori dai campi del modulo
-    const roles = JSON.parse(localStorage.getItem("selected_roles") || []);
+    event.preventDefault();
+    const roles = JSON.parse(localStorage.getItem("selected_roles") || "[]");
     const profilePhoto =
       profileImage || "https://bootdey.com/img/Content/avatar/avatar7.png";
-    const attributes = $("#attributes").val().trim() || null;
+    const attributes = $("#attributes").val() ? $("#attributes").val().trim() : null;
     const prefix = $("#phone_prefix").val();
-    const phone = $("#phone").val().trim();
+    const phone = $("#phone").val() ? $("#phone").val().trim() : "";
     let phoneNumber;
     if (phone && prefix)
-      phoneNumber = $("#phone_prefix").val() + " " + $("#phone").val().trim();
+      phoneNumber = prefix + " " + phone;
 
     let userData = {
       firstName: $("#name").val().trim(),
@@ -132,19 +125,31 @@ $(document).ready(function () {
       occupation: $("#occupation").val().trim(),
       education: $("#education").val().trim(),
       attributes: attributes ? JSON.parse(attributes) : null,
-      clientId: $("#client_id_select").val(), // ID Cliente
-      //roles: [$("#role_select").val()], // Ruoli
-      roles: roles, // Ruoli
+      clientId: $("#client_id_select").val(),
+      roles: roles,
       profile: profilePhoto,
     };
-    registerUser(userData, clients);
+    registerUser(userData, cachedClientsData);
   });
 });
 
 function registerUser(userForm, clients) {
-  const userClient = clients.find(
+  let userClient = (clients || []).find(
     (client) => client.clientId == userForm.clientId
   );
+
+  if (!userClient) {
+    const stored = localStorage.getItem(config.client_id + "_clients");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      userClient = parsed.find(c => c.clientId == userForm.clientId);
+    }
+  }
+
+  if (!userClient) {
+    return sweetalert("error", "Errore Client", "Seleziona un Client ID valido per proseguire.");
+  }
+
   const registrationUrl =
     config.register_user_url +
     "?client_id=" +
@@ -180,11 +185,14 @@ function registerUser(userForm, clients) {
       fetchHeader(data.headers);
       localStorage.removeItem(config.client_id + "_usersData");
       localStorage.removeItem("selected_roles");
-      return sweetalert(
+      sweetalert(
         "success",
         currentTranslations.register_form_confirm,
         responseData.message
       );
+      setTimeout(() => {
+        window.location.href = "/app/users";
+      }, 1500);
     }
   });
 }
@@ -200,11 +208,12 @@ function getClient() {
       return sweetalert("error", error.title, error.message);
     } else {
       fetchHeader(data.headers);
+      cachedClientsData = responseData.data || [];
       localStorage.setItem(
         config.client_id + "_clients",
-        JSON.stringify(responseData.data)
+        JSON.stringify(cachedClientsData)
       );
-      displayClientData(responseData.data);
+      displayClientData(cachedClientsData);
     }
   });
 }
@@ -214,17 +223,17 @@ function displayClientData(clients) {
   clientSelect.empty();
   clientSelect.append(
     '<option id="register_form_client_choose" selected disabled value="">' +
-      currentTranslations.register_form_client_choose +
+      (currentTranslations.register_form_client_choose || "Scegli un Client...") +
       "</option>"
   );
 
-  clients.forEach((client) => {
+  (clients || []).forEach((client) => {
     const option = $("<option>").val(client.clientId).text(client.clientId);
     clientSelect.append(option);
   });
 
   function populateRoles(clientId) {
-    const selectedClient = clients.find(
+    const selectedClient = (clients || []).find(
       (client) => client.clientId === clientId
     );
 
@@ -233,7 +242,7 @@ function displayClientData(clients) {
       roleSelect.empty();
       roleSelect.append(
         '<option id="register_form_roles_choose" selected disabled value="">' +
-          currentTranslations.register_form_roles_choose +
+          (currentTranslations.register_form_roles_choose || "Scegli un Ruolo...") +
           "</option>"
       );
 
@@ -247,7 +256,7 @@ function displayClientData(clients) {
     }
   }
 
-  $("#client_id_select").on("change", function () {
+  $("#client_id_select").off("change").on("change", function () {
     const selectedClientId = $(this).val();
     if (selectedClientId) {
       populateRoles(selectedClientId);
@@ -261,78 +270,38 @@ function displayClientData(clients) {
 }
 
 function addRole() {
-  $("#role_select").on("change", function () {
-    const selectedRole = $(this).val();
-    const alreadyAdded =
-      $(".role-card span").filter(function () {
-        return $(this).text() === selectedRole;
-      }).length > 0;
-
-    $("#add_role_btn").prop("disabled", !selectedRole || alreadyAdded);
-  });
-
   const selectedRole = $("#role_select").val();
   if (!selectedRole) return;
 
-  const alreadyAdded =
-    $(".role-card span").filter(function () {
-      return $(this).text() === selectedRole;
-    }).length > 0;
-
-  if (alreadyAdded) {
-    $("#add_role_btn").prop("disabled", true);
-    return;
+  const roles = JSON.parse(localStorage.getItem("selected_roles") || "[]");
+  if (!roles.includes(selectedRole)) {
+    roles.push(selectedRole);
+    localStorage.setItem("selected_roles", JSON.stringify(roles));
+    renderRolesList(roles);
   }
-
-  const roleContainer = $("#role_container");
-  const roleCard = $(`
-      <div class="card m-1 col role-card">
-        <div class="card-body">
-          <span><code style="color: inherit">${selectedRole}</code></span>
-          <i class="fa-duotone fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
-        </div>
-      </div>
-    `);
-
-  roleCard.find(".remove-role").on("click", function () {
-    roleCard.remove();
-    updateStoredRoles();
-    if ($(".role-card").length === 0) {
-      $("#client_id_select").prop("disabled", false);
-    }
-    $("#role_select option[value='" + selectedRole + "']").prop(
-      "disabled",
-      false
-    );
-    $("#add_role_btn").prop("disabled", false);
-  });
-
-  roleContainer.append(roleCard);
-  updateStoredRoles();
-  $("#client_id_select").prop("disabled", true);
-  $("#role_select option[value='" + selectedRole + "']").prop("disabled", true);
   $("#add_role_btn").prop("disabled", true);
+  $("#role_select").val("");
 }
 
-function updateStoredRoles() {
-  const roles = $(".role-card span")
-    .map(function () {
-      return $(this).text();
-    })
-    .get();
+function removeRole(roleToRemove) {
+  let roles = JSON.parse(localStorage.getItem("selected_roles") || "[]");
+  roles = roles.filter(r => r !== roleToRemove);
   localStorage.setItem("selected_roles", JSON.stringify(roles));
+  renderRolesList(roles);
 }
 
-function addImageUrl() {
-  return inputSweetAlert(
-    currentTranslations.register_form_profile_image_upload,
-    currentTranslations.inputGroupFileAddon04
-  ).then((result) => {
-    if (result.isConfirmed) {
-      profileImage = result.value;
-      const profileImg = document.getElementById("profile");
-      profileImg.src = profileImage;
-      profileImg.style.display = "block"; // Rendi visibile l'immagine
-    }
+function renderRolesList(roles) {
+  const container = $("#roles_list_container");
+  if (!container.length) return;
+  container.empty();
+  roles.forEach(role => {
+    container.append(`
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">
+        ${role}
+        <button type="button" onclick="removeRole('${role}')" class="text-gray-400 hover:text-red-400 ml-1 cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </span>
+    `);
   });
 }

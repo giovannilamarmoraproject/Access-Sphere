@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Sphere - Dettagli Client OAuth2</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
+  <script src="/app/shared/sweetalert.js"></script>
+
+  <script src="/app/shared/config.js"></script>
+  <script src="/app/shared/utils.js"></script>
+  <script src="/app/shared/api/authorize.js"></script>
+  <script src="/app/shared/api/logout.js"></script>
+  <script src="/app/i18n/translations.js"></script>
+  <script src="/app/shared/api/rest.js"></script>
+
+  <link rel="stylesheet" href="/css/m3-dashboard.css?v=1.6.8" />
+</head>
+<body>
+
+  <header class="glass-header">
+    <div class="header-container">
+      <div class="flex items-center gap-6">
+        <a href="/" class="flex items-center gap-3 text-decoration-none group">
+          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
+          <div class="flex flex-col">
+            <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              Access Sphere
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
+            </span>
+            <span class="text-[11px] text-gray-400 font-medium">Dettagli Configurazione Client</span>
+          </div>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+          <a href="/app/users" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-users"></i> Utenti
+          </a>
+          <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
+            <i class="fa-solid fa-key"></i> Client OAuth2
+          </a>
+          <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-book"></i> API Docs
+          </a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </a>
+        <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
+          <i class="fa-solid fa-circle-info text-sm"></i>
+        </button>
+        <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-wide-container">
+    <div id="client-detail-container" class="w-full">
+      <div class="m3-card p-12 text-center text-purple-300 flex flex-col items-center justify-center">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+        <p class="text-sm">Caricamento scheda client in corso...</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function formatRedirectUris(val) {
+      if (!val) return "";
+      if (typeof val === "string") {
+        if (val.startsWith("{") || val.startsWith("[")) {
+          try {
+            return formatRedirectUris(JSON.parse(val));
+          } catch(e) {
+            return val;
+          }
+        }
+        return val;
+      }
+      if (typeof val === "object") {
+        if (Array.isArray(val)) {
+          return val.map(item => typeof item === "object" ? (item.uri || item.url || JSON.stringify(item)) : item).join(" ");
+        }
+        const vals = Object.values(val).filter(Boolean);
+        return vals.join(" ");
+      }
+      return String(val);
+    }
+
+    function formatScopes(scopes) {
+      if (!scopes) return "";
+      if (Array.isArray(scopes)) return scopes.join(", ");
+      if (typeof scopes === "object") return Object.values(scopes).join(", ");
+      return String(scopes);
+    }
+
+    function formatWebhooks(webhooks) {
+      if (!webhooks) return "";
+      if (Array.isArray(webhooks)) {
+        return webhooks.map(w => typeof w === "object" ? (w.url || w.endpoint || JSON.stringify(w)) : w).join(", ");
+      }
+      if (typeof webhooks === "object") return JSON.stringify(webhooks);
+      return String(webhooks);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadClientDetails();
+    });
+
+    function loadClientDetails() {
+      const path = window.location.href;
+      let clientId = null;
+      if (path.includes("details/")) {
+        clientId = decodeURIComponent(path.split("details/")[1].split("/")[0].split("?")[0].split("#")[0]);
+      } else {
+        clientId = new URLSearchParams(window.location.search).get("clientId") || new URLSearchParams(window.location.search).get("id");
+      }
+
+      if (!clientId) {
+        document.getElementById("client-detail-container").innerHTML = '<div class="m3-card p-8 text-center text-red-300">Client ID non specificato.</div>';
+        return;
+      }
+
+      const token = getCookieOrStorage(config.access_token);
+      const url = window.location.origin + "/v1/clients";
+
+      fetch(url, {
+        headers: { "Authorization": "Bearer " + token }
+      })
+      .then(async (res) => {
+        const data = await res.json();
+        const clients = data.data || [];
+        const client = clients.find(c => c.clientId === clientId);
+        if (client) {
+          renderClientDetail(client);
+        } else {
+          document.getElementById("client-detail-container").innerHTML = `<div class="m3-card p-8 text-center text-red-300">Nessun client trovato con ID: ${clientId}</div>`;
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        document.getElementById("client-detail-container").innerHTML = '<div class="m3-card p-8 text-center text-red-300">Errore di caricamento client.</div>';
+      });
+    }
+
+    function renderClientDetail(c) {
+      const container = document.getElementById("client-detail-container");
+      const mfaBadge = c.mfaEnabled 
+        ? '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">MFA ATTIVA</span>' 
+        : '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-400 border border-gray-500/30">DISATTIVATA</span>';
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+          
+          <!-- Colonna Sinistra -->
+          <div class="m3-card p-8 flex flex-col items-center text-center h-fit">
+            <div class="w-24 h-24 rounded-3xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-4xl mb-6 shadow-xl">
+              <i class="fa-solid fa-cube"></i>
+            </div>
+
+            <h3 class="text-2xl font-bold text-white mb-1 font-mono">${c.clientId || "N/D"}</h3>
+            <p class="text-gray-400 text-xs font-mono mb-4">External ID: ${c.externalClientId || "Nessuno"}</p>
+            <div class="mb-6">${mfaBadge}</div>
+
+            <!-- Client Secret Card -->
+            <div class="w-full bg-purple-500/10 p-4 text-left text-xs text-gray-300 space-y-2 mb-6" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">
+              <span class="text-gray-400 uppercase font-semibold text-[11px] block">Client Secret</span>
+              <div class="flex items-center gap-2">
+                <input type="password" id="secret-field" readonly value="${c.clientSecret || ""}" class="form-control font-mono text-xs flex-1" style="background: rgba(14, 11, 20, 0.85); border: 1px solid rgba(208, 188, 255, 0.2); color: #fff; border-radius: 9999px; padding: 10px 18px;" />
+                <button type="button" class="flex-shrink-0" onclick="toggleSecret()" title="Mostra / Nascondi" style="width: 38px; height: 38px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                  <i id="secret-eye" class="fa-solid fa-eye text-xs"></i>
+                </button>
+                <button type="button" class="flex-shrink-0" onclick="copySecret()" title="Copia" style="width: 38px; height: 38px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                  <i class="fa-solid fa-copy text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Azioni Rapide M3 Harmonized Pills -->
+            <div class="space-y-3 w-full">
+              <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-btn-primary w-full justify-center text-xs font-bold shadow-lg hover:shadow-purple-500/25 transition-all text-decoration-none flex items-center gap-2" style="border-radius: 9999px !important; color: #FFFFFF !important; padding: 12px 20px;">
+                <i class="fa-solid fa-pen-to-square mr-1.5"></i>
+                <span style="color: #FFFFFF !important;">Modifica Client</span>
+              </a>
+              <button onclick="deleteClientAction('${c.clientId}')" class="w-full text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 shadow-sm transition-all" style="border-radius: 9999px !important; color: #FFFFFF !important; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); padding: 12px 20px;">
+                <i class="fa-solid fa-trash text-xs" style="color: #F87171;"></i>
+                <span style="color: #FFFFFF !important;">Elimina Client</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Colonna Destra: Parametri di Rete & Token -->
+          <div class="lg:col-span-2 space-y-8">
+            
+            <div class="m3-card p-8">
+              <h4 class="text-xl font-bold text-white mb-6 flex items-center gap-2.5 pb-4 border-b border-purple-500/15">
+                <i class="fa-solid fa-sliders text-purple-400"></i> Parametri di Configurazione OAuth2
+              </h4>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <span class="text-xs text-gray-400 uppercase font-semibold">Access Type</span>
+                  <div class="text-white font-medium text-base mt-1">${c.accessType || "ONLINE"}</div>
+                </div>
+                <div>
+                  <span class="text-xs text-gray-400 uppercase font-semibold">Token Type</span>
+                  <div class="text-white font-medium text-base mt-1">${c.tokenType || "JWT"}</div>
+                </div>
+                <div>
+                  <span class="text-xs text-gray-400 uppercase font-semibold">Auth Type</span>
+                  <div class="text-white font-medium text-base mt-1">${c.authType || "BEARER"}</div>
+                </div>
+                <div>
+                  <span class="text-xs text-gray-400 uppercase font-semibold">Scadenza Token</span>
+                  <div class="text-white font-medium text-base mt-1">${c.jwtExpiration || 3600} secondi</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="m3-card p-8">
+              <h4 class="text-xl font-bold text-white mb-6 flex items-center gap-2.5 pb-4 border-b border-purple-500/15">
+                <i class="fa-solid fa-network-wired text-purple-400"></i> Endpoint & Scopes
+              </h4>
+
+              <div class="space-y-4 text-xs">
+                <div>
+                  <span class="text-xs uppercase font-semibold block mb-1" style="color: #C4B5FD;">Redirect URIs</span>
+                  <div class="font-mono text-purple-200 p-3 break-all" style="background: rgba(14, 11, 20, 0.6); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 14px;">${formatRedirectUris(c.redirect_uri) || "Nessuna URI configurata"}</div>
+                </div>
+
+                <div>
+                  <span class="text-xs uppercase font-semibold block mb-1" style="color: #C4B5FD;">Scopes Autorizzati</span>
+                  <div class="font-mono text-purple-300 p-3" style="background: rgba(14, 11, 20, 0.6); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 14px;">${formatScopes(c.scopes) || "openid, profile, email"}</div>
+                </div>
+
+                <div>
+                  <span class="text-xs uppercase font-semibold block mb-1" style="color: #C4B5FD;">Webhooks</span>
+                  <div class="font-mono text-gray-300 p-3 break-all" style="background: rgba(14, 11, 20, 0.6); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 14px;">${formatWebhooks(c.webhooks) || "Nessun webhook registrato"}</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      `;
+    }
+
+    function toggleSecret() {
+      const input = document.getElementById("secret-field");
+      const eye = document.getElementById("secret-eye");
+      if (input.type === "password") {
+        input.type = "text";
+        eye.classList.remove("fa-eye");
+        eye.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        eye.classList.remove("fa-eye-slash");
+        eye.classList.add("fa-eye");
+      }
+    }
+
+    function copySecret() {
+      const input = document.getElementById("secret-field");
+      navigator.clipboard.writeText(input.value).then(() => {
+        sweetalert("info", "Copiato!", "Client Secret copiato negli appunti.");
+      });
+    }
+
+    function deleteClientAction(clientId) {
+      Swal.fire({
+        title: "Sei sicuro?",
+        text: `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Sì, elimina!",
+        cancelButtonText: "Annulla"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const token = getCookieOrStorage(config.access_token);
+          const url = window.location.origin + `/v1/client/${encodeURIComponent(clientId)}`;
+
+          fetch(url, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+          }).then(async (res) => {
+            if (res.ok) {
+              sweetalert("success", "Eliminato", `Il client ${clientId} è stato rimosso.`);
+              setTimeout(() => {
+                window.location.href = "/app/clients";
+              }, 1500);
+            } else {
+              sweetalert("error", "Errore", "Impossibile eliminare il client.");
+            }
+          });
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

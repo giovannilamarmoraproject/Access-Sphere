@@ -1,3 +1,17 @@
+function safeDisableLoader() {
+  if (typeof disableLoader === "function") {
+    try {
+      const res = disableLoader();
+      if (res && typeof res.then === "function") {
+        return res;
+      }
+    } catch (e) {
+      console.warn("Loader disable error:", e);
+    }
+  }
+  return Promise.resolve();
+}
+
 function sweetalert(icon, title, message, html = false) {
   const customClassSwal = Swal.mixin({
     customClass: {
@@ -9,7 +23,7 @@ function sweetalert(icon, title, message, html = false) {
   });
 
   if (html) {
-    return disableLoader().then(() => {
+    return safeDisableLoader().then(() => {
       return customClassSwal.fire({
         icon: icon,
         title: title,
@@ -22,7 +36,7 @@ function sweetalert(icon, title, message, html = false) {
     });
   }
 
-  return disableLoader().then(() => {
+  return safeDisableLoader().then(() => {
     return customClassSwal.fire({
       icon: icon,
       title: title,
@@ -45,7 +59,7 @@ function sweetalertConfirm(icon, title, message, btnConfirm, btnDeny) {
     buttonsStyling: true,
   });
 
-  return disableLoader().then(() => {
+  return safeDisableLoader().then(() => {
     return customClassSwal.fire({
       icon: icon,
       title: title,
@@ -70,7 +84,7 @@ function inputSweetAlert(title, confirm) {
     buttonsStyling: true,
   });
 
-  return disableLoader().then(() => {
+  return safeDisableLoader().then(() => {
     return customClassSwal.fire({
       title: title,
       input: "text",

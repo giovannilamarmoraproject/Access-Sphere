@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap");
 
 .hidden-desktop {
   visibility: hidden;
@@ -24,8 +24,8 @@
 }
 
 .light {
-  --mainColor: #64bcf4;
-  --hoverColor: #5bacdf;
+  --mainColor: #6750a4;
+  --hoverColor: #553e8d;
   --backgroundColor: #f1f8fc;
   --darkOne: #312f3a;
   --darkTwo: #45424b;
@@ -34,8 +34,8 @@
 }
 
 .dark {
-  --mainColor: #64bcf4;
-  --hoverColor: #5bacdf;
+  --mainColor: #6750a4;
+  --hoverColor: #553e8d;
   --backgroundColor: #192e3a;
   --darkOne: #f3f3f3;
   --darkTwo: #fff;
@@ -52,7 +52,7 @@
 }
 
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: "Google Sans Flex", sans-serif;
 }
 
 .stop-scrolling {

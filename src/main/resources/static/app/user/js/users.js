@@ -1,202 +1,143 @@
 function refreshUsers() {
   console.log("Refreshing Users...");
   localStorage.removeItem(config.client_id + "_usersData");
-  refreshAnimation("refresh-icon");
-  getUsers();
-  refreshAnimation("refresh-icon");
+  const icon = document.getElementById("refresh-icon");
+  if (icon) icon.classList.add("fa-spin");
+  getUsers().finally(() => {
+    if (icon) setTimeout(() => icon.classList.remove("fa-spin"), 500);
+  });
 }
 
 function getUsers() {
   const url = config.users_url;
   const token = getCookieOrStorage(config.access_token);
 
-  GET(url, token).then(async (data) => {
+  if (!token) {
+    console.warn("getUsers: Nessun token disponibile.");
+    if (typeof disableLoader === "function") disableLoader();
+    return Promise.resolve();
+  }
+
+  return GET(url, token).then(async (data) => {
     const responseData = await data.json();
     if (responseData.error != null) {
-      const error = getErrorCode(responseData.error);
-      return sweetalert("error", error.title, error.message);
+      console.warn("getUsers error response:", responseData.error);
+      // Se abbiamo già dati in tabella/cache, non mostrare alert bloccante
+      const cached = localStorage.getItem(config.client_id + "_usersData");
+      if (!cached) {
+        const error = getErrorCode(responseData.error);
+        sweetalert("error", error.title, error.message);
+      }
     } else {
       fetchHeader(data.headers);
-      // ✅ Salva i dati in localStorage come stringa JSON
       localStorage.setItem(
         config.client_id + "_usersData",
         JSON.stringify(responseData.data)
       );
       displayUsersTable(responseData.data);
+      updateUserKpis(responseData.data);
     }
+  }).catch((err) => {
+    console.error("Fetch users network error:", err);
+  }).finally(() => {
+    if (typeof disableLoader === "function") disableLoader();
   });
+}
+
+function updateUserKpis(users) {
+  if (!Array.isArray(users)) return;
+  const total = users.length;
+  const active = users.filter(u => !u.blocked).length;
+  const blocked = users.filter(u => !!u.blocked).length;
+
+  const totalEl = document.getElementById("stat-total-users");
+  const activeEl = document.getElementById("stat-active-users");
+  const blockedEl = document.getElementById("stat-blocked-users");
+
+  if (totalEl) totalEl.innerText = total;
+  if (activeEl) activeEl.innerText = active;
+  if (blockedEl) blockedEl.innerText = blocked;
 }
 
 function displayUsersTable(users) {
-  console.log("Displaying Users...");
-  var datatable = $("#users-table").DataTable();
+  if (!Array.isArray(users)) return;
+  console.log("Displaying Users table with " + users.length + " entries");
 
-  // Distruggi la DataTable esistente
-  datatable.destroy();
+  if ($.fn.DataTable.isDataTable('#users-table')) {
+    $('#users-table').DataTable().destroy();
+  }
 
   const table = document.getElementById("users-data");
-  table.innerHTML = ""; // Pulisce eventuali dati precedenti
+  if (!table) return;
+  table.innerHTML = "";
 
   users.forEach((user) => {
-    table.innerHTML += `<tr style="height: 50px; vertical-align: middle">
-                            <td class="text-center">
-                            <a href="/app/users/details/${user.identifier}">
-                              <img
-                                src="${getOrDefault(
-                                  user.profilePhoto,
-                                  "https://bootdey.com/img/Content/avatar/avatar7.png"
-                                )}"
-                                alt="Admin"
-                                class="rounded-circle"
-                                width="50"
-                                style="width: 50px; height: 50px; object-fit: cover;"
-                              /></a>
-                            </td>
-                            <td class="hidden-mobile"><a style="color: inherit;" href="/app/users/details/${
-                              user.identifier
-                            }">${user.name}</a></td>
-                            <td class="hidden-mobile"><a style="color: inherit;" href="/app/users/details/${
-                              user.identifier
-                            }">${user.surname}</a></td>
-                            <td><a style="color: inherit;" href="/app/users/details/${
-                              user.identifier
-                            }">${user.username}</a></td>
-                            <td class="hidden-mobile"><a style="color: inherit;" href="/app/users/details/${
-                              user.identifier
-                            }">${user.email}</a></td>
-                            <td>${
-                              user.blocked
-                                ? "<span class='badge text-bg-danger status_blocked'>BLOCKED</span>"
-                                : "<span class='badge text-bg-success status_active'>ACTIVE</span>"
-                            }</td>
-                            <td class="text-center hidden-mobile" style="min-width: 110px;">
-                              <a hidden class="m-1" href="/app/users/details/${
-                                user.identifier
-                              }"><i class="fa-solid fa-eye zoom_simple"></i></a>
-                              <a class="m-1" href="/app/users/edit/${
-                                user.identifier
-                              }"><i class="fa-solid fa-user-pen zoom_simple"></i></a>
-                              <a class="m-1" href="/app/users/roles/${
-                                user.identifier
-                              }"><i class="fa-solid fa-shield-keyhole zoom_simple"></i></a>
-                              <a class="m-1 clickable" onclick="deleteUser('${
-                                user.identifier
-                              }','${
-      user.username
-    }')"><i class="fa-solid fa-trash-xmark zoom_simple"></i></a>
-                            </td>
-                          </tr>`;
-  });
-  var datatable = $("#users-table").DataTable();
+    const photo = getOrDefault(user.profilePhoto, "https://bootdey.com/img/Content/avatar/avatar7.png");
+    const statusBadge = user.blocked
+      ? "<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30'>BLOCKED</span>"
+      : "<span class='px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'>ACTIVE</span>";
 
-  // Distruggi la DataTable esistente
-  datatable.destroy();
-  // Inizializza la tabella DataTable dopo aver inserito il codice HTML
-  $("#users-table").DataTable({
-    pageLength: 15, // Numero di righe di default
+    const tr = document.createElement("tr");
+    tr.style.height = "56px";
+    tr.style.verticalAlign = "middle";
+    tr.className = "cursor-pointer hover:bg-purple-500/10 transition-colors";
+    tr.onclick = (e) => {
+      if (e.target.closest("button") || e.target.closest("a")) return;
+      window.location.href = `/app/users/details/${encodeURIComponent(user.identifier)}`;
+    };
+
+    tr.innerHTML = `
+      <td class="text-center">
+        <a href="/app/users/details/${encodeURIComponent(user.identifier)}">
+          <img src="${photo}" alt="${user.username}" class="rounded-full mx-auto object-cover border border-purple-500/30" style="width: 42px; height: 42px;" />
+        </a>
+      </td>
+      <td class="hidden-mobile"><a class="text-white font-medium hover:underline" href="/app/users/details/${encodeURIComponent(user.identifier)}">${user.name || ""}</a></td>
+      <td class="hidden-mobile"><a class="text-white font-medium hover:underline" href="/app/users/details/${encodeURIComponent(user.identifier)}">${user.surname || ""}</a></td>
+      <td><a class="text-purple-300 font-mono font-medium hover:underline" href="/app/users/details/${encodeURIComponent(user.identifier)}">@${user.username || ""}</a></td>
+      <td class="hidden-mobile text-gray-300">${user.email || ""}</td>
+      <td>${statusBadge}</td>
+      <td class="text-center" style="min-width: 130px;">
+        <a class="m3-action-btn m3-action-edit" title="Modifica Utente" href="/app/users/edit/${encodeURIComponent(user.identifier)}">
+          <i class="fa-solid fa-user-pen text-xs"></i>
+        </a>
+        <a class="m3-action-btn m3-action-role" title="Gestisci Ruoli" href="/app/users/roles/${encodeURIComponent(user.identifier)}">
+          <i class="fa-solid fa-shield-halved text-xs"></i>
+        </a>
+        <button class="m3-action-btn m3-action-delete" title="Elimina Utente" onclick="event.stopPropagation(); deleteUser('${user.identifier}','${user.username}')">
+          <i class="fa-solid fa-trash text-xs"></i>
+        </button>
+      </td>
+    `;
+    table.appendChild(tr);
+  });
+
+  const userDt = $('#users-table').DataTable({
+    pageLength: 10,
     responsive: true,
-    lengthMenu: [10, 15, 25, 50, 100], // Opzioni della select
-    //columnDefs: [{ className: "dt-center", targets: "_all" }],
-    //dom: '<"top"lfB>rt<"bottom"ip>', // Separazione logica degli elementi
-    //layout: {
-    //  bottom: {
-    //    buttons: ["csv", "excel", "pdf"],
-    //    //buttons: ["csv", "excel", "pdf", "print"],
-    //  },
-    //},
-    order: [], // Non specifica nessun ordinamento iniziale
-    paging: true,
-    searching: true,
-    ordering: true,
-    info: true,
+    language: {
+      search: "Cerca utente:",
+      lengthMenu: "Mostra _MENU_ utenti",
+      info: "Visualizzati _START_ a _END_ di _TOTAL_ utenti",
+      paginate: {
+        first: "Primo",
+        last: "Ultimo",
+        next: "Succ.",
+        previous: "Prec."
+      }
+    }
   });
-  setDatatablesStyle("users-table");
-}
 
-function setDatatablesStyle(tableId) {
-  // Seleziona l'input di ricerca
-  const searchInput = document.querySelector('.dt-search input[type="search"]');
-
-  if (searchInput) {
-    searchInput.style.borderRadius = "12px";
-    searchInput.style.padding = "8px 12px";
-    searchInput.style.marginLeft = "10px";
-    searchInput.style.fontSize = "14px";
-    searchInput.style.width = "300px";
-  }
-
-  // Seleziona la select per il numero di righe da visualizzare
-  //const lengthSelect = document.querySelector(`.dt-input[id="dt-length-0"]`);
-  // Seleziona l'elemento .dt-input che contiene "dt-length" nell'ID
-  const lengthSelect = document.querySelector('.dt-input[id*="dt-length"]');
-
-  if (lengthSelect) {
-    lengthSelect.style.borderRadius = "12px";
-    lengthSelect.style.padding = "3px 8px";
-    lengthSelect.style.fontSize = "14px";
-    lengthSelect.style.marginRight = "10px";
-  }
-
-  // Funzione per applicare lo stile alla numerazione delle pagine
-  const applyPaginationStyles = () => {
-    const paginationButtons = document.querySelectorAll(".dt-paging-button");
-
-    if (paginationButtons)
-      paginationButtons.forEach((button) => {
-        button.style.borderRadius = "12px";
-        button.style.padding = "8px 12px";
-        button.style.fontSize = "14px";
-      });
-  };
-  const applyExportButtonsStyles = () => {
-    const exportButtons = document.querySelectorAll(".dt-buttons button");
-
-    if (exportButtons)
-      // Applica la classe Neverland a ciascun bottone
-      exportButtons.forEach((button) => {
-        button.style.borderRadius = "12px";
-        button.style.width = "100px";
-        button.style.marginBottom = "10px";
-        button.classList.add("btn"); // Aggiunge la classe 'btn-primary btn-block btn-lg'
-        button.classList.add("btn-primary"); // Aggiunge la classe 'btn-primary btn-block btn-lg'
-        //button.classList.add('btn-block'); // Aggiunge la classe 'btn-primary btn-block btn-lg'
-      });
-  };
-
-  // Applica gli stili alla paginazione subito dopo il caricamento della pagina
-  applyExportButtonsStyles();
-  applyPaginationStyles();
-
-  const observePaginationChanges = () => {
-    const paginationContainer = document.querySelector(".dt-paging");
-    if (!paginationContainer) return;
-
-    const observer = new MutationObserver(() => {
-      applyPaginationStyles();
-    });
-
-    observer.observe(paginationContainer, { childList: true, subtree: true });
-  };
-
-  // Avvia il MutationObserver dopo l'inizializzazione della tabella
-  observePaginationChanges();
-
-  // Se usi DataTables, ascolta l'evento 'draw' per applicare gli stili quando la tabella viene ridisegnata (ad esempio, dopo un cambio pagina)
-  if (typeof $ !== "undefined" && $.fn.dataTable) {
-    $(`#${tableId}`).on("draw.dt", () => {
-      applyExportButtonsStyles();
-      applyPaginationStyles();
+  function stylePaginationButtons() {
+    $('.dt-paging-button').each(function() {
+      this.style.setProperty('color', '#FFFFFF', 'important');
+      this.style.setProperty('-webkit-text-fill-color', '#FFFFFF', 'important');
+      this.style.setProperty('opacity', '1', 'important');
     });
   }
-}
 
-$(document).ready(function () {
-  refreshAnimation("refresh-icon");
-  const usersJSON = localStorage.getItem(config.client_id + "_usersData");
-  if (usersJSON) {
-    const users = JSON.parse(usersJSON);
-    displayUsersTable(users);
-  } else getUsers();
-  refreshAnimation("refresh-icon");
-  disableLoader();
-});
+  userDt.on('draw', stylePaginationButtons);
+  stylePaginationButtons();
+
+  updateUserKpis(users);
+}

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Sphere - Registra Nuovo Client OAuth2</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
+  <script src="/app/shared/sweetalert.js"></script>
+
+  <script src="/app/shared/config.js"></script>
+  <script src="/app/shared/utils.js"></script>
+  <script src="/app/shared/api/authorize.js"></script>
+  <script src="/app/shared/api/logout.js"></script>
+  <script src="/app/i18n/translations.js"></script>
+  <script src="/app/shared/api/rest.js"></script>
+
+  <link rel="stylesheet" href="/css/m3-dashboard.css" />
+</head>
+<body>
+
+  <header class="glass-header">
+    <div class="header-container">
+      <div class="flex items-center gap-6">
+        <a href="/" class="flex items-center gap-3 text-decoration-none group">
+          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
+          <div class="flex flex-col">
+            <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              Access Sphere
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
+            </span>
+            <span class="form-helper text-purple-300 text-xs font-medium">Registra Nuovo Client OAuth 2.0</span>
+          </div>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+          <a href="/app/users" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-users"></i> Utenti
+          </a>
+          <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
+            <i class="fa-solid fa-key"></i> Client OAuth2
+          </a>
+          <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-book"></i> API Docs
+          </a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </a>
+        <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
+          <i class="fa-solid fa-circle-info text-sm"></i>
+        </button>
+        <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-wide-container">
+    <div class="m3-card p-8 sm:p-12">
+      
+      <div class="flex items-center justify-between pb-6 mb-8 border-b border-purple-500/15">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+            <i class="fa-solid fa-key text-purple-400"></i> Registra Nuovo Client OAuth2
+          </h2>
+          <p class="form-helper text-purple-300 text-xs mt-1">
+            Configura le credenziali di accesso, endpoint di redirect, tipi di token e requisiti di sicurezza per una nuova applicazione.
+          </p>
+        </div>
+        <a href="/app/clients" class="text-xs font-semibold text-purple-300 hover:underline text-decoration-none">
+          Annulla e Torna Indietro
+        </a>
+      </div>
+
+      <form id="createClientForm" onsubmit="event.preventDefault(); submitCreateClient();" class="row g-4">
+        
+        <div class="col-md-6">
+          <label class="form-label text-xs font-semibold text-gray-300">Client ID *</label>
+          <input type="text" id="clientId" class="form-control font-mono" placeholder="es. MY-FRONTEND-APP" required />
+          <span class="form-helper text-purple-300 text-xs mt-1 block">Identificativo univoco dell'applicazione nel sistema.</span>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label text-xs font-semibold text-gray-300">Client Secret</label>
+          <div class="flex gap-2">
+            <input type="text" id="clientSecret" class="form-control font-mono" placeholder="Lascia vuoto per generarlo automaticamente" />
+            <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateSecret()" title="Genera Secret Sicuro">
+              <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+            </button>
+          </div>
+          <span class="form-helper text-purple-300 text-xs mt-1 block">Chiave segreta per autenticazione client confidenziale.</span>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label text-xs font-semibold text-gray-300">Access Type</label>
+          <select id="accessType" class="form-select">
+            <option value="ONLINE" selected>ONLINE (Sessione attiva)</option>
+            <option value="OFFLINE">OFFLINE (Supporto Refresh Token)</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label text-xs font-semibold text-gray-300">Token Type</label>
+          <select id="tokenType" class="form-select">
+            <option value="JWT" selected>JWT (Standard Bearer)</option>
+            <option value="JWE">JWE (Crittografato JWE)</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label text-xs font-semibold text-gray-300">Auth Type</label>
+          <select id="authType" class="form-select">
+            <option value="BEARER" selected>BEARER</option>
+            <option value="BASIC">BASIC</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label text-xs font-semibold text-gray-300">Scadenza Token (secondi)</label>
+          <input type="number" id="jwtExpiration" class="form-control font-mono" value="3600" />
+        </div>
+
+        <div class="col-md-8">
+          <label class="form-label text-xs font-semibold text-gray-300">Scopes Autorizzati (separati da virgola)</label>
+          <input type="text" id="scopes" class="form-control font-mono" placeholder="openid, profile, email" value="openid, profile, email" />
+        </div>
+
+        <div class="col-12">
+          <label class="form-label text-xs font-semibold text-gray-300">Redirect URIs</label>
+          <input type="text" id="redirect_uri" class="form-control font-mono text-xs" placeholder="http://localhost:8080/callback" />
+        </div>
+
+        <div class="col-12">
+          <label class="form-label text-xs font-semibold text-gray-300">Webhooks (URL endpoint notifica eventi)</label>
+          <input type="text" id="webhooks" class="form-control font-mono text-xs" placeholder="https://api.domain.com/webhook" />
+        </div>
+
+        <div class="col-12 flex items-center gap-3 pt-2">
+          <input type="checkbox" id="mfaEnabled" class="w-4 h-4 rounded accent-purple-500 cursor-pointer" />
+          <label for="mfaEnabled" class="text-xs font-semibold text-gray-300 cursor-pointer">
+            Richiedi autenticazione a due fattori (MFA / 2FA) obbligatoria per questo client
+          </label>
+        </div>
+
+        <div class="col-12 pt-6 border-t border-purple-500/15 flex items-center justify-end gap-3">
+          <a href="/app/clients" class="px-6 py-2.5 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all text-decoration-none">
+            Annulla
+          </a>
+          <button type="submit" class="m3-btn-primary">
+            <i class="fa-solid fa-check mr-1"></i> Salva e Crea Client
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <script>
+    function generateSecret() {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_~";
+      let secret = "sec_";
+      for (let i = 0; i < 32; i++) {
+        secret += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById("clientSecret").value = secret;
+    }
+
+    function submitCreateClient() {
+      const clientId = document.getElementById("clientId").value.trim();
+      if (!clientId) {
+        return sweetalert("warning", "Attenzione", "Il Client ID è obbligatorio.");
+      }
+
+      let secret = document.getElementById("clientSecret").value.trim();
+      if (!secret) {
+        generateSecret();
+        secret = document.getElementById("clientSecret").value.trim();
+      }
+
+      const redirectInput = document.getElementById("redirect_uri").value.trim();
+      const scopesInput = document.getElementById("scopes").value.trim();
+      const webhooksInput = document.getElementById("webhooks").value.trim();
+
+      const payload = {
+        clientId: clientId,
+        clientSecret: secret,
+        accessType: document.getElementById("accessType").value,
+        tokenType: document.getElementById("tokenType").value,
+        authType: document.getElementById("authType").value,
+        redirect_uri: redirectInput ? { "redirect_uri": redirectInput } : null,
+        scopes: scopesInput ? scopesInput.split(",").map(s => s.trim()).filter(Boolean) : null,
+        webhooks: webhooksInput ? webhooksInput.split(",").map(w => ({ url: w.trim() })) : null,
+        jwtExpiration: parseInt(document.getElementById("jwtExpiration").value) || 3600,
+        mfaEnabled: document.getElementById("mfaEnabled").checked
+      };
+
+      const token = getCookieOrStorage(config.access_token);
+      const url = window.location.origin + "/v1/client";
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(async (res) => {
+        if (res.ok) {
+          sweetalert("success", "Client Creato", "Il nuovo client OAuth2 è stato registrato con successo.");
+          setTimeout(() => {
+            window.location.href = "/app/clients";
+          }, 1500);
+        } else {
+          const err = await res.json().catch(() => ({}));
+          sweetalert("error", "Errore Creazione", err.message || "Impossibile creare il client sul database.");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        sweetalert("error", "Errore di Rete", "Connessione al server fallita.");
+      });
+    }
+  </script>
+
+</body>
+</html>

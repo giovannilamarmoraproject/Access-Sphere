@@ -1,29 +1,21 @@
 $(document).ready(function () {
-  getClients();
   getUser();
 
-  // Disabilita il bottone all'inizio
-  $("#add_role_btn").prop("disabled", true);
-
-  // Event listener per il cambio di ruolo o client
-  $(document).on(
-    "change",
-    "#role_select, #client_id_select",
-    validateRoleSelection
-  );
-
-  // Gestione click sul bottone "Add Role"
-  $("#add_role_btn").on("click", addRole);
-});
-
-function getClients() {
   const clientsJSON = localStorage.getItem(config.client_id + "_clients");
   if (clientsJSON) {
-    displayClientData(JSON.parse(clientsJSON));
+    try {
+      displayClientData(JSON.parse(clientsJSON));
+    } catch(e) {
+      getClient();
+    }
   } else {
     getClient();
   }
-}
+
+  $("#role_select").on("change", function () {
+    validateRoleSelection();
+  });
+});
 
 function getClient() {
   const url = config.client_id_url;
@@ -31,50 +23,35 @@ function getClient() {
 
   GET(url, token).then(async (data) => {
     const responseData = await data.json();
-    if (responseData.error) {
-      const error = getErrorCode(responseData.error);
-      return sweetalert("error", error.title, error.message);
+    if (responseData.error != null) {
+      console.warn("getClient error in roles:", responseData.error);
+    } else {
+      fetchHeader(data.headers);
+      localStorage.setItem(
+        config.client_id + "_clients",
+        JSON.stringify(responseData.data)
+      );
+      displayClientData(responseData.data);
     }
-    fetchHeader(data.headers);
-    localStorage.setItem(
-      config.client_id + "_clients",
-      JSON.stringify(responseData.data)
-    );
-    displayClientData(responseData.data);
   });
 }
 
 function displayClientData(clients) {
-  //const rolesJSON = localStorage.getItem("selected_roles");
-  //if (!rolesJSON) $("#save_role_btn").prop("disabled", true);
-  //else $("#save_role_btn").prop("disabled", true);
+  const clientSelect = $("#client_id_select").empty().append(
+    '<option selected disabled value="">Scegli un Client...</option>'
+  );
 
-  const clientSelect = $("#client_id_select")
-    .empty()
-    .append(
-      '<option id="register_form_client_choose" selected disabled value="">' +
-        currentTranslations.register_form_client_choose +
-        "</option>"
-    );
-
-  clients.forEach((client) => {
-    $("<option>")
-      .val(client.clientId)
-      .text(client.clientId)
-      .appendTo(clientSelect);
+  (clients || []).forEach((client) => {
+    $("<option>").val(client.clientId).text(client.clientId).appendTo(clientSelect);
   });
 
-  $("#client_id_select").on("change", function () {
-    const selectedClient = clients.find(
+  $("#client_id_select").off("change").on("change", function () {
+    const selectedClient = (clients || []).find(
       (client) => client.clientId === $(this).val()
     );
-    const roleSelect = $("#role_select")
-      .empty()
-      .append(
-        '<option id="register_form_roles_choose" selected disabled value="">' +
-          currentTranslations.register_form_roles_choose +
-          "</option>"
-      );
+    const roleSelect = $("#role_select").empty().append(
+      '<option selected disabled value="">Scegli un Ruolo...</option>'
+    );
 
     if (selectedClient?.appRoles) {
       selectedClient.appRoles.forEach((role) => {
@@ -86,23 +63,24 @@ function displayClientData(clients) {
     } else {
       roleSelect.prop("disabled", true);
     }
+    $("#add_role_btn").prop("disabled", true);
   });
 }
 
 function validateRoleSelection() {
   const selectedRole = $("#role_select").val();
   const alreadyAdded =
-    $(".role-card span").filter((_, el) => $(el).text() === selectedRole)
+    $(".role-chip span[data-role]").filter((_, el) => $(el).attr("data-role") === selectedRole)
       .length > 0;
 
   if (alreadyAdded) {
     $("#role_select").addClass("is-invalid");
-    $("#validationRoles").text(currentTranslations.roles_already_added);
+    $("#validationRoles").text("Questo ruolo è già stato assegnato all'utente.");
     $("#add_role_btn").prop("disabled", true);
   } else {
     $("#role_select").removeClass("is-invalid");
     $("#validationRoles").text("");
-    $("#add_role_btn").prop("disabled", !selectedRole); // Abilita solo se un ruolo è selezionato
+    $("#add_role_btn").prop("disabled", !selectedRole);
   }
 }
 
@@ -110,133 +88,157 @@ function addRole() {
   const selectedRole = $("#role_select").val();
   if (!selectedRole) return;
 
-  if (
-    $(".role-card span").filter((_, el) => $(el).text() === selectedRole)
-      .length > 0
-  ) {
-    $("#role_select").addClass("is-invalid");
-    $("#validationRoles").text(currentTranslations.roles_already_added);
-    $("#add_role_btn").prop("disabled", true);
-    return;
-  }
-
   const roleCard = $(`
-    <div class="card m-1 col role-card" style="min-width:250px">
-      <div class="card-body">
-        <span><code style="color: inherit">${selectedRole}</code></span>
-        <i class="fa-duotone fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
+    <div class="role-chip inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-purple-500/35 bg-purple-500/20 text-purple-100 shadow-md transition-all hover:border-purple-400 hover:scale-105">
+      <div class="w-6 h-6 rounded-full bg-purple-500/30 flex items-center justify-center text-purple-300">
+        <i class="fa-solid fa-shield-halved text-xs"></i>
       </div>
+      <span data-role="${selectedRole}" class="font-mono text-xs font-bold">${selectedRole}</span>
+      <button type="button" class="remove-role ml-1.5 w-5 h-5 rounded-full bg-red-500/15 hover:bg-red-500 hover:text-white text-red-300 transition-all cursor-pointer border-0 flex items-center justify-center" title="Revoca Ruolo">
+        <i class="fa-solid fa-xmark text-[11px]"></i>
+      </button>
     </div>
   `);
 
   roleCard.find(".remove-role").on("click", function () {
-    $(this).closest(".role-card").remove();
+    $(this).closest(".role-chip").remove();
     updateStoredRoles();
-    $("#role_select option[value='" + selectedRole + "']").prop(
-      "disabled",
-      false
-    );
-    $("#add_role_btn").prop("disabled", true);
+    validateRoleSelection();
   });
+
+  // Remove empty state message if present
+  if ($("#role_container .role-chip").length === 0) {
+    $("#role_container").empty();
+  }
 
   $("#role_container").append(roleCard);
   updateStoredRoles();
-  $("#role_select option[value='" + selectedRole + "']").prop("disabled", true);
+  $("#role_select").val("");
   $("#add_role_btn").prop("disabled", true);
-  $("#role_select").removeClass("is-invalid");
-  $("#validationRoles").text("");
 }
 
 function updateStoredRoles() {
-  const roles = $(".role-card span")
-    .map((_, el) => $(el).text())
+  const roles = $(".role-chip span[data-role]")
+    .map((_, el) => $(el).attr("data-role"))
     .get();
   localStorage.setItem("selected_roles", JSON.stringify(roles));
-
+  $("#user-roles-count-badge").text(`${roles.length} Ruoli Assegnati`);
   $("#save_role_btn").prop("disabled", false);
-}
 
-function getUser() {
-  const identifier = window.location.href.split("roles/")[1];
-  const usersJSON = localStorage.getItem(config.client_id + "_usersData");
-
-  if (usersJSON) {
-    const user = JSON.parse(usersJSON).find((u) => u.identifier == identifier);
-    if (user) displayUserData(user);
-  } else {
-    logout();
+  if (roles.length === 0) {
+    $("#role_container").html('<span class="text-xs text-purple-300 py-2">Nessun ruolo assegnato. Seleziona un ruolo nel riquadro sottostante per assegnarlo.</span>');
   }
 }
 
+function getUser() {
+  const urlParams = window.location.href;
+  let identifier = null;
+  if (urlParams.includes("roles/")) {
+    identifier = urlParams.split("roles/")[1].split("/")[0].split("?")[0].split("#")[0];
+  } else {
+    identifier = new URLSearchParams(window.location.search).get("identifier");
+  }
+
+  if (!identifier) return;
+
+  const usersJSON = localStorage.getItem(config.client_id + "_usersData");
+  if (usersJSON) {
+    try {
+      const user = JSON.parse(usersJSON).find((u) => u.identifier == identifier || u.username == identifier);
+      if (user) {
+        displayUserData(user);
+        return;
+      }
+    } catch(e) {}
+  }
+
+  const token = getCookieOrStorage(config.access_token);
+  GET(config.users_url, token).then(async (res) => {
+    try {
+      const data = await res.json();
+      if (data && data.data) {
+        localStorage.setItem(config.client_id + "_usersData", JSON.stringify(data.data));
+        const user = data.data.find((u) => u.identifier == identifier || u.username == identifier);
+        if (user) displayUserData(user);
+      }
+    } catch(e) {}
+  });
+}
+
 function displayUserData(user) {
+  // Update User Profile Header Banner
+  if (user) {
+    $("#user-full-name").text((user.name || "") + " " + (user.surname || "") || "Utente Access Sphere");
+    $("#user-username-badge").text("@" + (user.username || ""));
+    $("#user-email-text").text(user.email || "");
+    if (user.profilePhoto) {
+      $("#user-avatar-img").attr("src", user.profilePhoto);
+    }
+  }
+
   const roleContainer = $("#role_container").empty();
 
   if (!user.roles || user.roles.length === 0) {
-    $("#add_role_btn").prop("disabled", true); // Nessun ruolo presente → disabilita il bottone
+    roleContainer.html('<span class="text-xs text-purple-300 py-2">Nessun ruolo assegnato. Seleziona un ruolo nel riquadro sottostante per assegnarlo.</span>');
+    $("#user-roles-count-badge").text("0 Ruoli Assegnati");
   } else {
+    $("#user-roles-count-badge").text(`${user.roles.length} Ruoli Assegnati`);
     user.roles.forEach((role) => {
       const roleCard = $(`
-      <div class="card m-1 col role-card" style="min-width:250px">
-        <div class="card-body">
-          <span><code style="color: inherit">${role}</code></span>
-          <i class="fa-duotone fa-solid fa-trash-xmark remove-role clickable float-end mt-1"></i>
+        <div class="role-chip inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-purple-500/35 bg-purple-500/20 text-purple-100 shadow-md transition-all hover:border-purple-400 hover:scale-105">
+          <div class="w-6 h-6 rounded-full bg-purple-500/30 flex items-center justify-center text-purple-300">
+            <i class="fa-solid fa-shield-halved text-xs"></i>
+          </div>
+          <span data-role="${role}" class="font-mono text-xs font-bold">${role}</span>
+          <button type="button" class="remove-role ml-1.5 w-5 h-5 rounded-full bg-red-500/15 hover:bg-red-500 hover:text-white text-red-300 transition-all cursor-pointer border-0 flex items-center justify-center" title="Revoca Ruolo">
+            <i class="fa-solid fa-xmark text-[11px]"></i>
+          </button>
         </div>
-      </div>
-    `);
+      `);
+
+      roleCard.find(".remove-role").on("click", function () {
+        $(this).closest(".role-chip").remove();
+        updateStoredRoles();
+      });
 
       roleContainer.append(roleCard);
     });
   }
-  // Event listener per rimuovere i ruoli
-  $(document).on("click", ".remove-role", function () {
-    $(this).closest(".role-card").remove();
-    updateStoredRoles();
-
-    if ($(".role-card").length === 0) {
-      $("#client_id_select").prop("disabled", false);
-    }
-    validateRoleSelection(); // Controlla se il bottone va disabilitato
-  });
 }
 
 function changeRoles() {
-  const identifier = window.location.href.split("roles/")[1];
-  const rolesJSON = localStorage.getItem("selected_roles");
-  if (!rolesJSON) return;
-  const roles = JSON.parse(rolesJSON);
-  const changeRolesUrl =
-    window.location.origin + "/v1/users/" + identifier + "/roles";
+  const urlParams = window.location.href;
+  let identifier = urlParams.includes("roles/")
+    ? urlParams.split("roles/")[1].split("/")[0].split("?")[0].split("#")[0]
+    : new URLSearchParams(window.location.search).get("identifier");
+
+  const roles = $(".role-chip span[data-role]")
+    .map((_, el) => $(el).attr("data-role"))
+    .get();
+
+  const url = config.users_url + "/" + identifier + "/roles";
   const token = getCookieOrStorage(config.access_token);
-  const body = { roles: roles };
-  PUT(changeRolesUrl, token, body).then(async (data) => {
-    const responseData = await data.json();
-    if (responseData.error) {
-      const error = getErrorCode(responseData.error);
-      return sweetalert("error", error.title, error.message);
-    } else {
-      fetchHeader(data.headers);
+
+  fetch(url, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ roles: roles })
+  }).then(async (res) => {
+    if (res.ok) {
       localStorage.removeItem(config.client_id + "_usersData");
-      resetRolesSaved();
-      return sweetalert(
-        "success",
-        currentTranslations.roles_response_title,
-        currentTranslations.roles_response_text
-      ).then((result) => {
-        /* Read more about isConfirmed, isDenied below */
-        if (result.isConfirmed) {
-          const origin = window.location.origin;
-
-          // Costruisci l'URL completo aggiungendo il path
-          const fullUrl = `${origin}/app/users`;
-
-          // Reindirizza l'utente al nuovo URL
-          window.location.href = fullUrl;
-        }
-      });
+      sweetalert("success", "Ruoli Aggiornati", "I ruoli dell'utente sono stati aggiornati con successo.");
+      setTimeout(() => {
+        window.location.href = "/app/users/details/" + identifier;
+      }, 1500);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      sweetalert("error", "Errore", err.message || "Impossibile salvare i ruoli.");
     }
+  }).catch((err) => {
+    console.error(err);
+    sweetalert("error", "Errore di Connessione", "Impossibile contattare il server.");
   });
-}
-
-function resetRolesSaved() {
-  localStorage.removeItem("selected_roles");
 }

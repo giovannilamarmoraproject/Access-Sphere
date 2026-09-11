@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
+import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
@@ -55,5 +57,55 @@ public class ClientController {
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
       ServerHttpRequest request) {
     return clientService.getClients();
+  }
+
+  @PostMapping("/client")
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> createClient(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
+      @RequestBody @Valid ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    clientService.addClientToDatabase(clientCredential);
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            "Client created",
+            io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
+            clientCredential);
+    return Mono.just(ResponseEntity.ok(response));
+  }
+
+  @PutMapping("/client")
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> updateClient(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
+      @RequestBody @Valid ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    clientService.updateClientInDatabase(clientCredential);
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            "Client updated",
+            io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
+            clientCredential);
+    return Mono.just(ResponseEntity.ok(response));
+  }
+
+  @DeleteMapping("/client/{clientId}")
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> deleteClient(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
+      @PathVariable String clientId,
+      ServerHttpRequest request) {
+    ClientCredential cred = new ClientCredential();
+    cred.setClientId(clientId);
+    clientService.deleteClientFromDatabase(cred);
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            "Client deleted",
+            io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
+            null);
+    return Mono.just(ResponseEntity.ok(response));
   }
 }

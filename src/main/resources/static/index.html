@@ -1,361 +1,698 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Access Sphere</title>
-    <link rel="stylesheet" href="css/style.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    />
-    <link rel="manifest" href="/manifest.json" />
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .register("/service-worker.js")
-          .then(function (registration) {
-            console.log(
-              "📱 Service Worker registered with scope:",
-              registration.scope
-            );
-          })
-          .catch(function (error) {
-            console.log("❌ Service Worker registration failed:", error);
-          });
-      }
-    </script>
-    <!-- Google Tag Manager -->
-    <script>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != "dataLayer" ? "&l=" + l : "";
-        j.async = true;
-        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "GTM-KLC9VXFF");
-    </script>
-    <!-- End Google Tag Manager -->
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
+<html lang="it" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Sphere - Piattaforma Identity, OAuth2 & Security Management</title>
+  
+  <!-- Font Google Sans Flex -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-      gtag("config", "G-R4KLC18RH6");
-    </script>
-    <!-- Meta ag Google Search -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "Organization",
-            "@id": "https://access-sphere.giovannilamarmora.com/#organization",
-            "name": "Access Sphere",
-            "alternateName": [
-              "Access Sphere",
-              "Security",
-              "Access Sphere Security"
-            ],
-            "url": "https://access-sphere.giovannilamarmora.com",
-            "logo": {
-              "@type": "ImageObject",
-              "url": "https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-            },
-            "sameAs": [
-              "https://giovannilamarmora.github.io",
-              "https://github.com/giovannilamarmora",
-              "https://github.com/giovannilamarmoraproject",
-              "https://linkedin.com/in/giovannilamarmora"
-            ]
-          },
-          {
-            "@type": "Person",
-            "@id": "https://giovannilamarmora.github.io/#person",
-            "name": "Giovanni Lamarmora",
-            "url": "https://giovannilamarmora.github.io",
-            "sameAs": [
-              "https://giovannilamarmora.github.io",
-              "https://github.com/giovannilamarmora",
-              "https://github.com/giovannilamarmoraproject",
-              "https://linkedin.com/in/giovannilamarmora"
-            ],
-            "worksFor": {
-              "@id": "https://access-sphere.giovannilamarmora.com/#organization"
-            }
-          },
-          {
-            "@type": "WebSite",
-            "@id": "https://access-sphere.giovannilamarmora.com/#website",
-            "url": "https://access-sphere.giovannilamarmora.com",
-            "name": "Access Sphere",
-            "publisher": {
-              "@id": "https://access-sphere.giovannilamarmora.com/#organization"
-            },
-            "inLanguage": "en"
-          },
-          {
-            "@type": "WebPage",
-            "@id": "https://access-sphere.giovannilamarmora.com/#webpage",
-            "url": "https://access-sphere.giovannilamarmora.com",
-            "name": "Access Sphere - Digital Access and Security Solutions",
-            "description": "Access Sphere offers advanced solutions for secure digital access management.",
-            "inLanguage": "en",
-            "isPartOf": {
-              "@id": "https://access-sphere.giovannilamarmora.com/#website"
-            },
-            "about": {
-              "@id": "https://access-sphere.giovannilamarmora.com/#organization"
-            }
-          },
-          {
-            "@type": "WebPage",
-            "@id": "https://access-sphere.giovannilamarmora.com/#webpage",
-            "url": "https://access-sphere.giovannilamarmora.com",
-            "name": "Access Sphere - Soluzioni di Sicurezza e Accesso",
-            "description": "Access Sphere offre soluzioni avanzate per la gestione sicura degli accessi digitali.",
-            "inLanguage": "it",
-            "isPartOf": {
-              "@id": "https://access-sphere.giovannilamarmora.com/#website"
-            },
-            "about": {
-              "@id": "https://access-sphere.giovannilamarmora.com/#organization"
-            }
-          }
-        ]
-      }
-    </script>
+  <style>
+    :root {
+      --md-primary: #D0BCFF;
+      --md-primary-container: #4F378B;
+      --md-on-primary: #381E72;
+      --md-surface: #0E0B16;
+      --md-surface-card: rgba(24, 19, 38, 0.75);
+      --md-surface-card-border: rgba(208, 188, 255, 0.16);
+      --md-on-surface: #E6E1E5;
+    }
 
-    <meta
-      name="description"
-      content="Access Sphere - Empower your digital experience with Access Sphere. Join us to explore limitless possibilities and stay ahead with our innovative solutions."
-    />
+    body {
+      font-family: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--md-surface);
+      color: var(--md-on-surface);
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
 
-    <link rel="canonical" href="https://access-sphere.giovannilamarmora.com" />
+    #canvas-3d {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
 
-    <meta property="og:site_name" content="Access Sphere" />
-    <meta property="og:title" content="Security" />
-    <meta
-      property="og:description"
-      content="Access Sphere - Empower your digital experience with Access Sphere. Join us to explore limitless possibilities and stay ahead with our innovative solutions."
-    />
-    <meta
-      property="og:image"
-      content="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-    />
-    <meta
-      property="og:url"
-      content="https://access-sphere.giovannilamarmora.com"
-    />
-    <!-- Favicon - Generic -->
-    <link
-      title="Access Sphere"
-      rel="icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      type="image/x-icon"
-      sizes="72x72"
-    />
-    <link
-      title="Access Sphere"
-      rel="icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      type="image/x-icon"
-      sizes="96x96"
-    />
-    <link
-      title="Access Sphere"
-      rel="icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      type="image/x-icon"
-      sizes="128x128"
-    />
-    <link
-      title="Access Sphere"
-      rel="icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      type="image/x-icon"
-      sizes="144x144"
-    />
-    <link
-      title="Access Sphere"
-      rel="icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      type="image/x-icon"
-      sizes="152x152"
-    />
-    <link
-      title="Access Sphere"
-      rel="icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      type="image/x-icon"
-      sizes="192x192"
-    />
-    <link
-      title="Access Sphere"
-      rel="icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      type="image/x-icon"
-      sizes="384x384"
-    />
-    <link
-      title="Access Sphere"
-      rel="icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      type="image/x-icon"
-      sizes="512x512"
-    />
-    <!-- Favicon - Android -->
-    <link
-      title="Access Sphere"
-      rel="shortcut icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      sizes="192x192"
-    />
-    <!-- Favicon - iOS -->
-    <link
-      title="Access Sphere"
-      rel="apple-touch-icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      sizes="128x128"
-    />
-    <link
-      title="Access Sphere"
-      rel="apple-touch-icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      sizes="152x152"
-    />
-    <link
-      title="Access Sphere"
-      rel="apple-touch-icon"
-      href="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-      sizes="192x192"
-    />
-    <script>
-      function navigateToPath(path) {
-        // Ottieni l'origine attuale (es: https://stg.example.com o https://example.com)
-        const origin = window.location.origin;
+    .glass-nav {
+      background: rgba(14, 11, 22, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(208, 188, 255, 0.14);
+    }
 
-        // Costruisci l'URL completo aggiungendo il path
-        const fullUrl = `${origin}/${path}`;
+    .m3-glass-card {
+      background: var(--md-surface-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--md-surface-card-border);
+      border-radius: 28px;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-        // Reindirizza l'utente al nuovo URL
-        window.location.href = fullUrl;
-      }
-    </script>
-  </head>
-  <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript>
-      <iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-KLC9VXFF"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe>
-    </noscript>
-    <!-- End Google Tag Manager (noscript) -->
-    <main>
-      <div class="big-wrapper dark">
-        <img src="img/shape.png" alt="" class="shape" />
+    .m3-glass-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(208, 188, 255, 0.4);
+      box-shadow: 0 20px 40px -15px rgba(124, 77, 255, 0.32);
+    }
 
-        <header>
-          <div class="container">
-            <div class="logo">
-              <img hidden src="img/logo.png" alt="Access Sphere Logo" />
-              <img
-                src="img/Access%20Sphere%20Transparent%20512x512.png"
-                style="width: 50px"
-                alt="Access Sphere Logo"
-              />
-              <h3 style="margin-bottom: 7px">Access Sphere</h3>
-            </div>
+    .m3-pill-btn {
+      border-radius: 9999px;
+      padding: 10px 24px;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-            <div class="links">
-              <ul>
-                <li hidden><a href="#">Features</a></li>
-                <li style="width: 140px">
-                  <a
-                    style="width: max-content"
-                    href="https://access-sphere.giovannilamarmora.com/cookie-policy"
-                    onclick="event.preventDefault(); navigateToPath('cookie-policy')"
-                    >Cookie Policy</a
-                  >
-                </li>
-                <li style="width: 140px">
-                  <a
-                    style="width: max-content"
-                    href="https://access-sphere.giovannilamarmora.com/privacy-policy"
-                    onclick="event.preventDefault(); navigateToPath('privacy-policy')"
-                    >Privacy Policy</a
-                  >
-                </li>
-                <li><a href="/app/login" class="btn">🔐 Login</a></li>
-              </ul>
-            </div>
+    .m3-pill-btn-primary {
+      background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35);
+    }
 
-            <div class="overlay"></div>
+    .m3-pill-btn-primary:hover {
+      background: linear-gradient(135deg, #B56BF9 0%, #7961BC 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(168, 85, 247, 0.55);
+    }
 
-            <div class="hamburger-menu" style="display: none" hidden>
-              <div class="bar" hidden></div>
-            </div>
+    .m3-pill-btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      color: #E6E1E5;
+      border: 1px solid rgba(208, 188, 255, 0.25);
+    }
+
+    .m3-pill-btn-outline:hover {
+      background: rgba(208, 188, 255, 0.12);
+      border-color: rgba(208, 188, 255, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #FFFFFF 15%, #D0BCFF 55%, #A855F7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge-m3 {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: rgba(208, 188, 255, 0.1);
+      border: 1px solid rgba(208, 188, 255, 0.22);
+      color: #D0BCFF;
+    }
+  </style>
+</head>
+<body class="relative">
+
+  <canvas id="canvas-3d"></canvas>
+
+  <div class="relative z-10 flex flex-col min-h-screen">
+
+    <!-- Top Navigation Header -->
+    <header class="glass-nav sticky top-0 z-50">
+      <div class="w-full max-w-[1750px] mx-auto px-6 sm:px-10 lg:px-14 h-20 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3.5 group">
+          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
+          <div class="flex flex-col">
+            <span class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              Access Sphere
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">v1.6.7</span>
+            </span>
+            <span class="text-[11px] text-gray-400 font-medium tracking-wide">Identity & OAuth 2.0 Security Hub</span>
           </div>
-        </header>
+        </a>
 
-        <div class="showcase-area">
-          <div class="container">
-            <div class="left">
-              <div class="big-title">
-                <h1>Unlock the Future,</h1>
-                <h1>Discover Access Sphere.</h1>
-              </div>
-              <p class="text">
-                Empower your digital experience with Access Sphere. <br />
-                Join us to explore limitless possibilities and stay ahead with
-                our innovative solutions.
-              </p>
-              <div class="cta">
-                <a
-                  target="_blank"
-                  href="https://access.sphere.doc.giovannilamarmora.com"
-                  class="btn"
-                  >🚀 Get started</a
-                >
-                <a href="/app/login" class="btn hidden-desktop login-btn ms-3"
-                  >🔐 Login Page</a
-                >
-              </div>
-            </div>
+        <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-300">
+          <a href="#cosa-fa" class="hover:text-purple-300 transition-colors">Cos'è</a>
+          <a href="#funzionalita" class="hover:text-purple-300 transition-colors">Funzionalità</a>
+          <a href="#simulator" class="hover:text-purple-300 transition-colors">Simulatore OAuth2</a>
+          <a href="#architettura" class="hover:text-purple-300 transition-colors">Architettura</a>
+          <a href="/cookie-policy" class="hover:text-purple-300 transition-colors text-xs text-gray-400">Cookie Policy</a>
+          <a href="/privacy-policy" class="hover:text-purple-300 transition-colors text-xs text-gray-400">Privacy Policy</a>
+        </nav>
 
-            <!--<div class="right animated animatedFadeInUp fadeInUp">-->
-            <div id="person" class="right animated animatedFadeInUp fadeInUp">
-              <img src="img/person.png" alt="Person Image" class="person" />
-            </div>
-          </div>
-        </div>
-
-        <div class="bottom-area">
-          <div class="container">
-            <button class="toggle-btn">
-              <i class="far fa-moon"></i>
-              <i class="far fa-sun"></i>
-            </button>
-          </div>
+        <div class="flex items-center gap-3">
+          <a href="/app/login" class="m3-pill-btn m3-pill-btn-primary text-xs px-6 py-2.5">
+            <i class="fa-solid fa-arrow-right-to-bracket text-sm"></i> Login Console
+          </a>
         </div>
       </div>
-    </main>
+    </header>
 
-    <!-- JavaScript Files -->
-    <script src="js/main.js"></script>
-  </body>
+    <!-- Hero Section -->
+    <section class="min-h-[85vh] flex items-center justify-center px-6 pt-10 pb-20 text-center relative">
+      <div class="max-w-4xl mx-auto flex flex-col items-center">
+        
+        <div class="mb-6 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-purple-950/70 border border-purple-500/30 text-xs text-purple-200 backdrop-blur-md">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>OpenID Connect & RFC 6749 Compliant</span>
+          <span class="text-purple-400">|</span>
+          <span class="text-purple-300 font-semibold">Material Expressive 3</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.12] mb-6 text-gradient">
+          Identità, Client OAuth2 e Sicurezza Aziendale in una Sola Sfera.
+        </h1>
+
+        <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+          <strong class="text-white font-semibold">Access Sphere</strong> è il server di autorizzazione reattivo ad alte prestazioni basato su Spring Boot WebFlux. Centralizza l'autenticazione, la gestione di utenti e ruoli (RBAC), la registrazione di client OAuth2 con redirect URIs, la crittografia JWE e la verifica a due fattori (MFA).
+        </p>
+
+        <div class="flex flex-wrap items-center justify-center gap-4 mb-16">
+          <a href="/app/login" class="m3-pill-btn m3-pill-btn-primary text-base px-8 py-3.5">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Entra nella Console
+          </a>
+          <a href="#cosa-fa" class="m3-pill-btn m3-pill-btn-outline text-base px-8 py-3.5">
+            <i class="fa-solid fa-compass"></i> Esplora le Funzionalità
+          </a>
+        </div>
+
+        <!-- Metric Bento Highlights -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full text-left">
+          <div class="m3-glass-card p-5">
+            <div class="text-2xl sm:text-3xl font-bold text-white mb-1">OAuth 2.0</div>
+            <div class="text-xs text-gray-400">OIDC & PKCE Supportati</div>
+          </div>
+          <div class="m3-glass-card p-5">
+            <div class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-1">&lt; 20ms</div>
+            <div class="text-xs text-gray-400">Latenza Token Reattiva</div>
+          </div>
+          <div class="m3-glass-card p-5">
+            <div class="text-2xl sm:text-3xl font-bold text-purple-300 mb-1">MFA / 2FA</div>
+            <div class="text-xs text-gray-400">TOTP & Email OTP</div>
+          </div>
+          <div class="m3-glass-card p-5">
+            <div class="text-2xl sm:text-3xl font-bold text-pink-400 mb-1">100% UI</div>
+            <div class="text-xs text-gray-400">Gestione Client & Utenti</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Scroll Indicator -->
+    <div class="text-center py-4 text-xs font-medium tracking-widest text-purple-300/60 uppercase">
+      <i class="fa-solid fa-chevron-down animate-bounce mr-2"></i> Scorri per scoprire l'ecosistema: la Sfera 3D si trasforma e si adatta
+    </div>
+
+    <!-- Cos'è e Cosa fa in dettaglio -->
+    <section id="cosa-fa" class="py-24 px-6 relative">
+      <div class="max-w-7xl mx-auto">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <div class="badge-m3 mb-3">
+            <i class="fa-solid fa-layer-group"></i> Panoramica Dettagliata
+          </div>
+          <h2 class="text-3xl sm:text-5xl font-bold text-white tracking-tight mb-4">
+            Cos'è esattamente Access Sphere e cosa puoi fare?
+          </h2>
+          <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
+            Access-Sphere non è una semplice pagina di login: è un ecosistema completo di Identity and Access Management (IAM) progettato per centralizzare la sicurezza di qualsiasi architettura moderna.
+          </p>
+        </div>
+
+        <!-- Bento Grid delle 6 Funzionalità Chiave -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="funzionalita">
+
+          <!-- 1. Gestione Client -->
+          <div class="m3-glass-card p-8 flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-xl mb-6">
+                <i class="fa-solid fa-network-wired"></i>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">Gestione Completa Client OAuth2 (CRUD)</h3>
+              <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                Registra, modifica ed elimina al volo applicazioni terze e microservizi. Definisci <code>client_id</code>, <code>client_secret</code>, redirect URI consentite, tipologia di token (JWT o JWE) e scadenze crittografiche dedicate per ogni applicazione registrata nel DB.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-purple-500/10 flex items-center justify-between text-xs text-purple-300 font-semibold">
+              <a href="/app/clients" class="hover:underline flex items-center gap-1.5">Vai alla schermata Client <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+          </div>
+
+          <!-- 2. Gestione Utenti -->
+          <div class="m3-glass-card p-8 flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-xl mb-6">
+                <i class="fa-solid fa-users-viewfinder"></i>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">Gestione Utenti e Ruoli (RBAC)</h3>
+              <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                Pieno controllo sul ciclo di vita degli utenti: blocco/sblocco istantaneo degli account malevoli, registrazione guidata, aggiornamento anagrafica e profilazione granulare tramite ruoli applicativi con permessi su misura.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-purple-500/10 flex items-center justify-between text-xs text-emerald-300 font-semibold">
+              <a href="/app/users" class="hover:underline flex items-center gap-1.5">Vai alla schermata Utenti <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+          </div>
+
+          <!-- 3. Multi-Factor Authentication -->
+          <div class="m3-glass-card p-8 flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300 text-xl mb-6">
+                <i class="fa-solid fa-shield-virus"></i>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">Multi-Factor Authentication (MFA)</h3>
+              <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                Rafforza l'accesso con verifica a doppio fattore: supporto nativo per codici temporanei TOTP su app come Google Authenticator o Microsoft Authenticator, e codici monouso OTP recapitati via email protetta.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-purple-500/10 flex items-center justify-between text-xs text-pink-300 font-semibold">
+              <span>TOTP & Email OTP Standard</span>
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+          </div>
+
+          <!-- 4. JWT & JWE -->
+          <div class="m3-glass-card p-8 flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-300 text-xl mb-6">
+                <i class="fa-solid fa-file-shield"></i>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">Crittografia Token JWT & JWE</h3>
+              <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                Genera token con firma digitale (JWS) o cifratura end-to-end (JWE) per schermare i claim da occhi indiscreti su reti non protette. Configura chiavi di firma dedicate e tempi di vita personalizzati per access e refresh token.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-purple-500/10 flex items-center justify-between text-xs text-blue-300 font-semibold">
+              <span>Payload Cifrato & Intatto</span>
+              <i class="fa-solid fa-lock"></i>
+            </div>
+          </div>
+
+          <!-- 5. Webhooks -->
+          <div class="m3-glass-card p-8 flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 text-xl mb-6">
+                <i class="fa-solid fa-bolt"></i>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">Webhook Event-Driven</h3>
+              <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                Sincronizza automaticamente i tuoi sistemi esterni: invia notifiche webhook HTTP asincrone in caso di login, registrazione utente, modifica ruoli, revoca token o rotazione chiavi client.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-purple-500/10 flex items-center justify-between text-xs text-amber-300 font-semibold">
+              <span>Notifiche HTTP Real-time</span>
+              <i class="fa-solid fa-signal"></i>
+            </div>
+          </div>
+
+          <!-- 6. Reactive WebFlux Engine -->
+          <div class="m3-glass-card p-8 flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-300 text-xl mb-6">
+                <i class="fa-solid fa-gauge-high"></i>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">Reattività Spring WebFlux</h3>
+              <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                Progettato su architettura asincrona non-bloccante Project Reactor. Gestisce picchi intensi di richieste di autenticazione concorrenti senza saturare thread e con latenza inferiore ai 20 millisecondi.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-purple-500/10 flex items-center justify-between text-xs text-cyan-300 font-semibold">
+              <span>High Throughput & Low Latency</span>
+              <i class="fa-solid fa-microchip"></i>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Simulatore Interattivo OAuth2 & Token -->
+    <section id="simulator" class="py-20 px-6 relative">
+      <div class="max-w-6xl mx-auto m3-glass-card p-8 sm:p-12 border-purple-500/30">
+        <div class="flex flex-col lg:flex-row gap-10 items-center justify-between">
+          
+          <div class="lg:w-1/2 text-left">
+            <div class="badge-m3 mb-3">
+              <i class="fa-solid fa-terminal"></i> Simulatore Interattivo
+            </div>
+            <h3 class="text-2xl sm:text-4xl font-bold text-white mb-4">
+              Prova dal vivo la generazione dei Token e i Flussi OAuth2
+            </h3>
+            <p class="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
+              Clicca sui bottoni per simulare la richiesta di autenticazione a runtime. Osserva come Access-Sphere incapsula claim, ruoli applicativi e chiavi di sessione cifrate:
+            </p>
+            
+            <div class="flex flex-wrap gap-3">
+              <button onclick="simulateAuth('admin')" class="m3-pill-btn m3-pill-btn-primary text-xs cursor-pointer">
+                <i class="fa-solid fa-user-shield"></i> Simula Auth: Amministratore
+              </button>
+              <button onclick="simulateAuth('client')" class="m3-pill-btn m3-pill-btn-outline text-xs cursor-pointer">
+                <i class="fa-solid fa-robot"></i> Simula Auth: Client M2M
+              </button>
+              <button onclick="simulateAuth('mfa')" class="m3-pill-btn m3-pill-btn-outline text-xs cursor-pointer">
+                <i class="fa-solid fa-fingerprint"></i> Simula Risposta MFA
+              </button>
+            </div>
+          </div>
+
+          <div class="lg:w-1/2 w-full bg-black/70 rounded-2xl p-5 border border-purple-500/20 font-mono text-xs shadow-2xl">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-800 text-gray-400">
+              <span class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+                <span class="ml-2 text-gray-300">token-payload.json</span>
+              </span>
+              <span id="sim-status" class="text-[10px] text-purple-400 font-semibold uppercase">Pronto</span>
+            </div>
+            <pre id="sim-output" class="text-emerald-400 overflow-x-auto leading-relaxed max-h-[300px]">
+{
+  "status": "READY",
+  "issuer": "https://access-sphere.giovannilamarmora.com",
+  "client_id": "ACCESS-SPHERE-TECH",
+  "supported_grant_types": [
+    "authorization_code",
+    "client_credentials",
+    "refresh_token"
+  ],
+  "action": "Clicca su uno dei bottoni per simulare l'emissione del token!"
+}
+            </pre>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Architettura e Quick Access -->
+    <section id="architettura" class="py-20 px-6">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          
+          <div>
+            <div class="badge-m3 mb-3">
+              <i class="fa-solid fa-shield-halved"></i> Sicurezza Zero-Trust
+            </div>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mb-6">
+              Architettura Trasparente: Tutto quello che è a DB ha una sua UI Dedicata
+            </h2>
+            <div class="space-y-5 text-gray-300 text-sm leading-relaxed">
+              <div class="flex gap-4 items-start">
+                <div class="p-2.5 rounded-2xl bg-purple-500/20 text-purple-300 mt-1 border border-purple-500/30">
+                  <i class="fa-solid fa-server"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-base">Entità OAUTH_CLIENT</h4>
+                  <p class="text-gray-400">Ogni parametro nel database (id, clientId, redirect_uri, scopes, jwtExpiration, webhooks) è ora gestibile direttamente da interfaccia grafica con pieno supporto CRUD.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 items-start">
+                <div class="p-2.5 rounded-2xl bg-emerald-500/20 text-emerald-300 mt-1 border border-emerald-500/30">
+                  <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-base">Entità Utenti & Strapi Sync</h4>
+                  <p class="text-gray-400">Moderazione utenti istantanea con supporto fallback automatico tra CMS Strapi e Database relazionale locale.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 items-start">
+                <div class="p-2.5 rounded-2xl bg-pink-500/20 text-pink-300 mt-1 border border-pink-500/30">
+                  <i class="fa-solid fa-gauge"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-base">Rate Limiting Adattivo</h4>
+                  <p class="text-gray-400">Protezione da attacchi a forza bruta su password e token endpoint con filtro Bucket4j attivo a livello gateway.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Navigation Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <a href="/app/users" class="m3-glass-card p-6 block hover:border-purple-400/50 group">
+              <i class="fa-solid fa-users text-3xl text-purple-400 mb-4 group-hover:scale-110 transition-transform"></i>
+              <h3 class="text-lg font-bold text-white mb-1">Console Utenti</h3>
+              <p class="text-xs text-gray-400 mb-4">Visualizza la tabella utenti, blocca account, gestisci ruoli.</p>
+              <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
+                Apri Schermata <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </span>
+            </a>
+
+            <a href="/app/clients" class="m3-glass-card p-6 block hover:border-purple-400/50 group">
+              <i class="fa-solid fa-key text-3xl text-purple-400 mb-4 group-hover:scale-110 transition-transform"></i>
+              <h3 class="text-lg font-bold text-white mb-1">Gestione Client</h3>
+              <p class="text-xs text-gray-400 mb-4">Crea, modifica ed elimina client OAuth2 e redirect URIs.</p>
+              <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
+                Apri Schermata <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </span>
+            </a>
+
+            <a href="/app/login" class="m3-glass-card p-6 block hover:border-purple-400/50 group">
+              <i class="fa-solid fa-user-lock text-3xl text-purple-400 mb-4 group-hover:scale-110 transition-transform"></i>
+              <h3 class="text-lg font-bold text-white mb-1">Pagina di Login</h3>
+              <p class="text-xs text-gray-400 mb-4">Accedi con le tue credenziali o richiedi accesso sicuro.</p>
+              <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
+                Accedi <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </span>
+            </a>
+
+            <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="m3-glass-card p-6 block hover:border-purple-400/50 group">
+              <i class="fa-brands fa-github text-3xl text-purple-400 mb-4 group-hover:scale-110 transition-transform"></i>
+              <h3 class="text-lg font-bold text-white mb-1">GitHub Repository</h3>
+              <p class="text-xs text-gray-400 mb-4">Esplora il codice sorgente, documentazione e contributi.</p>
+              <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
+                Apri GitHub <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+              </span>
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Modern Expressive Footer -->
+    <footer class="glass-nav mt-auto border-t border-purple-500/10 py-12 px-6">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+        
+        <div class="flex items-center gap-3">
+          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-8 h-8" />
+          <div class="text-sm font-semibold text-white">Access Sphere</div>
+          <span class="text-xs text-gray-500">| Sviluppato da Giovanni Lamarmora</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-6 text-xs text-gray-400">
+          <a href="/cookie-policy" class="hover:text-purple-300 transition-colors">Cookie Policy</a>
+          <a href="/privacy-policy" class="hover:text-purple-300 transition-colors">Privacy Policy</a>
+          <a href="/app/users" class="hover:text-purple-300 transition-colors">Gestione Utenti</a>
+          <a href="/app/clients" class="hover:text-purple-300 transition-colors">Gestione Client</a>
+          <a href="https://github.com/giovannilamarmora" target="_blank" class="hover:text-purple-300 transition-colors">
+            <i class="fa-brands fa-github mr-1"></i> Profilo GitHub
+          </a>
+        </div>
+
+        <div class="text-xs text-gray-500">
+          &copy; 2025-2026 Access Sphere. Tutti i diritti riservati.
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Three.js 3D Wallpaper Engine -->
+  <script>
+    (function init3D() {
+      const canvas = document.getElementById('canvas-3d');
+      const scene = new THREE.Scene();
+      
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 7.5;
+      
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      scene.add(ambientLight);
+
+      const light1 = new THREE.PointLight(0xa855f7, 2.5, 50);
+      light1.position.set(5, 5, 5);
+      scene.add(light1);
+
+      const light2 = new THREE.PointLight(0x6750a4, 2.0, 50);
+      light2.position.set(-5, -5, 3);
+      scene.add(light2);
+
+      const group = new THREE.Group();
+      scene.add(group);
+
+      // 3D Sphere Wireframe
+      const geom = new THREE.IcosahedronGeometry(2.6, 4);
+      const wireMat = new THREE.MeshStandardMaterial({
+        color: 0xd0bcff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.35,
+        roughness: 0.2,
+        metalness: 0.8
+      });
+      const wireSphere = new THREE.Mesh(geom, wireMat);
+      group.add(wireSphere);
+
+      // Core Glowing Mesh
+      const coreGeom = new THREE.SphereGeometry(1.4, 32, 32);
+      const coreMat = new THREE.MeshStandardMaterial({
+        color: 0x4f378b,
+        emissive: 0x381e72,
+        emissiveIntensity: 0.85,
+        roughness: 0.1,
+        metalness: 0.9,
+        transparent: true,
+        opacity: 0.85
+      });
+      const coreMesh = new THREE.Mesh(coreGeom, coreMat);
+      group.add(coreMesh);
+
+      // Orbital Rings
+      const ringGeom1 = new THREE.TorusGeometry(3.5, 0.03, 16, 100);
+      const ringMat1 = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.6 });
+      const ring1 = new THREE.Mesh(ringGeom1, ringMat1);
+      ring1.rotation.x = Math.PI / 3;
+      group.add(ring1);
+
+      const ringGeom2 = new THREE.TorusGeometry(4.0, 0.02, 16, 100);
+      const ringMat2 = new THREE.MeshBasicMaterial({ color: 0xd0bcff, transparent: true, opacity: 0.4 });
+      const ring2 = new THREE.Mesh(ringGeom2, ringMat2);
+      ring2.rotation.y = Math.PI / 4;
+      group.add(ring2);
+
+      // Ambient Particle field
+      const particleCount = 450;
+      const particleGeom = new THREE.BufferGeometry();
+      const posArray = new Float32Array(particleCount * 3);
+      for(let i = 0; i < particleCount * 3; i++) {
+        posArray[i] = (Math.random() - 0.5) * 24;
+      }
+      particleGeom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+      const particleMat = new THREE.PointsMaterial({
+        size: 0.045,
+        color: 0xd0bcff,
+        transparent: true,
+        opacity: 0.65
+      });
+      const particles = new THREE.Points(particleGeom, particleMat);
+      scene.add(particles);
+
+      let mouseX = 0, mouseY = 0, targetScrollY = 0;
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 1.5;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 1.5;
+      });
+
+      window.addEventListener('scroll', () => {
+        targetScrollY = window.scrollY;
+      });
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        const totalScroll = document.body.scrollHeight - window.innerHeight || 1;
+        const progress = Math.min(Math.max(targetScrollY / totalScroll, 0), 1);
+
+        // Smooth scroll transformation
+        group.rotation.y += 0.003 + (progress * 0.012);
+        group.rotation.x += 0.002;
+        ring1.rotation.z += 0.004;
+        ring2.rotation.x -= 0.003;
+
+        // Position morphing on scroll
+        group.position.x = Math.sin(progress * Math.PI * 2) * 2.2 + (mouseX * 0.4);
+        group.position.y = - (progress * 4.5) + (mouseY * -0.4);
+        group.position.z = Math.cos(progress * Math.PI) * 1.6;
+
+        camera.position.x += (mouseX * 0.4 - camera.position.x) * 0.05;
+        camera.position.y += (-mouseY * 0.4 - camera.position.y) * 0.05;
+        camera.lookAt(0, 0, 0);
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+    })();
+
+    function simulateAuth(type) {
+      const output = document.getElementById('sim-output');
+      const status = document.getElementById('sim-status');
+      status.innerText = "Elaborazione...";
+      status.className = "text-[10px] text-yellow-400 font-semibold uppercase animate-pulse";
+
+      setTimeout(() => {
+        if(type === 'admin') {
+          status.innerText = "Token Emesso (200 OK)";
+          status.className = "text-[10px] text-emerald-400 font-semibold uppercase";
+          output.innerHTML = JSON.stringify({
+            "token_type": "Bearer",
+            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlRlY2giLCJBZG1pbiJdfQ...",
+            "expires_in": 3600,
+            "scope": "openid profile email admin:all",
+            "decoded_claims": {
+              "sub": "user_901a8f",
+              "username": "giovanni_admin",
+              "roles": ["ROLE_ADMIN", "ROLE_TECH"],
+              "auth_time": Math.floor(Date.now() / 1000),
+              "mfa_verified": true
+            }
+          }, null, 2);
+        } else if(type === 'client') {
+          status.innerText = "Client M2M Autorizzato";
+          status.className = "text-[10px] text-purple-400 font-semibold uppercase";
+          output.innerHTML = JSON.stringify({
+            "token_type": "Bearer",
+            "access_token": "eyJhbGciOiJSUzI1NiJ9.eyJjbGllbnRfaWQiOiJPUkRFUi1TRVJWSUNFIn0...",
+            "expires_in": 86400,
+            "grant_type": "client_credentials",
+            "client_id": "ORDER-SERVICE-CLIENT",
+            "authorized_scopes": ["read:orders", "write:payments", "webhook:listen"]
+          }, null, 2);
+        } else {
+          status.innerText = "MFA Challenge Superata";
+          status.className = "text-[10px] text-pink-400 font-semibold uppercase";
+          output.innerHTML = JSON.stringify({
+            "mfa_status": "CHALLENGE_VERIFIED",
+            "method": "TOTP_AUTHENTICATOR",
+            "verified_at": new Date().toISOString(),
+            "session_token": "mfa_sess_78bf104ec03",
+            "redirect_uri": "/app/users"
+          }, null, 2);
+        }
+      }, 300);
+    }
+  </script>
+</body>
 </html>

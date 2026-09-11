@@ -1,0 +1,450 @@
+/* =======================================================
+   ACCESS SPHERE - UNIFIED MATERIAL EXPRESSIVE 3 DASHBOARD
+   ======================================================= */
+
+:root {
+  --md-surface: #0E0B16;
+  --md-surface-card: rgba(24, 19, 38, 0.85);
+  --md-surface-border: rgba(208, 188, 255, 0.16);
+  --md-primary: #D0BCFF;
+  --md-primary-container: #4F378B;
+  --md-on-primary: #381E72;
+}
+
+body {
+  font-family: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  background-color: var(--md-surface) !important;
+  color: #E6E1E5 !important;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* -------------------------------------------
+   EXPANSIVE FLUID HEADER (WIDE)
+   ------------------------------------------- */
+.glass-header {
+  background: rgba(14, 11, 22, 0.92) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border-bottom: 1px solid var(--md-surface-border) !important;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+}
+
+.header-container {
+  width: 100% !important;
+  max-width: 1750px !important;
+  margin: 0 auto !important;
+  padding: 0 2rem !important;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Header Navigation Tabs */
+.nav-tab-m3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #CAC4D0 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
+}
+
+.nav-tab-m3:hover {
+  color: #FFFFFF !important;
+  background: rgba(208, 188, 255, 0.1) !important;
+}
+
+.nav-tab-m3.active {
+  background: #D0BCFF !important;
+  color: #381E72 !important;
+  box-shadow: 0 2px 12px rgba(208, 188, 255, 0.35) !important;
+}
+
+/* Header Action Buttons (Fix for square borders) */
+.m3-icon-btn {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(208, 188, 255, 0.08) !important;
+  border: 1px solid rgba(208, 188, 255, 0.16) !important;
+  color: #D0BCFF !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer;
+  padding: 0 !important;
+  margin: 0 4px !important;
+  text-decoration: none !important;
+  -webkit-appearance: none;
+}
+
+.m3-icon-btn:hover {
+  background: rgba(208, 188, 255, 0.22) !important;
+  border-color: rgba(208, 188, 255, 0.45) !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px);
+}
+
+.m3-icon-btn-danger {
+  color: #FFB4AB !important;
+  background: rgba(255, 180, 171, 0.08) !important;
+  border: 1px solid rgba(255, 180, 171, 0.2) !important;
+}
+
+.m3-icon-btn-danger:hover {
+  background: rgba(255, 180, 171, 0.25) !important;
+  border-color: rgba(255, 180, 171, 0.5) !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px);
+}
+
+.m3-btn-primary {
+  background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%) !important;
+  color: white !important;
+  border-radius: 9999px !important;
+  padding: 10px 24px !important;
+  font-weight: 600 !important;
+  font-size: 0.88rem !important;
+  border: none !important;
+  outline: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35) !important;
+  cursor: pointer;
+}
+
+.m3-btn-primary:hover {
+  background: linear-gradient(135deg, #B56BF9 0%, #7961BC 100%) !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5) !important;
+}
+
+/* -------------------------------------------
+   DASHBOARD CARDS & WIDE CONTAINERS
+   ------------------------------------------- */
+.dashboard-wide-container {
+  width: 100% !important;
+  max-width: 1750px !important;
+  margin: 0 auto !important;
+  padding: 2.5rem 2rem !important;
+}
+
+.m3-card, .card {
+  background: var(--md-surface-card) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--md-surface-border) !important;
+  border-radius: 26px !important;
+  color: #E6E1E5 !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* -------------------------------------------
+   DARK THEME DATA TABLE (FIX WHITE ROW GLITCH)
+   ------------------------------------------- */
+.table, table.dataTable, table.dataTable tbody, table.dataTable tbody tr, table.dataTable tbody td {
+  --bs-table-bg: transparent !important;
+  --bs-table-accent-bg: transparent !important;
+  --bs-table-striped-bg: transparent !important;
+  --bs-table-hover-bg: transparent !important;
+  background-color: transparent !important;
+  color: #E6E1E5 !important;
+  border-color: rgba(208, 188, 255, 0.1) !important;
+}
+
+table.dataTable {
+  border-collapse: separate !important;
+  border-spacing: 0 10px !important;
+  width: 100% !important;
+}
+
+table.dataTable thead th {
+  color: #D0BCFF !important;
+  background: transparent !important;
+  border-bottom: 1px solid rgba(208, 188, 255, 0.25) !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 14px 18px !important;
+}
+
+/* DARK TABLE ROWS - NO WHITE ROW ANYMORE */
+table.dataTable tbody tr {
+  background-color: rgba(26, 21, 40, 0.88) !important;
+  border: 1px solid rgba(208, 188, 255, 0.14) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+table.dataTable tbody tr:hover {
+  background-color: rgba(46, 36, 72, 0.95) !important;
+  border-color: rgba(208, 188, 255, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+table.dataTable tbody td {
+  background-color: transparent !important;
+  color: #E6E1E5 !important;
+  padding: 16px 18px !important;
+  vertical-align: middle !important;
+  border: none !important;
+}
+
+table.dataTable tbody tr td:first-child {
+  border-top-left-radius: 18px !important;
+  border-bottom-left-radius: 18px !important;
+}
+
+table.dataTable tbody tr td:last-child {
+  border-top-right-radius: 18px !important;
+  border-bottom-right-radius: 18px !important;
+}
+
+table.dataTable tbody td a {
+  color: #FFFFFF !important;
+  text-decoration: none !important;
+  font-weight: 500;
+}
+
+table.dataTable tbody td a:hover {
+  color: #D0BCFF !important;
+  text-decoration: underline !important;
+}
+
+/* DataTables search input & pagination styling */
+.dt-search input {
+  background: rgba(30, 24, 48, 0.9) !important;
+  border: 1px solid rgba(208, 188, 255, 0.25) !important;
+  border-radius: 9999px !important;
+  color: white !important;
+  padding: 8px 18px !important;
+  font-size: 0.88rem !important;
+  outline: none !important;
+}
+.dt-search input:focus {
+  border-color: #D0BCFF !important;
+  box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.2) !important;
+}
+.dt-length select {
+  background: rgba(30, 24, 48, 0.9) !important;
+  border: 1px solid rgba(208, 188, 255, 0.25) !important;
+  border-radius: 10px !important;
+  color: white !important;
+  padding: 6px 12px !important;
+  outline: none !important;
+}
+.dt-info, .dt-length label, .dt-search label {
+  color: #CAC4D0 !important;
+  font-size: 0.85rem !important;
+}
+
+/* -------------------------------------------
+   TABLE ACTION BUTTONS (M3 CIRCLE ICONS)
+   ------------------------------------------- */
+.m3-action-btn {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 3px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-decoration: none !important;
+  border: 1px solid transparent !important;
+  cursor: pointer;
+}
+
+.m3-action-edit {
+  background: rgba(208, 188, 255, 0.12) !important;
+  color: #D0BCFF !important;
+  border-color: rgba(208, 188, 255, 0.25) !important;
+}
+.m3-action-edit:hover {
+  background: #6750A4 !important;
+  color: #FFFFFF !important;
+  transform: scale(1.1);
+  border-color: #D0BCFF !important;
+}
+
+.m3-action-role {
+  background: rgba(56, 189, 248, 0.12) !important;
+  color: #38BDF8 !important;
+  border-color: rgba(56, 189, 248, 0.25) !important;
+}
+.m3-action-role:hover {
+  background: #0284C7 !important;
+  color: #FFFFFF !important;
+  transform: scale(1.1);
+  border-color: #38BDF8 !important;
+}
+
+.m3-action-delete {
+  background: rgba(248, 113, 113, 0.12) !important;
+  color: #F87171 !important;
+  border-color: rgba(248, 113, 113, 0.25) !important;
+}
+.m3-action-delete:hover {
+  background: #DC2626 !important;
+  color: #FFFFFF !important;
+  transform: scale(1.1);
+  border-color: #F87171 !important;
+}
+
+/* -------------------------------------------
+   FORM CONTROLS (REGISTER, EDIT, DETAILS)
+   ------------------------------------------- */
+.form-control, .form-select {
+  background-color: rgba(30, 24, 48, 0.9) !important;
+  border: 1px solid rgba(208, 188, 255, 0.2) !important;
+  color: #FFFFFF !important;
+  border-radius: 14px !important;
+  padding: 12px 16px !important;
+  font-size: 0.9rem !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #D0BCFF !important;
+  box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.25) !important;
+  background-color: rgba(40, 32, 62, 0.95) !important;
+}
+
+.form-label {
+  color: #D0BCFF !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 6px !important;
+}
+
+
+
+/* -------------------------------------------------------------
+   GLOBAL BOOTSTRAP OVERRIDES - ELIMINATE WHITE BORDERS & BLUE LINKS
+   ------------------------------------------------------------- */
+:root {
+  --bs-border-color: rgba(208, 188, 255, 0.15) !important;
+  --bs-border-color-translucent: rgba(208, 188, 255, 0.15) !important;
+  --bs-link-color: #FFFFFF !important;
+  --bs-link-hover-color: #D0BCFF !important;
+  --bs-btn-border-radius: 9999px !important;
+}
+
+/* Eliminate ANY white / light-grey border generated by Bootstrap */
+.border, .border-top, .border-bottom, .border-start, .border-end {
+  border-color: rgba(208, 188, 255, 0.15) !important;
+}
+
+/* Force all buttons and links in cards to never have blue text or sharp corners */
+a, a:hover, a:focus, a:visited {
+  text-decoration: none !important;
+}
+
+/* M3 Pill Geometry helper */
+.m3-pill {
+  border-radius: 9999px !important;
+}
+
+
+/* -------------------------------------------------------------
+   DATATABLES 1.x & 2.x PAGINATION - PURE BRIGHT WHITE TEXT FIX
+   ------------------------------------------------------------- */
+div.dt-container div.dt-paging,
+.dataTables_wrapper .dataTables_paginate {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 6px !important;
+  margin-top: 1.25rem !important;
+  color: #FFFFFF !important;
+}
+
+div.dt-container div.dt-paging button.dt-paging-button,
+div.dt-container .dt-paging button,
+.dataTables_wrapper .dataTables_paginate .paginate_button,
+button.dt-paging-button,
+a.paginate_button {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(208, 188, 255, 0.25) !important;
+  border-radius: 9999px !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  opacity: 1 !important;
+  padding: 6px 14px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  margin: 0 2px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  outline: none !important;
+  text-decoration: none !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 32px !important;
+  height: 32px !important;
+}
+
+div.dt-container div.dt-paging button.dt-paging-button:hover:not(.disabled):not(.current),
+div.dt-container .dt-paging button:hover:not(:disabled):not(.current),
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+  background: rgba(168, 85, 247, 0.45) !important;
+  border-color: #EADDFF !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.45) !important;
+}
+
+div.dt-container div.dt-paging button.dt-paging-button.current,
+div.dt-container .dt-paging button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: linear-gradient(135deg, #A855F7 0%, #7E22CE 100%) !important;
+  border: 2px solid #FFFFFF !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.75) !important;
+  border-radius: 50% !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+}
+
+div.dt-container div.dt-paging button.dt-paging-button.disabled,
+div.dt-container div.dt-paging button.dt-paging-button:disabled,
+div.dt-container .dt-paging button:disabled,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+  background: rgba(45, 36, 68, 0.6) !important;
+  border: 1px solid rgba(208, 188, 255, 0.2) !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  box-shadow: none !important;
+}

@@ -58,4 +58,24 @@ public class RedirectControllerImpl {
   public String mfa(Model model) {
     return "app/user/mfa";
   }
+
+  @GetMapping({"/app/clients", "/app/client", "/app/client/clients"})
+  public String clients(Model model) {
+    return "app/client/clients";
+  }
+
+  @GetMapping("/app/clients/register")
+  public String registerClient(Model model) {
+    return "app/client/register";
+  }
+
+  @GetMapping("/app/clients/details/{identifier}")
+  public String clientDetails(Model model) {
+    return "app/client/client";
+  }
+
+  @GetMapping("/app/clients/edit/{identifier}")
+  public String editClient(Model model) {
+    return "app/client/edit";
+  }
 }
