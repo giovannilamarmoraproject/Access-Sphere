@@ -19,6 +19,14 @@
   
   <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <!-- SweetAlert2 & Shared M3 Alert -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
+  <script src="/app/shared/sweetalert.js"></script>
+  
+  <!-- Global App Config & Versioning -->
+  <script src="/app/shared/config.js"></script>
 
   <style>
     :root {
@@ -140,7 +148,7 @@
           <div class="flex flex-col">
             <span class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
               Access Sphere
-              <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">v1.6.7</span>
+              <span class="landing-version-badge text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30" data-app-version="v">v2.0.0</span>
             </span>
             <span class="text-[11px] text-gray-400 font-medium tracking-wide">Identity & OAuth 2.0 Security Hub</span>
           </div>
@@ -510,7 +518,7 @@
         </div>
 
         <div class="text-xs text-gray-500">
-          &copy; 2025-2026 Access Sphere. Tutti i diritti riservati.
+          &copy; <span class="copyright-year">2026</span> Access Sphere. Tutti i diritti riservati.
         </div>
 
       </div>

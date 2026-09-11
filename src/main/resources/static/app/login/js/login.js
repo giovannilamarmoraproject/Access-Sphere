@@ -179,12 +179,12 @@ function checkMFAAndSetupOTP(response, client_id) {
         loginMethod.insertAdjacentHTML(
           "beforeend",
           `<label
-             style="border-color: rgb(64 71 79 / var(--tw-border-opacity, 1)) !important;"
-             class="flex items-center gap-4 rounded-xl border border-solid border-[#40474f] p-[15px] flex-row-reverse clickable"
+             style="border: 1.5px solid rgba(168, 85, 247, 0.4) !important;"
+             class="flex items-center gap-4 rounded-xl border border-solid border-purple-500/40 p-[15px] flex-row-reverse clickable"
            >
              <input
                type="radio"
-               class="h-5 w-5 accent-white border-2 bg-[#2c3035] border-[#40474f] text-transparent
+               class="h-5 w-5 accent-white border-2 bg-[#2c3035] border-purple-500/40 text-transparent
                       checked:border-white checked:bg-[image:--radio-dot-svg]
                       focus:outline-none focus:ring-0 checked:focus:border-white"
                name="mfa_method"
@@ -260,11 +260,11 @@ function checkMFAAndSetupOTPNew(response, client_id) {
                     64 71 79 / var(--tw-border-opacity, 1)
                   ) !important;
                 "
-                class="flex items-center gap-4 rounded-xl border border-solid border-[#40474f] p-[15px] flex-row-reverse clickable"
+                class="flex items-center gap-4 rounded-xl border border-solid border-purple-500/40 p-[15px] flex-row-reverse clickable"
               >
                 <input
                   type="radio"
-                  class="h-5 w-5 border-2 border-[#40474f] bg-transparent text-transparent checked:border-white checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-white"
+                  class="h-5 w-5 border-2 border-purple-500/40 bg-transparent text-transparent checked:border-white checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-white"
                   ${element == firstElement ? "checked" : ""}
                   value="${element}"
                   name="e4d946d7-bb41-4aac-9923-be1af497aa07"

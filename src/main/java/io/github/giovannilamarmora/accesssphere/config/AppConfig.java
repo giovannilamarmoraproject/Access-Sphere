@@ -21,7 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableCaching
 @OpenAPIDefinition(
-    info = @Info(title = "Access Sphere Swagger", version = "1.0.0"),
+    info = @Info(title = "Access Sphere Swagger", version = "2.0.0"),
     security = {@SecurityRequirement(name = HttpHeaders.AUTHORIZATION)},
     servers = {
       @Server(

@@ -1,34 +1,264 @@
+/* ==========================================================================
+   ACCESS SPHERE - MATERIAL EXPRESSIVE 3 (M3) SWEETALERT2 STYLESHEET
+   Tema unificato Cosmic Glass & Neon Purple per tutti i modali e alert dell'app
+   ========================================================================== */
+
+/* 1. Backdrop / Container */
+.swal2-container {
+  background: rgba(10, 7, 18, 0.78) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  z-index: 10000 !important;
+  transition: all 0.25s ease-in-out !important;
+}
+
+/* 2. Modal Popup (M3 Cosmic Glass Surface) */
+.swal2-popup,
+.m3-swal-popup {
+  background: rgba(20, 15, 33, 0.94) !important;
+  backdrop-filter: blur(32px) !important;
+  -webkit-backdrop-filter: blur(32px) !important;
+  border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+  border-radius: 36px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(168, 85, 247, 0.22) !important;
+  padding: 2.4rem 2.2rem 2.2rem !important;
+  color: #FFFFFF !important;
+  font-family: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  max-width: 480px !important;
+  width: 90% !important;
+}
+
+/* Retrocompatibilità vecchie classi */
 .border_round {
-  border-radius: 30px;
+  border-radius: 36px !important;
 }
-
 .blur-effect {
-  backdrop-filter: blur(30px);
-  background: rgba(227, 228, 237, 0.37);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(20, 15, 33, 0.94) !important;
+  backdrop-filter: blur(32px) !important;
+  -webkit-backdrop-filter: blur(32px) !important;
+  border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+  border-radius: 36px !important;
 }
 
-.width-100 {
-  width: 100px !important;
+/* 3. Typography */
+.swal2-title,
+.m3-swal-title {
+  color: #FFFFFF !important;
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0 !important;
 }
 
+.swal2-html-container,
+.m3-swal-html {
+  color: #CAC4D0 !important;
+  font-size: 0.92rem !important;
+  line-height: 1.6 !important;
+  font-weight: 400 !important;
+  margin: 0.75rem 0 1.25rem !important;
+}
+
+/* 4. Icons M3 Glow Palette - Cerchio perfetto 1:1, no distorsioni */
+.swal2-icon {
+  box-sizing: content-box !important;
+  width: 5em !important;
+  height: 5em !important;
+  min-width: 5em !important;
+  min-height: 5em !important;
+  max-width: 5em !important;
+  max-height: 5em !important;
+  aspect-ratio: 1 / 1 !important;
+  border: 0.25em solid transparent !important;
+  border-radius: 50% !important;
+  line-height: 5em !important;
+  flex-shrink: 0 !important;
+  margin: 1.25rem auto 1rem !important;
+}
+
+/* Info Icon (Purple M3) */
+.swal2-icon.swal2-info {
+  border-color: #A855F7 !important;
+  color: #D0BCFF !important;
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.35) !important;
+}
+
+/* Success Icon (Emerald M3) */
+.swal2-icon.swal2-success {
+  border-color: #10B981 !important;
+  color: #10B981 !important;
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.3) !important;
+}
+.swal2-icon.swal2-success .swal2-success-ring {
+  border: 0.25em solid rgba(16, 185, 129, 0.35) !important;
+}
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: #10B981 !important;
+}
 .swal2-success-circular-line-left,
 .swal2-success-circular-line-right,
 .swal2-success-fix {
   background-color: transparent !important;
 }
 
-body > * {
-  transition: 0.15s filter all;
+/* Warning Icon (Amber M3) */
+.swal2-icon.swal2-warning {
+  border-color: #F59E0B !important;
+  color: #FBBF24 !important;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.3) !important;
 }
 
+/* Error Icon (Coral Red M3) */
+.swal2-icon.swal2-error {
+  border-color: #EF4444 !important;
+  color: #EF4444 !important;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.35) !important;
+}
+.swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+  background-color: #EF4444 !important;
+}
+
+/* Question Icon (Violet M3) */
+.swal2-icon.swal2-question {
+  border-color: #A855F7 !important;
+  color: #C084FC !important;
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.35) !important;
+}
+
+/* 5. Buttons & Actions */
+.swal2-actions {
+  gap: 12px !important;
+  margin: 1.25rem auto 0 !important;
+  width: 100% !important;
+  justify-content: center !important;
+}
+
+/* Confirm Button: Pill Gradient Viola M3 */
+.swal2-confirm,
+.m3-swal-confirm-btn {
+  border-radius: 9999px !important;
+  background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(208, 188, 255, 0.3) !important;
+  padding: 10px 26px !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45) !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  min-width: 110px;
+}
+.swal2-confirm:hover,
+.m3-swal-confirm-btn:hover {
+  background: linear-gradient(135deg, #C084FC 0%, #9333EA 100%) !important;
+  box-shadow: 0 6px 24px rgba(168, 85, 247, 0.6) !important;
+  transform: translateY(-1px) !important;
+  border-color: rgba(208, 188, 255, 0.5) !important;
+}
+.swal2-confirm:focus,
+.m3-swal-confirm-btn:focus {
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.4) !important;
+  outline: none !important;
+}
+
+/* Cancel Button: Pill Dark Glass con bordo viola */
+.swal2-cancel,
+.m3-swal-cancel-btn {
+  border-radius: 9999px !important;
+  background: rgba(30, 23, 46, 0.8) !important;
+  color: #D0BCFF !important;
+  border: 1.5px solid rgba(168, 85, 247, 0.4) !important;
+  padding: 10px 24px !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+  min-width: 100px;
+}
+.swal2-cancel:hover,
+.m3-swal-cancel-btn:hover {
+  background: rgba(168, 85, 247, 0.25) !important;
+  border-color: #C084FC !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px) !important;
+}
+.swal2-cancel:focus,
+.m3-swal-cancel-btn:focus {
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3) !important;
+  outline: none !important;
+}
+
+/* Deny Button: Pill Soft Red con bordo rosso */
+.swal2-deny,
+.m3-swal-deny-btn {
+  border-radius: 9999px !important;
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #FCA5A5 !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.5) !important;
+  padding: 10px 24px !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+  min-width: 100px;
+}
+.swal2-deny:hover,
+.m3-swal-deny-btn:hover {
+  background: rgba(239, 68, 68, 0.35) !important;
+  border-color: #EF4444 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px) !important;
+}
+.swal2-deny:focus,
+.m3-swal-deny-btn:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3) !important;
+  outline: none !important;
+}
+
+/* 6. Inputs in Modal */
+.swal2-input,
+.swal2-textarea,
+.m3-swal-input {
+  background: rgba(30, 23, 46, 0.85) !important;
+  border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+  border-radius: 16px !important;
+  color: #FFFFFF !important;
+  font-size: 0.95rem !important;
+  padding: 10px 16px !important;
+  box-shadow: none !important;
+  margin: 1rem auto 0.5rem !important;
+  transition: all 0.25s ease !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+.swal2-input:focus,
+.swal2-textarea:focus,
+.m3-swal-input:focus {
+  background: rgba(38, 29, 58, 0.95) !important;
+  border-color: #A855F7 !important;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3) !important;
+  outline: none !important;
+}
+.swal2-input::placeholder,
+.swal2-textarea::placeholder,
+.m3-swal-input::placeholder {
+  color: rgba(208, 188, 255, 0.45) !important;
+}
+
+/* 7. Close button */
+.swal2-close {
+  color: rgba(208, 188, 255, 0.6) !important;
+  border-radius: 9999px !important;
+  transition: all 0.2s ease !important;
+}
+.swal2-close:hover {
+  color: #FFFFFF !important;
+  background: rgba(168, 85, 247, 0.2) !important;
+}
+
+/* 8. Effetto sfocatura di sfondo durante l'apertura */
 body.swal2-shown > [aria-hidden="true"] {
-  filter: blur(2px);
-}
-
-html,
-body {
-  height: 100%;
-  width: 100%;
-  overflow-x: hidden;
+  filter: blur(4px) !important;
+  transition: filter 0.25s ease !important;
 }
