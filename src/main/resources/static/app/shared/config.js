@@ -2,7 +2,7 @@ const appVersion = "v1.6.5";
 
 function getConfig() {
   const configClientID = "ACCESS-SPHERE-TECH";
-  const configRedirectUri = window.location.origin + "/app/users";
+  const configRedirectUri = window.location.origin + "/app";
 
   const urlConfig = {
     baseUrl: window.location.origin,

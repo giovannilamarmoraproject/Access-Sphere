@@ -23,7 +23,7 @@
         "strapi_token": true,
         "redirectUri": {
           "fallback_uri": "http://localhost:8081/app/login",
-          "redirect_uri": "http://localhost:8081 http://localhost:8081/app/users"
+          "redirect_uri": "http://localhost:8081 http://localhost:8081/app/users http://localhost:8081/app http://localhost:8081/app/dashboard"
         },
         "app_roles": [
           {

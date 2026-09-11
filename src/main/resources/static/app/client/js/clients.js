@@ -119,8 +119,7 @@ function displayClientsTable(clients) {
   clients.forEach((c) => {
     const scopesStr = formatScopes(c.scopes);
     const scopesBadge = scopesStr ? `<span class="badge text-bg-secondary text-[10px]">${scopesStr}</span>` : '<span class="text-gray-500 text-xs">Standard</span>';
-    const redirectStr = formatRedirectUris(c.redirect_uri);
-    const redirectPreview = redirectStr ? `<div class="max-w-[200px] truncate text-xs text-purple-200 font-mono" title="${redirectStr}">${redirectStr}</div>` : '<span class="text-gray-500 text-xs">Nessuno</span>';
+    const redirectPreview = renderRedirectUrisBadges(c.redirect_uri);
     const mfaBadge = c.mfaEnabled 
       ? '<span class="badge text-bg-success text-[10px]"><i class="fa-solid fa-shield-check mr-1"></i>ATTIVO</span>' 
       : '<span class="badge text-bg-secondary text-[10px]">DISATTIVATO</span>';
@@ -336,7 +335,7 @@ function viewClientDetails(clientId) {
   document.getElementById("detail-authType").innerText = client.authType || "BEARER";
   document.getElementById("detail-clientSecret").value = client.clientSecret || "";
   document.getElementById("detail-scopes").innerText = formatScopes(client.scopes) || "openid, profile, email";
-  document.getElementById("detail-redirectUri").innerText = formatRedirectUris(client.redirect_uri) || "Nessuna URI configurata";
+  document.getElementById("detail-redirectUri").innerHTML = renderRedirectUrisBadges(client.redirect_uri);
   document.getElementById("detail-webhooks").innerText = formatWebhooks(client.webhooks) || "Nessun webhook";
   document.getElementById("detail-jwtExpiration").innerText = (client.jwtExpiration || 3600) + " secondi";
   document.getElementById("detail-mfaStatus").innerHTML = client.mfaEnabled 

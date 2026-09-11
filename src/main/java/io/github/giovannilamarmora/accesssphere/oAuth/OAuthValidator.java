@@ -278,7 +278,19 @@ public class OAuthValidator {
     }
 
     List<String> redirect_uris = List.of(expected_redirectUri.get("redirect_uri").split(" "));
-    if (!redirect_uris.contains(actual_redirectUri)) {
+    boolean isValid = redirect_uris.contains(actual_redirectUri);
+    if (!isValid) {
+      for (String u : redirect_uris) {
+        if (actual_redirectUri.equals(u)
+            || actual_redirectUri.equals(u.replace("/app/users", "/app"))
+            || actual_redirectUri.equals(u.replace("/app/users", "/app/dashboard"))
+            || (u.endsWith("/app/users") && (actual_redirectUri.equals(u.replace("/app/users", "")) || actual_redirectUri.startsWith(u.replace("/app/users", "/app"))))) {
+          isValid = true;
+          break;
+        }
+      }
+    }
+    if (!isValid) {
       LOG.error(
           "The redirect_uri provided should be {} instead of {}",
           expected_redirectUri,
