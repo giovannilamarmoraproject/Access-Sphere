@@ -1,5 +1,5 @@
-// loader.js - Access Sphere High Performance Loader
-document.addEventListener("DOMContentLoaded", function () {
+// loader.js - Access Sphere High Performance Ultra-Fast Loader
+function initLoader() {
   const loader = document.getElementById("loader");
   if (loader && !loader.innerHTML.trim()) {
     loader.innerHTML = `
@@ -10,11 +10,15 @@ document.addEventListener("DOMContentLoaded", function () {
         <img src="/app/shared/loader/oval.svg" alt="Caricamento..." />
       </div>`;
   }
-  // Fallback di sicurezza: rimuovi automaticamente il loader dopo 800ms se non già disabilitato
-  setTimeout(() => {
-    disableLoader();
-  }, 800);
-});
+  // Rimuovi immediatamente il loader senza ritardi artificiali (instant reveal)
+  disableLoader();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initLoader);
+} else {
+  initLoader();
+}
 
 window.addEventListener("load", function () {
   disableLoader();
@@ -56,6 +60,6 @@ function disableLoader() {
         loader.style.display = "none";
       }
       resolve();
-    }, 150);
+    }, 60);
   });
 }

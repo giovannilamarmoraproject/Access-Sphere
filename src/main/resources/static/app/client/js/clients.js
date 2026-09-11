@@ -84,6 +84,9 @@ function getClients() {
         sweetalert("error", "Errore Caricamento Client", data.error.message || "Impossibile recuperare i client");
       } else {
         cachedClients = data.data || [];
+        try {
+          localStorage.setItem(cfg.client_id + "_clientsData", JSON.stringify(cachedClients));
+        } catch(e) {}
         displayClientsTable(cachedClients);
         updateClientKpis(cachedClients);
       }
@@ -92,6 +95,23 @@ function getClients() {
       console.error("Error fetching clients:", err);
       sweetalert("error", "Errore di Rete", "Impossibile contattare il server per la lista dei client.");
     });
+}
+
+function loadCachedClients() {
+  try {
+    const cfg = getConfig();
+    const stored = localStorage.getItem(cfg.client_id + "_clientsData");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cachedClients = parsed;
+        displayClientsTable(parsed);
+        updateClientKpis(parsed);
+        return true;
+      }
+    }
+  } catch (e) {}
+  return false;
 }
 
 function updateClientKpis(clients) {

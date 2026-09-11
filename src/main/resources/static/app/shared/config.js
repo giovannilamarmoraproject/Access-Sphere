@@ -90,11 +90,80 @@ function applyAutoCopyright() {
   }
 }
 
+/**
+ * ===================================================================
+ * INSTANT SPEED & SPECULATIVE PREFETCH ENGINE
+ * ===================================================================
+ * Precarica in cache HTTP le pagine interne al passaggio del mouse (hover),
+ * tocco o durante l'inattività (idle), rendendo i cambi di pagina istantanei.
+ */
+const _prefetchedRoutes = new Set();
+
+function prefetchRoute(url) {
+  if (!url || typeof url !== "string") return;
+  if (url.startsWith("#") || url.startsWith("javascript:") || url.startsWith("mailto:") || url.startsWith("tel:")) return;
+
+  try {
+    const target = new URL(url, window.location.origin);
+    if (target.origin !== window.location.origin) return;
+    if (target.pathname === window.location.pathname) return;
+    if (_prefetchedRoutes.has(target.pathname)) return;
+
+    _prefetchedRoutes.add(target.pathname);
+
+    // 1. Link prefetch tag
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.href = target.href;
+    link.as = "document";
+    document.head.appendChild(link);
+
+    // 2. Fetch di supporto per riscaldare la cache del browser
+    fetch(target.href, { priority: "low", credentials: "same-origin" }).catch(() => {});
+  } catch (e) {}
+}
+
+function initInstantNavigation() {
+  if (typeof document === "undefined") return;
+
+  // Intercetta hover e touch su tutti i link interni
+  document.addEventListener("mouseover", (e) => {
+    const a = e.target.closest("a");
+    if (a && a.href) prefetchRoute(a.href);
+  }, { passive: true });
+
+  document.addEventListener("touchstart", (e) => {
+    const a = e.target.closest("a");
+    if (a && a.href) prefetchRoute(a.href);
+  }, { passive: true });
+
+  // Precaricamento delle rotte chiave in idle
+  const idleFn = window.requestIdleCallback || ((cb) => setTimeout(cb, 250));
+  idleFn(() => {
+    const p = window.location.pathname;
+    if (p === "/" || p === "/index.html") {
+      prefetchRoute("/app/login");
+      prefetchRoute("/app");
+      prefetchRoute("/privacy-policy");
+      prefetchRoute("/cookie-policy");
+    } else if (p.startsWith("/app/login")) {
+      prefetchRoute("/app");
+      prefetchRoute("/");
+    } else if (p.startsWith("/app")) {
+      prefetchRoute("/app/users/register");
+      prefetchRoute("/app/clients/register");
+      prefetchRoute("/app/users");
+      prefetchRoute("/app/clients");
+    }
+  });
+}
+
 // Inizializzazione automatica al caricamento del DOM
 if (typeof document !== "undefined") {
   const initAppConfig = () => {
     applyAppVersion();
     applyAutoCopyright();
+    initInstantNavigation();
   };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initAppConfig);

@@ -448,3 +448,74 @@ div.dt-container .dt-paging button:disabled,
   -webkit-text-fill-color: #FFFFFF !important;
   box-shadow: none !important;
 }
+
+/* -------------------------------------------
+   HUB HERO & RECAP CARDS
+   ------------------------------------------- */
+.hub-hero-card {
+  background: rgba(24, 19, 38, 0.78);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(208, 188, 255, 0.18);
+  border-radius: 28px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.hub-hero-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(208, 188, 255, 0.45);
+  box-shadow: 0 24px 48px -12px rgba(124, 77, 255, 0.35);
+}
+.hub-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.hub-card-users::before {
+  background: linear-gradient(90deg, #A855F7, #EC4899);
+}
+.hub-card-clients::before {
+  background: linear-gradient(90deg, #6366F1, #06B6D4);
+}
+.hub-hero-card:hover::before {
+  opacity: 1;
+}
+.pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(208, 188, 255, 0.14);
+  color: #D0BCFF;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.m3-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 9999px !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(208, 188, 255, 0.25);
+  color: #E6E1E5;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+.m3-btn-secondary:hover {
+  background: rgba(208, 188, 255, 0.15);
+  border-color: rgba(208, 188, 255, 0.5);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
