@@ -85,17 +85,38 @@
       color: #A39DB5 !important;
       cursor: not-allowed;
     }
-    .repeater-table th {
-      color: #D0BCFF;
+    .table.repeater-table {
+      --bs-table-bg: transparent !important;
+      --bs-table-color: #FFFFFF !important;
+      color: #FFFFFF !important;
+      background-color: transparent !important;
+    }
+    .table.repeater-table > :not(caption) > * > * {
+      background-color: transparent !important;
+      color: #FFFFFF !important;
+    }
+    .table.repeater-table th {
+      color: #D0BCFF !important;
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 700;
-      padding: 8px 12px;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.2);
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(208, 188, 255, 0.2) !important;
+      background: transparent !important;
     }
-    .repeater-table td {
-      padding: 8px 12px;
+    .table.repeater-table td {
+      padding: 10px 12px;
       vertical-align: middle;
+      border-bottom: 1px solid rgba(208, 188, 255, 0.08) !important;
+      color: #E2E8F0 !important;
+      background: transparent !important;
+    }
+    .repeater-empty-state {
+      color: #D0BCFF !important;
+      opacity: 0.75;
+      font-style: italic;
+      text-align: center;
+      padding: 1.5rem 0 !important;
     }
   </style>
 </head>
@@ -505,7 +526,7 @@
       tbody.innerHTML = "";
 
       if (!appRolesList || appRolesList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-3 italic">Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state">Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.</td></tr>`;
         return;
       }
 
@@ -582,7 +603,7 @@
       tbody.innerHTML = "";
 
       if (!webhooksList || webhooksList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-3 italic">Nessun webhook registrato.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state">Nessun webhook registrato. Clicca su "Aggiungi Webhook" per aggiungerne uno.</td></tr>`;
         return;
       }
 

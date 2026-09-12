@@ -90,18 +90,42 @@
       color: #D8B4FE;
       border: 1px solid rgba(168, 85, 247, 0.3);
     }
-    .repeater-table th {
-      color: #D0BCFF;
+    .table.repeater-table {
+      --bs-table-bg: transparent !important;
+      --bs-table-color: #FFFFFF !important;
+      color: #FFFFFF !important;
+      background-color: transparent !important;
+    }
+    .table.repeater-table > :not(caption) > * > * {
+      background-color: transparent !important;
+      color: #FFFFFF !important;
+    }
+    .table.repeater-table th {
+      color: #D0BCFF !important;
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 700;
-      padding: 8px 12px;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.2);
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(208, 188, 255, 0.2) !important;
+      background: transparent !important;
     }
-    .repeater-table td {
-      padding: 10px 12px;
+    .table.repeater-table td {
+      padding: 12px 14px;
       vertical-align: middle;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.08);
+      border-bottom: 1px solid rgba(208, 188, 255, 0.08) !important;
+      color: #E2E8F0 !important;
+      background: transparent !important;
+    }
+    .repeater-empty-state {
+      color: #D0BCFF !important;
+      opacity: 0.75;
+      font-style: italic;
+      text-align: center;
+      padding: 1.5rem 0 !important;
+    }
+    .role-desc-text {
+      color: #E2E8F0 !important;
+      line-height: 1.5;
     }
     .masked-input {
       background: transparent;
@@ -367,27 +391,30 @@
                 <!-- Client Secret -->
                 <div class="param-box">
                   <span class="param-label">Client Secret</span>
+                  ${c.clientSecret ? `
                   <div class="flex items-center gap-2">
-                    <input type="password" id="secret-clientSecret" readonly value="${c.clientSecret || ''}" class="masked-input text-xs" />
+                    <input type="password" id="secret-clientSecret" readonly value="${c.clientSecret}" class="masked-input text-xs" />
                     <button type="button" class="m3-icon-btn flex-shrink-0" onclick="toggleMask('secret-clientSecret', 'eye-clientSecret')" title="Mostra / Nascondi">
                       <i id="eye-clientSecret" class="fa-solid fa-eye text-xs"></i>
                     </button>
-                    <button type="button" class="m3-icon-btn flex-shrink-0" onclick="copyValue('${c.clientSecret || ''}', 'Client Secret')" title="Copia Secret">
+                    <button type="button" class="m3-icon-btn flex-shrink-0" onclick="copyValue('${c.clientSecret}', 'Client Secret')" title="Copia Secret">
                       <i class="fa-solid fa-copy text-xs"></i>
                     </button>
                   </div>
+                  ` : '<div class="param-value font-mono text-sm font-semibold mt-1">N/D</div>'}
                 </div>
 
                 <!-- Registration Token -->
                 <div class="param-box">
                   <span class="param-label">Registration Token</span>
+                  ${(c.registrationToken || c.registration_token) ? `
                   <div class="flex items-center gap-2">
-                    <span class="font-mono text-xs text-gray-200 truncate flex-1">${c.registrationToken || c.registration_token || 'Non configurato'}</span>
-                    ${(c.registrationToken || c.registration_token) ? `
+                    <span class="font-mono text-xs text-gray-200 truncate flex-1">${c.registrationToken || c.registration_token}</span>
                     <button type="button" class="m3-icon-btn flex-shrink-0" onclick="copyValue('${c.registrationToken || c.registration_token}', 'Registration Token')" title="Copia Token">
                       <i class="fa-solid fa-copy text-xs"></i>
-                    </button>` : ''}
+                    </button>
                   </div>
+                  ` : '<div class="param-value font-mono text-sm font-semibold mt-1">N/D</div>'}
                 </div>
               </div>
 
@@ -540,16 +567,17 @@
                 <!-- JWT Secret -->
                 <div class="param-box">
                   <span class="param-label">JWT Secret Key (256-bit)</span>
+                  ${(c.jwtSecret || c.jwt_secret) ? `
                   <div class="flex items-center gap-2 mt-1">
-                    <input type="password" id="secret-jwtSecret" readonly value="${c.jwtSecret || c.jwt_secret || ''}" class="masked-input text-xs" />
+                    <input type="password" id="secret-jwtSecret" readonly value="${c.jwtSecret || c.jwt_secret}" class="masked-input text-xs" />
                     <button type="button" class="m3-icon-btn flex-shrink-0" onclick="toggleMask('secret-jwtSecret', 'eye-jwtSecret')" title="Mostra / Nascondi">
                       <i id="eye-jwtSecret" class="fa-solid fa-eye text-xs"></i>
                     </button>
-                    ${(c.jwtSecret || c.jwt_secret) ? `
                     <button type="button" class="m3-icon-btn flex-shrink-0" onclick="copyValue('${c.jwtSecret || c.jwt_secret}', 'JWT Secret')" title="Copia">
                       <i class="fa-solid fa-copy text-xs"></i>
-                    </button>` : ''}
+                    </button>
                   </div>
+                  ` : '<div class="param-value font-mono text-sm font-semibold mt-1">N/D</div>'}
                 </div>
 
                 <!-- JWT Expiration -->
@@ -563,16 +591,17 @@
                 <!-- JWE Secret -->
                 <div class="param-box">
                   <span class="param-label">JWE Secret Key (Cifratura)</span>
+                  ${(c.jweSecret || c.jwe_secret) ? `
                   <div class="flex items-center gap-2 mt-1">
-                    <input type="password" id="secret-jweSecret" readonly value="${c.jweSecret || c.jwe_secret || ''}" class="masked-input text-xs" />
+                    <input type="password" id="secret-jweSecret" readonly value="${c.jweSecret || c.jwe_secret}" class="masked-input text-xs" />
                     <button type="button" class="m3-icon-btn flex-shrink-0" onclick="toggleMask('secret-jweSecret', 'eye-jweSecret')" title="Mostra / Nascondi">
                       <i id="eye-jweSecret" class="fa-solid fa-eye text-xs"></i>
                     </button>
-                    ${(c.jweSecret || c.jwe_secret) ? `
                     <button type="button" class="m3-icon-btn flex-shrink-0" onclick="copyValue('${c.jweSecret || c.jwe_secret}', 'JWE Secret')" title="Copia">
                       <i class="fa-solid fa-copy text-xs"></i>
-                    </button>` : ''}
+                    </button>
                   </div>
+                  ` : '<div class="param-value font-mono text-sm font-semibold mt-1">N/D</div>'}
                 </div>
 
                 <!-- JWE Expiration -->
@@ -605,9 +634,9 @@
                       <tr>
                         <td class="font-mono font-bold text-white">${r.role || ''}</td>
                         <td><span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">${r.type || 'DEFAULT'}</span></td>
-                        <td class="text-gray-300">${r.description || 'Nessuna descrizione fornita'}</td>
+                        <td class="role-desc-text">${r.description || 'Nessuna descrizione fornita'}</td>
                       </tr>
-                    `).join('') : '<tr><td colspan="3" class="text-center text-gray-500 py-4 italic">Nessun ruolo applicativo configurato per questo client.</td></tr>'}
+                    `).join('') : '<tr><td colspan="3" class="repeater-empty-state">Nessun ruolo applicativo configurato per questo client.</td></tr>'}
                   </tbody>
                 </table>
               </div>
@@ -635,7 +664,7 @@
                         <td class="font-mono text-purple-300 break-all">${w.url || ''}</td>
                         <td><span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">${w.action || 'DELETE_USER'}</span></td>
                       </tr>
-                    `).join('') : '<tr><td colspan="3" class="text-center text-gray-500 py-4 italic">Nessun webhook registrato per questo client.</td></tr>'}
+                    `).join('') : '<tr><td colspan="3" class="repeater-empty-state">Nessun webhook registrato per questo client.</td></tr>'}
                   </tbody>
                 </table>
               </div>
