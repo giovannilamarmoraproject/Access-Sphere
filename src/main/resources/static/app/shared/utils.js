@@ -66,6 +66,17 @@ function encodeBase64(password) {
   return encodedPassword;
 }
 
+function escapeHtmlAttr(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+window.escapeHtmlAttr = escapeHtmlAttr;
+
 function isMobile() {
   return window.matchMedia("(max-width: 768px)").matches;
   //|| /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent)
@@ -227,8 +238,72 @@ function triggerMobileRefresh() {
   }
 }
 
+// ----------------------------------------------------
+// SCROLL MANAGEMENT (Always start from top on section/page change)
+// ----------------------------------------------------
+function scrollToTop(behavior = "instant") {
+  try {
+    window.scrollTo({ top: 0, left: 0, behavior: behavior });
+  } catch (e) {
+    window.scrollTo(0, 0);
+  }
+  if (document.documentElement) document.documentElement.scrollTop = 0;
+  if (document.body) document.body.scrollTop = 0;
+}
+window.scrollToTop = scrollToTop;
+
+// Disable automatic browser scroll restoration so navigating across pages/sections always starts at top
+if ("scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+
+// Reset scroll on initial script evaluation
+scrollToTop("instant");
+
+// Reset scroll on DOM ready, window load, pageshow (back/forward cache), and popstate
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => scrollToTop("instant"));
+} else {
+  scrollToTop("instant");
+}
+window.addEventListener("pageshow", () => {
+  scrollToTop("instant");
+});
+window.addEventListener("load", () => {
+  scrollToTop("instant");
+});
+window.addEventListener("popstate", () => {
+  scrollToTop("instant");
+});
+window.addEventListener("beforeunload", () => {
+  scrollToTop("instant");
+});
+
+// Intercept link clicks to reset scroll immediately before navigation
+document.addEventListener("click", (e) => {
+  const link = e.target.closest("a[href]");
+  if (link) {
+    const href = link.getAttribute("href");
+    if (href && !href.startsWith("#") && !href.startsWith("javascript:") && !link.target) {
+      scrollToTop("instant");
+    }
+  }
+}, { passive: true });
+
+function navigateToSection(targetPath, viewName) {
+  closeMobileNavDrawer();
+  scrollToTop("instant");
+  if (typeof switchDashboardView === "function" && viewName) {
+    switchDashboardView(viewName, true);
+    return false;
+  }
+  window.location.href = targetPath;
+  return false;
+}
+
 function triggerMobileBack() {
   closeMobileNavDrawer();
+  scrollToTop("instant");
   if (typeof goBack === "function") {
     goBack();
   } else if (window.history.length > 1) {
@@ -271,7 +346,7 @@ function initMobileNavigation() {
     drawer.className = "m3-mobile-drawer";
     drawer.innerHTML = `
       <div class="flex items-center justify-between pb-4 mb-4 border-b border-purple-500/20">
-        <a href="/app" class="flex items-center gap-3 text-decoration-none" onclick="closeMobileNavDrawer()">
+        <a href="/app" class="flex items-center gap-3 text-decoration-none" onclick="return navigateToSection('/app', 'dashboard');">
           <img src="/img/logo-minimal.svg" alt="Access Sphere" class="w-8 h-8" />
           <div class="flex flex-col">
             <span class="text-base font-bold text-white tracking-tight flex items-center gap-1.5">
@@ -288,15 +363,15 @@ function initMobileNavigation() {
       <!-- Navigazione Principale -->
       <div class="mb-5">
         <span class="text-[10px] uppercase font-bold text-purple-300/60 tracking-wider px-3 mb-2 block">Menu Principale</span>
-        <a href="/app" class="m3-mobile-nav-link ${currentPath === '/app' || currentPath === '/app/' ? 'active' : ''}">
+        <a href="/app" onclick="return navigateToSection('/app', 'dashboard');" class="m3-mobile-nav-link ${currentPath === '/app' || currentPath === '/app/' ? 'active' : ''}">
           <i class="fa-solid fa-gauge-high"></i>
           <span>Panoramica</span>
         </a>
-        <a href="/app/users" class="m3-mobile-nav-link ${currentPath.includes('/app/user') ? 'active' : ''}">
+        <a href="/app/users" onclick="return navigateToSection('/app/users', 'users');" class="m3-mobile-nav-link ${currentPath.includes('/app/user') ? 'active' : ''}">
           <i class="fa-solid fa-users"></i>
           <span>Utenti</span>
         </a>
-        <a href="/app/clients" class="m3-mobile-nav-link ${currentPath.includes('/app/client') ? 'active' : ''}">
+        <a href="/app/clients" onclick="return navigateToSection('/app/clients', 'clients');" class="m3-mobile-nav-link ${currentPath.includes('/app/client') ? 'active' : ''}">
           <i class="fa-solid fa-key"></i>
           <span>Client OAuth 2.0</span>
         </a>
@@ -319,11 +394,11 @@ function initMobileNavigation() {
           <span>Torna Indietro</span>
         </button>
         ` : ''}
-        <a href="/app/users/register" class="m3-mobile-nav-link">
+        <a href="/app/users/register" onclick="closeMobileNavDrawer(); scrollToTop('instant');" class="m3-mobile-nav-link">
           <i class="fa-solid fa-user-plus text-purple-400"></i>
           <span>Nuovo Utente</span>
         </a>
-        <a href="/app/clients/register" class="m3-mobile-nav-link">
+        <a href="/app/clients/register" onclick="closeMobileNavDrawer(); scrollToTop('instant');" class="m3-mobile-nav-link">
           <i class="fa-solid fa-plus text-indigo-400"></i>
           <span>Nuovo Client</span>
         </a>
@@ -346,6 +421,8 @@ function initMobileNavigation() {
 }
 
 // Global exports
+window.scrollToTop = scrollToTop;
+window.navigateToSection = navigateToSection;
 window.toggleMobileNavDrawer = toggleMobileNavDrawer;
 window.closeMobileNavDrawer = closeMobileNavDrawer;
 window.triggerMobileRefresh = triggerMobileRefresh;

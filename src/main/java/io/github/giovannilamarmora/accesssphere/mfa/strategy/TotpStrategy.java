@@ -50,11 +50,10 @@ public class TotpStrategy implements MFAStrategy {
                     "data:image/png;base64,"
                         + Base64.getEncoder()
                             .encodeToString(
-                                QRCodeUtils.generateQRCodeWithLogoFromUrl(
+                                QRCodeUtils.generateQRCodeWithDefaultLogo(
                                     otpAuth,
                                     300,
-                                    300,
-                                    "https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"));
+                                    300));
                 mfaSetupResponse = mfaSetupResponse.addQRCode(base64);
               }
               Response response =

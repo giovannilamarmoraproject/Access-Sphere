@@ -77,40 +77,42 @@ function renderCustomAttributesData(attributes) {
         let valueDisplay = "";
 
         if (typeof subVal === "string" && (subVal === "EUR" || subVal === "USD" || subVal.length <= 4)) {
-          valueDisplay = `<span class="px-3 py-1 font-mono font-bold text-xs" style="background: rgba(168, 85, 247, 0.2); color: #EADDFF; border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">${subVal}</span>`;
+          valueDisplay = `<span class="px-2.5 py-0.5 font-mono font-bold text-xs" style="background: rgba(168, 85, 247, 0.2); color: #EADDFF; border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">${subVal}</span>`;
         } else if (subVal === "€" || subVal === "$") {
-          valueDisplay = `<span class="px-3 py-1 font-bold font-mono text-sm" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px;">${subVal}</span>`;
+          valueDisplay = `<span class="px-2.5 py-0.5 font-bold font-mono text-sm" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px;">${subVal}</span>`;
         } else if (subVal === "ACTIVE" || subVal === "COMPLETED" || subVal === "TRUE" || subVal === true) {
-          valueDisplay = `<span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px;"><i class="fa-solid fa-circle-check text-[10px]"></i> ${subVal}</span>`;
+          valueDisplay = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px;"><i class="fa-solid fa-circle-check text-[10px]"></i> ${subVal}</span>`;
         } else if (subVal === "INACTIVE" || subVal === "PENDING" || subVal === false) {
-          valueDisplay = `<span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold" style="background: rgba(234, 179, 8, 0.2); color: #FDE047; border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 9999px;"><i class="fa-solid fa-clock text-[10px]"></i> ${subVal}</span>`;
+          valueDisplay = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold" style="background: rgba(234, 179, 8, 0.2); color: #FDE047; border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 9999px;"><i class="fa-solid fa-clock text-[10px]"></i> ${subVal}</span>`;
         } else {
-          valueDisplay = `<span class="font-mono text-white text-xs font-medium">${subVal}</span>`;
+          valueDisplay = `<span class="font-mono text-white text-xs font-medium truncate">${subVal}</span>`;
         }
 
         subItemsHtml += `
-          <div class="p-3.5 flex flex-col justify-between" style="background: rgba(14, 11, 20, 0.6); border: 1px solid rgba(208, 188, 255, 0.12); border-radius: 16px;">
-            <span class="text-[11px] text-purple-300/80 uppercase font-semibold tracking-wider mb-1">${subLabel}</span>
-            <div class="mt-1">${valueDisplay}</div>
+          <div class="p-3 flex flex-col justify-between min-w-0" style="background: rgba(14, 11, 20, 0.6); border: 1px solid rgba(208, 188, 255, 0.12); border-radius: 14px;">
+            <span class="text-[10px] text-purple-300/80 uppercase font-semibold tracking-wider truncate mb-1" title="${String(subLabel).replace(/"/g, '&quot;')}">${subLabel}</span>
+            <div class="mt-1 flex items-center min-w-0">${valueDisplay}</div>
           </div>
         `;
       }
 
       sectionsHtml += `
-        <div class="p-5 space-y-4" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">
-          <div class="flex items-center justify-between pb-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.12);">
-            <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 flex items-center justify-center text-purple-300" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 12px;">
+        <div class="p-4 sm:p-5 space-y-3.5" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 18px;">
+          <div class="flex items-center justify-between pb-3 gap-2" style="border-bottom: 1px solid rgba(208, 188, 255, 0.12);">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center text-purple-300 flex-shrink-0" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(208, 188, 255, 0.25);">
                 <i class="fa-solid fa-layer-group text-xs"></i>
               </div>
-              <div>
-                <span class="text-sm font-bold text-white block">${formattedTitle}</span>
-                <span class="text-[10px] font-mono text-purple-300">${key}</span>
+              <div class="min-w-0">
+                <span class="text-xs sm:text-sm font-bold text-white block truncate uppercase">${formattedTitle}</span>
+                <span class="text-[10px] font-mono text-purple-300/80 block truncate">${key}</span>
               </div>
             </div>
-            <span class="px-3 py-1 font-mono text-[10px]" style="background: rgba(208, 188, 255, 0.15); color: #EADDFF; border: 1px solid rgba(208, 188, 255, 0.2); border-radius: 9999px;">Oggetto</span>
+            <span class="px-2.5 py-1 font-mono text-[10px] font-semibold whitespace-nowrap flex-shrink-0 rounded-full" style="background: rgba(208, 188, 255, 0.15); color: #EADDFF; border: 1px solid rgba(208, 188, 255, 0.2);">
+              Oggetto (${Object.keys(value).length})
+            </span>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             ${subItemsHtml}
           </div>
         </div>
@@ -125,21 +127,27 @@ function renderCustomAttributesData(attributes) {
 
       if (isToken) {
         sectionsHtml += `
-          <div class="p-5 space-y-3" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <i class="fa-solid fa-key text-purple-400 text-xs"></i>
-                <span class="text-xs font-bold text-white uppercase">${formattedTitle}</span>
-                <span class="text-[10px] font-mono text-purple-300">(${key})</span>
+          <div class="p-4 sm:p-5 space-y-3" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 18px;">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-purple-300 flex-shrink-0" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(208, 188, 255, 0.25);">
+                  <i class="fa-solid fa-key text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                  <span class="text-xs sm:text-sm font-bold text-white block truncate uppercase">${formattedTitle}</span>
+                  <span class="text-[10px] font-mono text-purple-300/80 block truncate">${key}</span>
+                </div>
               </div>
-              <span class="px-3 py-1 font-mono text-[10px]" style="background: rgba(245, 158, 11, 0.15); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 9999px;">Token / Secret</span>
+              <span class="px-2.5 py-1 font-mono text-[10px] font-semibold whitespace-nowrap flex-shrink-0 rounded-full" style="background: rgba(245, 158, 11, 0.15); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.25);">
+                Token / Secret
+              </span>
             </div>
-            <div class="flex items-center gap-2 mt-2">
-              <input type="password" id="${inputId}" readonly value="${safeVal}" class="form-control font-mono text-xs flex-1" style="background: #231B34; border: 1.5px solid rgba(208, 188, 255, 0.28); color: #fff; border-radius: 9999px; padding: 10px 18px;" />
-              <button type="button" class="flex-shrink-0" onclick="togglePasswordVisibility('${inputId}', this)" title="Mostra / Nascondi" style="width: 38px; height: 38px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+            <div class="flex items-center gap-2 pt-1">
+              <input type="password" id="${inputId}" readonly value="${safeVal}" class="form-control font-mono text-xs flex-1 min-w-0" style="background: #231B34; border: 1.5px solid rgba(208, 188, 255, 0.28); color: #fff; border-radius: 9999px; padding: 9px 16px;" />
+              <button type="button" class="flex-shrink-0" onclick="togglePasswordVisibility('${inputId}', this)" title="Mostra / Nascondi" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i class="fa-solid fa-eye text-xs"></i>
               </button>
-              <button type="button" class="flex-shrink-0" onclick="copyTokenValue('${inputId}')" title="Copia negli Appunti" style="width: 38px; height: 38px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+              <button type="button" class="flex-shrink-0" onclick="copyTokenValue('${inputId}')" title="Copia negli Appunti" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i class="fa-solid fa-copy text-xs"></i>
               </button>
             </div>
@@ -147,12 +155,12 @@ function renderCustomAttributesData(attributes) {
         `;
       } else {
         sectionsHtml += `
-          <div class="p-4 flex items-center justify-between" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">
-            <div>
-              <span class="text-xs font-bold text-white uppercase block">${formattedTitle}</span>
-              <span class="text-[10px] font-mono text-purple-300">${key}</span>
+          <div class="p-3.5 sm:p-4 flex items-center justify-between gap-3" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 18px;">
+            <div class="min-w-0">
+              <span class="text-xs font-bold text-white uppercase block truncate">${formattedTitle}</span>
+              <span class="text-[10px] font-mono text-purple-300/80 block truncate">${key}</span>
             </div>
-            <span class="font-mono text-white text-xs font-semibold px-3 py-1" style="background: rgba(208, 188, 255, 0.15); border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">${value}</span>
+            <span class="font-mono text-white text-xs font-semibold px-3 py-1 flex-shrink-0 truncate" style="background: rgba(208, 188, 255, 0.15); border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">${value}</span>
           </div>
         `;
       }
@@ -161,12 +169,12 @@ function renderCustomAttributesData(attributes) {
     else {
       const formattedTitle = key.replace(/_/g, " ").replace(/-/g, " ").toUpperCase();
       sectionsHtml += `
-        <div class="p-4 flex items-center justify-between" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">
-          <div>
-            <span class="text-xs font-bold text-white uppercase block">${formattedTitle}</span>
-            <span class="text-[10px] font-mono text-purple-300">${key}</span>
+        <div class="p-3.5 sm:p-4 flex items-center justify-between gap-3" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 18px;">
+          <div class="min-w-0">
+            <span class="text-xs font-bold text-white uppercase block truncate">${formattedTitle}</span>
+            <span class="text-[10px] font-mono text-purple-300/80 block truncate">${key}</span>
           </div>
-          <span class="font-mono text-white text-xs font-semibold px-3 py-1" style="background: rgba(208, 188, 255, 0.15); border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">${JSON.stringify(value)}</span>
+          <span class="font-mono text-white text-xs font-semibold px-3 py-1 flex-shrink-0 truncate" style="background: rgba(208, 188, 255, 0.15); border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">${JSON.stringify(value)}</span>
         </div>
       `;
     }
@@ -174,21 +182,31 @@ function renderCustomAttributesData(attributes) {
 
   return `
     <div class="space-y-4">
-      <div class="flex items-center justify-between pb-2">
-        <span class="text-xs text-purple-300 font-semibold flex items-center gap-2">
-          <i class="fa-solid fa-check-double text-emerald-400"></i> ${Object.keys(attributes).length} Proprietà Configurate
+      <div class="flex items-center justify-between gap-2 pb-2">
+        <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5 truncate">
+          <i class="fa-solid fa-check-double text-emerald-400 flex-shrink-0"></i>
+          <span>${Object.keys(attributes).length} Proprietà</span>
         </span>
-        <button type="button" onclick="toggleRawJsonView()" class="transition-all flex items-center gap-2 cursor-pointer" style="background: rgba(208, 188, 255, 0.12); color: #FFFFFF !important; border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px; padding: 7px 18px; font-size: 0.78rem; font-weight: 600;">
-          <i class="fa-solid fa-code text-xs"></i> <span id="toggle-json-label" style="color: #FFFFFF !important;">Mostra JSON Grezzo</span>
+        <button type="button" onclick="toggleRawJsonView()" class="m3-btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 flex-shrink-0 cursor-pointer" style="border-radius: 9999px !important;">
+          <i class="fa-solid fa-code text-xs"></i>
+          <span id="toggle-json-label"><span class="hidden sm:inline">Mostra </span>JSON<span class="hidden sm:inline"> Grezzo</span></span>
         </button>
       </div>
       
-      <div class="space-y-4">
+      <div class="space-y-3">
         ${sectionsHtml}
       </div>
 
       <div id="raw-json-container" style="display: none;" class="mt-4">
-        <pre class="text-xs font-mono text-purple-200 p-4 overflow-x-auto" style="background: rgba(14, 11, 20, 0.85); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">${rawJson}</pre>
+        <div class="flex items-center justify-between pb-2 mb-1">
+          <span class="text-[11px] font-mono text-purple-300 font-semibold uppercase tracking-wider">
+            <i class="fa-solid fa-terminal mr-1"></i> Codice Sorgente JSON
+          </span>
+          <button type="button" class="m3-btn-outline text-xs py-1 px-2.5 cursor-pointer" onclick="navigator.clipboard.writeText(document.getElementById('raw-json-pre').innerText).then(() => sweetalert('success', 'Copiato', 'JSON copiato negli appunti!'))">
+            <i class="fa-solid fa-copy mr-1"></i> Copia
+          </button>
+        </div>
+        <pre id="raw-json-pre" class="text-xs font-mono text-purple-200 p-4 overflow-x-auto" style="background: rgba(14, 11, 20, 0.85); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 16px;">${rawJson}</pre>
       </div>
     </div>
   `;
@@ -221,10 +239,10 @@ function toggleRawJsonView() {
   if (!container) return;
   if (container.style.display === "none") {
     container.style.display = "block";
-    if (label) label.innerText = "Nascondi JSON Grezzo";
+    if (label) label.innerHTML = '<span class="hidden sm:inline">Nascondi </span>JSON<span class="hidden sm:inline"> Grezzo</span>';
   } else {
     container.style.display = "none";
-    if (label) label.innerText = "Mostra JSON Grezzo";
+    if (label) label.innerHTML = '<span class="hidden sm:inline">Mostra </span>JSON<span class="hidden sm:inline"> Grezzo</span>';
   }
 }
 
@@ -321,7 +339,7 @@ function displayUserData(user) {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
       
       <!-- Colonna Sinistra: Profilo Sintetico (M3 Card) -->
-      <div class="m3-card p-8 flex flex-col items-center text-center h-fit">
+      <div class="m3-card p-5 sm:p-8 flex flex-col items-center text-center h-fit">
         <div class="relative mb-6">
           <img
             src="${photo}"
@@ -389,7 +407,7 @@ function displayUserData(user) {
       <!-- Colonna Destra: Dettagli Anagrafici Completi -->
       <div class="lg:col-span-2 space-y-8">
         
-        <div class="m3-card p-8">
+        <div class="m3-card p-5 sm:p-8">
           <h4 class="text-xl font-bold text-white mb-6 flex items-center gap-2.5 pb-4" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
             <i class="fa-solid fa-id-card text-purple-400"></i> Informazioni Anagrafiche Complete
           </h4>
@@ -447,12 +465,12 @@ function displayUserData(user) {
         </div>
 
         <!-- Card Ruoli Applicativi (RBAC) -->
-        <div class="m3-card p-8">
-          <div class="flex items-center justify-between pb-4 mb-4" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
-            <h4 class="text-xl font-bold text-white flex items-center gap-2.5">
+        <div class="m3-card p-5 sm:p-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
+            <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
               <i class="fa-solid fa-user-shield text-purple-400"></i> Ruoli Applicativi (RBAC)
             </h4>
-            <a href="/app/users/roles/${user.identifier}" class="m3-btn-primary text-xs py-2 px-5 text-decoration-none shadow-md" style="border-radius: 9999px !important; color: #FFFFFF !important;">
+            <a href="/app/users/roles/${user.identifier}" class="m3-btn-primary text-xs py-2 px-5 text-decoration-none shadow-md w-full sm:w-auto justify-center" style="border-radius: 9999px !important; color: #FFFFFF !important;">
               <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">Gestisci Ruoli</span>
             </a>
           </div>
@@ -462,27 +480,27 @@ function displayUserData(user) {
         </div>
 
         <!-- Card Autenticazione a Due Fattori (MFA) -->
-        <div class="m3-card p-8">
+        <div class="m3-card p-5 sm:p-8">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
               <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
                 <i class="fa-solid fa-shield-halved text-purple-400"></i> Autenticazione a Due Fattori (MFA)
               </h4>
               ${isMfaActive
-                ? '<span class="px-3 py-1 text-xs font-semibold rounded-full" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35);">ATTIVA</span>'
-                : '<span class="px-3 py-1 text-xs font-semibold rounded-full" style="background: rgba(255, 255, 255, 0.08); color: #9CA3AF; border: 1px solid rgba(255, 255, 255, 0.15);">DISATTIVATA</span>'}
+                ? '<span class="px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35);">ATTIVA</span>'
+                : '<span class="px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0" style="background: rgba(255, 255, 255, 0.08); color: #9CA3AF; border: 1px solid rgba(255, 255, 255, 0.15);">DISATTIVATA</span>'}
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               ${isMfaActive ? `
-                <button type="button" onclick="toggleMfaStatus('${user.identifier}', false)" class="m3-btn-outline text-xs cursor-pointer flex items-center gap-1.5" style="color: #FCD34D !important; border-color: rgba(245, 158, 11, 0.4) !important;" title="Disattiva Autenticazione a Due Fattori">
+                <button type="button" onclick="toggleMfaStatus('${user.identifier}', false)" class="m3-btn-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" style="color: #FCD34D !important; border-color: rgba(245, 158, 11, 0.4) !important;" title="Disattiva Autenticazione a Due Fattori">
                   <i class="fa-solid fa-power-off text-xs" style="color: #FCD34D;"></i> Disattiva MFA
                 </button>
               ` : (hasMfaMethods ? `
-                <button type="button" onclick="toggleMfaStatus('${user.identifier}', true)" class="m3-btn-outline text-xs cursor-pointer flex items-center gap-1.5" style="color: #6EE7B7 !important; border-color: rgba(16, 185, 129, 0.4) !important;" title="Attiva Autenticazione a Due Fattori">
+                <button type="button" onclick="toggleMfaStatus('${user.identifier}', true)" class="m3-btn-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" style="color: #6EE7B7 !important; border-color: rgba(16, 185, 129, 0.4) !important;" title="Attiva Autenticazione a Due Fattori">
                   <i class="fa-solid fa-toggle-on text-xs" style="color: #6EE7B7;"></i> Attiva MFA
                 </button>
               ` : '')}
-              <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-4 text-decoration-none shadow-md flex items-center gap-1.5" style="border-radius: 9999px !important; color: #FFFFFF !important;">
+              <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-4 text-decoration-none shadow-md justify-center flex items-center gap-1.5" style="border-radius: 9999px !important; color: #FFFFFF !important;">
                 <i class="fa-solid fa-plus text-xs"></i> <span style="color: #FFFFFF !important;">Configura Metodo</span>
               </a>
             </div>
@@ -493,13 +511,13 @@ function displayUserData(user) {
         </div>
 
         <!-- Card Attributi Custom Trasformati in Dati Visivi -->
-        <div class="m3-card p-8">
-          <div class="flex items-center justify-between pb-4 mb-6" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
+        <div class="m3-card p-5 sm:p-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-5 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
             <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
               <i class="fa-solid fa-sliders text-purple-400"></i> Attributi Personalizzati
             </h4>
-            <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-outline text-xs flex items-center gap-1.5 text-decoration-none" style="color: #D0BCFF !important; border-color: rgba(208, 188, 255, 0.3) !important;">
-              <i class="fa-solid fa-pen-to-square text-xs"></i> <span style="color: #FFFFFF !important;">Modifica Attributi</span>
+            <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2 px-3.5 text-decoration-none" style="color: #D0BCFF !important; border-color: rgba(208, 188, 255, 0.3) !important;">
+              <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">Modifica Attributi</span>
             </a>
           </div>
           <div>

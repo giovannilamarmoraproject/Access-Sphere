@@ -36,10 +36,10 @@
   <script src="/app/shared/api/rest.js"></script>
   <script src="/app/user/js/validationForm.js"></script>
   <script src="/app/user/js/register.js"></script>
-  <script src="/app/user/js/attributes-manager.js?v=2.1.0"></script>
+  <script src="/app/user/js/attributes-manager.js?v=2.1.2"></script>
 
   <!-- Unified M3 Dashboard Theme -->
-  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.0" />
+  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.2" />
 
   <style>
     .form-section-title {
@@ -128,7 +128,7 @@
   <main class="dashboard-wide-container">
     <div class="m3-card p-8 sm:p-12">
       
-      <div class="flex items-center justify-between pb-6 mb-8 border-b border-purple-500/15">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-purple-500/15">
         <div>
           <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
             <i class="fa-solid fa-user-plus text-purple-400"></i> Registra Nuovo Utente
@@ -137,7 +137,7 @@
             Configura il profilo personale, credenziali di sicurezza, client associati e attributi personalizzati per la nuova identità.
           </p>
         </div>
-        <a href="/app/users" class="m3-btn-outline">
+        <a href="/app/users" class="m3-btn-outline w-full sm:w-auto justify-center">
           <i class="fa-solid fa-arrow-left text-xs"></i> Annulla e Torna Indietro
         </a>
       </div>
@@ -393,26 +393,29 @@
             </div>
 
             <!-- Toolbar Viste & Azioni -->
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
               <!-- Switch Modalità -->
-              <div class="flex items-center rounded-full p-1 bg-[#140F24] border border-purple-500/20 mr-1">
+              <div class="m3-segmented-switch">
                 <button type="button" id="tab-attr-visual" class="m3-btn-primary text-xs" onclick="switchAttributesMode('visual')">
-                  <i class="fa-solid fa-layer-group mr-1.5"></i> Visuale Strutturata
+                  <i class="fa-solid fa-layer-group mr-1.5"></i> Visuale<span class="hidden sm:inline"> Strutturata</span>
                 </button>
                 <button type="button" id="tab-attr-code" class="m3-btn-outline text-xs" onclick="switchAttributesMode('code')">
-                  <i class="fa-solid fa-code mr-1.5"></i> Editor JSON
+                  <i class="fa-solid fa-code mr-1.5"></i> <span class="hidden sm:inline">Editor </span>JSON
                 </button>
               </div>
 
-              <button type="button" class="m3-btn-outline text-xs" onclick="addAttributeRow()">
-                <i class="fa-solid fa-plus mr-1"></i> Proprietà
-              </button>
-              <button type="button" class="m3-btn-outline text-xs" onclick="addNestedObjectRow()" title="Aggiungi un oggetto inestato con sotto-proprietà">
-                <i class="fa-solid fa-folder-plus mr-1"></i> Oggetto Inestato
-              </button>
-              <button type="button" class="m3-btn-outline text-xs" onclick="loadExampleJson()" title="Carica configurazione JSON di esempio">
-                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Esempio
-              </button>
+              <!-- Action buttons grid on mobile, flex on desktop -->
+              <div id="attributes-action-buttons" class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+                <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5" onclick="addAttributeRow()">
+                  <i class="fa-solid fa-plus mr-1"></i> Proprietà
+                </button>
+                <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5" onclick="addNestedObjectRow()" title="Aggiungi un oggetto inestato con sotto-proprietà">
+                  <i class="fa-solid fa-folder-plus mr-1"></i> <span class="hidden sm:inline">Oggetto </span>Inestato
+                </button>
+                <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5 col-span-2 sm:col-span-1" onclick="loadExampleJson()" title="Carica configurazione JSON di esempio">
+                  <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> <span class="hidden sm:inline">Carica </span>Esempio
+                </button>
+              </div>
             </div>
           </div>
 
@@ -425,15 +428,15 @@
 
           <!-- VISTA 2: EDITOR DIRETTO JSON -->
           <div id="attributes-code-view" style="display: none;">
-            <div class="flex items-center justify-between pb-2 mb-2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2">
               <span class="text-[11px] text-purple-300 font-semibold uppercase tracking-wider">
                 <i class="fa-solid fa-terminal mr-1"></i> Codice Sorgente JSON
               </span>
-              <div class="flex gap-2">
-                <button type="button" class="m3-btn-outline text-xs" onclick="formatJsonCodeEditor()">
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button type="button" class="m3-btn-outline text-xs flex-1 sm:flex-initial justify-center py-2 px-3" onclick="formatJsonCodeEditor()">
                   <i class="fa-solid fa-align-left mr-1"></i> Formatta JSON
                 </button>
-                <button type="button" class="m3-btn-outline text-xs" onclick="copyJsonCodeEditor()">
+                <button type="button" class="m3-btn-outline text-xs flex-1 sm:flex-initial justify-center py-2 px-3" onclick="copyJsonCodeEditor()">
                   <i class="fa-solid fa-copy mr-1"></i> Copia
                 </button>
               </div>
@@ -466,11 +469,11 @@
         </div>
 
         <!-- BOTTONI AZIONE -->
-        <div class="pt-4 border-t border-purple-500/15 flex items-center justify-end gap-3">
-          <a href="/app/users" class="m3-btn-outline">
+        <div class="pt-4 border-t border-purple-500/15 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
+          <a href="/app/users" class="m3-btn-outline justify-center">
             <i class="fa-solid fa-xmark"></i> Annulla
           </a>
-          <button id="register_form_submit" class="m3-btn-primary" type="submit">
+          <button id="register_form_submit" class="m3-btn-primary justify-center" type="submit">
             <i class="fa-solid fa-user-plus mr-1"></i> Registra Utente
           </button>
         </div>

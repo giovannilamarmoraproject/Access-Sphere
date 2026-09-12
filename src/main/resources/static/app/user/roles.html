@@ -34,10 +34,10 @@
   <script src="/app/shared/api/logout.js"></script>
   <script src="/app/i18n/translations.js"></script>
   <script src="/app/shared/api/rest.js"></script>
-  <script src="/app/user/js/roles.js"></script>
+  <script src="/app/user/js/roles.js?v=2.1.1"></script>
 
   <!-- Unified M3 Dashboard Theme -->
-  <link rel="stylesheet" href="/css/m3-dashboard.css" />
+  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.3" />
 </head>
 <body>
 
@@ -52,7 +52,7 @@
               Access Sphere
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
-            <span class="text-[11px] text-gray-400 font-medium">Gestione Ruoli Utente (RBAC)</span>
+            <span id="header-subtitle" class="header-subtitle text-[11px] text-gray-400 font-medium">Gestione Ruoli Utente (RBAC)</span>
           </div>
         </a>
 
@@ -87,12 +87,11 @@
   </header>
 
   <!-- Roles Main Card -->
-    <!-- Roles Main Card -->
   <main class="dashboard-wide-container">
-    <div class="m3-card p-8 sm:p-12">
+    <div class="m3-card p-4 sm:p-12">
       
       <!-- Top Title & Navigation -->
-      <div class="flex items-center justify-between pb-6 mb-8 border-b border-purple-500/15">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-purple-500/15">
         <div>
           <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
             <i class="fa-solid fa-shield-halved text-purple-400"></i>
@@ -102,46 +101,51 @@
             Visualizza, assegna o rimuovi i ruoli autorizzativi dell'utente sulle diverse applicazioni OAuth2.
           </p>
         </div>
-        <a href="/app/users" class="m3-btn-outline">
+        <a href="/app/users" class="m3-btn-outline w-full sm:w-auto justify-center">
           <i class="fa-solid fa-arrow-left text-xs"></i> Torna agli Utenti
         </a>
       </div>
 
       <!-- User Profile Header Banner -->
-      <div id="user-header-banner" class="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-8">
-        <div class="flex items-center gap-4">
-          <img id="user-avatar-img" src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Avatar" class="w-14 h-14 rounded-full object-cover border-2 border-purple-400/40 shadow-md" />
-          <div>
-            <h3 id="user-full-name" class="text-lg font-bold text-white mb-0.5">Caricamento utente...</h3>
-            <div class="flex items-center gap-2">
-              <span id="user-username-badge" class="text-xs font-mono text-purple-300">@username</span>
-              <span class="text-gray-500">•</span>
-              <span id="user-email-text" class="text-xs text-gray-300">email@example.com</span>
+      <div id="user-header-banner" class="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-gradient-to-b from-purple-500/15 to-purple-950/30 border border-purple-500/25 mb-8 text-center sm:text-left shadow-lg">
+        <div class="flex flex-col sm:flex-row items-center gap-3.5 sm:gap-5 w-full sm:w-auto">
+          <div class="relative flex-shrink-0">
+            <img id="user-avatar-img" src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Avatar" class="w-16 h-16 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-purple-400/50 shadow-md ring-4 ring-purple-500/15" />
+          </div>
+          <div class="flex flex-col items-center sm:items-start min-w-0">
+            <h3 id="user-full-name" class="text-xl sm:text-lg font-extrabold sm:font-bold text-white tracking-tight mb-1">Caricamento utente...</h3>
+            <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs">
+              <span id="user-username-badge" class="font-mono text-purple-300 font-semibold">@username</span>
+              <span class="text-gray-500 hidden sm:inline">•</span>
+              <span id="user-email-text" class="text-gray-300 break-all">email@example.com</span>
             </div>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <span id="user-roles-count-badge" class="px-4 py-2 rounded-2xl bg-purple-500/20 text-purple-200 text-xs font-mono font-bold border border-purple-500/30">
-            0 Ruoli Assegnati
+        <div class="w-full sm:w-auto flex justify-center sm:justify-end pt-3 sm:pt-0 border-t sm:border-t-0 border-purple-500/15">
+          <span id="user-roles-count-badge" class="px-4 py-2 rounded-2xl bg-purple-500/25 text-purple-200 text-xs font-mono font-bold border border-purple-500/40 shadow-sm inline-flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-purple-400"></i>
+            <span>0 Ruoli Assegnati</span>
           </span>
         </div>
       </div>
 
       <!-- Current Assigned Roles Section -->
-      <div class="mb-10">
-        <div class="flex items-center justify-between mb-3">
-          <label class="block text-xs uppercase font-bold text-purple-300 tracking-wider flex items-center gap-2">
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 mb-3">
+          <label class="text-xs uppercase font-bold text-purple-300 tracking-wider flex items-center gap-2 m-0">
             <i class="fa-solid fa-shield-halved text-purple-400"></i> Ruoli Attualmente Assegnati:
           </label>
-          <span class="text-[11px] text-gray-400">Fai clic sulla <i class="fa-solid fa-xmark text-red-400"></i> per revocare un ruolo</span>
+          <span class="text-[11px] text-gray-400 flex items-center gap-1">
+            Fai clic su <i class="fa-solid fa-xmark text-red-400 px-0.5"></i> per revocare un ruolo
+          </span>
         </div>
-        <div id="role_container" class="flex flex-wrap gap-3 min-h-[64px] p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 items-center">
+        <div id="role_container" class="flex flex-col sm:flex-row sm:flex-wrap gap-2.5 sm:gap-3 p-3.5 sm:p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20">
           <span class="text-xs text-purple-300 py-2">Caricamento ruoli in corso...</span>
         </div>
       </div>
 
       <!-- Add New Role Section (Dedicated Elevated Surface) -->
-      <div class="p-6 rounded-2xl bg-purple-500/10 border border-purple-500/25 mb-8">
+      <div class="p-4 sm:p-6 rounded-2xl bg-purple-500/10 border border-purple-500/25 mb-8">
         <h4 class="text-base font-bold text-white mb-4 flex items-center gap-2">
           <i class="fa-solid fa-plus-circle text-purple-400"></i> Assegna un Nuovo Ruolo
         </h4>
@@ -180,15 +184,15 @@
       </div>
 
       <!-- Footer Actions -->
-      <div class="pt-6 border-t border-purple-500/15 flex items-center justify-end gap-3">
-        <a href="/app/users" class="m3-btn-outline">
+      <div class="pt-6 border-t border-purple-500/15 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
+        <a href="/app/users" class="m3-btn-outline justify-center">
           <i class="fa-solid fa-xmark"></i> Annulla
         </a>
         <button
           disabled
           id="save_role_btn"
           onclick="changeRoles()"
-          class="m3-btn-primary px-8 py-3 text-xs font-bold rounded-full shadow-lg"
+          class="m3-btn-primary px-8 py-3 text-xs font-bold rounded-full shadow-lg justify-center"
         >
           <i class="fa-solid fa-floppy-disk mr-1.5"></i> Salva Modifiche Ruoli
         </button>

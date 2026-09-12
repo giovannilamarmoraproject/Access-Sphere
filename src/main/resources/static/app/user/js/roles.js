@@ -89,13 +89,15 @@ function addRole() {
   if (!selectedRole) return;
 
   const roleCard = $(`
-    <div class="role-chip inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-purple-500/35 bg-purple-500/20 text-purple-100 shadow-md transition-all hover:border-purple-400 hover:scale-105">
-      <div class="w-6 h-6 rounded-full bg-purple-500/30 flex items-center justify-center text-purple-300">
-        <i class="fa-solid fa-shield-halved text-xs"></i>
+    <div class="role-chip">
+      <div class="flex items-center gap-2.5 min-w-0 flex-1 sm:flex-initial">
+        <div class="role-chip-icon">
+          <i class="fa-solid fa-shield-halved text-xs"></i>
+        </div>
+        <span data-role="${selectedRole}" class="font-mono text-xs font-bold text-purple-200 truncate">${selectedRole}</span>
       </div>
-      <span data-role="${selectedRole}" class="font-mono text-xs font-bold">${selectedRole}</span>
-      <button type="button" class="remove-role ml-1.5 w-5 h-5 rounded-full bg-red-500/15 hover:bg-red-500 hover:text-white text-red-300 transition-all cursor-pointer border-0 flex items-center justify-center" title="Revoca Ruolo">
-        <i class="fa-solid fa-xmark text-[11px]"></i>
+      <button type="button" class="remove-role" title="Revoca Ruolo">
+        <i class="fa-solid fa-xmark text-xs"></i>
       </button>
     </div>
   `);
@@ -122,7 +124,7 @@ function updateStoredRoles() {
     .map((_, el) => $(el).attr("data-role"))
     .get();
   localStorage.setItem("selected_roles", JSON.stringify(roles));
-  $("#user-roles-count-badge").text(`${roles.length} Ruoli Assegnati`);
+  $("#user-roles-count-badge").html(`<i class="fa-solid fa-shield-halved text-purple-400"></i><span>${roles.length} Ruoli Assegnati</span>`);
   $("#save_role_btn").prop("disabled", false);
 
   if (roles.length === 0) {
@@ -180,18 +182,20 @@ function displayUserData(user) {
 
   if (!user.roles || user.roles.length === 0) {
     roleContainer.html('<span class="text-xs text-purple-300 py-2">Nessun ruolo assegnato. Seleziona un ruolo nel riquadro sottostante per assegnarlo.</span>');
-    $("#user-roles-count-badge").text("0 Ruoli Assegnati");
+    $("#user-roles-count-badge").html('<i class="fa-solid fa-shield-halved text-purple-400"></i><span>0 Ruoli Assegnati</span>');
   } else {
-    $("#user-roles-count-badge").text(`${user.roles.length} Ruoli Assegnati`);
+    $("#user-roles-count-badge").html(`<i class="fa-solid fa-shield-halved text-purple-400"></i><span>${user.roles.length} Ruoli Assegnati</span>`);
     user.roles.forEach((role) => {
       const roleCard = $(`
-        <div class="role-chip inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-purple-500/35 bg-purple-500/20 text-purple-100 shadow-md transition-all hover:border-purple-400 hover:scale-105">
-          <div class="w-6 h-6 rounded-full bg-purple-500/30 flex items-center justify-center text-purple-300">
-            <i class="fa-solid fa-shield-halved text-xs"></i>
+        <div class="role-chip">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1 sm:flex-initial">
+            <div class="role-chip-icon">
+              <i class="fa-solid fa-shield-halved text-xs"></i>
+            </div>
+            <span data-role="${role}" class="font-mono text-xs font-bold text-purple-200 truncate">${role}</span>
           </div>
-          <span data-role="${role}" class="font-mono text-xs font-bold">${role}</span>
-          <button type="button" class="remove-role ml-1.5 w-5 h-5 rounded-full bg-red-500/15 hover:bg-red-500 hover:text-white text-red-300 transition-all cursor-pointer border-0 flex items-center justify-center" title="Revoca Ruolo">
-            <i class="fa-solid fa-xmark text-[11px]"></i>
+          <button type="button" class="remove-role" title="Revoca Ruolo">
+            <i class="fa-solid fa-xmark text-xs"></i>
           </button>
         </div>
       `);

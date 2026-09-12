@@ -59,8 +59,16 @@ function switchAttributesMode(mode) {
 
     if (visualContainer) visualContainer.style.display = "block";
     if (codeContainer) codeContainer.style.display = "none";
-    if (tabVisualBtn) tabVisualBtn.className = "m3-btn-primary text-xs";
-    if (tabCodeBtn) tabCodeBtn.className = "m3-btn-outline text-xs";
+    if (tabVisualBtn) {
+      tabVisualBtn.classList.remove("m3-btn-outline");
+      tabVisualBtn.classList.add("m3-btn-primary");
+    }
+    if (tabCodeBtn) {
+      tabCodeBtn.classList.remove("m3-btn-primary");
+      tabCodeBtn.classList.add("m3-btn-outline");
+    }
+    const actionButtons = document.getElementById("attributes-action-buttons");
+    if (actionButtons) actionButtons.style.display = "";
     renderAttributesTable();
   } else {
     // Passiamo alla vista codice
@@ -73,8 +81,16 @@ function switchAttributesMode(mode) {
     }
     if (visualContainer) visualContainer.style.display = "none";
     if (codeContainer) codeContainer.style.display = "block";
-    if (tabVisualBtn) tabVisualBtn.className = "m3-btn-outline text-xs";
-    if (tabCodeBtn) tabCodeBtn.className = "m3-btn-primary text-xs";
+    if (tabVisualBtn) {
+      tabVisualBtn.classList.remove("m3-btn-primary");
+      tabVisualBtn.classList.add("m3-btn-outline");
+    }
+    if (tabCodeBtn) {
+      tabCodeBtn.classList.remove("m3-btn-outline");
+      tabCodeBtn.classList.add("m3-btn-primary");
+    }
+    const actionButtons = document.getElementById("attributes-action-buttons");
+    if (actionButtons) actionButtons.style.display = "none";
   }
 }
 
@@ -96,13 +112,13 @@ function renderAttributesTable() {
         <p class="text-xs">Nessun attributo configurato. Puoi aggiungere proprietà semplici o caricare un oggetto inestato.</p>
         <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
           <button type="button" class="m3-btn-primary text-xs" onclick="addAttributeRow()">
-            <i class="fa-solid fa-plus mr-1"></i> Aggiungi Proprietà
+            <i class="fa-solid fa-plus mr-1"></i> <span class="hidden sm:inline">Aggiungi </span>Proprietà
           </button>
           <button type="button" class="m3-btn-outline text-xs" onclick="addNestedObjectRow()">
-            <i class="fa-solid fa-layer-group mr-1"></i> Aggiungi Oggetto Inestato
+            <i class="fa-solid fa-layer-group mr-1"></i> <span class="hidden sm:inline">Aggiungi </span>Oggetto Inestato
           </button>
           <button type="button" class="m3-btn-outline text-xs" onclick="loadExampleJson()">
-            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Carica Esempio
+            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> <span class="hidden sm:inline">Carica </span>Esempio
           </button>
         </div>
       </div>

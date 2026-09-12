@@ -967,6 +967,13 @@
     }
 
     function switchDashboardView(viewName, pushState = true) {
+        if (typeof scrollToTop === "function") {
+            scrollToTop("instant");
+        } else {
+            window.scrollTo(0, 0);
+            if (document.documentElement) document.documentElement.scrollTop = 0;
+            if (document.body) document.body.scrollTop = 0;
+        }
         currentView = viewName;
         const dashboardView = document.getElementById("view-dashboard");
         const usersView = document.getElementById("view-users");
@@ -1054,6 +1061,14 @@
                 }, 50);
             }
         }
+
+        setTimeout(() => {
+            if (typeof scrollToTop === "function") {
+                scrollToTop("instant");
+            } else {
+                window.scrollTo(0, 0);
+            }
+        }, 50);
     }
 
     function handleCurrentRefresh() {
@@ -1085,6 +1100,7 @@
     }
 
     window.addEventListener("popstate", (event) => {
+        if (typeof scrollToTop === "function") scrollToTop("instant");
         const path = window.location.pathname;
         if (path.includes("clients")) {
             switchDashboardView("clients", false);

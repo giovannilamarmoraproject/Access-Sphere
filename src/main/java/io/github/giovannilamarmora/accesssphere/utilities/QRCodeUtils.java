@@ -67,13 +67,24 @@ public class QRCodeUtils {
     }
   }
 
+  public static byte[] generateQRCodeWithDefaultLogo(String qrContent, int width, int height) {
+    try (InputStream is = QRCodeUtils.class.getResourceAsStream("/static/img/logo.png")) {
+      if (is != null) {
+        return generateQRCodeWithLogo(qrContent, width, height, is);
+      }
+      return generateCustomQRCode(qrContent, width, height);
+    } catch (Exception e) {
+      return generateCustomQRCode(qrContent, width, height);
+    }
+  }
+
   public static byte[] generateQRCodeWithLogo(
       String qrContent, int width, int height, InputStream logoInputStream) {
     try {
       // Genera il QR code base
       QRCodeWriter qrCodeWriter = new QRCodeWriter();
       Map<EncodeHintType, Object> hints = new HashMap<>();
-      hints.put(EncodeHintType.MARGIN, 1);
+      hints.put(EncodeHintType.MARGIN, 2);
       hints.put(
           EncodeHintType.ERROR_CORRECTION,
           ErrorCorrectionLevel.H); // livello alto per tolleranza logo
@@ -91,22 +102,37 @@ public class QRCodeUtils {
         }
       }
 
-      // Carica il logo
-      BufferedImage logo = ImageIO.read(logoInputStream);
+      if (logoInputStream != null) {
+        // Carica il logo
+        BufferedImage logo = ImageIO.read(logoInputStream);
 
-      // Calcola dimensione e posizione del logo
-      int logoWidth = width / 5;
-      int logoHeight = height / 5;
-      int logoX = (width - logoWidth) / 2;
-      int logoY = (height - logoHeight) / 2;
+        if (logo != null) {
+          // Calcola dimensione e posizione del logo (circa 25% del QR)
+          int logoWidth = width / 4;
+          int logoHeight = height / 4;
+          int logoX = (width - logoWidth) / 2;
+          int logoY = (height - logoHeight) / 2;
 
-      // Ridimensiona il logo
-      Image scaledLogo = logo.getScaledInstance(logoWidth, logoHeight, Image.SCALE_SMOOTH);
+          Graphics2D g = qrImage.createGraphics();
+          g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+          g.setRenderingHint(
+              RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-      // Sovrapponi il logo
-      Graphics2D g = qrImage.createGraphics();
-      g.drawImage(scaledLogo, logoX, logoY, null);
-      g.dispose();
+          // Pulizia sfondo sotto il logo (cerchio bianco per risaltare il logo moderno)
+          int padding = 4;
+          g.setColor(Color.WHITE);
+          g.fillOval(
+              logoX - padding,
+              logoY - padding,
+              logoWidth + (padding * 2),
+              logoHeight + (padding * 2));
+
+          // Ridimensiona e sovrapponi il logo
+          Image scaledLogo = logo.getScaledInstance(logoWidth, logoHeight, Image.SCALE_SMOOTH);
+          g.drawImage(scaledLogo, logoX, logoY, null);
+          g.dispose();
+        }
+      }
 
       // Converti in byte[]
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -143,21 +169,33 @@ public class QRCodeUtils {
       // Carica il logo da URL
       BufferedImage logo = ImageIO.read(URI.create(logoUrl).toURL());
 
-      // Calcola dimensione e posizione del logo
-      // Modifica del calcolo della dimensione del logo per ridurlo ulteriormente
-      int logoWidth = width / 4; // Riduci da 5 a 10 per un logo più piccolo
-      int logoHeight = height / 4; // Riduci da 5 a 10 per un logo più piccolo
+      if (logo != null) {
+        int logoWidth = width / 4;
+        int logoHeight = height / 4;
 
-      int logoX = (width - logoWidth) / 2;
-      int logoY = (height - logoHeight) / 2;
+        int logoX = (width - logoWidth) / 2;
+        int logoY = (height - logoHeight) / 2;
 
-      // Ridimensiona il logo
-      Image scaledLogo = logo.getScaledInstance(logoWidth, logoHeight, Image.SCALE_SMOOTH);
+        Graphics2D g = qrImage.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(
+            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-      // Sovrapponi il logo
-      Graphics2D g = qrImage.createGraphics();
-      g.drawImage(scaledLogo, logoX, logoY, null);
-      g.dispose();
+        int padding = 4;
+        g.setColor(Color.WHITE);
+        g.fillOval(
+            logoX - padding,
+            logoY - padding,
+            logoWidth + (padding * 2),
+            logoHeight + (padding * 2));
+
+        // Ridimensiona il logo
+        Image scaledLogo = logo.getScaledInstance(logoWidth, logoHeight, Image.SCALE_SMOOTH);
+
+        // Sovrapponi il logo
+        g.drawImage(scaledLogo, logoX, logoY, null);
+        g.dispose();
+      }
 
       // Converte in byte[]
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -165,7 +203,8 @@ public class QRCodeUtils {
       return baos.toByteArray();
 
     } catch (Exception e) {
-      throw new RuntimeException("❌ QR Code with logo from URL generation failed", e);
+      // Fallback a default logo se l'URL fallisce
+      return generateQRCodeWithDefaultLogo(qrContent, width, height);
     }
   }
 }
