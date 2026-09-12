@@ -1037,25 +1037,28 @@ textarea.is-valid {
 .m3-mobile-drawer {
   position: fixed;
   top: 0;
-  right: -340px;
-  width: 320px;
-  max-width: 88vw;
+  left: 0;
+  right: auto;
+  width: 310px;
+  max-width: 85vw;
   height: 100vh;
   background: rgba(22, 17, 36, 0.98);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-left: 1px solid rgba(208, 188, 255, 0.2);
-  box-shadow: -12px 0 36px rgba(0, 0, 0, 0.65);
+  border-right: 1px solid rgba(208, 188, 255, 0.2);
+  border-left: none;
+  box-shadow: 12px 0 36px rgba(0, 0, 0, 0.65);
   z-index: 9999;
   display: flex;
   flex-direction: column;
+  transform: translateX(-100%);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 1.5rem 1.25rem;
   overflow-y: auto;
 }
 
 .m3-mobile-drawer.active {
-  transform: translateX(-340px);
+  transform: translateX(0);
 }
 
 .m3-mobile-nav-link {
@@ -1095,20 +1098,54 @@ textarea.is-valid {
    RESPONSIVE MOBILE BREAKPOINTS & TABLE UPGRADES
    ------------------------------------------- */
 @media (max-width: 768px) {
-  /* Header adjustments */
+  /* Header adjustments: Single clean line, flex-start with gap */
   .header-container {
-    height: 68px !important;
+    height: 64px !important;
     padding: 0 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
   }
 
-  /* Hamburger button appears on mobile */
+  /* Hamburger button is positioned on the LEFT */
   .m3-mobile-menu-btn {
     display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    border-radius: 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
   }
 
-  /* Hide desktop primary action buttons that crowd the top bar */
-  .header-container #users-primary-action,
-  .header-container #clients-primary-action {
+  /* Hide subtitle on mobile so title is clean and vertically centered */
+  #header-subtitle {
+    display: none !important;
+  }
+
+  /* Compact brand elements on mobile */
+  .glass-header .header-container > div:first-of-type {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+
+  .glass-header .header-container a.group img,
+  .glass-header .header-container a img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .glass-header .header-container span.text-xl {
+    font-size: 1.05rem !important;
+  }
+
+  /* Hide entire right desktop action bar on mobile */
+  .glass-header .header-container > div:last-child {
     display: none !important;
   }
 

@@ -290,7 +290,12 @@ function displayUserData(user) {
               </div>
             </div>
 
-            <div class="flex items-center justify-end">
+            <div class="flex items-center justify-end gap-2.5">
+              ${m.confirmed === false ? `
+                <button type="button" onclick="finishMfaVerification('${user.identifier}', '${(m.label || '').replace(/'/g, "\\'")}', '${m.type || 'totp'}')" class="m3-btn-primary text-xs py-1.5 px-3.5 flex items-center gap-1.5 shadow-md cursor-pointer" style="border-radius: 9999px !important; color: #FFFFFF !important;" title="Inserisci il codice OTP per completare la verifica">
+                  <i class="fa-solid fa-circle-check text-xs"></i> <span>Completa Verifica</span>
+                </button>
+              ` : ''}
               <button type="button" onclick="deleteMfaMethod('${user.identifier}', '${(m.label || '').replace(/'/g, "\\'")}')" class="m3-icon-btn m3-icon-btn-danger" title="Elimina Metodo MFA">
                 <i class="fa-solid fa-trash text-xs"></i>
               </button>
@@ -754,4 +759,121 @@ function deleteMfaMethod(identifier, label) {
     }
   });
 }
+
+function finishMfaVerification(identifier, label, type) {
+  const formattedLabel = formatMfaLabel(label);
+  const swalHtml = `
+    <div style="text-align: left; color: #E2E8F0; font-size: 0.9rem; line-height: 1.5;">
+      <p style="margin-bottom: 1rem;">
+        Inserisci il codice temporaneo a 6 cifre generato dalla tua applicazione di autenticazione (<strong>${formattedLabel}</strong>) per completare la verifica e attivare il metodo.
+      </p>
+      <div style="display: flex; justify-content: center; margin: 1.25rem 0;">
+        <input 
+          type="text" 
+          id="swal-mfa-otp" 
+          maxlength="6" 
+          placeholder="••••••" 
+          pattern="\\d*" 
+          inputmode="numeric" 
+          autocomplete="one-time-code"
+          style="width: 220px; text-align: center; font-family: monospace; font-size: 1.75rem; font-weight: 700; letter-spacing: 0.35em; background: #1C172E; border: 1.5px solid rgba(208, 188, 255, 0.35); border-radius: 16px; color: #FFFFFF; padding: 10px 16px; outline: none;" 
+        />
+      </div>
+      <p style="text-align: center; font-size: 0.75rem; color: #A78BFA; margin-top: 0.5rem;">
+        Non hai ancora scansionato il QR code? 
+        <a href="/app/mfa/${encodeURIComponent(identifier)}" style="color: #D0BCFF; text-decoration: underline; font-weight: 600;">Riconfigura da zero</a>
+      </p>
+    </div>
+  `;
+
+  if (typeof Swal !== "undefined") {
+    Swal.fire({
+      title: `Completa Verifica MFA`,
+      html: swalHtml,
+      showCancelButton: true,
+      confirmButtonText: '<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i> Verifica e Attiva',
+      cancelButtonText: "Annulla",
+      background: "#161124",
+      color: "#FFFFFF",
+      confirmButtonColor: "#7C3AED",
+      cancelButtonColor: "#4B5563",
+      didOpen: () => {
+        const input = document.getElementById("swal-mfa-otp");
+        if (input) {
+          input.focus();
+          input.addEventListener("input", (e) => {
+            e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+          });
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && input.value.length === 6) {
+              Swal.clickConfirm();
+            }
+          });
+        }
+      },
+      preConfirm: () => {
+        const input = document.getElementById("swal-mfa-otp");
+        const otp = input ? input.value.trim() : "";
+        if (!otp || otp.length !== 6) {
+          Swal.showValidationMessage("Inserisci un codice numerico valido di 6 cifre");
+          return false;
+        }
+        return otp;
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        submitMfaConfirmation(identifier, label, type || "totp", result.value, formattedLabel);
+      }
+    });
+  } else {
+    const otp = prompt(`Inserisci il codice OTP a 6 cifre per ${formattedLabel}:`);
+    if (otp && otp.trim().length === 6) {
+      submitMfaConfirmation(identifier, label, type || "totp", otp.trim(), formattedLabel);
+    }
+  }
+}
+
+function submitMfaConfirmation(identifier, label, type, otp, formattedLabel) {
+  const url = window.location.origin + "/v1/mfa/confirm";
+  const token = getCookieOrStorage(config.access_token);
+  const body = {
+    identifier: identifier,
+    label: label,
+    type: type || "totp",
+    otp: otp
+  };
+
+  const postFn = typeof POST !== "undefined" ? POST : (typeof api !== "undefined" && api.POST ? api.POST : null);
+  if (!postFn) {
+    sweetalert("error", "Errore", "Funzione POST non disponibile.");
+    return;
+  }
+
+  postFn(url, token, body).then(async (data) => {
+    const responseData = await data.json().catch(() => ({}));
+    if (!data.ok || responseData.error != null) {
+      const errMsg = responseData.error?.message || responseData.message || "Codice OTP errato o scaduto. Riprova.";
+      sweetalert("error", "Verifica Non Riuscita", errMsg);
+    } else {
+      try {
+        localStorage.removeItem(config.client_id + "_usersData");
+        sessionStorage.removeItem("accesssphere_users_data");
+      } catch (e) {}
+
+      sweetalert("success", "Verifica Completata", `Il metodo "${formattedLabel}" è stato verificato e attivato con successo!`).then(() => {
+        window.location.reload();
+      });
+    }
+  }).catch(err => {
+    console.error("Error confirming MFA:", err);
+    sweetalert("error", "Errore", "Impossibile contattare il server per confermare l'MFA.");
+  });
+}
+
+// Global exports
+window.finishMfaVerification = finishMfaVerification;
+window.deleteMfaMethod = deleteMfaMethod;
+window.toggleMfaStatus = toggleMfaStatus;
+window.toggleBlockUser = toggleBlockUser;
+window.getUser = getUser;
 

@@ -3,6 +3,8 @@ function showOTPLabelSelect() {
   if (otp) otp.style.display = "block";
   const description = document.getElementById("mfa-description-card");
   if (description) description.style.display = "none";
+  const reInfo = document.getElementById("btn-mfa-reinfo");
+  if (reInfo) reInfo.style.display = "inline-flex";
 }
 
 function showDescriptionCard() {
@@ -10,6 +12,8 @@ function showDescriptionCard() {
   if (otp) otp.style.display = "none";
   const description = document.getElementById("mfa-description-card");
   if (description) description.style.display = "block";
+  const reInfo = document.getElementById("btn-mfa-reinfo");
+  if (reInfo) reInfo.style.display = "none";
 }
 
 function goBack() {

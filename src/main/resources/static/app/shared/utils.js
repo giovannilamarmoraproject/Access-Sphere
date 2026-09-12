@@ -209,29 +209,56 @@ function closeMobileNavDrawer() {
   document.body.style.overflow = "";
 }
 
+function triggerMobileRefresh() {
+  closeMobileNavDrawer();
+  const refreshBtn = document.getElementById("btn-refresh-data");
+  if (refreshBtn) {
+    refreshBtn.click();
+    return;
+  }
+  if (typeof handleCurrentRefresh === "function") {
+    handleCurrentRefresh();
+  } else if (typeof refreshUsers === "function") {
+    refreshUsers();
+  } else if (typeof refreshClients === "function") {
+    refreshClients();
+  } else {
+    window.location.reload();
+  }
+}
+
+function triggerMobileBack() {
+  closeMobileNavDrawer();
+  if (typeof goBack === "function") {
+    goBack();
+  } else if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "/app";
+  }
+}
+
 function initMobileNavigation() {
   const headerContainer = document.querySelector(".glass-header .header-container");
   if (!headerContainer) return;
 
-  // 1. Add hamburger button if not present
+  // 1. Add hamburger button on the left if not present
   if (!document.getElementById("mobile-menu-toggle-btn")) {
-    const actionGroup = headerContainer.querySelector(".flex.items-center.gap-2") || headerContainer.lastElementChild;
-    if (actionGroup) {
-      const toggleBtn = document.createElement("button");
-      toggleBtn.id = "mobile-menu-toggle-btn";
-      toggleBtn.type = "button";
-      toggleBtn.className = "m3-icon-btn m3-mobile-menu-btn";
-      toggleBtn.title = "Menu di Navigazione";
-      toggleBtn.setAttribute("aria-label", "Menu di Navigazione");
-      toggleBtn.onclick = toggleMobileNavDrawer;
-      toggleBtn.innerHTML = '<i class="fa-solid fa-bars text-sm"></i>';
-      actionGroup.appendChild(toggleBtn);
-    }
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "mobile-menu-toggle-btn";
+    toggleBtn.type = "button";
+    toggleBtn.className = "m3-icon-btn m3-mobile-menu-btn";
+    toggleBtn.title = "Menu di Navigazione";
+    toggleBtn.setAttribute("aria-label", "Menu di Navigazione");
+    toggleBtn.onclick = toggleMobileNavDrawer;
+    toggleBtn.innerHTML = '<i class="fa-solid fa-bars text-sm"></i>';
+    headerContainer.prepend(toggleBtn);
   }
 
   // 2. Add Drawer & Overlay if not present
   if (!document.getElementById("m3-mobile-nav-drawer")) {
     const currentPath = window.location.pathname;
+    const isRootDashboard = currentPath === '/app' || currentPath === '/app/' || currentPath === '';
 
     const overlay = document.createElement("div");
     overlay.id = "m3-mobile-nav-overlay";
@@ -259,7 +286,7 @@ function initMobileNavigation() {
       </div>
 
       <!-- Navigazione Principale -->
-      <div class="mb-6">
+      <div class="mb-5">
         <span class="text-[10px] uppercase font-bold text-purple-300/60 tracking-wider px-3 mb-2 block">Menu Principale</span>
         <a href="/app" class="m3-mobile-nav-link ${currentPath === '/app' || currentPath === '/app/' ? 'active' : ''}">
           <i class="fa-solid fa-gauge-high"></i>
@@ -279,9 +306,19 @@ function initMobileNavigation() {
         </a>
       </div>
 
-      <!-- Azioni Rapide -->
-      <div class="mb-6">
-        <span class="text-[10px] uppercase font-bold text-purple-300/60 tracking-wider px-3 mb-2 block">Azioni Rapide</span>
+      <!-- Azioni & Strumenti Rapidi -->
+      <div class="mb-5">
+        <span class="text-[10px] uppercase font-bold text-purple-300/60 tracking-wider px-3 mb-2 block">Strumenti & Azioni</span>
+        <button type="button" onclick="triggerMobileRefresh()" class="m3-mobile-nav-link w-full text-left bg-transparent border-0 cursor-pointer">
+          <i class="fa-solid fa-arrows-rotate text-purple-400"></i>
+          <span>Aggiorna Dati</span>
+        </button>
+        ${!isRootDashboard ? `
+        <button type="button" onclick="triggerMobileBack()" class="m3-mobile-nav-link w-full text-left bg-transparent border-0 cursor-pointer">
+          <i class="fa-solid fa-arrow-left text-purple-300"></i>
+          <span>Torna Indietro</span>
+        </button>
+        ` : ''}
         <a href="/app/users/register" class="m3-mobile-nav-link">
           <i class="fa-solid fa-user-plus text-purple-400"></i>
           <span>Nuovo Utente</span>
@@ -311,6 +348,8 @@ function initMobileNavigation() {
 // Global exports
 window.toggleMobileNavDrawer = toggleMobileNavDrawer;
 window.closeMobileNavDrawer = closeMobileNavDrawer;
+window.triggerMobileRefresh = triggerMobileRefresh;
+window.triggerMobileBack = triggerMobileBack;
 window.initMobileNavigation = initMobileNavigation;
 
 if (document.readyState === "loading") {
