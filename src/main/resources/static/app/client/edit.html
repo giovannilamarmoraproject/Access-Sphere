@@ -34,6 +34,70 @@
   <script src="/app/shared/api/rest.js"></script>
 
   <link rel="stylesheet" href="/css/m3-dashboard.css" />
+
+  <style>
+    .form-section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid rgba(208, 188, 255, 0.15);
+      margin-bottom: 1.25rem;
+    }
+    .m3-subcard {
+      background: rgba(26, 20, 42, 0.65);
+      border: 1px solid rgba(208, 188, 255, 0.14);
+      border-radius: 20px;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+    .m3-subcard:hover {
+      border-color: rgba(208, 188, 255, 0.25);
+    }
+    .m3-switch-card {
+      background: rgba(26, 20, 42, 0.65);
+      border: 1px solid rgba(208, 188, 255, 0.14);
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .form-control, .form-select {
+      background: #1C172E !important;
+      border: 1.5px solid rgba(208, 188, 255, 0.25) !important;
+      color: #FFFFFF !important;
+      border-radius: 12px !important;
+      padding: 10px 14px !important;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #D0BCFF !important;
+      box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.25) !important;
+      background: #231B38 !important;
+    }
+    .form-control:disabled, .form-control[readonly] {
+      background: #151124 !important;
+      border-color: rgba(208, 188, 255, 0.12) !important;
+      color: #A39DB5 !important;
+      cursor: not-allowed;
+    }
+    .repeater-table th {
+      color: #D0BCFF;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(208, 188, 255, 0.2);
+    }
+    .repeater-table td {
+      padding: 8px 12px;
+      vertical-align: middle;
+    }
+  </style>
 </head>
 <body>
 
@@ -90,84 +154,295 @@
             <i class="fa-solid fa-pen-to-square text-purple-400"></i> Modifica Client OAuth2
           </h2>
           <p class="form-helper text-purple-300 text-xs mt-1">
-            Aggiorna chiavi di sicurezza, scadenze, endpoint redirect e requisiti MFA.
+            Aggiorna tutti i parametri crittografici, endpoint di reindirizzamento, ruoli applicativi e webhooks per il client selezionato.
           </p>
         </div>
-        <a href="/app/clients" class="m3-btn-outline">
-          <i class="fa-solid fa-arrow-left text-xs"></i> Annulla e Torna Indietro
-        </a>
+        <div class="flex items-center gap-3">
+          <a id="back-to-details-btn" href="/app/clients" class="m3-btn-outline">
+            <i class="fa-solid fa-arrow-left text-xs"></i> Dettagli Client
+          </a>
+        </div>
       </div>
 
-      <form id="editClientForm" onsubmit="event.preventDefault(); submitEditClient();" class="row g-4">
-        
-        <div class="col-md-6">
-          <label class="form-label text-xs font-semibold text-gray-300">Client ID (Non Modificabile)</label>
-          <input type="text" id="clientId" class="form-control font-mono" readonly disabled style="opacity: 0.7;" />
-        </div>
+      <div id="loading-spinner" class="py-16 text-center text-purple-300 flex flex-col items-center justify-center">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+        <p class="text-sm">Caricamento impostazioni client...</p>
+      </div>
 
-        <div class="col-md-6">
-          <label class="form-label text-xs font-semibold text-gray-300">Client Secret</label>
-          <div class="flex gap-2">
-            <input type="text" id="clientSecret" class="form-control font-mono" required />
-            <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateSecret()" title="Rigenera Secret">
-              <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-            </button>
+      <form id="editClientForm" onsubmit="event.preventDefault(); submitEditClient();" class="space-y-8" style="display: none;">
+        
+        <!-- SEZIONE 1: IDENTITÀ CLIENT & CREDENZIALI -->
+        <div class="m3-subcard">
+          <div class="form-section-title">
+            <i class="fa-solid fa-id-card text-purple-400"></i> 1. Identità & Credenziali di Accesso
+          </div>
+          <div class="row g-4">
+            <div class="col-md-4">
+              <label class="form-label text-xs font-semibold text-gray-300">Client ID (Non Modificabile)</label>
+              <input type="text" id="clientId" class="form-control font-mono uppercase" readonly disabled />
+              <span class="text-[11px] text-gray-400 mt-1 block">Identificativo univoco dell'applicazione nel sistema.</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label text-xs font-semibold text-gray-300">Type (Gestione Token / Auth) *</label>
+              <select id="authType" class="form-select font-mono" required>
+                <option value="ALL_TYPE">ALL_TYPE (Supporto Multi-Protocollo)</option>
+                <option value="BEARER">BEARER (Standard Bearer)</option>
+                <option value="GOOGLE">GOOGLE (Integrazione Google OAuth)</option>
+              </select>
+              <span class="text-[11px] text-gray-400 mt-1 block">Tipo generale di gestione token adottato dal client.</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label text-xs font-semibold text-gray-300">External Client ID</label>
+              <input type="text" id="externalClientId" class="form-control font-mono text-xs" placeholder="es. 284023202969-...apps.googleusercontent.com" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Identificativo per integrazioni esterne (Google, Okta, ecc.).</span>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label text-xs font-semibold text-gray-300">Client Secret</label>
+              <div class="flex gap-2">
+                <input type="text" id="clientSecret" class="form-control font-mono text-xs" placeholder="es. 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" />
+                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateClientSecret()" title="Genera Nuovo Secret">
+                  <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                </button>
+              </div>
+              <span class="text-[11px] text-gray-400 mt-1 block">Chiave segreta usata per autenticazione client confidenziale.</span>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label text-xs font-semibold text-gray-300">Registration Token</label>
+              <div class="flex gap-2">
+                <input type="text" id="registrationToken" class="form-control font-mono text-xs" placeholder="es. ca466054-8575-4fbf-bb76-183f24bfbcde" />
+                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateRegistrationToken()" title="Genera Nuovo UUID">
+                  <i class="fa-solid fa-dice text-xs"></i>
+                </button>
+              </div>
+              <span class="text-[11px] text-gray-400 mt-1 block">Token univoco di registrazione assegnato al client.</span>
+            </div>
           </div>
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label text-xs font-semibold text-gray-300">Access Type</label>
-          <select id="accessType" class="form-select">
-            <option value="ONLINE">ONLINE (Sessione attiva)</option>
-            <option value="OFFLINE">OFFLINE (Supporto Refresh Token)</option>
-          </select>
+        <!-- SEZIONE 2: ACCESSO & REDIRECT URI -->
+        <div class="m3-subcard">
+          <div class="form-section-title">
+            <i class="fa-solid fa-network-wired text-purple-400"></i> 2. Reindirizzamenti, Scopes & Flussi OAuth
+          </div>
+          <div class="row g-4">
+            <div class="col-md-4">
+              <label class="form-label text-xs font-semibold text-gray-300">Access Type</label>
+              <select id="accessType" class="form-select font-mono">
+                <option value="ONLINE">ONLINE (Autenticazione web standard)</option>
+                <option value="OFFLINE">OFFLINE (Supporto Refresh Token continuo)</option>
+              </select>
+              <span class="text-[11px] text-gray-400 mt-1 block">Definisce il tipo di accesso (online o offline).</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label text-xs font-semibold text-gray-300">Authorize Redirect Status</label>
+              <select id="authorize_redirect_status" class="form-select font-mono">
+                <option value="FOUND">FOUND (HTTP 302 - Standard)</option>
+                <option value="SEE_OTHER">SEE_OTHER (HTTP 303)</option>
+                <option value="TEMPORARY_REDIRECT">TEMPORARY_REDIRECT (HTTP 307)</option>
+                <option value="PERMANENT_REDIRECT">PERMANENT_REDIRECT (HTTP 308)</option>
+                <option value="OK">OK (HTTP 200)</option>
+              </select>
+              <span class="text-[11px] text-gray-400 mt-1 block">Status code HTTP utilizzato per il redirect durante l'autorizzazione.</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label text-xs font-semibold text-gray-300">Token Type *</label>
+              <select id="tokenType" class="form-select font-mono" required>
+                <option value="BEARER_JWT">BEARER_JWT (Token JWT standard)</option>
+                <option value="BEARER_JWE">BEARER_JWE (Token JWE crittografato)</option>
+              </select>
+              <span class="text-[11px] text-gray-400 mt-1 block">Tipologia di token emesso al client.</span>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label text-xs font-semibold text-gray-300">Scopes Autorizzati</label>
+              <input type="text" id="scopes" class="form-control font-mono text-xs" 
+                     placeholder="openid email profile https://www.googleapis.com/auth/userinfo.profile" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Lista degli scope autorizzati per il client (separati da spazio o virgola).</span>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label text-xs font-semibold text-gray-300">Redirect URIs Autorizzate (redirect_uri)</label>
+              <textarea id="redirect_uri" rows="2" class="form-control font-mono text-xs" 
+                        placeholder="https://linkatutto.giovannilamarmora.com http://127.0.0.1:5501/index.html"></textarea>
+              <span class="text-[11px] text-gray-400 mt-1 block">URI consentite per la risposta di authorization code e token (separate da spazio).</span>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label text-xs font-semibold text-gray-300">Fallback URI (fallback_uri)</label>
+              <textarea id="fallback_uri" rows="2" class="form-control font-mono text-xs" 
+                        placeholder="https://access-sphere.giovannilamarmora.com/app/login?client_id=MY-CLIENT"></textarea>
+              <span class="text-[11px] text-gray-400 mt-1 block">URI di fallback utilizzata in caso di fallimento o annullamento del redirect primario.</span>
+            </div>
+          </div>
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label text-xs font-semibold text-gray-300">Token Type</label>
-          <select id="tokenType" class="form-select">
-            <option value="JWT">JWT (Standard Bearer)</option>
-            <option value="JWE">JWE (Crittografato JWE)</option>
-          </select>
+        <!-- SEZIONE 3: CRITTOGRAFIA & SCADENZE TOKEN -->
+        <div class="m3-subcard">
+          <div class="form-section-title">
+            <i class="fa-solid fa-shield-halved text-purple-400"></i> 3. Parametri Chiavi & Scadenze Token
+          </div>
+          <div class="row g-4">
+            <div class="col-md-8">
+              <label class="form-label text-xs font-semibold text-gray-300">JWT Secret</label>
+              <div class="flex gap-2">
+                <input type="text" id="jwtSecret" class="form-control font-mono text-xs" placeholder="Secret key a 256-bit per firmare i token JWT" />
+                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJwtSecret()" title="Genera Chiave JWT a 256-bit">
+                  <i class="fa-solid fa-key text-xs"></i>
+                </button>
+              </div>
+              <span class="text-[11px] text-gray-400 mt-1 block">Chiave segreta usata per la firma crittografica dei token JWT.</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label text-xs font-semibold text-gray-300">JWT Expiration (millisecondi)</label>
+              <input type="number" id="jwtExpiration" class="form-control font-mono" value="3600000" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Durata di validità del token JWT (es. 3600000 ms = 1 ora).</span>
+            </div>
+
+            <div class="col-md-8">
+              <label class="form-label text-xs font-semibold text-gray-300">JWE Secret</label>
+              <div class="flex gap-2">
+                <input type="text" id="jweSecret" class="form-control font-mono text-xs" placeholder="Secret key per cifratura token JWE" />
+                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJweSecret()" title="Genera Chiave JWE">
+                  <i class="fa-solid fa-lock text-xs"></i>
+                </button>
+              </div>
+              <span class="text-[11px] text-gray-400 mt-1 block">Chiave segreta usata per la crittografia dei token JWE.</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label text-xs font-semibold text-gray-300">JWE Expiration (millisecondi)</label>
+              <input type="number" id="jweExpiration" class="form-control font-mono" value="360000" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Durata di validità del token JWE (es. 360000 ms = 6 minuti).</span>
+            </div>
+          </div>
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label text-xs font-semibold text-gray-300">Auth Type</label>
-          <select id="authType" class="form-select">
-            <option value="BEARER">BEARER</option>
-            <option value="BASIC">BASIC</option>
-          </select>
+        <!-- SEZIONE 4: FLAG DI EMISSIONE TOKEN & SICUREZZA -->
+        <div class="m3-subcard">
+          <div class="form-section-title">
+            <i class="fa-solid fa-sliders text-purple-400"></i> 4. Flag di Emissione & Requisiti di Sicurezza
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <div class="m3-switch-card">
+              <div>
+                <span class="text-xs font-bold text-white block">MFA Obbligatoria</span>
+                <span class="text-[10px] text-gray-400 block mt-0.5">mfa_enabled</span>
+              </div>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input cursor-pointer" type="checkbox" id="mfaEnabled" style="width: 2.8em; height: 1.4em;" />
+              </div>
+            </div>
+
+            <div class="m3-switch-card">
+              <div>
+                <span class="text-xs font-bold text-white block">Emetti ID Token</span>
+                <span class="text-[10px] text-gray-400 block mt-0.5">id_token (OpenID Connect)</span>
+              </div>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input cursor-pointer" type="checkbox" id="idToken" style="width: 2.8em; height: 1.4em;" />
+              </div>
+            </div>
+
+            <div class="m3-switch-card">
+              <div>
+                <span class="text-xs font-bold text-white block">Emetti Access Token</span>
+                <span class="text-[10px] text-gray-400 block mt-0.5">access_token (OAuth2)</span>
+              </div>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input cursor-pointer" type="checkbox" id="accessToken" style="width: 2.8em; height: 1.4em;" />
+              </div>
+            </div>
+
+            <div class="m3-switch-card">
+              <div>
+                <span class="text-xs font-bold text-white block">Emetti Strapi Token</span>
+                <span class="text-[10px] text-gray-400 block mt-0.5">strapi_token</span>
+              </div>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input cursor-pointer" type="checkbox" id="strapiToken" style="width: 2.8em; height: 1.4em;" />
+              </div>
+            </div>
+
+          </div>
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label text-xs font-semibold text-gray-300">Scadenza Token (secondi)</label>
-          <input type="number" id="jwtExpiration" class="form-control font-mono" value="3600" />
+        <!-- SEZIONE 5: APP ROLES -->
+        <div class="m3-subcard">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-purple-500/15">
+            <div class="form-section-title m-0 border-0 p-0">
+              <i class="fa-solid fa-user-shield text-purple-400"></i> 5. Ruoli Applicativi (app_roles)
+            </div>
+            <div class="flex gap-2">
+              <button type="button" class="m3-btn-outline text-xs" onclick="toggleRolesJsonModal()">
+                <i class="fa-solid fa-code mr-1"></i> Modifica JSON
+              </button>
+              <button type="button" class="m3-btn-primary text-xs" onclick="addAppRoleRow()">
+                <i class="fa-solid fa-plus mr-1"></i> Aggiungi Ruolo
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="table repeater-table w-full text-xs">
+              <thead>
+                <tr>
+                  <th style="width: 28%;">Ruolo (Role) *</th>
+                  <th style="width: 22%;">Tipo (Type)</th>
+                  <th style="width: 42%;">Descrizione</th>
+                  <th style="width: 8%; text-align: center;">Azione</th>
+                </tr>
+              </thead>
+              <tbody id="app-roles-tbody">
+                <!-- Righe generate dinamicamente -->
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="col-md-8">
-          <label class="form-label text-xs font-semibold text-gray-300">Scopes Autorizzati (separati da virgola)</label>
-          <input type="text" id="scopes" class="form-control font-mono" />
+        <!-- SEZIONE 6: WEBHOOKS -->
+        <div class="m3-subcard">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-purple-500/15">
+            <div class="form-section-title m-0 border-0 p-0">
+              <i class="fa-solid fa-satellite-dish text-purple-400"></i> 6. Webhooks
+            </div>
+            <div class="flex gap-2">
+              <button type="button" class="m3-btn-outline text-xs" onclick="toggleWebhooksJsonModal()">
+                <i class="fa-solid fa-code mr-1"></i> Modifica JSON
+              </button>
+              <button type="button" class="m3-btn-primary text-xs" onclick="addWebhookRow()">
+                <i class="fa-solid fa-plus mr-1"></i> Aggiungi Webhook
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="table repeater-table w-full text-xs">
+              <thead>
+                <tr>
+                  <th style="width: 30%;">Nome Webhook *</th>
+                  <th style="width: 44%;">URL Endpoint *</th>
+                  <th style="width: 18%;">Azione (Action)</th>
+                  <th style="width: 8%; text-align: center;">Azione</th>
+                </tr>
+              </thead>
+              <tbody id="webhooks-tbody">
+                <!-- Righe generate dinamicamente -->
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="col-12">
-          <label class="form-label text-xs font-semibold text-gray-300">Redirect URIs</label>
-          <input type="text" id="redirect_uri" class="form-control font-mono text-xs" />
-        </div>
-
-        <div class="col-12">
-          <label class="form-label text-xs font-semibold text-gray-300">Webhooks</label>
-          <input type="text" id="webhooks" class="form-control font-mono text-xs" />
-        </div>
-
-        <div class="col-12 flex items-center gap-3 pt-2">
-          <input type="checkbox" id="mfaEnabled" class="w-4 h-4 rounded accent-purple-500 cursor-pointer" />
-          <label for="mfaEnabled" class="text-xs font-semibold text-gray-300 cursor-pointer">
-            Richiedi autenticazione a due fattori (MFA / 2FA) per questo client
-          </label>
-        </div>
-
-        <div class="col-12 pt-6 border-t border-purple-500/15 flex items-center justify-end gap-3">
-          <a href="/app/clients" class="m3-btn-outline">
+        <!-- AZIONI FORM -->
+        <div class="pt-6 border-t border-purple-500/15 flex items-center justify-end gap-3">
+          <a id="cancel-link" href="/app/clients" class="m3-btn-outline">
             <i class="fa-solid fa-xmark"></i> Annulla
           </a>
           <button type="submit" class="m3-btn-primary">
@@ -180,57 +455,202 @@
   </main>
 
   <script>
-    function formatRedirectUris(val) {
-      if (!val) return "";
-      if (typeof val === "string") {
-        if (val.startsWith("{") || val.startsWith("[")) {
-          try {
-            return formatRedirectUris(JSON.parse(val));
-          } catch(e) {
-            return val;
-          }
-        }
-        return val;
-      }
-      if (typeof val === "object") {
-        if (Array.isArray(val)) {
-          return val.map(item => typeof item === "object" ? (item.uri || item.url || JSON.stringify(item)) : item).join(" ");
-        }
-        const vals = Object.values(val).filter(Boolean);
-        return vals.join(" ");
-      }
-      return String(val);
-    }
-
-    function formatScopes(scopes) {
-      if (!scopes) return "";
-      if (Array.isArray(scopes)) return scopes.join(", ");
-      if (typeof scopes === "object") return Object.values(scopes).join(", ");
-      return String(scopes);
-    }
-
-    function formatWebhooks(webhooks) {
-      if (!webhooks) return "";
-      if (Array.isArray(webhooks)) {
-        return webhooks.map(w => typeof w === "object" ? (w.url || w.endpoint || JSON.stringify(w)) : w).join(", ");
-      }
-      if (typeof webhooks === "object") return JSON.stringify(webhooks);
-      return String(webhooks);
-    }
+    let currentClientId = null;
+    let appRolesList = [];
+    let webhooksList = [];
 
     document.addEventListener("DOMContentLoaded", () => {
       loadClientForEdit();
     });
 
-    function generateSecret() {
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_~";
-      let secret = "sec_";
-      for (let i = 0; i < 32; i++) {
+    // --- GENERATORI CHIAVI ---
+    function generateRandomHex(len) {
+      const hex = "0123456789ABCDEF";
+      let res = "";
+      for (let i = 0; i < len; i++) {
+        res += hex.charAt(Math.floor(Math.random() * hex.length));
+      }
+      return res;
+    }
+
+    function generateClientSecret() {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+      let secret = "GOCSPX-";
+      for (let i = 0; i < 28; i++) {
         secret += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       document.getElementById("clientSecret").value = secret;
     }
 
+    function generateRegistrationToken() {
+      const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        const r = (Math.random() * 16) | 0,
+          v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+      document.getElementById("registrationToken").value = uuid;
+    }
+
+    function generateJwtSecret() {
+      document.getElementById("jwtSecret").value = generateRandomHex(64);
+    }
+
+    function generateJweSecret() {
+      document.getElementById("jweSecret").value = generateRandomHex(64);
+    }
+
+    // --- GESTIONE APP ROLES ---
+    function renderAppRolesTable() {
+      const tbody = document.getElementById("app-roles-tbody");
+      tbody.innerHTML = "";
+
+      if (!appRolesList || appRolesList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-3 italic">Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.</td></tr>`;
+        return;
+      }
+
+      appRolesList.forEach((r, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>
+            <input type="text" class="form-control font-mono text-xs" value="${r.role || ''}" 
+                   oninput="appRolesList[${idx}].role = this.value.toUpperCase(); this.value = this.value.toUpperCase();" placeholder="es. ADMIN" />
+          </td>
+          <td>
+            <select class="form-select font-mono text-xs" onchange="appRolesList[${idx}].type = this.value;">
+              <option value="DEFAULT" ${r.type === 'DEFAULT' ? 'selected' : ''}>DEFAULT</option>
+              <option value="SUPER_ADMIN" ${r.type === 'SUPER_ADMIN' ? 'selected' : ''}>SUPER_ADMIN</option>
+              <option value="ADMIN" ${r.type === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+              <option value="USER" ${r.type === 'USER' ? 'selected' : ''}>USER</option>
+            </select>
+          </td>
+          <td>
+            <input type="text" class="form-control text-xs" value="${r.description || ''}" 
+                   oninput="appRolesList[${idx}].description = this.value;" placeholder="Descrizione del ruolo" />
+          </td>
+          <td class="text-center">
+            <button type="button" class="m3-icon-btn m3-icon-btn-danger" onclick="removeAppRoleRow(${idx})" title="Rimuovi Ruolo">
+              <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addAppRoleRow() {
+      appRolesList.push({ role: "", type: "DEFAULT", description: "" });
+      renderAppRolesTable();
+    }
+
+    function removeAppRoleRow(idx) {
+      appRolesList.splice(idx, 1);
+      renderAppRolesTable();
+    }
+
+    function toggleRolesJsonModal() {
+      Swal.fire({
+        title: "Modifica Ruoli in Formato JSON",
+        input: "textarea",
+        inputValue: JSON.stringify(appRolesList, null, 2),
+        inputAttributes: {
+          style: "height: 240px; font-family: monospace; font-size: 11px; background: #181427; color: #D0BCFF;"
+        },
+        showCancelButton: true,
+        confirmButtonText: "Salva JSON",
+        cancelButtonText: "Annulla"
+      }).then((res) => {
+        if (res.isConfirmed && res.value) {
+          try {
+            const parsed = JSON.parse(res.value);
+            if (Array.isArray(parsed)) {
+              appRolesList = parsed;
+              renderAppRolesTable();
+            } else {
+              sweetalert("error", "Formato Errato", "Il JSON deve essere un array di oggetti ruolo.");
+            }
+          } catch(e) {
+            sweetalert("error", "JSON Non Valido", e.message);
+          }
+        }
+      });
+    }
+
+    // --- GESTIONE WEBHOOKS ---
+    function renderWebhooksTable() {
+      const tbody = document.getElementById("webhooks-tbody");
+      tbody.innerHTML = "";
+
+      if (!webhooksList || webhooksList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-3 italic">Nessun webhook registrato.</td></tr>`;
+        return;
+      }
+
+      webhooksList.forEach((w, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>
+            <input type="text" class="form-control text-xs" value="${w.name || ''}" 
+                   oninput="webhooksList[${idx}].name = this.value;" placeholder="Nome webhook" />
+          </td>
+          <td>
+            <input type="text" class="form-control font-mono text-xs" value="${w.url || ''}" 
+                   oninput="webhooksList[${idx}].url = this.value;" placeholder="https://api.example.com/webhook" />
+          </td>
+          <td>
+            <select class="form-select font-mono text-xs" onchange="webhooksList[${idx}].action = this.value;">
+              <option value="DELETE_USER" ${w.action === 'DELETE_USER' ? 'selected' : ''}>DELETE_USER</option>
+            </select>
+          </td>
+          <td class="text-center">
+            <button type="button" class="m3-icon-btn m3-icon-btn-danger" onclick="removeWebhookRow(${idx})" title="Rimuovi Webhook">
+              <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addWebhookRow() {
+      webhooksList.push({ name: "", url: "", action: "DELETE_USER" });
+      renderWebhooksTable();
+    }
+
+    function removeWebhookRow(idx) {
+      webhooksList.splice(idx, 1);
+      renderWebhooksTable();
+    }
+
+    function toggleWebhooksJsonModal() {
+      Swal.fire({
+        title: "Modifica Webhooks in Formato JSON",
+        input: "textarea",
+        inputValue: JSON.stringify(webhooksList, null, 2),
+        inputAttributes: {
+          style: "height: 200px; font-family: monospace; font-size: 11px; background: #181427; color: #D0BCFF;"
+        },
+        showCancelButton: true,
+        confirmButtonText: "Salva JSON",
+        cancelButtonText: "Annulla"
+      }).then((res) => {
+        if (res.isConfirmed && res.value) {
+          try {
+            const parsed = JSON.parse(res.value);
+            if (Array.isArray(parsed)) {
+              webhooksList = parsed;
+              renderWebhooksTable();
+            } else {
+              sweetalert("error", "Formato Errato", "Il JSON deve essere un array di webhook.");
+            }
+          } catch(e) {
+            sweetalert("error", "JSON Non Valido", e.message);
+          }
+        }
+      });
+    }
+
+    // --- CARICAMENTO CLIENT ---
     function loadClientForEdit() {
       const path = window.location.href;
       let clientId = null;
@@ -240,7 +660,17 @@
         clientId = new URLSearchParams(window.location.search).get("clientId") || new URLSearchParams(window.location.search).get("id");
       }
 
-      if (!clientId) return;
+      if (!clientId) {
+        document.getElementById("loading-spinner").innerHTML = `
+          <div class="text-red-400 font-semibold mb-3">Client ID non specificato nel percorso o query param.</div>
+          <a href="/app/clients" class="m3-btn-outline text-xs">Torna alla lista client</a>
+        `;
+        return;
+      }
+
+      currentClientId = clientId;
+      document.getElementById("back-to-details-btn").href = `/app/clients/details/${encodeURIComponent(clientId)}`;
+      document.getElementById("cancel-link").href = `/app/clients/details/${encodeURIComponent(clientId)}`;
 
       const token = getCookieOrStorage(config.access_token);
       const url = window.location.origin + "/v1/clients";
@@ -252,37 +682,144 @@
         const data = await res.json();
         const clients = data.data || [];
         const client = clients.find(c => c.clientId === clientId);
-        if (client) {
-          document.getElementById("clientId").value = client.clientId || "";
-          document.getElementById("clientSecret").value = client.clientSecret || "";
-          document.getElementById("accessType").value = client.accessType || "ONLINE";
-          document.getElementById("tokenType").value = client.tokenType || "JWT";
-          document.getElementById("authType").value = client.authType || "BEARER";
-          document.getElementById("jwtExpiration").value = client.jwtExpiration || 3600;
-          document.getElementById("scopes").value = formatScopes(client.scopes);
-          document.getElementById("redirect_uri").value = formatRedirectUris(client.redirect_uri);
-          document.getElementById("webhooks").value = formatWebhooks(client.webhooks);
-          document.getElementById("mfaEnabled").checked = !!client.mfaEnabled;
+
+        if (!client) {
+          document.getElementById("loading-spinner").innerHTML = `
+            <div class="text-red-400 font-semibold mb-3">Nessun client trovato con identificativo: ${clientId}</div>
+            <a href="/app/clients" class="m3-btn-outline text-xs">Torna alla lista client</a>
+          `;
+          return;
         }
+
+        populateForm(client);
+      })
+      .catch((err) => {
+        console.error(err);
+        document.getElementById("loading-spinner").innerHTML = `
+          <div class="text-red-400 font-semibold mb-3">Errore durante il recupero dei dati del client.</div>
+          <a href="/app/clients" class="m3-btn-outline text-xs">Ricarica</a>
+        `;
       });
     }
 
+    function populateForm(client) {
+      document.getElementById("clientId").value = client.clientId || "";
+      document.getElementById("authType").value = client.authType || client.type || "ALL_TYPE";
+      document.getElementById("externalClientId").value = client.externalClientId || "";
+      document.getElementById("clientSecret").value = client.clientSecret || "";
+      document.getElementById("registrationToken").value = client.registrationToken || client.registration_token || "";
+
+      document.getElementById("accessType").value = client.accessType || "ONLINE";
+      document.getElementById("authorize_redirect_status").value = client.authorize_redirect_status || "FOUND";
+      document.getElementById("tokenType").value = client.tokenType || "BEARER_JWT";
+
+      // Scopes
+      if (Array.isArray(client.scopes)) {
+        document.getElementById("scopes").value = client.scopes.join(" ");
+      } else if (typeof client.scopes === "string") {
+        document.getElementById("scopes").value = client.scopes;
+      } else if (client.scopes && typeof client.scopes === "object") {
+        document.getElementById("scopes").value = Object.values(client.scopes).join(" ");
+      }
+
+      // Redirect URIs (redirect_uri e fallback_uri)
+      if (client.redirect_uri && typeof client.redirect_uri === "object" && !Array.isArray(client.redirect_uri)) {
+        document.getElementById("redirect_uri").value = client.redirect_uri.redirect_uri || "";
+        document.getElementById("fallback_uri").value = client.redirect_uri.fallback_uri || "";
+      } else if (typeof client.redirect_uri === "string") {
+        try {
+          const parsed = JSON.parse(client.redirect_uri);
+          if (typeof parsed === "object" && !Array.isArray(parsed)) {
+            document.getElementById("redirect_uri").value = parsed.redirect_uri || "";
+            document.getElementById("fallback_uri").value = parsed.fallback_uri || "";
+          } else {
+            document.getElementById("redirect_uri").value = client.redirect_uri;
+          }
+        } catch(e) {
+          document.getElementById("redirect_uri").value = client.redirect_uri;
+        }
+      }
+
+      // Cryptography & Expirations
+      document.getElementById("jwtSecret").value = client.jwtSecret || client.jwt_secret || "";
+      document.getElementById("jwtExpiration").value = client.jwtExpiration || client.jwt_expiration || 3600000;
+      document.getElementById("jweSecret").value = client.jweSecret || client.jwe_secret || "";
+      document.getElementById("jweExpiration").value = client.jweExpiration || client.jwe_expiration || 360000;
+
+      // Security / Emission switches
+      document.getElementById("mfaEnabled").checked = (client.mfaEnabled !== undefined) ? !!client.mfaEnabled : !!client.mfa_enabled;
+      document.getElementById("idToken").checked = (client.idToken !== undefined) ? !!client.idToken : !!client.id_token;
+      document.getElementById("accessToken").checked = (client.accessToken !== undefined) ? !!client.accessToken : !!client.access_token;
+      document.getElementById("strapiToken").checked = (client.strapiToken !== undefined) ? !!client.strapiToken : !!client.strapi_token;
+
+      // App Roles
+      if (client.appRoles || client.app_roles) {
+        const rawRoles = client.appRoles || client.app_roles;
+        if (typeof rawRoles === "string") {
+          try { appRolesList = JSON.parse(rawRoles); } catch(e) { appRolesList = []; }
+        } else if (Array.isArray(rawRoles)) {
+          appRolesList = rawRoles;
+        }
+      } else {
+        appRolesList = [];
+      }
+      renderAppRolesTable();
+
+      // Webhooks
+      if (client.webhooks) {
+        if (typeof client.webhooks === "string") {
+          try { webhooksList = JSON.parse(client.webhooks); } catch(e) { webhooksList = []; }
+        } else if (Array.isArray(client.webhooks)) {
+          webhooksList = client.webhooks;
+        }
+      } else {
+        webhooksList = [];
+      }
+      renderWebhooksTable();
+
+      // Mostra form e nascondi spinner
+      document.getElementById("loading-spinner").style.display = "none";
+      document.getElementById("editClientForm").style.display = "block";
+    }
+
+    // --- SUBMISSION ---
     function submitEditClient() {
-      const redirectInput = document.getElementById("redirect_uri").value.trim();
+      const clientId = document.getElementById("clientId").value.trim();
+      const secret = document.getElementById("clientSecret").value.trim();
+
+      const redirectUrisInput = document.getElementById("redirect_uri").value.trim();
+      const fallbackUriInput = document.getElementById("fallback_uri").value.trim();
       const scopesInput = document.getElementById("scopes").value.trim();
-      const webhooksInput = document.getElementById("webhooks").value.trim();
+
+      const redirectMap = {};
+      if (redirectUrisInput) redirectMap["redirect_uri"] = redirectUrisInput;
+      if (fallbackUriInput) redirectMap["fallback_uri"] = fallbackUriInput;
+
+      const scopesList = scopesInput ? scopesInput.split(/[\s,]+/).map(s => s.trim()).filter(Boolean) : null;
+      const cleanRoles = appRolesList.filter(r => r.role && r.role.trim() !== "");
+      const cleanWebhooks = webhooksList.filter(w => w.name && w.url);
 
       const payload = {
-        clientId: document.getElementById("clientId").value,
-        clientSecret: document.getElementById("clientSecret").value.trim(),
-        accessType: document.getElementById("accessType").value,
-        tokenType: document.getElementById("tokenType").value,
+        clientId: clientId,
         authType: document.getElementById("authType").value,
-        redirect_uri: redirectInput ? { "redirect_uri": redirectInput } : null,
-        scopes: scopesInput ? scopesInput.split(",").map(s => s.trim()).filter(Boolean) : null,
-        webhooks: webhooksInput ? webhooksInput.split(",").map(w => ({ url: w.trim() })) : null,
-        jwtExpiration: parseInt(document.getElementById("jwtExpiration").value) || 3600,
-        mfaEnabled: document.getElementById("mfaEnabled").checked
+        externalClientId: document.getElementById("externalClientId").value.trim() || null,
+        clientSecret: secret,
+        accessType: document.getElementById("accessType").value,
+        scopes: scopesList,
+        authorize_redirect_status: document.getElementById("authorize_redirect_status").value,
+        redirect_uri: Object.keys(redirectMap).length > 0 ? redirectMap : null,
+        tokenType: document.getElementById("tokenType").value,
+        jwtSecret: document.getElementById("jwtSecret").value.trim() || null,
+        jwtExpiration: parseInt(document.getElementById("jwtExpiration").value) || 3600000,
+        jweSecret: document.getElementById("jweSecret").value.trim() || null,
+        jweExpiration: parseInt(document.getElementById("jweExpiration").value) || 360000,
+        registrationToken: document.getElementById("registrationToken").value.trim() || null,
+        mfaEnabled: document.getElementById("mfaEnabled").checked,
+        idToken: document.getElementById("idToken").checked,
+        accessToken: document.getElementById("accessToken").checked,
+        strapiToken: document.getElementById("strapiToken").checked,
+        appRoles: cleanRoles.length > 0 ? cleanRoles : null,
+        webhooks: cleanWebhooks.length > 0 ? cleanWebhooks : null
       };
 
       const token = getCookieOrStorage(config.access_token);
@@ -298,13 +835,13 @@
       })
       .then(async (res) => {
         if (res.ok) {
-          sweetalert("success", "Client Aggiornato", "Le modifiche al client sono state salvate con successo.");
+          sweetalert("success", "Client Aggiornato", `Tutte le configurazioni del client ${clientId} sono state aggiornate con successo.`);
           setTimeout(() => {
-            window.location.href = "/app/clients/details/" + encodeURIComponent(payload.clientId);
+            window.location.href = `/app/clients/details/${encodeURIComponent(clientId)}`;
           }, 1500);
         } else {
           const err = await res.json().catch(() => ({}));
-          sweetalert("error", "Errore Aggiornamento", err.message || "Impossibile aggiornare il client.");
+          sweetalert("error", "Errore Aggiornamento", err.message || err.error?.message || "Impossibile aggiornare il client.");
         }
       })
       .catch((err) => {
@@ -316,4 +853,3 @@
 
 </body>
 </html>
-

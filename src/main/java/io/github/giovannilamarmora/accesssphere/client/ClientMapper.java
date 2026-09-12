@@ -136,7 +136,7 @@ public class ClientMapper {
     existingClient.setStrapiToken(clientCredential.getStrapiToken());
     existingClient.setAuthorize_redirect_status(clientCredential.getAuthorize_redirect_status());
     existingClient.setMfaEnabled(clientCredential.getMfaEnabled());
-    existingClient.setAppRoles(
+    existingClient.setWebhooks(
         ObjectUtils.isEmpty(clientCredential.getWebhooks())
             ? null
             : Mapper.writeObjectToString(clientCredential.getWebhooks()));

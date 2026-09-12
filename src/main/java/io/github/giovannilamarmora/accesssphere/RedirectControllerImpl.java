@@ -74,12 +74,12 @@ public class RedirectControllerImpl {
     return "app/client/register";
   }
 
-  @GetMapping("/app/clients/details/{identifier}")
+  @GetMapping({"/app/clients/details", "/app/clients/details/{identifier}"})
   public String clientDetails(Model model) {
     return "app/client/client";
   }
 
-  @GetMapping("/app/clients/edit/{identifier}")
+  @GetMapping({"/app/clients/edit", "/app/clients/edit/{identifier}"})
   public String editClient(Model model) {
     return "app/client/edit";
   }

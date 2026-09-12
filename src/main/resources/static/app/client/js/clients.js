@@ -154,7 +154,7 @@ function displayClientsTable(clients) {
       <td>
         <div class="font-bold text-white text-sm flex items-center gap-2">
           <i class="fa-solid fa-cube text-purple-400"></i>
-          <span class="hover:underline cursor-pointer text-purple-300" onclick="event.stopPropagation(); viewClientDetails('${c.clientId}')">${c.clientId || "N/A"}</span>
+          <span class="hover:underline cursor-pointer text-purple-300" onclick="event.stopPropagation(); window.location.href = '/app/clients/details/' + encodeURIComponent('${c.clientId}');">${c.clientId || "N/A"}</span>
         </div>
         <div class="text-[11px] text-gray-400 font-mono">${c.externalClientId || ""}</div>
       </td>
