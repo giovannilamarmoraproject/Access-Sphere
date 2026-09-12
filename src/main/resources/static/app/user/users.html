@@ -857,19 +857,30 @@
 
       // Load Clients KPI
       try {
-        const cachedClientsData = localStorage.getItem(cfg.client_id + "_clientsData");
+        const cachedClientsData = localStorage.getItem(cfg.client_id + "_clientsData") ||
+          localStorage.getItem(cfg.client_id + "_clients") ||
+          localStorage.getItem("ACCESS-SPHERE-TECH_clientsData") ||
+          localStorage.getItem("ACCESS-SPHERE-TECH_clients");
         if (cachedClientsData) {
           const parsed = JSON.parse(cachedClientsData);
-          renderClientsKpi(parsed);
+          if (Array.isArray(parsed)) {
+            renderClientsKpi(parsed);
+          }
         }
         if (token) {
           const clientUrl = cfg.client_id_url || (window.location.origin + "/v1/clients");
           GET(clientUrl, token).then(async (res) => {
             const data = await res.json();
-            const clients = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
-            if (Array.isArray(clients)) {
-              localStorage.setItem(cfg.client_id + "_clientsData", JSON.stringify(clients));
-              renderClientsKpi(clients);
+            if (data && data.error == null) {
+              const clients = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
+              if (Array.isArray(clients)) {
+                localStorage.setItem(cfg.client_id + "_clientsData", JSON.stringify(clients));
+                localStorage.setItem(cfg.client_id + "_clients", JSON.stringify(clients));
+                renderClientsKpi(clients);
+                if (typeof updateClientKpis === "function") {
+                  updateClientKpis(clients);
+                }
+              }
             }
           }).catch(() => {});
         }
@@ -889,7 +900,7 @@
     function renderClientsKpi(clients) {
       if (!Array.isArray(clients)) return;
       const total = clients.length;
-      const mfa = clients.filter(c => !!c.mfaEnabled).length;
+      const mfa = clients.filter(c => c && (c.mfaEnabled === true || c.mfaEnabled === "true" || c.mfa_enabled === true || c.mfa_enabled === "true")).length;
       const totalEl = document.getElementById("stat-recap-clients");
       const mfaEl = document.getElementById("stat-recap-mfa-clients");
       if (totalEl) totalEl.innerText = total;
@@ -1050,11 +1061,16 @@
       if (typeof loadCachedClients === "function") {
         loadCachedClients();
       }
-      const cachedClientsData = localStorage.getItem(config.client_id + "_clientsData");
+      const cachedClientsData = localStorage.getItem(config.client_id + "_clientsData") ||
+        localStorage.getItem(config.client_id + "_clients") ||
+        localStorage.getItem("ACCESS-SPHERE-TECH_clientsData") ||
+        localStorage.getItem("ACCESS-SPHERE-TECH_clients");
       if (cachedClientsData) {
         try {
           const parsed = JSON.parse(cachedClientsData);
-          renderClientsKpi(parsed);
+          if (Array.isArray(parsed)) {
+            renderClientsKpi(parsed);
+          }
         } catch(e) {}
       }
 

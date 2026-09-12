@@ -17,13 +17,15 @@ const totpLabel = {
 document.addEventListener("DOMContentLoaded", function () {
   const otpMethod = document.getElementById("mfa_label");
   if (otpMethod) {
+    let optionsHtml = "";
     Object.values(totpLabel).forEach((label) => {
       const formattedLabel = label
         .replace("-", " ")
         .replace(/\b\w/g, (char) => char.toUpperCase());
 
-      otpMethod.innerHTML += `<option value="${label}">${formattedLabel}</option>`;
+      optionsHtml += `<option value="${label}">${formattedLabel}</option>`;
     });
+    otpMethod.innerHTML = optionsHtml;
   }
 });
 
@@ -33,16 +35,19 @@ document.addEventListener("DOMContentLoaded", function () {
  * --------------------------------------------------------------
  */
 function enableVerifyBtn() {
-  const otp1 = document.getElementById("otp-1").value;
-  const otp2 = document.getElementById("otp-2").value;
-  const otp3 = document.getElementById("otp-3").value;
-  const otp4 = document.getElementById("otp-4").value;
-  const otp5 = document.getElementById("otp-5").value;
-  const otp6 = document.getElementById("otp-6").value;
+  const otp1 = document.getElementById("otp-1")?.value || "";
+  const otp2 = document.getElementById("otp-2")?.value || "";
+  const otp3 = document.getElementById("otp-3")?.value || "";
+  const otp4 = document.getElementById("otp-4")?.value || "";
+  const otp5 = document.getElementById("otp-5")?.value || "";
+  const otp6 = document.getElementById("otp-6")?.value || "";
+  const verifyBtn = document.getElementById("mfa_page_setup_confirm_proceed");
   if (otp1 && otp2 && otp3 && otp4 && otp5 && otp6) {
-    const verifyBtn = document.getElementById("mfa_page_setup_confirm_proceed");
     if (verifyBtn) verifyBtn.removeAttribute("disabled");
     return otp1 + otp2 + otp3 + otp4 + otp5 + otp6;
+  } else {
+    if (verifyBtn) verifyBtn.setAttribute("disabled", "true");
+    return null;
   }
 }
 
@@ -50,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("mfa-config-form");
   if (!form) return;
   const inputs = [...form.querySelectorAll("input[type=text]")];
-  const submit = form.querySelector("button[type=submit]");
+  const submit = form.querySelector("button[type=submit]") || document.getElementById("mfa_page_setup_confirm_proceed");
 
   const handleKeyDown = (e) => {
     if (
@@ -65,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (e.key === "Delete" || e.key === "Backspace") {
       const index = inputs.indexOf(e.target);
-      if (index > 0) {
+      if (index > 0 && !e.target.value) {
         inputs[index - 1].value = "";
         inputs[index - 1].focus();
       }
@@ -79,9 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (index < inputs.length - 1) {
         inputs[index + 1].focus();
       } else {
-        submit.focus();
+        if (submit) submit.focus();
       }
     }
+    enableVerifyBtn();
   };
 
   const handleFocus = (e) => {
@@ -90,13 +96,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const handlePaste = (e) => {
     e.preventDefault();
-    const text = e.clipboardData.getData("text");
+    const text = (e.clipboardData.getData("text") || "").trim();
     if (!new RegExp(`^[0-9]{${inputs.length}}$`).test(text)) {
       return;
     }
     const digits = text.split("");
     inputs.forEach((input, index) => (input.value = digits[index]));
-    submit.focus();
+    enableVerifyBtn();
+    if (submit) submit.focus();
   };
 
   inputs.forEach((input) => {

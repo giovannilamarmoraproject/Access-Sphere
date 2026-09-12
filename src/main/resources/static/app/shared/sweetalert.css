@@ -246,6 +246,49 @@
   color: rgba(208, 188, 255, 0.45) !important;
 }
 
+/* File Input within Modal (if explicitly enabled) */
+.swal2-file {
+  background: rgba(30, 23, 46, 0.85) !important;
+  border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+  border-radius: 14px !important;
+  color: #CAC4D0 !important;
+  font-size: 0.75rem !important;
+  padding: 0 12px !important;
+  height: 48px !important;
+  line-height: 46px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  margin: 1rem auto 0.5rem !important;
+}
+
+.swal2-file::-webkit-file-upload-button,
+.swal2-file::file-selector-button {
+  background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 10px !important;
+  height: 32px !important;
+  line-height: 30px !important;
+  padding: 0 14px !important;
+  margin: 7px 12px 7px 0 !important;
+  vertical-align: middle !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+}
+
+/* Ensure hidden Swal inputs remain hidden */
+.swal2-popup input[style*="display: none"],
+.swal2-popup .swal2-file[style*="display: none"],
+.swal2-popup .swal2-input[style*="display: none"],
+.swal2-popup .swal2-textarea[style*="display: none"],
+.swal2-popup .swal2-select[style*="display: none"],
+.swal2-popup .swal2-radio[style*="display: none"],
+.swal2-popup .swal2-checkbox[style*="display: none"],
+.swal2-popup .swal2-range[style*="display: none"] {
+  display: none !important;
+}
+
 /* 7. Close button */
 .swal2-close {
   color: rgba(208, 188, 255, 0.6) !important;

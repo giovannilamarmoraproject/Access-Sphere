@@ -86,6 +86,7 @@ function getClients() {
         cachedClients = data.data || [];
         try {
           localStorage.setItem(cfg.client_id + "_clientsData", JSON.stringify(cachedClients));
+          localStorage.setItem(cfg.client_id + "_clients", JSON.stringify(cachedClients));
         } catch(e) {}
         displayClientsTable(cachedClients);
         updateClientKpis(cachedClients);
@@ -100,7 +101,10 @@ function getClients() {
 function loadCachedClients() {
   try {
     const cfg = getConfig();
-    const stored = localStorage.getItem(cfg.client_id + "_clientsData");
+    const stored = localStorage.getItem(cfg.client_id + "_clientsData") ||
+      localStorage.getItem(cfg.client_id + "_clients") ||
+      localStorage.getItem("ACCESS-SPHERE-TECH_clientsData") ||
+      localStorage.getItem("ACCESS-SPHERE-TECH_clients");
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -115,9 +119,10 @@ function loadCachedClients() {
 }
 
 function updateClientKpis(clients) {
+  if (!Array.isArray(clients)) return;
   const total = clients.length;
-  const mfa = clients.filter(c => c.mfaEnabled).length;
-  const jwe = clients.filter(c => c.tokenType === "JWE").length;
+  const mfa = clients.filter(c => c && (c.mfaEnabled === true || c.mfaEnabled === "true" || c.mfa_enabled === true || c.mfa_enabled === "true")).length;
+  const jwe = clients.filter(c => c && c.tokenType === "JWE").length;
 
   const totalEl = document.getElementById("stat-total-clients");
   const mfaEl = document.getElementById("stat-mfa-clients");
@@ -126,6 +131,12 @@ function updateClientKpis(clients) {
   if(totalEl) totalEl.innerText = total;
   if(mfaEl) mfaEl.innerText = mfa;
   if(jweEl) jweEl.innerText = jwe;
+
+  // Sincronizza in tempo reale anche la card riepilogativa nella Dashboard
+  const recapTotalEl = document.getElementById("stat-recap-clients");
+  const recapMfaEl = document.getElementById("stat-recap-mfa-clients");
+  if (recapTotalEl) recapTotalEl.innerText = total;
+  if (recapMfaEl) recapMfaEl.innerText = mfa;
 }
 
 function displayClientsTable(clients) {
@@ -154,7 +165,7 @@ function displayClientsTable(clients) {
       <td>
         <div class="font-bold text-white text-sm flex items-center gap-2">
           <i class="fa-solid fa-cube text-purple-400"></i>
-          <span class="hover:underline cursor-pointer text-purple-300" onclick="event.stopPropagation(); window.location.href = '/app/clients/details/' + encodeURIComponent('${c.clientId}');">${c.clientId || "N/A"}</span>
+          <span class="cursor-pointer text-purple-300" onclick="event.stopPropagation(); window.location.href = '/app/clients/details/' + encodeURIComponent('${c.clientId}');">${c.clientId || "N/A"}</span>
         </div>
         <div class="text-[11px] text-gray-400 font-mono">${c.externalClientId || ""}</div>
       </td>

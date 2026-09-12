@@ -257,9 +257,59 @@ function displayUserData(user) {
 
   const attributesHtml = renderCustomAttributesData(user.attributes);
 
-  let mfaStatus = '<span class="text-xs text-gray-400">Disattivata</span>';
-  if (user.mfaSettings && user.mfaSettings.mfaEnabled) {
-    mfaStatus = '<span class="px-3 py-1 text-xs font-semibold" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 9999px;">ATTIVA</span>';
+  const isMfaActive = !!(user.mfaSettings && (user.mfaSettings.enabled === true || user.mfaSettings.mfaEnabled === true || user.mfaSettings.enabled === "true" || user.mfaSettings.mfaEnabled === "true"));
+  const mfaMethods = (user.mfaSettings && Array.isArray(user.mfaSettings.mfaMethods)) ? user.mfaSettings.mfaMethods : [];
+  const hasMfaMethods = mfaMethods.length > 0;
+
+  const mfaStatus = isMfaActive 
+    ? '<span class="px-3 py-1 text-xs font-semibold" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 9999px;">ATTIVA</span>' 
+    : '<span class="px-3 py-1 text-xs font-semibold" style="background: rgba(255, 255, 255, 0.08); color: #9CA3AF; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 9999px;">DISATTIVATA</span>';
+
+  let mfaMethodsHtml = "";
+  if (hasMfaMethods) {
+    mfaMethodsHtml = `
+      <div class="space-y-3">
+        ${mfaMethods.map(m => `
+          <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-purple-400/40" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">
+            <div class="flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-inner" style="background: rgba(208, 188, 255, 0.1); border: 1px solid rgba(208, 188, 255, 0.2);">
+                ${getMfaIcon(m.label)}
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-bold text-white">${formatMfaLabel(m.label)}</span>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full" style="background: rgba(168, 85, 247, 0.15); color: #D0BCFF; border: 1px solid rgba(208, 188, 255, 0.2);">${m.type || 'TOTP'}</span>
+                </div>
+                <div class="text-xs text-gray-400 mt-1 flex flex-wrap items-center gap-2">
+                  <span>Stato:</span>
+                  ${m.confirmed !== false
+                    ? '<span class="text-emerald-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-check text-[11px]"></i> Confermato</span>'
+                    : '<span class="text-amber-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-clock text-[11px]"></i> In attesa di verifica</span>'}
+                  ${m.creationDate ? `<span class="text-gray-500">• Configurato il ${typeof formatDateIntl === 'function' ? formatDateIntl(m.creationDate) : m.creationDate}</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end">
+              <button type="button" onclick="deleteMfaMethod('${user.identifier}', '${(m.label || '').replace(/'/g, "\\'")}')" class="m3-icon-btn m3-icon-btn-danger" title="Elimina Metodo MFA">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  } else {
+    mfaMethodsHtml = `
+      <div class="p-6 text-center rounded-2xl" style="background: rgba(26, 20, 42, 0.5); border: 1px dashed rgba(208, 188, 255, 0.2);">
+        <i class="fa-solid fa-shield-virus text-3xl text-purple-400/50 mb-2 block"></i>
+        <p class="text-sm text-gray-300 font-medium m-0">Nessun metodo di autenticazione a due fattori configurato.</p>
+        <p class="text-xs text-gray-400 mt-1 mb-4">Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account.</p>
+        <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-5 inline-flex items-center gap-2 text-decoration-none shadow-md" style="border-radius: 9999px !important; color: #FFFFFF !important;">
+          <i class="fa-solid fa-qrcode"></i> <span style="color: #FFFFFF !important;">Configura MFA Ora</span>
+        </a>
+      </div>
+    `;
   }
 
   container.innerHTML = `
@@ -297,24 +347,36 @@ function displayUserData(user) {
           </div>
         </div>
 
-        <!-- Bottoni Azione M3: Tutti Arrotondati (Pill), Testo Bianco, Nessun Bordo Bianco -->
-        <div class="space-y-3 w-full">
-          <a href="/app/users/edit/${user.identifier}" class="m3-btn-primary w-full justify-center py-3 text-xs font-bold text-decoration-none flex items-center gap-2 shadow-lg" style="border-radius: 9999px !important; color: #FFFFFF !important;">
+        <!-- Bottoni Azione M3: Tutti Arrotondati (Pill), Testo Bianco, Stesso Font Size e Spessore identici -->
+        <div class="space-y-2.5 w-full">
+          <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-primary m3-action-pill w-full justify-center py-2.5 px-4 text-decoration-none shadow-lg hover:brightness-110 transition-all" style="border-radius: 9999px !important; color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">
             <i class="fa-solid fa-user-pen text-sm"></i>
-            <span style="color: #FFFFFF !important;">Modifica Profilo</span>
+            <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Modifica Profilo</span>
           </a>
           
           <div class="grid grid-cols-2 gap-2.5 w-full">
-            <a href="/app/users/roles/${user.identifier}" class="py-2.5 px-3 text-xs font-semibold text-center text-decoration-none flex items-center justify-center gap-1.5 shadow-sm transition-all" style="background: rgba(168, 85, 247, 0.18); color: #FFFFFF !important; border: 1px solid rgba(208, 188, 255, 0.3); border-radius: 9999px !important;">
-              <i class="fa-solid fa-shield-halved text-xs" style="color: #D0BCFF;"></i>
-              <span style="color: #FFFFFF !important;">Ruoli</span>
+            <a href="/app/users/roles/${encodeURIComponent(user.identifier)}" class="m3-action-pill py-2.5 px-3 text-center text-decoration-none shadow-sm hover:brightness-110 transition-all" style="background: rgba(168, 85, 247, 0.18); color: #FFFFFF !important; border: 1px solid rgba(208, 188, 255, 0.3); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;">
+              <i class="fa-solid fa-shield-halved text-sm" style="color: #D0BCFF;"></i>
+              <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Ruoli</span>
             </a>
             
-            <button onclick="deleteUser('${user.identifier}','${user.username}')" class="py-2.5 px-3 text-xs font-semibold text-center cursor-pointer flex items-center justify-center gap-1.5 shadow-sm transition-all" style="background: rgba(239, 68, 68, 0.15); color: #FFFFFF !important; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px !important;">
-              <i class="fa-solid fa-trash text-xs" style="color: #F87171;"></i>
-              <span style="color: #FFFFFF !important;">Elimina</span>
-            </button>
+            ${isBlocked ? `
+              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', false)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(16, 185, 129, 0.18); color: #FFFFFF !important; border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="Sblocca Utente">
+                <i class="fa-solid fa-lock-open text-sm" style="color: #6EE7B7;"></i>
+                <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Sblocca</span>
+              </button>
+            ` : `
+              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', true)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(245, 158, 11, 0.18); color: #FFFFFF !important; border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="Blocca Utente">
+                <i class="fa-solid fa-lock text-sm" style="color: #FCD34D;"></i>
+                <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Blocca</span>
+              </button>
+            `}
           </div>
+
+          <button onclick="deleteUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}')" class="m3-action-pill w-full py-2.5 px-4 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(239, 68, 68, 0.15); color: #FFFFFF !important; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="Elimina Utente">
+            <i class="fa-solid fa-trash text-sm" style="color: #F87171;"></i>
+            <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Elimina</span>
+          </button>
         </div>
 
       </div>
@@ -394,11 +456,47 @@ function displayUserData(user) {
           </div>
         </div>
 
+        <!-- Card Autenticazione a Due Fattori (MFA) -->
+        <div class="m3-card p-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
+            <div class="flex items-center gap-3">
+              <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
+                <i class="fa-solid fa-shield-halved text-purple-400"></i> Autenticazione a Due Fattori (MFA)
+              </h4>
+              ${isMfaActive
+                ? '<span class="px-3 py-1 text-xs font-semibold rounded-full" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35);">ATTIVA</span>'
+                : '<span class="px-3 py-1 text-xs font-semibold rounded-full" style="background: rgba(255, 255, 255, 0.08); color: #9CA3AF; border: 1px solid rgba(255, 255, 255, 0.15);">DISATTIVATA</span>'}
+            </div>
+            <div class="flex items-center gap-2">
+              ${isMfaActive ? `
+                <button type="button" onclick="toggleMfaStatus('${user.identifier}', false)" class="m3-btn-outline text-xs cursor-pointer flex items-center gap-1.5" style="color: #FCD34D !important; border-color: rgba(245, 158, 11, 0.4) !important;" title="Disattiva Autenticazione a Due Fattori">
+                  <i class="fa-solid fa-power-off text-xs" style="color: #FCD34D;"></i> Disattiva MFA
+                </button>
+              ` : (hasMfaMethods ? `
+                <button type="button" onclick="toggleMfaStatus('${user.identifier}', true)" class="m3-btn-outline text-xs cursor-pointer flex items-center gap-1.5" style="color: #6EE7B7 !important; border-color: rgba(16, 185, 129, 0.4) !important;" title="Attiva Autenticazione a Due Fattori">
+                  <i class="fa-solid fa-toggle-on text-xs" style="color: #6EE7B7;"></i> Attiva MFA
+                </button>
+              ` : '')}
+              <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-4 text-decoration-none shadow-md flex items-center gap-1.5" style="border-radius: 9999px !important; color: #FFFFFF !important;">
+                <i class="fa-solid fa-plus text-xs"></i> <span style="color: #FFFFFF !important;">Configura Metodo</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Elenco Metodi MFA Configurati -->
+          ${mfaMethodsHtml}
+        </div>
+
         <!-- Card Attributi Custom Trasformati in Dati Visivi -->
         <div class="m3-card p-8">
-          <h4 class="text-xl font-bold text-white mb-6 flex items-center gap-2.5 pb-4" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
-            <i class="fa-solid fa-sliders text-purple-400"></i> Attributi Personalizzati
-          </h4>
+          <div class="flex items-center justify-between pb-4 mb-6" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
+            <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
+              <i class="fa-solid fa-sliders text-purple-400"></i> Attributi Personalizzati
+            </h4>
+            <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-outline text-xs flex items-center gap-1.5 text-decoration-none" style="color: #D0BCFF !important; border-color: rgba(208, 188, 255, 0.3) !important;">
+              <i class="fa-solid fa-pen-to-square text-xs"></i> <span style="color: #FFFFFF !important;">Modifica Attributi</span>
+            </a>
+          </div>
           <div>
             ${attributesHtml}
           </div>
@@ -410,31 +508,250 @@ function displayUserData(user) {
   `;
 }
 
-function deleteUser(identifier, username) {
-  sweetalert(
-    "warning",
-    "Conferma Eliminazione",
-    `Sei sicuro di voler eliminare definitivamente l'utente @${username}? L'operazione non è reversibile.`,
-    true
-  ).then((res) => {
+function toggleBlockUser(identifier, username, block) {
+  const actionTitle = block ? "Conferma Blocco" : "Conferma Sblocco";
+  const actionText = block
+    ? `Sei sicuro di voler bloccare l'utente @${username}? L'utente non potrà più accedere al sistema fino al successivo sblocco.`
+    : `Sei sicuro di voler sbloccare l'utente @${username}? L'utente potrà nuovamente accedere alle applicazioni del sistema.`;
+  const confirmBtnText = block ? "Sì, blocca" : "Sì, sblocca";
+  const cancelBtnText = "Annulla";
+
+  const confirmPromise = typeof sweetalertConfirm === 'function'
+    ? sweetalertConfirm("warning", actionTitle, actionText, confirmBtnText, cancelBtnText)
+    : (typeof Swal !== 'undefined' ? Swal.fire({
+        icon: "warning",
+        title: actionTitle,
+        text: actionText,
+        showCancelButton: true,
+        confirmButtonText: confirmBtnText,
+        cancelButtonText: cancelBtnText
+      }) : Promise.resolve({ isConfirmed: confirm(actionText) }));
+
+  confirmPromise.then((res) => {
     if (res.isConfirmed) {
-      const url = config.users_url + "/" + identifier;
+      const url = config.users_url + "/" + encodeURIComponent(identifier) + "?block=" + (block ? "true" : "false");
       const token = getCookieOrStorage(config.access_token);
-      DELETE(url, token).then(async (data) => {
+      const patchFn = typeof PATCH !== 'undefined' ? PATCH : (typeof api !== 'undefined' && api.PATCH ? api.PATCH : null);
+
+      if (!patchFn) {
+        sweetalert("error", "Errore", "Funzione PATCH non disponibile.");
+        return;
+      }
+
+      patchFn(url, token).then(async (data) => {
         const responseData = await data.json().catch(() => ({}));
-        if (responseData.error != null) {
-          sweetalert("error", "Errore Eliminazione", responseData.error.message || "Impossibile eliminare l'utente.");
+        if (!data.ok || responseData.error != null) {
+          const errMsg = responseData.error?.message || responseData.message || (block ? "Impossibile bloccare l'utente." : "Impossibile sbloccare l'utente.");
+          sweetalert("error", block ? "Errore Blocco" : "Errore Sblocco", errMsg);
         } else {
-          localStorage.removeItem(config.client_id + "_usersData");
-          sweetalert("success", "Utente Eliminato", `L'utente @${username} è stato rimosso.`);
-          setTimeout(() => {
-            window.location.href = "/app/users";
-          }, 1500);
+          try {
+            localStorage.removeItem(config.client_id + "_usersData");
+            sessionStorage.removeItem("accesssphere_users_data");
+          } catch (e) {}
+
+          const successTitle = block ? "Utente Bloccato" : "Utente Sbloccato";
+          const successMsg = block
+            ? `L'utente @${username} è stato bloccato con successo.`
+            : `L'utente @${username} è stato sbloccato con successo.`;
+
+          sweetalert("success", successTitle, successMsg).then(() => {
+            window.location.reload();
+          });
         }
       }).catch(err => {
-        console.error(err);
+        console.error("Error toggling user block status:", err);
         sweetalert("error", "Errore", "Impossibile contattare il server.");
       });
     }
   });
 }
+
+function deleteUser(identifier, username) {
+  const confirmPromise = typeof sweetalertConfirm === 'function'
+    ? sweetalertConfirm(
+        "warning",
+        "Conferma Eliminazione",
+        `Sei sicuro di voler eliminare definitivamente l'utente @${username}? L'operazione non è reversibile.`,
+        "Sì, elimina",
+        "Annulla"
+      )
+    : sweetalert("warning", "Conferma Eliminazione", `Sei sicuro di voler eliminare definitivamente l'utente @${username}? L'operazione non è reversibile.`, true);
+
+  confirmPromise.then((res) => {
+    if (res.isConfirmed) {
+      const url = config.users_url + "/" + encodeURIComponent(identifier);
+      const token = getCookieOrStorage(config.access_token);
+      DELETE(url, token).then(async (data) => {
+        const responseData = await data.json().catch(() => ({}));
+        if (!data.ok || responseData.error != null) {
+          sweetalert("error", "Errore Eliminazione", responseData.error?.message || responseData.message || "Impossibile eliminare l'utente.");
+        } else {
+          try {
+            localStorage.removeItem(config.client_id + "_usersData");
+            sessionStorage.removeItem("accesssphere_users_data");
+          } catch (e) {}
+          sweetalert("success", "Utente Eliminato", `L'utente @${username} è stato rimosso.`).then(() => {
+            window.location.href = "/app/users";
+          });
+        }
+      }).catch(err => {
+        console.error("Error deleting user:", err);
+        sweetalert("error", "Errore", "Impossibile contattare il server.");
+      });
+    }
+  });
+}
+
+function getMfaIcon(label) {
+  const l = (label || "").toLowerCase();
+  if (l.includes("google")) return '<i class="fa-brands fa-google text-red-400 text-lg"></i>';
+  if (l.includes("microsoft")) return '<i class="fa-brands fa-microsoft text-blue-400 text-lg"></i>';
+  if (l.includes("authy")) return '<i class="fa-solid fa-key text-red-400 text-lg"></i>';
+  if (l.includes("1password") || l.includes("onepassword")) return '<i class="fa-solid fa-lock text-cyan-400 text-lg"></i>';
+  if (l.includes("bitwarden")) return '<i class="fa-solid fa-shield-halved text-blue-400 text-lg"></i>';
+  return '<i class="fa-solid fa-mobile-screen-button text-purple-400 text-lg"></i>';
+}
+
+function formatMfaLabel(label) {
+  if (!label) return "Authenticator App";
+  const map = {
+    "google-authenticator": "Google Authenticator",
+    "microsoft-authenticator": "Microsoft Authenticator",
+    "authy": "Twilio Authy",
+    "lastpass-authenticator": "LastPass Authenticator",
+    "duo-mobile": "Duo Mobile",
+    "free-otp": "FreeOTP",
+    "aegis": "Aegis Authenticator",
+    "and-otp": "andOTP",
+    "1password": "1Password",
+    "bitwarden": "Bitwarden",
+    "keepass": "KeePass",
+    "enpass": "Enpass",
+    "dashlane": "Dashlane"
+  };
+  return map[label.toLowerCase()] || label.replace(/[-_]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+}
+
+function toggleMfaStatus(identifier, enable) {
+  const title = enable ? "Attiva Autenticazione a Due Fattori" : "Disattiva Autenticazione a Due Fattori";
+  const text = enable
+    ? "Sei sicuro di voler abilitare l'autenticazione a due fattori (MFA) per questo utente?"
+    : "Sei sicuro di voler disattivare l'autenticazione a due fattori (MFA)? L'accesso sarà protetto unicamente dalla password.";
+  const confirmBtn = enable ? "Sì, attiva MFA" : "Sì, disattiva MFA";
+  const denyBtn = "Annulla";
+
+  const confirmPromise = typeof sweetalertConfirm === "function"
+    ? sweetalertConfirm("warning", title, text, confirmBtn, denyBtn)
+    : (typeof Swal !== "undefined"
+        ? Swal.fire({
+            icon: "warning",
+            title: title,
+            text: text,
+            showCancelButton: true,
+            confirmButtonText: confirmBtn,
+            cancelButtonText: denyBtn
+          })
+        : Promise.resolve({ isConfirmed: confirm(text) }));
+
+  confirmPromise.then((res) => {
+    if (res.isConfirmed) {
+      const url = window.location.origin + "/v1/mfa/manage";
+      const token = getCookieOrStorage(config.access_token);
+      const body = {
+        identifier: identifier,
+        action: enable ? "ENABLE" : "DISABLE"
+      };
+
+      const postFn = typeof POST !== "undefined" ? POST : (typeof api !== "undefined" && api.POST ? api.POST : null);
+      if (!postFn) {
+        sweetalert("error", "Errore", "Funzione POST non disponibile.");
+        return;
+      }
+
+      postFn(url, token, body).then(async (data) => {
+        const responseData = await data.json().catch(() => ({}));
+        if (!data.ok || responseData.error != null) {
+          const errMsg = responseData.error?.message || responseData.message || (enable ? "Impossibile attivare l'MFA." : "Impossibile disattivare l'MFA.");
+          sweetalert("error", enable ? "Errore Attivazione" : "Errore Disattivazione", errMsg);
+        } else {
+          try {
+            localStorage.removeItem(config.client_id + "_usersData");
+            sessionStorage.removeItem("accesssphere_users_data");
+          } catch (e) {}
+
+          const successMsg = enable
+            ? "Autenticazione a due fattori attivata con successo."
+            : "Autenticazione a due fattori disattivata con successo.";
+
+          sweetalert("success", enable ? "MFA Attivata" : "MFA Disattivata", successMsg).then(() => {
+            window.location.reload();
+          });
+        }
+      }).catch(err => {
+        console.error("Error toggling MFA status:", err);
+        sweetalert("error", "Errore", "Impossibile contattare il server.");
+      });
+    }
+  });
+}
+
+function deleteMfaMethod(identifier, label) {
+  const formattedLabel = formatMfaLabel(label);
+  const confirmPromise = typeof sweetalertConfirm === "function"
+    ? sweetalertConfirm(
+        "warning",
+        "Elimina Metodo MFA",
+        `Sei sicuro di voler eliminare il metodo "${formattedLabel}"? Se non rimangono altri metodi configurati, l'MFA verrà automaticamente disattivata.`,
+        "Sì, elimina",
+        "Annulla"
+      )
+    : (typeof Swal !== "undefined"
+        ? Swal.fire({
+            icon: "warning",
+            title: "Elimina Metodo MFA",
+            text: `Sei sicuro di voler eliminare il metodo "${formattedLabel}"?`,
+            showCancelButton: true,
+            confirmButtonText: "Sì, elimina",
+            cancelButtonText: "Annulla"
+          })
+        : Promise.resolve({ isConfirmed: confirm("Sei sicuro di voler eliminare il metodo?") }));
+
+  confirmPromise.then((res) => {
+    if (res.isConfirmed) {
+      const url = window.location.origin + "/v1/mfa/manage";
+      const token = getCookieOrStorage(config.access_token);
+      const body = {
+        identifier: identifier,
+        label: label,
+        action: "DELETE"
+      };
+
+      const postFn = typeof POST !== "undefined" ? POST : (typeof api !== "undefined" && api.POST ? api.POST : null);
+      if (!postFn) {
+        sweetalert("error", "Errore", "Funzione POST non disponibile.");
+        return;
+      }
+
+      postFn(url, token, body).then(async (data) => {
+        const responseData = await data.json().catch(() => ({}));
+        if (!data.ok || responseData.error != null) {
+          const errMsg = responseData.error?.message || responseData.message || "Impossibile eliminare il metodo MFA.";
+          sweetalert("error", "Errore Eliminazione", errMsg);
+        } else {
+          try {
+            localStorage.removeItem(config.client_id + "_usersData");
+            sessionStorage.removeItem("accesssphere_users_data");
+          } catch (e) {}
+
+          sweetalert("success", "Metodo Rimosso", `Il metodo "${formattedLabel}" è stato eliminato con successo.`).then(() => {
+            window.location.reload();
+          });
+        }
+      }).catch(err => {
+        console.error("Error deleting MFA method:", err);
+        sweetalert("error", "Errore", "Impossibile contattare il server.");
+      });
+    }
+  });
+}
+

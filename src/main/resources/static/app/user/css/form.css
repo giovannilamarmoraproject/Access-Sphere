@@ -232,38 +232,17 @@ select {
   border-bottom-right-radius: 10px !important;
 }
 
-#file {
-  border-top-right-radius: 0px !important;
-  border-bottom-right-radius: 0px !important;
-}
-
-.form-control-group {
-  /* border-top-right-radius: 10px !important;
-  border-bottom-right-radius: 10px; */
-  border-top-left-radius: 0px !important;
-  border-bottom-left-radius: 0px !important;
-}
-
-/* Aggiungi anche un bordo completo se necessario */
-.input-group-text,
-.form-control {
-  border: 1px solid #ccc; /* Sostituisci con il colore del bordo che desideri */
-}
-
-/* Regola anche l'input[type="file"] per uniformarlo */
+/* File Input Styling */
 input[type="file"] {
-  height: 45px; /* Imposta la stessa altezza del form-control */
-  line-height: 1.5; /* Allinea verticalmente */
-  display: inline-block; /* Rende l'input file inline con il suo contenuto */
-  font-size: 12px; /* Modifica la dimensione del testo "Nessun file selezionato" */
+  height: 48px;
+  line-height: 46px;
+  font-size: 0.75rem;
 }
 
-/* Aggiustamento per il bottone 'Scegli file' */
 input[type="file"]::-webkit-file-upload-button {
-  height: 45px; /* Imposta l'altezza del bottone */
-  border: none; /* Rimuove il bordo */
-  cursor: pointer; /* Aggiungi il cursore pointer per il bottone */
-  font-size: 14px; /* Imposta la dimensione del testo nel bottone */
+  height: 32px;
+  cursor: pointer;
+  font-size: 0.75rem;
 }
 
 @media (max-width: 870px) {

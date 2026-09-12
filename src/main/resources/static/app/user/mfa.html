@@ -1,51 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Access Sphere - MFA</title>
-    <link rel="stylesheet" href="../../app/user/css/form.css" />
-    <link rel="stylesheet" href="../../app/user/css/style.css" />
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
-  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <!-- END JQuery -->
-    <!-- Shared Component -->
-    <link rel="stylesheet" href="../../app/shared/animations/animation.css" />
-    <script src="../../app/shared/config.js"></script>
-    <script src="../../app/shared/utils.js"></script>
-    <script src="../../app/shared/api/authorize.js"></script>
-    <script src="../../app/shared/api/logout.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Access Sphere - Autenticazione a Due Fattori (MFA)</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0" />
-    <link rel="stylesheet" href="../../app/shared/sweetalert.css" />
-    <script src="../../app/shared/sweetalert.js"></script>
-    <script src="../../app/i18n/translations.js"></script>
-    <script src="../../app/shared/api/rest.js"></script>
-    <!-- END Shared Component -->
-    <link rel="stylesheet" href="../../app/user/css/mfa.css" />
-    <script src="../../app/user/js/otp.js"></script>
-    <script src="../../app/user/js/mfa.js"></script>
-    <!-- TailwindCSS: https://tailwindcss.com/ -->
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
+
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <!-- Tailwind & Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- END TailwindCSS -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="../../app/shared/fontawesome/css/all.min.css"
-    />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -57,476 +33,352 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
-    <!-- Google Tag Manager -->
-    <script>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != "dataLayer" ? "&l=" + l : "";
-        j.async = true;
-        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "GTM-KLC9VXFF");
-    </script>
-    <!-- End Google Tag Manager -->
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
 
-      gtag("config", "G-R4KLC18RH6");
-    </script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="../../app/shared/sweetalert.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../app/shared/sweetalert.js"></script>
+
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../app/shared/fontawesome/css/all.min.css"
+    />
+
+    <!-- Shared Components & API -->
+    <link rel="stylesheet" href="../../app/shared/animations/animation.css" />
+    <script src="../../app/shared/config.js"></script>
+    <script src="../../app/shared/utils.js"></script>
+    <script src="../../app/shared/api/authorize.js"></script>
+    <script src="../../app/shared/api/logout.js"></script>
+    <script src="../../app/i18n/translations.js"></script>
+    <script src="../../app/shared/api/rest.js"></script>
+
+    <!-- Unified M3 Dashboard Theme & MFA Dedicated Styles -->
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.2" />
+    <link rel="stylesheet" href="../../app/user/css/mfa.css?v=2.1.0" />
+    <script src="../../app/user/js/otp.js?v=2.1.0"></script>
+    <script src="../../app/user/js/mfa.js?v=2.1.0"></script>
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .register("/service-worker.js")
-          .then(function (registration) {
-            console.log(
-              "📱 Service Worker registered with scope:",
-              registration.scope
-            );
-          })
-          .catch(function (error) {
-            console.log("❌ Service Worker registration failed:", error);
-          });
-      }
-    </script>
     <meta name="robots" content="noindex, nofollow" />
   </head>
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript>
-      <iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-KLC9VXFF"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe>
-    </noscript>
-    <!-- End Google Tag Manager (noscript) -->
-    <main>
-      <div
-        class="big-wrapper dark relative h-full w-full bg-slate-950"
-        style="justify-content: flex-start"
-      >
-        <div
-          class="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(255,0,182,.15),rgba(255,255,255,0))]"
-        ></div>
-        <div
-          class="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(255,0,182,.15),rgba(255,255,255,0))]"
-        ></div>
-        <img src="../../app/user/img/shape.png" alt="" class="shape fade-in" />
 
-        <!-- Wide Unified Glass Header -->
-        <header class="glass-header w-full mb-6">
-          <div class="header-container">
-            
-            <div class="flex items-center gap-6">
-              <a href="/app" class="flex items-center gap-3 text-decoration-none group">
-                <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
-                <div class="flex flex-col">
-                  <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                    Access Sphere
-                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
-                  </span>
-                  <span class="text-[11px] text-gray-400 font-medium">Autenticazione a Due Fattori (MFA)</span>
-                </div>
-              </a>
-
-              <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
-                <a href="/app" class="nav-tab-m3 text-decoration-none">
-                  <i class="fa-solid fa-gauge-high"></i> Panoramica
-                </a>
-                <a href="/app/users" class="nav-tab-m3 active text-decoration-none">
-                  <i class="fa-solid fa-users"></i> Utenti
-                </a>
-                <a href="/app/clients" class="nav-tab-m3 text-decoration-none">
-                  <i class="fa-solid fa-key"></i> Client OAuth2
-                </a>
-                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-                  <i class="fa-solid fa-book"></i> API Docs
-                </a>
-              </nav>
+    <!-- Wide Unified Glass Header (Identical to Dashboard / Users / Clients) -->
+    <header class="glass-header">
+      <div class="header-container">
+        
+        <div class="flex items-center gap-6">
+          <a href="/app" class="flex items-center gap-3 text-decoration-none group">
+            <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
+            <div class="flex flex-col">
+              <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                Access Sphere
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
+              </span>
+              <span class="form-helper text-purple-300 text-xs font-medium">Autenticazione a Due Fattori (MFA)</span>
             </div>
+          </a>
 
-            <div class="flex items-center gap-2">
-              <a href="/app/users" class="m3-icon-btn" title="Torna agli Utenti">
-                <i class="fa-solid fa-arrow-left text-sm"></i>
-              </a>
-              <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
-                <i class="fa-solid fa-circle-info text-sm"></i>
-              </button>
-              <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
-                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
-              </button>
-            </div>
+          <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+            <a href="/app" class="nav-tab-m3 text-decoration-none">
+              <i class="fa-solid fa-gauge-high"></i> Panoramica
+            </a>
+            <a href="/app/users" class="nav-tab-m3 active text-decoration-none">
+              <i class="fa-solid fa-users"></i> Utenti
+            </a>
+            <a href="/app/clients" class="nav-tab-m3 text-decoration-none">
+              <i class="fa-solid fa-key"></i> Client OAuth2
+            </a>
+            <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
+              <i class="fa-solid fa-book"></i> API Docs
+            </a>
+          </nav>
+        </div>
 
-          </div>
-        </header>
-        <div class="container d-flex align-items-center justify-content-center">
-          <div
-            id="mfa-description-card"
-            class="card p-5 w-100 fade-in"
-            style="max-width: 1000px"
-          >
-            <h2 class="text-center mb-4" id="mfa_page_description_title">
-              🔐 Configure Multi-Factor Authentication
+        <div class="flex items-center gap-2">
+          <a onclick="goBack()" class="m3-icon-btn cursor-pointer" title="Torna ai Dettagli Utente">
+            <i class="fa-solid fa-arrow-left text-sm"></i>
+          </a>
+          <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
+            <i class="fa-solid fa-circle-info text-sm"></i>
+          </button>
+          <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+            <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Standard M3 Dashboard Wide Container -->
+    <main class="dashboard-wide-container">
+      <div class="m3-card p-8 sm:p-12">
+
+        <!-- Top Title Bar (Identical layout to Register and Edit pages) -->
+        <div class="flex items-center justify-between pb-6 mb-8 border-b border-purple-500/15">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+              <i class="fa-solid fa-shield-halved text-purple-400"></i> Configura Autenticazione a Due Fattori
             </h2>
-            <div id="description-mfa">
-              <div
-                class="mx-auto"
-                style="
-                  width: fit-content;
-                  margin-top: 5%;
-                  margin-bottom: 5%;
-                  display: flex;
-                  align-items: center;
-                  gap: 2rem;
-                "
-              >
-                <!-- Pallino sinistra -->
-                <div
-                  style="
-                    width: 20px;
-                    height: 20px;
-                    background-color: #ccc;
-                    border-radius: 50%;
-                  "
-                ></div>
+            <p class="form-helper text-purple-300 text-xs mt-1">
+              Associa un'applicazione di autenticazione (TOTP) per proteggere l'accesso all'account dell'utente.
+            </p>
+          </div>
+          <a onclick="goBack()" class="m3-btn-outline cursor-pointer mfa_page_back_button">
+            <i class="fa-solid fa-arrow-left text-xs"></i> Torna ai Dettagli Utente
+          </a>
+        </div>
 
-                <!-- Google Authenticator -->
-                <div
-                  class="rounded-full p-2"
-                  style="
-                    background-color: white;
-                    opacity: 0.8;
-                    width: fit-content;
-                  "
-                >
-                  <img
-                    src="https://cdn.worldvectorlogo.com/logos/google-authenticator-3.svg"
-                    class="card-img-top"
-                    alt="Google Authentication"
-                    style="max-width: 50px"
-                  />
+        <!-- ================= FASE 0: PRESENTAZIONE & VANTAGGI ================= -->
+        <div id="mfa-description-card" class="fade-in space-y-6">
+          <div class="m3-subcard p-6 sm:p-8">
+            <div class="flex items-center gap-4 mb-6 pb-4 border-b border-purple-500/15">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600/30 to-indigo-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shadow-md">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white tracking-tight" id="mfa_page_description_title">
+                  🔐 Configura l'Autenticazione a Due Fattori
+                </h3>
+                <p class="text-xs text-purple-300/80 font-mono mt-0.5">PROTEZIONE ACCOUNT AVANZATA (TOTP RFC 6238)</p>
+              </div>
+            </div>
+
+            <!-- Griglia Informativa e Benefici -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              <div class="lg:col-span-2 space-y-4">
+                <div class="p-5 rounded-2xl bg-purple-950/25 border border-purple-500/20 text-gray-300 text-sm leading-relaxed">
+                  <p id="mfa_page_description_text_1" class="mb-3">
+                    Multi-Factor Authentication (MFA) adds an extra layer of protection to your account by requiring not just your password, but also an additional verification step—such as a code from your phone. <strong class="text-purple-200">This significantly reduces the risk of unauthorized access</strong>, even if your password gets compromised.
+                  </p>
+                  <p id="mfa_page_description_text_2" class="text-xs text-gray-400">
+                    By enabling MFA, you’re taking a proactive step toward securing your personal data, protecting sensitive company resources, and complying with modern security best practices. <strong class="text-purple-300">Choose one or more verification methods below to get started.</strong>
+                  </p>
                 </div>
 
-                <!-- Microsoft Authenticator -->
-                <div
-                  class="rounded-full p-2"
-                  style="
-                    background-color: white;
-                    opacity: 0.8;
-                    width: fit-content;
-                  "
-                >
-                  <img
-                    src="https://mecdata.it/wp-content/uploads/2024/12/Microsoft_Authenticator_iOS_icon.webp"
-                    class="card-img-top"
-                    alt="Microsoft Authentication"
-                    style="max-width: 50px"
-                  />
+                <!-- 3 Card Pillole Benefici -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div class="p-3.5 rounded-xl bg-purple-900/15 border border-purple-500/15 flex items-center gap-3">
+                    <i class="fa-solid fa-lock text-purple-400 text-lg"></i>
+                    <div>
+                      <div class="text-xs font-bold text-white">Massima Sicurezza</div>
+                      <div class="text-[10px] text-gray-400">Codici OTP effimeri (30s)</div>
+                    </div>
+                  </div>
+                  <div class="p-3.5 rounded-xl bg-purple-900/15 border border-purple-500/15 flex items-center gap-3">
+                    <i class="fa-solid fa-mobile-screen-button text-indigo-400 text-lg"></i>
+                    <div>
+                      <div class="text-xs font-bold text-white">App Universali</div>
+                      <div class="text-[10px] text-gray-400">Google, MS, Authy e altre</div>
+                    </div>
+                  </div>
+                  <div class="p-3.5 rounded-xl bg-purple-900/15 border border-purple-500/15 flex items-center gap-3">
+                    <i class="fa-solid fa-bolt text-amber-400 text-lg"></i>
+                    <div>
+                      <div class="text-xs font-bold text-white">Setup Rapido</div>
+                      <div class="text-[10px] text-gray-400">Scansione QR in 10 secondi</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Applicazioni Compatibili -->
+              <div class="lg:col-span-1 p-5 rounded-2xl bg-[#171226]/80 border border-purple-500/20 flex flex-col justify-between">
+                <div>
+                  <div class="text-xs font-semibold text-purple-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-cubes"></i> Applicazioni Consigliate
+                  </div>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-2 rounded-xl bg-purple-950/30 border border-purple-500/10">
+                      <img src="https://cdn.worldvectorlogo.com/logos/google-authenticator-3.svg" class="w-5 h-5 rounded-full" alt="Google" />
+                      <div class="text-xs font-semibold text-white">Google Authenticator</div>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 rounded-xl bg-purple-950/30 border border-purple-500/10">
+                      <img src="https://mecdata.it/wp-content/uploads/2024/12/Microsoft_Authenticator_iOS_icon.webp" class="w-5 h-5 rounded-full" alt="Microsoft" />
+                      <div class="text-xs font-semibold text-white">Microsoft Authenticator</div>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 rounded-xl bg-purple-950/30 border border-purple-500/10">
+                      <div class="w-5 h-5 rounded-md bg-purple-600/30 flex items-center justify-center text-purple-300 text-xs">
+                        <i class="fa-solid fa-key"></i>
+                      </div>
+                      <div class="text-xs font-semibold text-white">Twilio Authy</div>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 rounded-xl bg-purple-950/30 border border-purple-500/10">
+                      <div class="w-5 h-5 rounded-md bg-blue-600/30 flex items-center justify-center text-blue-300 text-xs">
+                        <i class="fa-solid fa-shield"></i>
+                      </div>
+                      <div class="text-xs font-semibold text-white">Bitwarden / 1Password</div>
+                    </div>
+                  </div>
                 </div>
 
-                <!-- Pallino destra -->
-                <div
-                  style="
-                    width: 20px;
-                    height: 20px;
-                    background-color: #ccc;
-                    border-radius: 50%;
-                  "
-                ></div>
+                <div class="mt-4 pt-3 border-t border-purple-500/15 text-[11px] text-gray-400">
+                  Compatibile con qualsiasi app conforme a <strong>RFC 6238 (TOTP)</strong>.
+                </div>
               </div>
-              <div class="mb-4">
-                <p
-                  class="text-muted text-center"
-                  id="mfa_page_description_text_1"
-                >
-                  Multi-Factor Authentication (MFA) adds an extra layer of
-                  protection to your account by requiring not just your
-                  password, but also an additional verification step—such as a
-                  code from your phone or email.
-                  <strong
-                    >This significantly reduces the risk of unauthorized
-                    access</strong
-                  >, even if your password gets compromised.
-                </p>
-                <p
-                  class="text-muted text-center mt-2"
-                  id="mfa_page_description_text_2"
-                >
-                  By enabling MFA, you’re taking a proactive step toward
-                  securing your personal data, protecting sensitive company
-                  resources, and complying with modern security best practices.
-                  <strong
-                    >Choose one or more verification methods below to get
-                    started.</strong
-                  >
-                </p>
-              </div>
+            </div>
 
+            <!-- Pulsanti di Azione -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-purple-500/15">
+              <a onclick="goBack()" class="m3-btn-outline cursor-pointer mfa_page_back_button">
+                <i class="fa-solid fa-arrow-left text-xs"></i> Torna ai Dettagli Utente
+              </a>
               <button
                 id="mfa_page_description_button"
                 onclick="showOTPLabelSelect()"
-                style="padding: 10px 20px; border-radius: 10px; width: 100%"
-                class="btn btn-outline-primary mt-3"
+                class="m3-btn-primary px-8 py-3 text-sm font-semibold shadow-lg shadow-purple-500/20"
               >
-                <strong>Continua</strong>
+                <span>Inizia Configurazione</span> <i class="fa-solid fa-arrow-right text-xs ml-1"></i>
               </button>
             </div>
-            <div class="text-center mt-4">
-              <a
-                class="text-decoration-none text-secondary clickable mfa_page_back_button"
-                onclick="goBack()"
-              >
-                <i class="bi bi-arrow-left"></i> Back to Account Settings
-              </a>
-            </div>
           </div>
-          <div id="mfa-config-section" style="display: none">
-            <h2
-              id="mfa_page_setup_title"
-              class="text-center fade-in text-white mt-4 mb-5"
-            >
-              🔐 Configure Authenticator App (TOTP)
-            </h2>
+        </div>
 
-            <form id="mfa-config-form">
-              <div class="card mx-auto fade-in" style="max-width: 30rem">
-                <div class="card-body text-center ms-4 me-4">
-                  <div
-                    id="mfa-logos"
-                    class="mx-auto"
-                    style="
-                      width: fit-content;
-                      margin-top: 15%;
-                      margin-bottom: 15%;
-                      display: flex;
-                      align-items: center;
-                      gap: 2rem;
-                    "
-                  >
-                    <!-- Pallino sinistra -->
-                    <div
-                      style="
-                        width: 20px;
-                        height: 20px;
-                        background-color: #ccc;
-                        border-radius: 50%;
-                      "
-                    ></div>
-
-                    <!-- Google Authenticator -->
-                    <div
-                      class="rounded-full p-2"
-                      style="
-                        background-color: white;
-                        opacity: 0.8;
-                        width: fit-content;
-                      "
-                    >
-                      <img
-                        src="https://cdn.worldvectorlogo.com/logos/google-authenticator-3.svg"
-                        class="card-img-top"
-                        alt="Google Authentication"
-                        style="max-width: 50px"
-                      />
-                    </div>
-
-                    <!-- Microsoft Authenticator -->
-                    <div
-                      class="rounded-full p-2"
-                      style="
-                        background-color: white;
-                        opacity: 0.8;
-                        width: fit-content;
-                      "
-                    >
-                      <img
-                        src="https://mecdata.it/wp-content/uploads/2024/12/Microsoft_Authenticator_iOS_icon.webp"
-                        class="card-img-top"
-                        alt="Microsoft Authentication"
-                        style="max-width: 50px"
-                      />
-                    </div>
-
-                    <!-- Pallino destra -->
-                    <div
-                      style="
-                        width: 20px;
-                        height: 20px;
-                        background-color: #ccc;
-                        border-radius: 50%;
-                      "
-                    ></div>
+        <!-- ================= FASE 1 & 2: PROCEDURA DI CONFIGURAZIONE MFA ================= -->
+        <div id="mfa-config-section" style="display: none;" class="fade-in space-y-6">
+          <form id="mfa-config-form" onsubmit="event.preventDefault();" novalidate>
+            <div class="m3-subcard p-6 sm:p-8">
+              
+              <!-- Header Sezione Configurazione -->
+              <div class="flex items-center justify-between pb-4 mb-6 border-b border-purple-500/15">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300">
+                    <i class="fa-solid fa-qrcode text-xl"></i>
                   </div>
+                  <div>
+                    <h3 id="mfa_page_setup_title" class="text-lg sm:text-xl font-bold text-white">
+                      Configura Applicazione di Autenticazione (TOTP)
+                    </h3>
+                    <p class="text-xs text-gray-400 mt-0.5">Associa la tua applicazione preferita e conferma il codice a 6 cifre</p>
+                  </div>
+                </div>
+                <button type="button" onclick="showDescriptionCard()" class="m3-btn-outline text-xs">
+                  <i class="fa-solid fa-circle-info text-xs"></i> Rivedi Info
+                </button>
+              </div>
 
-                  <div id="mfa_page_setup_card">
-                    <h5 id="mfa_page_setup_card_title" class="card-title">
-                      Authenticator App (TOTP)
-                    </h5>
-                    <p id="mfa_page_setup_card_text" class="card-text mt-3">
-                      Scegli una delle applicazioni disponibili per generare i
-                      codici temporanei. Puoi usare quella che preferisci!
-                    </p>
-                    <div class="mt-5">
-                      <select
-                        class="form-select mx-auto"
-                        style="border-radius: 20px !important; width: 100%"
-                        id="mfa-method"
-                        required
-                      >
-                        <option
-                          id="mfa_page_setup_select_choose"
-                          disabled
-                          selected
-                          required
-                          value=""
-                        >
-                          Choose a method
-                        </option>
-                        <div id="mfa_label"></div>
-                        <option hidden value="google-authenticator">
-                          Google Authenticator
-                        </option>
-                        <option hidden value="microsoft-authenticator">
-                          Microsoft Authenticator
-                        </option>
-                      </select>
-                    </div>
-                    <button
-                      disabled
-                      onclick="setupMFA()"
-                      type="button"
-                      id="mfa_page_setup_select_proceed"
-                      style="
-                        padding: 10px 20px;
-                        border-radius: 10px;
-                        width: 100%;
-                      "
-                      class="btn btn-outline-primary mt-3 mb-4"
+              <!-- Sotto-Card 1: Scelta Metodo / App -->
+              <div id="mfa_page_setup_card" class="max-w-xl mx-auto py-2">
+                <!-- Loghi App Animati -->
+                <div id="mfa-logos" class="flex items-center justify-center gap-4 my-6">
+                  <div class="w-2.5 h-2.5 rounded-full bg-purple-500/40 animate-pulse"></div>
+                  <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 p-2.5 flex items-center justify-center shadow-lg">
+                    <img src="https://cdn.worldvectorlogo.com/logos/google-authenticator-3.svg" alt="Google Authenticator" class="max-w-full max-h-full" />
+                  </div>
+                  <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 p-2.5 flex items-center justify-center shadow-lg">
+                    <img src="https://mecdata.it/wp-content/uploads/2024/12/Microsoft_Authenticator_iOS_icon.webp" alt="Microsoft Authenticator" class="max-w-full max-h-full" />
+                  </div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-purple-500/40 animate-pulse"></div>
+                </div>
+
+                <div class="text-center mb-6">
+                  <h4 id="mfa_page_setup_card_title" class="text-lg font-bold text-white mb-2">
+                    Authenticator App (TOTP)
+                  </h4>
+                  <p id="mfa_page_setup_card_text" class="text-xs text-gray-300 max-w-md mx-auto">
+                    Scegli una delle applicazioni disponibili per generare i codici temporanei. Puoi usare quella che preferisci!
+                  </p>
+                </div>
+
+                <div class="mb-6">
+                  <label class="form-label text-xs font-semibold text-gray-300 mb-2 block">
+                    Applicazione / Provider TOTP *
+                  </label>
+                  <div class="relative">
+                    <select
+                      class="w-full text-white bg-slate-900/90 border border-purple-500/30 rounded-2xl px-4 py-3 appearance-none focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 text-sm font-medium cursor-pointer transition-all"
+                      id="mfa-method"
+                      required
                     >
-                      <strong>Continua</strong>
-                    </button>
-                    <div class="text-center mb-2">
-                      <a
-                        class="text-decoration-none text-secondary clickable mfa_page_back_button"
-                        onclick="goBack()"
-                      >
-                        <i class="bi bi-arrow-left"></i> Back to Account
-                        Settings
-                      </a>
+                      <option id="mfa_page_setup_select_choose" disabled selected value="">
+                        Choose a method
+                      </option>
+                      <optgroup id="mfa_label" label="Applicazioni Supportate"></optgroup>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-purple-300">
+                      <i class="fa-solid fa-chevron-down text-xs"></i>
                     </div>
                   </div>
-                  <div
-                    id="mfa_page_confirm_card"
-                    class="fade-in"
-                    style="display: none"
-                  >
-                    <img
-                      class="mx-auto"
-                      id="mfa_page_confirm_card_image"
-                      style="border-radius: 30px; max-width: fit-content"
-                      alt=""
-                      srcset=""
-                    />
-                    <p id="mfa_page_confirm_card_text" class="card-text mt-3">
-                      Scansiona il QR Code ed inserisci il codice OTP per
-                      confermare!
-                    </p>
-                    <div class="flex items-center justify-center gap-2 mt-2">
-                      <input
-                        required
-                        type="text"
-                        class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                        pattern="\d*"
-                        id="otp-1"
-                        onchange="enableVerifyBtn()"
-                        maxlength="1"
-                      />
-                      <input
-                        required
-                        type="text"
-                        class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                        maxlength="1"
-                        onchange="enableVerifyBtn()"
-                        id="otp-2"
-                      />
-                      <input
-                        required
-                        type="text"
-                        class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                        maxlength="1"
-                        onchange="enableVerifyBtn()"
-                        id="otp-3"
-                      />
-                      <input
-                        required
-                        type="text"
-                        class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                        maxlength="1"
-                        onchange="enableVerifyBtn()"
-                        id="otp-4"
-                      />
-                      <input
-                        required
-                        type="text"
-                        class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                        maxlength="1"
-                        onchange="enableVerifyBtn()"
-                        id="otp-5"
-                      />
-                      <input
-                        required
-                        type="text"
-                        class="otp-input w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                        maxlength="1"
-                        onchange="enableVerifyBtn()"
-                        id="otp-6"
-                      />
+                </div>
+
+                <button
+                  disabled
+                  onclick="setupMFA()"
+                  type="button"
+                  id="mfa_page_setup_select_proceed"
+                  class="m3-btn-primary w-full justify-center py-3.5 text-sm font-semibold shadow-lg shadow-purple-500/20 mb-4"
+                >
+                  <i class="fa-solid fa-qrcode mr-1"></i> Genera QR Code &amp; Continua
+                </button>
+
+                <div class="text-center mt-3">
+                  <a onclick="goBack()" class="mfa-back-pill mfa_page_back_button cursor-pointer">
+                    <i class="fa-solid fa-arrow-left text-xs"></i> Torna ai Dettagli Utente
+                  </a>
+                </div>
+              </div>
+
+              <!-- Sotto-Card 2: Scansione QR Code & Verifica OTP a 6 cifre -->
+              <div id="mfa_page_confirm_card" class="fade-in py-2" style="display: none">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-3xl mx-auto">
+                  
+                  <!-- Box QR Code con glow bianco -->
+                  <div class="text-center">
+                    <div class="mfa-qrcode-box">
+                      <img id="mfa_page_confirm_card_image" alt="MFA QR Code" src="" />
                     </div>
+                    <p class="text-xs text-purple-300 mt-2 font-mono">Inquadra con l'app di autenticazione</p>
+                  </div>
+
+                  <!-- Inserimento OTP -->
+                  <div>
+                    <h4 class="text-lg font-bold text-white mb-1">Scansione del QR Code</h4>
+                    <p id="mfa_page_confirm_card_text" class="text-xs text-gray-300 mb-4 leading-relaxed">
+                      Scansiona il QR Code ed inserisci il codice OTP per confermare!
+                    </p>
+
+                    <div class="mfa-otp-container mb-5">
+                      <input required type="text" class="otp-input" pattern="\d*" id="otp-1" oninput="enableVerifyBtn()" onchange="enableVerifyBtn()" maxlength="1" autocomplete="off" inputmode="numeric" />
+                      <input required type="text" class="otp-input" pattern="\d*" id="otp-2" oninput="enableVerifyBtn()" onchange="enableVerifyBtn()" maxlength="1" autocomplete="off" inputmode="numeric" />
+                      <input required type="text" class="otp-input" pattern="\d*" id="otp-3" oninput="enableVerifyBtn()" onchange="enableVerifyBtn()" maxlength="1" autocomplete="off" inputmode="numeric" />
+                      <input required type="text" class="otp-input" pattern="\d*" id="otp-4" oninput="enableVerifyBtn()" onchange="enableVerifyBtn()" maxlength="1" autocomplete="off" inputmode="numeric" />
+                      <input required type="text" class="otp-input" pattern="\d*" id="otp-5" oninput="enableVerifyBtn()" onchange="enableVerifyBtn()" maxlength="1" autocomplete="off" inputmode="numeric" />
+                      <input required type="text" class="otp-input" pattern="\d*" id="otp-6" oninput="enableVerifyBtn()" onchange="enableVerifyBtn()" maxlength="1" autocomplete="off" inputmode="numeric" />
+                    </div>
+
                     <button
                       disabled
                       onclick="confirmMFA()"
                       type="button"
                       id="mfa_page_setup_confirm_proceed"
-                      style="
-                        padding: 10px 20px;
-                        border-radius: 10px;
-                        width: 100%;
-                      "
-                      class="btn btn-outline-primary mt-3 mb-4"
+                      class="m3-btn-primary w-full justify-center py-3.5 text-sm font-semibold shadow-lg shadow-purple-500/20 mb-4"
                     >
-                      <strong>Continua</strong>
+                      <i class="fa-solid fa-check-circle mr-1"></i> Verifica e Attiva
                     </button>
-                    <div class="text-center mb-2">
-                      <a
-                        class="text-decoration-none text-secondary clickable mfa_page_back_button"
-                        onclick="goBack()"
-                      >
-                        <i class="bi bi-arrow-left"></i> Back to Account
-                        Settings
+
+                    <div class="text-center mt-3">
+                      <a onclick="goBack()" class="mfa-back-pill mfa_page_back_button cursor-pointer">
+                        <i class="fa-solid fa-arrow-left text-xs"></i> Torna ai Dettagli Utente
                       </a>
                     </div>
                   </div>
+
                 </div>
               </div>
-            </form>
-          </div>
+
+            </div>
+          </form>
         </div>
+
       </div>
     </main>
+
   </body>
 </html>

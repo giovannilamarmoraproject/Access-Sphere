@@ -36,9 +36,46 @@
   <script src="/app/shared/api/rest.js"></script>
   <script src="/app/user/js/validationForm.js"></script>
   <script src="/app/user/js/register.js"></script>
+  <script src="/app/user/js/attributes-manager.js?v=2.1.0"></script>
 
   <!-- Unified M3 Dashboard Theme -->
-  <link rel="stylesheet" href="/css/m3-dashboard.css" />
+  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.0" />
+
+  <style>
+    .form-section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid rgba(208, 188, 255, 0.15);
+      margin-bottom: 1.25rem;
+    }
+    .m3-subcard {
+      background: rgba(26, 20, 42, 0.65);
+      border: 1px solid rgba(208, 188, 255, 0.14);
+      border-radius: 20px;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+    .m3-subcard:hover {
+      border-color: rgba(208, 188, 255, 0.25);
+    }
+    .form-control, .form-select {
+      background: #1C172E !important;
+      border: 1.5px solid rgba(208, 188, 255, 0.25) !important;
+      color: #FFFFFF !important;
+      border-radius: 12px !important;
+      padding: 10px 14px !important;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #D0BCFF !important;
+      box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.25) !important;
+      background: #231B38 !important;
+    }
+  </style>
 </head>
 <body>
 
@@ -97,7 +134,7 @@
             <i class="fa-solid fa-user-plus text-purple-400"></i> Registra Nuovo Utente
           </h2>
           <p class="form-helper text-purple-300 text-xs mt-1">
-            Inserisci i dati dell'account per creare una nuova identità nel database di Access Sphere.
+            Configura il profilo personale, credenziali di sicurezza, client associati e attributi personalizzati per la nuova identità.
           </p>
         </div>
         <a href="/app/users" class="m3-btn-outline">
@@ -105,150 +142,331 @@
         </a>
       </div>
 
-      <form id="registration_form" class="form row g-4">
+      <form id="registration_form" class="form space-y-8" novalidate>
         
-        <!-- Preview Foto Profilo -->
-        <div class="col-12 flex justify-center mb-2">
-          <img
-            id="profile"
-            alt="Anteprima Foto"
-            class="rounded-full w-28 h-28 object-cover border-2 border-purple-500/40 shadow-xl"
-            style="display: none;"
-          />
-        </div>
+        <!-- SEZIONE 1: IDENTITÀ, ANAGRAFICA & RECAPITI -->
+        <div class="m3-subcard">
+          <div class="form-section-title">
+            <i class="fa-solid fa-id-card text-purple-400"></i> 1. Identità & Informazioni Anagrafiche
+          </div>
+          <div class="row g-4">
+            <div class="col-md-4">
+              <label for="name" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Nome *</label>
+              <input type="text" class="form-control" id="name" placeholder="Mario" required />
+              <span class="text-[11px] text-gray-400 mt-1 block">Nome anagrafico dell'utente.</span>
+            </div>
 
-        <!-- Dati Base -->
-        <div class="col-md-4">
-          <label for="name" class="form-label text-xs font-semibold text-gray-300">Nome *</label>
-          <input type="text" class="form-control" id="name" placeholder="Mario" required />
-        </div>
+            <div class="col-md-4">
+              <label for="surname" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Cognome *</label>
+              <input type="text" class="form-control" id="surname" placeholder="Rossi" required />
+              <span class="text-[11px] text-gray-400 mt-1 block">Cognome o patronimico dell'utente.</span>
+            </div>
 
-        <div class="col-md-4">
-          <label for="surname" class="form-label text-xs font-semibold text-gray-300">Cognome *</label>
-          <input type="text" class="form-control" id="surname" placeholder="Rossi" required />
-        </div>
+            <div class="col-md-4">
+              <label for="validationDefaultUsername" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Username *</label>
+              <div class="input-group">
+                <span class="input-group-text font-mono text-purple-300">@</span>
+                <input type="text" class="form-control font-mono" id="validationDefaultUsername" placeholder="mrossi" required />
+              </div>
+              <span class="text-[11px] text-gray-400 mt-1 block">Username univoco per identificazione ed accesso.</span>
+            </div>
 
-        <div class="col-md-4">
-          <label for="validationDefaultUsername" class="form-label text-xs font-semibold text-gray-300">Username *</label>
-          <div class="input-group">
-            <span class="input-group-text font-mono text-purple-300">@</span>
-            <input type="text" class="form-control font-mono" id="validationDefaultUsername" placeholder="mrossi" required />
+            <div class="col-md-6">
+              <label for="email" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Email *</label>
+              <input type="email" class="form-control" id="email" placeholder="mario.rossi@example.com" required />
+              <span class="text-[11px] text-gray-400 mt-1 block">Indirizzo email principale per notifiche e recupero.</span>
+            </div>
+
+            <div class="col-md-2">
+              <label for="phone_prefix" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Prefisso</label>
+              <input type="text" class="form-control font-mono" id="phone_prefix" value="+39" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Prefisso int.</span>
+            </div>
+
+            <div class="col-md-4">
+              <label for="phone" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Telefono</label>
+              <input type="tel" class="form-control" id="phone" placeholder="3331234567" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Numero di cellulare con cui ricevere OTP o SMS.</span>
+            </div>
+
+            <div class="col-md-3">
+              <label for="birthdate" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Data di Nascita</label>
+              <input type="date" class="form-control" id="birthdate" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Data di nascita anagrafica (AAAA-MM-GG).</span>
+            </div>
+
+            <div class="col-md-3">
+              <label for="gender" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Genere</label>
+              <select class="form-select" id="gender">
+                <option value="" selected disabled>Seleziona...</option>
+                <option value="M">Maschio (M)</option>
+                <option value="F">Femmina (F)</option>
+                <option value="OTHER">Altro</option>
+              </select>
+              <span class="text-[11px] text-gray-400 mt-1 block">Genere anagrafico del profilo.</span>
+            </div>
+
+            <div class="col-md-3">
+              <label for="nationality" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Nazionalità</label>
+              <input type="text" class="form-control" id="nationality" placeholder="Italiana" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Paese di cittadinanza o residenza.</span>
+            </div>
+
+            <div class="col-md-3">
+              <label for="ssn" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Codice Fiscale / SSN</label>
+              <input type="text" class="form-control font-mono uppercase" id="ssn" placeholder="RSSMRA80A01H501U" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Codice identificativo fiscale univoco.</span>
+            </div>
+
+            <div class="col-md-6">
+              <label for="occupation" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Occupazione</label>
+              <input type="text" class="form-control" id="occupation" placeholder="Ingegnere del Software" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Ruolo professionale o mansione lavorativa attuale.</span>
+            </div>
+
+            <div class="col-md-6">
+              <label for="education" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Istruzione</label>
+              <input type="text" class="form-control" id="education" placeholder="Laurea Magistrale" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Titolo di studio o qualifica conseguita.</span>
+            </div>
           </div>
         </div>
 
-        <div class="col-md-6">
-          <label for="email" class="form-label text-xs font-semibold text-gray-300">Email *</label>
-          <input type="email" class="form-control" id="email" placeholder="mario.rossi@example.com" required />
-        </div>
+        <!-- SEZIONE 2: CREDENZIALI DI ACCESSO & SICUREZZA -->
+        <div class="m3-subcard">
+          <div class="form-section-title">
+            <i class="fa-solid fa-shield-halved text-purple-400"></i> 2. Credenziali di Accesso & Sicurezza
+          </div>
+          <div class="row g-4">
+            <!-- Password -->
+            <div class="col-md-6">
+              <label for="password" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Password *</label>
+              <div class="position-relative relative">
+                <input type="password" class="form-control pe-10" id="password" required autocomplete="new-password" placeholder="Inserisci password sicura" />
+                <button type="button" class="btn-toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-purple-300/70 hover:text-purple-100 transition-colors p-1" onclick="togglePasswordVisibility('password', this)" tabindex="-1" title="Mostra/Nascondi password">
+                  <i class="fa-solid fa-eye text-xs"></i>
+                </button>
+              </div>
+              <span class="text-[11px] text-gray-400 mt-1 block">Minimo 8 caratteri con maiuscola, minuscola, numero e speciale.</span>
 
-        <div class="col-md-2">
-          <label for="phone_prefix" class="form-label text-xs font-semibold text-gray-300">Prefisso</label>
-          <input type="text" class="form-control font-mono" id="phone_prefix" value="+39" />
-        </div>
+              <!-- Robustezza Password -->
+              <div id="password_strength_container" class="mt-2" style="display: none;">
+                <div class="flex items-center justify-between text-[11px] mb-1">
+                  <span class="text-gray-400">Robustezza:</span>
+                  <span id="password_strength_text" class="font-semibold text-gray-300">Debole</span>
+                </div>
+                <div class="w-full bg-[#161124] rounded-full h-1.5 overflow-hidden border border-purple-500/20">
+                  <div id="password_strength_bar" class="h-full rounded-full transition-all duration-300 bg-red-500" style="width: 0%;"></div>
+                </div>
+              </div>
 
-        <div class="col-md-4">
-          <label for="phone" class="form-label text-xs font-semibold text-gray-300">Telefono</label>
-          <input type="tel" class="form-control" id="phone" placeholder="3331234567" />
-        </div>
+              <!-- Checklist Requisiti Live -->
+              <div id="password_rules_container" class="mt-2.5 p-3 rounded-xl border border-purple-500/20 bg-[#161124]/80 backdrop-blur-md text-xs space-y-1.5" style="display: none;">
+                <div class="font-semibold text-purple-300 text-[11px] mb-1.5 flex items-center justify-between border-b border-purple-500/15 pb-1">
+                  <span>Requisiti di sicurezza:</span>
+                  <span id="rules_counter" class="text-[10px] text-gray-400 font-mono">0/5</span>
+                </div>
+                <div id="rule_length" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                  <span>Tra 8 e 20 caratteri</span>
+                </div>
+                <div id="rule_uppercase" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                  <span>Almeno una lettera maiuscola (A-Z)</span>
+                </div>
+                <div id="rule_lowercase" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                  <span>Almeno una lettera minuscola (a-z)</span>
+                </div>
+                <div id="rule_number" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                  <span>Almeno un numero (0-9)</span>
+                </div>
+                <div id="rule_special" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                  <span>Almeno un carattere speciale (@ $ ! % * ? &amp; . ,)</span>
+                </div>
+                <div id="rule_disallowed" class="text-red-400 text-[11px] pt-1 border-t border-red-500/20 flex items-center gap-1.5" style="display: none;">
+                  <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+                  <span>Contiene caratteri non ammessi (usa solo lettere, cifre e @$!%*?&amp;.,)</span>
+                </div>
+              </div>
 
-        <!-- Password -->
-        <div class="col-md-6">
-          <label for="password" class="form-label text-xs font-semibold text-gray-300">Password *</label>
-          <input type="password" class="form-control" id="password" required />
-          <div id="validationPassword" class="text-red-400 text-xs mt-1" style="display: none;">Minimo 8 caratteri con maiuscola, minuscola, numero e speciale.</div>
-        </div>
+              <div id="validationPassword" class="text-red-400 text-xs mt-1" style="display: none;">Minimo 8 caratteri con maiuscola, minuscola, numero e speciale.</div>
+            </div>
 
-        <div class="col-md-6">
-          <label for="confirm_password" class="form-label text-xs font-semibold text-gray-300">Conferma Password *</label>
-          <input type="password" class="form-control" id="confirm_password" required />
-          <div id="validationConfirmPassword" class="text-red-400 text-xs mt-1" style="display: none;">Le password non corrispondono.</div>
-        </div>
+            <!-- Conferma Password -->
+            <div class="col-md-6">
+              <label for="confirm_password" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Conferma Password *</label>
+              <div class="position-relative relative">
+                <input type="password" class="form-control pe-10" id="confirm_password" required autocomplete="new-password" placeholder="Ripeti la password" />
+                <button type="button" class="btn-toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-purple-300/70 hover:text-purple-100 transition-colors p-1" onclick="togglePasswordVisibility('confirm_password', this)" tabindex="-1" title="Mostra/Nascondi password">
+                  <i class="fa-solid fa-eye text-xs"></i>
+                </button>
+              </div>
+              <span class="text-[11px] text-gray-400 mt-1 block">Digita nuovamente la password per conferma di sicurezza.</span>
 
-        <!-- Dati Anagrafici Aggiuntivi -->
-        <div class="col-md-3">
-          <label for="birthdate" class="form-label text-xs font-semibold text-gray-300">Data di Nascita</label>
-          <input type="date" class="form-control" id="birthdate" />
-        </div>
+              <!-- Feedback Corrispondenza Live -->
+              <div id="confirm_password_feedback" class="mt-2.5 p-2.5 rounded-xl border border-purple-500/20 bg-[#161124]/80 backdrop-blur-md text-xs flex items-center gap-2" style="display: none;">
+                <i id="confirm_icon" class="fa-solid fa-circle text-[8px] text-gray-500"></i>
+                <span id="confirm_text" class="text-gray-300 text-[11px]"></span>
+              </div>
 
-        <div class="col-md-3">
-          <label for="gender" class="form-label text-xs font-semibold text-gray-300">Genere</label>
-          <select class="form-select" id="gender">
-            <option value="" selected disabled>Seleziona...</option>
-            <option value="M">Maschio (M)</option>
-            <option value="F">Femmina (F)</option>
-            <option value="OTHER">Altro</option>
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <label for="nationality" class="form-label text-xs font-semibold text-gray-300">Nazionalità</label>
-          <input type="text" class="form-control" id="nationality" placeholder="Italiana" />
-        </div>
-
-        <div class="col-md-3">
-          <label for="ssn" class="form-label text-xs font-semibold text-gray-300">Codice Fiscale / SSN</label>
-          <input type="text" class="form-control font-mono" id="ssn" placeholder="RSSMRA80A01H501U" />
-        </div>
-
-        <div class="col-md-6">
-          <label for="occupation" class="form-label text-xs font-semibold text-gray-300">Occupazione</label>
-          <input type="text" class="form-control" id="occupation" placeholder="Ingegnere" />
-        </div>
-
-        <div class="col-md-6">
-          <label for="education" class="form-label text-xs font-semibold text-gray-300">Istruzione</label>
-          <input type="text" class="form-control" id="education" placeholder="Laurea Magistrale" />
-        </div>
-
-        <!-- Client & Ruoli -->
-        <div class="col-md-6">
-          <label for="client_id_select" class="form-label text-xs font-semibold text-gray-300">Client ID Associato *</label>
-          <select class="form-select" id="client_id_select" required>
-            <option value="" selected disabled>Caricamento Client in corso...</option>
-          </select>
-        </div>
-
-        <div class="col-md-6">
-          <label for="role_select" class="form-label text-xs font-semibold text-gray-300">Ruoli Client</label>
-          <div class="flex gap-2">
-            <select class="form-select" id="role_select" disabled>
-              <option value="" selected disabled>Seleziona prima un Client...</option>
-            </select>
-            <button type="button" id="add_role_btn" onclick="addRole()" class="m3-btn-primary flex-shrink-0" style="padding: 8px 16px;">
-              <i class="fa-solid fa-plus"></i> Aggiungi
-            </button>
+              <div id="validationConfirmPassword" class="text-red-400 text-xs mt-1" style="display: none;">Le password non corrispondono.</div>
+            </div>
           </div>
         </div>
 
-        <!-- Lista Ruoli Selezionati -->
-        <div class="col-12">
-          <div id="roles_list_container" class="flex flex-wrap gap-2 min-h-[32px]"></div>
-          <div id="role_container" style="display: none;"></div>
+        <!-- SEZIONE 3: ASSOCIAZIONE CLIENT & RUOLI APPLICATIVI -->
+        <div class="m3-subcard">
+          <div class="form-section-title">
+            <i class="fa-solid fa-users-gear text-purple-400"></i> 3. Associazione Client & Ruoli Applicativi
+          </div>
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label for="client_id_select" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Client ID Associato *</label>
+              <select class="form-select font-mono" id="client_id_select" required>
+                <option value="" selected disabled>Caricamento Client in corso...</option>
+              </select>
+              <span class="text-[11px] text-gray-400 mt-1 block">Seleziona l'applicazione client a cui appartiene l'utente.</span>
+            </div>
+
+            <div class="col-md-6">
+              <label for="role_select" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Ruoli Client</label>
+              <div class="flex gap-2">
+                <select class="form-select font-mono" id="role_select" disabled>
+                  <option value="" selected disabled>Seleziona prima un Client...</option>
+                </select>
+                <button type="button" id="add_role_btn" onclick="addRole()" class="m3-btn-primary flex-shrink-0" style="padding: 8px 16px;">
+                  <i class="fa-solid fa-plus"></i> Aggiungi
+                </button>
+              </div>
+              <span class="text-[11px] text-gray-400 mt-1 block">Aggiungi uno o più ruoli disponibili per il client selezionato.</span>
+            </div>
+
+            <!-- Lista Ruoli Selezionati -->
+            <div class="col-12">
+              <div id="roles_list_container" class="flex flex-wrap gap-2 min-h-[32px]"></div>
+              <div id="role_container" style="display: none;"></div>
+            </div>
+          </div>
         </div>
 
-        <!-- Foto Profilo File -->
-        <div class="col-12">
-          <label for="file" class="form-label text-xs font-semibold text-gray-300">Foto Profilo</label>
-          <input type="file" class="form-control" id="file" accept="image/jpeg,image/png,image/webp" />
+        <!-- SEZIONE 4: FOTO PROFILO & AVATAR -->
+        <div class="m3-subcard">
+          <div class="form-section-title">
+            <i class="fa-solid fa-camera text-purple-400"></i> 4. Foto Profilo & Avatar
+          </div>
+          <div class="row g-4 items-center">
+            <div class="col-md-3 flex justify-center">
+              <div class="relative">
+                <img
+                  id="profile"
+                  alt="Anteprima Foto"
+                  class="rounded-full w-24 h-24 object-cover border-2 border-purple-500/40 shadow-xl bg-purple-950/40"
+                  style="display: none;"
+                />
+                <div id="profile_placeholder" class="rounded-full w-24 h-24 border-2 border-dashed border-purple-500/30 flex flex-col items-center justify-center text-purple-300/50 bg-purple-950/20">
+                  <i class="fa-solid fa-user text-2xl"></i>
+                  <span class="text-[9px] mt-1">Nessuna foto</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-9">
+              <label for="file" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider">Carica Foto Profilo</label>
+              <input type="file" class="form-control" id="file" accept="image/jpeg,image/png,image/webp" />
+              <span class="text-[11px] text-gray-400 mt-1 block">Formati supportati: JPEG, PNG, WebP. Dimensione consigliata: 400x400px.</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Attributi Custom -->
-        <div class="col-12">
-          <label for="attributes" class="form-label text-xs font-semibold text-gray-300">Attributi Custom (JSON)</label>
-          <textarea class="form-control font-mono text-xs" id="attributes" rows="3" placeholder="{}"></textarea>
-          <div id="validationAttributes" class="text-red-400 text-xs mt-1"></div>
+        <!-- SEZIONE 5: ATTRIBUTI PERSONALIZZATI (CUSTOM ATTRIBUTES - SUPPORTO OGGETTI INESTATI) -->
+        <div class="m3-subcard">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 border-b border-purple-500/15 gap-3">
+            <div>
+              <div class="form-section-title m-0 border-0 p-0 text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-purple-400"></i> 5. Attributi Personalizzati (Custom Attributes)
+              </div>
+              <span class="text-[11px] text-gray-400 mt-0.5 block">
+                Supporto completo per token, proprietà primitive e oggetti inestati (es. <code>app_settings</code>).
+              </span>
+            </div>
+
+            <!-- Toolbar Viste & Azioni -->
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- Switch Modalità -->
+              <div class="flex items-center rounded-full p-1 bg-[#140F24] border border-purple-500/20 mr-1">
+                <button type="button" id="tab-attr-visual" class="m3-btn-primary text-xs" onclick="switchAttributesMode('visual')">
+                  <i class="fa-solid fa-layer-group mr-1.5"></i> Visuale Strutturata
+                </button>
+                <button type="button" id="tab-attr-code" class="m3-btn-outline text-xs" onclick="switchAttributesMode('code')">
+                  <i class="fa-solid fa-code mr-1.5"></i> Editor JSON
+                </button>
+              </div>
+
+              <button type="button" class="m3-btn-outline text-xs" onclick="addAttributeRow()">
+                <i class="fa-solid fa-plus mr-1"></i> Proprietà
+              </button>
+              <button type="button" class="m3-btn-outline text-xs" onclick="addNestedObjectRow()" title="Aggiungi un oggetto inestato con sotto-proprietà">
+                <i class="fa-solid fa-folder-plus mr-1"></i> Oggetto Inestato
+              </button>
+              <button type="button" class="m3-btn-outline text-xs" onclick="loadExampleJson()" title="Carica configurazione JSON di esempio">
+                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Esempio
+              </button>
+            </div>
+          </div>
+
+          <!-- VISTA 1: STRUTTURATA (OGGETTI INESTATI & RIGHE SEMPLICI) -->
+          <div id="attributes-visual-view">
+            <div id="attributes-items-container" class="space-y-3">
+              <!-- Generato dinamicamente da attributes-manager.js -->
+            </div>
+          </div>
+
+          <!-- VISTA 2: EDITOR DIRETTO JSON -->
+          <div id="attributes-code-view" style="display: none;">
+            <div class="flex items-center justify-between pb-2 mb-2">
+              <span class="text-[11px] text-purple-300 font-semibold uppercase tracking-wider">
+                <i class="fa-solid fa-terminal mr-1"></i> Codice Sorgente JSON
+              </span>
+              <div class="flex gap-2">
+                <button type="button" class="m3-btn-outline text-xs" onclick="formatJsonCodeEditor()">
+                  <i class="fa-solid fa-align-left mr-1"></i> Formatta JSON
+                </button>
+                <button type="button" class="m3-btn-outline text-xs" onclick="copyJsonCodeEditor()">
+                  <i class="fa-solid fa-copy mr-1"></i> Copia
+                </button>
+              </div>
+            </div>
+            <textarea id="attributes-json-editor" class="json-code-editor font-mono" rows="9" oninput="validateJsonCodeEditor()" placeholder='{ "api-token": "...", "app_settings": { "theme": "DARK", "notifications": true } }'></textarea>
+            <div id="json-editor-feedback" class="mt-2 text-xs"></div>
+          </div>
+
+          <div id="validationAttributes" class="text-red-400 text-xs mt-2"></div>
+
+          <!-- Textarea nascosta sincronizzata bidirezionalmente per validazione e submit form -->
+          <textarea id="attributes" name="attributes" class="hidden" style="display: none;"></textarea>
         </div>
 
-        <!-- Checkbox Termini -->
-        <div class="col-12 flex items-center gap-2 pt-2">
-          <input class="w-4 h-4 rounded accent-purple-500 cursor-pointer" type="checkbox" value="true" id="invalidCheck2" required checked />
-          <label class="text-xs text-gray-300 cursor-pointer" for="invalidCheck2">
-            Accetto i termini e le condizioni d'uso del servizio
-          </label>
+        <!-- SEZIONE 6: TERMINI DI SERVIZIO & CONSENSI -->
+        <div class="m3-subcard">
+          <div class="flex items-start gap-3">
+            <input class="w-4 h-4 mt-1 rounded accent-purple-500 cursor-pointer" type="checkbox" value="true" id="invalidCheck2" required />
+            <label class="text-xs text-gray-300 cursor-pointer leading-relaxed" for="invalidCheck2">
+              Accetto i <span class="font-semibold text-white">termini e le condizioni d'uso</span> del servizio, e confermo di aver letto e compreso la 
+              <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-purple-300 underline font-medium hover:text-purple-200">
+                Privacy Policy <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+              </a> 
+              e la 
+              <a href="/cookie-policy" target="_blank" rel="noopener noreferrer" class="text-purple-300 underline font-medium hover:text-purple-200">
+                Cookie Policy <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+              </a>.
+            </label>
+          </div>
         </div>
 
-        <!-- Bottoni Azione -->
-        <div class="col-12 pt-6 border-t border-purple-500/15 flex items-center justify-end gap-3">
+        <!-- BOTTONI AZIONE -->
+        <div class="pt-4 border-t border-purple-500/15 flex items-center justify-end gap-3">
           <a href="/app/users" class="m3-btn-outline">
             <i class="fa-solid fa-xmark"></i> Annulla
           </a>

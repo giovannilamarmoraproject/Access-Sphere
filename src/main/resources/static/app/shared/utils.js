@@ -165,3 +165,158 @@ const formatDateIntl = (inputDate) => {
     hour12: false, // se vuoi orario in formato 24h
   }).format(date);
 };
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const icon = btn.querySelector("i");
+  if (input.type === "password") {
+    input.type = "text";
+    if (icon) {
+      icon.className = "fa-solid fa-eye-slash text-xs";
+    }
+  } else {
+    input.type = "password";
+    if (icon) {
+      icon.className = "fa-solid fa-eye text-xs";
+    }
+  }
+}
+
+/* -------------------------------------------
+   MOBILE NAVIGATION DRAWER INITIALIZER
+   ------------------------------------------- */
+function toggleMobileNavDrawer() {
+  const drawer = document.getElementById("m3-mobile-nav-drawer");
+  const overlay = document.getElementById("m3-mobile-nav-overlay");
+  if (!drawer || !overlay) return;
+
+  const isOpen = drawer.classList.contains("active");
+  if (isOpen) {
+    closeMobileNavDrawer();
+  } else {
+    drawer.classList.add("active");
+    overlay.classList.add("active");
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function closeMobileNavDrawer() {
+  const drawer = document.getElementById("m3-mobile-nav-drawer");
+  const overlay = document.getElementById("m3-mobile-nav-overlay");
+  if (drawer) drawer.classList.remove("active");
+  if (overlay) overlay.classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+function initMobileNavigation() {
+  const headerContainer = document.querySelector(".glass-header .header-container");
+  if (!headerContainer) return;
+
+  // 1. Add hamburger button if not present
+  if (!document.getElementById("mobile-menu-toggle-btn")) {
+    const actionGroup = headerContainer.querySelector(".flex.items-center.gap-2") || headerContainer.lastElementChild;
+    if (actionGroup) {
+      const toggleBtn = document.createElement("button");
+      toggleBtn.id = "mobile-menu-toggle-btn";
+      toggleBtn.type = "button";
+      toggleBtn.className = "m3-icon-btn m3-mobile-menu-btn";
+      toggleBtn.title = "Menu di Navigazione";
+      toggleBtn.setAttribute("aria-label", "Menu di Navigazione");
+      toggleBtn.onclick = toggleMobileNavDrawer;
+      toggleBtn.innerHTML = '<i class="fa-solid fa-bars text-sm"></i>';
+      actionGroup.appendChild(toggleBtn);
+    }
+  }
+
+  // 2. Add Drawer & Overlay if not present
+  if (!document.getElementById("m3-mobile-nav-drawer")) {
+    const currentPath = window.location.pathname;
+
+    const overlay = document.createElement("div");
+    overlay.id = "m3-mobile-nav-overlay";
+    overlay.className = "m3-mobile-drawer-overlay";
+    overlay.onclick = closeMobileNavDrawer;
+    document.body.appendChild(overlay);
+
+    const drawer = document.createElement("aside");
+    drawer.id = "m3-mobile-nav-drawer";
+    drawer.className = "m3-mobile-drawer";
+    drawer.innerHTML = `
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-purple-500/20">
+        <a href="/app" class="flex items-center gap-3 text-decoration-none" onclick="closeMobileNavDrawer()">
+          <img src="/img/logo-minimal.svg" alt="Access Sphere" class="w-8 h-8" />
+          <div class="flex flex-col">
+            <span class="text-base font-bold text-white tracking-tight flex items-center gap-1.5">
+              Access Sphere
+              <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
+            </span>
+          </div>
+        </a>
+        <button type="button" class="m3-icon-btn" onclick="closeMobileNavDrawer()" title="Chiudi menu">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Navigazione Principale -->
+      <div class="mb-6">
+        <span class="text-[10px] uppercase font-bold text-purple-300/60 tracking-wider px-3 mb-2 block">Menu Principale</span>
+        <a href="/app" class="m3-mobile-nav-link ${currentPath === '/app' || currentPath === '/app/' ? 'active' : ''}">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Panoramica</span>
+        </a>
+        <a href="/app/users" class="m3-mobile-nav-link ${currentPath.includes('/app/user') ? 'active' : ''}">
+          <i class="fa-solid fa-users"></i>
+          <span>Utenti</span>
+        </a>
+        <a href="/app/clients" class="m3-mobile-nav-link ${currentPath.includes('/app/client') ? 'active' : ''}">
+          <i class="fa-solid fa-key"></i>
+          <span>Client OAuth 2.0</span>
+        </a>
+        <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" rel="noopener noreferrer" class="m3-mobile-nav-link">
+          <i class="fa-solid fa-book"></i>
+          <span>API Docs</span>
+        </a>
+      </div>
+
+      <!-- Azioni Rapide -->
+      <div class="mb-6">
+        <span class="text-[10px] uppercase font-bold text-purple-300/60 tracking-wider px-3 mb-2 block">Azioni Rapide</span>
+        <a href="/app/users/register" class="m3-mobile-nav-link">
+          <i class="fa-solid fa-user-plus text-purple-400"></i>
+          <span>Nuovo Utente</span>
+        </a>
+        <a href="/app/clients/register" class="m3-mobile-nav-link">
+          <i class="fa-solid fa-plus text-indigo-400"></i>
+          <span>Nuovo Client</span>
+        </a>
+      </div>
+
+      <!-- Footer Menu: Info & Logout -->
+      <div class="mt-auto pt-4 border-t border-purple-500/20 space-y-2">
+        <button type="button" onclick="getVersion(); closeMobileNavDrawer();" class="m3-mobile-nav-link w-full text-left bg-transparent border-0 cursor-pointer">
+          <i class="fa-solid fa-circle-info text-purple-300"></i>
+          <span>Info Versione</span>
+        </button>
+        <button type="button" onclick="logout()" class="m3-mobile-nav-link w-full text-left bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/25 cursor-pointer">
+          <i class="fa-solid fa-arrow-right-from-bracket text-red-400"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    `;
+    document.body.appendChild(drawer);
+  }
+}
+
+// Global exports
+window.toggleMobileNavDrawer = toggleMobileNavDrawer;
+window.closeMobileNavDrawer = closeMobileNavDrawer;
+window.initMobileNavigation = initMobileNavigation;
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initMobileNavigation);
+} else {
+  initMobileNavigation();
+}
+
+

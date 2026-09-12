@@ -1,1082 +1,1152 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Access Sphere - Console di Amministrazione</title>
-  
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Access Sphere - Console di Amministrazione</title>
+
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
-  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
-  
-  <!-- JQuery -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  
-  <!-- TailwindCSS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap"
+          rel="stylesheet">
 
-  <!-- Shared Loader & SweetAlert2 -->
-  <link rel="stylesheet" href="/app/shared/loader/loader.css" />
-  <script src="/app/shared/loader/loader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
-  <script src="/app/shared/sweetalert.js"></script>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg"/>
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png"/>
 
-  <!-- DataTables -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/2.2.1/css/dataTables.dataTables.min.css" />
-  <script src="https://cdn.datatables.net/2.2.1/js/dataTables.min.js"></script>
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
-  <!-- Access Sphere Core Scripts -->
-  <script src="/app/shared/config.js"></script>
-  <script src="/app/shared/utils.js"></script>
-  <script src="/app/shared/api/authorize.js"></script>
-  <script src="/app/shared/api/logout.js"></script>
-  <script src="/app/i18n/translations.js"></script>
-  <script src="/app/shared/api/rest.js"></script>
-  <script src="/app/user/js/delete.js"></script>
-  <script src="/app/user/js/users.js"></script>
-  <script src="/app/client/js/clients.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
-  <!-- Unified M3 Dashboard Theme -->
-  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0" />
-  <!-- Early Synchronous Token Capture -->
-  <script>
-    (function () {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get("access-token");
-        const sessionId = params.get("session-id");
-        const clientId = params.get("client-id") || "ACCESS-SPHERE-TECH";
-        if (token) {
-          localStorage.setItem("access-token", token);
-          localStorage.setItem(clientId + "_access-token", token);
-          localStorage.setItem("ACCESS-SPHERE-TECH_access-token", token);
-        }
-        if (sessionId) {
-          localStorage.setItem("Session-ID", sessionId);
-        }
-      } catch (e) {}
-    })();
-  </script>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Shared Loader & SweetAlert2 -->
+    <link rel="stylesheet" href="/app/shared/loader/loader.css"/>
+    <script src="/app/shared/loader/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/app/shared/sweetalert.css"/>
+    <script src="/app/shared/sweetalert.js"></script>
+
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.1/css/dataTables.dataTables.min.css"/>
+    <script src="https://cdn.datatables.net/2.2.1/js/dataTables.min.js"></script>
+
+    <!-- Access Sphere Core Scripts -->
+    <script src="/app/shared/config.js"></script>
+    <script src="/app/shared/utils.js"></script>
+    <script src="/app/shared/api/authorize.js"></script>
+    <script src="/app/shared/api/logout.js"></script>
+    <script src="/app/i18n/translations.js"></script>
+    <script src="/app/shared/api/rest.js"></script>
+    <script src="/app/user/js/delete.js"></script>
+    <script src="/app/user/js/users.js"></script>
+    <script src="/app/client/js/clients.js"></script>
+
+    <!-- Unified M3 Dashboard Theme -->
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0"/>
+    <!-- Early Synchronous Token Capture -->
+    <script>
+        (function () {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const token = params.get("access-token");
+                const sessionId = params.get("session-id");
+                const clientId = params.get("client-id") || "ACCESS-SPHERE-TECH";
+                if (token) {
+                    localStorage.setItem("access-token", token);
+                    localStorage.setItem(clientId + "_access-token", token);
+                    localStorage.setItem("ACCESS-SPHERE-TECH_access-token", token);
+                }
+                if (sessionId) {
+                    localStorage.setItem("Session-ID", sessionId);
+                }
+            } catch (e) {
+            }
+        })();
+    </script>
 </head>
 <body>
-  <div id="loader" class="loader"></div>
+<div id="loader" class="loader"></div>
 
-  <!-- Wide Unified Header (Fluid Container) -->
-  <header class="glass-header">
+<!-- Wide Unified Header (Fluid Container) -->
+<header class="glass-header">
     <div class="header-container">
-      
-      <!-- Brand & Title -->
-      <div class="flex items-center gap-6">
-        <a href="/app" onclick="switchDashboardView('dashboard'); return false;" class="flex items-center gap-3 text-decoration-none group">
-          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
-          <div class="flex flex-col">
+
+        <!-- Brand & Title -->
+        <div class="flex items-center gap-6">
+            <a href="/app" onclick="switchDashboardView('dashboard'); return false;"
+               class="flex items-center gap-3 text-decoration-none group">
+                <img src="/img/logo-minimal.svg" alt="Access Sphere Logo"
+                     class="w-10 h-10 transition-transform duration-300 group-hover:scale-110"/>
+                <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               Access Sphere
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
-            <span id="header-subtitle" class="text-[11px] text-gray-400 font-medium">Gestione Identità & Accessi</span>
-          </div>
-        </a>
+                    <span id="header-subtitle"
+                          class="text-[11px] text-gray-400 font-medium">Gestione Identità & Accessi</span>
+                </div>
+            </a>
 
-        <!-- Fast Navigation Tabs (Instant Switch) -->
-        <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
-          <button id="nav-btn-dashboard" onclick="switchDashboardView('dashboard')" class="nav-tab-m3 cursor-pointer border-0 bg-transparent">
-            <i class="fa-solid fa-gauge-high"></i> Panoramica
-          </button>
-          <button id="nav-btn-users" onclick="switchDashboardView('users')" class="nav-tab-m3 active cursor-pointer border-0 bg-transparent">
-            <i class="fa-solid fa-users"></i> Utenti
-          </button>
-          <button id="nav-btn-clients" onclick="switchDashboardView('clients')" class="nav-tab-m3 cursor-pointer border-0 bg-transparent">
-            <i class="fa-solid fa-key"></i> Client OAuth2
-          </button>
-          <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-book"></i> API Docs
-          </a>
-        </nav>
-      </div>
-
-      <!-- Quick Action Controls -->
-      <div class="flex items-center gap-2">
-        <button id="btn-refresh-data" onclick="handleCurrentRefresh()" class="m3-icon-btn" title="Aggiorna dati">
-          <i id="refresh-icon" class="fa-solid fa-arrows-rotate text-sm"></i>
-        </button>
-        <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
-          <i class="fa-solid fa-circle-info text-sm"></i>
-        </button>
-        
-        <!-- Contextual Primary Action Button -->
-        <div id="users-primary-action">
-          <a href="/app/users/register" class="m3-btn-primary ml-2 text-decoration-none">
-            <i class="fa-solid fa-user-plus"></i> <span>Nuovo Utente</span>
-          </a>
-        </div>
-        <div id="clients-primary-action" style="display: none;">
-          <a href="/app/clients/register" class="m3-btn-primary ml-2 text-decoration-none">
-            <i class="fa-solid fa-plus"></i> <span>Nuovo Client</span>
-          </a>
+            <!-- Fast Navigation Tabs (Instant Switch) -->
+            <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+                <button id="nav-btn-dashboard" onclick="switchDashboardView('dashboard')"
+                        class="nav-tab-m3 cursor-pointer border-0 bg-transparent">
+                    <i class="fa-solid fa-gauge-high"></i> Panoramica
+                </button>
+                <button id="nav-btn-users" onclick="switchDashboardView('users')"
+                        class="nav-tab-m3 active cursor-pointer border-0 bg-transparent">
+                    <i class="fa-solid fa-users"></i> Utenti
+                </button>
+                <button id="nav-btn-clients" onclick="switchDashboardView('clients')"
+                        class="nav-tab-m3 cursor-pointer border-0 bg-transparent">
+                    <i class="fa-solid fa-key"></i> Client OAuth2
+                </button>
+                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank"
+                   class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-book"></i> API Docs
+                </a>
+            </nav>
         </div>
 
-        <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
-          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
-        </button>
-      </div>
+        <!-- Quick Action Controls -->
+        <div class="flex items-center gap-2">
+            <button id="btn-refresh-data" onclick="handleCurrentRefresh()" class="m3-icon-btn" title="Aggiorna dati">
+                <i id="refresh-icon" class="fa-solid fa-arrows-rotate text-sm"></i>
+            </button>
+            <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
+
+            <!-- Contextual Primary Action Button -->
+            <div id="users-primary-action">
+                <a href="/app/users/register" class="m3-btn-primary ml-2 text-decoration-none">
+                    <i class="fa-solid fa-user-plus"></i> <span>Nuovo Utente</span>
+                </a>
+            </div>
+            <div id="clients-primary-action" style="display: none;">
+                <a href="/app/clients/register" class="m3-btn-primary ml-2 text-decoration-none">
+                    <i class="fa-solid fa-plus"></i> <span>Nuovo Client</span>
+                </a>
+            </div>
+
+            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+            </button>
+        </div>
 
     </div>
-  </header>
+</header>
 
-  <!-- ================= VIEW 1: PANORAMICA DASHBOARD ================= -->
-  <main id="view-dashboard" class="dashboard-wide-container" style="display: none;">
+<!-- ================= VIEW 1: PANORAMICA DASHBOARD ================= -->
+<main id="view-dashboard" class="dashboard-wide-container" style="display: none;">
 
     <!-- Welcome & Live Status Hero -->
     <div class="m3-bento-card p-6 sm:p-8 mb-8">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-semibold mb-3">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Access Sphere Control Hub
-          </div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Benvenuto nella Console di Amministrazione
-          </h1>
-          <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-2xl">
-            Riepilogo in tempo reale dello stato dell'infrastruttura di identità e sicurezza. Scegli qui sotto se accedere all'amministrazione anagrafica degli <strong>Utenti</strong> o alla configurazione dei <strong>Client OAuth 2.0</strong>.
-          </p>
-        </div>
-        
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-purple-950/40 p-4 rounded-2xl border border-purple-500/20 shrink-0">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300">
-              <i class="fa-solid fa-clock text-base"></i>
-            </div>
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div>
-              <div class="text-[11px] text-gray-400 uppercase font-semibold">Orario Sistema</div>
-              <div id="live-clock" class="text-white font-mono font-bold text-sm">--:--:--</div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-semibold mb-3">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Access Sphere Control Hub
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                    Benvenuto nella Console di Amministrazione
+                </h1>
+                <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-2xl">
+                    Riepilogo in tempo reale dello stato dell'infrastruttura di identità e sicurezza. Scegli qui sotto
+                    se accedere all'amministrazione anagrafica degli <strong>Utenti</strong> o alla configurazione dei
+                    <strong>Client OAuth 2.0</strong>.
+                </p>
             </div>
-          </div>
-          <div class="hidden sm:block h-8 w-px bg-purple-500/20"></div>
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300">
-              <i class="fa-solid fa-signal text-base"></i>
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-purple-950/40 p-4 rounded-2xl border border-purple-500/20 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300">
+                        <i class="fa-solid fa-clock text-base"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold">Orario Sistema</div>
+                        <div id="live-clock" class="text-white font-mono font-bold text-sm">--:--:--</div>
+                    </div>
+                </div>
+                <div class="hidden sm:block h-8 w-px bg-purple-500/20"></div>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300">
+                        <i class="fa-solid fa-signal text-base"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold">Stato Servizi</div>
+                        <div class="text-emerald-300 font-semibold text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-check-circle text-xs"></i> Operativo
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div>
-              <div class="text-[11px] text-gray-400 uppercase font-semibold">Stato Servizi</div>
-              <div class="text-emerald-300 font-semibold text-sm flex items-center gap-1.5">
-                <i class="fa-solid fa-check-circle text-xs"></i> Operativo
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
 
     <!-- KPI Summary Metrics (Wide Bento Grid) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-      
-      <!-- Card 1: Utenti Totali -->
-      <div class="m3-bento-card p-6 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Utenti IAM</span>
-          <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300">
-            <i class="fa-solid fa-users text-lg"></i>
-          </div>
-        </div>
-        <div>
-          <div id="stat-recap-users" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
-          <div class="text-xs text-purple-300/80 mt-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-user-check text-emerald-400"></i>
-            <span id="stat-recap-active-users">--</span> utenti attivi
-          </div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-purple-500/15">
-          <button type="button" onclick="switchDashboardView('users')" class="text-xs text-purple-300 hover:text-purple-200 font-medium flex items-center justify-between w-full bg-transparent border-0 cursor-pointer p-0">
-            <span>Dettagli archivio utenti</span>
-            <i class="fa-solid fa-arrow-right text-[10px]"></i>
-          </button>
-        </div>
-      </div>
 
-      <!-- Card 2: Client OAuth2 -->
-      <div class="m3-bento-card p-6 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Client OAuth 2.0</span>
-          <div class="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-300">
-            <i class="fa-solid fa-cubes text-lg"></i>
-          </div>
+        <!-- Card 1: Utenti Totali -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Utenti IAM</span>
+                <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300">
+                    <i class="fa-solid fa-users text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div id="stat-recap-users" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--
+                </div>
+                <div class="text-xs text-purple-300/80 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-check text-emerald-400"></i>
+                    <span id="stat-recap-active-users">--</span> utenti attivi
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-purple-500/15">
+                <button type="button" onclick="switchDashboardView('users')"
+                        class="text-xs text-purple-300 hover:text-purple-200 font-medium flex items-center justify-between w-full bg-transparent border-0 cursor-pointer p-0">
+                    <span>Dettagli archivio utenti</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+            </div>
         </div>
-        <div>
-          <div id="stat-recap-clients" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
-          <div class="text-xs text-indigo-300/80 mt-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-shield-halved text-cyan-400"></i>
-            <span id="stat-recap-mfa-clients">--</span> con MFA obbligatoria
-          </div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-purple-500/15">
-          <button type="button" onclick="switchDashboardView('clients')" class="text-xs text-indigo-300 hover:text-indigo-200 font-medium flex items-center justify-between w-full bg-transparent border-0 cursor-pointer p-0">
-            <span>Configurazione applicazioni</span>
-            <i class="fa-solid fa-arrow-right text-[10px]"></i>
-          </button>
-        </div>
-      </div>
 
-      <!-- Card 3: Sicurezza & Token -->
-      <div class="m3-bento-card p-6 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Protezione Token</span>
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300">
-            <i class="fa-solid fa-lock text-lg"></i>
-          </div>
+        <!-- Card 2: Client OAuth2 -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Client OAuth 2.0</span>
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-300">
+                    <i class="fa-solid fa-cubes text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div id="stat-recap-clients" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--
+                </div>
+                <div class="text-xs text-indigo-300/80 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved text-cyan-400"></i>
+                    <span id="stat-recap-mfa-clients">--</span> con MFA obbligatoria
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-purple-500/15">
+                <button type="button" onclick="switchDashboardView('clients')"
+                        class="text-xs text-indigo-300 hover:text-indigo-200 font-medium flex items-center justify-between w-full bg-transparent border-0 cursor-pointer p-0">
+                    <span>Configurazione applicazioni</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+            </div>
         </div>
-        <div>
-          <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight">JWT & JWE</div>
-          <div class="text-xs text-emerald-300/80 mt-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-check text-emerald-400"></i>
-            Firma crittografica attiva
-          </div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-purple-500/15">
+
+        <!-- Card 3: Sicurezza & Token -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Protezione Token</span>
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300">
+                    <i class="fa-solid fa-lock text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight">JWT & JWE</div>
+                <div class="text-xs text-emerald-300/80 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    Firma crittografica attiva
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-purple-500/15">
           <span class="text-xs text-gray-400 flex items-center justify-between">
             <span>OAuth 2.0 / RFC 6749</span>
             <i class="fa-solid fa-shield text-[10px] text-emerald-400"></i>
           </span>
+            </div>
         </div>
-      </div>
 
-      <!-- Card 4: Sessione & Tracciamento -->
-      <div class="m3-bento-card p-6 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Sessione Amministratore</span>
-          <div class="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center text-cyan-300">
-            <i class="fa-solid fa-fingerprint text-lg"></i>
-          </div>
-        </div>
-        <div>
-          <div class="text-xl sm:text-2xl font-bold text-white tracking-tight">Session-ID</div>
-          <div id="stat-recap-session" class="text-[11px] sm:text-xs text-cyan-300/90 mt-1 font-mono break-all select-all font-medium" title="Session-ID">
-            Verificato & Protetto
-          </div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-purple-500/15">
+        <!-- Card 4: Sessione & Tracciamento -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Sessione Amministratore</span>
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center text-cyan-300">
+                    <i class="fa-solid fa-fingerprint text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div class="text-xl sm:text-2xl font-bold text-white tracking-tight">ID Sessione</div>
+                <div id="stat-recap-session"
+                     class="text-[11px] sm:text-xs text-cyan-300/90 mt-1 font-mono break-all select-all font-medium"
+                     title="Session-ID">
+                    Verificato & Protetto
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-purple-500/15">
           <span class="text-xs text-gray-400 flex items-center justify-between">
             <span>Tracciamento Span-ID</span>
             <i class="fa-solid fa-bolt text-[10px] text-cyan-400"></i>
           </span>
+            </div>
         </div>
-      </div>
 
     </div>
 
     <!-- PRIMARY DESTINATION SELECTION: TWO HERO HUB CARDS -->
     <div class="mb-12">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
-            Scegli l'Area Operativa
-          </h2>
-          <p class="text-xs sm:text-sm text-gray-400 mt-1">
-            Seleziona la console a cui desideri accedere per gestire utenti o applicazioni client.
-          </p>
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    Scegli l'Area Operativa
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-400 mt-1">
+                    Seleziona la console a cui desideri accedere per gestire utenti o applicazioni client.
+                </p>
+            </div>
         </div>
-      </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        <!-- ================= HERO CARD 1: IAM & GESTIONE UTENTI ================= -->
-        <div onclick="switchDashboardView('users')" class="hub-hero-card hub-card-users p-8 flex flex-col justify-between cursor-pointer">
-          <div>
-            <!-- Header Card -->
-            <div class="flex items-start justify-between gap-4 mb-6">
-              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/25 to-pink-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl shadow-lg">
-                <i class="fa-solid fa-users-gear"></i>
-              </div>
-              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-500/30 uppercase tracking-wider">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <!-- ================= HERO CARD 1: IAM & GESTIONE UTENTI ================= -->
+            <div onclick="switchDashboardView('users')"
+                 class="hub-hero-card hub-card-users p-8 flex flex-col justify-between cursor-pointer">
+                <div>
+                    <!-- Header Card -->
+                    <div class="flex items-start justify-between gap-4 mb-6">
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/25 to-pink-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl shadow-lg">
+                            <i class="fa-solid fa-users-gear"></i>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-500/30 uppercase tracking-wider">
                 IAM Management
               </span>
-            </div>
+                    </div>
 
-            <!-- Title & Body -->
-            <h3 class="text-2xl font-bold text-white tracking-tight mb-2">
-              Gestione Utenti
-            </h3>
-            <p class="text-gray-300 text-sm leading-relaxed mb-6">
-              Amministrazione completa delle anagrafiche utenti, verifica indirizzi email, gestione dello stato di attivazione o blocco, consultazione attributi personalizzati e assegnazione dei ruoli RBAC.
-            </p>
+                    <!-- Title & Body -->
+                    <h3 class="text-2xl font-bold text-white tracking-tight mb-2">
+                        Gestione Utenti
+                    </h3>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6">
+                        Amministrazione completa delle anagrafiche utenti, verifica indirizzi email, gestione dello
+                        stato di attivazione o blocco, consultazione attributi personalizzati e assegnazione dei ruoli
+                        RBAC.
+                    </p>
 
-            <!-- Feature Badges -->
-            <div class="flex flex-wrap gap-2 mb-8">
+                    <!-- Feature Badges -->
+                    <div class="flex flex-wrap gap-2 mb-8">
               <span class="pill-tag">
                 <i class="fa-solid fa-id-card text-purple-400"></i> Anagrafica & Profili
               </span>
-              <span class="pill-tag">
+                        <span class="pill-tag">
                 <i class="fa-solid fa-user-shield text-purple-400"></i> Ruoli RBAC
               </span>
-              <span class="pill-tag">
+                        <span class="pill-tag">
                 <i class="fa-solid fa-ban text-purple-400"></i> Blocco / Sblocco
               </span>
-              <span class="pill-tag">
+                        <span class="pill-tag">
                 <i class="fa-solid fa-key text-purple-400"></i> Reset Password
               </span>
+                    </div>
+                </div>
+
+                <!-- Bottom Action Buttons -->
+                <div class="pt-6 border-t border-purple-500/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <a href="/app/users" class="m3-btn-primary text-decoration-none justify-center px-6 py-3 text-sm">
+                        <span>Accedi alla Console Utenti</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <a href="/app/users/register" class="m3-btn-secondary justify-center text-xs">
+                        <i class="fa-solid fa-user-plus text-purple-300"></i>
+                        <span>Nuovo Utente</span>
+                    </a>
+                </div>
             </div>
-          </div>
 
-          <!-- Bottom Action Buttons -->
-          <div class="pt-6 border-t border-purple-500/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <a href="/app/users" class="m3-btn-primary text-decoration-none justify-center px-6 py-3 text-sm">
-              <span>Accedi alla Console Utenti</span>
-              <i class="fa-solid fa-arrow-right"></i>
-            </a>
-            <a href="/app/users/register" class="m3-btn-secondary justify-center text-xs">
-              <i class="fa-solid fa-user-plus text-purple-300"></i>
-              <span>Nuovo Utente</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- ================= HERO CARD 2: CLIENT OAUTH 2.0 ================= -->
-        <div onclick="switchDashboardView('clients')" class="hub-hero-card hub-card-clients p-8 flex flex-col justify-between cursor-pointer">
-          <div>
-            <!-- Header Card -->
-            <div class="flex items-start justify-between gap-4 mb-6">
-              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/25 to-cyan-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 text-2xl shadow-lg">
-                <i class="fa-solid fa-cube"></i>
-              </div>
-              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-200 border border-indigo-500/30 uppercase tracking-wider">
+            <!-- ================= HERO CARD 2: CLIENT OAUTH 2.0 ================= -->
+            <div onclick="switchDashboardView('clients')"
+                 class="hub-hero-card hub-card-clients p-8 flex flex-col justify-between cursor-pointer">
+                <div>
+                    <!-- Header Card -->
+                    <div class="flex items-start justify-between gap-4 mb-6">
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/25 to-cyan-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 text-2xl shadow-lg">
+                            <i class="fa-solid fa-cube"></i>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-200 border border-indigo-500/30 uppercase tracking-wider">
                 OAuth 2.0 Registry
               </span>
-            </div>
+                    </div>
 
-            <!-- Title & Body -->
-            <h3 class="text-2xl font-bold text-white tracking-tight mb-2">
-              Client OAuth 2.0
-            </h3>
-            <p class="text-gray-300 text-sm leading-relaxed mb-6">
-              Registrazione e configurazione delle applicazioni client autorizzate, gestione dei Client Secret crittografati, autorizzazione dei Redirect URIs, scopes consentiti e policy di sicurezza MFA obbligatoria.
-            </p>
+                    <!-- Title & Body -->
+                    <h3 class="text-2xl font-bold text-white tracking-tight mb-2">
+                        Client OAuth 2.0
+                    </h3>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6">
+                        Registrazione e configurazione delle applicazioni client autorizzate, gestione dei Client Secret
+                        crittografati, autorizzazione dei Redirect URIs, scopes consentiti e policy di sicurezza MFA
+                        obbligatoria.
+                    </p>
 
-            <!-- Feature Badges -->
-            <div class="flex flex-wrap gap-2 mb-8">
+                    <!-- Feature Badges -->
+                    <div class="flex flex-wrap gap-2 mb-8">
               <span class="pill-tag">
                 <i class="fa-solid fa-key text-indigo-400"></i> Client Secret Protetti
               </span>
-              <span class="pill-tag">
+                        <span class="pill-tag">
                 <i class="fa-solid fa-link text-indigo-400"></i> Redirect URIs Estesi
               </span>
-              <span class="pill-tag">
+                        <span class="pill-tag">
                 <i class="fa-solid fa-shield-cat text-indigo-400"></i> MFA Policy
               </span>
-              <span class="pill-tag">
+                        <span class="pill-tag">
                 <i class="fa-solid fa-bell text-indigo-400"></i> Webhooks & Scopes
               </span>
+                    </div>
+                </div>
+
+                <!-- Bottom Action Buttons -->
+                <div class="pt-6 border-t border-purple-500/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <a href="/app/clients" class="m3-btn-primary text-decoration-none justify-center px-6 py-3 text-sm">
+                        <span>Accedi ai Client OAuth2</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <a href="/app/clients/register" class="m3-btn-secondary justify-center text-xs">
+                        <i class="fa-solid fa-plus text-indigo-300"></i>
+                        <span>Nuovo Client</span>
+                    </a>
+                </div>
             </div>
-          </div>
 
-          <!-- Bottom Action Buttons -->
-          <div class="pt-6 border-t border-purple-500/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <a href="/app/clients" class="m3-btn-primary text-decoration-none justify-center px-6 py-3 text-sm">
-              <span>Accedi ai Client OAuth2</span>
-              <i class="fa-solid fa-arrow-right"></i>
-            </a>
-            <a href="/app/clients/register" class="m3-btn-secondary justify-center text-xs">
-              <i class="fa-solid fa-plus text-indigo-300"></i>
-              <span>Nuovo Client</span>
-            </a>
-          </div>
         </div>
-
-      </div>
     </div>
 
-  </main>
+</main>
 
-  
 
-  <!-- ================= VIEW 1: UTENTI DASHBOARD ================= -->
-  <main id="view-users" class="dashboard-wide-container">
+<!-- ================= VIEW 1: UTENTI DASHBOARD ================= -->
+<main id="view-users" class="dashboard-wide-container">
 
     <!-- KPI Summary Metrics (Wide Bento Grid) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-      
-      <div class="m3-card p-6 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Utenti Totali</span>
-          <div id="stat-total-users" class="text-3xl font-extrabold text-white mt-1">--</div>
-          <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> Anagrafica attiva</span>
-        </div>
-        <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl">
-          <i class="fa-solid fa-users"></i>
-        </div>
-      </div>
 
-      <div class="m3-card p-6 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Utenti Attivi</span>
-          <div id="stat-active-users" class="text-3xl font-extrabold text-emerald-400 mt-1">--</div>
-          <span class="text-[11px] text-emerald-300 mt-1 inline-block"><i class="fa-solid fa-circle-check mr-1"></i> Non bloccati</span>
+        <div class="m3-card p-6 flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Utenti Totali</span>
+                <div id="stat-total-users" class="text-3xl font-extrabold text-white mt-1">--</div>
+                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> Anagrafica attiva</span>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl">
+                <i class="fa-solid fa-users"></i>
+            </div>
         </div>
-        <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-2xl">
-          <i class="fa-solid fa-user-check"></i>
-        </div>
-      </div>
 
-      <div class="m3-card p-6 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Utenti Bloccati</span>
-          <div id="stat-blocked-users" class="text-3xl font-extrabold text-red-400 mt-1">--</div>
-          <span class="text-[11px] text-red-300 mt-1 inline-block"><i class="fa-solid fa-ban mr-1"></i> Accesso revocato</span>
+        <div class="m3-card p-6 flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Utenti Attivi</span>
+                <div id="stat-active-users" class="text-3xl font-extrabold text-emerald-400 mt-1">--</div>
+                <span class="text-[11px] text-emerald-300 mt-1 inline-block"><i
+                        class="fa-solid fa-circle-check mr-1"></i> Non bloccati</span>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-2xl">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
         </div>
-        <div class="w-14 h-14 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-300 text-2xl">
-          <i class="fa-solid fa-user-xmark"></i>
-        </div>
-      </div>
 
-      <!-- Quick Switch to Clients Bento Card -->
-      <div onclick="switchDashboardView('clients')" class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-purple-400/50">
-        <div>
-          <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Client OAuth2</span>
-          <div class="text-3xl font-extrabold text-purple-300 mt-1 flex items-center gap-2">
-            Gestisci <i class="fa-solid fa-arrow-right text-base transition-transform group-hover:translate-x-1.5"></i>
-          </div>
-          <span class="text-[11px] text-gray-400 mt-1 inline-block">Cambia vista all'istante</span>
+        <div class="m3-card p-6 flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Utenti Bloccati</span>
+                <div id="stat-blocked-users" class="text-3xl font-extrabold text-red-400 mt-1">--</div>
+                <span class="text-[11px] text-red-300 mt-1 inline-block"><i class="fa-solid fa-ban mr-1"></i> Accesso revocato</span>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-300 text-2xl">
+                <i class="fa-solid fa-user-xmark"></i>
+            </div>
         </div>
-        <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl group-hover:scale-110 transition-transform">
-          <i class="fa-solid fa-key"></i>
+
+        <!-- Quick Switch to Clients Bento Card -->
+        <div onclick="switchDashboardView('clients')"
+             class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-purple-400/50">
+            <div>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Client OAuth2</span>
+                <div class="text-3xl font-extrabold text-purple-300 mt-1 flex items-center gap-2">
+                    Gestisci <i
+                        class="fa-solid fa-arrow-right text-base transition-transform group-hover:translate-x-1.5"></i>
+                </div>
+                <span class="text-[11px] text-gray-400 mt-1 inline-block">Cambia vista all'istante</span>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-key"></i>
+            </div>
         </div>
-      </div>
 
     </div>
 
     <!-- Main Table Card (Wide Container) -->
     <div class="m3-card p-8">
-      
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-purple-500/15">
-        <div>
-          <h2 class="text-2xl font-bold text-white flex items-center gap-3">
-            <i class="fa-solid fa-address-book text-purple-400 text-2xl"></i>
-            Elenco Utenti Registrati
-          </h2>
-          <p class="text-xs text-gray-400 mt-1.5">
-            Clicca su una riga per visualizzare i dettagli completi, oppure usa i pulsanti azione per modificare o gestire i ruoli.
-          </p>
-        </div>
-        
-        <div class="flex items-center gap-3">
-          <a href="/app/users/register" class="m3-btn-primary text-decoration-none">
-            <i class="fa-solid fa-user-plus"></i> Nuovo Utente
-          </a>
-        </div>
-      </div>
 
-      <!-- Users Table -->
-      <div class="table-responsive">
-        <table id="users-table" class="table w-full">
-          <thead>
-            <tr>
-              <th scope="col" class="text-center" style="width: 70px;">Avatar</th>
-              <th scope="col" class="hidden-mobile">Nome</th>
-              <th scope="col" class="hidden-mobile">Cognome</th>
-              <th scope="col">Username</th>
-              <th scope="col" class="hidden-mobile">Email</th>
-              <th scope="col">Stato</th>
-              <th scope="col" class="text-center" style="width: 130px;">Azioni</th>
-            </tr>
-          </thead>
-          <tbody id="users-data">
-            <!-- Populated dynamically by users.js -->
-          </tbody>
-        </table>
-      </div>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-purple-500/15">
+            <div>
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-address-book text-purple-400 text-2xl"></i>
+                    Elenco Utenti Registrati
+                </h2>
+                <p class="text-xs text-gray-400 mt-1.5">
+                    Clicca su una riga per visualizzare i dettagli completi, oppure usa i pulsanti azione per modificare
+                    o gestire i ruoli.
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="/app/users/register" class="m3-btn-primary text-decoration-none">
+                    <i class="fa-solid fa-user-plus"></i> Nuovo Utente
+                </a>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-responsive">
+            <table id="users-table" class="table w-full">
+                <thead>
+                <tr>
+                    <th scope="col" class="text-center" style="width: 70px;">Avatar</th>
+                    <th scope="col" class="hidden-mobile">Nome</th>
+                    <th scope="col" class="hidden-mobile">Cognome</th>
+                    <th scope="col">Username</th>
+                    <th scope="col" class="hidden-mobile">Email</th>
+                    <th scope="col">Stato</th>
+                    <th scope="col" class="text-center" style="width: 130px;">Azioni</th>
+                </tr>
+                </thead>
+                <tbody id="users-data">
+                <!-- Populated dynamically by users.js -->
+                </tbody>
+            </table>
+        </div>
 
     </div>
 
-  </main>
+</main>
 
-  <!-- ================= VIEW 2: CLIENT OAUTH2 DASHBOARD ================= -->
-  <main id="view-clients" class="dashboard-wide-container" style="display: none;">
+<!-- ================= VIEW 2: CLIENT OAUTH2 DASHBOARD ================= -->
+<main id="view-clients" class="dashboard-wide-container" style="display: none;">
 
     <!-- KPI Summary Metrics (Wide Bento Grid) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-      
-      <div class="m3-card p-6 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Client Registrati</span>
-          <div id="stat-total-clients" class="text-3xl font-extrabold text-white mt-1">--</div>
-          <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> Totale in DB</span>
-        </div>
-        <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl">
-          <i class="fa-solid fa-network-wired"></i>
-        </div>
-      </div>
 
-      <div class="m3-card p-6 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Client con MFA</span>
-          <div id="stat-mfa-clients" class="text-3xl font-extrabold text-pink-400 mt-1">--</div>
-          <span class="text-[11px] text-pink-300 mt-1 inline-block"><i class="fa-solid fa-shield-virus mr-1"></i> Con 2FA attivo</span>
+        <div class="m3-card p-6 flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Client Registrati</span>
+                <div id="stat-total-clients" class="text-3xl font-extrabold text-white mt-1">--</div>
+                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> Totale in DB</span>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl">
+                <i class="fa-solid fa-network-wired"></i>
+            </div>
         </div>
-        <div class="w-14 h-14 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300 text-2xl">
-          <i class="fa-solid fa-fingerprint"></i>
-        </div>
-      </div>
 
-      <div class="m3-card p-6 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Token JWE Cifrati</span>
-          <div id="stat-jwe-clients" class="text-3xl font-extrabold text-blue-400 mt-1">--</div>
-          <span class="text-[11px] text-blue-300 mt-1 inline-block"><i class="fa-solid fa-lock mr-1"></i> Crittografia JWE</span>
+        <div class="m3-card p-6 flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Client con MFA</span>
+                <div id="stat-mfa-clients" class="text-3xl font-extrabold text-pink-400 mt-1">--</div>
+                <span class="text-[11px] text-pink-300 mt-1 inline-block"><i class="fa-solid fa-shield-virus mr-1"></i> Con 2FA attivo</span>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300 text-2xl">
+                <i class="fa-solid fa-fingerprint"></i>
+            </div>
         </div>
-        <div class="w-14 h-14 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-300 text-2xl">
-          <i class="fa-solid fa-file-shield"></i>
-        </div>
-      </div>
 
-      <!-- Quick Switch to Users Bento Card -->
-      <div onclick="switchDashboardView('users')" class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-emerald-400/50">
-        <div>
-          <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Console Utenti</span>
-          <div class="text-3xl font-extrabold text-emerald-400 mt-1 flex items-center gap-2">
-            Gestisci <i class="fa-solid fa-arrow-right text-base transition-transform group-hover:translate-x-1.5"></i>
-          </div>
-          <span class="text-[11px] text-gray-400 mt-1 inline-block">Torna all'elenco anagrafico</span>
+        <div class="m3-card p-6 flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Token JWE Cifrati</span>
+                <div id="stat-jwe-clients" class="text-3xl font-extrabold text-blue-400 mt-1">--</div>
+                <span class="text-[11px] text-blue-300 mt-1 inline-block"><i class="fa-solid fa-lock mr-1"></i> Crittografia JWE</span>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-300 text-2xl">
+                <i class="fa-solid fa-file-shield"></i>
+            </div>
         </div>
-        <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-2xl group-hover:scale-110 transition-transform">
-          <i class="fa-solid fa-users"></i>
+
+        <!-- Quick Switch to Users Bento Card -->
+        <div onclick="switchDashboardView('users')"
+             class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-emerald-400/50">
+            <div>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Console Utenti</span>
+                <div class="text-3xl font-extrabold text-emerald-400 mt-1 flex items-center gap-2">
+                    Gestisci <i
+                        class="fa-solid fa-arrow-right text-base transition-transform group-hover:translate-x-1.5"></i>
+                </div>
+                <span class="text-[11px] text-gray-400 mt-1 inline-block">Torna all'elenco anagrafico</span>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-2xl group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-users"></i>
+            </div>
         </div>
-      </div>
 
     </div>
 
     <!-- Main Table Card (Wide Container) -->
     <div class="m3-card p-8">
-      
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-purple-500/15">
-        <div>
-          <h2 class="text-2xl font-bold text-white flex items-center gap-3">
-            <i class="fa-solid fa-server text-purple-400 text-2xl"></i>
-            Applicazioni Client OAuth2 (Tabella OAUTH_CLIENT)
-          </h2>
-          <p class="text-xs text-gray-400 mt-1.5">
-            Clicca su una riga per esaminare tutti i dettagli (secret, redirect URIs, scopes, webhook, MFA).
-          </p>
-        </div>
-        
-        <div class="flex items-center gap-3">
-          <a href="/app/clients/register" class="m3-btn-primary text-decoration-none">
-            <i class="fa-solid fa-plus"></i> Registra Nuovo Client
-          </a>
-        </div>
-      </div>
 
-      <!-- Clients Table -->
-      <div class="table-responsive">
-        <table id="clients-table" class="table w-full">
-          <thead>
-            <tr>
-              <th scope="col">Client ID</th>
-              <th scope="col">Tipo Accesso</th>
-              <th scope="col">Tipo Token</th>
-              <th scope="col">Redirect URIs</th>
-              <th scope="col">MFA</th>
-              <th scope="col" class="text-center" style="width: 140px;">Azioni</th>
-            </tr>
-          </thead>
-          <tbody id="clients-data">
-            <!-- Populated dynamically by clients.js -->
-          </tbody>
-        </table>
-      </div>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-purple-500/15">
+            <div>
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-server text-purple-400 text-2xl"></i>
+                    Applicazioni Client OAuth2 (Tabella OAUTH_CLIENT)
+                </h2>
+                <p class="text-xs text-gray-400 mt-1.5">
+                    Clicca su una riga per esaminare tutti i dettagli (secret, redirect URIs, scopes, webhook, MFA).
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="/app/clients/register" class="m3-btn-primary text-decoration-none">
+                    <i class="fa-solid fa-plus"></i> Registra Nuovo Client
+                </a>
+            </div>
+        </div>
+
+        <!-- Clients Table -->
+        <div class="table-responsive">
+            <table id="clients-table" class="table w-full">
+                <thead>
+                <tr>
+                    <th scope="col">Client ID</th>
+                    <th scope="col">Tipo Accesso</th>
+                    <th scope="col">Tipo Token</th>
+                    <th scope="col">Redirect URIs</th>
+                    <th scope="col">MFA</th>
+                    <th scope="col" class="text-center" style="width: 140px;">Azioni</th>
+                </tr>
+                </thead>
+                <tbody id="clients-data">
+                <!-- Populated dynamically by clients.js -->
+                </tbody>
+            </table>
+        </div>
 
     </div>
 
-  </main>
+</main>
 
-  <!-- ================= MODALS ================= -->
+<!-- ================= MODALS ================= -->
 
-  <!-- Modal Dettagli Client -->
-  <div class="modal fade" id="clientDetailModal" tabindex="-1" aria-labelledby="clientDetailTitle" aria-hidden="true">
+<!-- Modal Dettagli Client -->
+<div class="modal fade" id="clientDetailModal" tabindex="-1" aria-labelledby="clientDetailTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border border-purple-500/30 shadow-2xl" style="background: #1e192c; border-radius: 24px;">
-        <div class="modal-header border-b border-purple-500/20 px-6 py-4">
-          <h5 class="modal-title text-white font-bold flex items-center gap-2.5 text-lg" id="clientDetailTitle">
-            <i class="fa-solid fa-cube text-purple-400"></i> Dettaglio Client OAuth2
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-        </div>
-        
-        <div class="modal-body p-6 space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
-              <span class="text-xs text-gray-400 uppercase font-semibold">Client ID</span>
-              <div id="detail-clientId" class="text-white font-mono font-bold text-base mt-1">--</div>
-            </div>
-            <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
-              <span class="text-xs text-gray-400 uppercase font-semibold">External Client ID</span>
-              <div id="detail-extClientId" class="text-white font-mono text-sm mt-1">--</div>
-            </div>
-          </div>
-
-          <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
-            <span class="text-xs text-gray-400 uppercase font-semibold">Client Secret</span>
-            <div class="flex items-center gap-2 mt-1">
-              <input type="password" id="detail-clientSecret" readonly class="form-control font-mono text-sm" style="background: #231B34; border: 1.5px solid rgba(208, 188, 255, 0.28); color: #fff;" />
-              <button type="button" class="m3-icon-btn" onclick="toggleSecretVisibility('detail-clientSecret', this)" title="Mostra / Nascondi">
-                <i class="fa-solid fa-eye text-xs"></i>
-              </button>
-              <button type="button" class="m3-icon-btn" onclick="copySecret('detail-clientSecret')" title="Copia negli appunti">
-                <i class="fa-solid fa-copy text-xs"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-              <span class="text-[11px] text-gray-400 uppercase">Tipo Accesso</span>
-              <div id="detail-accessType" class="text-purple-300 font-bold text-sm mt-1">ONLINE</div>
-            </div>
-            <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-              <span class="text-[11px] text-gray-400 uppercase">Tipo Token</span>
-              <div id="detail-tokenType" class="text-blue-300 font-bold text-sm mt-1">JWT</div>
-            </div>
-            <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-              <span class="text-[11px] text-gray-400 uppercase">Auth Type</span>
-              <div id="detail-authType" class="text-yellow-300 font-bold text-sm mt-1">BEARER</div>
-            </div>
-            <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-              <span class="text-[11px] text-gray-400 uppercase">Scadenza Token</span>
-              <div id="detail-jwtExpiration" class="text-emerald-300 font-bold text-sm mt-1">3600s</div>
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
-              <span class="text-xs text-gray-400 uppercase font-semibold">Redirect URIs</span>
-              <div id="detail-redirectUri" class="text-gray-200 text-xs font-mono break-all mt-1">--</div>
-            </div>
-            <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
-              <span class="text-xs text-gray-400 uppercase font-semibold">Scopes Autorizzati</span>
-              <div id="detail-scopes" class="text-purple-300 text-xs font-mono mt-1">--</div>
-            </div>
-            <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
-              <span class="text-xs text-gray-400 uppercase font-semibold">Webhooks</span>
-              <div id="detail-webhooks" class="text-gray-300 text-xs font-mono break-all mt-1">--</div>
-            </div>
-            <div class="flex items-center justify-between bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
-              <span class="text-xs text-gray-400 uppercase font-semibold">Autenticazione a Due Fattori (MFA)</span>
-              <div id="detail-mfaStatus">--</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer border-t border-purple-500/20 px-6 py-4 flex justify-between">
-          <button type="button" class="px-5 py-2.5 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all cursor-pointer" data-bs-dismiss="modal">
-            Chiudi
-          </button>
-          <button id="detail-editBtn" type="button" class="m3-btn-primary cursor-pointer">
-            <i class="fa-solid fa-pen-to-square mr-1"></i> Modifica Configurazione
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Creazione / Modifica Client -->
-  <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="modal-action-title" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border border-purple-500/30 shadow-2xl" style="background: #1e192c; border-radius: 24px;">
-        <div class="modal-header border-b border-purple-500/20 px-6 py-4">
-          <h5 class="modal-title text-white font-bold flex items-center gap-2.5 text-lg" id="modal-action-title">
-            <i class="fa-solid fa-key text-purple-400"></i> Registra Nuovo Client OAuth2
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-        </div>
-        
-        <div class="modal-body p-6">
-          <form id="clientForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            <div class="col-span-1">
-              <label class="form-label text-xs font-semibold text-gray-300">Client ID *</label>
-              <input type="text" id="form-clientId" class="form-control text-sm" placeholder="es. MY-FRONTEND-APP" required />
+        <div class="modal-content border border-purple-500/30 shadow-2xl"
+             style="background: #1e192c; border-radius: 24px;">
+            <div class="modal-header border-b border-purple-500/20 px-6 py-4">
+                <h5 class="modal-title text-white font-bold flex items-center gap-2.5 text-lg" id="clientDetailTitle">
+                    <i class="fa-solid fa-cube text-purple-400"></i> Dettaglio Client OAuth2
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Chiudi"></button>
             </div>
 
-            <div class="col-span-1">
-              <label class="form-label text-xs font-semibold text-gray-300">Client Secret</label>
-              <div class="flex gap-2">
-                <input type="text" id="form-clientSecret" class="form-control text-sm" placeholder="Lascia vuoto per auto-generazione" />
-                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateSecret()" title="Genera Secret Sicuro">
-                  <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+            <div class="modal-body p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
+                        <span class="text-xs text-gray-400 uppercase font-semibold">Client ID</span>
+                        <div id="detail-clientId" class="text-white font-mono font-bold text-base mt-1">--</div>
+                    </div>
+                    <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
+                        <span class="text-xs text-gray-400 uppercase font-semibold">External Client ID</span>
+                        <div id="detail-extClientId" class="text-white font-mono text-sm mt-1">--</div>
+                    </div>
+                </div>
+
+                <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Client Secret</span>
+                    <div class="flex items-center gap-2 mt-1">
+                        <input type="password" id="detail-clientSecret" readonly class="form-control font-mono text-sm"
+                               style="background: #231B34; border: 1.5px solid rgba(208, 188, 255, 0.28); color: #fff;"/>
+                        <button type="button" class="m3-icon-btn"
+                                onclick="toggleSecretVisibility('detail-clientSecret', this)" title="Mostra / Nascondi">
+                            <i class="fa-solid fa-eye text-xs"></i>
+                        </button>
+                        <button type="button" class="m3-icon-btn" onclick="copySecret('detail-clientSecret')"
+                                title="Copia negli appunti">
+                            <i class="fa-solid fa-copy text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
+                        <span class="text-[11px] text-gray-400 uppercase">Tipo Accesso</span>
+                        <div id="detail-accessType" class="text-purple-300 font-bold text-sm mt-1">ONLINE</div>
+                    </div>
+                    <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
+                        <span class="text-[11px] text-gray-400 uppercase">Tipo Token</span>
+                        <div id="detail-tokenType" class="text-blue-300 font-bold text-sm mt-1">JWT</div>
+                    </div>
+                    <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
+                        <span class="text-[11px] text-gray-400 uppercase">Auth Type</span>
+                        <div id="detail-authType" class="text-yellow-300 font-bold text-sm mt-1">BEARER</div>
+                    </div>
+                    <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
+                        <span class="text-[11px] text-gray-400 uppercase">Scadenza Token</span>
+                        <div id="detail-jwtExpiration" class="text-emerald-300 font-bold text-sm mt-1">3600s</div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
+                        <span class="text-xs text-gray-400 uppercase font-semibold">Redirect URIs</span>
+                        <div id="detail-redirectUri" class="text-gray-200 text-xs font-mono break-all mt-1">--</div>
+                    </div>
+                    <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
+                        <span class="text-xs text-gray-400 uppercase font-semibold">Scopes Autorizzati</span>
+                        <div id="detail-scopes" class="text-purple-300 text-xs font-mono mt-1">--</div>
+                    </div>
+                    <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
+                        <span class="text-xs text-gray-400 uppercase font-semibold">Webhooks</span>
+                        <div id="detail-webhooks" class="text-gray-300 text-xs font-mono break-all mt-1">--</div>
+                    </div>
+                    <div class="flex items-center justify-between bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
+                        <span class="text-xs text-gray-400 uppercase font-semibold">Autenticazione a Due Fattori (MFA)</span>
+                        <div id="detail-mfaStatus">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-t border-purple-500/20 px-6 py-4 flex justify-between">
+                <button type="button"
+                        class="px-5 py-2.5 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all cursor-pointer"
+                        data-bs-dismiss="modal">
+                    Chiudi
                 </button>
-              </div>
+                <button id="detail-editBtn" type="button" class="m3-btn-primary cursor-pointer">
+                    <i class="fa-solid fa-pen-to-square mr-1"></i> Modifica Configurazione
+                </button>
             </div>
-
-            <div class="col-span-1">
-              <label class="form-label text-xs font-semibold text-gray-300">Access Type</label>
-              <select id="form-accessType" class="form-select text-sm">
-                <option value="ONLINE">ONLINE</option>
-                <option value="OFFLINE">OFFLINE</option>
-              </select>
-            </div>
-
-            <div class="col-span-1">
-              <label class="form-label text-xs font-semibold text-gray-300">Token Type</label>
-              <select id="form-tokenType" class="form-select text-sm">
-                <option value="JWT">JWT (Standard Bearer)</option>
-                <option value="JWE">JWE (Crittografato)</option>
-              </select>
-            </div>
-
-            <div class="col-span-1">
-              <label class="form-label text-xs font-semibold text-gray-300">Auth Type</label>
-              <select id="form-authType" class="form-select text-sm">
-                <option value="BEARER">BEARER</option>
-                <option value="BASIC">BASIC</option>
-              </select>
-            </div>
-
-            <div class="col-span-1">
-              <label class="form-label text-xs font-semibold text-gray-300">Scadenza Token (secondi)</label>
-              <input type="number" id="form-jwtExpiration" class="form-control text-sm" value="3600" />
-            </div>
-
-            <div class="col-span-2">
-              <label class="form-label text-xs font-semibold text-gray-300">Redirect URIs (separate da virgola o JSON)</label>
-              <input type="text" id="form-redirectUri" class="form-control text-sm font-mono" placeholder="http://localhost:8080/callback" />
-            </div>
-
-            <div class="col-span-2">
-              <label class="form-label text-xs font-semibold text-gray-300">Scopes (separati da virgola)</label>
-              <input type="text" id="form-scopes" class="form-control text-sm font-mono" placeholder="openid, profile, email" />
-            </div>
-
-            <div class="col-span-2">
-              <label class="form-label text-xs font-semibold text-gray-300">Webhooks (opzionale)</label>
-              <input type="text" id="form-webhooks" class="form-control text-sm font-mono" placeholder="https://api.domain.com/webhook" />
-            </div>
-
-            <div class="col-span-2 flex items-center gap-3 pt-2">
-              <input type="checkbox" id="form-mfaEnabled" class="w-4 h-4 rounded accent-purple-500 cursor-pointer" />
-              <label for="form-mfaEnabled" class="text-xs font-semibold text-gray-300 cursor-pointer">
-                Richiedi autenticazione a due fattori (MFA / 2FA) per questo client
-              </label>
-            </div>
-
-          </form>
         </div>
-
-        <div class="modal-footer border-t border-purple-500/20 px-6 py-4 flex justify-end gap-3">
-          <button type="button" class="m3-btn-outline cursor-pointer" data-bs-dismiss="modal">
-            <i class="fa-solid fa-xmark"></i> Annulla
-          </button>
-          <button type="button" onclick="saveClient()" class="m3-btn-primary cursor-pointer">
-            <i class="fa-solid fa-floppy-disk mr-1"></i> Salva Client
-          </button>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- Instant SPA View Switching Logic -->
-  <script>
+<!-- Modal Creazione / Modifica Client -->
+<div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="modal-action-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border border-purple-500/30 shadow-2xl"
+             style="background: #1e192c; border-radius: 24px;">
+            <div class="modal-header border-b border-purple-500/20 px-6 py-4">
+                <h5 class="modal-title text-white font-bold flex items-center gap-2.5 text-lg" id="modal-action-title">
+                    <i class="fa-solid fa-key text-purple-400"></i> Registra Nuovo Client OAuth2
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Chiudi"></button>
+            </div>
+
+            <div class="modal-body p-6">
+                <form id="clientForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div class="col-span-1">
+                        <label class="form-label text-xs font-semibold text-gray-300">Client ID *</label>
+                        <input type="text" id="form-clientId" class="form-control text-sm"
+                               placeholder="es. MY-FRONTEND-APP" required/>
+                    </div>
+
+                    <div class="col-span-1">
+                        <label class="form-label text-xs font-semibold text-gray-300">Client Secret</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="form-clientSecret" class="form-control text-sm"
+                                   placeholder="Lascia vuoto per auto-generazione"/>
+                            <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateSecret()"
+                                    title="Genera Secret Sicuro">
+                                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-span-1">
+                        <label class="form-label text-xs font-semibold text-gray-300">Access Type</label>
+                        <select id="form-accessType" class="form-select text-sm">
+                            <option value="ONLINE">ONLINE</option>
+                            <option value="OFFLINE">OFFLINE</option>
+                        </select>
+                    </div>
+
+                    <div class="col-span-1">
+                        <label class="form-label text-xs font-semibold text-gray-300">Token Type</label>
+                        <select id="form-tokenType" class="form-select text-sm">
+                            <option value="JWT">JWT (Standard Bearer)</option>
+                            <option value="JWE">JWE (Crittografato)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-span-1">
+                        <label class="form-label text-xs font-semibold text-gray-300">Auth Type</label>
+                        <select id="form-authType" class="form-select text-sm">
+                            <option value="BEARER">BEARER</option>
+                            <option value="BASIC">BASIC</option>
+                        </select>
+                    </div>
+
+                    <div class="col-span-1">
+                        <label class="form-label text-xs font-semibold text-gray-300">Scadenza Token (secondi)</label>
+                        <input type="number" id="form-jwtExpiration" class="form-control text-sm" value="3600"/>
+                    </div>
+
+                    <div class="col-span-2">
+                        <label class="form-label text-xs font-semibold text-gray-300">Redirect URIs (separate da virgola
+                            o JSON)</label>
+                        <input type="text" id="form-redirectUri" class="form-control text-sm font-mono"
+                               placeholder="http://localhost:8080/callback"/>
+                    </div>
+
+                    <div class="col-span-2">
+                        <label class="form-label text-xs font-semibold text-gray-300">Scopes (separati da
+                            virgola)</label>
+                        <input type="text" id="form-scopes" class="form-control text-sm font-mono"
+                               placeholder="openid, profile, email"/>
+                    </div>
+
+                    <div class="col-span-2">
+                        <label class="form-label text-xs font-semibold text-gray-300">Webhooks (opzionale)</label>
+                        <input type="text" id="form-webhooks" class="form-control text-sm font-mono"
+                               placeholder="https://api.domain.com/webhook"/>
+                    </div>
+
+                    <div class="col-span-2 flex items-center gap-3 pt-2">
+                        <input type="checkbox" id="form-mfaEnabled"
+                               class="w-4 h-4 rounded accent-purple-500 cursor-pointer"/>
+                        <label for="form-mfaEnabled" class="text-xs font-semibold text-gray-300 cursor-pointer">
+                            Richiedi autenticazione a due fattori (MFA / 2FA) per questo client
+                        </label>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer border-t border-purple-500/20 px-6 py-4 flex justify-end gap-3">
+                <button type="button" class="m3-btn-outline cursor-pointer" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-xmark"></i> Annulla
+                </button>
+                <button type="button" onclick="saveClient()" class="m3-btn-primary cursor-pointer">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> Salva Client
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Instant SPA View Switching Logic -->
+<script>
     let currentView = "dashboard";
 
     function updateClock() {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const clockEl = document.getElementById("live-clock");
-      if (clockEl) clockEl.innerText = timeStr;
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+        const clockEl = document.getElementById("live-clock");
+        if (clockEl) clockEl.innerText = timeStr;
     }
+
     setInterval(updateClock, 1000);
 
     function fetchSessionInfo() {
-      const sessionId = localStorage.getItem("Session-ID");
-      const sessionEl = document.getElementById("stat-recap-session");
-      if (sessionEl) {
-        if (sessionId) {
-          sessionEl.innerText = sessionId;
-          sessionEl.title = sessionId;
-        } else {
-          sessionEl.innerText = "Attivo & Protetto";
+        const sessionId = localStorage.getItem("Session-ID");
+        const sessionEl = document.getElementById("stat-recap-session");
+        if (sessionEl) {
+            if (sessionId) {
+                sessionEl.innerText = sessionId;
+                sessionEl.title = sessionId;
+            } else {
+                sessionEl.innerText = "Attivo & Protetto";
+            }
         }
-      }
     }
 
     async function loadDashboardMetrics() {
-      const cfg = getConfig();
-      const token = getCookieOrStorage(cfg.access_token);
+        const cfg = getConfig();
+        const token = getCookieOrStorage(cfg.access_token);
 
-      // Load Users KPI
-      try {
-        const cachedUsers = localStorage.getItem(cfg.client_id + "_usersData");
-        if (cachedUsers) {
-          const parsed = JSON.parse(cachedUsers);
-          renderUsersKpi(parsed);
-        }
-        if (token) {
-          GET(cfg.users_url, token).then(async (res) => {
-            const data = await res.json();
-            if (data && data.data && Array.isArray(data.data)) {
-              localStorage.setItem(cfg.client_id + "_usersData", JSON.stringify(data.data));
-              renderUsersKpi(data.data);
-              if (typeof cachedUsers !== "undefined") {
-                cachedUsers = data.data;
-              }
-              const usersTbody = document.getElementById("users-data");
-              if (currentView === "users" || (usersTbody && usersTbody.children.length === 0)) {
-                if (typeof displayUsersTable === "function") displayUsersTable(data.data);
-                if (typeof updateUserKpis === "function") updateUserKpis(data.data);
-              }
+        // Load Users KPI
+        try {
+            const cachedUsers = localStorage.getItem(cfg.client_id + "_usersData");
+            if (cachedUsers) {
+                const parsed = JSON.parse(cachedUsers);
+                renderUsersKpi(parsed);
             }
-          }).catch(() => {});
+            if (token) {
+                GET(cfg.users_url, token).then(async (res) => {
+                    const data = await res.json();
+                    if (data && data.data && Array.isArray(data.data)) {
+                        localStorage.setItem(cfg.client_id + "_usersData", JSON.stringify(data.data));
+                        renderUsersKpi(data.data);
+                        if (typeof cachedUsers !== "undefined") {
+                            cachedUsers = data.data;
+                        }
+                        const usersTbody = document.getElementById("users-data");
+                        if (currentView === "users" || (usersTbody && usersTbody.children.length === 0)) {
+                            if (typeof displayUsersTable === "function") displayUsersTable(data.data);
+                            if (typeof updateUserKpis === "function") updateUserKpis(data.data);
+                        }
+                    }
+                }).catch(() => {
+                });
+            }
+        } catch (e) {
         }
-      } catch (e) {}
 
-      // Load Clients KPI
-      try {
-        const cachedClientsData = localStorage.getItem(cfg.client_id + "_clientsData");
-        if (cachedClientsData) {
-          const parsed = JSON.parse(cachedClientsData);
-          renderClientsKpi(parsed);
-        }
-        if (token) {
-          const clientUrl = cfg.client_id_url || (window.location.origin + "/v1/clients");
-          GET(clientUrl, token).then(async (res) => {
-            const data = await res.json();
-            const clients = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
-            if (Array.isArray(clients)) {
-              localStorage.setItem(cfg.client_id + "_clientsData", JSON.stringify(clients));
-              renderClientsKpi(clients);
+        // Load Clients KPI
+        try {
+            const cachedClientsData = localStorage.getItem(cfg.client_id + "_clientsData") ||
+                localStorage.getItem(cfg.client_id + "_clients") ||
+                localStorage.getItem("ACCESS-SPHERE-TECH_clientsData") ||
+                localStorage.getItem("ACCESS-SPHERE-TECH_clients");
+            if (cachedClientsData) {
+                const parsed = JSON.parse(cachedClientsData);
+                if (Array.isArray(parsed)) {
+                    renderClientsKpi(parsed);
+                }
             }
-          }).catch(() => {});
+            if (token) {
+                const clientUrl = cfg.client_id_url || (window.location.origin + "/v1/clients");
+                GET(clientUrl, token).then(async (res) => {
+                    const data = await res.json();
+                    if (data && data.error == null) {
+                        const clients = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
+                        if (Array.isArray(clients)) {
+                            localStorage.setItem(cfg.client_id + "_clientsData", JSON.stringify(clients));
+                            localStorage.setItem(cfg.client_id + "_clients", JSON.stringify(clients));
+                            renderClientsKpi(clients);
+                            if (typeof updateClientKpis === "function") {
+                                updateClientKpis(clients);
+                            }
+                        }
+                    }
+                }).catch(() => {
+                });
+            }
+        } catch (e) {
         }
-      } catch (e) {}
     }
 
     function renderUsersKpi(users) {
-      if (!Array.isArray(users)) return;
-      const total = users.length;
-      const active = users.filter(u => !u.blocked).length;
-      const totalEl = document.getElementById("stat-recap-users");
-      const activeEl = document.getElementById("stat-recap-active-users");
-      if (totalEl) totalEl.innerText = total;
-      if (activeEl) activeEl.innerText = active;
+        if (!Array.isArray(users)) return;
+        const total = users.length;
+        const active = users.filter(u => !u.blocked).length;
+        const totalEl = document.getElementById("stat-recap-users");
+        const activeEl = document.getElementById("stat-recap-active-users");
+        if (totalEl) totalEl.innerText = total;
+        if (activeEl) activeEl.innerText = active;
     }
 
     function renderClientsKpi(clients) {
-      if (!Array.isArray(clients)) return;
-      const total = clients.length;
-      const mfa = clients.filter(c => !!c.mfaEnabled).length;
-      const totalEl = document.getElementById("stat-recap-clients");
-      const mfaEl = document.getElementById("stat-recap-mfa-clients");
-      if (totalEl) totalEl.innerText = total;
-      if (mfaEl) mfaEl.innerText = mfa;
+        if (!Array.isArray(clients)) return;
+        const total = clients.length;
+        const mfa = clients.filter(c => c && (c.mfaEnabled === true || c.mfaEnabled === "true" || c.mfa_enabled === true || c.mfa_enabled === "true")).length;
+        const totalEl = document.getElementById("stat-recap-clients");
+        const mfaEl = document.getElementById("stat-recap-mfa-clients");
+        if (totalEl) totalEl.innerText = total;
+        if (mfaEl) mfaEl.innerText = mfa;
     }
 
     function refreshDashboardData() {
-      const icon = document.getElementById("refresh-icon");
-      if (icon) icon.classList.add("fa-spin");
-      loadDashboardMetrics().finally(() => {
-        if (icon) setTimeout(() => icon.classList.remove("fa-spin"), 500);
-      });
+        const icon = document.getElementById("refresh-icon");
+        if (icon) icon.classList.add("fa-spin");
+        loadDashboardMetrics().finally(() => {
+            if (icon) setTimeout(() => icon.classList.remove("fa-spin"), 500);
+        });
     }
 
     function switchDashboardView(viewName, pushState = true) {
-      currentView = viewName;
-      const dashboardView = document.getElementById("view-dashboard");
-      const usersView = document.getElementById("view-users");
-      const clientsView = document.getElementById("view-clients");
-      const btnNavDashboard = document.getElementById("nav-btn-dashboard");
-      const btnNavUsers = document.getElementById("nav-btn-users");
-      const btnNavClients = document.getElementById("nav-btn-clients");
-      const usersAction = document.getElementById("users-primary-action");
-      const clientsAction = document.getElementById("clients-primary-action");
-      const subtitle = document.getElementById("header-subtitle");
+        currentView = viewName;
+        const dashboardView = document.getElementById("view-dashboard");
+        const usersView = document.getElementById("view-users");
+        const clientsView = document.getElementById("view-clients");
+        const btnNavDashboard = document.getElementById("nav-btn-dashboard");
+        const btnNavUsers = document.getElementById("nav-btn-users");
+        const btnNavClients = document.getElementById("nav-btn-clients");
+        const usersAction = document.getElementById("users-primary-action");
+        const clientsAction = document.getElementById("clients-primary-action");
+        const subtitle = document.getElementById("header-subtitle");
 
-      if (viewName === "dashboard") {
-        if (dashboardView) dashboardView.style.display = "block";
-        if (usersView) usersView.style.display = "none";
-        if (clientsView) clientsView.style.display = "none";
-        if (btnNavDashboard) btnNavDashboard.classList.add("active");
-        if (btnNavUsers) btnNavUsers.classList.remove("active");
-        if (btnNavClients) btnNavClients.classList.remove("active");
-        if (usersAction) usersAction.style.display = "none";
-        if (clientsAction) clientsAction.style.display = "none";
-        if (subtitle) subtitle.innerText = "Centro di Controllo & Recap";
-        document.title = "Access Sphere - Dashboard & Recap";
-        
-        if (pushState) {
-          history.pushState({ view: "dashboard" }, "", "/app");
-        }
-        loadDashboardMetrics();
-      } else if (viewName === "clients") {
-        if (dashboardView) dashboardView.style.display = "none";
-        if (usersView) usersView.style.display = "none";
-        if (clientsView) clientsView.style.display = "block";
-        if (btnNavDashboard) btnNavDashboard.classList.remove("active");
-        if (btnNavUsers) btnNavUsers.classList.remove("active");
-        if (btnNavClients) btnNavClients.classList.add("active");
-        if (usersAction) usersAction.style.display = "none";
-        if (clientsAction) clientsAction.style.display = "block";
-        if (subtitle) subtitle.innerText = "OAuth 2.0 Client Registry";
-        document.title = "Access Sphere - Gestione Client OAuth2";
-        
-        if (pushState) {
-          history.pushState({ view: "clients" }, "", "/app/clients");
-        }
-        
-        if (typeof loadCachedClients === "function") {
-          loadCachedClients();
-        }
-        if (typeof getClients === "function") {
-          if (!cachedClients || cachedClients.length === 0) {
-            getClients();
-          }
-        }
-      } else {
-        // users
-        if (dashboardView) dashboardView.style.display = "none";
-        if (clientsView) clientsView.style.display = "none";
-        if (usersView) usersView.style.display = "block";
-        if (btnNavDashboard) btnNavDashboard.classList.remove("active");
-        if (btnNavUsers) btnNavUsers.classList.add("active");
-        if (btnNavClients) btnNavClients.classList.remove("active");
-        if (clientsAction) clientsAction.style.display = "none";
-        if (usersAction) usersAction.style.display = "block";
-        if (subtitle) subtitle.innerText = "Gestione Identità & Accessi";
-        document.title = "Access Sphere - Gestione Utenti";
-        
-        if (pushState) {
-          history.pushState({ view: "users" }, "", "/app/users");
-        }
-        
-        const hasLoadedUsers = (typeof loadCachedUsers === "function") && loadCachedUsers();
-        const usersTbody = document.getElementById("users-data");
-        const isUsersTableEmpty = !usersTbody || usersTbody.children.length === 0;
+        if (viewName === "dashboard") {
+            if (dashboardView) dashboardView.style.display = "block";
+            if (usersView) usersView.style.display = "none";
+            if (clientsView) clientsView.style.display = "none";
+            if (btnNavDashboard) btnNavDashboard.classList.add("active");
+            if (btnNavUsers) btnNavUsers.classList.remove("active");
+            if (btnNavClients) btnNavClients.classList.remove("active");
+            if (usersAction) usersAction.style.display = "none";
+            if (clientsAction) clientsAction.style.display = "none";
+            if (subtitle) subtitle.innerText = "Centro di Controllo & Recap";
+            document.title = "Access Sphere - Dashboard & Recap";
 
-        if (typeof getUsers === "function") {
-          if (!hasLoadedUsers || isUsersTableEmpty || !cachedUsers || cachedUsers.length === 0) {
-            getUsers();
-          }
-        }
+            if (pushState) {
+                history.pushState({view: "dashboard"}, "", "/app");
+            }
+            loadDashboardMetrics();
+        } else if (viewName === "clients") {
+            if (dashboardView) dashboardView.style.display = "none";
+            if (usersView) usersView.style.display = "none";
+            if (clientsView) clientsView.style.display = "block";
+            if (btnNavDashboard) btnNavDashboard.classList.remove("active");
+            if (btnNavUsers) btnNavUsers.classList.remove("active");
+            if (btnNavClients) btnNavClients.classList.add("active");
+            if (usersAction) usersAction.style.display = "none";
+            if (clientsAction) clientsAction.style.display = "block";
+            if (subtitle) subtitle.innerText = "OAuth 2.0 Client Registry";
+            document.title = "Access Sphere - Gestione Client OAuth2";
 
-        if (window.$ && $.fn && $.fn.DataTable && $.fn.DataTable.isDataTable('#users-table')) {
-          setTimeout(() => {
-            try {
-              $('#users-table').DataTable().columns.adjust().responsive.recalc();
-            } catch (e) {}
-          }, 50);
+            if (pushState) {
+                history.pushState({view: "clients"}, "", "/app/clients");
+            }
+
+            if (typeof loadCachedClients === "function") {
+                loadCachedClients();
+            }
+            if (typeof getClients === "function") {
+                if (!cachedClients || cachedClients.length === 0) {
+                    getClients();
+                }
+            }
+        } else {
+            // users
+            if (dashboardView) dashboardView.style.display = "none";
+            if (clientsView) clientsView.style.display = "none";
+            if (usersView) usersView.style.display = "block";
+            if (btnNavDashboard) btnNavDashboard.classList.remove("active");
+            if (btnNavUsers) btnNavUsers.classList.add("active");
+            if (btnNavClients) btnNavClients.classList.remove("active");
+            if (clientsAction) clientsAction.style.display = "none";
+            if (usersAction) usersAction.style.display = "block";
+            if (subtitle) subtitle.innerText = "Gestione Identità & Accessi";
+            document.title = "Access Sphere - Gestione Utenti";
+
+            if (pushState) {
+                history.pushState({view: "users"}, "", "/app/users");
+            }
+
+            const hasLoadedUsers = (typeof loadCachedUsers === "function") && loadCachedUsers();
+            const usersTbody = document.getElementById("users-data");
+            const isUsersTableEmpty = !usersTbody || usersTbody.children.length === 0;
+
+            if (typeof getUsers === "function") {
+                if (!hasLoadedUsers || isUsersTableEmpty || !cachedUsers || cachedUsers.length === 0) {
+                    getUsers();
+                }
+            }
+
+            if (window.$ && $.fn && $.fn.DataTable && $.fn.DataTable.isDataTable('#users-table')) {
+                setTimeout(() => {
+                    try {
+                        $('#users-table').DataTable().columns.adjust().responsive.recalc();
+                    } catch (e) {
+                    }
+                }, 50);
+            }
         }
-      }
     }
 
     function handleCurrentRefresh() {
-      if (currentView === "clients") {
-        refreshClients();
-      } else if (currentView === "dashboard") {
-        refreshDashboardData();
-      } else {
-        refreshUsers();
-      }
+        if (currentView === "clients") {
+            refreshClients();
+        } else if (currentView === "dashboard") {
+            refreshDashboardData();
+        } else {
+            refreshUsers();
+        }
     }
 
     function toggleSecretVisibility(inputId, btn) {
-      const input = document.getElementById(inputId);
-      const icon = btn.querySelector("i");
-      if (input.type === "password") {
-        input.type = "text";
-        if (icon) {
-          icon.classList.remove("fa-eye");
-          icon.classList.add("fa-eye-slash");
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector("i");
+        if (input.type === "password") {
+            input.type = "text";
+            if (icon) {
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            }
+        } else {
+            input.type = "password";
+            if (icon) {
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
         }
-      } else {
-        input.type = "password";
-        if (icon) {
-          icon.classList.remove("fa-eye-slash");
-          icon.classList.add("fa-eye");
-        }
-      }
     }
 
     window.addEventListener("popstate", (event) => {
-      const path = window.location.pathname;
-      if (path.includes("clients")) {
-        switchDashboardView("clients", false);
-      } else if (path.includes("users")) {
-        switchDashboardView("users", false);
-      } else {
-        switchDashboardView("dashboard", false);
-      }
+        const path = window.location.pathname;
+        if (path.includes("clients")) {
+            switchDashboardView("clients", false);
+        } else if (path.includes("users")) {
+            switchDashboardView("users", false);
+        } else {
+            switchDashboardView("dashboard", false);
+        }
     });
 
     document.addEventListener("DOMContentLoaded", () => {
-      // 1. Caricamento immediato cache utenti
-      if (typeof loadCachedUsers === "function") {
-        loadCachedUsers();
-      }
-      const cfg = typeof getConfig === "function" ? getConfig() : config;
-      const cachedUsersRaw = localStorage.getItem((cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData");
-      if (cachedUsersRaw) {
-        try {
-          const parsed = JSON.parse(cachedUsersRaw);
-          renderUsersKpi(parsed);
-        } catch(e) {}
-      }
+        // 1. Caricamento immediato cache utenti
+        if (typeof loadCachedUsers === "function") {
+            loadCachedUsers();
+        }
+        const cfg = typeof getConfig === "function" ? getConfig() : config;
+        const cachedUsersRaw = localStorage.getItem((cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData");
+        if (cachedUsersRaw) {
+            try {
+                const parsed = JSON.parse(cachedUsersRaw);
+                renderUsersKpi(parsed);
+            } catch (e) {
+            }
+        }
 
-      // 2. Caricamento immediato cache client
-      if (typeof loadCachedClients === "function") {
-        loadCachedClients();
-      }
-      const cachedClientsData = localStorage.getItem(config.client_id + "_clientsData");
-      if (cachedClientsData) {
-        try {
-          const parsed = JSON.parse(cachedClientsData);
-          renderClientsKpi(parsed);
-        } catch(e) {}
-      }
+        // 2. Caricamento immediato cache client
+        if (typeof loadCachedClients === "function") {
+            loadCachedClients();
+        }
+        const cachedClientsData = localStorage.getItem(config.client_id + "_clientsData") ||
+            localStorage.getItem(config.client_id + "_clients") ||
+            localStorage.getItem("ACCESS-SPHERE-TECH_clientsData") ||
+            localStorage.getItem("ACCESS-SPHERE-TECH_clients");
+        if (cachedClientsData) {
+            try {
+                const parsed = JSON.parse(cachedClientsData);
+                if (Array.isArray(parsed)) {
+                    renderClientsKpi(parsed);
+                }
+            } catch (e) {
+            }
+        }
 
-      // 3. Orologio e Session info
-      updateClock();
-      fetchSessionInfo();
+        // 3. Orologio e Session info
+        updateClock();
+        fetchSessionInfo();
 
-      // 4. Attivazione istantanea della vista corretta in base alla URL
-      const path = window.location.pathname;
-      if (path.includes("clients")) {
-        switchDashboardView("clients", false);
-      } else if (path.includes("users")) {
-        switchDashboardView("users", false);
-      } else {
-        switchDashboardView("dashboard", false);
-      }
+        // 4. Attivazione istantanea della vista corretta in base alla URL
+        const path = window.location.pathname;
+        if (path.includes("clients")) {
+            switchDashboardView("clients", false);
+        } else if (path.includes("users")) {
+            switchDashboardView("users", false);
+        } else {
+            switchDashboardView("dashboard", false);
+        }
 
-      if (typeof disableLoader === "function") {
-        disableLoader();
-      }
+        if (typeof disableLoader === "function") {
+            disableLoader();
+        }
     });
-  </script>
+</script>
 
 </body>
 </html>

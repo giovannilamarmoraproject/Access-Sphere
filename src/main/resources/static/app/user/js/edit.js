@@ -37,6 +37,11 @@ $(document).ready(function () {
 
   $(".form").on("submit", function (event) {
     event.preventDefault();
+    if (typeof validateUserEditForm === "function") {
+      if (!validateUserEditForm()) {
+        return;
+      }
+    }
 
     const currentProfilePhoto = $("#profile").attr("src");
     const profilePhoto = profileImage || currentProfilePhoto;
@@ -132,8 +137,14 @@ function populateUserData(user) {
   $("#validationDefaultUsername").val(user.username);
   $("#occupation").val(user.occupation);
   $("#education").val(user.education);
-  if (user.attributes)
+  if (user.attributes) {
     $("#attributes").val(JSON.stringify(user.attributes, null, 2));
+    if (typeof loadAttributesIntoRepeater === "function") {
+      loadAttributesIntoRepeater(user.attributes);
+    }
+  } else if (typeof loadAttributesIntoRepeater === "function") {
+    loadAttributesIntoRepeater({});
+  }
   if (user.profilePhoto) {
     $("#profile").attr("src", user.profilePhoto).show();
   }

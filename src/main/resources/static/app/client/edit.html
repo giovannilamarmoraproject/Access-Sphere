@@ -190,7 +190,7 @@
         <p class="text-sm">Caricamento impostazioni client...</p>
       </div>
 
-      <form id="editClientForm" onsubmit="event.preventDefault(); submitEditClient();" class="space-y-8" style="display: none;">
+      <form id="editClientForm" onsubmit="event.preventDefault(); submitEditClient();" class="space-y-8" style="display: none;" novalidate>
         
         <!-- SEZIONE 1: IDENTITÀ CLIENT & CREDENZIALI -->
         <div class="m3-subcard">
@@ -803,8 +803,95 @@
       document.getElementById("editClientForm").style.display = "block";
     }
 
+    // --- VALIDAZIONE CAMPI OBBLIGATORI ---
+    function validateClientForm() {
+      const errors = [];
+      const invalidEls = [];
+
+      const clientIdEl = document.getElementById("clientId");
+      const authTypeEl = document.getElementById("authType");
+      const tokenTypeEl = document.getElementById("tokenType");
+      const jwtExpEl = document.getElementById("jwtExpiration");
+      const jweExpEl = document.getElementById("jweExpiration");
+
+      document.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
+
+      if (!clientIdEl.value || !clientIdEl.value.trim()) {
+        errors.push("<b>Client ID</b> è obbligatorio");
+        invalidEls.push(clientIdEl);
+      }
+
+      if (!authTypeEl.value || !authTypeEl.value.trim()) {
+        errors.push("<b>Type (Auth Type)</b> è obbligatorio");
+        invalidEls.push(authTypeEl);
+      }
+
+      if (!tokenTypeEl.value || !tokenTypeEl.value.trim()) {
+        errors.push("<b>Token Type</b> è obbligatorio");
+        invalidEls.push(tokenTypeEl);
+      }
+
+      if (!jwtExpEl.value || isNaN(parseInt(jwtExpEl.value)) || parseInt(jwtExpEl.value) <= 0) {
+        errors.push("<b>JWT Expiration</b> deve essere un numero valido positivo (es. 3600000 ms)");
+        invalidEls.push(jwtExpEl);
+      }
+
+      if (!jweExpEl.value || isNaN(parseInt(jweExpEl.value)) || parseInt(jweExpEl.value) <= 0) {
+        errors.push("<b>JWE Expiration</b> deve essere un numero valido positivo (es. 360000 ms)");
+        invalidEls.push(jweExpEl);
+      }
+
+      // Controllo ruoli con nome vuoto
+      const emptyRole = appRolesList.find(r => !r.role || !r.role.trim());
+      if (emptyRole) {
+        errors.push("<b>Ruoli Applicativi</b>: è presente una riga di ruolo con il campo Ruolo vuoto");
+      }
+
+      // Controllo webhook incompleti
+      const emptyWebhook = webhooksList.find(w => !w.name || !w.name.trim() || !w.url || !w.url.trim());
+      if (emptyWebhook) {
+        errors.push("<b>Webhooks</b>: ogni webhook inserito deve avere sia Nome che URL Endpoint compilati");
+      }
+
+      if (errors.length > 0) {
+        invalidEls.forEach(el => {
+          el.classList.add("is-invalid");
+          const removeHandler = () => {
+            el.classList.remove("is-invalid");
+            el.removeEventListener("input", removeHandler);
+            el.removeEventListener("change", removeHandler);
+          };
+          el.addEventListener("input", removeHandler);
+          el.addEventListener("change", removeHandler);
+        });
+
+        if (invalidEls.length > 0) {
+          invalidEls[0].focus();
+          if (typeof invalidEls[0].scrollIntoView === "function") {
+            invalidEls[0].scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
+
+        Swal.fire({
+          icon: "warning",
+          title: "Campi Obbligatori Mancanti",
+          html: `<div style="text-align: left; font-size: 13px; color: #D0BCFF;">
+            Per aggiornare il client, compila o correggi i seguenti campi:
+            <ul style="margin-top: 10px; margin-left: 15px; list-style-type: disc; color: #F87171; line-height: 1.6;">
+              ${errors.map(e => `<li>${e}</li>`).join("")}
+            </ul>
+          </div>`,
+          confirmButtonText: "Ho capito"
+        });
+        return false;
+      }
+      return true;
+    }
+
     // --- SUBMISSION ---
     function submitEditClient() {
+      if (!validateClientForm()) return;
+
       const clientId = document.getElementById("clientId").value.trim();
       const secret = document.getElementById("clientSecret").value.trim();
 

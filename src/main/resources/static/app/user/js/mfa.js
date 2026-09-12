@@ -5,10 +5,24 @@ function showOTPLabelSelect() {
   if (description) description.style.display = "none";
 }
 
+function showDescriptionCard() {
+  const otp = document.getElementById("mfa-config-section");
+  if (otp) otp.style.display = "none";
+  const description = document.getElementById("mfa-description-card");
+  if (description) description.style.display = "block";
+}
+
 function goBack() {
   const urlParams = window.location.href;
-  const identifier = urlParams.split("mfa/")[1];
-  window.location.href = "/app/users/details/" + identifier;
+  if (urlParams.includes("mfa/")) {
+    const rawId = urlParams.split("mfa/")[1];
+    const identifier = rawId.split("?")[0].split("#")[0];
+    if (identifier) {
+      window.location.href = "/app/users/details/" + identifier;
+      return;
+    }
+  }
+  window.location.href = "/app/users";
 }
 
 document.addEventListener("DOMContentLoaded", function () {

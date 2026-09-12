@@ -36,9 +36,10 @@
   <script src="/app/shared/api/rest.js"></script>
   <script src="/app/user/js/validationForm.js"></script>
   <script src="/app/user/js/edit.js"></script>
+  <script src="/app/user/js/attributes-manager.js?v=2.1.0"></script>
 
   <!-- Unified M3 Dashboard Theme -->
-  <link rel="stylesheet" href="/css/m3-dashboard.css" />
+  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.2" />
 </head>
 <body>
 
@@ -105,7 +106,7 @@
         </a>
       </div>
 
-      <form id="edit_form" class="form row g-4">
+      <form id="edit_form" class="form row g-4" novalidate>
         
         <!-- Avatar Preview -->
         <div class="col-12 flex justify-center mb-2">
@@ -193,11 +194,74 @@
           <input type="file" class="form-control" id="file" accept="image/jpeg,image/png,image/webp" />
         </div>
 
-        <!-- Attributi JSON -->
+        <!-- Attributi Custom M3 (Supporto Oggetti Inestati & Editor JSON) -->
         <div class="col-12">
-          <label for="attributes" class="form-label text-xs font-semibold text-gray-300">Attributi Custom (JSON)</label>
-          <textarea class="form-control font-mono text-xs" id="attributes" rows="4" placeholder="{}"></textarea>
-          <div id="validationAttributes" class="text-red-400 text-xs mt-1"></div>
+          <div class="m3-subcard p-4 rounded-2xl" style="background: rgba(26, 20, 42, 0.6); border: 1px solid rgba(208, 188, 255, 0.15);">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 border-b border-purple-500/15 gap-3">
+              <div>
+                <div class="form-section-title m-0 border-0 p-0 text-sm font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-sliders text-purple-400"></i> Attributi Personalizzati (Custom Attributes)
+                </div>
+                <span class="text-[11px] text-gray-400 mt-0.5 block">
+                  Gestione completa di proprietà semplici e oggetti inestati (es. <code>app_settings</code>).
+                </span>
+              </div>
+
+              <!-- Toolbar Viste & Azioni -->
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Switch Modalità -->
+                <div class="flex items-center rounded-full p-1 bg-[#140F24] border border-purple-500/20 mr-1">
+                  <button type="button" id="tab-attr-visual" class="m3-btn-primary text-xs" onclick="switchAttributesMode('visual')">
+                    <i class="fa-solid fa-layer-group mr-1.5"></i> Visuale Strutturata
+                  </button>
+                  <button type="button" id="tab-attr-code" class="m3-btn-outline text-xs" onclick="switchAttributesMode('code')">
+                    <i class="fa-solid fa-code mr-1.5"></i> Editor JSON
+                  </button>
+                </div>
+
+                <button type="button" class="m3-btn-outline text-xs" onclick="addAttributeRow()">
+                  <i class="fa-solid fa-plus mr-1"></i> Proprietà
+                </button>
+                <button type="button" class="m3-btn-outline text-xs" onclick="addNestedObjectRow()" title="Aggiungi un oggetto inestato con sotto-proprietà">
+                  <i class="fa-solid fa-folder-plus mr-1"></i> Oggetto Inestato
+                </button>
+                <button type="button" class="m3-btn-outline text-xs" onclick="loadExampleJson()" title="Carica configurazione JSON di esempio">
+                  <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Esempio
+                </button>
+              </div>
+            </div>
+
+            <!-- VISTA 1: STRUTTURATA (OGGETTI INESTATI & RIGHE SEMPLICI) -->
+            <div id="attributes-visual-view">
+              <div id="attributes-items-container" class="space-y-3">
+                <!-- Generato dinamicamente da attributes-manager.js -->
+              </div>
+            </div>
+
+            <!-- VISTA 2: EDITOR DIRETTO JSON -->
+            <div id="attributes-code-view" style="display: none;">
+              <div class="flex items-center justify-between pb-2 mb-2">
+                <span class="text-[11px] text-purple-300 font-semibold uppercase tracking-wider">
+                  <i class="fa-solid fa-terminal mr-1"></i> Codice Sorgente JSON
+                </span>
+                <div class="flex gap-2">
+                  <button type="button" class="m3-btn-outline text-xs" onclick="formatJsonCodeEditor()">
+                    <i class="fa-solid fa-align-left mr-1"></i> Formatta JSON
+                  </button>
+                  <button type="button" class="m3-btn-outline text-xs" onclick="copyJsonCodeEditor()">
+                    <i class="fa-solid fa-copy mr-1"></i> Copia
+                  </button>
+                </div>
+              </div>
+              <textarea id="attributes-json-editor" class="json-code-editor font-mono" rows="9" oninput="validateJsonCodeEditor()" placeholder='{ "api-token": "...", "app_settings": { "theme": "DARK", "notifications": true } }'></textarea>
+              <div id="json-editor-feedback" class="mt-2 text-xs"></div>
+            </div>
+
+            <div id="validationAttributes" class="text-red-400 text-xs mt-2"></div>
+
+            <!-- Textarea nascosta sincronizzata bidirezionalmente per validazione e submit form -->
+            <textarea id="attributes" name="attributes" class="hidden" style="display: none;"></textarea>
+          </div>
         </div>
 
         <div class="col-12 flex items-center gap-2 pt-2">

@@ -119,9 +119,9 @@ function displayUsersTable(users) {
           <img src="${photo}" alt="${user.username}" class="rounded-full mx-auto object-cover border border-purple-500/30" style="width: 42px; height: 42px;" />
         </a>
       </td>
-      <td class="hidden-mobile"><a class="text-white font-medium hover:underline" href="/app/users/details/${encodeURIComponent(user.identifier)}">${user.name || ""}</a></td>
-      <td class="hidden-mobile"><a class="text-white font-medium hover:underline" href="/app/users/details/${encodeURIComponent(user.identifier)}">${user.surname || ""}</a></td>
-      <td><a class="text-purple-300 font-mono font-medium hover:underline" href="/app/users/details/${encodeURIComponent(user.identifier)}">@${user.username || ""}</a></td>
+      <td class="hidden-mobile"><a class="text-white font-medium" href="/app/users/details/${encodeURIComponent(user.identifier)}">${user.name || ""}</a></td>
+      <td class="hidden-mobile"><a class="text-white font-medium" href="/app/users/details/${encodeURIComponent(user.identifier)}">${user.surname || ""}</a></td>
+      <td><a class="text-purple-300 font-mono font-medium" href="/app/users/details/${encodeURIComponent(user.identifier)}">@${user.username || ""}</a></td>
       <td class="hidden-mobile text-gray-300">${user.email || ""}</td>
       <td>${statusBadge}</td>
       <td class="text-center" style="min-width: 130px;">

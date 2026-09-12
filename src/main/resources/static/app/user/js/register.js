@@ -22,7 +22,6 @@ $(document).ready(function () {
         currentTranslations.edit_attributes_valid
       );
       textarea.addClass("is-invalid");
-      $("#register_form_submit").prop("disabled", true);
     }
 
     this.style.height = "auto";
@@ -90,6 +89,8 @@ $(document).ready(function () {
           if (profileImg) {
             profileImg.src = base64String;
             profileImg.style.display = "block";
+            const placeholder = document.getElementById("profile_placeholder");
+            if (placeholder) placeholder.style.display = "none";
           }
           profileImage = base64String;
         };
@@ -100,6 +101,11 @@ $(document).ready(function () {
 
   $(".form").on("submit", function (event) {
     event.preventDefault();
+    if (typeof validateUserRegistrationForm === "function") {
+      if (!validateUserRegistrationForm()) {
+        return;
+      }
+    }
     const roles = JSON.parse(localStorage.getItem("selected_roles") || "[]");
     const profilePhoto =
       profileImage || "https://bootdey.com/img/Content/avatar/avatar7.png";
