@@ -32,6 +32,10 @@ function getUser() {
   GET(config.users_url, token).then(async (res) => {
     try {
       const data = await res.json();
+      if (data && data.error && typeof isUnauthorizedError === "function" && isUnauthorizedError(data.error)) {
+        if (typeof logout === "function") logout();
+        return;
+      }
       if (data && data.data && Array.isArray(data.data)) {
         localStorage.setItem(config.client_id + "_usersData", JSON.stringify(data.data));
         const user = data.data.find((u) => u.identifier == identifier || u.username == identifier);

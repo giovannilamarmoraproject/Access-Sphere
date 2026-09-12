@@ -28,6 +28,21 @@ async function loadErrorCode() {
 }
 
 function getErrorCode(error) {
+  if (typeof isUnauthorizedError === "function" && isUnauthorizedError(error)) {
+    if (!window.location.pathname.includes("/login")) {
+      console.warn("🔒 getErrorCode: Unauthorized error detected, performing logout...", error);
+      if (typeof logout === "function") {
+        logout();
+      } else {
+        if (typeof cleanStorageAndCookies === "function") cleanStorageAndCookies();
+        else localStorage.clear();
+        window.location.href = (typeof config !== "undefined" && config && config.login_url)
+          ? config.login_url
+          : (window.location.origin + "/app/login");
+      }
+    }
+  }
+
   const errorData = errorCode[error.exception];
   if (errorData) {
     if (errorData.message) return errorData;

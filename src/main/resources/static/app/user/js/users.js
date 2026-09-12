@@ -48,6 +48,10 @@ function getUsers() {
     const responseData = await data.json();
     if (responseData.error != null) {
       console.warn("getUsers error response:", responseData.error);
+      if (typeof isUnauthorizedError === "function" && isUnauthorizedError(responseData.error)) {
+        if (typeof logout === "function") logout();
+        return;
+      }
       const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
       const cached = localStorage.getItem(key);
       if (!cached) {

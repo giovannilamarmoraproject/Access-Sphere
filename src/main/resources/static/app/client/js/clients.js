@@ -81,6 +81,10 @@ function getClients() {
     .then(async (res) => {
       const data = await res.json();
       if (data.error != null) {
+        if (typeof isUnauthorizedError === "function" && isUnauthorizedError(data.error)) {
+          if (typeof logout === "function") logout();
+          return;
+        }
         sweetalert("error", "Errore Caricamento Client", data.error.message || "Impossibile recuperare i client");
       } else {
         cachedClients = data.data || [];

@@ -25,6 +25,10 @@ function getClient() {
     const responseData = await data.json();
     if (responseData.error != null) {
       console.warn("getClient error in roles:", responseData.error);
+      if (typeof isUnauthorizedError === "function" && isUnauthorizedError(responseData.error)) {
+        if (typeof logout === "function") logout();
+        return;
+      }
     } else {
       fetchHeader(data.headers);
       localStorage.setItem(

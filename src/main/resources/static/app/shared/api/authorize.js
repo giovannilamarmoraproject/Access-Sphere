@@ -50,10 +50,25 @@ function authorizeRequest() {
         checkLocationAndRedirect(response);
       } else {
         console.warn("Authorization verification status:", response.status);
+        if (response.status === 401 || response.status === 403) {
+          console.warn("🔒 Token non valido o scaduto nella verifica autorizzazione. Esecuzione logout...");
+          if (typeof logout === "function") {
+            logout();
+          } else {
+            if (typeof cleanStorageAndCookies === "function") cleanStorageAndCookies();
+            else localStorage.clear();
+            window.location.href = config.login_url;
+          }
+          return null;
+        }
       }
       return response.json().catch(() => null);
     })
     .then((response) => {
+      if (response && response.error && typeof isUnauthorizedError === "function" && isUnauthorizedError(response.error)) {
+        if (typeof logout === "function") logout();
+        return;
+      }
       if (response) {
         saveTokens(response);
       }
