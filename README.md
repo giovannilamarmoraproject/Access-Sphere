@@ -230,7 +230,9 @@ AccessSphere integra filtri HTTP avanzati per la massima protezione applicativa:
 
 ---
 
-## 📄 **Licenza**
+## 📄 **Licenza & Copyright**
+
+Copyright &copy; 2026 **Access Sphere**. Tutti i diritti riservati.
 
 Questo progetto è distribuito sotto licenza **Apache License 2.0**. Per maggiori informazioni consultare il file [LICENSE](LICENSE).
 
