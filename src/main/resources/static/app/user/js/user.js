@@ -135,7 +135,7 @@ function renderCustomAttributesData(attributes) {
               <span class="px-3 py-1 font-mono text-[10px]" style="background: rgba(245, 158, 11, 0.15); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 9999px;">Token / Secret</span>
             </div>
             <div class="flex items-center gap-2 mt-2">
-              <input type="password" id="${inputId}" readonly value="${safeVal}" class="form-control font-mono text-xs flex-1" style="background: rgba(14, 11, 20, 0.85); border: 1px solid rgba(208, 188, 255, 0.2); color: #fff; border-radius: 9999px; padding: 10px 18px;" />
+              <input type="password" id="${inputId}" readonly value="${safeVal}" class="form-control font-mono text-xs flex-1" style="background: #231B34; border: 1.5px solid rgba(208, 188, 255, 0.28); color: #fff; border-radius: 9999px; padding: 10px 18px;" />
               <button type="button" class="flex-shrink-0" onclick="togglePasswordVisibility('${inputId}', this)" title="Mostra / Nascondi" style="width: 38px; height: 38px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i class="fa-solid fa-eye text-xs"></i>
               </button>

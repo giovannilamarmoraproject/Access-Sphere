@@ -139,6 +139,68 @@ body {
   box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5) !important;
 }
 
+.m3-btn-outline,
+.m3-btn-secondary,
+a.m3-btn-outline,
+a.m3-btn-secondary,
+button.m3-btn-outline,
+button.m3-btn-secondary {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #E6E1E5 !important;
+  border-radius: 9999px !important;
+  padding: 9px 20px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  border: 1.5px solid rgba(208, 188, 255, 0.28) !important;
+  outline: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.m3-btn-outline:hover,
+.m3-btn-secondary:hover,
+a.m3-btn-outline:hover,
+a.m3-btn-secondary:hover,
+button.m3-btn-outline:hover,
+button.m3-btn-secondary:hover,
+.m3-btn-outline:focus,
+.m3-btn-secondary:focus,
+a.m3-btn-outline:focus,
+a.m3-btn-secondary:focus,
+button.m3-btn-outline:focus,
+button.m3-btn-secondary:focus {
+  background: rgba(208, 188, 255, 0.12) !important;
+  border-color: rgba(208, 188, 255, 0.6) !important;
+  color: #FFFFFF !important;
+  text-decoration: none !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(124, 77, 255, 0.2) !important;
+}
+
+.m3-btn-outline:active,
+.m3-btn-secondary:active,
+a.m3-btn-outline:active,
+a.m3-btn-secondary:active,
+button.m3-btn-outline:active,
+button.m3-btn-secondary:active {
+  transform: translateY(0) !important;
+  background: rgba(208, 188, 255, 0.18) !important;
+  color: #FFFFFF !important;
+}
+
+.m3-btn-outline:visited,
+.m3-btn-secondary:visited,
+a.m3-btn-outline:visited,
+a.m3-btn-secondary:visited {
+  color: #E6E1E5 !important;
+}
+
 /* -------------------------------------------
    DASHBOARD CARDS & WIDE CONTAINERS
    ------------------------------------------- */
@@ -234,25 +296,36 @@ table.dataTable tbody td a:hover {
 
 /* DataTables search input & pagination styling */
 .dt-search input {
-  background: rgba(30, 24, 48, 0.9) !important;
-  border: 1px solid rgba(208, 188, 255, 0.25) !important;
+  background: #231B34 !important;
+  border: 1.5px solid rgba(208, 188, 255, 0.28) !important;
   border-radius: 9999px !important;
-  color: white !important;
+  color: #FFFFFF !important;
   padding: 8px 18px !important;
   font-size: 0.88rem !important;
   outline: none !important;
+  transition: all 0.2s ease !important;
+}
+.dt-search input:hover {
+  background: #2A203F !important;
+  border-color: rgba(208, 188, 255, 0.45) !important;
 }
 .dt-search input:focus {
+  background: #31254A !important;
   border-color: #D0BCFF !important;
-  box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.2) !important;
+  box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.3) !important;
 }
 .dt-length select {
-  background: rgba(30, 24, 48, 0.9) !important;
-  border: 1px solid rgba(208, 188, 255, 0.25) !important;
+  background: #231B34 !important;
+  border: 1.5px solid rgba(208, 188, 255, 0.28) !important;
   border-radius: 10px !important;
-  color: white !important;
+  color: #FFFFFF !important;
   padding: 6px 12px !important;
   outline: none !important;
+  cursor: pointer !important;
+}
+.dt-length select option {
+  background: #1E1730 !important;
+  color: #FFFFFF !important;
 }
 .dt-info, .dt-length label, .dt-search label {
   color: #CAC4D0 !important;
@@ -315,21 +388,148 @@ table.dataTable tbody td a:hover {
 }
 
 /* -------------------------------------------
-   FORM CONTROLS (REGISTER, EDIT, DETAILS)
+   FORM CONTROLS (REGISTER, EDIT, DETAILS, SEARCH)
    ------------------------------------------- */
-.form-control, .form-select {
-  background-color: rgba(30, 24, 48, 0.9) !important;
-  border: 1px solid rgba(208, 188, 255, 0.2) !important;
+.form-control,
+.form-select,
+textarea.form-control {
+  background-color: #231B34 !important;
+  border: 1.5px solid rgba(208, 188, 255, 0.28) !important;
   color: #FFFFFF !important;
   border-radius: 14px !important;
   padding: 12px 16px !important;
   font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:hover,
+.form-select:hover,
+textarea.form-control:hover {
+  background-color: #2A203F !important;
+  border-color: rgba(208, 188, 255, 0.45) !important;
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea.form-control:focus {
+  background-color: #31254A !important;
   border-color: #D0BCFF !important;
-  box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.25) !important;
-  background-color: rgba(40, 32, 62, 0.95) !important;
+  box-shadow: 0 0 0 3.5px rgba(208, 188, 255, 0.3) !important;
+  color: #FFFFFF !important;
+  outline: none !important;
+}
+
+/* High-Contrast Legible Placeholders */
+.form-control::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: rgba(208, 188, 255, 0.55) !important;
+  opacity: 1 !important;
+}
+
+/* Disabled & Readonly Input States */
+.form-control:disabled,
+.form-control[readonly],
+.form-select:disabled {
+  background-color: rgba(25, 19, 38, 0.7) !important;
+  border-color: rgba(208, 188, 255, 0.15) !important;
+  color: rgba(208, 188, 255, 0.55) !important;
+  cursor: not-allowed !important;
+  opacity: 0.85 !important;
+}
+
+/* Select Dropdowns (Chevron, Options & Popups) */
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23D0BCFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 1rem center !important;
+  background-size: 16px 12px !important;
+  cursor: pointer !important;
+  padding-right: 2.75rem !important;
+}
+
+.form-select option,
+select option {
+  background-color: #1E1730 !important;
+  color: #FFFFFF !important;
+  padding: 12px !important;
+}
+
+.form-select option:disabled,
+select option:disabled {
+  color: rgba(208, 188, 255, 0.4) !important;
+}
+
+.form-select option:checked,
+select option:checked {
+  background-color: #4F378B !important;
+  color: #FFFFFF !important;
+}
+
+/* File Input Modern Styling (Scegli File Button) */
+.form-control[type="file"],
+input[type="file"].form-control {
+  padding: 8px 12px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  color: #E6E1E5 !important;
+  height: auto !important;
+  min-height: 48px !important;
+}
+
+.form-control[type="file"]::file-selector-button,
+input[type="file"]::file-selector-button,
+input[type="file"]::-webkit-file-upload-button {
+  background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 9999px !important;
+  padding: 7px 18px !important;
+  margin-right: 14px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.form-control[type="file"]::file-selector-button:hover,
+input[type="file"]::file-selector-button:hover,
+input[type="file"]::-webkit-file-upload-button:hover {
+  background: linear-gradient(135deg, #B56BF9 0%, #7961BC 100%) !important;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.55) !important;
+  transform: translateY(-1px);
+}
+
+/* Date Picker Indicator (Calendar Icon) */
+input[type="date"].form-control::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(50%) hue-rotate(220deg) brightness(1.2);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+  background: rgba(208, 188, 255, 0.15);
+}
+
+/* Input Group Prefixes (@, icons) */
+.input-group-text {
+  background-color: #231B34 !important;
+  border: 1.5px solid rgba(208, 188, 255, 0.28) !important;
+  color: #D0BCFF !important;
+  border-radius: 14px 0 0 14px !important;
+  padding: 12px 16px !important;
+  font-weight: 600 !important;
+}
+
+.input-group > .form-control {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
 }
 
 .form-label {

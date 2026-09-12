@@ -7,7 +7,12 @@
     <title>Access Sphere - MFA</title>
     <link rel="stylesheet" href="../../app/user/css/form.css" />
     <link rel="stylesheet" href="../../app/user/css/style.css" />
-    <link rel="icon" href="../../../favicon.ico" type="image/x-icon" />
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
     <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <!-- END JQuery -->
@@ -18,6 +23,10 @@
     <script src="../../app/shared/api/authorize.js"></script>
     <script src="../../app/shared/api/logout.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0" />
     <link rel="stylesheet" href="../../app/shared/sweetalert.css" />
     <script src="../../app/shared/sweetalert.js"></script>
     <script src="../../app/i18n/translations.js"></script>
@@ -119,99 +128,50 @@
         ></div>
         <img src="../../app/user/img/shape.png" alt="" class="shape fade-in" />
 
-        <header class="mb-3">
-          <div class="container">
-            <a href="/app/users" class="logo zoom_smaller">
-              <img
-                hidden
-                src="../../app/user/img/logo.png"
-                alt="Access Sphere Logo"
-              />
-              <img
-                src="../../app/user/img/Access%20Sphere%20Transparent%20512x512.png"
-                style="width: 50px"
-                alt="Access Sphere Logo"
-              />
-              <h3 style="margin-bottom: 7px">Access Sphere</h3>
-            </a>
+        <!-- Wide Unified Glass Header -->
+        <header class="glass-header w-full mb-6">
+          <div class="header-container">
+            
+            <div class="flex items-center gap-6">
+              <a href="/app" class="flex items-center gap-3 text-decoration-none group">
+                <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
+                <div class="flex flex-col">
+                  <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                    Access Sphere
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
+                  </span>
+                  <span class="text-[11px] text-gray-400 font-medium">Autenticazione a Due Fattori (MFA)</span>
+                </div>
+              </a>
 
-            <div class="links">
-              <ul class="ul-list">
-                <li style="width: 110px" class="li-align text-center">
-                  <a
-                    id="menu_dashboard"
-                    class="li-align a-padding"
-                    style="width: max-content"
-                    href="/app"
-                    >Panoramica</a
-                  >
-                </li>
-                <li style="width: 130px" class="li-align text-center">
-                  <a
-                    id="menu_register"
-                    class="li-align a-padding"
-                    style="width: max-content"
-                    href="/app/users/register"
-                    >Register User</a
-                  >
-                </li>
-                <li style="width: 70px" class="li-align text-center">
-                  <a
-                    id="menu_user"
-                    class="li-align a-padding"
-                    style="width: max-content"
-                    href="/app/users"
-                    >Users</a
-                  >
-                </li>
-                <li style="width: 110px" class="li-align text-center me-1">
-                  <a
-                    id="menu_version"
-                    class="a-padding li-align clickable"
-                    style="width: max-content"
-                    onclick="getVersion()"
-                    ><i class="fa-duotone fa-regular fa-circle-info"></i>
-                    Version</a
-                  >
-                </li>
-                <li class="li-align">
-                  <a
-                    onclick="logout()"
-                    class="button clickable li-align a-padding"
-                    style="height: 40px; padding: 0.5rem 1.5rem"
-                    ><i
-                      class="fa-duotone fa-regular fa-right-from-bracket me-1"
-                    ></i>
-                    Logout</a
-                  >
-                </li>
-              </ul>
+              <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+                <a href="/app" class="nav-tab-m3 text-decoration-none">
+                  <i class="fa-solid fa-gauge-high"></i> Panoramica
+                </a>
+                <a href="/app/users" class="nav-tab-m3 active text-decoration-none">
+                  <i class="fa-solid fa-users"></i> Utenti
+                </a>
+                <a href="/app/clients" class="nav-tab-m3 text-decoration-none">
+                  <i class="fa-solid fa-key"></i> Client OAuth2
+                </a>
+                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
+                  <i class="fa-solid fa-book"></i> API Docs
+                </a>
+              </nav>
             </div>
 
-            <div class="overlay"></div>
-
-            <div class="hamburger-menu">
-              <div class="bar"></div>
+            <div class="flex items-center gap-2">
+              <a href="/app/users" class="m3-icon-btn" title="Torna agli Utenti">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+              </a>
+              <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+              </button>
+              <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+              </button>
             </div>
 
-            <script>
-              var big_wrapper;
-              var hamburger_menu;
-
-              function declare() {
-                big_wrapper = document.querySelector(".big-wrapper");
-                hamburger_menu = document.querySelector(".hamburger-menu");
-              }
-
-              declare();
-              function events() {
-                hamburger_menu.addEventListener("click", () => {
-                  big_wrapper.classList.toggle("active");
-                });
-              }
-
-              events();
-            </script>
           </div>
         </header>
         <div class="container d-flex align-items-center justify-content-center">

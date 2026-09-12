@@ -1,6 +1,31 @@
+let cachedUsers = [];
+
+function loadCachedUsers() {
+  try {
+    const cfg = typeof getConfig === "function" ? getConfig() : config;
+    const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
+    const raw = localStorage.getItem(key) || localStorage.getItem("ACCESS-SPHERE-TECH_usersData");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cachedUsers = parsed;
+        displayUsersTable(parsed);
+        updateUserKpis(parsed);
+        return true;
+      }
+    }
+  } catch (e) {
+    console.error("Error loading cached users:", e);
+  }
+  return false;
+}
+
 function refreshUsers() {
   console.log("Refreshing Users...");
-  localStorage.removeItem(config.client_id + "_usersData");
+  cachedUsers = [];
+  const cfg = typeof getConfig === "function" ? getConfig() : config;
+  const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
+  localStorage.removeItem(key);
   const icon = document.getElementById("refresh-icon");
   if (icon) icon.classList.add("fa-spin");
   getUsers().finally(() => {
@@ -9,8 +34,9 @@ function refreshUsers() {
 }
 
 function getUsers() {
-  const url = config.users_url;
-  const token = getCookieOrStorage(config.access_token);
+  const cfg = typeof getConfig === "function" ? getConfig() : config;
+  const url = cfg.users_url || (window.location.origin + "/v1/users");
+  const token = getCookieOrStorage(cfg.access_token);
 
   if (!token) {
     console.warn("getUsers: Nessun token disponibile.");
@@ -22,20 +48,21 @@ function getUsers() {
     const responseData = await data.json();
     if (responseData.error != null) {
       console.warn("getUsers error response:", responseData.error);
-      // Se abbiamo già dati in tabella/cache, non mostrare alert bloccante
-      const cached = localStorage.getItem(config.client_id + "_usersData");
+      const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
+      const cached = localStorage.getItem(key);
       if (!cached) {
         const error = getErrorCode(responseData.error);
         sweetalert("error", error.title, error.message);
       }
     } else {
       fetchHeader(data.headers);
-      localStorage.setItem(
-        config.client_id + "_usersData",
-        JSON.stringify(responseData.data)
-      );
-      displayUsersTable(responseData.data);
-      updateUserKpis(responseData.data);
+      cachedUsers = responseData.data || [];
+      const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
+      try {
+        localStorage.setItem(key, JSON.stringify(cachedUsers));
+      } catch (e) {}
+      displayUsersTable(cachedUsers);
+      updateUserKpis(cachedUsers);
     }
   }).catch((err) => {
     console.error("Fetch users network error:", err);

@@ -22,7 +22,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
   
-  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
   
   <!-- JQuery -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -274,7 +279,7 @@
         </div>
         <div>
           <div class="text-xl sm:text-2xl font-bold text-white tracking-tight">Session-ID</div>
-          <div id="stat-recap-session" class="text-xs text-cyan-300/80 mt-1 font-mono truncate" title="Session-ID">
+          <div id="stat-recap-session" class="text-[11px] sm:text-xs text-cyan-300/90 mt-1 font-mono break-all select-all font-medium" title="Session-ID">
             Verificato & Protetto
           </div>
         </div>
@@ -639,7 +644,7 @@
           <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
             <span class="text-xs text-gray-400 uppercase font-semibold">Client Secret</span>
             <div class="flex items-center gap-2 mt-1">
-              <input type="password" id="detail-clientSecret" readonly class="form-control font-mono text-sm" style="background: rgba(14, 11, 20, 0.7); border: 1px solid rgba(208, 188, 255, 0.2); color: #fff;" />
+              <input type="password" id="detail-clientSecret" readonly class="form-control font-mono text-sm" style="background: #231B34; border: 1.5px solid rgba(208, 188, 255, 0.28); color: #fff;" />
               <button type="button" class="m3-icon-btn" onclick="toggleSecretVisibility('detail-clientSecret', this)" title="Mostra / Nascondi">
                 <i class="fa-solid fa-eye text-xs"></i>
               </button>
@@ -784,8 +789,8 @@
         </div>
 
         <div class="modal-footer border-t border-purple-500/20 px-6 py-4 flex justify-end gap-3">
-          <button type="button" class="px-5 py-2.5 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all cursor-pointer" data-bs-dismiss="modal">
-            Annulla
+          <button type="button" class="m3-btn-outline cursor-pointer" data-bs-dismiss="modal">
+            <i class="fa-solid fa-xmark"></i> Annulla
           </button>
           <button type="button" onclick="saveClient()" class="m3-btn-primary cursor-pointer">
             <i class="fa-solid fa-floppy-disk mr-1"></i> Salva Client
@@ -812,7 +817,7 @@
       const sessionEl = document.getElementById("stat-recap-session");
       if (sessionEl) {
         if (sessionId) {
-          sessionEl.innerText = sessionId.substring(0, 16) + "...";
+          sessionEl.innerText = sessionId;
           sessionEl.title = sessionId;
         } else {
           sessionEl.innerText = "Attivo & Protetto";
@@ -837,6 +842,14 @@
             if (data && data.data && Array.isArray(data.data)) {
               localStorage.setItem(cfg.client_id + "_usersData", JSON.stringify(data.data));
               renderUsersKpi(data.data);
+              if (typeof cachedUsers !== "undefined") {
+                cachedUsers = data.data;
+              }
+              const usersTbody = document.getElementById("users-data");
+              if (currentView === "users" || (usersTbody && usersTbody.children.length === 0)) {
+                if (typeof displayUsersTable === "function") displayUsersTable(data.data);
+                if (typeof updateUserKpis === "function") updateUserKpis(data.data);
+              }
             }
           }).catch(() => {});
         }
@@ -960,11 +973,22 @@
           history.pushState({ view: "users" }, "", "/app/users");
         }
         
+        const hasLoadedUsers = (typeof loadCachedUsers === "function") && loadCachedUsers();
+        const usersTbody = document.getElementById("users-data");
+        const isUsersTableEmpty = !usersTbody || usersTbody.children.length === 0;
+
         if (typeof getUsers === "function") {
-          const usersData = localStorage.getItem(config.client_id + "_usersData");
-          if (!usersData) {
+          if (!hasLoadedUsers || isUsersTableEmpty || !cachedUsers || cachedUsers.length === 0) {
             getUsers();
           }
+        }
+
+        if (window.$ && $.fn && $.fn.DataTable && $.fn.DataTable.isDataTable('#users-table')) {
+          setTimeout(() => {
+            try {
+              $('#users-table').DataTable().columns.adjust().responsive.recalc();
+            } catch (e) {}
+          }, 50);
         }
       }
     }
@@ -1009,13 +1033,15 @@
     });
 
     document.addEventListener("DOMContentLoaded", () => {
-      // 1. Caricamento immediato cache utenti per evitare cards vuote
-      const cachedUsers = localStorage.getItem(config.client_id + "_usersData");
-      if (cachedUsers) {
+      // 1. Caricamento immediato cache utenti
+      if (typeof loadCachedUsers === "function") {
+        loadCachedUsers();
+      }
+      const cfg = typeof getConfig === "function" ? getConfig() : config;
+      const cachedUsersRaw = localStorage.getItem((cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData");
+      if (cachedUsersRaw) {
         try {
-          const parsed = JSON.parse(cachedUsers);
-          displayUsersTable(parsed);
-          updateUserKpis(parsed);
+          const parsed = JSON.parse(cachedUsersRaw);
           renderUsersKpi(parsed);
         } catch(e) {}
       }

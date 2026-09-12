@@ -317,27 +317,34 @@ body {
 
 /* INPUT FORM IN STILE M3 GLASS */
 .form-input {
-  background: rgba(30, 23, 46, 0.7) !important;
-  border: 1px solid rgba(208, 188, 255, 0.2) !important;
+  background: #231B34 !important;
+  border: 1.5px solid rgba(208, 188, 255, 0.28) !important;
   border-radius: 16px !important;
   color: #ffffff !important;
+  font-weight: 500 !important;
   transition: all 0.25s ease !important;
 }
 
+.form-input:hover {
+  background: #2A203F !important;
+  border-color: rgba(208, 188, 255, 0.45) !important;
+}
+
 .form-input:focus {
-  background: rgba(38, 29, 58, 0.95) !important;
+  background: #31254A !important;
   border-color: #A855F7 !important;
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.28) !important;
+  box-shadow: 0 0 0 3.5px rgba(168, 85, 247, 0.32) !important;
   outline: none !important;
 }
 
 .form-input::placeholder {
-  color: rgba(208, 188, 255, 0.45) !important;
+  color: rgba(208, 188, 255, 0.55) !important;
+  opacity: 1 !important;
 }
 
 /* AUTOFILL FIX COORDINATO */
 input:-webkit-autofill {
-  box-shadow: 0 0 0px 1000px #1e1732 inset !important;
+  box-shadow: 0 0 0px 1000px #231B34 inset !important;
   -webkit-text-fill-color: #ffffff !important;
   caret-color: #ffffff;
   transition: background-color 9999s ease-out, color 9999s ease-out;

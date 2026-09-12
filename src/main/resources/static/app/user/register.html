@@ -9,7 +9,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
-  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
@@ -95,8 +100,8 @@
             Inserisci i dati dell'account per creare una nuova identità nel database di Access Sphere.
           </p>
         </div>
-        <a href="/app/users" class="text-xs font-semibold text-purple-300 hover:underline text-decoration-none">
-          Annulla e Torna Indietro
+        <a href="/app/users" class="m3-btn-outline">
+          <i class="fa-solid fa-arrow-left text-xs"></i> Annulla e Torna Indietro
         </a>
       </div>
 
@@ -126,7 +131,7 @@
         <div class="col-md-4">
           <label for="validationDefaultUsername" class="form-label text-xs font-semibold text-gray-300">Username *</label>
           <div class="input-group">
-            <span class="input-group-text font-mono text-purple-300" style="background: rgba(30, 24, 48, 0.9); border: 1px solid rgba(208, 188, 255, 0.25);">@</span>
+            <span class="input-group-text font-mono text-purple-300">@</span>
             <input type="text" class="form-control font-mono" id="validationDefaultUsername" placeholder="mrossi" required />
           </div>
         </div>
@@ -244,8 +249,8 @@
 
         <!-- Bottoni Azione -->
         <div class="col-12 pt-6 border-t border-purple-500/15 flex items-center justify-end gap-3">
-          <a href="/app/users" class="px-6 py-2.5 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all text-decoration-none">
-            Annulla
+          <a href="/app/users" class="m3-btn-outline">
+            <i class="fa-solid fa-xmark"></i> Annulla
           </a>
           <button id="register_form_submit" class="m3-btn-primary" type="submit">
             <i class="fa-solid fa-user-plus mr-1"></i> Registra Utente
