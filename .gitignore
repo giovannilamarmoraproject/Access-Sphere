@@ -34,3 +34,4 @@ build/
 .mvn/
 *.log
 /src/main/resources/access.json
+scratch/

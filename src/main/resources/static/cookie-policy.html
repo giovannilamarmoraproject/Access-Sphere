@@ -215,11 +215,80 @@
       box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
     }
 
-    /* Audit table responsive styling */
+    /* CookieYes Audit Table Dynamic Styling (Material Expressive 3 Glass) */
     .cky-audit-table-element {
-      margin-top: 1rem;
-      margin-bottom: 1.5rem;
-      overflow-x: auto;
+      margin-top: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .cky-audit-table-element .cky-cookie-category,
+    .cky-audit-table-element > div {
+      background: rgba(24, 19, 38, 0.5) !important;
+      border: 1px solid rgba(208, 188, 255, 0.18) !important;
+      border-radius: 20px !important;
+      padding: 1.5rem !important;
+      margin-bottom: 1.5rem !important;
+      backdrop-filter: blur(12px) !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+    }
+    .cky-audit-table-element .cky-category-title,
+    .cky-audit-table-element h6 {
+      color: #FFFFFF !important;
+      font-size: 1.15rem !important;
+      font-weight: 700 !important;
+      margin-bottom: 0.5rem !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+    .cky-audit-table-element .cky-category-description,
+    .cky-audit-table-element p {
+      color: #CAC4D0 !important;
+      font-size: 0.85rem !important;
+      line-height: 1.6 !important;
+      margin-bottom: 1rem !important;
+    }
+    .cky-audit-table-element table,
+    .cky-audit-table-element .cky-table,
+    .cky-audit-table-element .cky-audit-table {
+      width: 100% !important;
+      border-collapse: separate !important;
+      border-spacing: 0 !important;
+      border: 1px solid rgba(208, 188, 255, 0.2) !important;
+      border-radius: 14px !important;
+      overflow: hidden !important;
+      background: rgba(14, 11, 22, 0.6) !important;
+      font-size: 0.82rem !important;
+      margin-top: 0.75rem !important;
+    }
+    .cky-audit-table-element thead,
+    .cky-audit-table-element th {
+      background: rgba(103, 80, 164, 0.25) !important;
+      color: #D0BCFF !important;
+      font-weight: 700 !important;
+      padding: 10px 14px !important;
+      border-bottom: 1px solid rgba(208, 188, 255, 0.2) !important;
+      text-align: left !important;
+    }
+    .cky-audit-table-element td {
+      padding: 10px 14px !important;
+      border-bottom: 1px solid rgba(208, 188, 255, 0.08) !important;
+      color: #E6E1E5 !important;
+      line-height: 1.5 !important;
+    }
+    .cky-audit-table-element tr:last-child td {
+      border-bottom: none !important;
+    }
+    .cky-audit-table-element tr:hover td {
+      background: rgba(208, 188, 255, 0.06) !important;
+    }
+    .cky-audit-table-element .cky-always-active {
+      font-size: 11px !important;
+      padding: 2px 10px !important;
+      border-radius: 9999px !important;
+      background: rgba(16, 185, 129, 0.2) !important;
+      color: #6EE7B7 !important;
+      border: 1px solid rgba(16, 185, 129, 0.35) !important;
+      font-weight: 600 !important;
     }
   </style>
 </head>
@@ -302,111 +371,7 @@
         <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4">
           <span class="w-2 h-2 rounded-full bg-purple-400"></span> Types of Cookies we use
         </h5>
-
-        <div class="cky-audit-table-element space-y-6 my-4">
-          <!-- Necessary Cookies -->
-          <div class="p-5 rounded-2xl bg-purple-950/20 border border-purple-500/20">
-            <div class="flex items-center justify-between mb-2">
-              <h6 class="text-base font-bold text-white mb-0 flex items-center gap-2">
-                <i class="fa-solid fa-shield-halved text-emerald-400 text-xs"></i> Necessary
-              </h6>
-              <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">Always Active</span>
-            </div>
-            <p class="text-xs text-gray-400 mb-3 leading-relaxed">
-              Necessary cookies are crucial for the basic functions of the website and the website will not work in its intended way without them. These cookies do not store any personally identifiable data.
-            </p>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs border border-purple-500/20 rounded-xl overflow-hidden">
-                <thead class="bg-purple-900/30 text-purple-200">
-                  <tr>
-                    <th class="p-2.5 border-b border-purple-500/20">Cookie</th>
-                    <th class="p-2.5 border-b border-purple-500/20">Duration</th>
-                    <th class="p-2.5 border-b border-purple-500/20">Description</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-purple-500/10 text-gray-300">
-                  <tr>
-                    <td class="p-2.5 font-mono text-purple-300 whitespace-nowrap">cookieyes-consent</td>
-                    <td class="p-2.5 whitespace-nowrap">1 year</td>
-                    <td class="p-2.5 leading-relaxed">CookieYes sets this cookie to remember users' consent preferences so that their preferences are respected on subsequent visits to this site. It does not collect or store any personal information about the site visitors.</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2.5 font-mono text-purple-300 whitespace-nowrap">JSESSIONID</td>
-                    <td class="p-2.5 whitespace-nowrap">Session</td>
-                    <td class="p-2.5 leading-relaxed">Access Sphere platform uses this cookie to maintain session state and authenticate requests securely.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Functional Cookies -->
-          <div class="p-5 rounded-2xl bg-purple-950/20 border border-purple-500/20">
-            <div class="flex items-center justify-between mb-2">
-              <h6 class="text-base font-bold text-white mb-0 flex items-center gap-2">
-                <i class="fa-solid fa-sliders text-purple-400 text-xs"></i> Functional
-              </h6>
-              <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-semibold">Optional</span>
-            </div>
-            <p class="text-xs text-gray-400 mb-3 leading-relaxed">
-              Functional cookies help to perform certain functionalities like sharing the content of the website on social media platforms, collecting feedbacks, and other third-party features.
-            </p>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs border border-purple-500/20 rounded-xl overflow-hidden">
-                <thead class="bg-purple-900/30 text-purple-200">
-                  <tr>
-                    <th class="p-2.5 border-b border-purple-500/20">Cookie</th>
-                    <th class="p-2.5 border-b border-purple-500/20">Duration</th>
-                    <th class="p-2.5 border-b border-purple-500/20">Description</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-purple-500/10 text-gray-300">
-                  <tr>
-                    <td class="p-2.5 font-mono text-purple-300 whitespace-nowrap">selected_lang</td>
-                    <td class="p-2.5 whitespace-nowrap">1 year</td>
-                    <td class="p-2.5 leading-relaxed">Remembers user language selection preferences across sessions (Italian / English).</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Analytics Cookies -->
-          <div class="p-5 rounded-2xl bg-purple-950/20 border border-purple-500/20">
-            <div class="flex items-center justify-between mb-2">
-              <h6 class="text-base font-bold text-white mb-0 flex items-center gap-2">
-                <i class="fa-solid fa-chart-pie text-cyan-400 text-xs"></i> Analytics
-              </h6>
-              <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold">Optional</span>
-            </div>
-            <p class="text-xs text-gray-400 mb-3 leading-relaxed">
-              Analytical cookies are used to understand how visitors interact with the website. These cookies help provide information on metrics the number of visitors, bounce rate, traffic source, etc.
-            </p>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs border border-purple-500/20 rounded-xl overflow-hidden">
-                <thead class="bg-purple-900/30 text-purple-200">
-                  <tr>
-                    <th class="p-2.5 border-b border-purple-500/20">Cookie</th>
-                    <th class="p-2.5 border-b border-purple-500/20">Duration</th>
-                    <th class="p-2.5 border-b border-purple-500/20">Description</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-purple-500/10 text-gray-300">
-                  <tr>
-                    <td class="p-2.5 font-mono text-purple-300 whitespace-nowrap">_ga</td>
-                    <td class="p-2.5 whitespace-nowrap">2 years</td>
-                    <td class="p-2.5 leading-relaxed">The _ga cookie, installed by Google Analytics, calculates visitor, session and campaign data and also keeps track of site usage for the site's analytics report. The cookie stores information anonymously and assigns a randomly generated number to recognize unique visitors.</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2.5 font-mono text-purple-300 whitespace-nowrap">_ga_R4KLC18RH6</td>
-                    <td class="p-2.5 whitespace-nowrap">2 years</td>
-                    <td class="p-2.5 leading-relaxed">Google Analytics 4 sets this cookie to store and count page views, track active visitor sessions, and measure traffic volume for Google Tag G-R4KLC18RH6.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <div class="cky-audit-table-element"></div>
 
         <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4 mb-2">
           <span class="w-2 h-2 rounded-full bg-purple-400"></span> Manage cookie preferences

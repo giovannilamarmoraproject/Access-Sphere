@@ -2,45 +2,48 @@ self.addEventListener("install", (event) => {
   console.log("📱 Service Worker installato.");
   event.waitUntil(
     caches
-      .open("v1")
+      .open("v2")
       .then((cache) => {
         return cache.addAll([
           "/",
           "/index.html",
           "/cookie-policy.html",
           "/privacy-policy.html",
+          "/service-worker.js",
           "/favicon.ico",
           "img/favicon-32x32.png",
           "img/favicon-16x16.png",
-          "img/apple-touch-icon.png",
-          "img/logo-minimal.svg",
-          "css/styles.css",
+          "css/style.css",
+          "css/cookie-policy.css",
+          "css/privacy-policy.css",
           "img/shape.png",
           "img/person.png",
           "img/Access Sphere Transparent 512x512.png",
+          "img/logo-minimal.svg",
           "app/i18n/errorCode.json",
           "app/i18n/translations.js",
           "app/i18n/translations.json",
           "app/login/index.html",
           "app/login/img/Access Sphere Full.png",
           "app/login/img/Access Sphere Transparent 512x512.png",
+          "app/login/img/logo-minimal.svg",
           "app/login/css/sliding-animations.css",
           "app/login/css/style.css",
-          "app/shared/css/config.js",
-          "app/shared/css/utils.js",
-          "app/shared/css/sweetalert.js",
-          "app/shared/css/sweetalert.css",
-          "app/shared/user/edit.html",
-          "app/shared/user/register.html",
-          "app/shared/user/roles.html",
-          "app/shared/user/user.html",
-          "app/shared/user/users.html",
-          "app/shared/user/img/shape.png",
-          "app/shared/user/img/Access Sphere Full.png",
-          "app/shared/user/img/Access Sphere Transparent 512x512.png",
-          "app/shared/user/css/style.css",
-          "app/shared/user/css/form.css",
-          "app/shared/shared/animations/animation.css",
+          "app/shared/config.js",
+          "app/shared/utils.js",
+          "app/shared/sweetalert.js",
+          "app/shared/sweetalert.css",
+          "app/user/edit.html",
+          "app/user/register.html",
+          "app/user/roles.html",
+          "app/user/user.html",
+          "app/user/users.html",
+          "app/user/img/shape.png",
+          "app/user/img/Access Sphere Transparent 512x512.png",
+          "app/user/img/logo-minimal.svg",
+          "app/user/css/style.css",
+          "app/user/css/form.css",
+          "app/shared/animations/animation.css",
         ]);
       })
       .catch((error) => {
@@ -54,7 +57,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== "v1") {
+          if (cache !== "v2") {
             console.log("🗑️ Eliminazione della vecchia cache:", cache);
             return caches.delete(cache);
           }
@@ -358,7 +361,7 @@ self.addEventListener("fetch", (event) => {
                   
                   <div class="resource-card">
                     <i class="fa-solid fa-link-slash"></i>
-                    <span class="resource-url">\${event.request.url}</span>
+                    <span class="resource-url">${event.request.url}</span>
                   </div>
                   
                   <div class="actions-container">
