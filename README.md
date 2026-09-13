@@ -45,7 +45,21 @@
   - Single Page Application (SPA) a 0ms di latenza con navigazione fluida tra Panoramica, Utenti e Client.
   - **Auto Scroll-to-Top**: Ripristino automatico e immediato della vista in cima alla pagina (`Y = 0`) ad ogni cambio sezione o navigazione browser.
   - Caching locale **Stale-While-Revalidate (SWR)** per visualizzazione istantanea di tabelle e KPI.
-  - Design Bento Glassmorphism con palette M3 profonda (`#0E0B16` / `#231B34`) e accenti viola vibranti.
+  - Design Bento Glassmorphism con layout ultra-wide e accenti reattivi.
+- 🎨 **Motore Multi-Palette & Temi Dinamici a 360°**:
+  - 6 armonie cromatiche Material Expressive 3: **Cosmic Purple** (Default), **Midnight Ocean**, **Emerald Matrix**, **Amber Sunset**, **Titanium Slate** e **Crimson Cyber**.
+  - Propagazione istantanea del tema all'intera piattaforma: Landing page (inclusa la scena 3D Three.js interattiva), schermata di login, dashboard e tutte le sezioni di gestione.
+- 🏷️ **White-Labeling & Personalizzazione Branding**:
+  - Configurazione a runtime di Logo aziendale, Favicon, Nome Piattaforma, Tagline, Footer Copyright e Support Email.
+  - Personalizzazione della schermata di Login: scelta tra Cinematic Showcase predefinito o Immagine di sfondo personalizzata con opacità regolabile e titoli dinamici.
+- 💾 **Backup & Restore Completo a 1-Click**:
+  - Esportazione istantanea dell'intero database (utenti, credenziali, ruoli, client OAuth2, impostazioni) in un unico file JSON strutturato.
+  - Procedura di ripristino con validazione schema e zero downtime per migrazioni e disaster recovery.
+- 🌐 **Internazionalizzazione (i18n)**:
+  - Supporto completo e reattivo per Italiano e Inglese con 260+ chiavi di traduzione.
+  - Rilevamento automatico della lingua del browser al primo avvio e cambio lingua immediato senza reload.
+- 🚀 **Technical Seed & Bootstrap Automatico**:
+  - Creazione automatica all'avvio a DB vuoto dell'utenza tecnica e del client tecnico OAuth2 configurabili da variabili d'ambiente.
 - 📱 **Progressive Web App (PWA)**: Supporto offline tramite Service Worker dedicato, manifest PWA e asset multi-risoluzione.
 - 📖 **Documentazione Interattiva OpenAPI / Swagger 3.0**: Esplorazione e test immediato delle API tramite Swagger UI integrata.
 
@@ -278,6 +292,45 @@ Una volta avviato il servizio:
 - 📊 **M3 Admin Console**: `http://localhost:8081/app`
 - 📑 **Swagger UI Docs**: `http://localhost:8081/swagger-ui.html`
 - 📄 **OpenAPI Spec (JSON)**: `http://localhost:8081/api-docs`
+
+---
+
+## ⚙️ **Configurazione & Bootstrap Automatico (Technical Seed)**
+
+AccessSphere supporta l'inizializzazione automatica delle credenziali di accesso al primo avvio su database vuoto (`ProjectInitializerService`), garantendo un bootstrap istantaneo senza dover eseguire script SQL manuali:
+
+| Variabile d'Ambiente | Proprietà Spring | Descrizione | Default |
+|---|---|---|---|
+| `APP_INIT_TECH_USER_USERNAME` | `application.init.tech-user.username` | Username dell'utenza tecnica con privilegi ADMIN | `giovanni_admin` |
+| `APP_INIT_TECH_USER_PASSWORD` | `application.init.tech-user.password` | Password iniziale dell'utenza tecnica | `GiovanniPass123!` |
+| `APP_INIT_TECH_USER_EMAIL` | `application.init.tech-user.email` | Email associata all'utenza tecnica | `admin@access-sphere.com` |
+| `APP_INIT_TECH_CLIENT_ID` | `application.init.tech-client.client-id` | Client ID OAuth2 tecnico dell'applicazione | `ACCESS-SPHERE-TECH` |
+| `APP_INIT_TECH_CLIENT_SECRET` | `application.init.tech-client.client-secret` | Client Secret dell'applicazione | `SphereSecretKey2026!` |
+
+---
+
+## 🎨 **Impostazioni Applicazione, White-Labeling & Backup**
+
+Dal pannello delle impostazioni nella Dashboard amministrativa `/app`, gli amministratori possono gestire in tempo reale:
+
+1. **Brand Identity & White-Labeling**:
+   - Modifica istantanea di **Nome Applicazione**, **Tagline**, **Email di Supporto** e **Copyright**.
+   - Caricamento dinamico del **Logo** e della **Favicon** in formato Base64.
+   - Personalizzazione della schermata di Login: **Cinematic Showcase** con animazioni o **Sfondo Aziendale Custom** con slider di regolazione dell'opacità dell'overlay (`0% - 100%`) e testi hero personalizzabili.
+2. **Motore Multi-Palette & Temi Material Expressive 3**:
+   - Selezione dinamica tra 6 armonie cromatiche:
+     - 🟣 **Cosmic Purple**: L'armonia originale elegante e profonda con accenti viola elettrico.
+     - 🌊 **Midnight Ocean**: Tonalità ciano e blu profondo per ecosistemi cloud ed enterprise.
+     - 🍃 **Emerald Matrix**: Verde smeraldo per ambienti di monitoraggio e compliance.
+     - 🌅 **Amber Sunset**: Tonalità arancio e ambra calde ad alto impatto visuale.
+     - 🪙 **Titanium Slate**: Slate bluastro sobrio e minimale ad alto contrasto.
+     - 🌹 **Crimson Cyber**: Rosso cremisi futuristico per ambienti di security e NOC/SOC.
+   - **Propagazione a 360°**: Il tema attivo riconfigura istantaneamente ogni pixel: Landing page, particelle e sfere 3D Three.js, schermata di Login, bottoni, card bento, tab e modali amministrative.
+3. **Backup & Restore a 1-Click**:
+   - **Export 1-Click**: Scarica un archivio JSON completo contenente utenti, ruoli, registrazioni client e preferenze di sistema.
+   - **Ripristino Sicuro**: Carica un backup precedente per ripristinare o migrare l'intera istanza con zero downtime.
+4. **Localizzazione Dinamica (i18n)**:
+   - Traduzioni complete in **Italiano** e **Inglese** con oltre 260 chiavi dedicate, auto-detection della lingua del browser e switch istantaneo.
 
 ---
 

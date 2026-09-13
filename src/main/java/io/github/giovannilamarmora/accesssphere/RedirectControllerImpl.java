@@ -29,7 +29,7 @@ public class RedirectControllerImpl {
     return "app/login/index_old";
   }
 
-  @GetMapping({"/app", "/app/dashboard", "/app/home"})
+  @GetMapping({"/app", "/app/dashboard", "/app/home", "/app/settings"})
   public String dashboard(Model model) {
     return "app/dashboard";
   }

@@ -14,18 +14,18 @@ public class TechUserConfig {
 
   public final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Value(value = "${app.tech-user.username}")
+  @Value(value = "${app.tech-user.username:tech_admin}")
   public String tech_username;
 
-  @Value(value = "${app.tech-user.password}")
+  @Value(value = "${app.tech-user.password:tech_password}")
   public String tech_password;
 
   @Getter
-  @Value(value = "${app.tech-user.client-id}")
+  @Value(value = "${app.tech-user.client-id:ACCESS-SPHERE-TECH}")
   public String tech_client_id;
 
   @Getter
-  @Value(value = "${app.tech-user.strapi}")
+  @Value(value = "${app.tech-user.strapi:}")
   public String tech_token;
 
   @Autowired public TokenService tokenService;

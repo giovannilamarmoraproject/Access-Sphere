@@ -6,6 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Access Sphere - Console di Amministrazione</title>
 
+    <!-- Immediate Zero-Flicker Theme Application -->
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem("access_sphere_theme");
+                if (!theme) {
+                    var s = localStorage.getItem("access_sphere_settings");
+                    if (s) {
+                        var parsed = JSON.parse(s);
+                        theme = parsed.activeTheme;
+                    }
+                }
+                document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
+            } catch (e) {}
+        })();
+    </script>
+
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
@@ -65,8 +82,10 @@
     <script src="/app/user/js/users.js"></script>
     <script src="/app/client/js/clients.js"></script>
 
-    <!-- Unified M3 Dashboard Theme -->
+    <!-- Unified M3 Dashboard Theme & Themes Palette -->
     <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0"/>
+    <link rel="stylesheet" href="/css/m3-themes.css"/>
+    <script src="/app/shared/settings.js"></script>
     <!-- Early Synchronous Token Capture -->
     <script>
         (function () {
@@ -100,14 +119,14 @@
             <a href="/app" onclick="switchDashboardView('dashboard'); return false;"
                class="flex items-center gap-3 text-decoration-none group">
                 <img src="/img/logo-minimal.svg" alt="Access Sphere Logo"
-                     class="w-10 h-10 transition-transform duration-300 group-hover:scale-110"/>
+                     class="w-10 h-10 transition-transform duration-300 group-hover:scale-110 app-brand-logo"/>
                 <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              Access Sphere
+              <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
                     <span id="header-subtitle"
-                          class="text-[11px] text-gray-400 font-medium">Gestione Identità & Accessi</span>
+                          class="text-[11px] text-gray-400 font-medium" data-i18n="header_subtitle">Gestione Identità & Accessi</span>
                 </div>
             </a>
 
@@ -115,26 +134,30 @@
             <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
                 <button id="nav-btn-dashboard" onclick="switchDashboardView('dashboard')"
                         class="nav-tab-m3 cursor-pointer border-0 bg-transparent">
-                    <i class="fa-solid fa-gauge-high"></i> Panoramica
+                    <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
                 </button>
                 <button id="nav-btn-users" onclick="switchDashboardView('users')"
                         class="nav-tab-m3 active cursor-pointer border-0 bg-transparent">
-                    <i class="fa-solid fa-users"></i> Utenti
+                    <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
                 </button>
                 <button id="nav-btn-clients" onclick="switchDashboardView('clients')"
                         class="nav-tab-m3 cursor-pointer border-0 bg-transparent">
-                    <i class="fa-solid fa-key"></i> Client OAuth2
+                    <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
+                </button>
+                <button id="nav-btn-settings" onclick="switchDashboardView('settings')"
+                        class="nav-tab-m3 cursor-pointer border-0 bg-transparent">
+                    <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
                 </button>
                 <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank"
                    class="nav-tab-m3 text-decoration-none">
-                    <i class="fa-solid fa-book"></i> API Docs
+                    <i class="fa-solid fa-book"></i> <span data-i18n="nav_docs">API Docs</span>
                 </a>
             </nav>
         </div>
 
         <!-- Quick Action Controls -->
         <div class="flex items-center gap-2">
-            <button id="btn-refresh-data" onclick="handleCurrentRefresh()" class="m3-icon-btn" title="Aggiorna dati">
+            <button id="btn-refresh-data" onclick="handleCurrentRefresh()" class="m3-icon-btn" title="Aggiorna dati" data-i18n-title="btn_refresh">
                 <i id="refresh-icon" class="fa-solid fa-arrows-rotate text-sm"></i>
             </button>
             <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
@@ -144,16 +167,16 @@
             <!-- Contextual Primary Action Button -->
             <div id="users-primary-action">
                 <a href="/app/users/register" class="m3-btn-primary ml-2 text-decoration-none">
-                    <i class="fa-solid fa-user-plus"></i> <span>Nuovo Utente</span>
+                    <i class="fa-solid fa-user-plus"></i> <span data-i18n="btn_new_user">Nuovo Utente</span>
                 </a>
             </div>
             <div id="clients-primary-action" style="display: none;">
                 <a href="/app/clients/register" class="m3-btn-primary ml-2 text-decoration-none">
-                    <i class="fa-solid fa-plus"></i> <span>Nuovo Client</span>
+                    <i class="fa-solid fa-plus"></i> <span data-i18n="btn_new_client">Nuovo Client</span>
                 </a>
             </div>
 
-            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout" data-i18n-title="btn_logout">
                 <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
             </button>
         </div>
@@ -172,10 +195,10 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     Access Sphere Control Hub
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight" data-i18n="dash_welcome_title">
                     Benvenuto nella Console di Amministrazione
                 </h1>
-                <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-2xl">
+                <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-2xl" data-i18n="dash_welcome_desc">
                     Riepilogo in tempo reale dello stato dell'infrastruttura di identità e sicurezza. Scegli qui sotto
                     se accedere all'amministrazione anagrafica degli <strong>Utenti</strong> o alla configurazione dei
                     <strong>Client OAuth 2.0</strong>.
@@ -188,7 +211,7 @@
                         <i class="fa-solid fa-clock text-base"></i>
                     </div>
                     <div>
-                        <div class="text-[11px] text-gray-400 uppercase font-semibold">Orario Sistema</div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_system_clock">Orario Sistema</div>
                         <div id="live-clock" class="text-white font-mono font-bold text-sm">--:--:--</div>
                     </div>
                 </div>
@@ -198,9 +221,9 @@
                         <i class="fa-solid fa-signal text-base"></i>
                     </div>
                     <div>
-                        <div class="text-[11px] text-gray-400 uppercase font-semibold">Stato Servizi</div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_service_status">Stato Servizi</div>
                         <div class="text-emerald-300 font-semibold text-sm flex items-center gap-1.5">
-                            <i class="fa-solid fa-check-circle text-xs"></i> Operativo
+                            <i class="fa-solid fa-check-circle text-xs"></i> <span data-i18n="dash_status_operational">Operativo</span>
                         </div>
                     </div>
                 </div>
@@ -214,7 +237,7 @@
         <!-- Card 1: Utenti Totali -->
         <div class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Utenti IAM</span>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="dash_card_users_title">Utenti IAM</span>
                 <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300">
                     <i class="fa-solid fa-users text-lg"></i>
                 </div>
@@ -224,13 +247,13 @@
                 </div>
                 <div class="text-xs text-purple-300/80 mt-1 flex items-center gap-1.5">
                     <i class="fa-solid fa-user-check text-emerald-400"></i>
-                    <span id="stat-recap-active-users">--</span> utenti attivi
+                    <span id="stat-recap-active-users">--</span> <span data-i18n="dash_card_users_active">utenti attivi</span>
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-purple-500/15">
                 <button type="button" onclick="switchDashboardView('users')"
                         class="text-xs text-purple-300 hover:text-purple-200 font-medium flex items-center justify-between w-full bg-transparent border-0 cursor-pointer p-0">
-                    <span>Dettagli archivio utenti</span>
+                    <span data-i18n="dash_card_users_link">Dettagli archivio utenti</span>
                     <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </button>
             </div>
@@ -239,7 +262,7 @@
         <!-- Card 2: Client OAuth2 -->
         <div class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Client OAuth 2.0</span>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="dash_card_clients_title">Client OAuth 2.0</span>
                 <div class="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-300">
                     <i class="fa-solid fa-cubes text-lg"></i>
                 </div>
@@ -249,13 +272,13 @@
                 </div>
                 <div class="text-xs text-indigo-300/80 mt-1 flex items-center gap-1.5">
                     <i class="fa-solid fa-shield-halved text-cyan-400"></i>
-                    <span id="stat-recap-mfa-clients">--</span> con MFA obbligatoria
+                    <span id="stat-recap-mfa-clients">--</span> <span data-i18n="dash_card_clients_mfa">con MFA obbligatoria</span>
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-purple-500/15">
                 <button type="button" onclick="switchDashboardView('clients')"
                         class="text-xs text-indigo-300 hover:text-indigo-200 font-medium flex items-center justify-between w-full bg-transparent border-0 cursor-pointer p-0">
-                    <span>Configurazione applicazioni</span>
+                    <span data-i18n="dash_card_clients_link">Configurazione applicazioni</span>
                     <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </button>
             </div>
@@ -264,7 +287,7 @@
         <!-- Card 3: Sicurezza & Token -->
         <div class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Protezione Token</span>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="dash_card_security_title">Protezione Token</span>
                 <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300">
                     <i class="fa-solid fa-lock text-lg"></i>
                 </div>
@@ -273,7 +296,7 @@
                 <div class="text-2xl sm:text-3xl font-bold text-white tracking-tight">JWT & JWE</div>
                 <div class="text-xs text-emerald-300/80 mt-1 flex items-center gap-1.5">
                     <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                    Firma crittografica attiva
+                    <span data-i18n="dash_card_security_desc">Firma crittografica attiva</span>
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-purple-500/15">
@@ -287,7 +310,7 @@
         <!-- Card 4: Sessione & Tracciamento -->
         <div class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Sessione Amministratore</span>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="dash_card_session_title">Sessione Amministratore</span>
                 <div class="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center text-cyan-300">
                     <i class="fa-solid fa-fingerprint text-lg"></i>
                 </div>
@@ -296,13 +319,13 @@
                 <div class="text-xl sm:text-2xl font-bold text-white tracking-tight">ID Sessione</div>
                 <div id="stat-recap-session"
                      class="text-[11px] sm:text-xs text-cyan-300/90 mt-1 font-mono break-all select-all font-medium"
-                     title="Session-ID">
+                     title="Session-ID" data-i18n="dash_card_session_status">
                     Verificato & Protetto
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-purple-500/15">
           <span class="text-xs text-gray-400 flex items-center justify-between">
-            <span>Tracciamento Span-ID</span>
+            <span data-i18n="dash_card_span_tracking">Tracciamento Span-ID</span>
             <i class="fa-solid fa-bolt text-[10px] text-cyan-400"></i>
           </span>
             </div>
@@ -314,10 +337,10 @@
     <div class="mb-12">
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight" data-i18n="dash_choose_area_title">
                     Scegli l'Area Operativa
                 </h2>
-                <p class="text-xs sm:text-sm text-gray-400 mt-1">
+                <p class="text-xs sm:text-sm text-gray-400 mt-1" data-i18n="dash_choose_area_desc">
                     Seleziona la console a cui desideri accedere per gestire utenti o applicazioni client.
                 </p>
             </div>
@@ -340,10 +363,10 @@
                     </div>
 
                     <!-- Title & Body -->
-                    <h3 class="text-2xl font-bold text-white tracking-tight mb-2">
+                    <h3 class="text-2xl font-bold text-white tracking-tight mb-2" data-i18n="dash_hub_users_title">
                         Gestione Utenti
                     </h3>
-                    <p class="text-gray-300 text-sm leading-relaxed mb-6">
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6" data-i18n="dash_hub_users_desc">
                         Amministrazione completa delle anagrafiche utenti, verifica indirizzi email, gestione dello
                         stato di attivazione o blocco, consultazione attributi personalizzati e assegnazione dei ruoli
                         RBAC.
@@ -369,12 +392,12 @@
                 <!-- Bottom Action Buttons -->
                 <div class="pt-6 border-t border-purple-500/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                     <a href="/app/users" class="m3-btn-primary text-decoration-none justify-center px-6 py-3 text-sm">
-                        <span>Accedi alla Console Utenti</span>
+                        <span data-i18n="dash_hub_users_btn">Accedi alla Console Utenti</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </a>
                     <a href="/app/users/register" class="m3-btn-secondary justify-center text-xs">
                         <i class="fa-solid fa-user-plus text-purple-300"></i>
-                        <span>Nuovo Utente</span>
+                        <span data-i18n="btn_new_user">Nuovo Utente</span>
                     </a>
                 </div>
             </div>
@@ -394,10 +417,10 @@
                     </div>
 
                     <!-- Title & Body -->
-                    <h3 class="text-2xl font-bold text-white tracking-tight mb-2">
+                    <h3 class="text-2xl font-bold text-white tracking-tight mb-2" data-i18n="dash_hub_clients_title">
                         Client OAuth 2.0
                     </h3>
-                    <p class="text-gray-300 text-sm leading-relaxed mb-6">
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6" data-i18n="dash_hub_clients_desc">
                         Registrazione e configurazione delle applicazioni client autorizzate, gestione dei Client Secret
                         crittografati, autorizzazione dei Redirect URIs, scopes consentiti e policy di sicurezza MFA
                         obbligatoria.
@@ -423,12 +446,12 @@
                 <!-- Bottom Action Buttons -->
                 <div class="pt-6 border-t border-purple-500/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                     <a href="/app/clients" class="m3-btn-primary text-decoration-none justify-center px-6 py-3 text-sm">
-                        <span>Accedi ai Client OAuth2</span>
+                        <span data-i18n="dash_hub_clients_btn">Accedi ai Client OAuth2</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </a>
                     <a href="/app/clients/register" class="m3-btn-secondary justify-center text-xs">
                         <i class="fa-solid fa-plus text-indigo-300"></i>
-                        <span>Nuovo Client</span>
+                        <span data-i18n="btn_new_client">Nuovo Client</span>
                     </a>
                 </div>
             </div>
@@ -638,6 +661,373 @@
                 <!-- Populated dynamically by clients.js -->
                 </tbody>
             </table>
+        </div>
+
+    </div>
+
+</main>
+
+<!-- ================= VIEW 3: IMPOSTAZIONI APPLICAZIONE ================= -->
+<main id="view-settings" class="dashboard-wide-container" style="display: none;">
+
+    <!-- Settings Hero Header -->
+    <div class="m3-bento-card p-6 sm:p-8 mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-semibold mb-3">
+                    <i class="fa-solid fa-sliders text-xs"></i>
+                    <span data-i18n="settings_title">Impostazioni Applicazione</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight" data-i18n="settings_title">
+                    Impostazioni dell'Applicazione
+                </h1>
+                <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-2xl" data-i18n="settings_subtitle">
+                    Personalizza l'aspetto, il brand, la lingua, i temi grafici e gestisci il backup e ripristino di Access Sphere.
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0">
+                <button type="button" onclick="resetSettingsToDefault()" class="m3-btn-secondary px-4 py-2.5 text-xs">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> <span data-i18n="btn_reset_defaults">Ripristina Predefiniti</span>
+                </button>
+                <button type="button" onclick="saveAllSettings()" class="m3-btn-primary px-6 py-3 text-sm font-bold shadow-lg">
+                    <i class="fa-solid fa-floppy-disk mr-1.5"></i> <span data-i18n="btn_save_settings">Salva Impostazioni</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Settings Form Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+
+        <!-- ================= CARD 1: LINGUA & LOCALIZZAZIONE ================= -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-lg">
+                        <i class="fa-solid fa-language"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_lang_title">Lingua & Localizzazione</h3>
+                        <p class="text-xs text-gray-400" data-i18n="settings_card_lang_desc">Scegli la lingua dell'interfaccia. Rilevata automaticamente dal browser se non impostata.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="app_language_radio" id="lang-radio-it" value="it" class="sr-only peer" onchange="switchLanguage('it')">
+                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5">
+                            <span class="text-2xl">🇮🇹</span>
+                            <div>
+                                <div class="text-sm font-bold text-white">Italiano</div>
+                                <div class="text-[11px] text-gray-400">Predefinito IT</div>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer">
+                        <input type="radio" name="app_language_radio" id="lang-radio-en" value="en" class="sr-only peer" onchange="switchLanguage('en')">
+                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5">
+                            <span class="text-2xl">🇬🇧</span>
+                            <div>
+                                <div class="text-sm font-bold text-white">English</div>
+                                <div class="text-[11px] text-gray-400">Default EN</div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-purple-500/15 text-[11px] text-gray-400 flex items-center gap-2">
+                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                <span>Tutti i testi vengono caricati dinamicamente dai file dedicati in <code>/languages</code>.</span>
+            </div>
+        </div>
+
+        <!-- ================= CARD 2: SCHERMATA DI LOGIN ================= -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between lg:col-span-2">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 text-lg">
+                        <i class="fa-solid fa-image"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_login_title">Personalizzazione Pagina di Accesso (Login)</h3>
+                        <p class="text-xs text-gray-400" data-i18n="settings_card_login_desc">Scegli tra la vetrina con le card informative (Foto 1) o uno sfondo personalizzato oscurato.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="login_mode_radio" id="login-mode-showcase" value="SHOWCASE" class="sr-only peer" checked onchange="handleLoginModeChange('SHOWCASE')">
+                        <div class="p-4 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <i class="fa-solid fa-list-check text-purple-400 text-base"></i>
+                                <span class="text-sm font-bold text-white" data-i18n="login_mode_showcase">Vetrina Funzionalità (Foto 1)</span>
+                            </div>
+                            <p class="text-[11px] text-gray-400">Mostra il testo hero ("Autenticazione Sicura & Modulare") e le tre Bento card (Zero-Trust, OAuth 2.0, MFA).</p>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer">
+                        <input type="radio" name="login_mode_radio" id="login-mode-custom-bg" value="CUSTOM_BACKGROUND" class="sr-only peer" onchange="handleLoginModeChange('CUSTOM_BACKGROUND')">
+                        <div class="p-4 rounded-xl border border-white/10 peer-checked:border-indigo-400 peer-checked:bg-indigo-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 text-base"></i>
+                                <span class="text-sm font-bold text-white" data-i18n="login_mode_custom_bg">Sfondo Personalizzato</span>
+                            </div>
+                            <p class="text-[11px] text-gray-400">Imposta una splendida immagine a tutto schermo con filtro oscurato per risaltare il form di login.</p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Custom Background Upload Section -->
+                <div id="login-bg-upload-container" class="mt-4 p-4 rounded-xl bg-purple-950/30 border border-purple-500/20" style="display: none;">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                        <div class="sm:col-span-2">
+                            <label class="text-xs font-semibold text-gray-300 mb-1.5 block" data-i18n="upload_bg_label">Carica Immagine di Sfondo</label>
+                            <input type="file" id="setting-login-bg-file" accept="image/*" class="form-control text-xs" onchange="handleBgFileUpload(event)">
+                            <div class="flex items-center gap-3 mt-3">
+                                <label class="text-xs font-semibold text-gray-300 whitespace-nowrap" data-i18n="bg_dimming_label">Livello Oscuramento (%):</label>
+                                <input type="range" id="setting-login-bg-opacity" min="10" max="90" value="50" class="w-full accent-purple-500" oninput="updateBgOpacityPreview(this.value)">
+                                <span id="bg-opacity-val" class="text-xs font-mono font-bold text-purple-300 min-w-[32px]">50%</span>
+                            </div>
+                        </div>
+
+                        <div class="sm:col-span-1">
+                            <div class="text-[11px] text-gray-400 mb-1">Anteprima Sfondo:</div>
+                            <div id="bg-preview-box" class="h-20 w-full rounded-lg border border-purple-500/30 bg-cover bg-center relative overflow-hidden flex items-center justify-center">
+                                <div id="bg-preview-overlay" class="absolute inset-0 bg-[#0E0B16]/50"></div>
+                                <span class="relative z-10 text-[10px] text-gray-300 font-bold px-2 py-0.5 rounded bg-black/40">Anteprima</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CARD 3: TEMI & PALETTE COLORI ================= -->
+        <div class="m3-bento-card p-6 lg:col-span-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300 text-lg">
+                        <i class="fa-solid fa-palette"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_theme_title">Palette Colori & Tema Interfaccia</h3>
+                        <p class="text-xs text-gray-400" data-i18n="settings_card_theme_desc">Seleziona una delle 6 palette grafiche. L'intera interfaccia si aggiorna istantaneamente in tempo reale.</p>
+                    </div>
+                </div>
+                <span class="text-xs px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium self-start sm:self-center">
+                    Tema Attivo: <span id="active-theme-name" class="font-bold">Cosmic Purple (Default)</span>
+                </span>
+            </div>
+
+            <!-- Palettes Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4" id="theme-palette-grid">
+                <!-- Theme 1: Cosmic Purple (Default) -->
+                <div onclick="selectTheme('cosmic-purple')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-purple-400 transition-all bg-[#0E0B16] flex flex-col justify-between relative group" data-theme-choice="cosmic-purple">
+                    <div>
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%);">
+                            <span class="text-white font-bold text-xs drop-shadow">Default</span>
+                        </div>
+                        <div class="font-bold text-white text-xs mb-1">Cosmic Purple</div>
+                        <div class="text-[10px] text-gray-400">Cyber violet, dark glow</div>
+                    </div>
+                    <div class="mt-3 flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #A855F7;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #6750A4;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #0E0B16; border: 1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                </div>
+
+                <!-- Theme 2: Midnight Ocean -->
+                <div onclick="selectTheme('midnight-ocean')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-sky-400 transition-all bg-[#060D18] flex flex-col justify-between relative group" data-theme-choice="midnight-ocean">
+                    <div>
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);">
+                            <span class="text-white font-bold text-xs drop-shadow">Oceanic</span>
+                        </div>
+                        <div class="font-bold text-white text-xs mb-1">Midnight Ocean</div>
+                        <div class="text-[10px] text-gray-400">Navy blue, electric cyan</div>
+                    </div>
+                    <div class="mt-3 flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #38BDF8;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #0284C7;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #060D18; border: 1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                </div>
+
+                <!-- Theme 3: Emerald Matrix -->
+                <div onclick="selectTheme('emerald-matrix')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-emerald-400 transition-all bg-[#05130E] flex flex-col justify-between relative group" data-theme-choice="emerald-matrix">
+                    <div>
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #34D399 0%, #059669 100%);">
+                            <span class="text-white font-bold text-xs drop-shadow">Matrix</span>
+                        </div>
+                        <div class="font-bold text-white text-xs mb-1">Emerald Matrix</div>
+                        <div class="text-[10px] text-gray-400">Obsidian, cyber mint</div>
+                    </div>
+                    <div class="mt-3 flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #34D399;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #059669;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #05130E; border: 1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                </div>
+
+                <!-- Theme 4: Amber Sunset -->
+                <div onclick="selectTheme('amber-sunset')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-amber-400 transition-all bg-[#140C07] flex flex-col justify-between relative group" data-theme-choice="amber-sunset">
+                    <div>
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #F59E0B 0%, #EA580C 100%);">
+                            <span class="text-white font-bold text-xs drop-shadow">Sunset</span>
+                        </div>
+                        <div class="font-bold text-white text-xs mb-1">Amber Sunset</div>
+                        <div class="text-[10px] text-gray-400">Warm amber & coral</div>
+                    </div>
+                    <div class="mt-3 flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #F59E0B;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #EA580C;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #140C07; border: 1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                </div>
+
+                <!-- Theme 5: Titanium Slate -->
+                <div onclick="selectTheme('titanium-slate')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-slate-400 transition-all bg-[#0F172A] flex flex-col justify-between relative group" data-theme-choice="titanium-slate">
+                    <div>
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #94A3B8 0%, #475569 100%);">
+                            <span class="text-white font-bold text-xs drop-shadow">Slate</span>
+                        </div>
+                        <div class="font-bold text-white text-xs mb-1">Titanium Slate</div>
+                        <div class="text-[10px] text-gray-400">Graphite, monochrome</div>
+                    </div>
+                    <div class="mt-3 flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #CBD5E1;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #64748B;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #0F172A; border: 1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                </div>
+
+                <!-- Theme 6: Crimson Cyber -->
+                <div onclick="selectTheme('crimson-cyber')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-rose-400 transition-all bg-[#14080D] flex flex-col justify-between relative group" data-theme-choice="crimson-cyber">
+                    <div>
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #FB7185 0%, #E11D48 100%);">
+                            <span class="text-white font-bold text-xs drop-shadow">Cyber</span>
+                        </div>
+                        <div class="font-bold text-white text-xs mb-1">Crimson Cyber</div>
+                        <div class="text-[10px] text-gray-400">Ruby & neon crimson</div>
+                    </div>
+                    <div class="mt-3 flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #F43F5E;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #881337;"></span>
+                        <span class="w-3.5 h-3.5 rounded-full" style="background: #14080D; border: 1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CARD 4: BRANDING & IDENTITÀ ================= -->
+        <div class="m3-bento-card p-6 lg:col-span-2">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-300 text-lg">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white" data-i18n="settings_card_brand_title">Branding & Identità Piattaforma</h3>
+                    <p class="text-xs text-gray-400" data-i18n="settings_card_brand_desc">Sostituisci il nome dell'applicazione, il logo e la favicon per personalizzare interamente la piattaforma.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="app_name_label">Nome Applicazione</label>
+                    <input type="text" id="setting-app-name" class="form-control text-sm" value="Access Sphere" placeholder="es. Acme Identity Hub">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="app_tagline_label">Slogan / Sottotitolo</label>
+                    <input type="text" id="setting-app-tagline" class="form-control text-sm" value="Gestione Identità & Accessi" placeholder="es. Single Sign-On Enterprise">
+                </div>
+
+                <!-- Logo Upload -->
+                <div>
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="upload_logo_label">Logo Personalizzato (PNG, SVG)</label>
+                    <input type="file" id="setting-logo-file" accept="image/*" class="form-control text-xs" onchange="handleLogoUpload(event)">
+                    <div class="flex items-center gap-3 mt-2">
+                        <img id="logo-preview-img" src="/img/logo-minimal.svg" class="w-9 h-9 rounded-lg bg-black/40 p-1 border border-white/10" alt="Logo preview">
+                        <span class="text-[11px] text-gray-400">Anteprima Logo</span>
+                    </div>
+                </div>
+
+                <!-- Favicon Upload -->
+                <div>
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="upload_favicon_label">Favicon (.ico, PNG, SVG)</label>
+                    <input type="file" id="setting-favicon-file" accept="image/*" class="form-control text-xs" onchange="handleFaviconUpload(event)">
+                    <div class="flex items-center gap-3 mt-2">
+                        <img id="favicon-preview-img" src="/img/logo-minimal.svg" class="w-6 h-6 rounded bg-black/40 p-0.5 border border-white/10" alt="Favicon preview">
+                        <span class="text-[11px] text-gray-400">Anteprima Favicon</span>
+                    </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="footer_copyright_label">Testo Copyright Footer</label>
+                    <input type="text" id="setting-footer-copyright" class="form-control text-sm" value="© 2026 Access Sphere" placeholder="es. © 2026 Acme Corp. Tutti i diritti riservati.">
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="privacy_policy_url_label">URL Privacy Policy</label>
+                    <input type="text" id="setting-privacy-url" class="form-control text-sm" value="/privacy-policy">
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="cookie_policy_url_label">URL Cookie Policy</label>
+                    <input type="text" id="setting-cookie-url" class="form-control text-sm" value="/cookie-policy">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="support_email_label">Email o Link di Supporto</label>
+                    <input type="text" id="setting-support-email" class="form-control text-sm" value="support@accesssphere.io" placeholder="es. helpdesk@company.com">
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CARD 5: BACKUP & RIPRISTINO ================= -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-lg">
+                        <i class="fa-solid fa-box-archive"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_backup_title">Backup & Ripristino</h3>
+                        <p class="text-xs text-gray-400" data-i18n="settings_card_backup_desc">Esporta l'intero stato dell'applicazione (utenti, client, impostazioni) o ripristinalo.</p>
+                    </div>
+                </div>
+
+                <!-- Export Section -->
+                <div class="p-4 rounded-xl bg-purple-950/25 border border-purple-500/20 mb-4">
+                    <div class="text-xs font-bold text-white mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-down text-purple-400"></i> Esportazione Dati
+                    </div>
+                    <p class="text-[11px] text-gray-400 mb-3">Genera un archivio JSON istantaneo con tutti gli utenti, ruoli, client OAuth e impostazioni.</p>
+                    <button type="button" onclick="handleExportBackup()" class="m3-btn-secondary w-full justify-center py-2.5 text-xs font-semibold">
+                        <i class="fa-solid fa-download mr-1.5"></i> <span data-i18n="btn_export_backup">Esporta Backup Completo</span>
+                    </button>
+                </div>
+
+                <!-- Restore Section -->
+                <div class="p-4 rounded-xl bg-rose-950/20 border border-rose-500/20">
+                    <div class="text-xs font-bold text-rose-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up text-rose-400"></i> Ripristino Snapshot
+                    </div>
+                    <p class="text-[11px] text-gray-400 mb-2">Carica un file JSON di backup precedente per effettuare il restore.</p>
+                    <input type="file" id="setting-restore-file" accept=".json" class="form-control text-xs mb-3">
+                    <button type="button" onclick="handleRestoreBackup()" class="m3-btn-danger w-full justify-center py-2.5 text-xs font-semibold">
+                        <i class="fa-solid fa-arrow-rotate-left mr-1.5"></i> <span data-i18n="btn_restore_backup">Ripristina da File</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-purple-500/15 text-[10px] text-amber-400/90 flex items-center gap-1.5">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span data-i18n="restore_warning">Il ripristino aggiornerà gli utenti, i client e i temi presenti nel file.</span>
+            </div>
         </div>
 
     </div>
@@ -978,9 +1368,11 @@
         const dashboardView = document.getElementById("view-dashboard");
         const usersView = document.getElementById("view-users");
         const clientsView = document.getElementById("view-clients");
+        const settingsView = document.getElementById("view-settings");
         const btnNavDashboard = document.getElementById("nav-btn-dashboard");
         const btnNavUsers = document.getElementById("nav-btn-users");
         const btnNavClients = document.getElementById("nav-btn-clients");
+        const btnNavSettings = document.getElementById("nav-btn-settings");
         const usersAction = document.getElementById("users-primary-action");
         const clientsAction = document.getElementById("clients-primary-action");
         const subtitle = document.getElementById("header-subtitle");
@@ -989,9 +1381,11 @@
             if (dashboardView) dashboardView.style.display = "block";
             if (usersView) usersView.style.display = "none";
             if (clientsView) clientsView.style.display = "none";
+            if (settingsView) settingsView.style.display = "none";
             if (btnNavDashboard) btnNavDashboard.classList.add("active");
             if (btnNavUsers) btnNavUsers.classList.remove("active");
             if (btnNavClients) btnNavClients.classList.remove("active");
+            if (btnNavSettings) btnNavSettings.classList.remove("active");
             if (usersAction) usersAction.style.display = "none";
             if (clientsAction) clientsAction.style.display = "none";
             if (subtitle) subtitle.innerText = "Centro di Controllo & Recap";
@@ -1005,9 +1399,11 @@
             if (dashboardView) dashboardView.style.display = "none";
             if (usersView) usersView.style.display = "none";
             if (clientsView) clientsView.style.display = "block";
+            if (settingsView) settingsView.style.display = "none";
             if (btnNavDashboard) btnNavDashboard.classList.remove("active");
             if (btnNavUsers) btnNavUsers.classList.remove("active");
             if (btnNavClients) btnNavClients.classList.add("active");
+            if (btnNavSettings) btnNavSettings.classList.remove("active");
             if (usersAction) usersAction.style.display = "none";
             if (clientsAction) clientsAction.style.display = "block";
             if (subtitle) subtitle.innerText = "OAuth 2.0 Client Registry";
@@ -1025,14 +1421,34 @@
                     getClients();
                 }
             }
+        } else if (viewName === "settings") {
+            if (dashboardView) dashboardView.style.display = "none";
+            if (usersView) usersView.style.display = "none";
+            if (clientsView) clientsView.style.display = "none";
+            if (settingsView) settingsView.style.display = "block";
+            if (btnNavDashboard) btnNavDashboard.classList.remove("active");
+            if (btnNavUsers) btnNavUsers.classList.remove("active");
+            if (btnNavClients) btnNavClients.classList.remove("active");
+            if (btnNavSettings) btnNavSettings.classList.add("active");
+            if (usersAction) usersAction.style.display = "none";
+            if (clientsAction) clientsAction.style.display = "none";
+            if (subtitle) subtitle.innerText = "Impostazioni Applicazione & Personalizzazione";
+            document.title = "Access Sphere - Impostazioni";
+
+            if (pushState) {
+                history.pushState({view: "settings"}, "", "/app/settings");
+            }
+            loadSettingsView();
         } else {
             // users
             if (dashboardView) dashboardView.style.display = "none";
             if (clientsView) clientsView.style.display = "none";
+            if (settingsView) settingsView.style.display = "none";
             if (usersView) usersView.style.display = "block";
             if (btnNavDashboard) btnNavDashboard.classList.remove("active");
             if (btnNavUsers) btnNavUsers.classList.add("active");
             if (btnNavClients) btnNavClients.classList.remove("active");
+            if (btnNavSettings) btnNavSettings.classList.remove("active");
             if (clientsAction) clientsAction.style.display = "none";
             if (usersAction) usersAction.style.display = "block";
             if (subtitle) subtitle.innerText = "Gestione Identità & Accessi";
@@ -1076,8 +1492,372 @@
             refreshClients();
         } else if (currentView === "dashboard") {
             refreshDashboardData();
+        } else if (currentView === "settings") {
+            loadSettingsView();
         } else {
             refreshUsers();
+        }
+    }
+
+    // ============================================
+    // APPLICATION SETTINGS CONTROLLER LOGIC
+    // ============================================
+    let currentSettingsData = null;
+
+    async function loadSettingsView() {
+        const savedLang = localStorage.getItem("access_sphere_language") || (navigator.language.slice(0, 2) === "it" ? "it" : "en");
+        const rIt = document.getElementById("lang-radio-it");
+        const rEn = document.getElementById("lang-radio-en");
+        if (rIt && rEn) {
+            rIt.checked = (savedLang === "it");
+            rEn.checked = (savedLang === "en");
+        }
+
+        const activeTheme = localStorage.getItem("access_sphere_theme") || "cosmic-purple";
+        updateThemeUISelection(activeTheme);
+
+        try {
+            const data = await AppSettings.loadAdminSettings();
+            if (data) {
+                currentSettingsData = data;
+                populateSettingsForm(data);
+            }
+        } catch (e) {
+            console.warn("Could not load admin settings:", e);
+            const cached = localStorage.getItem("access_sphere_settings");
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    populateSettingsForm(parsed);
+                } catch (err) {}
+            }
+        }
+    }
+
+    function populateSettingsForm(data) {
+        if (!data) return;
+        if (data.defaultLanguage && (data.defaultLanguage === "it" || data.defaultLanguage === "en")) {
+            const radioIt = document.getElementById("lang-radio-it");
+            const radioEn = document.getElementById("lang-radio-en");
+            if (radioIt && radioEn) {
+                radioIt.checked = (data.defaultLanguage === "it");
+                radioEn.checked = (data.defaultLanguage === "en");
+            }
+        }
+        if (data.appName) document.getElementById("setting-app-name").value = data.appName;
+        if (data.appTagline) document.getElementById("setting-app-tagline").value = data.appTagline;
+        if (data.footerCopyright) document.getElementById("setting-footer-copyright").value = data.footerCopyright;
+        if (data.privacyPolicyUrl) document.getElementById("setting-privacy-url").value = data.privacyPolicyUrl;
+        if (data.cookiePolicyUrl) document.getElementById("setting-cookie-url").value = data.cookiePolicyUrl;
+        if (data.supportEmail) document.getElementById("setting-support-email").value = data.supportEmail;
+
+        if (data.logoUrl) {
+            const logoImg = document.getElementById("logo-preview-img");
+            if (logoImg) logoImg.src = data.logoUrl;
+        }
+        if (data.faviconUrl) {
+            const favImg = document.getElementById("favicon-preview-img");
+            if (favImg) favImg.src = data.faviconUrl;
+        }
+
+        if (data.loginMode === "CUSTOM_BACKGROUND") {
+            const radioBg = document.getElementById("login-mode-custom-bg");
+            if (radioBg) radioBg.checked = true;
+            handleLoginModeChange("CUSTOM_BACKGROUND");
+        } else {
+            const radioShowcase = document.getElementById("login-mode-showcase");
+            if (radioShowcase) radioShowcase.checked = true;
+            handleLoginModeChange("SHOWCASE");
+        }
+
+        if (data.loginBgUrl) {
+            const previewBox = document.getElementById("bg-preview-box");
+            if (previewBox) previewBox.style.backgroundImage = `url('${data.loginBgUrl}')`;
+        }
+        if (data.loginBgOpacity !== undefined) {
+            const slider = document.getElementById("setting-login-bg-opacity");
+            if (slider) slider.value = data.loginBgOpacity;
+            updateBgOpacityPreview(data.loginBgOpacity);
+        }
+
+        if (data.activeTheme) {
+            updateThemeUISelection(data.activeTheme);
+        }
+    }
+
+    function selectTheme(themeName) {
+        AppSettings.applyTheme(themeName);
+        updateThemeUISelection(themeName);
+    }
+
+    function updateThemeUISelection(themeName) {
+        const themeLabels = {
+            "cosmic-purple": "Cosmic Purple (Default)",
+            "midnight-ocean": "Midnight Ocean",
+            "emerald-matrix": "Emerald Matrix",
+            "amber-sunset": "Amber Sunset",
+            "titanium-slate": "Titanium Slate",
+            "crimson-cyber": "Crimson Cyber"
+        };
+        const labelEl = document.getElementById("active-theme-name");
+        if (labelEl) labelEl.innerText = themeLabels[themeName] || themeName;
+
+        document.querySelectorAll(".theme-card").forEach(card => {
+            const choice = card.getAttribute("data-theme-choice");
+            if (choice === themeName) {
+                card.classList.add("ring-2", "ring-purple-400", "shadow-[0_0_20px_rgba(168,85,247,0.4)]");
+            } else {
+                card.classList.remove("ring-2", "ring-purple-400", "shadow-[0_0_20px_rgba(168,85,247,0.4)]");
+            }
+        });
+    }
+
+    function handleLoginModeChange(mode) {
+        const container = document.getElementById("login-bg-upload-container");
+        if (container) {
+            container.style.display = (mode === "CUSTOM_BACKGROUND") ? "block" : "none";
+        }
+    }
+
+    async function handleLogoUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const b64 = await AppSettings.fileToBase64(file);
+        document.getElementById("logo-preview-img").src = b64;
+    }
+
+    async function handleFaviconUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const b64 = await AppSettings.fileToBase64(file);
+        document.getElementById("favicon-preview-img").src = b64;
+    }
+
+    async function handleBgFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const b64 = await AppSettings.fileToBase64(file);
+        const previewBox = document.getElementById("bg-preview-box");
+        if (previewBox) previewBox.style.backgroundImage = `url('${b64}')`;
+    }
+
+    function updateBgOpacityPreview(val) {
+        const span = document.getElementById("bg-opacity-val");
+        if (span) span.innerText = val + "%";
+        const overlay = document.getElementById("bg-preview-overlay");
+        if (overlay) overlay.style.backgroundColor = `rgba(14, 11, 22, ${val / 100})`;
+    }
+
+    async function saveAllSettings() {
+        const appName = document.getElementById("setting-app-name").value;
+        const appTagline = document.getElementById("setting-app-tagline").value;
+        const footerCopyright = document.getElementById("setting-footer-copyright").value;
+        const privacyPolicyUrl = document.getElementById("setting-privacy-url").value;
+        const cookiePolicyUrl = document.getElementById("setting-cookie-url").value;
+        const supportEmail = document.getElementById("setting-support-email").value;
+        const logoUrl = document.getElementById("logo-preview-img").src;
+        const faviconUrl = document.getElementById("favicon-preview-img").src;
+
+        const isCustomBg = document.getElementById("login-mode-custom-bg").checked;
+        const loginMode = isCustomBg ? "CUSTOM_BACKGROUND" : "SHOWCASE";
+        const bgPreviewBox = document.getElementById("bg-preview-box");
+        let loginBgUrl = null;
+        if (bgPreviewBox && bgPreviewBox.style.backgroundImage) {
+            loginBgUrl = bgPreviewBox.style.backgroundImage.slice(5, -2);
+        }
+        const loginBgOpacity = parseInt(document.getElementById("setting-login-bg-opacity").value, 10);
+        const activeTheme = localStorage.getItem("access_sphere_theme") || "cosmic-purple";
+        let defaultLanguage = localStorage.getItem("access_sphere_language") || "auto";
+        const radioIt = document.getElementById("lang-radio-it");
+        const radioEn = document.getElementById("lang-radio-en");
+        if (radioIt && radioIt.checked) defaultLanguage = "it";
+        else if (radioEn && radioEn.checked) defaultLanguage = "en";
+
+        const payload = {
+            appName,
+            appTagline,
+            footerCopyright,
+            privacyPolicyUrl,
+            cookiePolicyUrl,
+            supportEmail,
+            logoUrl,
+            faviconUrl,
+            loginMode,
+            loginBgUrl,
+            loginBgOpacity,
+            activeTheme,
+            defaultLanguage
+        };
+
+        try {
+            if (typeof showLoader === "function") showLoader();
+            await AppSettings.saveAdminSettings(payload);
+            if (typeof hideLoader === "function") hideLoader();
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Impostazioni Salvate!',
+                    text: 'Le modifiche sono state applicate con successo all\'intera applicazione.',
+                    background: '#1e192c',
+                    color: '#fff',
+                    confirmButtonColor: '#A855F7'
+                });
+            } else {
+                alert("Impostazioni salvate con successo!");
+            }
+        } catch (err) {
+            if (typeof hideLoader === "function") hideLoader();
+            console.error("Save settings error:", err);
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errore nel salvataggio',
+                    text: err.message || 'Si è verificato un errore durante il salvataggio delle impostazioni.',
+                    background: '#1e192c',
+                    color: '#fff',
+                    confirmButtonColor: '#A855F7'
+                });
+            }
+        }
+    }
+
+    async function resetSettingsToDefault() {
+        if (window.Swal) {
+            const confirm = await Swal.fire({
+                title: 'Ripristinare le impostazioni predefinite?',
+                text: 'Il nome, i loghi, il tema e la modalità di login torneranno ai valori iniziali.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sì, ripristina',
+                cancelButtonText: 'Annulla',
+                background: '#1e192c',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
+            if (!confirm.isConfirmed) return;
+        }
+
+        selectTheme('cosmic-purple');
+        document.getElementById("setting-app-name").value = "Access Sphere";
+        document.getElementById("setting-app-tagline").value = "Gestione Identità & Accessi";
+        document.getElementById("setting-footer-copyright").value = "© 2026 Access Sphere";
+        document.getElementById("setting-privacy-url").value = "/privacy-policy";
+        document.getElementById("setting-cookie-url").value = "/cookie-policy";
+        document.getElementById("setting-support-email").value = "support@accesssphere.io";
+        document.getElementById("logo-preview-img").src = "/img/logo-minimal.svg";
+        document.getElementById("favicon-preview-img").src = "/img/logo-minimal.svg";
+        document.getElementById("login-mode-showcase").checked = true;
+        handleLoginModeChange("SHOWCASE");
+        await saveAllSettings();
+    }
+
+    async function handleExportBackup() {
+        try {
+            if (typeof showLoader === "function") showLoader();
+            await AppSettings.exportBackup();
+            if (typeof hideLoader === "function") hideLoader();
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Backup Esportato!',
+                    text: 'Il file JSON di backup è stato scaricato sul tuo dispositivo.',
+                    background: '#1e192c',
+                    color: '#fff',
+                    confirmButtonColor: '#A855F7'
+                });
+            }
+        } catch (e) {
+            if (typeof hideLoader === "function") hideLoader();
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errore Esportazione',
+                    text: e.message || 'Impossibile creare il backup.',
+                    background: '#1e192c',
+                    color: '#fff',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+    }
+
+    async function handleRestoreBackup() {
+        const fileInput = document.getElementById("setting-restore-file");
+        if (!fileInput || !fileInput.files[0]) {
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Nessun file selezionato',
+                    text: 'Seleziona un file di backup .json valido prima di avviare il ripristino.',
+                    background: '#1e192c',
+                    color: '#fff',
+                    confirmButtonColor: '#A855F7'
+                });
+            }
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const text = await file.text();
+        let backupObj;
+        try {
+            backupObj = JSON.parse(text);
+        } catch (e) {
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File non valido',
+                    text: 'Il file selezionato non è un JSON valido.',
+                    background: '#1e192c',
+                    color: '#fff',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+            return;
+        }
+
+        if (window.Swal) {
+            const confirm = await Swal.fire({
+                title: 'Conferma Ripristino Backup',
+                html: `Sei sicuro di voler ripristinare il backup?<br><small class="text-gray-400">Versione: ${backupObj.version || 'N/D'} - Data: ${backupObj.timestamp || 'N/D'}</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sì, procedi al ripristino',
+                cancelButtonText: 'Annulla',
+                background: '#1e192c',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
+            if (!confirm.isConfirmed) return;
+        }
+
+        try {
+            if (typeof showLoader === "function") showLoader();
+            await AppSettings.restoreBackup(backupObj);
+            if (typeof hideLoader === "function") hideLoader();
+            if (window.Swal) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Ripristino Completato!',
+                    text: 'Tutti i dati e le impostazioni sono stati ripristinati con successo. La pagina verrà ricaricata.',
+                    background: '#1e192c',
+                    color: '#fff',
+                    confirmButtonColor: '#A855F7'
+                });
+            }
+            window.location.reload();
+        } catch (e) {
+            if (typeof hideLoader === "function") hideLoader();
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errore Ripristino',
+                    text: e.message || 'Impossibile completare il ripristino.',
+                    background: '#1e192c',
+                    color: '#fff',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
         }
     }
 
@@ -1150,10 +1930,13 @@
 
         // 4. Attivazione istantanea della vista corretta in base alla URL
         const path = window.location.pathname;
-        if (path.includes("clients")) {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (path.includes("clients") || urlParams.get("view") === "clients") {
             switchDashboardView("clients", false);
-        } else if (path.includes("users")) {
+        } else if (path.includes("users") || urlParams.get("view") === "users") {
             switchDashboardView("users", false);
+        } else if (path.includes("settings") || urlParams.get("view") === "settings") {
+            switchDashboardView("settings", false);
         } else {
             switchDashboardView("dashboard", false);
         }

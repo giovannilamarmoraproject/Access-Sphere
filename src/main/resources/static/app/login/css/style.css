@@ -52,7 +52,7 @@ body {
   will-change: transform;
   transform: translateX(100%);
   z-index: 0;
-  background-color: #0E0B16 !important;
+  background-color: var(--m3-surface) !important;
 }
 
 .page--current {
@@ -114,9 +114,9 @@ body {
   gap: 8px;
   padding: 8px 18px;
   border-radius: 9999px !important;
-  background: rgba(30, 23, 46, 0.75) !important;
-  border: 1.5px solid #A855F7 !important;
-  color: #D0BCFF !important;
+  background: var(--md-surface-card, rgba(30, 23, 46, 0.75)) !important;
+  border: 1.5px solid var(--theme-primary, #A855F7) !important;
+  color: var(--theme-accent, #D0BCFF) !important;
   font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none !important;
@@ -125,10 +125,10 @@ body {
 }
 
 .showcase-home-btn:hover {
-  background: rgba(168, 85, 247, 0.25) !important;
-  border-color: #C084FC !important;
+  background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.25) !important;
+  border-color: var(--theme-accent, #C084FC) !important;
   color: #FFFFFF !important;
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 16px var(--theme-glow, rgba(168, 85, 247, 0.4));
   transform: translateY(-1px);
 }
 
@@ -138,40 +138,40 @@ body {
   gap: 8px;
   padding: 5px 14px;
   border-radius: 9999px !important;
-  background: rgba(168, 85, 247, 0.15) !important;
-  border: 1.5px solid #A855F7 !important;
+  background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15) !important;
+  border: 1.5px solid var(--theme-primary, #A855F7) !important;
   font-size: 11px;
   font-family: monospace;
-  color: #D0BCFF !important;
+  color: var(--theme-accent, #D0BCFF) !important;
 }
 
 .showcase-logo-box {
   width: 64px;
   height: 64px;
   border-radius: 20px;
-  background: rgba(24, 18, 38, 0.85) !important;
-  border: 1.5px solid #A855F7 !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(168, 85, 247, 0.4) !important;
+  background: var(--md-surface-card, rgba(24, 18, 38, 0.85)) !important;
+  border: 1.5px solid var(--theme-primary, #A855F7) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px var(--theme-glow, rgba(168, 85, 247, 0.4)) !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #D0BCFF;
+  color: var(--theme-accent, #D0BCFF);
   margin-bottom: 24px;
 }
 
 /* PANNELLO SINISTRO DESKTOP (CINEMATIC HERO SHOWCASE) */
 .left-background {
   height: 100vh;
-  background: radial-gradient(circle at 20% 25%, rgba(168, 85, 247, 0.22) 0%, transparent 45%),
-              radial-gradient(circle at 75% 75%, rgba(103, 80, 164, 0.28) 0%, transparent 55%),
-              radial-gradient(ellipse at 50% 50%, #161125 0%, #0E0B16 100%);
+  background: radial-gradient(circle at 20% 25%, var(--theme-ambient-1, rgba(168, 85, 247, 0.22)) 0%, transparent 45%),
+              radial-gradient(circle at 75% 75%, var(--theme-ambient-2, rgba(103, 80, 164, 0.28)) 0%, transparent 55%),
+              radial-gradient(ellipse at 50% 50%, var(--m3-surface-container, #161125) 0%, var(--m3-surface, #0E0B16) 100%);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 48px;
-  border-right: 1px solid rgba(168, 85, 247, 0.2);
+  border-right: 1px solid rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2);
 }
 
 .ambient-glow-1 {
@@ -179,7 +179,7 @@ body {
   width: 480px;
   height: 480px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--theme-ambient-1, rgba(168, 85, 247, 0.18)) 0%, transparent 70%);
   top: -100px;
   left: -80px;
   pointer-events: none;
@@ -191,7 +191,7 @@ body {
   width: 400px;
   height: 400px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--theme-ambient-2, rgba(99, 102, 241, 0.15)) 0%, transparent 70%);
   bottom: -60px;
   right: -60px;
   pointer-events: none;
@@ -207,7 +207,7 @@ body {
   background: rgba(24, 18, 38, 0.72);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+  border: 1.5px solid rgba(var(--theme-primary-rgb, 168, 85, 247), 0.35) !important;
   color: #E6E1E5;
   font-size: 0.88rem;
   transition: all 0.3s ease;
@@ -215,20 +215,20 @@ body {
 
 .bento-feature-badge:hover {
   transform: translateY(-2px);
-  border-color: #A855F7 !important;
-  background: rgba(32, 24, 52, 0.85);
-  box-shadow: 0 10px 25px -5px rgba(124, 77, 255, 0.25);
+  border-color: var(--theme-primary, #A855F7) !important;
+  background: rgba(var(--theme-surface-rgb, 32, 24, 52), 0.85);
+  box-shadow: 0 10px 25px -5px var(--theme-glow, rgba(124, 77, 255, 0.25));
 }
 
 .hero-text-gradient {
-  background: linear-gradient(135deg, #FFFFFF 15%, #D0BCFF 55%, #A855F7 100%);
+  background: linear-gradient(135deg, #FFFFFF 15%, var(--theme-accent, #D0BCFF) 55%, var(--theme-primary, #A855F7) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 /* PANNELLO DESTRO (SURFACE & FORMS) */
 .right-panel {
-  background-color: #0E0B16;
+  background-color: var(--m3-surface, #0E0B16);
 }
 
 /* BANNER IMMAGINI IN TESTATA (A TUTTA LARGHEZZA, SENZA BORDI, FONDO ARROTONDATO) */
@@ -267,7 +267,7 @@ body {
   z-index: 10;
   width: 90px;
   height: 90px;
-  filter: drop-shadow(0 6px 26px rgba(168, 85, 247, 0.65));
+  filter: drop-shadow(0 6px 26px var(--theme-glow, rgba(168, 85, 247, 0.65)));
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -276,24 +276,24 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 9999px !important;
-  background: rgba(30, 23, 46, 0.75) !important;
-  border: 1.5px solid #A855F7 !important;
-  color: #D0BCFF !important;
+  background: var(--md-surface-card, rgba(30, 23, 46, 0.75)) !important;
+  border: 1.5px solid var(--theme-primary, #A855F7) !important;
+  color: var(--theme-accent, #D0BCFF) !important;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.25s ease !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 10px rgba(168, 85, 247, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 10px var(--theme-glow, rgba(168, 85, 247, 0.25));
   flex-shrink: 0;
 }
 
 .back-btn:hover {
-  background: rgba(168, 85, 247, 0.25) !important;
-  border-color: #C084FC !important;
+  background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.25) !important;
+  border-color: var(--theme-accent, #C084FC) !important;
   color: #FFFFFF !important;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(168, 85, 247, 0.4);
+  box-shadow: 0 6px 18px var(--theme-glow, rgba(168, 85, 247, 0.4));
 }
 
 .login-logo-glow:hover {
@@ -308,8 +308,8 @@ body {
   background: rgba(14, 11, 22, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1.5px solid #A855F7 !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 16px rgba(168, 85, 247, 0.4);
+  border: 1.5px solid var(--theme-primary, #A855F7) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 16px var(--theme-glow, rgba(168, 85, 247, 0.4));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -317,8 +317,8 @@ body {
 
 /* INPUT FORM IN STILE M3 GLASS */
 .form-input {
-  background: #231B34 !important;
-  border: 1.5px solid rgba(208, 188, 255, 0.28) !important;
+  background: var(--theme-input-bg, #231B34) !important;
+  border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
   border-radius: 16px !important;
   color: #ffffff !important;
   font-weight: 500 !important;
@@ -326,25 +326,25 @@ body {
 }
 
 .form-input:hover {
-  background: #2A203F !important;
-  border-color: rgba(208, 188, 255, 0.45) !important;
+  background: var(--theme-input-hover, #2A203F) !important;
+  border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45) !important;
 }
 
 .form-input:focus {
-  background: #31254A !important;
-  border-color: #A855F7 !important;
-  box-shadow: 0 0 0 3.5px rgba(168, 85, 247, 0.32) !important;
+  background: var(--theme-input-focus, #31254A) !important;
+  border-color: var(--theme-primary, #A855F7) !important;
+  box-shadow: 0 0 0 3.5px var(--theme-glow, rgba(168, 85, 247, 0.32)) !important;
   outline: none !important;
 }
 
 .form-input::placeholder {
-  color: rgba(208, 188, 255, 0.55) !important;
+  color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.55) !important;
   opacity: 1 !important;
 }
 
 /* AUTOFILL FIX COORDINATO */
 input:-webkit-autofill {
-  box-shadow: 0 0 0px 1000px #231B34 inset !important;
+  box-shadow: 0 0 0px 1000px var(--theme-input-bg, #231B34) inset !important;
   -webkit-text-fill-color: #ffffff !important;
   caret-color: #ffffff;
   transition: background-color 9999s ease-out, color 9999s ease-out;
@@ -357,11 +357,11 @@ input:-webkit-autofill {
 #otp_verification_code_button,
 #verifyOTP {
   border-radius: 9999px !important;
-  background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%) !important;
+  background: var(--m3-primary-gradient, linear-gradient(135deg, #A855F7 0%, #6750A4 100%)) !important;
   color: #FFFFFF !important;
   font-weight: 600 !important;
   border: none !important;
-  box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35) !important;
+  box-shadow: 0 4px 18px var(--theme-glow, rgba(168, 85, 247, 0.35)) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   cursor: pointer !important;
 }
@@ -371,9 +371,9 @@ input:-webkit-autofill {
 #changePasswordButton:hover:not(:disabled),
 #otp_verification_code_button:hover:not(:disabled),
 #verifyOTP:hover:not(:disabled) {
-  background: linear-gradient(135deg, #B56BF9 0%, #7961BC 100%) !important;
+  background: var(--theme-primary-hover-grad, linear-gradient(135deg, #B56BF9 0%, #7961BC 100%)) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.55) !important;
+  box-shadow: 0 8px 25px var(--theme-glow, rgba(168, 85, 247, 0.55)) !important;
 }
 
 #loginButton:disabled,
@@ -381,9 +381,9 @@ input:-webkit-autofill {
 #changePasswordButton:disabled,
 #otp_verification_code_button:disabled,
 #verifyOTP:disabled {
-  background: rgba(208, 188, 255, 0.08) !important;
-  color: rgba(208, 188, 255, 0.3) !important;
-  border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+  background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08) !important;
+  color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;
+  border: 1.5px solid rgba(var(--theme-primary-rgb, 168, 85, 247), 0.35) !important;
   box-shadow: none !important;
   cursor: not-allowed !important;
   transform: none !important;
@@ -399,7 +399,7 @@ input:-webkit-autofill {
   -webkit-appearance: none;
   background-color: rgba(255, 255, 255, 0.05) !important;
   background-image: none !important;
-  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+  border: 1px solid rgba(var(--theme-primary-rgb, 168, 85, 247), 0.4) !important;
   border-radius: 9999px !important;
   box-sizing: border-box;
   color: #FFFFFF !important;
@@ -423,9 +423,9 @@ input:-webkit-autofill {
 }
 
 .gsi-material-button:hover {
-  background-color: rgba(208, 188, 255, 0.12) !important;
-  border-color: rgba(208, 188, 255, 0.45) !important;
-  box-shadow: 0 4px 18px rgba(168, 85, 247, 0.25) !important;
+  background-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12) !important;
+  border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45) !important;
+  box-shadow: 0 4px 18px var(--theme-glow, rgba(168, 85, 247, 0.25)) !important;
   transform: translateY(-1px);
 }
 
@@ -471,17 +471,17 @@ input:-webkit-autofill {
 
 /* CASELLE OTP DIGIT: BENTO BOXES CON FOCUS RING */
 .otp-gap input {
-  background: rgba(30, 23, 46, 0.8) !important;
-  border: 2px solid rgba(168, 85, 247, 0.35) !important;
+  background: var(--theme-input-bg, rgba(30, 23, 46, 0.8)) !important;
+  border: 2px solid rgba(var(--theme-primary-rgb, 168, 85, 247), 0.35) !important;
   border-radius: 16px !important;
   color: #FFFFFF !important;
   transition: all 0.2s ease !important;
 }
 
 .otp-gap input:focus {
-  border-color: #A855F7 !important;
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3) !important;
-  background: rgba(38, 29, 58, 0.95) !important;
+  border-color: var(--theme-primary, #A855F7) !important;
+  box-shadow: 0 0 0 3px var(--theme-glow, rgba(168, 85, 247, 0.3)) !important;
+  background: var(--theme-input-focus, rgba(38, 29, 58, 0.95)) !important;
 }
 
 /* ================= CENTRATURA VERTICALE LATO DESKTOP LOGIN ================= */

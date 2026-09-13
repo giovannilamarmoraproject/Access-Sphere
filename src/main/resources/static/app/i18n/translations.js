@@ -5,15 +5,86 @@ let currentLanguage = "en"; // Default language
 let currentTranslations = {};
 
 async function loadTranslations() {
+  detectLanguage();
   try {
-    const response = await fetch("/app/i18n/translations.json");
-    translations = await response.json();
-    detectLanguage();
-    currentTranslations = translations[currentLanguage];
-    applyTranslations();
+    const response = await fetch(`/app/i18n/languages/${currentLanguage}.json`);
+    if (response.ok) {
+      currentTranslations = await response.json();
+      translations[currentLanguage] = currentTranslations;
+    } else {
+      const fallback = await fetch("/app/i18n/translations.json");
+      translations = await fallback.json();
+      currentTranslations = translations[currentLanguage] || translations["en"] || {};
+    }
   } catch (error) {
-    console.error("Error loading translations:", error);
+    console.warn("Falling back to translations.json:", error);
+    try {
+      const fallback = await fetch("/app/i18n/translations.json");
+      translations = await fallback.json();
+      currentTranslations = translations[currentLanguage] || translations["en"] || {};
+    } catch (e) {
+      console.error("Error loading translations:", e);
+    }
   }
+
+  if (!translations[currentLanguage]) {
+    translations[currentLanguage] = currentTranslations || {};
+  }
+
+  // 1. First translate elements with data-i18n
+  translateDOM();
+
+  // 2. Safely apply legacy ID-based translations
+  try {
+    applyTranslations();
+  } catch (e) {
+    console.warn("Legacy applyTranslations warning:", e);
+  }
+
+  // 3. Keep language radio selector in sync
+  syncLanguageUI(currentLanguage);
+}
+
+function translateDOM() {
+  const dict = currentTranslations || translations[currentLanguage];
+  if (!dict) return;
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (dict[key] !== undefined) {
+      el.innerHTML = dict[key];
+    }
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (dict[key] !== undefined) {
+      el.placeholder = dict[key];
+    }
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-title");
+    if (dict[key] !== undefined) {
+      el.title = dict[key];
+    }
+  });
+}
+
+function syncLanguageUI(lang) {
+  const radioIt = document.getElementById("lang-radio-it");
+  const radioEn = document.getElementById("lang-radio-en");
+  if (radioIt && radioEn) {
+    radioIt.checked = (lang === "it");
+    radioEn.checked = (lang === "en");
+  }
+}
+
+async function switchLanguage(lang) {
+  if (lang !== "it" && lang !== "en") lang = "en";
+  currentLanguage = lang;
+  localStorage.setItem("access_sphere_language", lang);
+  localStorage.setItem("app_language", lang);
+  await loadTranslations();
+  if (typeof loadErrorCode === "function") await loadErrorCode();
+  window.dispatchEvent(new CustomEvent("languageChanged", { detail: { language: lang } }));
 }
 
 async function loadErrorCode() {
@@ -21,7 +92,7 @@ async function loadErrorCode() {
     const response = await fetch("/app/i18n/errorCode.json");
     const error_translations = await response.json();
     detectLanguage();
-    errorCode = error_translations[currentLanguage];
+    errorCode = error_translations[currentLanguage] || error_translations["en"];
   } catch (error) {
     console.error("Error loading error code:", error);
   }
@@ -60,8 +131,13 @@ function getErrorCode(error) {
 }
 
 function detectLanguage() {
-  const browserLanguage = navigator.language.slice(0, 2); // Get first 2 chars (e.g., "en", "it")
-  currentLanguage = translations[browserLanguage] ? browserLanguage : "en";
+  const savedLang = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language");
+  if (savedLang && (savedLang === "it" || savedLang === "en")) {
+    currentLanguage = savedLang;
+    return;
+  }
+  const browserLanguage = (navigator.language || navigator.userLanguage || "en").slice(0, 2).toLowerCase();
+  currentLanguage = (browserLanguage === "it") ? "it" : "en";
 }
 
 function applyLanguageOld(id, text, innerHTML = false) {
@@ -71,6 +147,7 @@ function applyLanguageOld(id, text, innerHTML = false) {
 }
 
 function applyLanguage(selector, text, innerHTML = false) {
+  if (text === undefined || text === null) return;
   let elements;
 
   if (selector.startsWith(".")) {
@@ -93,6 +170,7 @@ function applyLanguage(selector, text, innerHTML = false) {
 }
 
 function applyLanguageInputPlaceholder(selector, text) {
+  if (text === undefined || text === null) return;
   let elements;
 
   if (selector.startsWith(".")) {
@@ -119,6 +197,9 @@ document.addEventListener("DOMContentLoaded", loadErrorCode);
  *----------------------------------------------------------
  */
 function applyTranslations() {
+  const dict = (translations && translations[currentLanguage]) || currentTranslations || {};
+  if (!dict || Object.keys(dict).length === 0) return;
+
   /*
    *----------------------------------------------------------
    * Login Page Section
@@ -126,26 +207,28 @@ function applyTranslations() {
    */
   applyLanguage(
     "login_page_tab_title",
-    translations[currentLanguage].login_page_tab_title
+    dict.login_page_tab_title
   );
   applyLanguage(
     "login_page_forgot_password",
-    translations[currentLanguage].login_page_forgot_password
+    dict.login_page_forgot_password
   );
-  applyLanguage("loginButton", translations[currentLanguage].loginButton);
-  applyLanguage(".googleLogin", translations[currentLanguage].googleLogin);
+  applyLanguage("loginButton", dict.loginButton);
+  applyLanguage(".googleLogin", dict.googleLogin);
   applyLanguage(
     "login_page_sign_up_text",
-    translations[currentLanguage].login_page_sign_up_text
+    dict.login_page_sign_up_text
   );
-  applyLanguage(
-    ".footer_copyright_text",
-    translations[currentLanguage].footer_copyright_text.replace(
-      "#YEAR#",
-      new Date().getFullYear()
-    ),
-    true
-  );
+  if (dict.footer_copyright_text) {
+    applyLanguage(
+      ".footer_copyright_text",
+      dict.footer_copyright_text.replace(
+        "#YEAR#",
+        new Date().getFullYear()
+      ),
+      true
+    );
+  }
   /*
    *----------------------------------------------------------
    * Forgot Page Section

@@ -390,7 +390,7 @@ button.m3-action-pill i {
   padding: 2.5rem 2rem !important;
 }
 
-.m3-card, .card {
+.m3-card, .card, .m3-bento-card {
   background: var(--md-surface-card) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
@@ -398,6 +398,15 @@ button.m3-action-pill i {
   border-radius: 26px !important;
   color: #E6E1E5 !important;
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.m3-bento-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(208, 188, 255, 0.45) !important;
+  box-shadow: 0 20px 40px -15px rgba(124, 77, 255, 0.32) !important;
 }
 
 /* -------------------------------------------

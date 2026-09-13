@@ -6,7 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Access Sphere - Console di Amministrazione</title>
   
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <!-- Immediate Zero-Flicker Theme Application -->
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem("access_sphere_theme");
+        if (!theme) {
+          var s = localStorage.getItem("access_sphere_settings");
+          if (s) {
+            var parsed = JSON.parse(s);
+            theme = parsed.activeTheme;
+          }
+        }
+        document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
@@ -64,8 +81,10 @@
   <script src="/app/user/js/users.js"></script>
   <script src="/app/client/js/clients.js"></script>
 
-  <!-- Unified M3 Dashboard Theme -->
+  <!-- Unified M3 Dashboard Theme & Themes Palette -->
   <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0" />
+  <link rel="stylesheet" href="/css/m3-themes.css" />
+  <script src="/app/shared/settings.js"></script>
   <!-- Early Synchronous Token Capture -->
   <script>
     (function () {

@@ -6,6 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Access Sphere - Piattaforma Identity, OAuth2 & Security Management</title>
 
+    <!-- Immediate Zero-Flicker Theme Application -->
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem("access_sphere_theme");
+                if (!theme) {
+                    var s = localStorage.getItem("access_sphere_settings");
+                    if (s) {
+                        var parsed = JSON.parse(s);
+                        theme = parsed.activeTheme;
+                    }
+                }
+                document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
+            } catch (e) {}
+        })();
+    </script>
+
     <!-- DNS Prefetch & Preconnect for Ultra-Fast CDN Loading -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
@@ -42,6 +59,10 @@
     <!-- Global App Config & Versioning -->
     <script src="/app/shared/config.js"></script>
 
+    <!-- Unified Theme Engine & App Settings -->
+    <link rel="stylesheet" href="/css/m3-themes.css"/>
+    <script src="/app/shared/settings.js"></script>
+
     <style>
         :root {
             --md-primary: #D0BCFF;
@@ -73,10 +94,10 @@
         }
 
         .glass-nav {
-            background: rgba(14, 11, 22, 0.85);
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(208, 188, 255, 0.14);
+            border-bottom: 1px solid var(--md-surface-border, rgba(208, 188, 255, 0.14));
         }
 
         .m3-glass-card {
@@ -90,8 +111,8 @@
 
         .m3-glass-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(208, 188, 255, 0.4);
-            box-shadow: 0 20px 40px -15px rgba(124, 77, 255, 0.32);
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.4);
+            box-shadow: 0 20px 40px -15px var(--theme-glow, rgba(124, 77, 255, 0.32));
         }
 
         .m3-pill-btn {
@@ -105,31 +126,31 @@
         }
 
         .m3-pill-btn-primary {
-            background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%);
+            background: var(--m3-primary-gradient, linear-gradient(135deg, #A855F7 0%, #6750A4 100%));
             color: #FFFFFF;
-            box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35);
+            box-shadow: 0 4px 18px var(--theme-glow, rgba(168, 85, 247, 0.35));
         }
 
         .m3-pill-btn-primary:hover {
-            background: linear-gradient(135deg, #B56BF9 0%, #7961BC 100%);
+            background: var(--theme-primary-hover-grad, linear-gradient(135deg, #B56BF9 0%, #7961BC 100%));
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.55);
+            box-shadow: 0 8px 25px var(--theme-glow, rgba(168, 85, 247, 0.55));
         }
 
         .m3-pill-btn-outline {
             background: rgba(255, 255, 255, 0.05);
-            color: #E6E1E5;
-            border: 1px solid rgba(208, 188, 255, 0.25);
+            color: var(--md-on-surface, #E6E1E5);
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);
         }
 
         .m3-pill-btn-outline:hover {
-            background: rgba(208, 188, 255, 0.12);
-            border-color: rgba(208, 188, 255, 0.5);
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12);
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.5);
             transform: translateY(-2px);
         }
 
         .text-gradient {
-            background: linear-gradient(135deg, #FFFFFF 15%, #D0BCFF 55%, #A855F7 100%);
+            background: linear-gradient(135deg, #FFFFFF 15%, var(--theme-accent, #D0BCFF) 55%, var(--theme-primary, #A855F7) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -668,6 +689,38 @@
         });
         const particles = new THREE.Points(particleGeom, particleMat);
         scene.add(particles);
+
+        // Dynamic 3D Scene Palette System
+        const themeThreePalettes = {
+            "cosmic-purple": { ring1: 0xa855f7, ring2: 0xd0bcff, core: 0x4f378b, emissive: 0x381e72, wire: 0xd0bcff, particle: 0xd0bcff },
+            "midnight-ocean": { ring1: 0x0284c7, ring2: 0x38bdf8, core: 0x0369a1, emissive: 0x082f49, wire: 0x38bdf8, particle: 0x38bdf8 },
+            "emerald-matrix": { ring1: 0x10b981, ring2: 0x34d399, core: 0x065f46, emissive: 0x022c22, wire: 0x34d399, particle: 0x34d399 },
+            "amber-sunset": { ring1: 0xea580c, ring2: 0xfbbf24, core: 0x9a3412, emissive: 0x451a03, wire: 0xfbbf24, particle: 0xfbbf24 },
+            "titanium-slate": { ring1: 0x94a3b8, ring2: 0xcbd5e1, core: 0x334155, emissive: 0x0f172a, wire: 0xcbd5e1, particle: 0xcbd5e1 },
+            "crimson-cyber": { ring1: 0xf43f5e, ring2: 0xfda4af, core: 0x881337, emissive: 0x4c0519, wire: 0xfda4af, particle: 0xfda4af }
+        };
+
+        function updateThreeColors(themeName) {
+            const p = themeThreePalettes[themeName] || themeThreePalettes["cosmic-purple"];
+            if (ringMat1) ringMat1.color.setHex(p.ring1);
+            if (ringMat2) ringMat2.color.setHex(p.ring2);
+            if (wireMat) wireMat.color.setHex(p.wire);
+            if (coreMat) {
+                coreMat.color.setHex(p.core);
+                coreMat.emissive.setHex(p.emissive);
+            }
+            if (particleMat) particleMat.color.setHex(p.particle);
+        }
+
+        window.addEventListener('themeChanged', (e) => {
+            if (e.detail && e.detail.theme) {
+                updateThreeColors(e.detail.theme);
+            }
+        });
+
+        // Initialize with active theme
+        const activeThemeOnLoad = document.documentElement.getAttribute('data-theme') || localStorage.getItem('access_sphere_theme') || 'cosmic-purple';
+        updateThreeColors(activeThemeOnLoad);
 
         let mouseX = 0, mouseY = 0, targetScrollY = 0;
 
