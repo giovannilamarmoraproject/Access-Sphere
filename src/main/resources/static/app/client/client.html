@@ -46,12 +46,12 @@
       align-items: center;
       gap: 0.6rem;
       padding-bottom: 0.6rem;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.15);
+      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
       margin-bottom: 1.25rem;
     }
     .param-box {
-      background: rgba(14, 11, 20, 0.6);
-      border: 1px solid rgba(208, 188, 255, 0.14);
+      background: rgba(var(--theme-surface-rgb, 14, 11, 20), 0.6);
+      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
       border-radius: 14px;
       padding: 0.75rem 1rem;
     }
@@ -59,7 +59,7 @@
       font-size: 0.7rem;
       text-transform: uppercase;
       font-weight: 600;
-      color: #D0BCFF;
+      color: var(--theme-accent, #D0BCFF);
       margin-bottom: 0.25rem;
       display: block;
     }
@@ -88,9 +88,9 @@
       border: 1px solid rgba(156, 163, 175, 0.25);
     }
     .pill-info {
-      background: rgba(168, 85, 247, 0.15);
-      color: #D8B4FE;
-      border: 1px solid rgba(168, 85, 247, 0.3);
+      background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18);
+      color: var(--theme-accent, #D8B4FE);
+      border: 1px solid rgba(var(--theme-accent-rgb, 168, 85, 247), 0.3);
     }
     .table.repeater-table {
       --bs-table-bg: transparent !important;
@@ -103,23 +103,23 @@
       color: #FFFFFF !important;
     }
     .table.repeater-table th {
-      color: #D0BCFF !important;
+      color: var(--theme-accent, #D0BCFF) !important;
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 700;
       padding: 10px 14px;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.2) !important;
+      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.22) !important;
       background: transparent !important;
     }
     .table.repeater-table td {
       padding: 12px 14px;
       vertical-align: middle;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.08) !important;
+      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1) !important;
       color: #E2E8F0 !important;
       background: transparent !important;
     }
     .repeater-empty-state {
-      color: #D0BCFF !important;
+      color: var(--theme-accent, #D0BCFF) !important;
       opacity: 0.75;
       font-style: italic;
       text-align: center;
@@ -146,10 +146,10 @@
     <div class="header-container">
       <div class="flex items-center gap-6">
         <a href="/app" class="flex items-center gap-3 text-decoration-none group">
-          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
+          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
           <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              Access Sphere
+              <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
             <span class="text-[11px] text-gray-400 font-medium">Dettagli Configurazione Client</span>
@@ -165,6 +165,9 @@
           </a>
           <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
             <i class="fa-solid fa-key"></i> Client OAuth2
+          </a>
+          <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
           </a>
           <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
             <i class="fa-solid fa-book"></i> API Docs
@@ -706,18 +709,18 @@
       if (!currentClientData) return;
       const jsonStr = JSON.stringify(currentClientData, null, 2);
       navigator.clipboard.writeText(jsonStr).then(() => {
-        sweetalert("success", "JSON Copiato!", "La configurazione completa del client è stata copiata negli appunti in formato JSON.");
+        sweetalert("success", (typeof t === 'function' ? t("swal_json_copied_title", "JSON Copiato!") : "JSON Copiato!"), (typeof t === 'function' ? t("swal_json_copied_desc", "La configurazione completa del client è stata copiata negli appunti in formato JSON.") : "La configurazione completa del client è stata copiata negli appunti in formato JSON."));
       });
     }
 
     function deleteClientAction(clientId) {
       Swal.fire({
-        title: "Sei sicuro?",
-        text: `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`,
+        title: (typeof t === 'function' ? t("swal_delete_client_title", "Sei sicuro?") : "Sei sicuro?"),
+        text: (typeof t === 'function' ? t("swal_delete_client_desc", `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`).replace("#CLIENT_ID#", clientId) : `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`),
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "Sì, elimina!",
-        cancelButtonText: "Annulla"
+        confirmButtonText: (typeof t === 'function' ? t("btn_delete_confirm", "Sì, elimina!") : "Sì, elimina!"),
+        cancelButtonText: (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla")
       }).then((result) => {
         if (result.isConfirmed) {
           const token = getCookieOrStorage(config.access_token);
@@ -728,12 +731,12 @@
             headers: { "Authorization": "Bearer " + token }
           }).then(async (res) => {
             if (res.ok) {
-              sweetalert("success", "Eliminato", `Il client ${clientId} è stato rimosso.`);
+              sweetalert("success", (typeof t === 'function' ? t("swal_deleted_title", "Eliminato") : "Eliminato"), (typeof t === 'function' ? t("swal_delete_client_success", `Il client ${clientId} è stato rimosso.`).replace("#CLIENT_ID#", clientId) : `Il client ${clientId} è stato rimosso.`));
               setTimeout(() => {
                 window.location.href = "/app/clients";
               }, 1500);
             } else {
-              sweetalert("error", "Errore", "Impossibile eliminare il client.");
+              sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Errore") : "Errore"), (typeof t === 'function' ? t("swal_delete_client_error", "Impossibile eliminare il client.") : "Impossibile eliminare il client."));
             }
           });
         }

@@ -29,8 +29,14 @@ const AppSettings = (function () {
 
       const cachedRaw = localStorage.getItem(SETTINGS_KEY);
       if (cachedRaw) {
-        const s = JSON.parse(cachedRaw);
-        applyBrandingToDOM(s);
+        try {
+          const s = JSON.parse(cachedRaw);
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => applyBrandingToDOM(s));
+          } else {
+            applyBrandingToDOM(s);
+          }
+        } catch (err) {}
       }
     } catch (e) {
       console.warn("Early theme init error:", e);
@@ -64,20 +70,24 @@ const AppSettings = (function () {
 
     // 2. Logo
     if (settings.logoUrl) {
-      document.querySelectorAll(".app-brand-logo").forEach((img) => {
+      document.querySelectorAll(".app-brand-logo, .login-logo-glow, .mobile-logo-badge img, img[alt*='Access Sphere'], img[src*='logo-minimal']").forEach((img) => {
         img.src = settings.logoUrl;
       });
     }
 
     // 3. Favicon
     if (settings.faviconUrl) {
-      let iconLink = document.querySelector("link[rel~='icon']");
-      if (!iconLink) {
-        iconLink = document.createElement("link");
+      const favLinks = document.querySelectorAll("link[rel*='icon'], link[rel='apple-touch-icon']");
+      if (favLinks.length > 0) {
+        favLinks.forEach((link) => {
+          link.href = settings.faviconUrl;
+        });
+      } else {
+        const iconLink = document.createElement("link");
         iconLink.rel = "icon";
+        iconLink.href = settings.faviconUrl;
         document.head.appendChild(iconLink);
       }
-      iconLink.href = settings.faviconUrl;
     }
 
     // 4. Footer Copyright
@@ -93,45 +103,65 @@ const AppSettings = (function () {
 
   function applyLoginCustomization(settings) {
     const leftPanel = document.querySelector(".left-background");
-    if (!leftPanel) return;
-
+    const mobileBanner = document.querySelector(".page-banner");
     const showcaseContent = document.querySelector(".showcase-content-box");
+    let overlay = document.getElementById("login-bg-overlay");
+
+    if (!leftPanel && !mobileBanner) return;
 
     if (settings.loginMode === "CUSTOM_BACKGROUND" && settings.loginBgUrl) {
-      // Custom Background Mode
-      leftPanel.style.backgroundImage = `url('${settings.loginBgUrl}')`;
-      leftPanel.style.backgroundSize = "cover";
-      leftPanel.style.backgroundPosition = "center";
-      leftPanel.style.position = "relative";
+      // 1. Custom Background Mode - Override any CSS gradient backgrounds
+      if (leftPanel) {
+        leftPanel.style.setProperty("background-image", `url("${settings.loginBgUrl}")`, "important");
+        leftPanel.style.setProperty("background-size", "cover", "important");
+        leftPanel.style.setProperty("background-position", "center", "important");
+        leftPanel.style.setProperty("background-repeat", "no-repeat", "important");
+        leftPanel.style.position = "relative";
 
-      // Apply darkening overlay
-      let overlay = document.getElementById("login-bg-overlay");
-      if (!overlay) {
-        overlay = document.createElement("div");
-        overlay.id = "login-bg-overlay";
-        overlay.style.position = "absolute";
-        overlay.style.inset = "0";
-        overlay.style.zIndex = "1";
-        overlay.style.pointerEvents = "none";
-        leftPanel.insertBefore(overlay, leftPanel.firstChild);
+        // 2. Darkening overlay for contrast
+        if (!overlay) {
+          overlay = document.createElement("div");
+          overlay.id = "login-bg-overlay";
+          overlay.style.position = "absolute";
+          overlay.style.inset = "0";
+          overlay.style.zIndex = "1";
+          overlay.style.pointerEvents = "none";
+          leftPanel.insertBefore(overlay, leftPanel.firstChild);
+        }
+        const opacity = (settings.loginBgOpacity !== undefined ? settings.loginBgOpacity : 50) / 100;
+        overlay.style.backgroundColor = `rgba(14, 11, 22, ${opacity})`;
+
+        // 3. Hide showcase content and ambient glow orbs completely so background is clean
+        if (showcaseContent) {
+          showcaseContent.style.display = "none";
+        }
+        document.querySelectorAll(".ambient-glow-1, .ambient-glow-2").forEach(el => el.style.display = "none");
       }
-      const opacity = (settings.loginBgOpacity !== undefined ? settings.loginBgOpacity : 50) / 100;
-      overlay.style.backgroundColor = `rgba(14, 11, 22, ${opacity})`;
 
-      // Hide showcase text or keep subtle branding
-      if (showcaseContent) {
-        showcaseContent.style.opacity = "0.9";
-        showcaseContent.style.position = "relative";
-        showcaseContent.style.zIndex = "2";
+      if (mobileBanner) {
+        mobileBanner.style.setProperty("background-image", `url("${settings.loginBgUrl}")`, "important");
+        mobileBanner.style.setProperty("background-size", "cover", "important");
+        mobileBanner.style.setProperty("background-position", "center", "important");
       }
     } else {
       // Default Showcase Mode
-      leftPanel.style.backgroundImage = "";
-      const overlay = document.getElementById("login-bg-overlay");
-      if (overlay) overlay.remove();
-      if (showcaseContent) {
-        showcaseContent.style.opacity = "1";
-        showcaseContent.style.display = "";
+      if (leftPanel) {
+        leftPanel.style.removeProperty("background-image");
+        leftPanel.style.removeProperty("background-size");
+        leftPanel.style.removeProperty("background-position");
+        leftPanel.style.removeProperty("background-repeat");
+        leftPanel.style.removeProperty("background");
+        if (overlay) overlay.remove();
+        if (showcaseContent) {
+          showcaseContent.style.display = "";
+          showcaseContent.style.opacity = "1";
+        }
+        document.querySelectorAll(".ambient-glow-1, .ambient-glow-2").forEach(el => el.style.display = "");
+      }
+      if (mobileBanner) {
+        mobileBanner.style.removeProperty("background-image");
+        mobileBanner.style.removeProperty("background-size");
+        mobileBanner.style.removeProperty("background-position");
       }
     }
 
@@ -146,16 +176,38 @@ const AppSettings = (function () {
     }
   }
 
+  function getAuthToken() {
+    if (typeof getCookieOrStorage === "function") {
+      const cfg = typeof getConfig === "function" ? getConfig() : null;
+      const key = cfg && cfg.access_token ? cfg.access_token : "access-token";
+      const tok = getCookieOrStorage(key);
+      if (tok) return tok;
+    }
+    return (
+      localStorage.getItem("access-token") ||
+      localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
+      (typeof getCookie === "function" ? getCookie("access-token") : null) ||
+      ""
+    );
+  }
+
   async function loadPublicSettings() {
     try {
       const res = await fetch("/v1/app/settings/public");
       if (!res.ok) return;
       const data = await res.json();
       if (data && data.data) {
+        const s = data.data;
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
-        const currentLocal = localStorage.getItem(THEME_KEY);
-        if (!currentLocal && s.activeTheme) {
-          applyTheme(s.activeTheme);
+        const activeTheme = s.activeTheme || localStorage.getItem(THEME_KEY);
+        if (activeTheme) {
+          applyTheme(activeTheme);
+        }
+        const savedLang = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language");
+        if (s.defaultLanguage && s.defaultLanguage !== "auto" && !savedLang) {
+          if (typeof switchLanguage === "function") {
+            switchLanguage(s.defaultLanguage);
+          }
         }
         applyBrandingToDOM(s);
         return s;
@@ -167,7 +219,7 @@ const AppSettings = (function () {
 
   async function loadAdminSettings(token) {
     if (!token) {
-      token = localStorage.getItem("access-token") || localStorage.getItem("ACCESS-SPHERE-TECH_access-token");
+      token = getAuthToken();
     }
     const res = await fetch("/v1/app/settings", {
       headers: {
@@ -181,7 +233,7 @@ const AppSettings = (function () {
 
   async function saveAdminSettings(settingsData, token) {
     if (!token) {
-      token = localStorage.getItem("access-token") || localStorage.getItem("ACCESS-SPHERE-TECH_access-token");
+      token = getAuthToken();
     }
     const res = await fetch("/v1/app/settings", {
       method: "PUT",
@@ -197,6 +249,11 @@ const AppSettings = (function () {
       if (json.data.activeTheme) {
         applyTheme(json.data.activeTheme);
       }
+      if (json.data.defaultLanguage && json.data.defaultLanguage !== "auto") {
+        if (typeof switchLanguage === "function") {
+          switchLanguage(json.data.defaultLanguage);
+        }
+      }
       applyBrandingToDOM(json.data);
     }
     return json;
@@ -204,7 +261,7 @@ const AppSettings = (function () {
 
   async function exportBackup(token) {
     if (!token) {
-      token = localStorage.getItem("access-token") || localStorage.getItem("ACCESS-SPHERE-TECH_access-token");
+      token = getAuthToken();
     }
     const res = await fetch("/v1/app/settings/backup", {
       headers: {
@@ -232,7 +289,7 @@ const AppSettings = (function () {
 
   async function restoreBackup(backupJsonData, token) {
     if (!token) {
-      token = localStorage.getItem("access-token") || localStorage.getItem("ACCESS-SPHERE-TECH_access-token");
+      token = getAuthToken();
     }
     const res = await fetch("/v1/app/settings/restore", {
       method: "POST",

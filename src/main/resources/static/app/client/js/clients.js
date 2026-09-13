@@ -318,13 +318,14 @@ function saveClient() {
 }
 
 function deleteClientAction(clientId) {
+  const confirmText = (typeof t === "function" ? t("swal_delete_client_desc", `Vuoi davvero eliminare il client ${clientId}? Questa azione è irreversibile!`) : `Vuoi davvero eliminare il client ${clientId}? Questa azione è irreversibile!`).replace("#CLIENT_ID#", clientId);
   Swal.fire({
-    title: "Sei sicuro?",
-    text: `Vuoi davvero eliminare il client ${clientId}? Questa azione è irreversibile!`,
+    title: (typeof t === "function" ? t("swal_delete_client_title", "Sei sicuro?") : "Sei sicuro?"),
+    text: confirmText,
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: "Sì, elimina!",
-    cancelButtonText: "Annulla"
+    confirmButtonText: (typeof t === "function" ? t("btn_delete_confirm", "Sì, elimina!") : "Sì, elimina!"),
+    cancelButtonText: (typeof t === "function" ? t("btn_cancel", "Annulla") : "Annulla")
   }).then((result) => {
     if (result.isConfirmed) {
       const cfg = getConfig();
@@ -339,15 +340,16 @@ function deleteClientAction(clientId) {
       })
       .then(async (res) => {
         if(res.ok) {
-          sweetalert("success", "Eliminato!", `Il client ${clientId} è stato rimosso.`);
+          const successMsg = (typeof t === "function" ? t("swal_delete_client_success", `Il client ${clientId} è stato rimosso.`) : `Il client ${clientId} è stato rimosso.`).replace("#CLIENT_ID#", clientId);
+          sweetalert("success", (typeof t === "function" ? t("swal_deleted_title", "Eliminato!") : "Eliminato!"), successMsg);
           getClients();
         } else {
-          sweetalert("error", "Errore", "Impossibile eliminare il client dal database.");
+          sweetalert("error", (typeof t === "function" ? t("swal_error_title", "Errore") : "Errore"), (typeof t === "function" ? t("swal_delete_client_error", "Impossibile eliminare il client dal database.") : "Impossibile eliminare il client dal database."));
         }
       })
       .catch(err => {
         console.error("Delete client error:", err);
-        sweetalert("error", "Errore", "Errore di connessione durante l'eliminazione.");
+        sweetalert("error", (typeof t === "function" ? t("swal_error_title", "Errore") : "Errore"), (typeof t === "function" ? t("swal_connection_error", "Errore di connessione durante l'eliminazione.") : "Errore di connessione durante l'eliminazione."));
       });
     }
   });

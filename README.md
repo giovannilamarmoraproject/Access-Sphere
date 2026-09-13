@@ -55,9 +55,10 @@
 - 💾 **Backup & Restore Completo a 1-Click**:
   - Esportazione istantanea dell'intero database (utenti, credenziali, ruoli, client OAuth2, impostazioni) in un unico file JSON strutturato.
   - Procedura di ripristino con validazione schema e zero downtime per migrazioni e disaster recovery.
-- 🌐 **Internazionalizzazione (i18n)**:
-  - Supporto completo e reattivo per Italiano e Inglese con 260+ chiavi di traduzione.
-  - Rilevamento automatico della lingua del browser al primo avvio e cambio lingua immediato senza reload.
+- 🌐 **Internazionalizzazione (i18n) & Zero-Flicker Rendering**:
+  - Supporto completo per Italiano e Inglese con 330+ chiavi di traduzione (Landing page, Login, Dashboard, Gestione Utenti, Gestione Client, Modali ed Error Code).
+  - Selezione flessibile della lingua: **Automatico (Browser)** con fallback intelligente, oppure forzatura manuale (**Italiano** o **English**).
+  - Rendering istantaneo senza sfarfallio (FOUC) tramite cache sincrona e CSS anti-flicker guard.
 - 🚀 **Technical Seed & Bootstrap Automatico**:
   - Creazione automatica all'avvio a DB vuoto dell'utenza tecnica e del client tecnico OAuth2 configurabili da variabili d'ambiente.
 - 📱 **Progressive Web App (PWA)**: Supporto offline tramite Service Worker dedicato, manifest PWA e asset multi-risoluzione.

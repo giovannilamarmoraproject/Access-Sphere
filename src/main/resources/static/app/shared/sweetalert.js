@@ -54,6 +54,7 @@ function sweetalert(icon, title, message, html = false) {
 
 function sweetalertConfirm(icon, title, message, btnConfirm, btnDeny) {
   const customClassSwal = getM3SwalMixin();
+  const cancelText = (typeof t === "function" ? t("btn_cancel", "Annulla") : "Annulla");
 
   return safeDisableLoader().then(() => {
     return customClassSwal.fire({
@@ -63,14 +64,15 @@ function sweetalertConfirm(icon, title, message, btnConfirm, btnDeny) {
       color: "#FFFFFF",
       showDenyButton: true,
       showCancelButton: false,
-      confirmButtonText: btnConfirm,
-      denyButtonText: btnDeny,
+      confirmButtonText: btnConfirm || (typeof t === "function" ? t("btn_confirm", "Conferma") : "Conferma"),
+      denyButtonText: btnDeny || cancelText,
     });
   });
 }
 
 function inputSweetAlert(title, confirm) {
   const customClassSwal = getM3SwalMixin();
+  const cancelText = (typeof t === "function" ? t("btn_cancel", "Annulla") : "Annulla");
 
   return safeDisableLoader().then(() => {
     return customClassSwal.fire({
@@ -82,7 +84,7 @@ function inputSweetAlert(title, confirm) {
       },
       showCancelButton: true,
       confirmButtonText: confirm,
-      cancelButtonText: "Annulla",
+      cancelButtonText: cancelText,
       preConfirm: async (text) => {
         return text;
       },

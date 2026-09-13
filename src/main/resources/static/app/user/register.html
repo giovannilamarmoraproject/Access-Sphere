@@ -52,30 +52,30 @@
       align-items: center;
       gap: 0.6rem;
       padding-bottom: 0.6rem;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.15);
+      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
       margin-bottom: 1.25rem;
     }
     .m3-subcard {
-      background: rgba(26, 20, 42, 0.65);
-      border: 1px solid rgba(208, 188, 255, 0.14);
+      background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
+      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
       border-radius: 20px;
       padding: 1.5rem;
       transition: all 0.2s ease;
     }
     .m3-subcard:hover {
-      border-color: rgba(208, 188, 255, 0.25);
+      border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
     }
     .form-control, .form-select {
-      background: #1C172E !important;
-      border: 1.5px solid rgba(208, 188, 255, 0.25) !important;
+      background: var(--theme-input-bg, #1C172E) !important;
+      border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
       color: #FFFFFF !important;
       border-radius: 12px !important;
       padding: 10px 14px !important;
     }
     .form-control:focus, .form-select:focus {
-      border-color: #D0BCFF !important;
-      box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.25) !important;
-      background: #231B38 !important;
+      border-color: var(--theme-accent, #D0BCFF) !important;
+      box-shadow: 0 0 0 3px var(--theme-glow, rgba(208, 188, 255, 0.25)) !important;
+      background: var(--theme-input-focus, #231B38) !important;
     }
   </style>
 </head>
@@ -86,10 +86,10 @@
     <div class="header-container">
       <div class="flex items-center gap-6">
         <a href="/app" class="flex items-center gap-3 text-decoration-none group">
-          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
+          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
           <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              Access Sphere
+              <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
             <span class="form-helper text-purple-300 text-xs font-medium">Registrazione Nuovo Utente</span>
@@ -105,6 +105,9 @@
           </a>
           <a href="/app/clients" class="nav-tab-m3 text-decoration-none">
             <i class="fa-solid fa-key"></i> Client OAuth2
+          </a>
+          <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
           </a>
           <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
             <i class="fa-solid fa-book"></i> API Docs

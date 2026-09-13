@@ -107,8 +107,25 @@ function refreshAnimation(id) {
 }
 
 function cleanStorageAndCookies() {
-  console.log("🧹 Cleaning Storage and Cookies...");
+  console.log("🧹 Cleaning Storage and Cookies (preserving settings & preferences)...");
+  const preservedKeys = [
+    "access_sphere_theme",
+    "access_sphere_settings",
+    "access_sphere_language",
+    "app_language",
+    "access_sphere_app_name",
+  ];
+  const preserved = {};
+  preservedKeys.forEach((key) => {
+    const val = localStorage.getItem(key);
+    if (val !== null) preserved[key] = val;
+  });
+
   localStorage.clear();
+
+  Object.keys(preserved).forEach((key) => {
+    localStorage.setItem(key, preserved[key]);
+  });
   deleteSelectedCookies();
 }
 

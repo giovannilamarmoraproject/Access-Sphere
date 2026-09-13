@@ -352,17 +352,6 @@
     <!-- ================= PANNELLO DESTRO (AUTH VIEWS CONTAINER) ================= -->
     <div class="right-panel relative w-full md:w-2/5 xl:w-2/5 h-full overflow-hidden flex flex-col justify-between">
 
-        <!-- Floating Language Switcher -->
-        <div class="absolute top-4 right-4 z-30 flex items-center gap-1.5 bg-[#1e192c]/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-purple-500/30 text-xs shadow-lg">
-            <button type="button" onclick="switchLanguage('it')" class="cursor-pointer bg-transparent border-0 text-white font-semibold hover:text-purple-300 transition-colors flex items-center gap-1" title="Italiano">
-                <span>🇮🇹</span> <span>IT</span>
-            </button>
-            <span class="text-purple-500/40">|</span>
-            <button type="button" onclick="switchLanguage('en')" class="cursor-pointer bg-transparent border-0 text-white font-semibold hover:text-purple-300 transition-colors flex items-center gap-1" title="English">
-                <span>🇬🇧</span> <span>EN</span>
-            </button>
-        </div>
-
         <!-- ================= 1. LOGIN SECTION ================= -->
         <div
                 id="login_section"
@@ -382,7 +371,7 @@
                 <div class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                     <div class="mobile-logo-badge">
                         <img src="/img/logo-minimal.svg" alt="Access Sphere Logo"
-                             class="w-12 h-12 drop-shadow-[0_4px_16px_rgba(168,85,247,0.7)]"/>
+                             class="w-12 h-12 app-brand-logo drop-shadow-[0_4px_16px_rgba(168,85,247,0.7)]"/>
                     </div>
                 </div>
             </div>
@@ -391,7 +380,7 @@
                 <div class="login-form-inner w-full mt-5 md:mt-0 md:my-auto">
                     <!-- Desktop Glowing Logo (Hidden on Mobile) -->
                     <div class="hidden md:flex justify-center mb-4 md:mb-5">
-                        <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="login-logo-glow"/>
+                        <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="login-logo-glow app-brand-logo"/>
                     </div>
 
                     <!-- Title & Subtitle -->

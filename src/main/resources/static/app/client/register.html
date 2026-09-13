@@ -46,22 +46,22 @@
       align-items: center;
       gap: 0.6rem;
       padding-bottom: 0.6rem;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.15);
+      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
       margin-bottom: 1.25rem;
     }
     .m3-subcard {
-      background: rgba(26, 20, 42, 0.65);
-      border: 1px solid rgba(208, 188, 255, 0.14);
+      background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
+      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
       border-radius: 20px;
       padding: 1.5rem;
       transition: all 0.2s ease;
     }
     .m3-subcard:hover {
-      border-color: rgba(208, 188, 255, 0.25);
+      border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
     }
     .m3-switch-card {
-      background: rgba(26, 20, 42, 0.65);
-      border: 1px solid rgba(208, 188, 255, 0.14);
+      background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
+      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
       border-radius: 16px;
       padding: 1rem 1.25rem;
       display: flex;
@@ -70,16 +70,16 @@
       gap: 1rem;
     }
     .form-control, .form-select {
-      background: #1C172E !important;
-      border: 1.5px solid rgba(208, 188, 255, 0.25) !important;
+      background: var(--theme-input-bg, #1C172E) !important;
+      border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
       color: #FFFFFF !important;
       border-radius: 12px !important;
       padding: 10px 14px !important;
     }
     .form-control:focus, .form-select:focus {
-      border-color: #D0BCFF !important;
-      box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.25) !important;
-      background: #231B38 !important;
+      border-color: var(--theme-accent, #D0BCFF) !important;
+      box-shadow: 0 0 0 3px var(--theme-glow, rgba(208, 188, 255, 0.25)) !important;
+      background: var(--theme-input-focus, #231B38) !important;
     }
     .table.repeater-table {
       --bs-table-bg: transparent !important;
@@ -92,23 +92,23 @@
       color: #FFFFFF !important;
     }
     .table.repeater-table th {
-      color: #D0BCFF !important;
+      color: var(--theme-accent, #D0BCFF) !important;
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 700;
       padding: 10px 14px;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.2) !important;
+      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.22) !important;
       background: transparent !important;
     }
     .table.repeater-table td {
       padding: 8px 12px;
       vertical-align: middle;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.08) !important;
+      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1) !important;
       color: #E2E8F0 !important;
       background: transparent !important;
     }
     .repeater-empty-state {
-      color: #D0BCFF !important;
+      color: var(--theme-accent, #D0BCFF) !important;
       opacity: 0.75;
       font-style: italic;
       text-align: center;
@@ -122,10 +122,10 @@
     <div class="header-container">
       <div class="flex items-center gap-6">
         <a href="/app" class="flex items-center gap-3 text-decoration-none group">
-          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
+          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
           <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              Access Sphere
+              <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
             <span class="form-helper text-purple-300 text-xs font-medium">Registra Nuovo Client OAuth 2.0</span>
@@ -141,6 +141,9 @@
           </a>
           <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
             <i class="fa-solid fa-key"></i> Client OAuth2
+          </a>
+          <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
           </a>
           <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
             <i class="fa-solid fa-book"></i> API Docs
@@ -575,15 +578,15 @@
 
     function toggleRolesJsonModal() {
       Swal.fire({
-        title: "Modifica Ruoli in Formato JSON",
+        title: (typeof t === 'function' ? t("swal_edit_roles_json_title", "Modifica Ruoli in Formato JSON") : "Modifica Ruoli in Formato JSON"),
         input: "textarea",
         inputValue: JSON.stringify(appRolesList, null, 2),
         inputAttributes: {
-          style: "height: 240px; font-family: monospace; font-size: 11px; background: #181427; color: #D0BCFF;"
+          style: "height: 240px; font-family: monospace; font-size: 11px; background: var(--theme-input-bg, #181427); color: var(--theme-accent, #D0BCFF);"
         },
         showCancelButton: true,
-        confirmButtonText: "Salva JSON",
-        cancelButtonText: "Annulla"
+        confirmButtonText: (typeof t === 'function' ? t("swal_save_json_btn", "Salva JSON") : "Salva JSON"),
+        cancelButtonText: (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla")
       }).then((res) => {
         if (res.isConfirmed && res.value) {
           try {
@@ -592,10 +595,10 @@
               appRolesList = parsed;
               renderAppRolesTable();
             } else {
-              sweetalert("error", "Formato Errato", "Il JSON deve essere un array di oggetti ruolo.");
+              sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Formato Errato") : "Formato Errato"), (typeof t === 'function' ? t("swal_invalid_json_format", "Il JSON deve essere un array di oggetti.") : "Il JSON deve essere un array di oggetti."));
             }
           } catch(e) {
-            sweetalert("error", "JSON Non Valido", e.message);
+            sweetalert("error", (typeof t === 'function' ? t("swal_invalid_json_syntax", "JSON Non Valido") : "JSON Non Valido"), e.message);
           }
         }
       });
@@ -649,15 +652,15 @@
 
     function toggleWebhooksJsonModal() {
       Swal.fire({
-        title: "Modifica Webhooks in Formato JSON",
+        title: (typeof t === 'function' ? t("swal_edit_webhooks_json_title", "Modifica Webhooks in Formato JSON") : "Modifica Webhooks in Formato JSON"),
         input: "textarea",
         inputValue: JSON.stringify(webhooksList, null, 2),
         inputAttributes: {
-          style: "height: 200px; font-family: monospace; font-size: 11px; background: #181427; color: #D0BCFF;"
+          style: "height: 200px; font-family: monospace; font-size: 11px; background: var(--theme-input-bg, #181427); color: var(--theme-accent, #D0BCFF);"
         },
         showCancelButton: true,
-        confirmButtonText: "Salva JSON",
-        cancelButtonText: "Annulla"
+        confirmButtonText: (typeof t === 'function' ? t("swal_save_json_btn", "Salva JSON") : "Salva JSON"),
+        cancelButtonText: (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla")
       }).then((res) => {
         if (res.isConfirmed && res.value) {
           try {
@@ -666,10 +669,10 @@
               webhooksList = parsed;
               renderWebhooksTable();
             } else {
-              sweetalert("error", "Formato Errato", "Il JSON deve essere un array di webhook.");
+              sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Formato Errato") : "Formato Errato"), (typeof t === 'function' ? t("swal_invalid_json_format", "Il JSON deve essere un array di webhook.") : "Il JSON deve essere un array di webhook."));
             }
           } catch(e) {
-            sweetalert("error", "JSON Non Valido", e.message);
+            sweetalert("error", (typeof t === 'function' ? t("swal_invalid_json_syntax", "JSON Non Valido") : "JSON Non Valido"), e.message);
           }
         }
       });
@@ -746,14 +749,14 @@
 
         Swal.fire({
           icon: "warning",
-          title: "Campi Obbligatori Mancanti",
-          html: `<div style="text-align: left; font-size: 13px; color: #D0BCFF;">
-            Per registrare il client, compila o correggi i seguenti campi:
+          title: (typeof t === 'function' ? t("swal_missing_fields_title", "Campi Obbligatori Mancanti") : "Campi Obbligatori Mancanti"),
+          html: `<div style="text-align: left; font-size: 13px; color: var(--theme-accent, #D0BCFF);">
+            ${typeof t === 'function' ? t("swal_missing_fields_desc", "Per registrare il client, compila o correggi i seguenti campi:") : "Per registrare il client, compila o correggi i seguenti campi:"}
             <ul style="margin-top: 10px; margin-left: 15px; list-style-type: disc; color: #F87171; line-height: 1.6;">
               ${errors.map(e => `<li>${e}</li>`).join("")}
             </ul>
           </div>`,
-          confirmButtonText: "Ho capito"
+          confirmButtonText: (typeof t === 'function' ? t("swal_understood_btn", "Ho capito") : "Ho capito")
         });
         return false;
       }

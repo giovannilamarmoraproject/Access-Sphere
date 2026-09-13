@@ -137,14 +137,14 @@ function validateUserRegistrationForm() {
 
     Swal.fire({
       icon: "warning",
-      title: "Campi Obbligatori Mancanti",
-      html: `<div style="text-align: left; font-size: 13px; color: #D0BCFF;">
-        Per completare la registrazione dell'utente, compila o correggi i seguenti campi:
+      title: (typeof t === 'function' ? t("swal_missing_fields_title", "Campi Obbligatori Mancanti") : "Campi Obbligatori Mancanti"),
+      html: `<div style="text-align: left; font-size: 13px; color: var(--theme-accent, #D0BCFF);">
+        ${typeof t === 'function' ? t("swal_missing_user_fields_desc", "Per completare la registrazione dell'utente, compila o correggi i seguenti campi:") : "Per completare la registrazione dell'utente, compila o correggi i seguenti campi:"}
         <ul style="margin-top: 10px; margin-left: 15px; list-style-type: disc; color: #F87171; line-height: 1.6;">
           ${errors.map(e => `<li>${e}</li>`).join("")}
         </ul>
       </div>`,
-      confirmButtonText: "Ho capito"
+      confirmButtonText: (typeof t === 'function' ? t("swal_understood_btn", "Ho capito") : "Ho capito")
     });
     return false;
   }
@@ -208,14 +208,14 @@ function validateUserEditForm() {
 
     Swal.fire({
       icon: "warning",
-      title: "Campi Obbligatori Mancanti",
-      html: `<div style="text-align: left; font-size: 13px; color: #D0BCFF;">
-        Per salvare le modifiche, compila o correggi i seguenti campi obbligatori:
+      title: (typeof t === 'function' ? t("swal_missing_fields_title", "Campi Obbligatori Mancanti") : "Campi Obbligatori Mancanti"),
+      html: `<div style="text-align: left; font-size: 13px; color: var(--theme-accent, #D0BCFF);">
+        ${typeof t === 'function' ? t("swal_missing_user_edit_fields_desc", "Per salvare le modifiche, compila o correggi i seguenti campi obbligatori:") : "Per salvare le modifiche, compila o correggi i seguenti campi obbligatori:"}
         <ul style="margin-top: 10px; margin-left: 15px; list-style-type: disc; color: #F87171; line-height: 1.6;">
           ${errors.map(e => `<li>${e}</li>`).join("")}
         </ul>
       </div>`,
-      confirmButtonText: "Ho capito"
+      confirmButtonText: (typeof t === 'function' ? t("swal_understood_btn", "Ho capito") : "Ho capito")
     });
     return false;
   }

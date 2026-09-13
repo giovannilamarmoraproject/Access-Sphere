@@ -1,16 +1,76 @@
 let translations = {};
 let errorCode = {};
 let currentLanguage = "en"; // Default language
-
 let currentTranslations = {};
+
+function detectLanguage() {
+  const savedLang = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language") || "auto";
+  if (savedLang === "it" || savedLang === "en") {
+    currentLanguage = savedLang;
+    return;
+  }
+  // "auto" or undefined: detect from browser
+  const browserLanguage = (navigator.language || navigator.userLanguage || "en").slice(0, 2).toLowerCase();
+  currentLanguage = (browserLanguage === "it") ? "it" : "en";
+}
+
+// 1. Synchronously populate from cache if present
+try {
+  detectLanguage();
+  const cached = sessionStorage.getItem("i18n_cache_" + currentLanguage);
+  if (cached) {
+    currentTranslations = JSON.parse(cached);
+    translations[currentLanguage] = currentTranslations;
+  }
+} catch (e) {}
+
+// 2. FOUC Guard: prevents flashing of Italian text when target language is English
+(function initFoucGuard() {
+  if (typeof document === "undefined") return;
+  detectLanguage();
+  if (currentLanguage !== "it") {
+    if (!document.getElementById("i18n-fouc-guard")) {
+      const style = document.createElement("style");
+      style.id = "i18n-fouc-guard";
+      style.textContent = "html:not(.i18n-ready) body { opacity: 0 !important; } html.i18n-ready body { opacity: 1 !important; transition: opacity 0.12s ease-in; }";
+      if (document.head) {
+        document.head.appendChild(style);
+      } else {
+        document.addEventListener("DOMContentLoaded", () => {
+          if (!document.documentElement.classList.contains("i18n-ready")) {
+            document.head.appendChild(style);
+          }
+        });
+      }
+      setTimeout(() => {
+        document.documentElement.classList.add("i18n-ready");
+      }, 180);
+    }
+  } else {
+    document.documentElement.classList.add("i18n-ready");
+  }
+})();
 
 async function loadTranslations() {
   detectLanguage();
+
+  // If in-memory translations exist from cache, translate immediately before network
+  if (currentTranslations && Object.keys(currentTranslations).length > 0) {
+    translateDOM();
+    try {
+      applyTranslations();
+    } catch (e) {}
+    document.documentElement.classList.add("i18n-ready");
+  }
+
   try {
     const response = await fetch(`/app/i18n/languages/${currentLanguage}.json`);
     if (response.ok) {
       currentTranslations = await response.json();
       translations[currentLanguage] = currentTranslations;
+      try {
+        sessionStorage.setItem("i18n_cache_" + currentLanguage, JSON.stringify(currentTranslations));
+      } catch (e) {}
     } else {
       const fallback = await fetch("/app/i18n/translations.json");
       translations = await fallback.json();
@@ -31,7 +91,7 @@ async function loadTranslations() {
     translations[currentLanguage] = currentTranslations || {};
   }
 
-  // 1. First translate elements with data-i18n
+  // 1. Translate elements with data-i18n
   translateDOM();
 
   // 2. Safely apply legacy ID-based translations
@@ -43,7 +103,19 @@ async function loadTranslations() {
 
   // 3. Keep language radio selector in sync
   syncLanguageUI(currentLanguage);
+
+  // 4. Reveal page smoothly with zero flicker
+  document.documentElement.classList.add("i18n-ready");
 }
+
+function t(key, fallback) {
+  const dict = currentTranslations || (typeof translations !== "undefined" ? translations[currentLanguage] : null);
+  if (dict && dict[key] !== undefined) {
+    return dict[key];
+  }
+  return fallback !== undefined ? fallback : key;
+}
+window.t = t;
 
 function translateDOM() {
   const dict = currentTranslations || translations[currentLanguage];
@@ -51,7 +123,11 @@ function translateDOM() {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (dict[key] !== undefined) {
-      el.innerHTML = dict[key];
+      if (el.tagName === "TITLE") {
+        document.title = dict[key];
+      } else {
+        el.innerHTML = dict[key];
+      }
     }
   });
   document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
@@ -69,22 +145,47 @@ function translateDOM() {
 }
 
 function syncLanguageUI(lang) {
+  const savedPref = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language") || "auto";
+  const radioAuto = document.getElementById("lang-radio-auto");
   const radioIt = document.getElementById("lang-radio-it");
   const radioEn = document.getElementById("lang-radio-en");
-  if (radioIt && radioEn) {
-    radioIt.checked = (lang === "it");
-    radioEn.checked = (lang === "en");
+  if (radioAuto && radioIt && radioEn) {
+    radioAuto.checked = (savedPref === "auto");
+    radioIt.checked = (savedPref === "it");
+    radioEn.checked = (savedPref === "en");
+  } else if (radioIt && radioEn) {
+    radioIt.checked = (currentLanguage === "it");
+    radioEn.checked = (currentLanguage === "en");
+  }
+
+  // Floating and Navigation Language Switcher Buttons
+  const btnAuto = document.getElementById("lang-btn-auto");
+  const btnIt = document.getElementById("lang-btn-it");
+  const btnEn = document.getElementById("lang-btn-en");
+  if (btnAuto && btnIt && btnEn) {
+    btnAuto.classList.toggle("text-purple-300", savedPref === "auto");
+    btnAuto.classList.toggle("font-bold", savedPref === "auto");
+    btnIt.classList.toggle("text-purple-300", savedPref === "it");
+    btnIt.classList.toggle("font-bold", savedPref === "it");
+    btnEn.classList.toggle("text-purple-300", savedPref === "en");
+    btnEn.classList.toggle("font-bold", savedPref === "en");
   }
 }
 
 async function switchLanguage(lang) {
-  if (lang !== "it" && lang !== "en") lang = "en";
-  currentLanguage = lang;
-  localStorage.setItem("access_sphere_language", lang);
-  localStorage.setItem("app_language", lang);
+  if (lang === "auto") {
+    localStorage.setItem("access_sphere_language", "auto");
+    localStorage.setItem("app_language", "auto");
+    detectLanguage();
+  } else {
+    if (lang !== "it" && lang !== "en") lang = "en";
+    currentLanguage = lang;
+    localStorage.setItem("access_sphere_language", lang);
+    localStorage.setItem("app_language", lang);
+  }
   await loadTranslations();
   if (typeof loadErrorCode === "function") await loadErrorCode();
-  window.dispatchEvent(new CustomEvent("languageChanged", { detail: { language: lang } }));
+  window.dispatchEvent(new CustomEvent("languageChanged", { detail: { language: currentLanguage, mode: lang } }));
 }
 
 async function loadErrorCode() {
@@ -128,16 +229,6 @@ function getErrorCode(error) {
     title: error.exception,
     message: error.message,
   };
-}
-
-function detectLanguage() {
-  const savedLang = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language");
-  if (savedLang && (savedLang === "it" || savedLang === "en")) {
-    currentLanguage = savedLang;
-    return;
-  }
-  const browserLanguage = (navigator.language || navigator.userLanguage || "en").slice(0, 2).toLowerCase();
-  currentLanguage = (browserLanguage === "it") ? "it" : "en";
 }
 
 function applyLanguageOld(id, text, innerHTML = false) {

@@ -188,7 +188,7 @@
 <main id="view-dashboard" class="dashboard-wide-container" style="display: none;">
 
     <!-- Welcome & Live Status Hero -->
-    <div class="m3-bento-card p-6 sm:p-8 mb-8">
+    <div class="mb-12">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div>
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-semibold mb-3">
@@ -319,8 +319,8 @@
                 <div class="text-xl sm:text-2xl font-bold text-white tracking-tight">ID Sessione</div>
                 <div id="stat-recap-session"
                      class="text-[11px] sm:text-xs text-cyan-300/90 mt-1 font-mono break-all select-all font-medium"
-                     title="Session-ID" data-i18n="dash_card_session_status">
-                    Verificato & Protetto
+                     title="Session-ID">
+                    Attivo & Protetto
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-purple-500/15">
@@ -713,25 +713,42 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 mt-4">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="app_language_radio" id="lang-radio-it" value="it" class="sr-only peer" onchange="switchLanguage('it')">
-                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5">
-                            <span class="text-2xl">🇮🇹</span>
-                            <div>
-                                <div class="text-sm font-bold text-white">Italiano</div>
-                                <div class="text-[11px] text-gray-400">Predefinito IT</div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                    <label class="cursor-pointer block h-full">
+                        <input type="radio" name="app_language_radio" id="lang-radio-auto" value="auto" class="sr-only peer" onchange="switchLanguage('auto')">
+                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/30">
+                                <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_auto">Automatico</div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_auto_desc">Browser (IT / EN)</div>
                             </div>
                         </div>
                     </label>
 
-                    <label class="cursor-pointer">
+                    <label class="cursor-pointer block h-full">
+                        <input type="radio" name="app_language_radio" id="lang-radio-it" value="it" class="sr-only peer" onchange="switchLanguage('it')">
+                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-emerald-500/30">
+                                IT
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_it">Italiano</div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_it_desc">Predefinito IT</div>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer block h-full">
                         <input type="radio" name="app_language_radio" id="lang-radio-en" value="en" class="sr-only peer" onchange="switchLanguage('en')">
-                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5">
-                            <span class="text-2xl">🇬🇧</span>
-                            <div>
-                                <div class="text-sm font-bold text-white">English</div>
-                                <div class="text-[11px] text-gray-400">Default EN</div>
+                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-blue-500/30">
+                                EN
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_en">English</div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_en_desc">Default EN</div>
                             </div>
                         </div>
                     </label>
@@ -740,7 +757,7 @@
 
             <div class="mt-4 pt-3 border-t border-purple-500/15 text-[11px] text-gray-400 flex items-center gap-2">
                 <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                <span>Tutti i testi vengono caricati dinamicamente dai file dedicati in <code>/languages</code>.</span>
+                <span data-i18n="settings_lang_dynamic_note">Tutti i testi vengono caricati dinamicamente dai file dedicati in <code>/languages</code>.</span>
             </div>
         </div>
 
@@ -765,18 +782,18 @@
                                 <i class="fa-solid fa-list-check text-purple-400 text-base"></i>
                                 <span class="text-sm font-bold text-white" data-i18n="login_mode_showcase">Vetrina Funzionalità (Foto 1)</span>
                             </div>
-                            <p class="text-[11px] text-gray-400">Mostra il testo hero ("Autenticazione Sicura & Modulare") e le tre Bento card (Zero-Trust, OAuth 2.0, MFA).</p>
+                            <p class="text-[11px] text-gray-400" data-i18n="login_mode_showcase_desc">Mostra il testo hero ("Autenticazione Sicura & Modulare") e le tre Bento card (Zero-Trust, OAuth 2.0, MFA).</p>
                         </div>
                     </label>
 
                     <label class="cursor-pointer">
                         <input type="radio" name="login_mode_radio" id="login-mode-custom-bg" value="CUSTOM_BACKGROUND" class="sr-only peer" onchange="handleLoginModeChange('CUSTOM_BACKGROUND')">
-                        <div class="p-4 rounded-xl border border-white/10 peer-checked:border-indigo-400 peer-checked:bg-indigo-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
+                        <div class="p-4 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
                             <div class="flex items-center gap-2.5 mb-2">
-                                <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 text-base"></i>
+                                <i class="fa-solid fa-wand-magic-sparkles text-purple-400 text-base"></i>
                                 <span class="text-sm font-bold text-white" data-i18n="login_mode_custom_bg">Sfondo Personalizzato</span>
                             </div>
-                            <p class="text-[11px] text-gray-400">Imposta una splendida immagine a tutto schermo con filtro oscurato per risaltare il form di login.</p>
+                            <p class="text-[11px] text-gray-400" data-i18n="login_mode_custom_bg_desc">Imposta una splendida immagine a tutto schermo con filtro oscurato per risaltare il form di login.</p>
                         </div>
                     </label>
                 </div>
@@ -795,10 +812,10 @@
                         </div>
 
                         <div class="sm:col-span-1">
-                            <div class="text-[11px] text-gray-400 mb-1">Anteprima Sfondo:</div>
+                            <div class="text-[11px] text-gray-400 mb-1" data-i18n="bg_preview_label">Anteprima Sfondo:</div>
                             <div id="bg-preview-box" class="h-20 w-full rounded-lg border border-purple-500/30 bg-cover bg-center relative overflow-hidden flex items-center justify-center">
                                 <div id="bg-preview-overlay" class="absolute inset-0 bg-[#0E0B16]/50"></div>
-                                <span class="relative z-10 text-[10px] text-gray-300 font-bold px-2 py-0.5 rounded bg-black/40">Anteprima</span>
+                                <span class="relative z-10 text-[10px] text-gray-300 font-bold px-2 py-0.5 rounded bg-black/40" data-i18n="preview_badge">Anteprima</span>
                             </div>
                         </div>
                     </div>
@@ -951,7 +968,7 @@
                     <input type="file" id="setting-logo-file" accept="image/*" class="form-control text-xs" onchange="handleLogoUpload(event)">
                     <div class="flex items-center gap-3 mt-2">
                         <img id="logo-preview-img" src="/img/logo-minimal.svg" class="w-9 h-9 rounded-lg bg-black/40 p-1 border border-white/10" alt="Logo preview">
-                        <span class="text-[11px] text-gray-400">Anteprima Logo</span>
+                        <span class="text-[11px] text-gray-400" data-i18n="logo_preview_label">Anteprima Logo</span>
                     </div>
                 </div>
 
@@ -961,7 +978,7 @@
                     <input type="file" id="setting-favicon-file" accept="image/*" class="form-control text-xs" onchange="handleFaviconUpload(event)">
                     <div class="flex items-center gap-3 mt-2">
                         <img id="favicon-preview-img" src="/img/logo-minimal.svg" class="w-6 h-6 rounded bg-black/40 p-0.5 border border-white/10" alt="Favicon preview">
-                        <span class="text-[11px] text-gray-400">Anteprima Favicon</span>
+                        <span class="text-[11px] text-gray-400" data-i18n="favicon_preview_label">Anteprima Favicon</span>
                     </div>
                 </div>
 
@@ -1003,9 +1020,9 @@
                 <!-- Export Section -->
                 <div class="p-4 rounded-xl bg-purple-950/25 border border-purple-500/20 mb-4">
                     <div class="text-xs font-bold text-white mb-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-arrow-down text-purple-400"></i> Esportazione Dati
+                        <i class="fa-solid fa-cloud-arrow-down text-purple-400"></i> <span data-i18n="backup_export_title">Esportazione Dati</span>
                     </div>
-                    <p class="text-[11px] text-gray-400 mb-3">Genera un archivio JSON istantaneo con tutti gli utenti, ruoli, client OAuth e impostazioni.</p>
+                    <p class="text-[11px] text-gray-400 mb-3" data-i18n="backup_export_desc">Genera un archivio JSON istantaneo con tutti gli utenti, ruoli, client OAuth e impostazioni.</p>
                     <button type="button" onclick="handleExportBackup()" class="m3-btn-secondary w-full justify-center py-2.5 text-xs font-semibold">
                         <i class="fa-solid fa-download mr-1.5"></i> <span data-i18n="btn_export_backup">Esporta Backup Completo</span>
                     </button>
@@ -1014,9 +1031,9 @@
                 <!-- Restore Section -->
                 <div class="p-4 rounded-xl bg-rose-950/20 border border-rose-500/20">
                     <div class="text-xs font-bold text-rose-300 mb-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-arrow-up text-rose-400"></i> Ripristino Snapshot
+                        <i class="fa-solid fa-cloud-arrow-up text-rose-400"></i> <span data-i18n="backup_restore_title">Ripristino Snapshot</span>
                     </div>
-                    <p class="text-[11px] text-gray-400 mb-2">Carica un file JSON di backup precedente per effettuare il restore.</p>
+                    <p class="text-[11px] text-gray-400 mb-2" data-i18n="backup_restore_desc">Carica un file JSON di backup precedente per effettuare il restore.</p>
                     <input type="file" id="setting-restore-file" accept=".json" class="form-control text-xs mb-3">
                     <button type="button" onclick="handleRestoreBackup()" class="m3-btn-danger w-full justify-center py-2.5 text-xs font-semibold">
                         <i class="fa-solid fa-arrow-rotate-left mr-1.5"></i> <span data-i18n="btn_restore_backup">Ripristina da File</span>
@@ -1040,7 +1057,7 @@
 <div class="modal fade" id="clientDetailModal" tabindex="-1" aria-labelledby="clientDetailTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border border-purple-500/30 shadow-2xl"
-             style="background: #1e192c; border-radius: 24px;">
+             style="border-radius: 24px;">
             <div class="modal-header border-b border-purple-500/20 px-6 py-4">
                 <h5 class="modal-title text-white font-bold flex items-center gap-2.5 text-lg" id="clientDetailTitle">
                     <i class="fa-solid fa-cube text-purple-400"></i> Dettaglio Client OAuth2
@@ -1134,7 +1151,7 @@
 <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="modal-action-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border border-purple-500/30 shadow-2xl"
-             style="background: #1e192c; border-radius: 24px;">
+             style="border-radius: 24px;">
             <div class="modal-header border-b border-purple-500/20 px-6 py-4">
                 <h5 class="modal-title text-white font-bold flex items-center gap-2.5 text-lg" id="modal-action-title">
                     <i class="fa-solid fa-key text-purple-400"></i> Registra Nuovo Client OAuth2
@@ -1250,7 +1267,9 @@
     setInterval(updateClock, 1000);
 
     function fetchSessionInfo() {
-        const sessionId = localStorage.getItem("Session-ID");
+        const sessionId = (typeof getCookieOrStorage === "function")
+            ? (getCookieOrStorage("Session-ID") || localStorage.getItem("Session-ID"))
+            : localStorage.getItem("Session-ID");
         const sessionEl = document.getElementById("stat-recap-session");
         if (sessionEl) {
             if (sessionId) {
@@ -1262,7 +1281,12 @@
         }
     }
 
+    window.addEventListener("languageChanged", () => {
+        fetchSessionInfo();
+    });
+
     async function loadDashboardMetrics() {
+        fetchSessionInfo();
         const cfg = getConfig();
         const token = getCookieOrStorage(cfg.access_token);
 
@@ -1503,6 +1527,7 @@
     // APPLICATION SETTINGS CONTROLLER LOGIC
     // ============================================
     let currentSettingsData = null;
+    let currentLoginBgDataUrl = null;
 
     async function loadSettingsView() {
         const savedLang = localStorage.getItem("access_sphere_language") || (navigator.language.slice(0, 2) === "it" ? "it" : "en");
@@ -1571,6 +1596,7 @@
         }
 
         if (data.loginBgUrl) {
+            currentLoginBgDataUrl = data.loginBgUrl;
             const previewBox = document.getElementById("bg-preview-box");
             if (previewBox) previewBox.style.backgroundImage = `url('${data.loginBgUrl}')`;
         }
@@ -1637,6 +1663,7 @@
         const file = event.target.files[0];
         if (!file) return;
         const b64 = await AppSettings.fileToBase64(file);
+        currentLoginBgDataUrl = b64;
         const previewBox = document.getElementById("bg-preview-box");
         if (previewBox) previewBox.style.backgroundImage = `url('${b64}')`;
     }
@@ -1660,17 +1687,15 @@
 
         const isCustomBg = document.getElementById("login-mode-custom-bg").checked;
         const loginMode = isCustomBg ? "CUSTOM_BACKGROUND" : "SHOWCASE";
-        const bgPreviewBox = document.getElementById("bg-preview-box");
-        let loginBgUrl = null;
-        if (bgPreviewBox && bgPreviewBox.style.backgroundImage) {
-            loginBgUrl = bgPreviewBox.style.backgroundImage.slice(5, -2);
-        }
+        const loginBgUrl = isCustomBg ? currentLoginBgDataUrl : null;
         const loginBgOpacity = parseInt(document.getElementById("setting-login-bg-opacity").value, 10);
         const activeTheme = localStorage.getItem("access_sphere_theme") || "cosmic-purple";
         let defaultLanguage = localStorage.getItem("access_sphere_language") || "auto";
+        const radioAuto = document.getElementById("lang-radio-auto");
         const radioIt = document.getElementById("lang-radio-it");
         const radioEn = document.getElementById("lang-radio-en");
-        if (radioIt && radioIt.checked) defaultLanguage = "it";
+        if (radioAuto && radioAuto.checked) defaultLanguage = "auto";
+        else if (radioIt && radioIt.checked) defaultLanguage = "it";
         else if (radioEn && radioEn.checked) defaultLanguage = "en";
 
         const payload = {
@@ -1696,14 +1721,11 @@
             if (window.Swal) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Impostazioni Salvate!',
-                    text: 'Le modifiche sono state applicate con successo all\'intera applicazione.',
-                    background: '#1e192c',
-                    color: '#fff',
-                    confirmButtonColor: '#A855F7'
+                    title: t('swal_settings_saved_title', 'Impostazioni Salvate!'),
+                    text: t('swal_settings_saved_desc', 'Le modifiche sono state applicate con successo all\'intera applicazione.')
                 });
             } else {
-                alert("Impostazioni salvate con successo!");
+                alert(t('swal_settings_saved_title', 'Impostazioni salvate con successo!'));
             }
         } catch (err) {
             if (typeof hideLoader === "function") hideLoader();
@@ -1711,11 +1733,8 @@
             if (window.Swal) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Errore nel salvataggio',
-                    text: err.message || 'Si è verificato un errore durante il salvataggio delle impostazioni.',
-                    background: '#1e192c',
-                    color: '#fff',
-                    confirmButtonColor: '#A855F7'
+                    title: t('swal_settings_save_error_title', 'Errore nel salvataggio'),
+                    text: err.message || t('swal_settings_save_error_desc', 'Si è verificato un errore durante il salvataggio delle impostazioni.')
                 });
             }
         }
@@ -1724,15 +1743,12 @@
     async function resetSettingsToDefault() {
         if (window.Swal) {
             const confirm = await Swal.fire({
-                title: 'Ripristinare le impostazioni predefinite?',
-                text: 'Il nome, i loghi, il tema e la modalità di login torneranno ai valori iniziali.',
+                title: t('swal_settings_reset_confirm_title', 'Ripristinare le impostazioni predefinite?'),
+                text: t('swal_settings_reset_confirm_desc', 'Il nome, i loghi, il tema e la modalità di login torneranno ai valori iniziali.'),
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Sì, ripristina',
-                cancelButtonText: 'Annulla',
-                background: '#1e192c',
-                color: '#fff',
-                confirmButtonColor: '#ef4444'
+                confirmButtonText: t('btn_reset_confirm', 'Sì, ripristina'),
+                cancelButtonText: t('btn_cancel', 'Annulla')
             });
             if (!confirm.isConfirmed) return;
         }
@@ -1748,6 +1764,7 @@
         document.getElementById("favicon-preview-img").src = "/img/logo-minimal.svg";
         document.getElementById("login-mode-showcase").checked = true;
         handleLoginModeChange("SHOWCASE");
+        if (typeof switchLanguage === "function") await switchLanguage("auto");
         await saveAllSettings();
     }
 
@@ -1759,11 +1776,8 @@
             if (window.Swal) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Backup Esportato!',
-                    text: 'Il file JSON di backup è stato scaricato sul tuo dispositivo.',
-                    background: '#1e192c',
-                    color: '#fff',
-                    confirmButtonColor: '#A855F7'
+                    title: t('swal_backup_exported_title', 'Backup Esportato!'),
+                    text: t('swal_backup_exported_desc', 'Il file JSON di backup è stato scaricato sul tuo dispositivo.')
                 });
             }
         } catch (e) {
@@ -1771,11 +1785,8 @@
             if (window.Swal) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Errore Esportazione',
-                    text: e.message || 'Impossibile creare il backup.',
-                    background: '#1e192c',
-                    color: '#fff',
-                    confirmButtonColor: '#ef4444'
+                    title: t('swal_backup_export_error', 'Errore Esportazione'),
+                    text: e.message || t('swal_backup_export_error_desc', 'Impossibile creare il backup.')
                 });
             }
         }
@@ -1787,11 +1798,8 @@
             if (window.Swal) {
                 Swal.fire({
                     icon: 'info',
-                    title: 'Nessun file selezionato',
-                    text: 'Seleziona un file di backup .json valido prima di avviare il ripristino.',
-                    background: '#1e192c',
-                    color: '#fff',
-                    confirmButtonColor: '#A855F7'
+                    title: t('swal_no_file_selected_title', 'Nessun file selezionato'),
+                    text: t('swal_no_file_selected_desc', 'Seleziona un file di backup .json valido prima di avviare il ripristino.')
                 });
             }
             return;
@@ -1806,11 +1814,8 @@
             if (window.Swal) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'File non valido',
-                    text: 'Il file selezionato non è un JSON valido.',
-                    background: '#1e192c',
-                    color: '#fff',
-                    confirmButtonColor: '#ef4444'
+                    title: t('swal_invalid_file_title', 'File non valido'),
+                    text: t('swal_invalid_file_desc', 'Il file selezionato non è un JSON valido.')
                 });
             }
             return;
@@ -1818,15 +1823,12 @@
 
         if (window.Swal) {
             const confirm = await Swal.fire({
-                title: 'Conferma Ripristino Backup',
-                html: `Sei sicuro di voler ripristinare il backup?<br><small class="text-gray-400">Versione: ${backupObj.version || 'N/D'} - Data: ${backupObj.timestamp || 'N/D'}</small>`,
+                title: t('swal_restore_confirm_title', 'Conferma Ripristino Backup'),
+                html: `${t('swal_restore_confirm_desc', 'Sei sicuro di voler ripristinare il backup?')}<br><small class="text-gray-400">Versione: ${backupObj.version || 'N/D'} - Data: ${backupObj.timestamp || 'N/D'}</small>`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Sì, procedi al ripristino',
-                cancelButtonText: 'Annulla',
-                background: '#1e192c',
-                color: '#fff',
-                confirmButtonColor: '#ef4444'
+                confirmButtonText: t('btn_restore_proceed', 'Sì, procedi al ripristino'),
+                cancelButtonText: t('btn_cancel', 'Annulla')
             });
             if (!confirm.isConfirmed) return;
         }
@@ -1838,11 +1840,8 @@
             if (window.Swal) {
                 await Swal.fire({
                     icon: 'success',
-                    title: 'Ripristino Completato!',
-                    text: 'Tutti i dati e le impostazioni sono stati ripristinati con successo. La pagina verrà ricaricata.',
-                    background: '#1e192c',
-                    color: '#fff',
-                    confirmButtonColor: '#A855F7'
+                    title: t('swal_restore_completed_title', 'Ripristino Completato!'),
+                    text: t('swal_restore_completed_desc', 'Tutti i dati e le impostazioni sono stati ripristinati con successo. La pagina verrà ricaricata.')
                 });
             }
             window.location.reload();
@@ -1851,11 +1850,8 @@
             if (window.Swal) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Errore Ripristino',
-                    text: e.message || 'Impossibile completare il ripristino.',
-                    background: '#1e192c',
-                    color: '#fff',
-                    confirmButtonColor: '#ef4444'
+                    title: t('swal_restore_error_title', 'Errore Ripristino'),
+                    text: e.message || t('swal_restore_error_desc', 'Impossibile completare il ripristino.')
                 });
             }
         }

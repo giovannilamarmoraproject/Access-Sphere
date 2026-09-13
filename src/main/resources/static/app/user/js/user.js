@@ -536,12 +536,16 @@ function displayUserData(user) {
 }
 
 function toggleBlockUser(identifier, username, block) {
-  const actionTitle = block ? "Conferma Blocco" : "Conferma Sblocco";
+  const actionTitle = block 
+    ? (typeof t === 'function' ? t("swal_user_blocked_title", "Conferma Blocco") : "Conferma Blocco") 
+    : (typeof t === 'function' ? t("swal_user_unblocked_title", "Conferma Sblocco") : "Conferma Sblocco");
   const actionText = block
-    ? `Sei sicuro di voler bloccare l'utente @${username}? L'utente non potrà più accedere al sistema fino al successivo sblocco.`
-    : `Sei sicuro di voler sbloccare l'utente @${username}? L'utente potrà nuovamente accedere alle applicazioni del sistema.`;
-  const confirmBtnText = block ? "Sì, blocca" : "Sì, sblocca";
-  const cancelBtnText = "Annulla";
+    ? (typeof t === 'function' ? t("swal_block_user_confirm", `Sei sicuro di voler bloccare l'utente @${username}? L'utente non potrà più accedere al sistema fino al successivo sblocco.`).replace("#USERNAME#", username) : `Sei sicuro di voler bloccare l'utente @${username}? L'utente non potrà più accedere al sistema fino al successivo sblocco.`)
+    : (typeof t === 'function' ? t("swal_unblock_user_confirm", `Sei sicuro di voler sbloccare l'utente @${username}? L'utente potrà nuovamente accedere alle applicazioni del sistema.`).replace("#USERNAME#", username) : `Sei sicuro di voler sbloccare l'utente @${username}? L'utente potrà nuovamente accedere alle applicazioni del sistema.`);
+  const confirmBtnText = block 
+    ? (typeof t === 'function' ? t("swal_block_confirm_btn", "Sì, blocca") : "Sì, blocca") 
+    : (typeof t === 'function' ? t("swal_unblock_confirm_btn", "Sì, sblocca") : "Sì, sblocca");
+  const cancelBtnText = (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla");
 
   const confirmPromise = typeof sweetalertConfirm === 'function'
     ? sweetalertConfirm("warning", actionTitle, actionText, confirmBtnText, cancelBtnText)
@@ -561,7 +565,7 @@ function toggleBlockUser(identifier, username, block) {
       const patchFn = typeof PATCH !== 'undefined' ? PATCH : (typeof api !== 'undefined' && api.PATCH ? api.PATCH : null);
 
       if (!patchFn) {
-        sweetalert("error", "Errore", "Funzione PATCH non disponibile.");
+        sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Errore") : "Errore"), "Funzione PATCH non disponibile.");
         return;
       }
 
@@ -576,10 +580,12 @@ function toggleBlockUser(identifier, username, block) {
             sessionStorage.removeItem("accesssphere_users_data");
           } catch (e) {}
 
-          const successTitle = block ? "Utente Bloccato" : "Utente Sbloccato";
+          const successTitle = block 
+            ? (typeof t === 'function' ? t("swal_user_blocked_title", "Utente Bloccato") : "Utente Bloccato") 
+            : (typeof t === 'function' ? t("swal_user_unblocked_title", "Utente Sbloccato") : "Utente Sbloccato");
           const successMsg = block
-            ? `L'utente @${username} è stato bloccato con successo.`
-            : `L'utente @${username} è stato sbloccato con successo.`;
+            ? (typeof t === 'function' ? t("swal_user_blocked_desc", `L'utente @${username} è stato bloccato con successo.`).replace("#USERNAME#", username) : `L'utente @${username} è stato bloccato con successo.`)
+            : (typeof t === 'function' ? t("swal_user_unblocked_desc", `L'utente @${username} è stato sbloccato con successo.`).replace("#USERNAME#", username) : `L'utente @${username} è stato sbloccato con successo.`);
 
           sweetalert("success", successTitle, successMsg).then(() => {
             window.location.reload();
@@ -587,22 +593,21 @@ function toggleBlockUser(identifier, username, block) {
         }
       }).catch(err => {
         console.error("Error toggling user block status:", err);
-        sweetalert("error", "Errore", "Impossibile contattare il server.");
+        sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Errore") : "Errore"), (typeof t === 'function' ? t("swal_connection_error", "Errore di connessione durante l'operazione.") : "Errore di connessione durante l'operazione."));
       });
     }
   });
 }
 
 function deleteUser(identifier, username) {
+  const title = (typeof t === 'function' ? t("swal_delete_user_confirm_title", "Conferma Eliminazione") : "Conferma Eliminazione");
+  const text = (typeof t === 'function' ? t("swal_delete_user_confirm_desc", `Sei sicuro di voler eliminare definitivamente l'utente @${username}? L'operazione non è reversibile.`).replace("#USERNAME#", username) : `Sei sicuro di voler eliminare definitivamente l'utente @${username}? L'operazione non è reversibile.`);
+  const confirmBtn = (typeof t === 'function' ? t("btn_delete_confirm", "Sì, elimina") : "Sì, elimina");
+  const cancelBtn = (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla");
+
   const confirmPromise = typeof sweetalertConfirm === 'function'
-    ? sweetalertConfirm(
-        "warning",
-        "Conferma Eliminazione",
-        `Sei sicuro di voler eliminare definitivamente l'utente @${username}? L'operazione non è reversibile.`,
-        "Sì, elimina",
-        "Annulla"
-      )
-    : sweetalert("warning", "Conferma Eliminazione", `Sei sicuro di voler eliminare definitivamente l'utente @${username}? L'operazione non è reversibile.`, true);
+    ? sweetalertConfirm("warning", title, text, confirmBtn, cancelBtn)
+    : sweetalert("warning", title, text, true);
 
   confirmPromise.then((res) => {
     if (res.isConfirmed) {
@@ -611,19 +616,21 @@ function deleteUser(identifier, username) {
       DELETE(url, token).then(async (data) => {
         const responseData = await data.json().catch(() => ({}));
         if (!data.ok || responseData.error != null) {
-          sweetalert("error", "Errore Eliminazione", responseData.error?.message || responseData.message || "Impossibile eliminare l'utente.");
+          sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Errore Eliminazione") : "Errore Eliminazione"), responseData.error?.message || responseData.message || "Impossibile eliminare l'utente.");
         } else {
           try {
             localStorage.removeItem(config.client_id + "_usersData");
             sessionStorage.removeItem("accesssphere_users_data");
           } catch (e) {}
-          sweetalert("success", "Utente Eliminato", `L'utente @${username} è stato rimosso.`).then(() => {
+          const successTitle = (typeof t === 'function' ? t("swal_user_deleted_title", "Utente Eliminato") : "Utente Eliminato");
+          const successDesc = (typeof t === 'function' ? t("swal_user_deleted_desc", `L'utente @${username} è stato rimosso.`).replace("#USERNAME#", username) : `L'utente @${username} è stato rimosso.`);
+          sweetalert("success", successTitle, successDesc).then(() => {
             window.location.href = "/app/users";
           });
         }
       }).catch(err => {
         console.error("Error deleting user:", err);
-        sweetalert("error", "Errore", "Impossibile contattare il server.");
+        sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Errore") : "Errore"), (typeof t === 'function' ? t("swal_connection_error", "Errore di connessione durante l'operazione.") : "Errore di connessione durante l'operazione."));
       });
     }
   });
@@ -660,12 +667,16 @@ function formatMfaLabel(label) {
 }
 
 function toggleMfaStatus(identifier, enable) {
-  const title = enable ? "Attiva Autenticazione a Due Fattori" : "Disattiva Autenticazione a Due Fattori";
+  const title = enable 
+    ? (typeof t === "function" ? t("swal_enable_mfa_title", "Attiva Autenticazione a Due Fattori") : "Attiva Autenticazione a Due Fattori")
+    : (typeof t === "function" ? t("swal_disable_mfa_title", "Disattiva Autenticazione a Due Fattori") : "Disattiva Autenticazione a Due Fattori");
   const text = enable
-    ? "Sei sicuro di voler abilitare l'autenticazione a due fattori (MFA) per questo utente?"
-    : "Sei sicuro di voler disattivare l'autenticazione a due fattori (MFA)? L'accesso sarà protetto unicamente dalla password.";
-  const confirmBtn = enable ? "Sì, attiva MFA" : "Sì, disattiva MFA";
-  const denyBtn = "Annulla";
+    ? (typeof t === "function" ? t("swal_enable_mfa_desc", "Sei sicuro di voler abilitare l'autenticazione a due fattori (MFA) per questo utente?") : "Sei sicuro di voler abilitare l'autenticazione a due fattori (MFA) per questo utente?")
+    : (typeof t === "function" ? t("swal_disable_mfa_desc", "Sei sicuro di voler disattivare l'autenticazione a due fattori (MFA)? L'accesso sarà protetto unicamente dalla password.") : "Sei sicuro di voler disattivare l'autenticazione a due fattori (MFA)? L'accesso sarà protetto unicamente dalla password.");
+  const confirmBtn = enable 
+    ? (typeof t === "function" ? t("swal_enable_mfa_btn", "Sì, attiva MFA") : "Sì, attiva MFA") 
+    : (typeof t === "function" ? t("swal_disable_mfa_btn", "Sì, disattiva MFA") : "Sì, disattiva MFA");
+  const denyBtn = (typeof t === "function" ? t("btn_cancel", "Annulla") : "Annulla");
 
   const confirmPromise = typeof sweetalertConfirm === "function"
     ? sweetalertConfirm("warning", title, text, confirmBtn, denyBtn)
@@ -691,7 +702,7 @@ function toggleMfaStatus(identifier, enable) {
 
       const postFn = typeof POST !== "undefined" ? POST : (typeof api !== "undefined" && api.POST ? api.POST : null);
       if (!postFn) {
-        sweetalert("error", "Errore", "Funzione POST non disponibile.");
+        sweetalert("error", (typeof t === "function" ? t("swal_error_title", "Errore") : "Errore"), "Funzione POST non disponibile.");
         return;
       }
 
@@ -699,7 +710,7 @@ function toggleMfaStatus(identifier, enable) {
         const responseData = await data.json().catch(() => ({}));
         if (!data.ok || responseData.error != null) {
           const errMsg = responseData.error?.message || responseData.message || (enable ? "Impossibile attivare l'MFA." : "Impossibile disattivare l'MFA.");
-          sweetalert("error", enable ? "Errore Attivazione" : "Errore Disattivazione", errMsg);
+          sweetalert("error", enable ? (typeof t === "function" ? t("swal_error_title", "Errore") : "Errore Attivazione") : (typeof t === "function" ? t("swal_error_title", "Errore") : "Errore Disattivazione"), errMsg);
         } else {
           try {
             localStorage.removeItem(config.client_id + "_usersData");
@@ -707,16 +718,20 @@ function toggleMfaStatus(identifier, enable) {
           } catch (e) {}
 
           const successMsg = enable
-            ? "Autenticazione a due fattori attivata con successo."
-            : "Autenticazione a due fattori disattivata con successo.";
+            ? (typeof t === "function" ? t("swal_mfa_enabled_desc", "Autenticazione a due fattori attivata con successo.") : "Autenticazione a due fattori attivata con successo.")
+            : (typeof t === "function" ? t("swal_mfa_disabled_desc", "Autenticazione a due fattori disattivata con successo.") : "Autenticazione a due fattori disattivata con successo.");
 
-          sweetalert("success", enable ? "MFA Attivata" : "MFA Disattivata", successMsg).then(() => {
+          const successTitle = enable 
+            ? (typeof t === "function" ? t("swal_mfa_enabled_title", "MFA Attivata") : "MFA Attivata")
+            : (typeof t === "function" ? t("swal_mfa_disabled_title", "MFA Disattivata") : "MFA Disattivata");
+
+          sweetalert("success", successTitle, successMsg).then(() => {
             window.location.reload();
           });
         }
       }).catch(err => {
         console.error("Error toggling MFA status:", err);
-        sweetalert("error", "Errore", "Impossibile contattare il server.");
+        sweetalert("error", (typeof t === "function" ? t("swal_error_title", "Errore") : "Errore"), (typeof t === "function" ? t("swal_connection_error", "Errore di connessione durante l'operazione.") : "Errore di connessione durante l'operazione."));
       });
     }
   });
@@ -724,22 +739,21 @@ function toggleMfaStatus(identifier, enable) {
 
 function deleteMfaMethod(identifier, label) {
   const formattedLabel = formatMfaLabel(label);
+  const title = (typeof t === "function" ? t("swal_delete_mfa_title", "Elimina Metodo MFA") : "Elimina Metodo MFA");
+  const text = (typeof t === "function" ? t("swal_delete_mfa_desc", `Sei sicuro di voler eliminare il metodo "${formattedLabel}"? Se non rimangono altri metodi configurati, l'MFA verrà automaticamente disattivata.`).replace("#LABEL#", formattedLabel) : `Sei sicuro di voler eliminare il metodo "${formattedLabel}"? Se non rimangono altri metodi configurati, l'MFA verrà automaticamente disattivata.`);
+  const confirmBtn = (typeof t === "function" ? t("btn_delete_confirm", "Sì, elimina") : "Sì, elimina");
+  const cancelBtn = (typeof t === "function" ? t("btn_cancel", "Annulla") : "Annulla");
+
   const confirmPromise = typeof sweetalertConfirm === "function"
-    ? sweetalertConfirm(
-        "warning",
-        "Elimina Metodo MFA",
-        `Sei sicuro di voler eliminare il metodo "${formattedLabel}"? Se non rimangono altri metodi configurati, l'MFA verrà automaticamente disattivata.`,
-        "Sì, elimina",
-        "Annulla"
-      )
+    ? sweetalertConfirm("warning", title, text, confirmBtn, cancelBtn)
     : (typeof Swal !== "undefined"
         ? Swal.fire({
             icon: "warning",
-            title: "Elimina Metodo MFA",
-            text: `Sei sicuro di voler eliminare il metodo "${formattedLabel}"?`,
+            title: title,
+            text: text,
             showCancelButton: true,
-            confirmButtonText: "Sì, elimina",
-            cancelButtonText: "Annulla"
+            confirmButtonText: confirmBtn,
+            cancelButtonText: cancelBtn
           })
         : Promise.resolve({ isConfirmed: confirm("Sei sicuro di voler eliminare il metodo?") }));
 
@@ -798,26 +812,26 @@ function finishMfaVerification(identifier, label, type) {
           pattern="\\d*" 
           inputmode="numeric" 
           autocomplete="one-time-code"
-          style="width: 220px; text-align: center; font-family: monospace; font-size: 1.75rem; font-weight: 700; letter-spacing: 0.35em; background: #1C172E; border: 1.5px solid rgba(208, 188, 255, 0.35); border-radius: 16px; color: #FFFFFF; padding: 10px 16px; outline: none;" 
+          style="width: 220px; text-align: center; font-family: monospace; font-size: 1.75rem; font-weight: 700; letter-spacing: 0.35em; background: var(--theme-input-bg, #1C172E); border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35); border-radius: 16px; color: #FFFFFF; padding: 10px 16px; outline: none;" 
         />
       </div>
-      <p style="text-align: center; font-size: 0.75rem; color: #A78BFA; margin-top: 0.5rem;">
+      <p style="text-align: center; font-size: 0.75rem; color: var(--theme-accent, #A78BFA); margin-top: 0.5rem;">
         Non hai ancora scansionato il QR code? 
-        <a href="/app/mfa/${encodeURIComponent(identifier)}" style="color: #D0BCFF; text-decoration: underline; font-weight: 600;">Riconfigura da zero</a>
+        <a href="/app/mfa/${encodeURIComponent(identifier)}" style="color: var(--theme-accent, #D0BCFF); text-decoration: underline; font-weight: 600;">Riconfigura da zero</a>
       </p>
     </div>
   `;
 
   if (typeof Swal !== "undefined") {
     Swal.fire({
-      title: `Completa Verifica MFA`,
+      title: (typeof t === "function" ? t("swal_complete_mfa_title", "Completa Verifica MFA") : "Completa Verifica MFA"),
       html: swalHtml,
       showCancelButton: true,
-      confirmButtonText: '<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i> Verifica e Attiva',
-      cancelButtonText: "Annulla",
-      background: "#161124",
+      confirmButtonText: `<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i> ${typeof t === "function" ? t("swal_verify_and_activate_btn", "Verifica e Attiva") : "Verifica e Attiva"}`,
+      cancelButtonText: (typeof t === "function" ? t("btn_cancel", "Annulla") : "Annulla"),
+      background: "var(--theme-surface-container, #161124)",
       color: "#FFFFFF",
-      confirmButtonColor: "#7C3AED",
+      confirmButtonColor: "var(--theme-primary, #7C3AED)",
       cancelButtonColor: "#4B5563",
       didOpen: () => {
         const input = document.getElementById("swal-mfa-otp");
