@@ -49,7 +49,13 @@ public class AppSettingsService {
     return Mono.fromCallable(
         () -> {
           List<AppSettingsEntity> list = appSettingsDAO.findAll();
-          AppSettingsEntity entity = list.isEmpty() ? null : list.get(0);
+          AppSettingsEntity entity;
+          if (list.isEmpty()) {
+            AppSettingsEntity defaultEntity = new AppSettingsEntity();
+            entity = appSettingsDAO.saveAndFlush(defaultEntity);
+          } else {
+            entity = list.get(0);
+          }
           PublicAppSettingsDTO dto = AppSettingsMapper.toPublicDTO(entity);
           publicCache.set(dto);
           return dto;
@@ -79,7 +85,7 @@ public class AppSettingsService {
             entity = list.get(0);
             AppSettingsMapper.updateEntity(entity, dto);
           }
-          AppSettingsEntity saved = appSettingsDAO.save(entity);
+          AppSettingsEntity saved = appSettingsDAO.saveAndFlush(entity);
           PublicAppSettingsDTO pubDto = AppSettingsMapper.toPublicDTO(saved);
           publicCache.set(pubDto);
           LOG.info("Application settings updated successfully");
@@ -129,7 +135,7 @@ public class AppSettingsService {
             } else {
               importedSettings.setId(null);
             }
-            appSettingsDAO.save(importedSettings);
+            appSettingsDAO.saveAndFlush(importedSettings);
             publicCache.set(AppSettingsMapper.toPublicDTO(importedSettings));
           }
 

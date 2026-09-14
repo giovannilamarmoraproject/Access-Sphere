@@ -134,31 +134,31 @@
               <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
-            <span class="form-helper text-purple-300 text-xs font-medium">Modifica Client OAuth 2.0</span>
+            <span class="form-helper text-purple-300 text-xs font-medium" data-i18n="client_edit_page_title">Modifica Client OAuth 2.0</span>
           </div>
         </a>
 
         <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
           <a href="/app" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gauge-high"></i> Panoramica
+            <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
           </a>
           <a href="/app/users" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-users"></i> Utenti
+            <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
           </a>
           <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
-            <i class="fa-solid fa-key"></i> Client OAuth2
+            <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
           </a>
           <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
             <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
           </a>
           <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-book"></i> API Docs
+            <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
           </a>
         </nav>
       </div>
 
       <div class="flex items-center gap-2">
-        <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client">
+        <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client" data-i18n-title="client_detail_back">
           <i class="fa-solid fa-arrow-left text-sm"></i>
         </a>
         <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
@@ -177,22 +177,22 @@
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-purple-500/15">
         <div>
           <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <i class="fa-solid fa-pen-to-square text-purple-400"></i> Modifica Client OAuth2
+            <i class="fa-solid fa-pen-to-square text-purple-400"></i> <span data-i18n="client_edit_page_title">Modifica Client OAuth2</span>
           </h2>
-          <p class="form-helper text-purple-300 text-xs mt-1">
+          <p class="form-helper text-purple-300 text-xs mt-1" data-i18n="client_edit_page_subtitle">
             Aggiorna tutti i parametri crittografici, endpoint di reindirizzamento, ruoli applicativi e webhooks per il client selezionato.
           </p>
         </div>
         <div class="flex items-center gap-3 w-full sm:w-auto">
           <a id="back-to-details-btn" href="/app/clients" class="m3-btn-outline w-full sm:w-auto justify-center">
-            <i class="fa-solid fa-arrow-left text-xs"></i> Dettagli Client
+            <i class="fa-solid fa-arrow-left text-xs"></i> <span data-i18n="client_edit_back_to_details">Dettagli Client</span>
           </a>
         </div>
       </div>
 
       <div id="loading-spinner" class="py-16 text-center text-purple-300 flex flex-col items-center justify-center">
         <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
-        <p class="text-sm">Caricamento impostazioni client...</p>
+        <p class="text-sm" data-i18n="client_detail_loading">Caricamento impostazioni client...</p>
       </div>
 
       <form id="editClientForm" onsubmit="event.preventDefault(); submitEditClient();" class="space-y-8" style="display: none;" novalidate>
@@ -200,51 +200,51 @@
         <!-- SEZIONE 1: IDENTITÀ CLIENT & CREDENZIALI -->
         <div class="m3-subcard">
           <div class="form-section-title">
-            <i class="fa-solid fa-id-card text-purple-400"></i> 1. Identità & Credenziali di Accesso
+            <i class="fa-solid fa-id-card text-purple-400"></i> <span data-i18n="client_sec_identity_title">1. Identità & Credenziali di Accesso</span>
           </div>
           <div class="row g-4">
             <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300">Client ID (Non Modificabile)</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_client_id">Client ID (Non Modificabile)</label>
               <input type="text" id="clientId" class="form-control font-mono uppercase" readonly disabled />
-              <span class="text-[11px] text-gray-400 mt-1 block">Identificativo univoco dell'applicazione nel sistema.</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_client_id_desc">Identificativo univoco dell'applicazione nel sistema.</span>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300">Type (Gestione Token / Auth) *</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_auth_type">Type (Gestione Token / Auth) *</label>
               <select id="authType" class="form-select font-mono" required>
                 <option value="ALL_TYPE">ALL_TYPE (Supporto Multi-Protocollo)</option>
                 <option value="BEARER">BEARER (Standard Bearer)</option>
                 <option value="GOOGLE">GOOGLE (Integrazione Google OAuth)</option>
               </select>
-              <span class="text-[11px] text-gray-400 mt-1 block">Tipo generale di gestione token adottato dal client.</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_auth_type_desc">Tipo generale di gestione token adottato dal client.</span>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300">External Client ID</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_ext_id">External Client ID</label>
               <input type="text" id="externalClientId" class="form-control font-mono text-xs" placeholder="es. 284023202969-...apps.googleusercontent.com" />
-              <span class="text-[11px] text-gray-400 mt-1 block">Identificativo per integrazioni esterne (Google, Okta, ecc.).</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_ext_id_desc">Identificativo per integrazioni esterne (Google, Okta, ecc.).</span>
             </div>
 
             <div class="col-md-6">
-              <label class="form-label text-xs font-semibold text-gray-300">Client Secret</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_secret">Client Secret</label>
               <div class="flex gap-2">
                 <input type="text" id="clientSecret" class="form-control font-mono text-xs" placeholder="es. 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" />
-                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateClientSecret()" title="Genera Nuovo Secret">
+                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateClientSecret()" title="Genera Nuovo Secret" data-i18n-title="client_btn_generate_secret">
                   <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
                 </button>
               </div>
-              <span class="text-[11px] text-gray-400 mt-1 block">Chiave segreta usata per autenticazione client confidenziale.</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_secret_desc">Chiave segreta usata per autenticazione client confidenziale.</span>
             </div>
 
             <div class="col-md-6">
-              <label class="form-label text-xs font-semibold text-gray-300">Registration Token</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_reg_token">Registration Token</label>
               <div class="flex gap-2">
                 <input type="text" id="registrationToken" class="form-control font-mono text-xs" placeholder="es. ca466054-8575-4fbf-bb76-183f24bfbcde" />
-                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateRegistrationToken()" title="Genera Nuovo UUID">
+                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateRegistrationToken()" title="Genera Nuovo UUID" data-i18n-title="client_btn_generate_reg_token">
                   <i class="fa-solid fa-dice text-xs"></i>
                 </button>
               </div>
-              <span class="text-[11px] text-gray-400 mt-1 block">Token univoco di registrazione assegnato al client.</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_reg_token_desc">Token univoco di registrazione assegnato al client.</span>
             </div>
           </div>
         </div>
@@ -252,20 +252,20 @@
         <!-- SEZIONE 2: ACCESSO & REDIRECT URI -->
         <div class="m3-subcard">
           <div class="form-section-title">
-            <i class="fa-solid fa-network-wired text-purple-400"></i> 2. Reindirizzamenti, Scopes & Flussi OAuth
+            <i class="fa-solid fa-network-wired text-purple-400"></i> <span data-i18n="client_sec_redirect_title">2. Reindirizzamenti, Scopes & Flussi OAuth</span>
           </div>
           <div class="row g-4">
             <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300">Access Type</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_access_type">Access Type</label>
               <select id="accessType" class="form-select font-mono">
                 <option value="ONLINE">ONLINE (Autenticazione web standard)</option>
                 <option value="OFFLINE">OFFLINE (Supporto Refresh Token continuo)</option>
               </select>
-              <span class="text-[11px] text-gray-400 mt-1 block">Definisce il tipo di accesso (online o offline).</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_access_type_desc">Definisce il tipo di accesso (online o offline).</span>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300">Authorize Redirect Status</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_redirect_status">Authorize Redirect Status</label>
               <select id="authorize_redirect_status" class="form-select font-mono">
                 <option value="FOUND">FOUND (HTTP 302 - Standard)</option>
                 <option value="SEE_OTHER">SEE_OTHER (HTTP 303)</option>
@@ -273,37 +273,37 @@
                 <option value="PERMANENT_REDIRECT">PERMANENT_REDIRECT (HTTP 308)</option>
                 <option value="OK">OK (HTTP 200)</option>
               </select>
-              <span class="text-[11px] text-gray-400 mt-1 block">Status code HTTP utilizzato per il redirect durante l'autorizzazione.</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_redirect_status_desc">Status code HTTP utilizzato per il redirect durante l'autorizzazione.</span>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300">Token Type *</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_token_type">Token Type *</label>
               <select id="tokenType" class="form-select font-mono" required>
                 <option value="BEARER_JWT">BEARER_JWT (Token JWT standard)</option>
                 <option value="BEARER_JWE">BEARER_JWE (Token JWE crittografato)</option>
               </select>
-              <span class="text-[11px] text-gray-400 mt-1 block">Tipologia di token emesso al client.</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_token_type_desc">Tipologia di token emesso al client.</span>
             </div>
 
             <div class="col-12">
-              <label class="form-label text-xs font-semibold text-gray-300">Scopes Autorizzati</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_scopes">Scopes Autorizzati</label>
               <input type="text" id="scopes" class="form-control font-mono text-xs" 
                      placeholder="openid email profile https://www.googleapis.com/auth/userinfo.profile" />
-              <span class="text-[11px] text-gray-400 mt-1 block">Lista degli scope autorizzati per il client (separati da spazio o virgola).</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_scopes_desc">Lista degli scope autorizzati per il client (separati da spazio o virgola).</span>
             </div>
 
             <div class="col-md-6">
-              <label class="form-label text-xs font-semibold text-gray-300">Redirect URIs Autorizzate (redirect_uri)</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_redirect_uris">Redirect URIs Autorizzate (redirect_uri)</label>
               <textarea id="redirect_uri" rows="2" class="form-control font-mono text-xs" 
                         placeholder="https://linkatutto.giovannilamarmora.com http://127.0.0.1:5501/index.html"></textarea>
-              <span class="text-[11px] text-gray-400 mt-1 block">URI consentite per la risposta di authorization code e token (separate da spazio).</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_redirect_uris_desc">URI consentite per la risposta di authorization code e token (separate da spazio).</span>
             </div>
 
             <div class="col-md-6">
-              <label class="form-label text-xs font-semibold text-gray-300">Fallback URI (fallback_uri)</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_fallback_uri">Fallback URI (fallback_uri)</label>
               <textarea id="fallback_uri" rows="2" class="form-control font-mono text-xs" 
                         placeholder="https://access-sphere.giovannilamarmora.com/app/login?client_id=MY-CLIENT"></textarea>
-              <span class="text-[11px] text-gray-400 mt-1 block">URI di fallback utilizzata in caso di fallimento o annullamento del redirect primario.</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_fallback_uri_desc">URI di fallback utilizzata in caso di fallimento o annullamento del redirect primario.</span>
             </div>
           </div>
         </div>
@@ -311,41 +311,41 @@
         <!-- SEZIONE 3: CRITTOGRAFIA & SCADENZE TOKEN -->
         <div class="m3-subcard">
           <div class="form-section-title">
-            <i class="fa-solid fa-shield-halved text-purple-400"></i> 3. Parametri Chiavi & Scadenze Token
+            <i class="fa-solid fa-shield-halved text-purple-400"></i> <span data-i18n="client_sec_crypto_title">3. Parametri Chiavi & Scadenze Token</span>
           </div>
           <div class="row g-4">
             <div class="col-md-8">
-              <label class="form-label text-xs font-semibold text-gray-300">JWT Secret</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwt_secret">JWT Secret</label>
               <div class="flex gap-2">
                 <input type="text" id="jwtSecret" class="form-control font-mono text-xs" placeholder="Secret key a 256-bit per firmare i token JWT" />
-                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJwtSecret()" title="Genera Chiave JWT a 256-bit">
+                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJwtSecret()" title="Genera Chiave JWT a 256-bit" data-i18n-title="client_btn_generate_jwt">
                   <i class="fa-solid fa-key text-xs"></i>
                 </button>
               </div>
-              <span class="text-[11px] text-gray-400 mt-1 block">Chiave segreta usata per la firma crittografica dei token JWT.</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwt_secret_desc">Chiave segreta usata per la firma crittografica dei token JWT.</span>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300">JWT Expiration (millisecondi)</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwt_exp">JWT Expiration (millisecondi)</label>
               <input type="number" id="jwtExpiration" class="form-control font-mono" value="3600000" />
-              <span class="text-[11px] text-gray-400 mt-1 block">Durata di validità del token JWT (es. 3600000 ms = 1 ora).</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwt_exp_desc">Durata di validità del token JWT (es. 3600000 ms = 1 ora).</span>
             </div>
 
             <div class="col-md-8">
-              <label class="form-label text-xs font-semibold text-gray-300">JWE Secret</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwe_secret">JWE Secret</label>
               <div class="flex gap-2">
                 <input type="text" id="jweSecret" class="form-control font-mono text-xs" placeholder="Secret key per cifratura token JWE" />
-                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJweSecret()" title="Genera Chiave JWE">
+                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJweSecret()" title="Genera Chiave JWE" data-i18n-title="client_btn_generate_jwe">
                   <i class="fa-solid fa-lock text-xs"></i>
                 </button>
               </div>
-              <span class="text-[11px] text-gray-400 mt-1 block">Chiave segreta usata per la crittografia dei token JWE.</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwe_secret_desc">Chiave segreta usata per la crittografia dei token JWE.</span>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300">JWE Expiration (millisecondi)</label>
+              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwe_exp">JWE Expiration (millisecondi)</label>
               <input type="number" id="jweExpiration" class="form-control font-mono" value="360000" />
-              <span class="text-[11px] text-gray-400 mt-1 block">Durata di validità del token JWE (es. 360000 ms = 6 minuti).</span>
+              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwe_exp_desc">Durata di validità del token JWE (es. 360000 ms = 6 minuti).</span>
             </div>
           </div>
         </div>
@@ -353,13 +353,13 @@
         <!-- SEZIONE 4: FLAG DI EMISSIONE TOKEN & SICUREZZA -->
         <div class="m3-subcard">
           <div class="form-section-title">
-            <i class="fa-solid fa-sliders text-purple-400"></i> 4. Flag di Emissione & Requisiti di Sicurezza
+            <i class="fa-solid fa-sliders text-purple-400"></i> <span data-i18n="client_sec_flags_title">4. Flag di Emissione & Requisiti di Sicurezza</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
             <div class="m3-switch-card">
               <div>
-                <span class="text-xs font-bold text-white block">MFA Obbligatoria</span>
+                <span class="text-xs font-bold text-white block" data-i18n="client_flag_mfa">MFA Obbligatoria</span>
                 <span class="text-[10px] text-gray-400 block mt-0.5">mfa_enabled</span>
               </div>
               <div class="form-check form-switch m-0">
@@ -369,7 +369,7 @@
 
             <div class="m3-switch-card">
               <div>
-                <span class="text-xs font-bold text-white block">Emetti ID Token</span>
+                <span class="text-xs font-bold text-white block" data-i18n="client_flag_id_token">Emetti ID Token</span>
                 <span class="text-[10px] text-gray-400 block mt-0.5">id_token (OpenID Connect)</span>
               </div>
               <div class="form-check form-switch m-0">
@@ -379,7 +379,7 @@
 
             <div class="m3-switch-card">
               <div>
-                <span class="text-xs font-bold text-white block">Emetti Access Token</span>
+                <span class="text-xs font-bold text-white block" data-i18n="client_flag_access_token">Emetti Access Token</span>
                 <span class="text-[10px] text-gray-400 block mt-0.5">access_token (OAuth2)</span>
               </div>
               <div class="form-check form-switch m-0">
@@ -389,7 +389,7 @@
 
             <div class="m3-switch-card">
               <div>
-                <span class="text-xs font-bold text-white block">Emetti Strapi Token</span>
+                <span class="text-xs font-bold text-white block" data-i18n="client_flag_strapi_token">Emetti Strapi Token</span>
                 <span class="text-[10px] text-gray-400 block mt-0.5">strapi_token</span>
               </div>
               <div class="form-check form-switch m-0">
@@ -404,14 +404,14 @@
         <div class="m3-subcard">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-purple-500/15">
             <div class="form-section-title m-0 border-0 p-0">
-              <i class="fa-solid fa-user-shield text-purple-400"></i> 5. Ruoli Applicativi (app_roles)
+              <i class="fa-solid fa-user-shield text-purple-400"></i> <span data-i18n="client_sec_roles_title">5. Ruoli Applicativi (app_roles)</span>
             </div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               <button type="button" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2.5 px-4" onclick="toggleRolesJsonModal()">
-                <i class="fa-solid fa-code mr-1"></i> Modifica JSON
+                <i class="fa-solid fa-code mr-1"></i> <span data-i18n="client_btn_edit_json">Modifica JSON</span>
               </button>
               <button type="button" class="m3-btn-primary text-xs w-full sm:w-auto justify-center py-2.5 px-4" onclick="addAppRoleRow()">
-                <i class="fa-solid fa-plus mr-1"></i> Aggiungi Ruolo
+                <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="client_btn_add_role">Aggiungi Ruolo</span>
               </button>
             </div>
           </div>
@@ -420,10 +420,10 @@
             <table class="table repeater-table w-full text-xs">
               <thead>
                 <tr>
-                  <th style="width: 28%;">Ruolo (Role) *</th>
-                  <th style="width: 22%;">Tipo (Type)</th>
-                  <th style="width: 42%;">Descrizione</th>
-                  <th style="width: 8%; text-align: center;">Azione</th>
+                  <th style="width: 28%;" data-i18n="client_table_col_role">Ruolo (Role) *</th>
+                  <th style="width: 22%;" data-i18n="client_table_col_type">Tipo (Type)</th>
+                  <th style="width: 42%;" data-i18n="client_table_col_desc">Descrizione</th>
+                  <th style="width: 8%; text-align: center;" data-i18n="client_table_col_action">Azione</th>
                 </tr>
               </thead>
               <tbody id="app-roles-tbody">
@@ -437,14 +437,14 @@
         <div class="m3-subcard">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-purple-500/15">
             <div class="form-section-title m-0 border-0 p-0">
-              <i class="fa-solid fa-satellite-dish text-purple-400"></i> 6. Webhooks
+              <i class="fa-solid fa-satellite-dish text-purple-400"></i> <span data-i18n="client_sec_webhooks_title">6. Webhooks</span>
             </div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               <button type="button" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2.5 px-4" onclick="toggleWebhooksJsonModal()">
-                <i class="fa-solid fa-code mr-1"></i> Modifica JSON
+                <i class="fa-solid fa-code mr-1"></i> <span data-i18n="client_btn_edit_json">Modifica JSON</span>
               </button>
               <button type="button" class="m3-btn-primary text-xs w-full sm:w-auto justify-center py-2.5 px-4" onclick="addWebhookRow()">
-                <i class="fa-solid fa-plus mr-1"></i> Aggiungi Webhook
+                <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="client_btn_add_webhook">Aggiungi Webhook</span>
               </button>
             </div>
           </div>
@@ -453,10 +453,10 @@
             <table class="table repeater-table w-full text-xs">
               <thead>
                 <tr>
-                  <th style="width: 30%;">Nome Webhook *</th>
-                  <th style="width: 44%;">URL Endpoint *</th>
-                  <th style="width: 18%;">Azione (Action)</th>
-                  <th style="width: 8%; text-align: center;">Azione</th>
+                  <th style="width: 30%;" data-i18n="client_table_col_webhook_name">Nome Webhook *</th>
+                  <th style="width: 44%;" data-i18n="client_table_col_webhook_url">URL Endpoint *</th>
+                  <th style="width: 18%;" data-i18n="client_table_col_webhook_action">Azione (Action)</th>
+                  <th style="width: 8%; text-align: center;" data-i18n="client_table_col_action">Azione</th>
                 </tr>
               </thead>
               <tbody id="webhooks-tbody">
@@ -469,10 +469,10 @@
         <!-- AZIONI FORM -->
         <div class="pt-6 border-t border-purple-500/15 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
           <a id="cancel-link" href="/app/clients" class="m3-btn-outline justify-center">
-            <i class="fa-solid fa-xmark"></i> Annulla
+            <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
           </a>
           <button type="submit" class="m3-btn-primary justify-center">
-            <i class="fa-solid fa-floppy-disk mr-1"></i> Salva Modifiche Client
+            <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="btn_save_client_changes">Salva Modifiche Client</span>
           </button>
         </div>
 
@@ -487,6 +487,11 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       loadClientForEdit();
+    });
+
+    window.addEventListener("languageChanged", () => {
+      renderAppRolesTable();
+      renderWebhooksTable();
     });
 
     // --- GENERATORI CHIAVI ---
@@ -531,7 +536,7 @@
       tbody.innerHTML = "";
 
       if (!appRolesList || appRolesList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state">Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state" data-i18n="client_detail_empty_roles">${typeof t === 'function' ? t('client_detail_empty_roles', 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.') : 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.'}</td></tr>`;
         return;
       }
 
@@ -608,7 +613,7 @@
       tbody.innerHTML = "";
 
       if (!webhooksList || webhooksList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state">Nessun webhook registrato. Clicca su "Aggiungi Webhook" per aggiungerne uno.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state" data-i18n="client_detail_empty_webhooks">${typeof t === 'function' ? t('client_detail_empty_webhooks', 'Nessun webhook registrato. Clicca su "Aggiungi Webhook" per aggiungerne uno.') : 'Nessun webhook registrato. Clicca su "Aggiungi Webhook" per aggiungerne uno.'}</td></tr>`;
         return;
       }
 

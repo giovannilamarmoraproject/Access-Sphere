@@ -85,7 +85,7 @@ function getClients() {
           if (typeof logout === "function") logout();
           return;
         }
-        sweetalert("error", "Errore Caricamento Client", data.error.message || "Impossibile recuperare i client");
+        sweetalert("error", (typeof t === "function" ? t("swal_client_load_error_title", "Errore Caricamento Client") : "Errore Caricamento Client"), data.error.message || (typeof t === "function" ? t("swal_client_load_error_desc", "Impossibile recuperare i client") : "Impossibile recuperare i client"));
       } else {
         cachedClients = data.data || [];
         try {
@@ -98,7 +98,7 @@ function getClients() {
     })
     .catch((err) => {
       console.error("Error fetching clients:", err);
-      sweetalert("error", "Errore di Rete", "Impossibile contattare il server per la lista dei client.");
+      sweetalert("error", (typeof t === "function" ? t("swal_network_error_title", "Errore di Rete") : "Errore di Rete"), (typeof t === "function" ? t("swal_network_error_desc", "Impossibile contattare il server per la lista dei client.") : "Impossibile contattare il server per la lista dei client."));
     });
 }
 
@@ -156,8 +156,8 @@ function displayClientsTable(clients) {
     const scopesBadge = scopesStr ? `<span class="badge text-bg-secondary text-[10px]">${scopesStr}</span>` : '<span class="text-gray-500 text-xs">Standard</span>';
     const redirectPreview = renderRedirectUrisBadges(c.redirect_uri);
     const mfaBadge = c.mfaEnabled 
-      ? '<span class="badge text-bg-success text-[10px]"><i class="fa-solid fa-shield-check mr-1"></i>ATTIVO</span>' 
-      : '<span class="badge text-bg-secondary text-[10px]">DISATTIVATO</span>';
+      ? `<span class="badge text-bg-success text-[10px]"><i class="fa-solid fa-shield-check mr-1"></i>${typeof t === 'function' ? t('user_detail_active', 'ATTIVO') : 'ATTIVO'}</span>` 
+      : `<span class="badge text-bg-secondary text-[10px]">${typeof t === 'function' ? t('user_detail_disabled_f', 'DISATTIVATO') : 'DISATTIVATO'}</span>`;
 
     const tr = document.createElement("tr");
     tr.className = "cursor-pointer hover:bg-purple-500/10 transition-colors";
@@ -186,10 +186,10 @@ function displayClientsTable(clients) {
       <td>${redirectPreview}</td>
       <td>${mfaBadge}</td>
       <td class="text-center">
-        <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-action-btn m3-action-edit" title="Modifica Client">
+        <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-action-btn m3-action-edit" title="${typeof t === 'function' ? t('client_edit_page_title', 'Modifica Client') : 'Modifica Client'}">
           <i class="fa-solid fa-pen-to-square text-xs"></i>
         </a>
-        <button onclick="deleteClientAction('${c.clientId}')" class="m3-action-btn m3-action-delete" title="Elimina Client">
+        <button onclick="deleteClientAction('${c.clientId}')" class="m3-action-btn m3-action-delete" title="${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client') : 'Elimina Client'}">
           <i class="fa-solid fa-trash text-xs"></i>
         </button>
       </td>
@@ -201,14 +201,16 @@ function displayClientsTable(clients) {
     pageLength: 10,
     responsive: true,
     language: {
-      search: "Cerca client:",
-      lengthMenu: "Mostra _MENU_ client",
-      info: "Visualizzati _START_ a _END_ di _TOTAL_ client",
+      search: typeof t === "function" ? t("dt_search_clients", "Cerca client:") : "Cerca client:",
+      lengthMenu: typeof t === "function" ? t("dt_length_clients", "Mostra _MENU_ client") : "Mostra _MENU_ client",
+      info: typeof t === "function" ? t("dt_info_clients", "Visualizzati _START_ a _END_ di _TOTAL_ client") : "Visualizzati _START_ a _END_ di _TOTAL_ client",
+      infoEmpty: typeof t === "function" ? t("dt_info_empty", "Nessun dato presente") : "Nessun dato presente",
+      zeroRecords: typeof t === "function" ? t("dt_zero_records", "Nessun risultato trovato") : "Nessun risultato trovato",
       paginate: {
-        first: "Primo",
-        last: "Ultimo",
-        next: "Succ.",
-        previous: "Prec."
+        first: typeof t === "function" ? t("dt_first", "Primo") : "Primo",
+        last: typeof t === "function" ? t("dt_last", "Ultimo") : "Ultimo",
+        next: typeof t === "function" ? t("dt_next", "Succ.") : "Succ.",
+        previous: typeof t === "function" ? t("dt_prev", "Prec.") : "Prec."
       }
     }
   });
@@ -227,7 +229,9 @@ function displayClientsTable(clients) {
 
 function openClientModal(client = null) {
   isEditMode = !!client;
-  document.getElementById("modal-action-title").innerText = isEditMode ? "Modifica Client OAuth2" : "Registra Nuovo Client OAuth2";
+  document.getElementById("modal-action-title").innerText = isEditMode
+    ? (typeof t === "function" ? t("client_modal_edit_title", "Modifica Client OAuth2") : "Modifica Client OAuth2")
+    : (typeof t === "function" ? t("client_modal_register_title", "Registra Nuovo Client OAuth2") : "Registra Nuovo Client OAuth2");
   
   const idInput = document.getElementById("form-clientId");
   idInput.value = client ? client.clientId || "" : "";
@@ -266,7 +270,7 @@ function editClient(clientId) {
 function saveClient() {
   const clientId = document.getElementById("form-clientId").value.trim();
   if(!clientId) {
-    return sweetalert("warning", "Attenzione", "Il Client ID è obbligatorio.");
+    return sweetalert("warning", typeof t === "function" ? t("swal_warning_title", "Attenzione") : "Attenzione", typeof t === "function" ? t("swal_client_missing_id", "Il Client ID è obbligatorio.") : "Il Client ID è obbligatorio.");
   }
 
   const redirectInput = document.getElementById("form-redirectUri").value.trim();
@@ -304,16 +308,16 @@ function saveClient() {
       const modalEl = document.getElementById("clientModal");
       const modal = bootstrap.Modal.getInstance(modalEl);
       if(modal) modal.hide();
-      sweetalert("success", "Operazione Riuscita", isEditMode ? "Client aggiornato con successo!" : "Nuovo client registrato!");
+      sweetalert("success", typeof t === "function" ? t("swal_success_title", "Operazione Riuscita") : "Operazione Riuscita", isEditMode ? (typeof t === "function" ? t("swal_client_updated_success", "Client aggiornato con successo!") : "Client aggiornato con successo!") : (typeof t === "function" ? t("swal_client_created_success", "Nuovo client registrato!") : "Nuovo client registrato!"));
       getClients();
     } else {
       const err = await res.json().catch(() => ({}));
-      sweetalert("error", "Errore Salvataggio", err.message || "Impossibile salvare il client sul database.");
+      sweetalert("error", typeof t === "function" ? t("swal_save_error_title", "Errore Salvataggio") : "Errore Salvataggio", err.message || (typeof t === "function" ? t("swal_save_error_desc", "Impossibile salvare il client sul database.") : "Impossibile salvare il client sul database."));
     }
   })
   .catch(err => {
     console.error("Save client error:", err);
-    sweetalert("error", "Errore di Rete", "Connessione fallita.");
+    sweetalert("error", typeof t === "function" ? t("swal_network_error_title", "Errore di Rete") : "Errore di Rete", typeof t === "function" ? t("swal_network_error_desc", "Connessione fallita.") : "Connessione fallita.");
   });
 }
 
@@ -395,10 +399,17 @@ function copySecret(elementId) {
   const input = document.getElementById(elementId);
   if (input) {
     navigator.clipboard.writeText(input.value).then(() => {
-      sweetalert("info", "Copiato!", "Client Secret copiato negli appunti.");
+      sweetalert("info", typeof t === "function" ? t("swal_copied_title", "Copiato!") : "Copiato!", typeof t === "function" ? t("swal_secret_copied_desc", "Client Secret copiato negli appunti.") : "Client Secret copiato negli appunti.");
     });
   }
 }
+
+// Re-render client table when language is changed dynamically
+window.addEventListener("languageChanged", () => {
+  if (cachedClients && cachedClients.length > 0) {
+    displayClientsTable(cachedClients);
+  }
+});
 
   if (typeof clientDt !== 'undefined') {
     clientDt.on('draw', function() {

@@ -470,9 +470,9 @@
 
         <div class="m3-card p-6 flex items-center justify-between">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Utenti Totali</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="kpi_total_users">Utenti Totali</span>
                 <div id="stat-total-users" class="text-3xl font-extrabold text-white mt-1">--</div>
-                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> Anagrafica attiva</span>
+                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> <span data-i18n="kpi_users_active_desc">Anagrafica attiva</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl">
                 <i class="fa-solid fa-users"></i>
@@ -481,10 +481,10 @@
 
         <div class="m3-card p-6 flex items-center justify-between">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Utenti Attivi</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="kpi_active_users">Utenti Attivi</span>
                 <div id="stat-active-users" class="text-3xl font-extrabold text-emerald-400 mt-1">--</div>
                 <span class="text-[11px] text-emerald-300 mt-1 inline-block"><i
-                        class="fa-solid fa-circle-check mr-1"></i> Non bloccati</span>
+                        class="fa-solid fa-circle-check mr-1"></i> <span data-i18n="kpi_active_users_desc">Non bloccati</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-2xl">
                 <i class="fa-solid fa-user-check"></i>
@@ -493,9 +493,9 @@
 
         <div class="m3-card p-6 flex items-center justify-between">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Utenti Bloccati</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="kpi_blocked_users">Utenti Bloccati</span>
                 <div id="stat-blocked-users" class="text-3xl font-extrabold text-red-400 mt-1">--</div>
-                <span class="text-[11px] text-red-300 mt-1 inline-block"><i class="fa-solid fa-ban mr-1"></i> Accesso revocato</span>
+                <span class="text-[11px] text-red-300 mt-1 inline-block"><i class="fa-solid fa-ban mr-1"></i> <span data-i18n="kpi_blocked_users_desc">Accesso revocato</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-300 text-2xl">
                 <i class="fa-solid fa-user-xmark"></i>
@@ -506,12 +506,12 @@
         <div onclick="switchDashboardView('clients')"
              class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-purple-400/50">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Client OAuth2</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="nav_clients">Client OAuth2</span>
                 <div class="text-3xl font-extrabold text-purple-300 mt-1 flex items-center gap-2">
-                    Gestisci <i
+                    <span data-i18n="btn_manage">Gestisci</span> <i
                         class="fa-solid fa-arrow-right text-base transition-transform group-hover:translate-x-1.5"></i>
                 </div>
-                <span class="text-[11px] text-gray-400 mt-1 inline-block">Cambia vista all'istante</span>
+                <span class="text-[11px] text-gray-400 mt-1 inline-block" data-i18n="btn_switch_to_clients_hint">Cambia vista all'istante</span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-key"></i>
@@ -527,9 +527,9 @@
             <div>
                 <h2 class="text-2xl font-bold text-white flex items-center gap-3">
                     <i class="fa-solid fa-address-book text-purple-400 text-2xl"></i>
-                    Elenco Utenti Registrati
+                    <span data-i18n="users_list_title">Elenco Utenti Registrati</span>
                 </h2>
-                <p class="text-xs text-gray-400 mt-1.5">
+                <p class="text-xs text-gray-400 mt-1.5" data-i18n="users_list_desc">
                     Clicca su una riga per visualizzare i dettagli completi, oppure usa i pulsanti azione per modificare
                     o gestire i ruoli.
                 </p>
@@ -537,7 +537,7 @@
 
             <div class="flex items-center gap-3">
                 <a href="/app/users/register" class="m3-btn-primary text-decoration-none">
-                    <i class="fa-solid fa-user-plus"></i> Nuovo Utente
+                    <i class="fa-solid fa-user-plus"></i> <span data-i18n="btn_new_user">Nuovo Utente</span>
                 </a>
             </div>
         </div>
@@ -547,13 +547,13 @@
             <table id="users-table" class="table w-full">
                 <thead>
                 <tr>
-                    <th scope="col" class="text-center" style="width: 70px;">Avatar</th>
-                    <th scope="col" class="hidden-mobile">Nome</th>
-                    <th scope="col" class="hidden-mobile">Cognome</th>
-                    <th scope="col">Username</th>
-                    <th scope="col" class="hidden-mobile">Email</th>
-                    <th scope="col">Stato</th>
-                    <th scope="col" class="text-center" style="width: 130px;">Azioni</th>
+                    <th scope="col" class="text-center" style="width: 70px;" data-i18n="table_col_avatar">Avatar</th>
+                    <th scope="col" class="hidden-mobile" data-i18n="table_col_name">Nome</th>
+                    <th scope="col" class="hidden-mobile" data-i18n="table_col_surname">Cognome</th>
+                    <th scope="col" data-i18n="table_col_username">Username</th>
+                    <th scope="col" class="hidden-mobile" data-i18n="table_col_email">Email</th>
+                    <th scope="col" data-i18n="table_col_status">Stato</th>
+                    <th scope="col" class="text-center" style="width: 130px;" data-i18n="table_col_actions">Azioni</th>
                 </tr>
                 </thead>
                 <tbody id="users-data">
@@ -574,9 +574,9 @@
 
         <div class="m3-card p-6 flex items-center justify-between">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Client Registrati</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="client_kpi_total_clients">Client Registrati</span>
                 <div id="stat-total-clients" class="text-3xl font-extrabold text-white mt-1">--</div>
-                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> Totale in DB</span>
+                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> <span data-i18n="kpi_total_in_db">Totale in DB</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl">
                 <i class="fa-solid fa-network-wired"></i>
@@ -585,9 +585,9 @@
 
         <div class="m3-card p-6 flex items-center justify-between">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Client con MFA</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="client_kpi_mfa_clients">Client con MFA</span>
                 <div id="stat-mfa-clients" class="text-3xl font-extrabold text-pink-400 mt-1">--</div>
-                <span class="text-[11px] text-pink-300 mt-1 inline-block"><i class="fa-solid fa-shield-virus mr-1"></i> Con 2FA attivo</span>
+                <span class="text-[11px] text-pink-300 mt-1 inline-block"><i class="fa-solid fa-shield-virus mr-1"></i> <span data-i18n="kpi_mfa_active_desc">Con 2FA attivo</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300 text-2xl">
                 <i class="fa-solid fa-fingerprint"></i>
@@ -596,9 +596,9 @@
 
         <div class="m3-card p-6 flex items-center justify-between">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Token JWE Cifrati</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="client_kpi_jwe_clients">Token JWE Cifrati</span>
                 <div id="stat-jwe-clients" class="text-3xl font-extrabold text-blue-400 mt-1">--</div>
-                <span class="text-[11px] text-blue-300 mt-1 inline-block"><i class="fa-solid fa-lock mr-1"></i> Crittografia JWE</span>
+                <span class="text-[11px] text-blue-300 mt-1 inline-block"><i class="fa-solid fa-lock mr-1"></i> <span data-i18n="kpi_jwe_active_desc">Crittografia JWE</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-300 text-2xl">
                 <i class="fa-solid fa-file-shield"></i>
@@ -609,12 +609,12 @@
         <div onclick="switchDashboardView('users')"
              class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-emerald-400/50">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Console Utenti</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="hub_users_title">Gestione Utenti</span>
                 <div class="text-3xl font-extrabold text-emerald-400 mt-1 flex items-center gap-2">
-                    Gestisci <i
+                    <span data-i18n="btn_manage">Gestisci</span> <i
                         class="fa-solid fa-arrow-right text-base transition-transform group-hover:translate-x-1.5"></i>
                 </div>
-                <span class="text-[11px] text-gray-400 mt-1 inline-block">Torna all'elenco anagrafico</span>
+                <span class="text-[11px] text-gray-400 mt-1 inline-block" data-i18n="btn_switch_to_users_hint">Torna all'elenco anagrafico</span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-2xl group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-users"></i>
@@ -630,16 +630,16 @@
             <div>
                 <h2 class="text-2xl font-bold text-white flex items-center gap-3">
                     <i class="fa-solid fa-server text-purple-400 text-2xl"></i>
-                    Applicazioni Client OAuth2 (Tabella OAUTH_CLIENT)
+                    <span data-i18n="clients_table_title">Applicazioni Client OAuth2 (Tabella OAUTH_CLIENT)</span>
                 </h2>
-                <p class="text-xs text-gray-400 mt-1.5">
+                <p class="text-xs text-gray-400 mt-1.5" data-i18n="clients_table_desc">
                     Clicca su una riga per esaminare tutti i dettagli (secret, redirect URIs, scopes, webhook, MFA).
                 </p>
             </div>
 
             <div class="flex items-center gap-3">
                 <a href="/app/clients/register" class="m3-btn-primary text-decoration-none">
-                    <i class="fa-solid fa-plus"></i> Registra Nuovo Client
+                    <i class="fa-solid fa-plus"></i> <span data-i18n="btn_register_new_client">Registra Nuovo Client</span>
                 </a>
             </div>
         </div>
@@ -649,12 +649,12 @@
             <table id="clients-table" class="table w-full">
                 <thead>
                 <tr>
-                    <th scope="col">Client ID</th>
-                    <th scope="col">Tipo Accesso</th>
-                    <th scope="col">Tipo Token</th>
-                    <th scope="col">Redirect URIs</th>
-                    <th scope="col">MFA</th>
-                    <th scope="col" class="text-center" style="width: 140px;">Azioni</th>
+                    <th scope="col" data-i18n="table_col_client_id">Client ID</th>
+                    <th scope="col" data-i18n="table_col_access_type">Tipo Accesso</th>
+                    <th scope="col" data-i18n="table_col_token_type">Tipo Token</th>
+                    <th scope="col" data-i18n="table_col_redirect_uris">Redirect URIs</th>
+                    <th scope="col" data-i18n="table_col_mfa">MFA</th>
+                    <th scope="col" class="text-center" style="width: 140px;" data-i18n="table_col_actions">Azioni</th>
                 </tr>
                 </thead>
                 <tbody id="clients-data">
@@ -965,9 +965,10 @@
                 <!-- Logo Upload -->
                 <div>
                     <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="upload_logo_label">Logo Personalizzato (PNG, SVG)</label>
+                    <input type="text" id="setting-logo-url" class="form-control text-xs mb-2" placeholder="URL o carica file sotto..." oninput="handleLogoUrlInput(this.value)">
                     <input type="file" id="setting-logo-file" accept="image/*" class="form-control text-xs" onchange="handleLogoUpload(event)">
                     <div class="flex items-center gap-3 mt-2">
-                        <img id="logo-preview-img" src="/img/logo-minimal.svg" class="w-9 h-9 rounded-lg bg-black/40 p-1 border border-white/10" alt="Logo preview">
+                        <img id="logo-preview-img" src="/img/logo-minimal.svg" class="w-9 h-9 rounded-lg bg-black/40 p-1 border border-white/10 object-contain" alt="Logo preview">
                         <span class="text-[11px] text-gray-400" data-i18n="logo_preview_label">Anteprima Logo</span>
                     </div>
                 </div>
@@ -975,9 +976,10 @@
                 <!-- Favicon Upload -->
                 <div>
                     <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="upload_favicon_label">Favicon (.ico, PNG, SVG)</label>
+                    <input type="text" id="setting-favicon-url" class="form-control text-xs mb-2" placeholder="URL o carica file sotto..." oninput="handleFaviconUrlInput(this.value)">
                     <input type="file" id="setting-favicon-file" accept="image/*" class="form-control text-xs" onchange="handleFaviconUpload(event)">
                     <div class="flex items-center gap-3 mt-2">
-                        <img id="favicon-preview-img" src="/img/logo-minimal.svg" class="w-6 h-6 rounded bg-black/40 p-0.5 border border-white/10" alt="Favicon preview">
+                        <img id="favicon-preview-img" src="/img/logo-minimal.svg" class="w-6 h-6 rounded bg-black/40 p-0.5 border border-white/10 object-contain" alt="Favicon preview">
                         <span class="text-[11px] text-gray-400" data-i18n="favicon_preview_label">Anteprima Favicon</span>
                     </div>
                 </div>
@@ -1060,7 +1062,7 @@
              style="border-radius: 24px;">
             <div class="modal-header border-b border-purple-500/20 px-6 py-4">
                 <h5 class="modal-title text-white font-bold flex items-center gap-2.5 text-lg" id="clientDetailTitle">
-                    <i class="fa-solid fa-cube text-purple-400"></i> Dettaglio Client OAuth2
+                    <i class="fa-solid fa-cube text-purple-400"></i> <span data-i18n="client_detail_modal_title">Dettaglio Client OAuth2</span>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Chiudi"></button>
@@ -1069,17 +1071,17 @@
             <div class="modal-body p-6 space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
-                        <span class="text-xs text-gray-400 uppercase font-semibold">Client ID</span>
+                        <span class="text-xs text-gray-400 uppercase font-semibold" data-i18n="table_col_client_id">Client ID</span>
                         <div id="detail-clientId" class="text-white font-mono font-bold text-base mt-1">--</div>
                     </div>
                     <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
-                        <span class="text-xs text-gray-400 uppercase font-semibold">External Client ID</span>
+                        <span class="text-xs text-gray-400 uppercase font-semibold" data-i18n="table_col_ext_id">External Client ID</span>
                         <div id="detail-extClientId" class="text-white font-mono text-sm mt-1">--</div>
                     </div>
                 </div>
 
                 <div class="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/15">
-                    <span class="text-xs text-gray-400 uppercase font-semibold">Client Secret</span>
+                    <span class="text-xs text-gray-400 uppercase font-semibold" data-i18n="client_field_client_secret">Client Secret</span>
                     <div class="flex items-center gap-2 mt-1">
                         <input type="password" id="detail-clientSecret" readonly class="form-control font-mono text-sm"
                                style="background: #231B34; border: 1.5px solid rgba(208, 188, 255, 0.28); color: #fff;"/>
@@ -1096,38 +1098,38 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-                        <span class="text-[11px] text-gray-400 uppercase">Tipo Accesso</span>
+                        <span class="text-[11px] text-gray-400 uppercase" data-i18n="table_col_access_type">Tipo Accesso</span>
                         <div id="detail-accessType" class="text-purple-300 font-bold text-sm mt-1">ONLINE</div>
                     </div>
                     <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-                        <span class="text-[11px] text-gray-400 uppercase">Tipo Token</span>
+                        <span class="text-[11px] text-gray-400 uppercase" data-i18n="table_col_token_type">Tipo Token</span>
                         <div id="detail-tokenType" class="text-blue-300 font-bold text-sm mt-1">JWT</div>
                     </div>
                     <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-                        <span class="text-[11px] text-gray-400 uppercase">Auth Type</span>
+                        <span class="text-[11px] text-gray-400 uppercase" data-i18n="table_col_auth_type">Auth Type</span>
                         <div id="detail-authType" class="text-yellow-300 font-bold text-sm mt-1">BEARER</div>
                     </div>
                     <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-                        <span class="text-[11px] text-gray-400 uppercase">Scadenza Token</span>
+                        <span class="text-[11px] text-gray-400 uppercase" data-i18n="client_field_jwt_expiration">Scadenza Token</span>
                         <div id="detail-jwtExpiration" class="text-emerald-300 font-bold text-sm mt-1">3600s</div>
                     </div>
                 </div>
 
                 <div class="space-y-3">
                     <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
-                        <span class="text-xs text-gray-400 uppercase font-semibold">Redirect URIs</span>
+                        <span class="text-xs text-gray-400 uppercase font-semibold" data-i18n="table_col_redirect_uris">Redirect URIs</span>
                         <div id="detail-redirectUri" class="text-gray-200 text-xs font-mono break-all mt-1">--</div>
                     </div>
                     <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
-                        <span class="text-xs text-gray-400 uppercase font-semibold">Scopes Autorizzati</span>
+                        <span class="text-xs text-gray-400 uppercase font-semibold" data-i18n="client_field_scopes">Scopes Autorizzati</span>
                         <div id="detail-scopes" class="text-purple-300 text-xs font-mono mt-1">--</div>
                     </div>
                     <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
-                        <span class="text-xs text-gray-400 uppercase font-semibold">Webhooks</span>
+                        <span class="text-xs text-gray-400 uppercase font-semibold" data-i18n="client_sec_webhooks_title">Webhooks</span>
                         <div id="detail-webhooks" class="text-gray-300 text-xs font-mono break-all mt-1">--</div>
                     </div>
                     <div class="flex items-center justify-between bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
-                        <span class="text-xs text-gray-400 uppercase font-semibold">Autenticazione a Due Fattori (MFA)</span>
+                        <span class="text-xs text-gray-400 uppercase font-semibold" data-i18n="client_sec_mfa_title">Autenticazione a Due Fattori (MFA)</span>
                         <div id="detail-mfaStatus">--</div>
                     </div>
                 </div>
@@ -1137,10 +1139,10 @@
                 <button type="button"
                         class="px-5 py-2.5 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all cursor-pointer"
                         data-bs-dismiss="modal">
-                    Chiudi
+                    <span data-i18n="btn_close">Chiudi</span>
                 </button>
                 <button id="detail-editBtn" type="button" class="m3-btn-primary cursor-pointer">
-                    <i class="fa-solid fa-pen-to-square mr-1"></i> Modifica Configurazione
+                    <i class="fa-solid fa-pen-to-square mr-1"></i> <span data-i18n="client_detail_edit_btn">Modifica Configurazione</span>
                 </button>
             </div>
         </div>
@@ -1154,7 +1156,7 @@
              style="border-radius: 24px;">
             <div class="modal-header border-b border-purple-500/20 px-6 py-4">
                 <h5 class="modal-title text-white font-bold flex items-center gap-2.5 text-lg" id="modal-action-title">
-                    <i class="fa-solid fa-key text-purple-400"></i> Registra Nuovo Client OAuth2
+                    <i class="fa-solid fa-key text-purple-400"></i> <span data-i18n="client_modal_register_title">Registra Nuovo Client OAuth2</span>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Chiudi"></button>
@@ -1164,25 +1166,25 @@
                 <form id="clientForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300">Client ID *</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_client_id">Client ID *</label>
                         <input type="text" id="form-clientId" class="form-control text-sm"
                                placeholder="es. MY-FRONTEND-APP" required/>
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300">Client Secret</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_client_secret">Client Secret</label>
                         <div class="flex gap-2">
                             <input type="text" id="form-clientSecret" class="form-control text-sm"
-                                   placeholder="Lascia vuoto per auto-generazione"/>
+                                   placeholder="Lascia vuoto per auto-generazione" data-i18n-placeholder="client_btn_generate_secret_placeholder"/>
                             <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateSecret()"
-                                    title="Genera Secret Sicuro">
+                                    title="Genera Secret Sicuro" data-i18n-title="client_btn_generate_secret">
                                 <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
                             </button>
                         </div>
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300">Access Type</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="table_col_access_type">Access Type</label>
                         <select id="form-accessType" class="form-select text-sm">
                             <option value="ONLINE">ONLINE</option>
                             <option value="OFFLINE">OFFLINE</option>
@@ -1190,7 +1192,7 @@
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300">Token Type</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="table_col_token_type">Token Type</label>
                         <select id="form-tokenType" class="form-select text-sm">
                             <option value="JWT">JWT (Standard Bearer)</option>
                             <option value="JWE">JWE (Crittografato)</option>
@@ -1198,7 +1200,7 @@
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300">Auth Type</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="table_col_auth_type">Auth Type</label>
                         <select id="form-authType" class="form-select text-sm">
                             <option value="BEARER">BEARER</option>
                             <option value="BASIC">BASIC</option>
@@ -1206,26 +1208,26 @@
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300">Scadenza Token (secondi)</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwt_expiration">Scadenza Token (secondi)</label>
                         <input type="number" id="form-jwtExpiration" class="form-control text-sm" value="3600"/>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="form-label text-xs font-semibold text-gray-300">Redirect URIs (separate da virgola
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_redirect_uris">Redirect URIs (separate da virgola
                             o JSON)</label>
                         <input type="text" id="form-redirectUri" class="form-control text-sm font-mono"
                                placeholder="http://localhost:8080/callback"/>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="form-label text-xs font-semibold text-gray-300">Scopes (separati da
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_scopes">Scopes (separati da
                             virgola)</label>
                         <input type="text" id="form-scopes" class="form-control text-sm font-mono"
                                placeholder="openid, profile, email"/>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="form-label text-xs font-semibold text-gray-300">Webhooks (opzionale)</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_sec_webhooks_title">Webhooks (opzionale)</label>
                         <input type="text" id="form-webhooks" class="form-control text-sm font-mono"
                                placeholder="https://api.domain.com/webhook"/>
                     </div>
@@ -1233,7 +1235,7 @@
                     <div class="col-span-2 flex items-center gap-3 pt-2">
                         <input type="checkbox" id="form-mfaEnabled"
                                class="w-4 h-4 rounded accent-purple-500 cursor-pointer"/>
-                        <label for="form-mfaEnabled" class="text-xs font-semibold text-gray-300 cursor-pointer">
+                        <label for="form-mfaEnabled" class="text-xs font-semibold text-gray-300 cursor-pointer" data-i18n="client_field_mfa_required">
                             Richiedi autenticazione a due fattori (MFA / 2FA) per questo client
                         </label>
                     </div>
@@ -1243,10 +1245,10 @@
 
             <div class="modal-footer border-t border-purple-500/20 px-6 py-4 flex justify-end gap-3">
                 <button type="button" class="m3-btn-outline cursor-pointer" data-bs-dismiss="modal">
-                    <i class="fa-solid fa-xmark"></i> Annulla
+                    <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
                 </button>
                 <button type="button" onclick="saveClient()" class="m3-btn-primary cursor-pointer">
-                    <i class="fa-solid fa-floppy-disk mr-1"></i> Salva Client
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="client_btn_save">Salva Client</span>
                 </button>
             </div>
         </div>
@@ -1528,6 +1530,8 @@
     // ============================================
     let currentSettingsData = null;
     let currentLoginBgDataUrl = null;
+    let currentLogoDataUrl = null;
+    let currentFaviconDataUrl = null;
 
     async function loadSettingsView() {
         const savedLang = localStorage.getItem("access_sphere_language") || (navigator.language.slice(0, 2) === "it" ? "it" : "en");
@@ -1577,12 +1581,26 @@
         if (data.supportEmail) document.getElementById("setting-support-email").value = data.supportEmail;
 
         if (data.logoUrl) {
+            currentLogoDataUrl = data.logoUrl;
             const logoImg = document.getElementById("logo-preview-img");
             if (logoImg) logoImg.src = data.logoUrl;
+            const logoInput = document.getElementById("setting-logo-url");
+            if (logoInput) logoInput.value = data.logoUrl.startsWith("data:") ? "" : data.logoUrl;
+        } else {
+            currentLogoDataUrl = "/img/logo-minimal.svg";
+            const logoInput = document.getElementById("setting-logo-url");
+            if (logoInput) logoInput.value = "";
         }
         if (data.faviconUrl) {
+            currentFaviconDataUrl = data.faviconUrl;
             const favImg = document.getElementById("favicon-preview-img");
             if (favImg) favImg.src = data.faviconUrl;
+            const favInput = document.getElementById("setting-favicon-url");
+            if (favInput) favInput.value = data.faviconUrl.startsWith("data:") ? "" : data.faviconUrl;
+        } else {
+            currentFaviconDataUrl = "/img/logo-minimal.svg";
+            const favInput = document.getElementById("setting-favicon-url");
+            if (favInput) favInput.value = "";
         }
 
         if (data.loginMode === "CUSTOM_BACKGROUND") {
@@ -1645,24 +1663,46 @@
         }
     }
 
+    function handleLogoUrlInput(val) {
+        const trimmed = (val || "").trim();
+        currentLogoDataUrl = trimmed || "/img/logo-minimal.svg";
+        const logoImg = document.getElementById("logo-preview-img");
+        if (logoImg) logoImg.src = currentLogoDataUrl;
+    }
+
+    function handleFaviconUrlInput(val) {
+        const trimmed = (val || "").trim();
+        currentFaviconDataUrl = trimmed || "/img/logo-minimal.svg";
+        const favImg = document.getElementById("favicon-preview-img");
+        if (favImg) favImg.src = currentFaviconDataUrl;
+    }
+
     async function handleLogoUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-        const b64 = await AppSettings.fileToBase64(file);
-        document.getElementById("logo-preview-img").src = b64;
+        const b64 = await AppSettings.fileToBase64(file, { maxWidth: 512, maxHeight: 512, quality: 0.9 });
+        currentLogoDataUrl = b64;
+        const logoImg = document.getElementById("logo-preview-img");
+        if (logoImg) logoImg.src = b64;
+        const logoInput = document.getElementById("setting-logo-url");
+        if (logoInput) logoInput.value = "";
     }
 
     async function handleFaviconUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-        const b64 = await AppSettings.fileToBase64(file);
-        document.getElementById("favicon-preview-img").src = b64;
+        const b64 = await AppSettings.fileToBase64(file, { maxWidth: 128, maxHeight: 128, quality: 0.9 });
+        currentFaviconDataUrl = b64;
+        const favImg = document.getElementById("favicon-preview-img");
+        if (favImg) favImg.src = b64;
+        const favInput = document.getElementById("setting-favicon-url");
+        if (favInput) favInput.value = "";
     }
 
     async function handleBgFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-        const b64 = await AppSettings.fileToBase64(file);
+        const b64 = await AppSettings.fileToBase64(file, { maxWidth: 1920, maxHeight: 1080, quality: 0.85 });
         currentLoginBgDataUrl = b64;
         const previewBox = document.getElementById("bg-preview-box");
         if (previewBox) previewBox.style.backgroundImage = `url('${b64}')`;
@@ -1682,8 +1722,10 @@
         const privacyPolicyUrl = document.getElementById("setting-privacy-url").value;
         const cookiePolicyUrl = document.getElementById("setting-cookie-url").value;
         const supportEmail = document.getElementById("setting-support-email").value;
-        const logoUrl = document.getElementById("logo-preview-img").src;
-        const faviconUrl = document.getElementById("favicon-preview-img").src;
+        const logoUrlInput = document.getElementById("setting-logo-url")?.value.trim();
+        const faviconUrlInput = document.getElementById("setting-favicon-url")?.value.trim();
+        const logoUrl = logoUrlInput || currentLogoDataUrl || document.getElementById("logo-preview-img")?.getAttribute("src") || "/img/logo-minimal.svg";
+        const faviconUrl = faviconUrlInput || currentFaviconDataUrl || document.getElementById("favicon-preview-img")?.getAttribute("src") || "/img/logo-minimal.svg";
 
         const isCustomBg = document.getElementById("login-mode-custom-bg").checked;
         const loginMode = isCustomBg ? "CUSTOM_BACKGROUND" : "SHOWCASE";
@@ -1717,6 +1759,7 @@
         try {
             if (typeof showLoader === "function") showLoader();
             await AppSettings.saveAdminSettings(payload);
+            AppSettings.applyBrandingToDOM(payload);
             if (typeof hideLoader === "function") hideLoader();
             if (window.Swal) {
                 Swal.fire({
@@ -1736,6 +1779,8 @@
                     title: t('swal_settings_save_error_title', 'Errore nel salvataggio'),
                     text: err.message || t('swal_settings_save_error_desc', 'Si è verificato un errore durante il salvataggio delle impostazioni.')
                 });
+            } else {
+                alert("Errore salvataggio: " + err.message);
             }
         }
     }
@@ -1760,6 +1805,12 @@
         document.getElementById("setting-privacy-url").value = "/privacy-policy";
         document.getElementById("setting-cookie-url").value = "/cookie-policy";
         document.getElementById("setting-support-email").value = "support@accesssphere.io";
+        const logoInput = document.getElementById("setting-logo-url");
+        if (logoInput) logoInput.value = "";
+        const favInput = document.getElementById("setting-favicon-url");
+        if (favInput) favInput.value = "";
+        currentLogoDataUrl = "/img/logo-minimal.svg";
+        currentFaviconDataUrl = "/img/logo-minimal.svg";
         document.getElementById("logo-preview-img").src = "/img/logo-minimal.svg";
         document.getElementById("favicon-preview-img").src = "/img/logo-minimal.svg";
         document.getElementById("login-mode-showcase").checked = true;

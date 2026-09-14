@@ -50,8 +50,12 @@ public class AppSettingsMapper {
     if (source == null || target == null) return;
     if (source.getAppName() != null) target.setAppName(source.getAppName());
     if (source.getAppTagline() != null) target.setAppTagline(source.getAppTagline());
-    if (source.getLogoUrl() != null) target.setLogoUrl(source.getLogoUrl());
-    if (source.getFaviconUrl() != null) target.setFaviconUrl(source.getFaviconUrl());
+    if (source.getLogoUrl() != null) {
+      target.setLogoUrl(source.getLogoUrl().isBlank() ? "/img/logo-minimal.svg" : source.getLogoUrl());
+    }
+    if (source.getFaviconUrl() != null) {
+      target.setFaviconUrl(source.getFaviconUrl().isBlank() ? "/img/logo-minimal.svg" : source.getFaviconUrl());
+    }
     if (source.getActiveTheme() != null) target.setActiveTheme(source.getActiveTheme());
     if (source.getDefaultLanguage() != null) target.setDefaultLanguage(source.getDefaultLanguage());
     if (source.getLoginMode() != null) target.setLoginMode(source.getLoginMode());

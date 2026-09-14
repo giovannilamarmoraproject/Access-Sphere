@@ -19,6 +19,8 @@ spring:
   sql:
     init:
       mode: always
+  codec:
+    max-in-memory-size: ${CODEC_MAX_IN_MEMORY_SIZE:20MB}
 
 # Level of LOG
 logging:

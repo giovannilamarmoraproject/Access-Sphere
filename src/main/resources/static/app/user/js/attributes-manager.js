@@ -106,19 +106,24 @@ function renderAttributesTable() {
   }
 
   if (attributesData.length === 0) {
+    const emptyDesc = typeof t === "function" ? t("attr_empty_desc", "Nessun attributo configurato. Puoi aggiungere proprietà semplici o caricare un oggetto inestato.") : "Nessun attributo configurato. Puoi aggiungere proprietà semplici o caricare un oggetto inestato.";
+    const btnProp = typeof t === "function" ? t("attr_btn_add_prop", "Aggiungi Proprietà") : "Aggiungi Proprietà";
+    const btnNested = typeof t === "function" ? t("attr_btn_add_nested", "Aggiungi Oggetto Inestato") : "Aggiungi Oggetto Inestato";
+    const btnExample = typeof t === "function" ? t("user_attr_btn_example", "Carica Esempio") : "Carica Esempio";
+
     container.innerHTML = `
       <div class="p-6 text-center text-purple-300/80 rounded-2xl border border-purple-500/20 bg-[#161124]/40">
         <i class="fa-solid fa-sliders text-2xl text-purple-400/60 mb-2 block"></i>
-        <p class="text-xs">Nessun attributo configurato. Puoi aggiungere proprietà semplici o caricare un oggetto inestato.</p>
+        <p class="text-xs">${emptyDesc}</p>
         <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
           <button type="button" class="m3-btn-primary text-xs" onclick="addAttributeRow()">
-            <i class="fa-solid fa-plus mr-1"></i> <span class="hidden sm:inline">Aggiungi </span>Proprietà
+            <i class="fa-solid fa-plus mr-1"></i> ${btnProp}
           </button>
           <button type="button" class="m3-btn-outline text-xs" onclick="addNestedObjectRow()">
-            <i class="fa-solid fa-layer-group mr-1"></i> <span class="hidden sm:inline">Aggiungi </span>Oggetto Inestato
+            <i class="fa-solid fa-layer-group mr-1"></i> ${btnNested}
           </button>
           <button type="button" class="m3-btn-outline text-xs" onclick="loadExampleJson()">
-            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> <span class="hidden sm:inline">Carica </span>Esempio
+            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> ${btnExample}
           </button>
         </div>
       </div>
@@ -127,6 +132,18 @@ function renderAttributesTable() {
   }
 
   let html = "";
+
+  const subKeyPlaceholder = typeof t === "function" ? t("attr_sub_key_placeholder", "Chiave interna (es. currency, liveWallets)") : "Chiave interna (es. currency, liveWallets)";
+  const subValPlaceholder = typeof t === "function" ? t("attr_sub_val_placeholder", "Valore interno (es. EUR, ACTIVE, €)") : "Valore interno (es. EUR, ACTIVE, €)";
+  const delPropTitle = typeof t === "function" ? t("attr_del_prop", "Elimina attributo") : "Elimina attributo";
+  const nestedNamePlaceholder = typeof t === "function" ? t("attr_nested_name_placeholder", "Nome oggetto (es. money_stats_settings)") : "Nome oggetto (es. money_stats_settings)";
+  const addSubPropTitle = typeof t === "function" ? t("attr_add_sub_prop", "Proprietà") : "Proprietà";
+  const delNestedTitle = typeof t === "function" ? t("attr_del_nested", "Elimina intero oggetto") : "Elimina intero oggetto";
+  const subKeyLabel = typeof t === "function" ? t("attr_sub_key_label", "Sotto-Chiave") : "Sotto-Chiave";
+  const subValLabel = typeof t === "function" ? t("attr_sub_val_label", "Sotto-Valore") : "Sotto-Valore";
+  const noSubPropsText = typeof t === "function" ? t("attr_no_sub_props", "Nessuna proprietà interna. Clicca su \"+ Proprietà\" per aggiungerne una.") : "Nessuna proprietà interna. Clicca su \"+ Proprietà\" per aggiungerne una.";
+  const propNamePlaceholder = typeof t === "function" ? t("attr_prop_name_placeholder", "Nome attributo (es. strapi-token)") : "Nome attributo (es. strapi-token)";
+  const propValPlaceholder = typeof t === "function" ? t("attr_prop_val_placeholder", "Valore (stringa, numero o booleano)") : "Valore (stringa, numero o booleano)";
 
   attributesData.forEach((item, index) => {
     if (item.type === "object") {
@@ -138,13 +155,13 @@ function renderAttributesTable() {
             <input type="text" class="form-control font-mono text-xs flex-1"
               value="${escapeHtmlAttr(sub.key)}"
               oninput="updateSubItemKey(${index}, ${subIdx}, this.value)"
-              placeholder="Chiave interna (es. currency, liveWallets)" />
+              placeholder="${escapeHtmlAttr(subKeyPlaceholder)}" />
             <input type="text" class="form-control font-mono text-xs flex-1"
               value="${escapeHtmlAttr(sub.value)}"
               oninput="updateSubItemValue(${index}, ${subIdx}, this.value)"
-              placeholder="Valore interno (es. EUR, ACTIVE, €)" />
+              placeholder="${escapeHtmlAttr(subValPlaceholder)}" />
             <button type="button" class="m3-icon-btn m3-icon-btn-danger flex-shrink-0"
-              onclick="removeSubItem(${index}, ${subIdx})" title="Rimuovi proprietà interna">
+              onclick="removeSubItem(${index}, ${subIdx})" title="${escapeHtmlAttr(delPropTitle)}">
               <i class="fa-solid fa-trash text-xs"></i>
             </button>
           </div>
@@ -161,16 +178,16 @@ function renderAttributesTable() {
               <input type="text" class="form-control font-mono text-xs font-bold text-purple-200 flex-1 max-w-xs"
                 value="${escapeHtmlAttr(item.key)}"
                 oninput="updateAttributeKey(${index}, this.value)"
-                placeholder="Nome oggetto (es. money_stats_settings)" />
+                placeholder="${escapeHtmlAttr(nestedNamePlaceholder)}" />
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex-shrink-0">
-                Oggetto Inestato (${(item.subItems || []).length})
+                ${escapeHtmlAttr(item.key || "Object")} (${(item.subItems || []).length})
               </span>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
-              <button type="button" class="m3-btn-outline text-xs" onclick="addSubItem(${index})" title="Aggiungi proprietà a questo oggetto">
-                <i class="fa-solid fa-plus mr-1"></i> Proprietà
+              <button type="button" class="m3-btn-outline text-xs" onclick="addSubItem(${index})" title="${escapeHtmlAttr(addSubPropTitle)}">
+                <i class="fa-solid fa-plus mr-1"></i> ${escapeHtmlAttr(addSubPropTitle)}
               </button>
-              <button type="button" class="m3-icon-btn m3-icon-btn-danger" onclick="removeAttributeRow(${index})" title="Elimina intero oggetto">
+              <button type="button" class="m3-icon-btn m3-icon-btn-danger" onclick="removeAttributeRow(${index})" title="${escapeHtmlAttr(delNestedTitle)}">
                 <i class="fa-solid fa-trash text-xs"></i>
               </button>
             </div>
@@ -178,11 +195,11 @@ function renderAttributesTable() {
 
           <div class="space-y-1 pl-2 sm:pl-3">
             <div class="flex items-center gap-2 text-[10px] font-semibold text-purple-300/70 uppercase tracking-wider mb-1.5 px-1">
-              <span class="flex-1">Sotto-Chiave</span>
-              <span class="flex-1">Sotto-Valore</span>
+              <span class="flex-1">${escapeHtmlAttr(subKeyLabel)}</span>
+              <span class="flex-1">${escapeHtmlAttr(subValLabel)}</span>
               <span style="width: 36px;"></span>
             </div>
-            ${subRowsHtml || '<p class="text-xs text-gray-400 italic py-2">Nessuna proprietà interna. Clicca su "+ Proprietà" per aggiungerne una.</p>'}
+            ${subRowsHtml || `<p class="text-xs text-gray-400 italic py-2">${escapeHtmlAttr(noSubPropsText)}</p>`}
           </div>
         </div>
       `;
@@ -195,13 +212,13 @@ function renderAttributesTable() {
             <input type="text" class="form-control font-mono text-xs"
               value="${escapeHtmlAttr(item.key)}"
               oninput="updateAttributeKey(${index}, this.value)"
-              placeholder="Nome attributo (es. strapi-token)" />
+              placeholder="${escapeHtmlAttr(propNamePlaceholder)}" />
           </div>
           <div class="flex-1 flex items-center gap-2">
             <input type="text" class="form-control font-mono text-xs flex-1"
               value="${escapeHtmlAttr(item.value)}"
               oninput="updateAttributeValue(${index}, this.value)"
-              placeholder="Valore (stringa, numero o booleano)" />
+              placeholder="${escapeHtmlAttr(propValPlaceholder)}" />
             ${isToken ? `
               <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30 flex-shrink-0">
                 Token
@@ -209,7 +226,7 @@ function renderAttributesTable() {
             ` : ""}
           </div>
           <div class="flex items-center justify-end gap-1 flex-shrink-0">
-            <button type="button" class="m3-icon-btn m3-icon-btn-danger" onclick="removeAttributeRow(${index})" title="Elimina attributo">
+            <button type="button" class="m3-icon-btn m3-icon-btn-danger" onclick="removeAttributeRow(${index})" title="${escapeHtmlAttr(delPropTitle)}">
               <i class="fa-solid fa-trash text-xs"></i>
             </button>
           </div>
@@ -521,6 +538,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (e) {}
   } else {
+    renderAttributesTable();
+  }
+});
+
+// Ascolta il cambio lingua globale per ri-renderizzare la tabella con i testi localizzati
+window.addEventListener("languageChanged", function () {
+  if (currentAttributesMode === "visual") {
     renderAttributesTable();
   }
 });

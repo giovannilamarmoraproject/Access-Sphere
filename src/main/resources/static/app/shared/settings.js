@@ -31,6 +31,15 @@ const AppSettings = (function () {
       if (cachedRaw) {
         try {
           const s = JSON.parse(cachedRaw);
+          if (s && s.faviconUrl && document.head) {
+            let iconLink = document.querySelector("link[rel*='icon']");
+            if (!iconLink) {
+              iconLink = document.createElement("link");
+              iconLink.rel = "icon";
+              document.head.appendChild(iconLink);
+            }
+            iconLink.href = s.faviconUrl;
+          }
           if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", () => applyBrandingToDOM(s));
           } else {
@@ -70,23 +79,34 @@ const AppSettings = (function () {
 
     // 2. Logo
     if (settings.logoUrl) {
-      document.querySelectorAll(".app-brand-logo, .login-logo-glow, .mobile-logo-badge img, img[alt*='Access Sphere'], img[src*='logo-minimal']").forEach((img) => {
-        img.src = settings.logoUrl;
+      // Aggiorna tutti i logo del brand evitando di sovrascrivere l'anteprima favicon
+      document.querySelectorAll(".app-brand-logo, .login-logo-glow, .mobile-logo-badge img, .app-brand-icon").forEach((img) => {
+        if (img.id !== "favicon-preview-img") {
+          img.src = settings.logoUrl;
+        }
       });
+      const logoPreview = document.getElementById("logo-preview-img");
+      if (logoPreview) {
+        logoPreview.src = settings.logoUrl;
+      }
     }
 
-    // 3. Favicon
+    // 3. Favicon (forza ricaricamento nel tab del browser ricreando il tag link)
     if (settings.faviconUrl) {
-      const favLinks = document.querySelectorAll("link[rel*='icon'], link[rel='apple-touch-icon']");
-      if (favLinks.length > 0) {
-        favLinks.forEach((link) => {
-          link.href = settings.faviconUrl;
-        });
-      } else {
-        const iconLink = document.createElement("link");
-        iconLink.rel = "icon";
-        iconLink.href = settings.faviconUrl;
-        document.head.appendChild(iconLink);
+      document.querySelectorAll("link[rel*='icon'], link[rel='apple-touch-icon']").forEach((el) => el.remove());
+      const iconLink = document.createElement("link");
+      iconLink.rel = "icon";
+      iconLink.href = settings.faviconUrl;
+      document.head.appendChild(iconLink);
+
+      const appleLink = document.createElement("link");
+      appleLink.rel = "apple-touch-icon";
+      appleLink.href = settings.faviconUrl;
+      document.head.appendChild(appleLink);
+
+      const favPreview = document.getElementById("favicon-preview-img");
+      if (favPreview) {
+        favPreview.src = settings.faviconUrl;
       }
     }
 
@@ -183,10 +203,13 @@ const AppSettings = (function () {
       const tok = getCookieOrStorage(key);
       if (tok) return tok;
     }
+    const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-TECH";
     return (
-      localStorage.getItem("access-token") ||
+      localStorage.getItem(`${clientId}_access-token`) ||
       localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
+      localStorage.getItem("access-token") ||
       (typeof getCookie === "function" ? getCookie("access-token") : null) ||
+      sessionStorage.getItem("access-token") ||
       ""
     );
   }
@@ -221,13 +244,21 @@ const AppSettings = (function () {
     if (!token) {
       token = getAuthToken();
     }
+    const headers = {
+      Authorization: "Bearer " + token,
+      Accept: "application/json",
+    };
+    if (typeof getSavedHeaders === "function") {
+      Object.assign(headers, getSavedHeaders());
+    }
     const res = await fetch("/v1/app/settings", {
-      headers: {
-        Authorization: "Bearer " + token,
-        Accept: "application/json",
-      },
+      headers: headers,
     });
-    const json = await res.json();
+    if (!res.ok) {
+      console.warn("Could not load admin settings:", res.status);
+      return null;
+    }
+    const json = await res.json().catch(() => ({}));
     return json.data;
   }
 
@@ -235,16 +266,24 @@ const AppSettings = (function () {
     if (!token) {
       token = getAuthToken();
     }
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    };
+    if (typeof getSavedHeaders === "function") {
+      Object.assign(headers, getSavedHeaders());
+    }
     const res = await fetch("/v1/app/settings", {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
+      headers: headers,
       body: JSON.stringify(settingsData),
     });
-    const json = await res.json();
-    if (res.ok && json.data) {
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      console.error("Save settings failed:", res.status, json);
+      throw new Error((json && (json.message || json.exception)) || `HTTP ${res.status}`);
+    }
+    if (json.data) {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(json.data));
       if (json.data.activeTheme) {
         applyTheme(json.data.activeTheme);
@@ -263,13 +302,17 @@ const AppSettings = (function () {
     if (!token) {
       token = getAuthToken();
     }
+    const headers = {
+      Authorization: "Bearer " + token,
+      Accept: "application/json",
+    };
+    if (typeof getSavedHeaders === "function") {
+      Object.assign(headers, getSavedHeaders());
+    }
     const res = await fetch("/v1/app/settings/backup", {
-      headers: {
-        Authorization: "Bearer " + token,
-        Accept: "application/json",
-      },
+      headers: headers,
     });
-    const json = await res.json();
+    const json = await res.json().catch(() => ({}));
     if (!res.ok) {
       throw new Error(json.message || "Export error");
     }
@@ -291,15 +334,19 @@ const AppSettings = (function () {
     if (!token) {
       token = getAuthToken();
     }
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    };
+    if (typeof getSavedHeaders === "function") {
+      Object.assign(headers, getSavedHeaders());
+    }
     const res = await fetch("/v1/app/settings/restore", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
+      headers: headers,
       body: JSON.stringify(backupJsonData),
     });
-    const json = await res.json();
+    const json = await res.json().catch(() => ({}));
     if (!res.ok) {
       throw new Error(json.message || "Restore error");
     }
@@ -308,11 +355,61 @@ const AppSettings = (function () {
     return json;
   }
 
-  function fileToBase64(file) {
+  function fileToBase64(file, options = {}) {
     return new Promise((resolve, reject) => {
+      if (!file) return resolve("");
+
+      // Se non è un'immagine o è un formato vettoriale SVG, leggiamo direttamente come Data URL
+      if (!file.type || !file.type.startsWith("image/") || file.type === "image/svg+xml") {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      // Dimensioni massime e qualità per prevenire payload eccessivi
+      const maxWidth = options.maxWidth || 1200;
+      const maxHeight = options.maxHeight || 1200;
+      const quality = options.quality !== undefined ? options.quality : 0.88;
+
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
+      reader.onerror = (err) => reject(err);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = () => resolve(e.target.result);
+        img.onload = () => {
+          try {
+            let { width, height } = img;
+
+            // Se l'immagine è già di dimensioni contenute e pesa meno di 350KB, manteniamo i byte originali
+            if (width <= maxWidth && height <= maxHeight && file.size < 350 * 1024) {
+              return resolve(e.target.result);
+            }
+
+            if (width > maxWidth || height > maxHeight) {
+              const ratio = Math.min(maxWidth / width, maxHeight / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Manteniamo PNG se ha trasparenza o è leggero, altrimenti JPEG compresso
+            const outputType = (file.type === "image/png" && file.size < 800 * 1024) ? "image/png" : "image/jpeg";
+            const dataUrl = canvas.toDataURL(outputType, quality);
+            resolve(dataUrl);
+          } catch (canvasErr) {
+            console.warn("Canvas image optimization fallback:", canvasErr);
+            resolve(e.target.result);
+          }
+        };
+        img.src = e.target.result;
+      };
       reader.readAsDataURL(file);
     });
   }

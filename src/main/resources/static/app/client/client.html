@@ -152,31 +152,31 @@
               <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
-            <span class="text-[11px] text-gray-400 font-medium">Dettagli Configurazione Client</span>
+            <span class="text-[11px] text-gray-400 font-medium" data-i18n="client_detail_nav_subtitle">Dettagli Configurazione Client</span>
           </div>
         </a>
 
         <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
           <a href="/app" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gauge-high"></i> Panoramica
+            <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
           </a>
           <a href="/app/users" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-users"></i> Utenti
+            <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
           </a>
           <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
-            <i class="fa-solid fa-key"></i> Client OAuth2
+            <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
           </a>
           <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
             <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
           </a>
           <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-book"></i> API Docs
+            <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
           </a>
         </nav>
       </div>
 
       <div class="flex items-center gap-2">
-        <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client">
+        <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client" data-i18n-title="client_detail_back">
           <i class="fa-solid fa-arrow-left text-sm"></i>
         </a>
         <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
@@ -193,7 +193,7 @@
     <div id="client-detail-container" class="w-full">
       <div class="m3-card p-12 text-center text-purple-300 flex flex-col items-center justify-center">
         <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
-        <p class="text-sm">Caricamento scheda client in corso...</p>
+        <p class="text-sm" data-i18n="client_detail_loading">Caricamento scheda client in corso...</p>
       </div>
     </div>
   </main>
@@ -278,6 +278,12 @@
       loadClientDetails();
     });
 
+    window.addEventListener("languageChanged", () => {
+      if (currentClientData) {
+        renderClientDetail(currentClientData);
+      }
+    });
+
     function loadClientDetails() {
       const path = window.location.href;
       let clientId = null;
@@ -291,7 +297,7 @@
         document.getElementById("client-detail-container").innerHTML = `
           <div class="m3-card p-8 text-center text-red-300">
             <p class="font-bold mb-2">Client ID non specificato.</p>
-            <a href="/app/clients" class="m3-btn-outline text-xs mt-2">Torna ai Client</a>
+            <a href="/app/clients" class="m3-btn-outline text-xs mt-2">${typeof t === 'function' ? t('client_detail_back', 'Torna ai Client') : 'Torna ai Client'}</a>
           </div>
         `;
         return;
@@ -313,8 +319,8 @@
         } else {
           document.getElementById("client-detail-container").innerHTML = `
             <div class="m3-card p-8 text-center text-red-300">
-              <p class="font-bold mb-2">Nessun client trovato con ID: ${clientId}</p>
-              <a href="/app/clients" class="m3-btn-outline text-xs mt-2">Torna ai Client</a>
+              <p class="font-bold mb-2">${typeof t === 'function' ? t('client_detail_no_client_found', 'Nessun client trovato con ID:') : 'Nessun client trovato con ID:'} ${clientId}</p>
+              <a href="/app/clients" class="m3-btn-outline text-xs mt-2">${typeof t === 'function' ? t('client_detail_back', 'Torna ai Client') : 'Torna ai Client'}</a>
             </div>
           `;
         }
@@ -324,7 +330,7 @@
         document.getElementById("client-detail-container").innerHTML = `
           <div class="m3-card p-8 text-center text-red-300">
             <p class="font-bold mb-2">Errore di connessione durante il caricamento del client.</p>
-            <a href="/app/clients" class="m3-btn-outline text-xs mt-2">Torna ai Client</a>
+            <a href="/app/clients" class="m3-btn-outline text-xs mt-2">${typeof t === 'function' ? t('client_detail_back', 'Torna ai Client') : 'Torna ai Client'}</a>
           </div>
         `;
       });
@@ -368,6 +374,11 @@
         }
       }
 
+      const activeLabel = typeof t === 'function' ? t('user_detail_active', 'ATTIVO') : 'ATTIVO';
+      const inactiveLabel = typeof t === 'function' ? t('user_detail_disabled_f', 'DISATTIVO') : 'DISATTIVO';
+      const yesLabel = typeof t === 'function' ? t('user_detail_yes', 'SI') : 'SI';
+      const noLabel = typeof t === 'function' ? (t('no', 'NO') || 'NO') : 'NO';
+
       container.innerHTML = `
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
           
@@ -387,15 +398,15 @@
                 <span class="pill-badge pill-info font-mono">${authType}</span>
                 <span class="pill-badge pill-info font-mono">${tokenType}</span>
                 ${mfaEnabled 
-                  ? '<span class="pill-badge pill-active"><i class="fa-solid fa-shield-check"></i> MFA ATTIVA</span>' 
-                  : '<span class="pill-badge pill-inactive"><i class="fa-solid fa-shield-slash"></i> MFA OFF</span>'}
+                  ? `<span class="pill-badge pill-active"><i class="fa-solid fa-shield-check"></i> ${typeof t === 'function' ? t('client_detail_mfa_active', 'MFA ATTIVA') : 'MFA ATTIVA'}</span>` 
+                  : `<span class="pill-badge pill-inactive"><i class="fa-solid fa-shield-slash"></i> ${typeof t === 'function' ? t('client_detail_mfa_off', 'MFA OFF') : 'MFA OFF'}</span>`}
               </div>
 
               <!-- CREDENZIALI CRITICHE -->
               <div class="w-full space-y-3 mb-6 text-left">
                 <!-- Client Secret -->
                 <div class="param-box">
-                  <span class="param-label">Client Secret</span>
+                  <span class="param-label">${typeof t === 'function' ? t('client_field_secret', 'Client Secret') : 'Client Secret'}</span>
                   ${c.clientSecret ? `
                   <div class="flex items-center gap-2">
                     <input type="password" id="secret-clientSecret" readonly value="${c.clientSecret}" class="masked-input text-xs" />
@@ -411,7 +422,7 @@
 
                 <!-- Registration Token -->
                 <div class="param-box">
-                  <span class="param-label">Registration Token</span>
+                  <span class="param-label">${typeof t === 'function' ? t('client_field_reg_token', 'Registration Token') : 'Registration Token'}</span>
                   ${(c.registrationToken || c.registration_token) ? `
                   <div class="flex items-center gap-2">
                     <span class="font-mono text-xs text-gray-200 truncate flex-1">${c.registrationToken || c.registration_token}</span>
@@ -427,17 +438,17 @@
               <div class="space-y-2.5 w-full">
                 <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-btn-primary w-full justify-center text-xs font-bold text-decoration-none flex items-center gap-2 shadow-lg">
                   <i class="fa-solid fa-pen-to-square"></i>
-                  <span>Modifica Tutte le Impostazioni</span>
+                  <span>${typeof t === 'function' ? t('client_detail_edit_all_btn', 'Modifica Tutte le Impostazioni') : 'Modifica Tutte le Impostazioni'}</span>
                 </a>
                 
                 <button onclick="copyFullConfigJson()" class="m3-btn-outline w-full justify-center text-xs flex items-center gap-2">
                   <i class="fa-solid fa-code"></i>
-                  <span>Copia Configurazione JSON</span>
+                  <span>${typeof t === 'function' ? t('client_detail_copy_json_btn', 'Copia Configurazione JSON') : 'Copia Configurazione JSON'}</span>
                 </button>
 
                 <button onclick="deleteClientAction('${c.clientId}')" class="w-full text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all mt-2" style="border-radius: 9999px !important; color: #FFFFFF !important; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); padding: 10px 18px;">
                   <i class="fa-solid fa-trash text-xs" style="color: #F87171;"></i>
-                  <span>Elimina Client OAuth2</span>
+                  <span>${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client OAuth2') : 'Elimina Client OAuth2'}</span>
                 </button>
               </div>
             </div>
@@ -445,39 +456,39 @@
             <!-- FLAG DI EMISSIONE & PROTOCOLLI -->
             <div class="m3-card p-6">
               <div class="detail-card-title m-0 pb-3 mb-4">
-                <i class="fa-solid fa-toggle-on text-purple-400"></i> Flag di Emissione & Requisiti
+                <i class="fa-solid fa-toggle-on text-purple-400"></i> ${typeof t === 'function' ? t('client_detail_issuance_title', 'Flag di Emissione & Requisiti') : 'Flag di Emissione & Requisiti'}
               </div>
               <div class="space-y-3">
                 <div class="flex items-center justify-between p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/10">
                   <div>
-                    <span class="text-xs font-bold text-white block">MFA Obbligatoria</span>
+                    <span class="text-xs font-bold text-white block">${typeof t === 'function' ? t('client_flag_mfa', 'MFA Obbligatoria') : 'MFA Obbligatoria'}</span>
                     <span class="text-[10px] text-gray-400 font-mono">mfa_enabled</span>
                   </div>
-                  <span class="pill-badge ${mfaEnabled ? 'pill-active' : 'pill-inactive'}">${mfaEnabled ? 'SI' : 'NO'}</span>
+                  <span class="pill-badge ${mfaEnabled ? 'pill-active' : 'pill-inactive'}">${mfaEnabled ? yesLabel : noLabel}</span>
                 </div>
 
                 <div class="flex items-center justify-between p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/10">
                   <div>
-                    <span class="text-xs font-bold text-white block">Emissione ID Token</span>
+                    <span class="text-xs font-bold text-white block">${typeof t === 'function' ? t('client_flag_id_token', 'Emissione ID Token') : 'Emissione ID Token'}</span>
                     <span class="text-[10px] text-gray-400 font-mono">id_token (OIDC)</span>
                   </div>
-                  <span class="pill-badge ${idToken ? 'pill-active' : 'pill-inactive'}">${idToken ? 'ATTIVO' : 'DISATTIVO'}</span>
+                  <span class="pill-badge ${idToken ? 'pill-active' : 'pill-inactive'}">${idToken ? activeLabel : inactiveLabel}</span>
                 </div>
 
                 <div class="flex items-center justify-between p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/10">
                   <div>
-                    <span class="text-xs font-bold text-white block">Emissione Access Token</span>
+                    <span class="text-xs font-bold text-white block">${typeof t === 'function' ? t('client_flag_access_token', 'Emissione Access Token') : 'Emissione Access Token'}</span>
                     <span class="text-[10px] text-gray-400 font-mono">access_token (OAuth2)</span>
                   </div>
-                  <span class="pill-badge ${accessToken ? 'pill-active' : 'pill-inactive'}">${accessToken ? 'ATTIVO' : 'DISATTIVO'}</span>
+                  <span class="pill-badge ${accessToken ? 'pill-active' : 'pill-inactive'}">${accessToken ? activeLabel : inactiveLabel}</span>
                 </div>
 
                 <div class="flex items-center justify-between p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/10">
                   <div>
-                    <span class="text-xs font-bold text-white block">Emissione Strapi Token</span>
+                    <span class="text-xs font-bold text-white block">${typeof t === 'function' ? t('client_flag_strapi_token', 'Emissione Strapi Token') : 'Emissione Strapi Token'}</span>
                     <span class="text-[10px] text-gray-400 font-mono">strapi_token</span>
                   </div>
-                  <span class="pill-badge ${strapiToken ? 'pill-active' : 'pill-inactive'}">${strapiToken ? 'ATTIVO' : 'DISATTIVO'}</span>
+                  <span class="pill-badge ${strapiToken ? 'pill-active' : 'pill-inactive'}">${strapiToken ? activeLabel : inactiveLabel}</span>
                 </div>
               </div>
             </div>
@@ -489,38 +500,38 @@
             <!-- SCHEDA PROTOCOLLO & RETE -->
             <div class="m3-card p-6 sm:p-8">
               <div class="detail-card-title">
-                <i class="fa-solid fa-network-wired text-purple-400"></i> Parametri OAuth2 & Endpoint di Rete
+                <i class="fa-solid fa-network-wired text-purple-400"></i> ${typeof t === 'function' ? t('client_detail_oauth_params_title', 'Parametri OAuth2 & Endpoint di Rete') : 'Parametri OAuth2 & Endpoint di Rete'}
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                 <div class="param-box">
-                  <span class="param-label">Access Type</span>
+                  <span class="param-label">${typeof t === 'function' ? t('client_field_access_type', 'Access Type') : 'Access Type'}</span>
                   <div class="param-value font-mono font-semibold">${accessType}</div>
                 </div>
                 <div class="param-box">
-                  <span class="param-label">Authorize Status</span>
+                  <span class="param-label">${typeof t === 'function' ? t('client_field_redirect_status', 'Authorize Status') : 'Authorize Status'}</span>
                   <div class="param-value font-mono font-semibold">${redirectStatus}</div>
                 </div>
                 <div class="param-box">
-                  <span class="param-label">Token Type</span>
+                  <span class="param-label">${typeof t === 'function' ? t('client_field_token_type', 'Token Type') : 'Token Type'}</span>
                   <div class="param-value font-mono font-semibold">${tokenType}</div>
                 </div>
               </div>
 
               <!-- SCOPES -->
               <div class="param-box mb-4">
-                <span class="param-label">Scopes Autorizzati</span>
+                <span class="param-label">${typeof t === 'function' ? t('client_field_scopes', 'Scopes Autorizzati') : 'Scopes Autorizzati'}</span>
                 <div class="flex flex-wrap gap-1.5 mt-1">
                   ${scopesList.length > 0 
                     ? scopesList.map(s => `<span class="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/25 text-purple-300 font-mono text-xs">${s}</span>`).join('') 
-                    : '<span class="text-gray-400 text-xs italic">Nessuno scope specificato</span>'}
+                    : `<span class="text-gray-400 text-xs italic">${typeof t === 'function' ? t('client_detail_no_scopes', 'Nessuno scope specificato') : 'Nessuno scope specificato'}</span>`}
                 </div>
               </div>
 
               <!-- REDIRECT URIS -->
               <div class="param-box mb-4">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="param-label m-0">Redirect URIs Autorizzate (redirect_uri)</span>
-                  ${redirectInfo.redirect_uris.length > 0 ? `<span class="text-[11px] font-mono text-purple-300 font-semibold">${redirectInfo.redirect_uris.length} URI configurate</span>` : ''}
+                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_redirect_uris', 'Redirect URIs Autorizzate (redirect_uri)') : 'Redirect URIs Autorizzate (redirect_uri)'}</span>
+                  ${redirectInfo.redirect_uris.length > 0 ? `<span class="text-[11px] font-mono text-purple-300 font-semibold">${redirectInfo.redirect_uris.length} ${typeof t === 'function' ? t('client_detail_configured_uris', 'URI configurate') : 'URI configurate'}</span>` : ''}
                 </div>
                 ${redirectInfo.redirect_uris.length > 0 ? `
                   <div class="flex flex-col gap-2 mt-2">
@@ -536,14 +547,14 @@
                       </div>
                     `).join('')}
                   </div>
-                ` : '<div class="text-gray-400 text-xs italic py-1">Nessuna redirect URI configurata</div>'}
+                ` : `<div class="text-gray-400 text-xs italic py-1">${typeof t === 'function' ? t('client_detail_no_redirect_uris', 'Nessuna redirect URI configurata') : 'Nessuna redirect URI configurata'}</div>`}
               </div>
 
               <!-- FALLBACK URI -->
               <div class="param-box">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="param-label m-0">Fallback URI (fallback_uri)</span>
-                  ${redirectInfo.fallback_uris.length > 0 ? `<span class="text-[11px] font-mono text-purple-300 font-semibold">${redirectInfo.fallback_uris.length} URI configurate</span>` : ''}
+                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_fallback_uri', 'Fallback URI (fallback_uri)') : 'Fallback URI (fallback_uri)'}</span>
+                  ${redirectInfo.fallback_uris.length > 0 ? `<span class="text-[11px] font-mono text-purple-300 font-semibold">${redirectInfo.fallback_uris.length} ${typeof t === 'function' ? t('client_detail_configured_uris', 'URI configurate') : 'URI configurate'}</span>` : ''}
                 </div>
                 ${redirectInfo.fallback_uris.length > 0 ? `
                   <div class="flex flex-col gap-2 mt-2">
@@ -559,19 +570,19 @@
                       </div>
                     `).join('')}
                   </div>
-                ` : '<div class="text-gray-400 text-xs italic py-1">Nessuna fallback URI configurata</div>'}
+                ` : `<div class="text-gray-400 text-xs italic py-1">${typeof t === 'function' ? t('client_detail_no_fallback_uri', 'Nessuna fallback URI configurata') : 'Nessuna fallback URI configurata'}</div>`}
               </div>
             </div>
 
             <!-- SCHEDA CRITTOGRAFIA & CHIAVI -->
             <div class="m3-card p-6 sm:p-8">
               <div class="detail-card-title">
-                <i class="fa-solid fa-shield-halved text-purple-400"></i> Parametri Crittografici & Scadenze Token
+                <i class="fa-solid fa-shield-halved text-purple-400"></i> ${typeof t === 'function' ? t('client_detail_crypto_title', 'Parametri Crittografici & Scadenze Token') : 'Parametri Crittografici & Scadenze Token'}
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- JWT Secret -->
                 <div class="param-box">
-                  <span class="param-label">JWT Secret Key (256-bit)</span>
+                  <span class="param-label">${typeof t === 'function' ? t('client_field_jwt_secret', 'JWT Secret Key (256-bit)') : 'JWT Secret Key (256-bit)'}</span>
                   ${(c.jwtSecret || c.jwt_secret) ? `
                   <div class="flex items-center gap-2 mt-1">
                     <input type="password" id="secret-jwtSecret" readonly value="${c.jwtSecret || c.jwt_secret}" class="masked-input text-xs" />
@@ -587,7 +598,7 @@
 
                 <!-- JWT Expiration -->
                 <div class="param-box">
-                  <span class="param-label">Scadenza JWT (jwtExpiration)</span>
+                  <span class="param-label">${typeof t === 'function' ? t('client_field_jwt_exp', 'Scadenza JWT (jwtExpiration)') : 'Scadenza JWT (jwtExpiration)'}</span>
                   <div class="param-value font-mono text-sm font-semibold mt-1">
                     ${formatTimeMs(c.jwtExpiration || c.jwt_expiration)}
                   </div>
@@ -595,7 +606,7 @@
 
                 <!-- JWE Secret -->
                 <div class="param-box">
-                  <span class="param-label">JWE Secret Key (Cifratura)</span>
+                  <span class="param-label">${typeof t === 'function' ? t('client_field_jwe_secret', 'JWE Secret Key (Cifratura)') : 'JWE Secret Key (Cifratura)'}</span>
                   ${(c.jweSecret || c.jwe_secret) ? `
                   <div class="flex items-center gap-2 mt-1">
                     <input type="password" id="secret-jweSecret" readonly value="${c.jweSecret || c.jwe_secret}" class="masked-input text-xs" />
@@ -611,7 +622,7 @@
 
                 <!-- JWE Expiration -->
                 <div class="param-box">
-                  <span class="param-label">Scadenza JWE (jweExpiration)</span>
+                  <span class="param-label">${typeof t === 'function' ? t('client_field_jwe_exp', 'Scadenza JWE (jweExpiration)') : 'Scadenza JWE (jweExpiration)'}</span>
                   <div class="param-value font-mono text-sm font-semibold mt-1">
                     ${formatTimeMs(c.jweExpiration || c.jwe_expiration)}
                   </div>
@@ -622,16 +633,16 @@
             <!-- SCHEDA RUOLI APPLICATIVI (app_roles) -->
             <div class="m3-card p-6 sm:p-8">
               <div class="detail-card-title flex items-center justify-between">
-                <span><i class="fa-solid fa-user-shield text-purple-400"></i> Ruoli Applicativi Configurati (${roles.length})</span>
+                <span><i class="fa-solid fa-user-shield text-purple-400"></i> ${typeof t === 'function' ? t('client_detail_app_roles_title', 'Ruoli Applicativi Configurati') : 'Ruoli Applicativi Configurati'} (${roles.length})</span>
                 <span class="text-xs text-purple-300 font-mono">app_roles</span>
               </div>
               <div class="overflow-x-auto">
                 <table class="table repeater-table w-full text-xs">
                   <thead>
                     <tr>
-                      <th style="width: 25%;">Ruolo</th>
-                      <th style="width: 20%;">Tipo</th>
-                      <th style="width: 55%;">Descrizione</th>
+                      <th style="width: 25%;">${typeof t === 'function' ? t('client_table_col_role', 'Ruolo') : 'Ruolo'}</th>
+                      <th style="width: 20%;">${typeof t === 'function' ? t('client_table_col_type', 'Tipo') : 'Tipo'}</th>
+                      <th style="width: 55%;">${typeof t === 'function' ? t('client_table_col_desc', 'Descrizione') : 'Descrizione'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -641,7 +652,7 @@
                         <td><span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">${r.type || 'DEFAULT'}</span></td>
                         <td class="role-desc-text">${r.description || 'Nessuna descrizione fornita'}</td>
                       </tr>
-                    `).join('') : '<tr><td colspan="3" class="repeater-empty-state">Nessun ruolo applicativo configurato per questo client.</td></tr>'}
+                    `).join('') : `<tr><td colspan="3" class="repeater-empty-state">${typeof t === 'function' ? t('client_detail_empty_roles', 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.') : 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.'}</td></tr>`}
                   </tbody>
                 </table>
               </div>
@@ -650,16 +661,16 @@
             <!-- SCHEDA WEBHOOKS -->
             <div class="m3-card p-6 sm:p-8">
               <div class="detail-card-title flex items-center justify-between">
-                <span><i class="fa-solid fa-satellite-dish text-purple-400"></i> Webhooks Registrati (${webhooks.length})</span>
+                <span><i class="fa-solid fa-satellite-dish text-purple-400"></i> ${typeof t === 'function' ? t('client_detail_webhooks_title', 'Webhooks Registrati') : 'Webhooks Registrati'} (${webhooks.length})</span>
                 <span class="text-xs text-purple-300 font-mono">webhooks</span>
               </div>
               <div class="overflow-x-auto">
                 <table class="table repeater-table w-full text-xs">
                   <thead>
                     <tr>
-                      <th style="width: 25%;">Nome</th>
-                      <th style="width: 55%;">URL Endpoint</th>
-                      <th style="width: 20%;">Azione</th>
+                      <th style="width: 25%;">${typeof t === 'function' ? t('client_table_col_webhook_name', 'Nome') : 'Nome'}</th>
+                      <th style="width: 55%;">${typeof t === 'function' ? t('client_table_col_webhook_url', 'URL Endpoint') : 'URL Endpoint'}</th>
+                      <th style="width: 20%;">${typeof t === 'function' ? t('client_table_col_webhook_action', 'Azione') : 'Azione'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -669,7 +680,7 @@
                         <td class="font-mono text-purple-300 break-all">${w.url || ''}</td>
                         <td><span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">${w.action || 'DELETE_USER'}</span></td>
                       </tr>
-                    `).join('') : '<tr><td colspan="3" class="repeater-empty-state">Nessun webhook registrato per questo client.</td></tr>'}
+                    `).join('') : `<tr><td colspan="3" class="repeater-empty-state">${typeof t === 'function' ? t('client_detail_empty_webhooks', 'Nessun webhook registrato per questo client.') : 'Nessun webhook registrato per questo client.'}</td></tr>`}
                   </tbody>
                 </table>
               </div>
@@ -697,13 +708,19 @@
 
     function copyValue(val, label) {
       if (!val) {
-        sweetalert("warning", "Dato Assente", `${label} non è configurato.`);
+        sweetalert("warning", (typeof t === 'function' ? t('swal_missing_data_title', 'Dato Assente') : 'Dato Assente'), `${label} ` + (typeof t === 'function' ? t('swal_missing_data_desc', 'non è configurato.') : 'non è configurato.'));
         return;
       }
       navigator.clipboard.writeText(val).then(() => {
-        sweetalert("info", "Copiato!", `${label} copiato negli appunti.`);
+        sweetalert("info", (typeof t === 'function' ? t('swal_copied_title', 'Copiato!') : 'Copiato!'), `${label} ` + (typeof t === 'function' ? t('swal_copied_desc', 'copiato negli appunti.') : 'copiato negli appunti.'));
       });
     }
+
+    window.addEventListener("languageChanged", () => {
+      if (currentClientData) {
+        renderClientDetail(currentClientData);
+      }
+    });
 
     function copyFullConfigJson() {
       if (!currentClientData) return;

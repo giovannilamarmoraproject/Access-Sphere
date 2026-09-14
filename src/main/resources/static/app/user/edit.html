@@ -56,31 +56,31 @@
               <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
-            <span class="form-helper text-purple-300 text-xs font-medium">Modifica Profilo Utente</span>
+            <span class="form-helper text-purple-300 text-xs font-medium" data-i18n="user_edit_page_title">Modifica Profilo Utente</span>
           </div>
         </a>
 
         <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
           <a href="/app" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gauge-high"></i> Panoramica
+            <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
           </a>
           <a href="/app/users" class="nav-tab-m3 active text-decoration-none">
-            <i class="fa-solid fa-users"></i> Utenti
+            <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
           </a>
           <a href="/app/clients" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-key"></i> Client OAuth2
+            <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
           </a>
           <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
             <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
           </a>
           <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-book"></i> API Docs
+            <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
           </a>
         </nav>
       </div>
 
       <div class="flex items-center gap-2">
-        <a href="/app/users" class="m3-icon-btn" title="Torna agli Utenti">
+        <a href="/app/users" class="m3-icon-btn" title="Torna agli Utenti" data-i18n-title="user_detail_back">
           <i class="fa-solid fa-arrow-left text-sm"></i>
         </a>
         <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
@@ -100,14 +100,14 @@
       <div class="flex items-center justify-between pb-6 mb-8 border-b border-purple-500/15">
         <div>
           <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <i class="fa-solid fa-user-pen text-purple-400"></i> Modifica Utente
+            <i class="fa-solid fa-user-pen text-purple-400"></i> <span data-i18n="user_edit_page_title">Modifica Utente</span>
           </h2>
-          <p class="form-helper text-purple-300 text-xs mt-1">
+          <p class="form-helper text-purple-300 text-xs mt-1" data-i18n="user_edit_page_subtitle">
             Aggiorna i dati anagrafici, i recapiti e le impostazioni dell'account utente.
           </p>
         </div>
         <a href="/app/users" class="m3-btn-outline">
-          <i class="fa-solid fa-arrow-left text-xs"></i> Annulla e Torna Indietro
+          <i class="fa-solid fa-arrow-left text-xs"></i> <span data-i18n="btn_cancel_and_back">Annulla e Torna Indietro</span>
         </a>
       </div>
 
@@ -125,17 +125,17 @@
 
         <!-- Dati Base -->
         <div class="col-md-4">
-          <label for="name" class="form-label text-xs font-semibold text-gray-300">Nome *</label>
+          <label for="name" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_name">Nome *</label>
           <input type="text" class="form-control" id="name" required />
         </div>
 
         <div class="col-md-4">
-          <label for="surname" class="form-label text-xs font-semibold text-gray-300">Cognome *</label>
+          <label for="surname" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_surname">Cognome *</label>
           <input type="text" class="form-control" id="surname" required />
         </div>
 
         <div class="col-md-4">
-          <label for="validationDefaultUsername" class="form-label text-xs font-semibold text-gray-300">Username *</label>
+          <label for="validationDefaultUsername" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_username">Username *</label>
           <div class="input-group">
             <span class="input-group-text font-mono text-purple-300">@</span>
             <input type="text" class="form-control font-mono" id="validationDefaultUsername" required />
@@ -143,59 +143,59 @@
         </div>
 
         <div class="col-md-6">
-          <label for="email" class="form-label text-xs font-semibold text-gray-300">Email *</label>
+          <label for="email" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_email">Email *</label>
           <input type="email" class="form-control" id="email" required />
         </div>
 
         <div class="col-md-2">
-          <label for="phone_prefix" class="form-label text-xs font-semibold text-gray-300">Prefisso</label>
+          <label for="phone_prefix" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_prefix">Prefisso</label>
           <input type="text" class="form-control font-mono" id="phone_prefix" placeholder="+39" />
         </div>
 
         <div class="col-md-4">
-          <label for="phone" class="form-label text-xs font-semibold text-gray-300">Telefono</label>
+          <label for="phone" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_phone">Telefono</label>
           <input type="tel" class="form-control" id="phone" />
         </div>
 
         <!-- Dati Anagrafici -->
         <div class="col-md-3">
-          <label for="birthdate" class="form-label text-xs font-semibold text-gray-300">Data di Nascita</label>
+          <label for="birthdate" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_birthdate">Data di Nascita</label>
           <input type="date" class="form-control" id="birthdate" />
         </div>
 
         <div class="col-md-3">
-          <label for="gender" class="form-label text-xs font-semibold text-gray-300">Genere</label>
+          <label for="gender" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_gender">Genere</label>
           <select class="form-select" id="gender">
-            <option value="" selected disabled>Seleziona...</option>
-            <option value="M">Maschio (M)</option>
-            <option value="F">Femmina (F)</option>
-            <option value="OTHER">Altro</option>
+            <option value="" selected disabled data-i18n="register_form_gender_choose">Seleziona...</option>
+            <option value="M" data-i18n="register_form_gender_male">Maschio (M)</option>
+            <option value="F" data-i18n="register_form_gender_female">Femmina (F)</option>
+            <option value="OTHER" data-i18n="register_form_gender_other">Altro</option>
           </select>
         </div>
 
         <div class="col-md-3">
-          <label for="nationality" class="form-label text-xs font-semibold text-gray-300">Nazionalità</label>
+          <label for="nationality" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_nationality">Nazionalità</label>
           <input type="text" class="form-control" id="nationality" placeholder="Italiana" />
         </div>
 
         <div class="col-md-3">
-          <label for="ssn" class="form-label text-xs font-semibold text-gray-300">Codice Fiscale / SSN</label>
+          <label for="ssn" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_ssn">Codice Fiscale / SSN</label>
           <input type="text" class="form-control font-mono" id="ssn" placeholder="RSSMRA..." />
         </div>
 
         <div class="col-md-6">
-          <label for="occupation" class="form-label text-xs font-semibold text-gray-300">Occupazione</label>
+          <label for="occupation" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_occupation">Occupazione</label>
           <input type="text" class="form-control" id="occupation" />
         </div>
 
         <div class="col-md-6">
-          <label for="education" class="form-label text-xs font-semibold text-gray-300">Istruzione</label>
+          <label for="education" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_education">Istruzione</label>
           <input type="text" class="form-control" id="education" />
         </div>
 
         <!-- Caricamento Foto -->
         <div class="col-12">
-          <label for="file" class="form-label text-xs font-semibold text-gray-300">Carica Nuova Foto Profilo</label>
+          <label for="file" class="form-label text-xs font-semibold text-gray-300" data-i18n="user_field_upload_photo">Carica Nuova Foto Profilo</label>
           <input type="file" class="form-control" id="file" accept="image/jpeg,image/png,image/webp" />
         </div>
 
@@ -205,9 +205,9 @@
             <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 border-b border-purple-500/15 gap-3">
               <div>
                 <div class="form-section-title m-0 border-0 p-0 text-sm font-bold text-white flex items-center gap-2">
-                  <i class="fa-solid fa-sliders text-purple-400"></i> Attributi Personalizzati (Custom Attributes)
+                  <i class="fa-solid fa-sliders text-purple-400"></i> <span data-i18n="user_sec_attributes_title">Attributi Personalizzati (Custom Attributes)</span>
                 </div>
-                <span class="text-[11px] text-gray-400 mt-0.5 block">
+                <span class="text-[11px] text-gray-400 mt-0.5 block" data-i18n="user_sec_attributes_desc">
                   Gestione completa di proprietà semplici e oggetti inestati (es. <code>app_settings</code>).
                 </span>
               </div>
@@ -217,23 +217,23 @@
                 <!-- Switch Modalità -->
                 <div class="m3-segmented-switch">
                   <button type="button" id="tab-attr-visual" class="m3-btn-primary text-xs" onclick="switchAttributesMode('visual')">
-                    <i class="fa-solid fa-layer-group mr-1.5"></i> Visuale<span class="hidden sm:inline"> Strutturata</span>
+                    <i class="fa-solid fa-layer-group mr-1.5"></i> <span data-i18n="user_attr_btn_visual">Visuale Strutturata</span>
                   </button>
                   <button type="button" id="tab-attr-code" class="m3-btn-outline text-xs" onclick="switchAttributesMode('code')">
-                    <i class="fa-solid fa-code mr-1.5"></i> <span class="hidden sm:inline">Editor </span>JSON
+                    <i class="fa-solid fa-code mr-1.5"></i> <span data-i18n="user_attr_btn_code">Editor JSON</span>
                   </button>
                 </div>
 
                 <!-- Action buttons grid on mobile, flex on desktop -->
                 <div id="attributes-action-buttons" class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
                   <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5" onclick="addAttributeRow()">
-                    <i class="fa-solid fa-plus mr-1"></i> Proprietà
+                    <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="user_attr_btn_prop">Proprietà</span>
                   </button>
                   <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5" onclick="addNestedObjectRow()" title="Aggiungi un oggetto inestato con sotto-proprietà">
-                    <i class="fa-solid fa-folder-plus mr-1"></i> <span class="hidden sm:inline">Oggetto </span>Inestato
+                    <i class="fa-solid fa-folder-plus mr-1"></i> <span data-i18n="user_attr_btn_nested">Oggetto Inestato</span>
                   </button>
                   <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5 col-span-2 sm:col-span-1" onclick="loadExampleJson()" title="Carica configurazione JSON di esempio">
-                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> <span class="hidden sm:inline">Carica </span>Esempio
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> <span data-i18n="user_attr_btn_example">Carica Esempio</span>
                   </button>
                 </div>
               </div>
@@ -250,14 +250,14 @@
             <div id="attributes-code-view" style="display: none;">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2">
                 <span class="text-[11px] text-purple-300 font-semibold uppercase tracking-wider">
-                  <i class="fa-solid fa-terminal mr-1"></i> Codice Sorgente JSON
+                  <i class="fa-solid fa-terminal mr-1"></i> <span data-i18n="user_attr_json_source">Codice Sorgente JSON</span>
                 </span>
                 <div class="flex items-center gap-2 w-full sm:w-auto">
                   <button type="button" class="m3-btn-outline text-xs flex-1 sm:flex-initial justify-center py-2 px-3" onclick="formatJsonCodeEditor()">
-                    <i class="fa-solid fa-align-left mr-1"></i> Formatta JSON
+                    <i class="fa-solid fa-align-left mr-1"></i> <span data-i18n="user_attr_format_json">Formatta JSON</span>
                   </button>
                   <button type="button" class="m3-btn-outline text-xs flex-1 sm:flex-initial justify-center py-2 px-3" onclick="copyJsonCodeEditor()">
-                    <i class="fa-solid fa-copy mr-1"></i> Copia
+                    <i class="fa-solid fa-copy mr-1"></i> <span data-i18n="btn_copy">Copia</span>
                   </button>
                 </div>
               </div>
@@ -274,17 +274,17 @@
 
         <div class="col-12 flex items-center gap-2 pt-2">
           <input class="w-4 h-4 rounded accent-purple-500 cursor-pointer" type="checkbox" value="true" id="invalidCheck2" required checked />
-          <label class="text-xs text-gray-300 cursor-pointer" for="invalidCheck2">
+          <label class="text-xs text-gray-300 cursor-pointer" for="invalidCheck2" data-i18n="user_terms_confirm_accuracy">
             Confermo la veridicità delle modifiche apportate
           </label>
         </div>
 
         <div class="col-12 pt-6 border-t border-purple-500/15 flex items-center justify-end gap-3">
           <a href="/app/users" class="m3-btn-outline">
-            <i class="fa-solid fa-xmark"></i> Annulla
+            <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
           </a>
           <button id="edit_user_button" class="m3-btn-primary" type="submit">
-            <i class="fa-solid fa-check"></i> Salva Modifiche
+            <i class="fa-solid fa-check"></i> <span data-i18n="user_btn_save_changes">Salva Modifiche</span>
           </button>
         </div>
 

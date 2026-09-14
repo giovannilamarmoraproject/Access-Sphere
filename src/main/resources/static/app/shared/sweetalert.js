@@ -32,19 +32,21 @@ function getM3SwalMixin() {
 
 function sweetalert(icon, title, message, html = false) {
   const customClassSwal = getM3SwalMixin();
+  const translatedTitle = (typeof t === "function" && title) ? t(title, title) : title;
+  const translatedMessage = (typeof t === "function" && typeof message === "string") ? t(message, message) : message;
 
   const options = {
     icon: icon,
-    title: title,
+    title: translatedTitle,
     color: "#FFFFFF",
     showCancelButton: false,
-    confirmButtonText: "OK",
+    confirmButtonText: typeof t === "function" ? t("btn_ok", "OK") : "OK",
   };
 
   if (html) {
-    options.html = message;
+    options.html = translatedMessage;
   } else {
-    options.text = message;
+    options.text = translatedMessage;
   }
 
   return safeDisableLoader().then(() => {
@@ -55,12 +57,14 @@ function sweetalert(icon, title, message, html = false) {
 function sweetalertConfirm(icon, title, message, btnConfirm, btnDeny) {
   const customClassSwal = getM3SwalMixin();
   const cancelText = (typeof t === "function" ? t("btn_cancel", "Annulla") : "Annulla");
+  const translatedTitle = (typeof t === "function" && title) ? t(title, title) : title;
+  const translatedMessage = (typeof t === "function" && typeof message === "string") ? t(message, message) : message;
 
   return safeDisableLoader().then(() => {
     return customClassSwal.fire({
       icon: icon,
-      title: title,
-      text: message,
+      title: translatedTitle,
+      text: translatedMessage,
       color: "#FFFFFF",
       showDenyButton: true,
       showCancelButton: false,

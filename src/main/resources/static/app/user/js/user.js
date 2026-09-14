@@ -62,7 +62,7 @@ function renderCustomAttributesData(attributes) {
     return `
       <div class="p-6 text-center text-purple-300 flex items-center justify-center gap-3" style="background: rgba(26, 20, 42, 0.6); border: 1px solid rgba(208, 188, 255, 0.12); border-radius: 20px;">
         <i class="fa-solid fa-sliders text-purple-400 text-lg"></i>
-        <span class="text-xs font-medium">Nessun attributo personalizzato presente per questo account.</span>
+        <span class="text-xs font-medium">${typeof t === 'function' ? t("user_detail_no_attributes", "Nessun attributo personalizzato presente per questo account.") : "Nessun attributo personalizzato presente per questo account."}</span>
       </div>
     `;
   }
@@ -113,7 +113,7 @@ function renderCustomAttributesData(attributes) {
               </div>
             </div>
             <span class="px-2.5 py-1 font-mono text-[10px] font-semibold whitespace-nowrap flex-shrink-0 rounded-full" style="background: rgba(208, 188, 255, 0.15); color: #EADDFF; border: 1px solid rgba(208, 188, 255, 0.2);">
-              Oggetto (${Object.keys(value).length})
+              ${typeof t === 'function' ? t("client_field_nested_obj", "Oggetto") : "Oggetto"} (${Object.keys(value).length})
             </span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
@@ -151,7 +151,7 @@ function renderCustomAttributesData(attributes) {
               <button type="button" class="flex-shrink-0" onclick="togglePasswordVisibility('${inputId}', this)" title="Mostra / Nascondi" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i class="fa-solid fa-eye text-xs"></i>
               </button>
-              <button type="button" class="flex-shrink-0" onclick="copyTokenValue('${inputId}')" title="Copia negli Appunti" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+              <button type="button" class="flex-shrink-0" onclick="copyTokenValue('${inputId}')" title="${typeof t === 'function' ? t("user_detail_copy_btn", "Copia") : "Copia"}" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i class="fa-solid fa-copy text-xs"></i>
               </button>
             </div>
@@ -189,11 +189,11 @@ function renderCustomAttributesData(attributes) {
       <div class="flex items-center justify-between gap-2 pb-2">
         <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5 truncate">
           <i class="fa-solid fa-check-double text-emerald-400 flex-shrink-0"></i>
-          <span>${Object.keys(attributes).length} Proprietà</span>
+          <span>${Object.keys(attributes).length} ${typeof t === 'function' ? t("user_detail_properties_count", "Proprietà") : "Proprietà"}</span>
         </span>
         <button type="button" onclick="toggleRawJsonView()" class="m3-btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 flex-shrink-0 cursor-pointer" style="border-radius: 9999px !important;">
           <i class="fa-solid fa-code text-xs"></i>
-          <span id="toggle-json-label"><span class="hidden sm:inline">Mostra </span>JSON<span class="hidden sm:inline"> Grezzo</span></span>
+          <span id="toggle-json-label">${typeof t === 'function' ? t("user_detail_show_raw_json", "Mostra JSON Grezzo") : "Mostra JSON Grezzo"}</span>
         </button>
       </div>
       
@@ -204,10 +204,10 @@ function renderCustomAttributesData(attributes) {
       <div id="raw-json-container" style="display: none;" class="mt-4">
         <div class="flex items-center justify-between pb-2 mb-1">
           <span class="text-[11px] font-mono text-purple-300 font-semibold uppercase tracking-wider">
-            <i class="fa-solid fa-terminal mr-1"></i> Codice Sorgente JSON
+            <i class="fa-solid fa-terminal mr-1"></i> ${typeof t === 'function' ? t("user_detail_json_source", "Codice Sorgente JSON") : "Codice Sorgente JSON"}
           </span>
           <button type="button" class="m3-btn-outline text-xs py-1 px-2.5 cursor-pointer" onclick="navigator.clipboard.writeText(document.getElementById('raw-json-pre').innerText).then(() => sweetalert('success', 'Copiato', 'JSON copiato negli appunti!'))">
-            <i class="fa-solid fa-copy mr-1"></i> Copia
+            <i class="fa-solid fa-copy mr-1"></i> ${typeof t === 'function' ? t("user_detail_copy_btn", "Copia") : "Copia"}
           </button>
         </div>
         <pre id="raw-json-pre" class="text-xs font-mono text-purple-200 p-4 overflow-x-auto" style="background: rgba(14, 11, 20, 0.85); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 16px;">${rawJson}</pre>
@@ -243,20 +243,30 @@ function toggleRawJsonView() {
   if (!container) return;
   if (container.style.display === "none") {
     container.style.display = "block";
-    if (label) label.innerHTML = '<span class="hidden sm:inline">Nascondi </span>JSON<span class="hidden sm:inline"> Grezzo</span>';
+    if (label) label.innerText = typeof t === 'function' ? t("user_detail_hide_raw_json", "Nascondi JSON Grezzo") : "Nascondi JSON Grezzo";
   } else {
     container.style.display = "none";
-    if (label) label.innerHTML = '<span class="hidden sm:inline">Mostra </span>JSON<span class="hidden sm:inline"> Grezzo</span>';
+    if (label) label.innerText = typeof t === 'function' ? t("user_detail_show_raw_json", "Mostra JSON Grezzo") : "Mostra JSON Grezzo";
   }
 }
 
+let currentUserData = null;
+
+// Re-render user details when language changes dynamically
+window.addEventListener("languageChanged", () => {
+  if (currentUserData) {
+    displayUserData(currentUserData);
+  }
+});
+
 function displayUserData(user) {
+  currentUserData = user;
   const container = document.getElementById("user-data");
   if (!container) return;
   container.innerHTML = "";
 
   if (!user) {
-    container.innerHTML = `<div class="m3-card p-8 text-center text-gray-400">Nessun dato utente disponibile.</div>`;
+    container.innerHTML = `<div class="m3-card p-8 text-center text-gray-400">${typeof t === 'function' ? t("common_no_data", "Nessun dato utente disponibile.") : "Nessun dato utente disponibile."}</div>`;
     return;
   }
 
@@ -264,10 +274,10 @@ function displayUserData(user) {
   const isBlocked = !!user.blocked;
   const isConfirmed = user.confirmed !== false;
   const statusBadge = isBlocked 
-    ? '<span class="px-3.5 py-1 text-xs font-semibold" style="background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px;">BLOCCATO</span>' 
-    : '<span class="px-3.5 py-1 text-xs font-semibold" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 9999px;">ATTIVO</span>';
+    ? `<span class="px-3.5 py-1 text-xs font-semibold" style="background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px;">${typeof t === 'function' ? t("user_detail_blocked", "BLOCCATO") : "BLOCCATO"}</span>` 
+    : `<span class="px-3.5 py-1 text-xs font-semibold" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 9999px;">${typeof t === 'function' ? t("user_detail_active", "ATTIVO") : "ATTIVO"}</span>`;
 
-  let rolesHtml = '<span class="text-xs text-gray-400">Nessun ruolo assegnato</span>';
+  let rolesHtml = `<span class="text-xs text-gray-400">${typeof t === 'function' ? t("user_detail_no_roles", "Nessun ruolo assegnato") : "Nessun ruolo assegnato"}</span>`;
   if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
     rolesHtml = user.roles.map(r => `
       <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-mono font-semibold mr-2 mb-2 shadow-sm" style="background: rgba(168, 85, 247, 0.18); color: #EADDFF; border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">
@@ -284,8 +294,8 @@ function displayUserData(user) {
   const hasMfaMethods = mfaMethods.length > 0;
 
   const mfaStatus = isMfaActive 
-    ? '<span class="px-3 py-1 text-xs font-semibold" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 9999px;">ATTIVA</span>' 
-    : '<span class="px-3 py-1 text-xs font-semibold" style="background: rgba(255, 255, 255, 0.08); color: #9CA3AF; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 9999px;">DISATTIVATA</span>';
+    ? `<span class="px-3 py-1 text-xs font-semibold" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 9999px;">${typeof t === 'function' ? t("user_detail_active_f", "ATTIVA") : "ATTIVA"}</span>` 
+    : `<span class="px-3 py-1 text-xs font-semibold" style="background: rgba(255, 255, 255, 0.08); color: #9CA3AF; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 9999px;">${typeof t === 'function' ? t("user_detail_disabled_f", "DISATTIVATA") : "DISATTIVATA"}</span>`;
 
   let mfaMethodsHtml = "";
   if (hasMfaMethods) {
@@ -303,11 +313,11 @@ function displayUserData(user) {
                   <span class="text-[10px] font-mono px-2 py-0.5 rounded-full" style="background: rgba(168, 85, 247, 0.15); color: #D0BCFF; border: 1px solid rgba(208, 188, 255, 0.2);">${m.type || 'TOTP'}</span>
                 </div>
                 <div class="text-xs text-gray-400 mt-1 flex flex-wrap items-center gap-2">
-                  <span>Stato:</span>
+                  <span>${typeof t === 'function' ? t("user_detail_state", "Stato:") : "Stato:"}</span>
                   ${m.confirmed !== false
-                    ? '<span class="text-emerald-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-check text-[11px]"></i> Confermato</span>'
-                    : '<span class="text-amber-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-clock text-[11px]"></i> In attesa di verifica</span>'}
-                  ${m.creationDate ? `<span class="text-gray-500">• Configurato il ${typeof formatDateIntl === 'function' ? formatDateIntl(m.creationDate) : m.creationDate}</span>` : ''}
+                    ? `<span class="text-emerald-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-check text-[11px]"></i> ${typeof t === 'function' ? t("user_detail_state_confirmed", "Confermato") : "Confermato"}</span>`
+                    : `<span class="text-amber-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-clock text-[11px]"></i> ${typeof t === 'function' ? t("user_detail_state_pending", "In attesa di verifica") : "In attesa di verifica"}</span>`}
+                  ${m.creationDate ? `<span class="text-gray-500">• ${typeof t === 'function' ? t("user_detail_configured_on", "Configurato il") : "Configurato il"} ${typeof formatDateIntl === 'function' ? formatDateIntl(m.creationDate) : m.creationDate}</span>` : ''}
                 </div>
               </div>
             </div>
@@ -315,7 +325,7 @@ function displayUserData(user) {
             <div class="flex items-center justify-end gap-2.5">
               ${m.confirmed === false ? `
                 <button type="button" onclick="finishMfaVerification('${user.identifier}', '${(m.label || '').replace(/'/g, "\\'")}', '${m.type || 'totp'}')" class="m3-btn-primary text-xs py-1.5 px-3.5 flex items-center gap-1.5 shadow-md cursor-pointer" style="border-radius: 9999px !important; color: #FFFFFF !important;" title="Inserisci il codice OTP per completare la verifica">
-                  <i class="fa-solid fa-circle-check text-xs"></i> <span>Completa Verifica</span>
+                  <i class="fa-solid fa-circle-check text-xs"></i> <span>${typeof t === 'function' ? t("user_detail_complete_verify", "Completa Verifica") : "Completa Verifica"}</span>
                 </button>
               ` : ''}
               <button type="button" onclick="deleteMfaMethod('${user.identifier}', '${(m.label || '').replace(/'/g, "\\'")}')" class="m3-icon-btn m3-icon-btn-danger" title="Elimina Metodo MFA">
@@ -330,10 +340,10 @@ function displayUserData(user) {
     mfaMethodsHtml = `
       <div class="p-6 text-center rounded-2xl" style="background: rgba(26, 20, 42, 0.5); border: 1px dashed rgba(208, 188, 255, 0.2);">
         <i class="fa-solid fa-shield-virus text-3xl text-purple-400/50 mb-2 block"></i>
-        <p class="text-sm text-gray-300 font-medium m-0">Nessun metodo di autenticazione a due fattori configurato.</p>
-        <p class="text-xs text-gray-400 mt-1 mb-4">Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account.</p>
+        <p class="text-sm text-gray-300 font-medium m-0">${typeof t === 'function' ? t("user_detail_no_mfa", "Nessun metodo di autenticazione a due fattori configurato.") : "Nessun metodo di autenticazione a due fattori configurato."}</p>
+        <p class="text-xs text-gray-400 mt-1 mb-4">${typeof t === 'function' ? t("user_detail_no_mfa_desc", "Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account.") : "Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account."}</p>
         <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-5 inline-flex items-center gap-2 text-decoration-none shadow-md" style="border-radius: 9999px !important; color: #FFFFFF !important;">
-          <i class="fa-solid fa-qrcode"></i> <span style="color: #FFFFFF !important;">Configura MFA Ora</span>
+          <i class="fa-solid fa-qrcode"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_setup_mfa", "Configura MFA Ora") : "Configura MFA Ora"}</span>
         </a>
       </div>
     `;
@@ -351,7 +361,7 @@ function displayUserData(user) {
             class="w-36 h-36 rounded-full object-cover shadow-2xl"
             style="border: 4px solid rgba(208, 188, 255, 0.25);"
           />
-          <span class="absolute bottom-2 right-2 w-5 h-5 rounded-full ${isBlocked ? 'bg-red-500' : 'bg-emerald-400'}" style="border: 2px solid #171324;" title="${isBlocked ? 'Bloccato' : 'Attivo'}"></span>
+          <span class="absolute bottom-2 right-2 w-5 h-5 rounded-full ${isBlocked ? 'bg-red-500' : 'bg-emerald-400'}" style="border: 2px solid #171324;" title="${isBlocked ? (typeof t === 'function' ? t('user_detail_blocked', 'Bloccato') : 'Bloccato') : (typeof t === 'function' ? t('user_detail_active', 'Attivo') : 'Attivo')}"></span>
         </div>
 
         <h3 class="text-2xl font-bold text-white mb-1">${user.name || ""} ${user.surname || ""}</h3>
@@ -361,16 +371,16 @@ function displayUserData(user) {
         <!-- Box UUID ed Email SENZA BORDO BIANCO -->
         <div class="w-full p-4 text-left text-xs text-gray-300 space-y-3 mb-6" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">
           <div>
-            <span class="block text-[11px] uppercase font-semibold mb-0.5" style="color: #C4B5FD;">UUID Utente</span>
+            <span class="block text-[11px] uppercase font-semibold mb-0.5" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_detail_uuid", "UUID Utente") : "UUID Utente"}</span>
             <span class="font-mono text-purple-200 text-xs break-all select-all block leading-relaxed">${user.identifier || "N/D"}</span>
           </div>
           <div style="border-top: 1px solid rgba(208, 188, 255, 0.12); padding-top: 10px;">
-            <span class="block text-[11px] uppercase font-semibold mb-0.5" style="color: #C4B5FD;">Email</span>
+            <span class="block text-[11px] uppercase font-semibold mb-0.5" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_email", "Email") : "Email"}</span>
             <span class="text-white text-xs break-all select-all block leading-relaxed">${user.email || "N/D"}</span>
           </div>
           <div class="flex items-center justify-between" style="border-top: 1px solid rgba(208, 188, 255, 0.12); padding-top: 10px;">
-            <span class="text-[11px] uppercase font-semibold" style="color: #C4B5FD;">Account Confermato</span>
-            <span class="${isConfirmed ? 'text-emerald-300' : 'text-yellow-300'} font-semibold text-xs">${isConfirmed ? 'Sì' : 'In attesa'}</span>
+            <span class="text-[11px] uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_detail_confirmed", "Account Confermato") : "Account Confermato"}</span>
+            <span class="${isConfirmed ? 'text-emerald-300' : 'text-yellow-300'} font-semibold text-xs">${isConfirmed ? (typeof t === 'function' ? t("user_detail_yes", "Sì") : "Sì") : (typeof t === 'function' ? t("user_detail_waiting", "In attesa") : "In attesa")}</span>
           </div>
         </div>
 
@@ -378,31 +388,31 @@ function displayUserData(user) {
         <div class="space-y-2.5 w-full">
           <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-primary m3-action-pill w-full justify-center py-2.5 px-4 text-decoration-none shadow-lg hover:brightness-110 transition-all" style="border-radius: 9999px !important; color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">
             <i class="fa-solid fa-user-pen text-sm"></i>
-            <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Modifica Profilo</span>
+            <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_edit_profile", "Modifica Profilo") : "Modifica Profilo"}</span>
           </a>
           
           <div class="grid grid-cols-2 gap-2.5 w-full">
             <a href="/app/users/roles/${encodeURIComponent(user.identifier)}" class="m3-action-pill py-2.5 px-3 text-center text-decoration-none shadow-sm hover:brightness-110 transition-all" style="background: rgba(168, 85, 247, 0.18); color: #FFFFFF !important; border: 1px solid rgba(208, 188, 255, 0.3); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;">
               <i class="fa-solid fa-shield-halved text-sm" style="color: #D0BCFF;"></i>
-              <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Ruoli</span>
+              <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_roles_btn", "Ruoli") : "Ruoli"}</span>
             </a>
             
             ${isBlocked ? `
-              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', false)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(16, 185, 129, 0.18); color: #FFFFFF !important; border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="Sblocca Utente">
+              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', false)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(16, 185, 129, 0.18); color: #FFFFFF !important; border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_unlock_btn", "Sblocca") : "Sblocca"}">
                 <i class="fa-solid fa-lock-open text-sm" style="color: #6EE7B7;"></i>
-                <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Sblocca</span>
+                <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_unlock_btn", "Sblocca") : "Sblocca"}</span>
               </button>
             ` : `
-              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', true)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(245, 158, 11, 0.18); color: #FFFFFF !important; border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="Blocca Utente">
+              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', true)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(245, 158, 11, 0.18); color: #FFFFFF !important; border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_lock_btn", "Blocca") : "Blocca"}">
                 <i class="fa-solid fa-lock text-sm" style="color: #FCD34D;"></i>
-                <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Blocca</span>
+                <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_lock_btn", "Blocca") : "Blocca"}</span>
               </button>
             `}
           </div>
 
-          <button onclick="deleteUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}')" class="m3-action-pill w-full py-2.5 px-4 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(239, 68, 68, 0.15); color: #FFFFFF !important; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="Elimina Utente">
+          <button onclick="deleteUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}')" class="m3-action-pill w-full py-2.5 px-4 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(239, 68, 68, 0.15); color: #FFFFFF !important; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}">
             <i class="fa-solid fa-trash text-sm" style="color: #F87171;"></i>
-            <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">Elimina</span>
+            <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}</span>
           </button>
         </div>
 
@@ -413,56 +423,56 @@ function displayUserData(user) {
         
         <div class="m3-card p-5 sm:p-8">
           <h4 class="text-xl font-bold text-white mb-6 flex items-center gap-2.5 pb-4" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
-            <i class="fa-solid fa-id-card text-purple-400"></i> Informazioni Anagrafiche Complete
+            <i class="fa-solid fa-id-card text-purple-400"></i> ${typeof t === 'function' ? t("user_detail_full_info", "Informazioni Anagrafiche Complete") : "Informazioni Anagrafiche Complete"}
           </h4>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Nome</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_name", "Nome") : "Nome"}</span>
               <div class="text-white font-medium text-base mt-1">${user.name || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Cognome</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_surname", "Cognome") : "Cognome"}</span>
               <div class="text-white font-medium text-base mt-1">${user.surname || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Username</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_username", "Username") : "Username"}</span>
               <div class="text-purple-300 font-medium text-base mt-1 font-mono">@${user.username || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Indirizzo Email</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_email", "Email") : "Email"}</span>
               <div class="text-white font-medium text-base mt-1">${user.email || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Telefono</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_detail_phone", "Telefono") : "Telefono"}</span>
               <div class="text-white font-medium text-base mt-1 font-mono">${user.phoneNumber || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Data di Nascita</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_birthdate", "Data di Nascita") : "Data di Nascita"}</span>
               <div class="text-white font-medium text-base mt-1">${user.birthDate || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Genere</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_gender", "Genere") : "Genere"}</span>
               <div class="text-white font-medium text-base mt-1">${user.gender || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Nazionalità</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_nationality", "Nazionalità") : "Nazionalità"}</span>
               <div class="text-white font-medium text-base mt-1">${user.nationality || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Codice Fiscale / SSN</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_ssn", "Codice Fiscale / SSN") : "Codice Fiscale / SSN"}</span>
               <div class="text-white font-medium text-base mt-1 font-mono">${user.ssn || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Occupazione</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_occupation", "Occupazione") : "Occupazione"}</span>
               <div class="text-white font-medium text-base mt-1">${user.occupation || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Istruzione</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_education", "Istruzione") : "Istruzione"}</span>
               <div class="text-white font-medium text-base mt-1">${user.education || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">Sicurezza 2FA (MFA)</span>
+              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_detail_mfa_sec", "Sicurezza 2FA (MFA)") : "Sicurezza 2FA (MFA)"}</span>
               <div class="mt-1">${mfaStatus}</div>
             </div>
           </div>
@@ -472,10 +482,10 @@ function displayUserData(user) {
         <div class="m3-card p-5 sm:p-8">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
             <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
-              <i class="fa-solid fa-user-shield text-purple-400"></i> Ruoli Applicativi (RBAC)
+              <i class="fa-solid fa-user-shield text-purple-400"></i> ${typeof t === 'function' ? t("user_detail_rbac_title", "Ruoli Applicativi (RBAC)") : "Ruoli Applicativi (RBAC)"}
             </h4>
             <a href="/app/users/roles/${user.identifier}" class="m3-btn-primary text-xs py-2 px-5 text-decoration-none shadow-md w-full sm:w-auto justify-center" style="border-radius: 9999px !important; color: #FFFFFF !important;">
-              <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">Gestisci Ruoli</span>
+              <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_manage_roles", "Gestisci Ruoli") : "Gestisci Ruoli"}</span>
             </a>
           </div>
           <div class="flex flex-wrap pt-2">
@@ -488,24 +498,24 @@ function displayUserData(user) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
             <div class="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
               <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
-                <i class="fa-solid fa-shield-halved text-purple-400"></i> Autenticazione a Due Fattori (MFA)
+                <i class="fa-solid fa-shield-halved text-purple-400"></i> ${typeof t === 'function' ? t("user_detail_mfa_title", "Autenticazione a Due Fattori (MFA)") : "Autenticazione a Due Fattori (MFA)"}
               </h4>
               ${isMfaActive
-                ? '<span class="px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35);">ATTIVA</span>'
-                : '<span class="px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0" style="background: rgba(255, 255, 255, 0.08); color: #9CA3AF; border: 1px solid rgba(255, 255, 255, 0.15);">DISATTIVATA</span>'}
+                ? `<span class="px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35);">${typeof t === 'function' ? t("user_detail_active_f", "ATTIVA") : "ATTIVA"}</span>`
+                : `<span class="px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0" style="background: rgba(255, 255, 255, 0.08); color: #9CA3AF; border: 1px solid rgba(255, 255, 255, 0.15);">${typeof t === 'function' ? t("user_detail_disabled_f", "DISATTIVATA") : "DISATTIVATA"}</span>`}
             </div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               ${isMfaActive ? `
-                <button type="button" onclick="toggleMfaStatus('${user.identifier}', false)" class="m3-btn-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" style="color: #FCD34D !important; border-color: rgba(245, 158, 11, 0.4) !important;" title="Disattiva Autenticazione a Due Fattori">
-                  <i class="fa-solid fa-power-off text-xs" style="color: #FCD34D;"></i> Disattiva MFA
+                <button type="button" onclick="toggleMfaStatus('${user.identifier}', false)" class="m3-btn-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" style="color: #FCD34D !important; border-color: rgba(245, 158, 11, 0.4) !important;" title="${typeof t === 'function' ? t("user_detail_disable_mfa", "Disattiva MFA") : "Disattiva MFA"}">
+                  <i class="fa-solid fa-power-off text-xs" style="color: #FCD34D;"></i> ${typeof t === 'function' ? t("user_detail_disable_mfa", "Disattiva MFA") : "Disattiva MFA"}
                 </button>
               ` : (hasMfaMethods ? `
-                <button type="button" onclick="toggleMfaStatus('${user.identifier}', true)" class="m3-btn-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" style="color: #6EE7B7 !important; border-color: rgba(16, 185, 129, 0.4) !important;" title="Attiva Autenticazione a Due Fattori">
-                  <i class="fa-solid fa-toggle-on text-xs" style="color: #6EE7B7;"></i> Attiva MFA
+                <button type="button" onclick="toggleMfaStatus('${user.identifier}', true)" class="m3-btn-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" style="color: #6EE7B7 !important; border-color: rgba(16, 185, 129, 0.4) !important;" title="${typeof t === 'function' ? t("user_detail_enable_mfa", "Attiva MFA") : "Attiva MFA"}">
+                  <i class="fa-solid fa-toggle-on text-xs" style="color: #6EE7B7;"></i> ${typeof t === 'function' ? t("user_detail_enable_mfa", "Attiva MFA") : "Attiva MFA"}
                 </button>
               ` : '')}
               <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-4 text-decoration-none shadow-md justify-center flex items-center gap-1.5" style="border-radius: 9999px !important; color: #FFFFFF !important;">
-                <i class="fa-solid fa-plus text-xs"></i> <span style="color: #FFFFFF !important;">Configura Metodo</span>
+                <i class="fa-solid fa-plus text-xs"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_config_method", "Configura Metodo") : "Configura Metodo"}</span>
               </a>
             </div>
           </div>
@@ -518,10 +528,10 @@ function displayUserData(user) {
         <div class="m3-card p-5 sm:p-8">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-5 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
             <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
-              <i class="fa-solid fa-sliders text-purple-400"></i> Attributi Personalizzati
+              <i class="fa-solid fa-sliders text-purple-400"></i> ${typeof t === 'function' ? t("user_detail_custom_attributes", "Attributi Personalizzati") : "Attributi Personalizzati"}
             </h4>
             <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2 px-3.5 text-decoration-none" style="color: #D0BCFF !important; border-color: rgba(208, 188, 255, 0.3) !important;">
-              <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">Modifica Attributi</span>
+              <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_edit_attributes", "Modifica Attributi") : "Modifica Attributi"}</span>
             </a>
           </div>
           <div>

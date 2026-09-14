@@ -153,7 +153,9 @@ function registerUser(userForm, clients) {
   }
 
   if (!userClient) {
-    return sweetalert("error", "Errore Client", "Seleziona un Client ID valido per proseguire.");
+    const errorTitle = typeof t === "function" ? t("swal_client_select_error_title", "Errore Client") : "Errore Client";
+    const errorDesc = typeof t === "function" ? t("swal_client_select_error_desc", "Seleziona un Client ID valido per proseguire.") : "Seleziona un Client ID valido per proseguire.";
+    return sweetalert("error", errorTitle, errorDesc);
   }
 
   const registrationUrl =

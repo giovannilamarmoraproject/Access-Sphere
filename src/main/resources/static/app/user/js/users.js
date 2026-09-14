@@ -105,8 +105,8 @@ function displayUsersTable(users) {
   users.forEach((user) => {
     const photo = getOrDefault(user.profilePhoto, "https://bootdey.com/img/Content/avatar/avatar7.png");
     const statusBadge = user.blocked
-      ? "<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30'>BLOCKED</span>"
-      : "<span class='px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'>ACTIVE</span>";
+      ? `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30'>${typeof t === 'function' ? t('user_status_blocked', 'BLOCCATO') : 'BLOCKED'}</span>`
+      : `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'>${typeof t === 'function' ? t('user_status_active', 'ATTIVO') : 'ACTIVE'}</span>`;
 
     const tr = document.createElement("tr");
     tr.style.height = "56px";
@@ -129,13 +129,13 @@ function displayUsersTable(users) {
       <td class="hidden-mobile text-gray-300">${user.email || ""}</td>
       <td>${statusBadge}</td>
       <td class="text-center" style="min-width: 130px;">
-        <a class="m3-action-btn m3-action-edit" title="Modifica Utente" href="/app/users/edit/${encodeURIComponent(user.identifier)}">
+        <a class="m3-action-btn m3-action-edit" title="${typeof t === 'function' ? t('user_btn_edit', 'Modifica Utente') : 'Modifica Utente'}" href="/app/users/edit/${encodeURIComponent(user.identifier)}">
           <i class="fa-solid fa-user-pen text-xs"></i>
         </a>
-        <a class="m3-action-btn m3-action-role" title="Gestisci Ruoli" href="/app/users/roles/${encodeURIComponent(user.identifier)}">
+        <a class="m3-action-btn m3-action-role" title="${typeof t === 'function' ? t('user_btn_manage_roles', 'Gestisci Ruoli') : 'Gestisci Ruoli'}" href="/app/users/roles/${encodeURIComponent(user.identifier)}">
           <i class="fa-solid fa-shield-halved text-xs"></i>
         </a>
-        <button class="m3-action-btn m3-action-delete" title="Elimina Utente" onclick="event.stopPropagation(); deleteUser('${user.identifier}','${user.username}')">
+        <button class="m3-action-btn m3-action-delete" title="${typeof t === 'function' ? t('user_btn_delete', 'Elimina Utente') : 'Elimina Utente'}" onclick="event.stopPropagation(); deleteUser('${user.identifier}','${user.username}')">
           <i class="fa-solid fa-trash text-xs"></i>
         </button>
       </td>
@@ -147,14 +147,16 @@ function displayUsersTable(users) {
     pageLength: 10,
     responsive: true,
     language: {
-      search: "Cerca utente:",
-      lengthMenu: "Mostra _MENU_ utenti",
-      info: "Visualizzati _START_ a _END_ di _TOTAL_ utenti",
+      search: typeof t === "function" ? t("dt_search_users", "Cerca utente:") : "Cerca utente:",
+      lengthMenu: typeof t === "function" ? t("dt_length_users", "Mostra _MENU_ utenti") : "Mostra _MENU_ utenti",
+      info: typeof t === "function" ? t("dt_info_users", "Visualizzati _START_ a _END_ di _TOTAL_ utenti") : "Visualizzati _START_ a _END_ di _TOTAL_ utenti",
+      infoEmpty: typeof t === "function" ? t("dt_info_empty", "Nessun dato presente") : "Nessun dato presente",
+      zeroRecords: typeof t === "function" ? t("dt_zero_records", "Nessun risultato trovato") : "Nessun risultato trovato",
       paginate: {
-        first: "Primo",
-        last: "Ultimo",
-        next: "Succ.",
-        previous: "Prec."
+        first: typeof t === "function" ? t("dt_first", "Primo") : "Primo",
+        last: typeof t === "function" ? t("dt_last", "Ultimo") : "Ultimo",
+        next: typeof t === "function" ? t("dt_next", "Succ.") : "Succ.",
+        previous: typeof t === "function" ? t("dt_prev", "Prec.") : "Prec."
       }
     }
   });
@@ -172,3 +174,10 @@ function displayUsersTable(users) {
 
   updateUserKpis(users);
 }
+
+// Re-render users table on language changed
+window.addEventListener("languageChanged", () => {
+  if (cachedUsers && cachedUsers.length > 0) {
+    displayUsersTable(cachedUsers);
+  }
+});
