@@ -875,20 +875,21 @@ textarea {
   border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.25) !important;
 }
 
-/* Righe card fluttuanti ESCLUSIVAMENTE per le tabelle DataTables principali */
+/* Righe card ESCLUSIVAMENTE per le tabelle DataTables principali.
+   box-shadow RIMOSSO: l'ombra 3D creava gap scuri tra righe adiacenti (Foto 2). */
 [data-theme] table.dataTable:not(.repeater-table) tbody tr:not(.dt-empty):not(.dataTables_empty) {
   background-color: rgba(var(--theme-surface-rgb), 0.88) !important;
   border: 1px solid rgba(var(--theme-accent-rgb), 0.14) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: none !important;
   transition: all 0.2s ease !important;
 }
 
-/* Hover sobrio ed elegante per DataTables (Foto 1 - Ripristino effetto precedente senza bagliore/glow) */
+/* Hover sobrio: leggera elevazione e tinta primaria, senza ombre tra righe */
 [data-theme] table.dataTable:not(.repeater-table) tbody tr:not(.dt-empty):not(.dataTables_empty):hover {
   background-color: rgba(var(--theme-primary-rgb), 0.24) !important;
   border-color: rgba(var(--theme-accent-rgb), 0.4) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: none !important;
 }
 
 [data-theme] table.dataTable tbody td {
@@ -918,12 +919,14 @@ textarea {
   transform: none !important;
 }
 
+/* Intestazioni repeater-table: nessun border-bottom per evitare
+   il doppio divisore quando segue un .detail-card-title con border-bottom proprio */
 [data-theme] table.repeater-table th,
 [data-theme] .table.repeater-table th {
   background: transparent !important;
   color: var(--theme-accent) !important;
   border-top: none !important;
-  border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.2) !important;
+  border-bottom: none !important;
   box-shadow: none !important;
 }
 

@@ -453,11 +453,20 @@ table.dataTable thead th {
   padding: 14px 18px !important;
 }
 
-/* DARK TABLE ROWS - NO WHITE ROW ANYMORE */
+/* =======================================================
+   DARK TABLE ROWS
+   =======================================================
+   Righe scure per le DataTables principali (Utenti, Client).
+   - Sfondo superficie scuro (0.88 opacity) per garantire contrasto con il body.
+   - Bordo sottile d'accento (0.14 opacity) per delimitare le righe senza essere invasivo.
+   - box-shadow RIMOSSO: l'ombra 3D tra righe adiacenti creava spazi scuri/gap
+     indesiderati tra un elemento e l'altro (vedi Foto 2).
+   - Transizione morbida per hover fluido.
+   ======================================================= */
 table.dataTable tbody tr {
   background-color: rgba(var(--theme-surface-rgb, 26, 21, 40), 0.88) !important;
   border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.14) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: none !important;
   transition: all 0.2s ease !important;
 }
 

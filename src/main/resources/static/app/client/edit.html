@@ -97,13 +97,14 @@
       background-color: transparent !important;
       color: #FFFFFF !important;
     }
+    /* Intestazioni repeater-table: nessun border-bottom per evitare il doppio divisore */
     .table.repeater-table th {
       color: var(--theme-accent, #D0BCFF) !important;
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 700;
       padding: 10px 14px;
-      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.22) !important;
+      border-bottom: none !important;
       background: transparent !important;
     }
     .table.repeater-table td {

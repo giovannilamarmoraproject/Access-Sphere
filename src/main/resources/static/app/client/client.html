@@ -102,13 +102,15 @@
       background-color: transparent !important;
       color: #FFFFFF !important;
     }
+    /* Intestazioni repeater-table: nessun border-bottom per evitare
+       il doppio divisore visivo con il border del .detail-card-title soprastante (Foto 1) */
     .table.repeater-table th {
       color: var(--theme-accent, #D0BCFF) !important;
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 700;
       padding: 10px 14px;
-      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.22) !important;
+      border-bottom: none !important;
       background: transparent !important;
     }
     .table.repeater-table td {
@@ -129,6 +131,16 @@
       color: #E2E8F0 !important;
       line-height: 1.5;
     }
+    /* =======================================================
+       CAMPO SECRET MASCHERATO (.masked-input)
+       =======================================================
+       Visualizza il valore del secret come pallini (●) quando type="password".
+       - max-width limitato a 120px: mostra solo ~8 pallini, evitando la lunga
+         fila di punti che occupava tutta la larghezza del container (Foto 1).
+       - Il valore completo è comunque preservato nell'attributo value per la copia
+         e per la rivelazione tramite toggleMask (toggle password ⇌ text).
+       - overflow/text-overflow gestiscono il troncamento visivo.
+       ======================================================= */
     .masked-input {
       background: transparent;
       border: none;
@@ -137,6 +149,13 @@
       font-size: 0.8rem;
       outline: none;
       width: 100%;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Quando il campo è rivelato (type="text"), si espande al 100% per mostrare il valore intero */
+    .masked-input[type="text"] {
+      max-width: 100%;
     }
   </style>
 </head>
