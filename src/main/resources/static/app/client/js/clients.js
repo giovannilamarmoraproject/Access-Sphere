@@ -28,8 +28,8 @@ function renderRedirectUrisBadges(val) {
   return `
     <div class="flex flex-col gap-1.5 py-1 min-w-[240px] max-w-[480px]">
       ${uris.map(u => `
-        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-950/60 border border-purple-500/25 text-purple-200 text-xs font-mono group hover:border-purple-400/50 hover:bg-purple-900/40 transition-all">
-          <i class="fa-solid fa-link text-[10px] text-purple-400 shrink-0"></i>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg m3-uri-badge text-xs font-mono group transition-all">
+          <i class="fa-solid fa-link text-[10px] shrink-0"></i>
           <span class="break-all select-all leading-relaxed" title="${u}">${u}</span>
         </div>
       `).join('')}

@@ -536,10 +536,10 @@
                 ${redirectInfo.redirect_uris.length > 0 ? `
                   <div class="flex flex-col gap-2 mt-2">
                     ${redirectInfo.redirect_uris.map(u => `
-                      <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/20 hover:border-purple-400/40 transition-all group">
+                      <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl m3-uri-badge transition-all group">
                         <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                          <i class="fa-solid fa-link text-purple-400 text-xs shrink-0"></i>
-                          <span class="font-mono text-xs text-purple-200 break-all select-all">${u}</span>
+                          <i class="fa-solid fa-link text-xs shrink-0"></i>
+                          <span class="font-mono text-xs break-all select-all">${u}</span>
                         </div>
                         <button type="button" class="m3-icon-btn flex-shrink-0 opacity-80 group-hover:opacity-100" onclick="copyValue('${u}', 'Redirect URI')" title="Copia URI">
                           <i class="fa-solid fa-copy text-[11px]"></i>

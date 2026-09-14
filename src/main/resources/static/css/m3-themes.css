@@ -1046,6 +1046,202 @@ textarea {
   box-shadow: 0 0 10px var(--theme-glow) !important;
 }
 
+/* =======================================================
+   CLIENT REDIRECT URIS PALETTE (Foto 3)
+   ======================================================= */
+[data-theme] .m3-uri-badge {
+  background: rgba(var(--theme-surface-rgb), 0.75) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.25) !important;
+  color: var(--theme-accent) !important;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme] .m3-uri-badge:hover {
+  background: rgba(var(--theme-accent-rgb), 0.15) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.5) !important;
+}
+
+[data-theme] .m3-uri-badge i {
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] .bg-purple-950\/60,
+[data-theme] .bg-purple-950\/50,
+[data-theme] .bg-purple-950\/40 {
+  background-color: rgba(var(--theme-surface-rgb), 0.75) !important;
+}
+
+[data-theme] .border-purple-500\/25,
+[data-theme] .border-purple-500\/20 {
+  border-color: rgba(var(--theme-accent-rgb), 0.25) !important;
+}
+
+[data-theme] .hover\:border-purple-400\/50:hover,
+[data-theme] .hover\:border-purple-400\/40:hover {
+  border-color: var(--theme-accent) !important;
+}
+
+[data-theme] .hover\:bg-purple-900\/40:hover {
+  background-color: rgba(var(--theme-accent-rgb), 0.18) !important;
+}
+
+/* =======================================================
+   USER REGISTRATION & ATTRIBUTES ADAPTIVE PALETTE (Foto 4)
+   ======================================================= */
+/* Profile photo preview */
+[data-theme] #profile_placeholder {
+  background-color: rgba(var(--theme-accent-rgb), 0.08) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.3) !important;
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] #profile {
+  border-color: rgba(var(--theme-accent-rgb), 0.4) !important;
+  background-color: rgba(var(--theme-surface-rgb), 0.8) !important;
+}
+
+/* Segmented switch */
+[data-theme] .m3-segmented-switch {
+  background: rgba(var(--theme-surface-rgb), 0.9) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.25) !important;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Attributes empty state container */
+[data-theme] .m3-attr-empty-state {
+  background-color: rgba(var(--theme-surface-rgb), 0.5) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.22) !important;
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] .m3-attr-empty-state i {
+  color: var(--theme-accent) !important;
+}
+
+/* Nested Object Card */
+[data-theme] .m3-nested-card {
+  background: rgba(var(--theme-surface-rgb), 0.6) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.22) !important;
+}
+
+[data-theme] .m3-nested-card:hover {
+  border-color: rgba(var(--theme-accent-rgb), 0.45) !important;
+}
+
+/* JSON Code Editor */
+[data-theme] .json-code-editor {
+  background: var(--theme-input-bg, rgba(var(--theme-surface-rgb), 0.95)) !important;
+  border: 1.5px solid rgba(var(--theme-accent-rgb), 0.28) !important;
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] .json-code-editor:focus {
+  border-color: var(--theme-accent) !important;
+  box-shadow: 0 0 0 3px rgba(var(--theme-accent-rgb), 0.25) !important;
+}
+
+/* Outline Buttons adapt to theme */
+[data-theme] .m3-btn-outline,
+[data-theme] a.m3-btn-outline,
+[data-theme] button.m3-btn-outline {
+  border-color: rgba(var(--theme-accent-rgb), 0.3) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme] .m3-btn-outline:hover,
+[data-theme] a.m3-btn-outline:hover,
+[data-theme] button.m3-btn-outline:hover {
+  background: rgba(var(--theme-accent-rgb), 0.16) !important;
+  border-color: var(--theme-accent) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme] .m3-btn-outline i {
+  color: var(--theme-accent) !important;
+}
+
+/* =======================================================
+   SWEETALERT2 ADAPTIVE PALETTE & CONTROLS (Foto 5)
+   ======================================================= */
+[data-theme] .swal2-popup,
+[data-theme] .m3-swal-popup,
+[data-theme] .blur-effect {
+  background: rgba(var(--theme-surface-rgb), 0.94) !important;
+  border: 1.5px solid rgba(var(--theme-accent-rgb), 0.35) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 40px var(--theme-glow) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme] .swal2-title,
+[data-theme] .m3-swal-title {
+  color: #FFFFFF !important;
+}
+
+[data-theme] .swal2-html-container,
+[data-theme] .m3-swal-html {
+  color: #CAC4D0 !important;
+}
+
+[data-theme] .swal2-input,
+[data-theme] .swal2-textarea,
+[data-theme] .m3-swal-input {
+  background: var(--theme-input-bg, rgba(var(--theme-surface-rgb), 0.85)) !important;
+  border: 1.5px solid rgba(var(--theme-accent-rgb), 0.35) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme] .swal2-input:focus,
+[data-theme] .swal2-textarea:focus,
+[data-theme] .m3-swal-input:focus {
+  background: var(--theme-input-focus, rgba(var(--theme-surface-rgb), 0.95)) !important;
+  border-color: var(--theme-accent) !important;
+  box-shadow: 0 0 0 3px var(--theme-glow) !important;
+}
+
+[data-theme] .swal2-textarea {
+  color: var(--theme-accent) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+/* SweetAlert Buttons */
+[data-theme] .swal2-confirm,
+[data-theme] .m3-swal-confirm-btn {
+  background: var(--m3-primary-gradient) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 4px 16px var(--theme-glow) !important;
+}
+
+[data-theme] .swal2-confirm:hover,
+[data-theme] .m3-swal-confirm-btn:hover {
+  background: var(--theme-primary-hover-grad) !important;
+  box-shadow: 0 6px 24px var(--theme-glow) !important;
+}
+
+[data-theme] .swal2-cancel,
+[data-theme] .m3-swal-cancel-btn {
+  background: rgba(var(--theme-surface-rgb), 0.8) !important;
+  color: var(--theme-accent) !important;
+  border: 1.5px solid rgba(var(--theme-accent-rgb), 0.4) !important;
+}
+
+[data-theme] .swal2-cancel:hover,
+[data-theme] .m3-swal-cancel-btn:hover {
+  background: rgba(var(--theme-accent-rgb), 0.2) !important;
+  border-color: var(--theme-accent) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme] .swal2-close {
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] .swal2-close:hover {
+  color: #FFFFFF !important;
+  background: rgba(var(--theme-accent-rgb), 0.2) !important;
+}
+
 /* Helpers */
 .theme-accent-bg {
   background-color: var(--theme-primary) !important;
@@ -1056,3 +1252,4 @@ textarea {
 .theme-glow-box {
   box-shadow: 0 0 25px var(--theme-glow) !important;
 }
+

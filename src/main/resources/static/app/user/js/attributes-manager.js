@@ -112,8 +112,8 @@ function renderAttributesTable() {
     const btnExample = typeof t === "function" ? t("user_attr_btn_example", "Carica Esempio") : "Carica Esempio";
 
     container.innerHTML = `
-      <div class="p-6 text-center text-purple-300/80 rounded-2xl border border-purple-500/20 bg-[#161124]/40">
-        <i class="fa-solid fa-sliders text-2xl text-purple-400/60 mb-2 block"></i>
+      <div class="p-6 text-center m3-attr-empty-state rounded-2xl border border-purple-500/20 bg-[#161124]/40">
+        <i class="fa-solid fa-sliders text-2xl mb-2 block"></i>
         <p class="text-xs">${emptyDesc}</p>
         <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
           <button type="button" class="m3-btn-primary text-xs" onclick="addAttributeRow()">

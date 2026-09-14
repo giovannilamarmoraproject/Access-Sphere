@@ -659,7 +659,15 @@
         input: "textarea",
         inputValue: JSON.stringify(webhooksList, null, 2),
         inputAttributes: {
-          style: "height: 200px; font-family: monospace; font-size: 11px; background: var(--theme-input-bg, #181427); color: var(--theme-accent, #D0BCFF);"
+          style: "height: 220px; font-family: monospace; font-size: 11px; background: var(--theme-input-bg, #181427); color: var(--theme-accent, #D0BCFF); border: 1.5px solid rgba(var(--theme-accent-rgb, 168, 85, 247), 0.35); border-radius: 14px; resize: vertical;",
+          spellcheck: "false",
+          autocomplete: "off",
+          autocorrect: "off",
+          autocapitalize: "off",
+          "data-gramm": "false",
+          "data-gramm_editor": "false",
+          "data-enable-grammarly": "false",
+          "data-ms-editor": "false"
         },
         showCancelButton: true,
         confirmButtonText: (typeof t === 'function' ? t("swal_save_json_btn", "Salva JSON") : "Salva JSON"),

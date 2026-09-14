@@ -71,4 +71,7 @@ public class AppSettingsEntity extends GenericEntity {
 
   @Column(name = "SUPPORT_EMAIL")
   private String supportEmail = "support@accesssphere.io";
+
+  @Column(name = "HIDE_HOME_BUTTON")
+  private Boolean hideHomeButton = false;
 }

@@ -75,6 +75,14 @@ const AppSettings = (function () {
       document.querySelectorAll(".app-brand-name").forEach((el) => {
         el.textContent = settings.appName;
       });
+      const loginTitle = document.getElementById("login_page_title");
+      if (loginTitle) {
+        loginTitle.textContent = settings.appName;
+      }
+      const loginTabTitle = document.getElementById("login_page_tab_title");
+      if (loginTabTitle) {
+        loginTabTitle.textContent = `${settings.appName} - Login`;
+      }
     }
 
     // 2. Logo
@@ -112,12 +120,12 @@ const AppSettings = (function () {
 
     // 4. Footer Copyright
     if (settings.footerCopyright) {
-      document.querySelectorAll(".app-footer-copyright").forEach((el) => {
+      document.querySelectorAll(".app-footer-copyright, .footer_copyright_text").forEach((el) => {
         el.innerHTML = settings.footerCopyright;
       });
     }
 
-    // 5. Login Page Background / Showcase Mode
+    // 5. Login Page Background / Showcase Mode & Home Button
     applyLoginCustomization(settings);
   }
 
@@ -194,6 +202,12 @@ const AppSettings = (function () {
       const heroDesc = document.getElementById("login-hero-desc");
       if (heroDesc) heroDesc.innerHTML = settings.loginHeroSubtitle;
     }
+
+    // Gestione visibilità pulsante "Torna alla Home"
+    const homeBtns = document.querySelectorAll(".showcase-home-btn, .showcase-mobile-home-btn");
+    homeBtns.forEach((btn) => {
+      btn.style.display = settings.hideHomeButton ? "none" : "";
+    });
   }
 
   function getAuthToken() {

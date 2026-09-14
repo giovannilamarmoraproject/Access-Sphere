@@ -224,6 +224,8 @@
   "bg_dimming_label": "Background Dimming Level (%)",
   "bg_preview_label": "Background Preview:",
   "preview_badge": "Preview",
+  "settings_hide_home_btn_title": "Hide \"Back to Home\" Button",
+  "settings_hide_home_btn_desc": "Hides the button to return to the home page from the login screen.",
   "settings_card_brand_title": "Branding & Platform Identity",
   "settings_card_brand_desc": "Change the application name, logo, and favicon to fully white-label the platform.",
   "app_name_label": "Application Name",
