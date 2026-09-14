@@ -286,15 +286,38 @@ body {
   border-color: rgba(var(--theme-accent-rgb), 0.55) !important;
 }
 
-/* Dashboard Navigation Tabs */
+/* =======================================================
+   DASHBOARD NAVIGATION TABS (M3 Header Tabs)
+   =======================================================
+   Garantisce che i tab di navigazione nell'header rimangano perfettamente nitidi:
+   - .nav-tab-m3.active: pillola attiva nello stile Material 3, con colore di sfondo
+     primario del tema e testo on-primary ad altissima leggibilità. Usa un'ombra
+     scura sobria (0 2px 6px rgba(0,0,0,0.28)) ed elimina completamente 'var(--theme-glow)'
+     che causava l'alone sfuocato/nebbioso visibile in Foto 2.
+   - .nav-tab-m3:hover: stato hover pulito con accento semitrasparente (0.12), bordo
+     di accento leggero, testo bianco brillante e 'box-shadow: none' assoluto.
+   ======================================================= */
 .nav-tab-m3.active {
   background: var(--md-primary) !important;
   color: var(--md-on-primary) !important;
-  box-shadow: 0 2px 12px var(--theme-glow) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28) !important;
+  border-color: transparent !important;
+}
+
+.nav-tab-m3.active:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.38) !important;
+  opacity: 0.96;
+}
+
+.nav-tab-m3:not(.active):hover {
+  background: rgba(var(--theme-accent-rgb), 0.12) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.25) !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
 }
 
 .nav-tab-m3:hover {
-  background: rgba(var(--theme-accent-rgb), 0.12) !important;
+  box-shadow: none !important;
 }
 
 /* Circular Icon Buttons */
@@ -830,35 +853,104 @@ textarea {
 }
 
 /* =======================================================
-   TABLES & DATATABLES ADAPTIVE THEME (Foto 3)
+   TABLES & DATATABLES ADAPTIVE THEME
+   =======================================================
+   Gestione coordinata e gerarchica delle tabelle dell'applicazione:
+   1. DataTables Principali (Overview, Utenti IAM, Client OAuth2):
+      - thead th: intestazioni trasparenti con colore accento e separatore leggero.
+      - tbody tr: schede fluttuanti isolate (.m3-card style) con colore superficie
+        del tema attivo, bordo tenue ed elevazione scura sobria.
+      - tbody tr:hover (Fix Foto 1): ripristinato l'effetto hover precedente sobrio ed elegante,
+        con lieve elevazione (translateY(-1px)), tinta primaria morbida (0.24) ed
+        esclusione totale di 'var(--theme-glow)' o aloni sfocati/nebbiosi violenti.
+      - Righe vuote (empty state): completamente trasparenti senza bordo né ombre.
+   2. Tabelle Repeater & Dettagli (Ruoli, Webhooks, Attributi) (Fix Foto 3):
+      - Escluse esplicitamente dal layout a schede: le righe rimangono 100% trasparenti,
+        senza riquadri scuri, senza bordi marcati e senza evidenziazioni al passaggio del mouse.
+      - Lo stato vuoto (.repeater-empty-state) non mostra alcun rettangolo di highlight.
    ======================================================= */
-[data-theme] table.dataTable thead th,
-[data-theme] .table thead th,
-[data-theme] .m3-table thead th {
+[data-theme] table.dataTable:not(.repeater-table) thead th {
   background-color: transparent !important;
   color: var(--theme-accent) !important;
   border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.25) !important;
 }
 
-[data-theme] table.dataTable tbody tr,
-[data-theme] .table tbody tr,
-[data-theme] .m3-table tbody tr {
-  background-color: rgba(var(--theme-surface-rgb), 0.85) !important;
-  border: 1px solid rgba(var(--theme-accent-rgb), 0.16) !important;
+/* Righe card fluttuanti ESCLUSIVAMENTE per le tabelle DataTables principali */
+[data-theme] table.dataTable:not(.repeater-table) tbody tr:not(.dt-empty):not(.dataTables_empty) {
+  background-color: rgba(var(--theme-surface-rgb), 0.88) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.14) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
 }
 
-[data-theme] table.dataTable tbody tr:hover,
-[data-theme] .table tbody tr:hover,
-[data-theme] .m3-table tbody tr:hover {
-  background-color: rgba(var(--theme-primary-rgb), 0.18) !important;
+/* Hover sobrio ed elegante per DataTables (Foto 1 - Ripristino effetto precedente senza bagliore/glow) */
+[data-theme] table.dataTable:not(.repeater-table) tbody tr:not(.dt-empty):not(.dataTables_empty):hover {
+  background-color: rgba(var(--theme-primary-rgb), 0.24) !important;
   border-color: rgba(var(--theme-accent-rgb), 0.4) !important;
-  box-shadow: 0 4px 20px -4px var(--theme-glow) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 
-[data-theme] table.dataTable tbody td,
-[data-theme] .table tbody td,
-[data-theme] .m3-table td {
+[data-theme] table.dataTable tbody td {
   border-color: rgba(var(--theme-accent-rgb), 0.1) !important;
+}
+
+/* =======================================================
+   TABELLE REPEATER E DETTAGLI UTENTE / CLIENT (Fix Foto 3)
+   =======================================================
+   Risolve l'anomalia in cui le righe delle tabelle secondarie (es. Webhooks, Ruoli,
+   Attributi dinamici) o il relativo messaggio "Nessun webhook registrato"
+   venivano evidenziate con un box/card scuro rettangolare indesiderato.
+   Garantisce trasparenza assoluta, nessun bordo card e nessun highlight di hover.
+   ======================================================= */
+[data-theme] table.repeater-table,
+[data-theme] .table.repeater-table,
+[data-theme] table.repeater-table tbody,
+[data-theme] .table.repeater-table tbody,
+[data-theme] table.repeater-table tbody tr,
+[data-theme] .table.repeater-table tbody tr,
+[data-theme] table.repeater-table tbody tr:hover,
+[data-theme] .table.repeater-table tbody tr:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+[data-theme] table.repeater-table th,
+[data-theme] .table.repeater-table th {
+  background: transparent !important;
+  color: var(--theme-accent) !important;
+  border-top: none !important;
+  border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.2) !important;
+  box-shadow: none !important;
+}
+
+[data-theme] table.repeater-table td,
+[data-theme] .table.repeater-table td {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Stato vuoto pulito e trasparente per repeater tables */
+[data-theme] .repeater-empty-state,
+[data-theme] tr:has(.repeater-empty-state),
+[data-theme] tr:has(.repeater-empty-state):hover,
+[data-theme] td.repeater-empty-state,
+[data-theme] .table tbody tr td.repeater-empty-state,
+[data-theme] table.repeater-table tbody tr td.repeater-empty-state {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  color: #938F99 !important;
+  font-style: italic !important;
 }
 
 [data-theme] table.dataTable tbody td a {

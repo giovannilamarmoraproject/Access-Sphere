@@ -45,7 +45,18 @@ body {
   justify-content: space-between;
 }
 
-/* Header Navigation Tabs */
+/* =======================================================
+   HEADER NAVIGATION TABS (M3 Pill Tabs)
+   =======================================================
+   Definisce le pillole di navigazione principali della navbar superiore.
+   - .nav-tab-m3: stato base, pillola trasparente con testo grigio-chiaro (#CAC4D0).
+   - .nav-tab-m3:hover: transizione morbida con background semitrasparente d'accento,
+     testo bianco nitido e NESSUN alone sfuocato/glow (box-shadow: none) per preservare
+     la pulizia visiva richiesta (evita il blur mostrato in Foto 2).
+   - .nav-tab-m3.active: pillola attiva con colore primario, testo di contrasto scuro
+     e un'ombreggiatura scura sobria e definita (0 2px 6px rgba(0,0,0,0.25)) invece
+     di aloni fluorescenti o nebbiosi.
+   ======================================================= */
 .nav-tab-m3 {
   display: inline-flex;
   align-items: center;
@@ -63,12 +74,15 @@ body {
 .nav-tab-m3:hover {
   color: #FFFFFF !important;
   background: rgba(208, 188, 255, 0.1) !important;
+  border-color: rgba(208, 188, 255, 0.2) !important;
+  box-shadow: none !important;
 }
 
 .nav-tab-m3.active {
   background: #D0BCFF !important;
   color: #381E72 !important;
-  box-shadow: 0 2px 12px rgba(208, 188, 255, 0.35) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+  border-color: transparent !important;
 }
 
 /* Header Action Buttons (Fix for square borders) */
