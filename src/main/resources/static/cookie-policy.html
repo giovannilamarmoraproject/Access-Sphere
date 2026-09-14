@@ -61,9 +61,10 @@
         gtag("config", "G-R4KLC18RH6");
     </script>
 
-    <!-- Theme Engine & Settings -->
+    <!-- Theme Engine, Settings & i18n Translations -->
     <link rel="stylesheet" href="/css/m3-themes.css"/>
     <script src="/app/shared/settings.js"></script>
+    <script src="/app/i18n/translations.js"></script>
 
     <!-- JSON-LD structured data -->
     <script type="application/ld+json">
@@ -156,53 +157,77 @@
     <script src="/app/shared/config.js"></script>
 
     <style>
+        /* =======================================================
+           MATERIAL 3 THEME ADAPTIVE DESIGN VARIABLES
+           ======================================================= */
         :root {
-            --md-primary: #D0BCFF;
-            --md-surface: #0E0B16;
-            --md-surface-card: rgba(24, 19, 38, 0.85);
-            --md-surface-card-border: rgba(208, 188, 255, 0.16);
+            --md-primary: var(--theme-primary, #D0BCFF);
+            --md-surface: var(--theme-surface, #0E0B16);
+            --md-surface-card: rgba(var(--theme-surface-rgb, 24, 19, 38), 0.85);
+            --md-surface-card-border: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
             --md-on-surface: #E6E1E5;
         }
 
         body {
             font-family: 'Google Sans Flex', sans-serif;
-            background-color: var(--md-surface);
-            color: var(--md-on-surface);
+            background-color: var(--theme-surface, #0E0B16) !important;
+            color: var(--md-on-surface, #E6E1E5);
             margin: 0;
             padding: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .glass-nav {
-            background: rgba(14, 11, 22, 0.85);
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85) !important;
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(208, 188, 255, 0.14);
+            border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.14) !important;
         }
 
         .m3-glass-card {
-            background: var(--md-surface-card);
+            background: var(--md-surface-card) !important;
             backdrop-filter: blur(20px);
-            border: 1px solid var(--md-surface-card-border);
+            border: 1px solid var(--md-surface-card-border) !important;
             border-radius: 28px;
         }
 
         .m3-pill-btn-outline {
             background: rgba(255, 255, 255, 0.05);
             color: #E6E1E5;
-            border: 1px solid rgba(208, 188, 255, 0.25);
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);
             border-radius: 9999px;
-            padding: 8px 20px;
+            padding: 8px 18px;
             font-weight: 600;
             transition: all 0.2s;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
+            cursor: pointer;
         }
 
         .m3-pill-btn-outline:hover {
-            background: rgba(208, 188, 255, 0.15);
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);
+            color: #FFFFFF;
+            border-color: var(--theme-accent, #D0BCFF);
+        }
+
+        .policy-badge {
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.12);
+            color: var(--theme-accent, #D0BCFF);
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);
+        }
+
+        .policy-dot {
+            background: var(--theme-accent, #D0BCFF);
+        }
+
+        .policy-link {
+            color: var(--theme-accent, #D0BCFF);
+            transition: color 0.2s ease;
+        }
+        .policy-link:hover {
             color: #FFFFFF;
         }
 
@@ -212,9 +237,9 @@
             align-items: center;
             justify-content: center;
             padding: 10px 26px;
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(103, 80, 164, 0.3));
+            background: var(--theme-primary-gradient, linear-gradient(135deg, rgba(var(--theme-primary-rgb, 168, 85, 247), 0.25), rgba(var(--theme-accent-rgb, 103, 80, 164), 0.3))) !important;
             color: #FFFFFF !important;
-            border: 1.5px solid rgba(208, 188, 255, 0.35);
+            border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35) !important;
             box-sizing: border-box;
             cursor: pointer;
             border-radius: 9999px;
@@ -222,14 +247,13 @@
             font-weight: 600;
             text-decoration: none !important;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 14px rgba(168, 85, 247, 0.25);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
         }
 
         a.cky-banner-element:hover {
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(103, 80, 164, 0.5));
-            border-color: rgba(208, 188, 255, 0.7);
+            border-color: var(--theme-accent, #D0BCFF) !important;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
         }
 
         /* CookieYes Audit Table Dynamic Styling (Material Expressive 3 Glass) */
@@ -318,7 +342,7 @@
         }
     </style>
 </head>
-<body class="bg-[#0E0B16]">
+<body>
 
 <!-- Google Tag Manager (noscript) -->
 <noscript>
@@ -334,19 +358,24 @@
 <header class="glass-nav sticky top-0 z-50">
     <div class="w-full max-w-[1750px] mx-auto px-6 sm:px-10 lg:px-14 h-20 flex items-center justify-between">
         <a href="/" class="flex items-center gap-3.5 text-decoration-none">
-            <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10"/>
+            <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10"/>
             <div class="flex flex-col">
-                <span class="text-xl font-bold tracking-tight text-white flex items-center gap-2">Access Sphere</span>
-                <span class="text-[11px] text-gray-400 font-medium tracking-wide">Cookie Policy</span>
+                <span class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="app-brand-name">Access Sphere</span>
+                </span>
+                <span class="text-[11px] text-gray-400 font-medium tracking-wide" data-i18n="policy_nav_cookie">Cookie Policy</span>
             </div>
         </a>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
+            <button type="button" onclick="togglePolicyLanguage()" id="policy-lang-toggle" class="m3-pill-btn-outline text-xs" title="Cambia lingua / Switch language">
+                <i class="fa-solid fa-globe mr-1.5 text-xs"></i> <span id="policy-lang-label">IT</span>
+            </button>
             <a href="/privacy-policy" class="m3-pill-btn-outline text-xs">
-                <i class="fa-solid fa-user-shield mr-3"></i> Privacy Policy
+                <i class="fa-solid fa-user-shield mr-2"></i> <span data-i18n="policy_nav_privacy">Privacy Policy</span>
             </a>
             <a href="/" class="m3-pill-btn-outline text-xs">
-                <i class="fa-solid fa-house mr-3"></i> Torna alla Home
+                <i class="fa-solid fa-house mr-2"></i> <span data-i18n="policy_nav_home">Torna alla Home</span>
             </a>
         </div>
     </div>
@@ -354,29 +383,29 @@
 
 <main class="flex-1 max-w-6xl mx-auto px-6 py-16 w-full">
     <div class="m3-glass-card p-8 sm:p-12 shadow-2xl">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-semibold mb-6">
-            <i class="fa-solid fa-cookie-bite"></i> Cookie Policy
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full policy-badge text-xs font-semibold mb-6">
+            <i class="fa-solid fa-cookie-bite"></i> <span data-i18n="cookie_badge">Cookie Policy</span>
         </div>
 
-        <h1 class="cookie-policy-h1 text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-2">
+        <h1 class="cookie-policy-h1 text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-2" data-i18n="cookie_title">
             Cookie Policy
         </h1>
-        <p class="text-xs text-gray-400 mb-8 border-b border-purple-500/10 pb-4">
-            Effective Date: 23-Jan-2025 <br/>
-            Last Updated: 23-Jan-2025
+        <p class="text-xs text-gray-400 mb-8 border-b border-white/10 pb-4">
+            <span data-i18n="cookie_effective_date">Effective Date: 23-Jan-2025</span> <br/>
+            <span data-i18n="cookie_last_updated">Last Updated: 23-Jan-2025</span>
         </p>
 
         <div class="space-y-6 text-gray-300 text-sm sm:text-base leading-relaxed">
             <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-2">
-                <span class="w-2 h-2 rounded-full bg-purple-400"></span> What are cookies?
+                <span class="w-2 h-2 rounded-full policy-dot"></span> <span data-i18n="cookie_sec1_title">What are cookies?</span>
             </h5>
             <div class="cookie-policy-p space-y-3 text-gray-300">
-                <p>
+                <p data-i18n="cookie_sec1_p1">
                     This Cookie Policy explains what cookies are and how we use them, the types of cookies we use i.e,
                     the information we collect using cookies and how that information is used, and how to manage the
                     cookie settings.
                 </p>
-                <p>
+                <p data-i18n="cookie_sec1_p2">
                     Cookies are small text files that are used to store small pieces of information. They are stored on
                     your device when the website is loaded on your browser. These cookies help us make the website
                     function properly, make it more secure, provide better user experience, and understand how the
@@ -385,15 +414,15 @@
             </div>
 
             <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4">
-                <span class="w-2 h-2 rounded-full bg-purple-400"></span> How do we use cookies?
+                <span class="w-2 h-2 rounded-full policy-dot"></span> <span data-i18n="cookie_sec2_title">How do we use cookies?</span>
             </h5>
             <div class="cookie-policy-p space-y-3 text-gray-300">
-                <p>
+                <p data-i18n="cookie_sec2_p1">
                     As most of the online services, our website uses first-party and third-party cookies for several
                     purposes. First-party cookies are mostly necessary for the website to function the right way, and
                     they do not collect any of your personally identifiable data.
                 </p>
-                <p>
+                <p data-i18n="cookie_sec2_p2">
                     The third-party cookies used on our website are mainly for understanding how the website performs,
                     how you interact with our website, keeping our services secure, providing advertisements that are
                     relevant to you, and all in all providing you with a better and improved user experience and help
@@ -402,24 +431,24 @@
             </div>
 
             <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4">
-                <span class="w-2 h-2 rounded-full bg-purple-400"></span> Types of Cookies we use
+                <span class="w-2 h-2 rounded-full policy-dot"></span> <span data-i18n="cookie_sec3_title">Types of Cookies we use</span>
             </h5>
             <div class="cky-audit-table-element"></div>
 
             <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4 mb-2">
-                <span class="w-2 h-2 rounded-full bg-purple-400"></span> Manage cookie preferences
+                <span class="w-2 h-2 rounded-full policy-dot"></span> <span data-i18n="cookie_sec4_title">Manage cookie preferences</span>
             </h5>
 
             <div class="my-4">
-                <a class="cky-banner-element">Cookie Settings</a>
+                <a class="cky-banner-element" data-i18n="cookie_btn_settings">Cookie Settings</a>
             </div>
 
             <div class="space-y-4 pt-2 text-gray-300">
-                <p>
+                <p data-i18n="cookie_sec4_p1">
                     You can change your cookie preferences any time by clicking the above button. This will let you
                     revisit the cookie consent banner and change your preferences or withdraw your consent right away.
                 </p>
-                <p>
+                <p data-i18n="cookie_sec4_p2">
                     In addition to this, different browsers provide different methods to block and delete cookies used
                     by websites. You can change the settings of your browser to block/delete the cookies. Listed below
                     are the links to the support documents on how to manage and delete cookies from the major web
@@ -428,41 +457,76 @@
                 <ul class="list-disc list-inside space-y-2 text-gray-300 pl-2">
                     <li>
                         Chrome: <a target="_blank" href="https://support.google.com/accounts/answer/32050"
-                                   class="text-purple-300 hover:text-white underline">https://support.google.com/accounts/answer/32050</a>
+                                   class="policy-link underline">https://support.google.com/accounts/answer/32050</a>
                     </li>
                     <li>
                         Safari: <a target="_blank" href="https://support.apple.com/en-in/guide/safari/sfri11471/mac"
-                                   class="text-purple-300 hover:text-white underline">https://support.apple.com/en-in/guide/safari/sfri11471/mac</a>
+                                   class="policy-link underline">https://support.apple.com/en-in/guide/safari/sfri11471/mac</a>
                     </li>
                     <li>
                         Firefox: <a target="_blank"
                                     href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox?redirectslug=delete-cookies-remove-info-websites-stored&amp;redirectlocale=en-US"
-                                    class="text-purple-300 hover:text-white underline">https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox</a>
+                                    class="policy-link underline">https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox</a>
                     </li>
                     <li>
                         Internet Explorer: <a target="_blank"
                                               href="https://support.microsoft.com/en-us/topic/how-to-delete-cookie-files-in-internet-explorer-bca9446f-d873-78de-77ba-d42645fa52fc"
-                                              class="text-purple-300 hover:text-white underline">https://support.microsoft.com/en-us/topic/how-to-delete-cookie-files-in-internet-explorer-bca9446f-d873-78de-77ba-d42645fa52fc</a>
+                                              class="policy-link underline">https://support.microsoft.com/en-us/topic/how-to-delete-cookie-files-in-internet-explorer-bca9446f-d873-78de-77ba-d42645fa52fc</a>
                     </li>
                 </ul>
-                <p>
+                <p data-i18n="cookie_other_browsers">
                     If you are using any other web browser, please visit your browser’s official support documents.
                 </p>
             </div>
         </div>
 
-        <div class="mt-12 pt-6 border-t border-purple-500/10 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-            <a href="/privacy-policy" class="text-purple-300 hover:underline">
-                <i class="fa-solid fa-shield-halved mr-1"></i> Consulta anche la nostra Privacy Policy
+        <div class="mt-12 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
+            <a href="/privacy-policy" class="policy-link hover:underline">
+                <i class="fa-solid fa-shield-halved mr-1"></i> <span data-i18n="cookie_link_privacy">Consulta anche la nostra Privacy Policy</span>
             </a>
-            <span>Access Sphere IAM Security Solutions</span>
+            <span><span class="app-brand-name">Access Sphere</span> IAM Security Solutions</span>
         </div>
     </div>
 </main>
 
-<footer class="glass-nav mt-auto border-t border-purple-500/10 py-8 px-6 text-center text-xs text-gray-500">
-    &copy; <span class="copyright-year">2026</span> Access Sphere. Tutti i diritti riservati.
+<footer class="glass-nav mt-auto border-t border-white/10 py-8 px-6 text-center text-xs text-gray-400">
+    &copy; <span class="copyright-year">2026</span> <span class="app-brand-name">Access Sphere</span>. <span data-i18n="policy_footer_rights">Tutti i diritti riservati.</span>
 </footer>
 
+<!-- Language Switcher & Localization Script -->
+<script>
+    /**
+     * Alterna la lingua attiva tra Italiano ed Inglese per la Cookie Policy
+     */
+    function togglePolicyLanguage() {
+        const nextLang = (currentLanguage === "it") ? "en" : "it";
+        if (typeof switchLanguage === "function") {
+            switchLanguage(nextLang);
+        } else {
+            localStorage.setItem("access_sphere_language", nextLang);
+            localStorage.setItem("app_language", nextLang);
+            location.reload();
+        }
+        updatePolicyLangLabel();
+    }
+
+    /**
+     * Aggiorna l'etichetta del pulsante della lingua
+     */
+    function updatePolicyLangLabel() {
+        const lbl = document.getElementById("policy-lang-label");
+        if (lbl) {
+            lbl.textContent = (currentLanguage === "it") ? "IT" : "EN";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        updatePolicyLangLabel();
+    });
+
+    window.addEventListener("languageChanged", () => {
+        updatePolicyLangLabel();
+    });
+</script>
 </body>
 </html>

@@ -997,7 +997,13 @@ textarea.is-valid {
   box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25) !important;
 }
 
-/* Password Toggle Eye Button */
+/* =======================================================
+   PASSWORD TOGGLE EYE BUTTON (M3 Form Controls)
+   =======================================================
+   Pulsante per alternare la visibilità della password (mostra/nascondi).
+   Usa il colore di accento del tema attivo per garantire conformità cromatica
+   in tutta l'interfaccia (Foto 3).
+   ======================================================= */
 .btn-toggle-password {
   background: transparent;
   border: none;
@@ -1007,10 +1013,17 @@ textarea.is-valid {
   align-items: center;
   justify-content: center;
   outline: none !important;
+  color: var(--theme-accent, #D0BCFF);
+  opacity: 0.8;
+  transition: all 0.2s ease;
 }
 .btn-toggle-password:focus {
   outline: none !important;
   box-shadow: none !important;
+}
+.btn-toggle-password:hover {
+  color: #FFFFFF;
+  opacity: 1;
 }
 
 /* Repeater Table (Attributes / Webhooks / Redirect URIs) */

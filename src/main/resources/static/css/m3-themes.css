@@ -823,6 +823,53 @@ textarea {
     box-shadow: 0 0 0 2px var(--theme-primary) !important;
 }
 
+/* =======================================================
+   PASSWORD VISIBILITY TOGGLE ICONS (Foto 3)
+   =======================================================
+   Garantisce che l'icona a forma di occhio (mostra/nascondi password)
+   segua sempre il colore di accento della palette del tema selezionato.
+   ======================================================= */
+[data-theme] .btn-toggle-password,
+[data-theme] .btn-toggle-password i,
+[data-theme] .eyeIcon,
+[data-theme] button:has(.eyeIcon) i {
+    color: var(--theme-accent) !important;
+    opacity: 0.8;
+    transition: all 0.2s ease !important;
+}
+
+[data-theme] .btn-toggle-password:hover,
+[data-theme] .btn-toggle-password:hover i,
+[data-theme] .eyeIcon:hover,
+[data-theme] button:hover > .eyeIcon {
+    color: #FFFFFF !important;
+    opacity: 1;
+}
+
+/* Contenitori di supporto password (requisiti e feedback) */
+[data-theme] #password_rules_container,
+[data-theme] #confirm_password_feedback {
+    background: rgba(var(--theme-surface-rgb), 0.85) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.25) !important;
+}
+
+[data-theme] #password_rules_container > div:first-child {
+    border-bottom-color: rgba(var(--theme-accent-rgb), 0.18) !important;
+    color: var(--theme-accent) !important;
+}
+
+/* =======================================================
+   SETTINGS CARD ICONS (Foto 1)
+   =======================================================
+   Icone quadrate pulite per le card impostazioni (Backup, Branding, ecc.)
+   adattate cromaticamente alla palette del tema attivo.
+   ======================================================= */
+[data-theme] .settings-card-icon {
+    background-color: rgba(var(--theme-primary-rgb), 0.18) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.28) !important;
+    color: var(--theme-accent) !important;
+}
+
 /* Modals Adaptive Theme */
 [data-theme] .modal-content {
     background-color: var(--theme-surface-container) !important;
@@ -1358,5 +1405,68 @@ textarea {
 
 .theme-glow-box {
     box-shadow: 0 0 25px var(--theme-glow) !important;
+}
+
+/* =======================================================
+   COOKIE & PRIVACY POLICY ADAPTIVE THEME
+   =======================================================
+   Garantisce che le pagine Cookie Policy e Privacy Policy
+   si integrino fedelmente con la palette cromatica di tutti i temi.
+   - Sfondo card, navbar di vetro e bordi adattati al tema attivo.
+   - Punti elenco, badge e pulsanti coordinati con la tinta primaria e d'accento.
+   - Tabelle di audit CookieYes integrate nello stile M3 Glassmorphism.
+   ======================================================= */
+[data-theme] .glass-nav {
+    background: rgba(var(--theme-surface-rgb), 0.85) !important;
+    border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.14) !important;
+}
+
+[data-theme] .m3-glass-card {
+    background: rgba(var(--theme-surface-rgb), 0.8) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.18) !important;
+}
+
+[data-theme] .policy-bullet,
+[data-theme] .policy-dot {
+    background-color: var(--theme-accent) !important;
+}
+
+[data-theme] .policy-badge {
+    background-color: rgba(var(--theme-primary-rgb), 0.14) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.28) !important;
+    color: var(--theme-accent) !important;
+}
+
+[data-theme] a.cky-banner-element {
+    background: var(--theme-primary-gradient, linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.35), rgba(var(--theme-accent-rgb), 0.25))) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.45) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme] a.cky-banner-element:hover {
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme] .cky-audit-table-element thead,
+[data-theme] .cky-audit-table-element th {
+    background: rgba(var(--theme-primary-rgb), 0.22) !important;
+    color: var(--theme-accent) !important;
+    border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.2) !important;
+}
+
+[data-theme] .cky-audit-table-element table,
+[data-theme] .cky-audit-table-element .cky-table,
+[data-theme] .cky-audit-table-element .cky-audit-table {
+    border-color: rgba(var(--theme-accent-rgb), 0.2) !important;
+    background: rgba(var(--theme-surface-rgb), 0.6) !important;
+}
+
+[data-theme] .cky-audit-table-element td {
+    border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.08) !important;
+}
+
+[data-theme] .cky-audit-table-element tr:hover td {
+    background: rgba(var(--theme-primary-rgb), 0.08) !important;
 }
 
