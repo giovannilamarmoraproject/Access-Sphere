@@ -1,429 +1,465 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cookie Policy - Access Sphere</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
-  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
-  <link rel="manifest" href="/manifest.json" />
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Cookie Policy - Access Sphere</title>
 
-  <!-- Service Worker Registration -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/service-worker.js")
-        .then(function (registration) {
-          console.log("📱 Service Worker registered with scope:", registration.scope);
-        })
-        .catch(function (error) {
-          console.log("❌ Service Worker registration failed:", error);
-        });
-    }
-  </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap"
+          rel="stylesheet">
 
-  <!-- Google Tag Manager -->
-  <script>
-    (function (w, d, s, l, i) {
-      w[l] = w[l] || [];
-      w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-      var f = d.getElementsByTagName(s)[0],
-        j = d.createElement(s),
-        dl = l != "dataLayer" ? "&l=" + l : "";
-      j.async = true;
-      j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-      f.parentNode.insertBefore(j, f);
-    })(window, document, "script", "dataLayer", "GTM-KLC9VXFF");
-  </script>
-  <!-- End Google Tag Manager -->
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg"/>
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png"/>
+    <link rel="manifest" href="/manifest.json"/>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag("js", new Date());
-    gtag("config", "G-R4KLC18RH6");
-  </script>
-
-  <!-- Theme Engine & Settings -->
-  <link rel="stylesheet" href="/css/m3-themes.css"/>
-  <script src="/app/shared/settings.js"></script>
-
-  <!-- JSON-LD structured data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "Organization",
-          "@id": "https://access-sphere.giovannilamarmora.com/#organization",
-          "name": "Access Sphere",
-          "url": "https://access-sphere.giovannilamarmora.com",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
-          }
-        },
-        {
-          "@type": "WebSite",
-          "@id": "https://access-sphere.giovannilamarmora.com/#website",
-          "url": "https://access-sphere.giovannilamarmora.com",
-          "name": "Access Sphere",
-          "publisher": {
-            "@id": "https://access-sphere.giovannilamarmora.com/#organization"
-          },
-          "inLanguage": "en"
-        },
-        {
-          "@type": "WebPage",
-          "@id": "https://access-sphere.giovannilamarmora.com/cookie-policy",
-          "url": "https://access-sphere.giovannilamarmora.com/cookie-policy",
-          "name": "Cookie Policy - Access Sphere",
-          "description": "Find out how Access Sphere uses cookies to enhance your browsing experience and comply with GDPR.",
-          "inLanguage": "en",
-          "isPartOf": {
-            "@id": "https://access-sphere.giovannilamarmora.com/#website"
-          },
-          "about": {
-            "@id": "https://access-sphere.giovannilamarmora.com/#organization"
-          }
-        },
-        {
-          "@type": "WebPage",
-          "@id": "https://access-sphere.giovannilamarmora.com/cookie-policy",
-          "url": "https://access-sphere.giovannilamarmora.com/cookie-policy",
-          "name": "Cookie Policy - Access Sphere",
-          "description": "Scopri come Access Sphere utilizza i cookie per migliorare la tua esperienza di navigazione e rispettare il GDPR.",
-          "inLanguage": "it",
-          "isPartOf": {
-            "@id": "https://access-sphere.giovannilamarmora.com/#website"
-          },
-          "about": {
-            "@id": "https://access-sphere.giovannilamarmora.com/#organization"
-          }
+    <!-- Service Worker Registration -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker
+                .register("/service-worker.js")
+                .then(function (registration) {
+                    console.log("📱 Service Worker registered with scope:", registration.scope);
+                })
+                .catch(function (error) {
+                    console.log("❌ Service Worker registration failed:", error);
+                });
         }
-      ]
-    }
-  </script>
+    </script>
 
-  <!-- Descrizioni Multilingua -->
-  <meta name="description" content="Find out how Access Sphere uses cookies to enhance your browsing experience and comply with GDPR." lang="en" />
-  <meta name="description" content="Scopri come Access Sphere utilizza i cookie per migliorare la tua esperienza di navigazione e rispettare il GDPR." lang="it" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://access-sphere.giovannilamarmora.com/cookie-policy" />
-  <link rel="alternate" hreflang="it" href="https://access-sphere.giovannilamarmora.com/cookie-policy" />
-  <link rel="alternate" hreflang="en" href="https://access-sphere.giovannilamarmora.com/cookie-policy" />
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || [];
+            w[l].push({"gtm.start": new Date().getTime(), event: "gtm.js"});
+            var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s),
+                dl = l != "dataLayer" ? "&l=" + l : "";
+            j.async = true;
+            j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+            f.parentNode.insertBefore(j, f);
+        })(window, document, "script", "dataLayer", "GTM-KLC9VXFF");
+    </script>
+    <!-- End Google Tag Manager -->
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Cookie Policy - Access Sphere" />
-  <meta property="og:description" content="Find out how Access Sphere uses cookies to enhance your browsing experience and comply with GDPR." />
-  <meta property="og:url" content="https://access-sphere.giovannilamarmora.com/cookie-policy" />
-  <meta property="og:image" content="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R4KLC18RH6"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Cookie Policy - Access Sphere" />
-  <meta name="twitter:description" content="Find out how Access Sphere uses cookies to enhance your browsing experience and comply with GDPR." />
-  <meta name="twitter:image" content="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png" />
+        function gtag() {
+            dataLayer.push(arguments);
+        }
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <script src="/app/shared/config.js"></script>
+        gtag("js", new Date());
+        gtag("config", "G-R4KLC18RH6");
+    </script>
 
-  <style>
-    :root {
-      --md-primary: #D0BCFF;
-      --md-surface: #0E0B16;
-      --md-surface-card: rgba(24, 19, 38, 0.85);
-      --md-surface-card-border: rgba(208, 188, 255, 0.16);
-      --md-on-surface: #E6E1E5;
-    }
+    <!-- Theme Engine & Settings -->
+    <link rel="stylesheet" href="/css/m3-themes.css"/>
+    <script src="/app/shared/settings.js"></script>
 
-    body {
-      font-family: 'Google Sans Flex', sans-serif;
-      background-color: var(--md-surface);
-      color: var(--md-on-surface);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Organization",
+                    "@id": "https://access-sphere.giovannilamarmora.com/#organization",
+                    "name": "Access Sphere",
+                    "url": "https://access-sphere.giovannilamarmora.com",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"
+                    }
+                },
+                {
+                    "@type": "WebSite",
+                    "@id": "https://access-sphere.giovannilamarmora.com/#website",
+                    "url": "https://access-sphere.giovannilamarmora.com",
+                    "name": "Access Sphere",
+                    "publisher": {
+                        "@id": "https://access-sphere.giovannilamarmora.com/#organization"
+                    },
+                    "inLanguage": "en"
+                },
+                {
+                    "@type": "WebPage",
+                    "@id": "https://access-sphere.giovannilamarmora.com/cookie-policy",
+                    "url": "https://access-sphere.giovannilamarmora.com/cookie-policy",
+                    "name": "Cookie Policy - Access Sphere",
+                    "description": "Find out how Access Sphere uses cookies to enhance your browsing experience and comply with GDPR.",
+                    "inLanguage": "en",
+                    "isPartOf": {
+                        "@id": "https://access-sphere.giovannilamarmora.com/#website"
+                    },
+                    "about": {
+                        "@id": "https://access-sphere.giovannilamarmora.com/#organization"
+                    }
+                },
+                {
+                    "@type": "WebPage",
+                    "@id": "https://access-sphere.giovannilamarmora.com/cookie-policy",
+                    "url": "https://access-sphere.giovannilamarmora.com/cookie-policy",
+                    "name": "Cookie Policy - Access Sphere",
+                    "description": "Scopri come Access Sphere utilizza i cookie per migliorare la tua esperienza di navigazione e rispettare il GDPR.",
+                    "inLanguage": "it",
+                    "isPartOf": {
+                        "@id": "https://access-sphere.giovannilamarmora.com/#website"
+                    },
+                    "about": {
+                        "@id": "https://access-sphere.giovannilamarmora.com/#organization"
+                    }
+                }
+            ]
+        }
+    </script>
 
-    .glass-nav {
-      background: rgba(14, 11, 22, 0.85);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(208, 188, 255, 0.14);
-    }
+    <!-- Descrizioni Multilingua -->
+    <meta name="description"
+          content="Find out how Access Sphere uses cookies to enhance your browsing experience and comply with GDPR."
+          lang="en"/>
+    <meta name="description"
+          content="Scopri come Access Sphere utilizza i cookie per migliorare la tua esperienza di navigazione e rispettare il GDPR."
+          lang="it"/>
+    <meta name="robots" content="index, follow"/>
+    <link rel="canonical" href="https://access-sphere.giovannilamarmora.com/cookie-policy"/>
+    <link rel="alternate" hreflang="it" href="https://access-sphere.giovannilamarmora.com/cookie-policy"/>
+    <link rel="alternate" hreflang="en" href="https://access-sphere.giovannilamarmora.com/cookie-policy"/>
 
-    .m3-glass-card {
-      background: var(--md-surface-card);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--md-surface-card-border);
-      border-radius: 28px;
-    }
+    <!-- Open Graph -->
+    <meta property="og:type" content="website"/>
+    <meta property="og:title" content="Cookie Policy - Access Sphere"/>
+    <meta property="og:description"
+          content="Find out how Access Sphere uses cookies to enhance your browsing experience and comply with GDPR."/>
+    <meta property="og:url" content="https://access-sphere.giovannilamarmora.com/cookie-policy"/>
+    <meta property="og:image"
+          content="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"/>
 
-    .m3-pill-btn-outline {
-      background: rgba(255, 255, 255, 0.05);
-      color: #E6E1E5;
-      border: 1px solid rgba(208, 188, 255, 0.25);
-      border-radius: 9999px;
-      padding: 8px 20px;
-      font-weight: 600;
-      transition: all 0.2s;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-    }
-    .m3-pill-btn-outline:hover {
-      background: rgba(208, 188, 255, 0.15);
-      color: #FFFFFF;
-    }
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content="Cookie Policy - Access Sphere"/>
+    <meta name="twitter:description"
+          content="Find out how Access Sphere uses cookies to enhance your browsing experience and comply with GDPR."/>
+    <meta name="twitter:image"
+          content="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png"/>
 
-    /* CookieYes Banner Button Styling */
-    a.cky-banner-element {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 26px;
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(103, 80, 164, 0.3));
-      color: #FFFFFF !important;
-      border: 1.5px solid rgba(208, 188, 255, 0.35);
-      box-sizing: border-box;
-      cursor: pointer;
-      border-radius: 9999px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      text-decoration: none !important;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 14px rgba(168, 85, 247, 0.25);
-    }
-    a.cky-banner-element:hover {
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(103, 80, 164, 0.5));
-      border-color: rgba(208, 188, 255, 0.7);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
-    }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="/app/shared/config.js"></script>
 
-    /* CookieYes Audit Table Dynamic Styling (Material Expressive 3 Glass) */
-    .cky-audit-table-element {
-      margin-top: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    .cky-audit-table-element .cky-cookie-category,
-    .cky-audit-table-element > div {
-      background: rgba(24, 19, 38, 0.5) !important;
-      border: 1px solid rgba(208, 188, 255, 0.18) !important;
-      border-radius: 20px !important;
-      padding: 1.5rem !important;
-      margin-bottom: 1.5rem !important;
-      backdrop-filter: blur(12px) !important;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
-    }
-    .cky-audit-table-element .cky-category-title,
-    .cky-audit-table-element h6 {
-      color: #FFFFFF !important;
-      font-size: 1.15rem !important;
-      font-weight: 700 !important;
-      margin-bottom: 0.5rem !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-    }
-    .cky-audit-table-element .cky-category-description,
-    .cky-audit-table-element p {
-      color: #CAC4D0 !important;
-      font-size: 0.85rem !important;
-      line-height: 1.6 !important;
-      margin-bottom: 1rem !important;
-    }
-    .cky-audit-table-element table,
-    .cky-audit-table-element .cky-table,
-    .cky-audit-table-element .cky-audit-table {
-      width: 100% !important;
-      border-collapse: separate !important;
-      border-spacing: 0 !important;
-      border: 1px solid rgba(208, 188, 255, 0.2) !important;
-      border-radius: 14px !important;
-      overflow: hidden !important;
-      background: rgba(14, 11, 22, 0.6) !important;
-      font-size: 0.82rem !important;
-      margin-top: 0.75rem !important;
-    }
-    .cky-audit-table-element thead,
-    .cky-audit-table-element th {
-      background: rgba(103, 80, 164, 0.25) !important;
-      color: #D0BCFF !important;
-      font-weight: 700 !important;
-      padding: 10px 14px !important;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.2) !important;
-      text-align: left !important;
-    }
-    .cky-audit-table-element td {
-      padding: 10px 14px !important;
-      border-bottom: 1px solid rgba(208, 188, 255, 0.08) !important;
-      color: #E6E1E5 !important;
-      line-height: 1.5 !important;
-    }
-    .cky-audit-table-element tr:last-child td {
-      border-bottom: none !important;
-    }
-    .cky-audit-table-element tr:hover td {
-      background: rgba(208, 188, 255, 0.06) !important;
-    }
-    .cky-audit-table-element .cky-always-active {
-      font-size: 11px !important;
-      padding: 2px 10px !important;
-      border-radius: 9999px !important;
-      background: rgba(16, 185, 129, 0.2) !important;
-      color: #6EE7B7 !important;
-      border: 1px solid rgba(16, 185, 129, 0.35) !important;
-      font-weight: 600 !important;
-    }
-  </style>
+    <style>
+        :root {
+            --md-primary: #D0BCFF;
+            --md-surface: #0E0B16;
+            --md-surface-card: rgba(24, 19, 38, 0.85);
+            --md-surface-card-border: rgba(208, 188, 255, 0.16);
+            --md-on-surface: #E6E1E5;
+        }
+
+        body {
+            font-family: 'Google Sans Flex', sans-serif;
+            background-color: var(--md-surface);
+            color: var(--md-on-surface);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .glass-nav {
+            background: rgba(14, 11, 22, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(208, 188, 255, 0.14);
+        }
+
+        .m3-glass-card {
+            background: var(--md-surface-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--md-surface-card-border);
+            border-radius: 28px;
+        }
+
+        .m3-pill-btn-outline {
+            background: rgba(255, 255, 255, 0.05);
+            color: #E6E1E5;
+            border: 1px solid rgba(208, 188, 255, 0.25);
+            border-radius: 9999px;
+            padding: 8px 20px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .m3-pill-btn-outline:hover {
+            background: rgba(208, 188, 255, 0.15);
+            color: #FFFFFF;
+        }
+
+        /* CookieYes Banner Button Styling */
+        a.cky-banner-element {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 26px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(103, 80, 164, 0.3));
+            color: #FFFFFF !important;
+            border: 1.5px solid rgba(208, 188, 255, 0.35);
+            box-sizing: border-box;
+            cursor: pointer;
+            border-radius: 9999px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(168, 85, 247, 0.25);
+        }
+
+        a.cky-banner-element:hover {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(103, 80, 164, 0.5));
+            border-color: rgba(208, 188, 255, 0.7);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
+        }
+
+        /* CookieYes Audit Table Dynamic Styling (Material Expressive 3 Glass) */
+        .cky-audit-table-element {
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .cky-audit-table-element .cky-cookie-category,
+        .cky-audit-table-element > div {
+            background: rgba(24, 19, 38, 0.5) !important;
+            border: 1px solid rgba(208, 188, 255, 0.18) !important;
+            border-radius: 20px !important;
+            padding: 1.5rem !important;
+            margin-bottom: 1.5rem !important;
+            backdrop-filter: blur(12px) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        .cky-audit-table-element .cky-category-title,
+        .cky-audit-table-element h6 {
+            color: #FFFFFF !important;
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            margin-bottom: 0.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+        }
+
+        .cky-audit-table-element .cky-category-description,
+        .cky-audit-table-element p {
+            color: #CAC4D0 !important;
+            font-size: 0.85rem !important;
+            line-height: 1.6 !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .cky-audit-table-element table,
+        .cky-audit-table-element .cky-table,
+        .cky-audit-table-element .cky-audit-table {
+            width: 100% !important;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            border: 1px solid rgba(208, 188, 255, 0.2) !important;
+            border-radius: 14px !important;
+            overflow: hidden !important;
+            background: rgba(14, 11, 22, 0.6) !important;
+            font-size: 0.82rem !important;
+            margin-top: 0.75rem !important;
+        }
+
+        .cky-audit-table-element thead,
+        .cky-audit-table-element th {
+            background: rgba(103, 80, 164, 0.25) !important;
+            color: #D0BCFF !important;
+            font-weight: 700 !important;
+            padding: 10px 14px !important;
+            border-bottom: 1px solid rgba(208, 188, 255, 0.2) !important;
+            text-align: left !important;
+        }
+
+        .cky-audit-table-element td {
+            padding: 10px 14px !important;
+            border-bottom: 1px solid rgba(208, 188, 255, 0.08) !important;
+            color: #E6E1E5 !important;
+            line-height: 1.5 !important;
+        }
+
+        .cky-audit-table-element tr:last-child td {
+            border-bottom: none !important;
+        }
+
+        .cky-audit-table-element tr:hover td {
+            background: rgba(208, 188, 255, 0.06) !important;
+        }
+
+        .cky-audit-table-element .cky-always-active {
+            font-size: 11px !important;
+            padding: 2px 10px !important;
+            border-radius: 9999px !important;
+            background: rgba(16, 185, 129, 0.2) !important;
+            color: #6EE7B7 !important;
+            border: 1px solid rgba(16, 185, 129, 0.35) !important;
+            font-weight: 600 !important;
+        }
+    </style>
 </head>
 <body class="bg-[#0E0B16]">
 
-  <!-- Google Tag Manager (noscript) -->
-  <noscript>
+<!-- Google Tag Manager (noscript) -->
+<noscript>
     <iframe
-      src="https://www.googletagmanager.com/ns.html?id=GTM-KLC9VXFF"
-      height="0"
-      width="0"
-      style="display: none; visibility: hidden"
+            src="https://www.googletagmanager.com/ns.html?id=GTM-KLC9VXFF"
+            height="0"
+            width="0"
+            style="display: none; visibility: hidden"
     ></iframe>
-  </noscript>
-  <!-- End Google Tag Manager (noscript) -->
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
 
-  <header class="glass-nav sticky top-0 z-50">
+<header class="glass-nav sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3.5 text-decoration-none">
-        <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10" />
-        <div class="flex flex-col">
-          <span class="text-xl font-bold tracking-tight text-white">Access Sphere</span>
-          <span class="text-[11px] text-gray-400">Cookie Policy</span>
+        <a href="/" class="flex items-center gap-3.5 text-decoration-none">
+            <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="w-10 h-10"/>
+            <div class="flex flex-col">
+                <span class="text-xl font-bold tracking-tight text-white">Access Sphere</span>
+                <span class="text-[11px] text-gray-400">Cookie Policy</span>
+            </div>
+        </a>
+
+        <div class="flex items-center gap-4">
+            <a href="/" class="m3-pill-btn-outline text-xs">
+                <i class="fa-solid fa-house mr-1"></i> Torna alla Home
+            </a>
         </div>
-      </a>
-
-      <div class="flex items-center gap-4">
-        <a href="/" class="m3-pill-btn-outline text-xs">
-          <i class="fa-solid fa-house mr-1"></i> Torna alla Home
-        </a>
-        <a href="/app" class="m3-pill-btn-outline text-xs">
-          <i class="fa-solid fa-gauge-high mr-1"></i> Panoramica
-        </a>
-        <a href="/app/login" class="px-5 py-2 rounded-full text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white transition-all shadow-lg shadow-purple-600/30 text-decoration-none inline-flex items-center">
-          <i class="fa-solid fa-lock mr-1"></i> Login Console
-        </a>
-      </div>
     </div>
-  </header>
+</header>
 
-  <main class="flex-1 max-w-4xl mx-auto px-6 py-16 w-full">
+<main class="flex-1 max-w-4xl mx-auto px-6 py-16 w-full">
     <div class="m3-glass-card p-8 sm:p-12 shadow-2xl">
-      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-semibold mb-6">
-        <i class="fa-solid fa-cookie-bite"></i> Cookie Policy
-      </div>
-
-      <h1 class="cookie-policy-h1 text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-2">
-        Cookie Policy
-      </h1>
-      <p class="text-xs text-gray-400 mb-8 border-b border-purple-500/10 pb-4">
-        Effective Date: 23-Jan-2025 <br />
-        Last Updated: 23-Jan-2025
-      </p>
-
-      <div class="space-y-6 text-gray-300 text-sm sm:text-base leading-relaxed">
-        <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-2">
-          <span class="w-2 h-2 rounded-full bg-purple-400"></span> What are cookies?
-        </h5>
-        <div class="cookie-policy-p space-y-3 text-gray-300">
-          <p>
-            This Cookie Policy explains what cookies are and how we use them, the types of cookies we use i.e, the information we collect using cookies and how that information is used, and how to manage the cookie settings.
-          </p>
-          <p>
-            Cookies are small text files that are used to store small pieces of information. They are stored on your device when the website is loaded on your browser. These cookies help us make the website function properly, make it more secure, provide better user experience, and understand how the website performs and to analyze what works and where it needs improvement.
-          </p>
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-semibold mb-6">
+            <i class="fa-solid fa-cookie-bite"></i> Cookie Policy
         </div>
 
-        <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4">
-          <span class="w-2 h-2 rounded-full bg-purple-400"></span> How do we use cookies?
-        </h5>
-        <div class="cookie-policy-p space-y-3 text-gray-300">
-          <p>
-            As most of the online services, our website uses first-party and third-party cookies for several purposes. First-party cookies are mostly necessary for the website to function the right way, and they do not collect any of your personally identifiable data.
-          </p>
-          <p>
-            The third-party cookies used on our website are mainly for understanding how the website performs, how you interact with our website, keeping our services secure, providing advertisements that are relevant to you, and all in all providing you with a better and improved user experience and help speed up your future interactions with our website.
-          </p>
+        <h1 class="cookie-policy-h1 text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-2">
+            Cookie Policy
+        </h1>
+        <p class="text-xs text-gray-400 mb-8 border-b border-purple-500/10 pb-4">
+            Effective Date: 23-Jan-2025 <br/>
+            Last Updated: 23-Jan-2025
+        </p>
+
+        <div class="space-y-6 text-gray-300 text-sm sm:text-base leading-relaxed">
+            <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-2">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span> What are cookies?
+            </h5>
+            <div class="cookie-policy-p space-y-3 text-gray-300">
+                <p>
+                    This Cookie Policy explains what cookies are and how we use them, the types of cookies we use i.e,
+                    the information we collect using cookies and how that information is used, and how to manage the
+                    cookie settings.
+                </p>
+                <p>
+                    Cookies are small text files that are used to store small pieces of information. They are stored on
+                    your device when the website is loaded on your browser. These cookies help us make the website
+                    function properly, make it more secure, provide better user experience, and understand how the
+                    website performs and to analyze what works and where it needs improvement.
+                </p>
+            </div>
+
+            <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span> How do we use cookies?
+            </h5>
+            <div class="cookie-policy-p space-y-3 text-gray-300">
+                <p>
+                    As most of the online services, our website uses first-party and third-party cookies for several
+                    purposes. First-party cookies are mostly necessary for the website to function the right way, and
+                    they do not collect any of your personally identifiable data.
+                </p>
+                <p>
+                    The third-party cookies used on our website are mainly for understanding how the website performs,
+                    how you interact with our website, keeping our services secure, providing advertisements that are
+                    relevant to you, and all in all providing you with a better and improved user experience and help
+                    speed up your future interactions with our website.
+                </p>
+            </div>
+
+            <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span> Types of Cookies we use
+            </h5>
+            <div class="cky-audit-table-element"></div>
+
+            <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4 mb-2">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span> Manage cookie preferences
+            </h5>
+
+            <div class="my-4">
+                <a class="cky-banner-element">Cookie Settings</a>
+            </div>
+
+            <div class="space-y-4 pt-2 text-gray-300">
+                <p>
+                    You can change your cookie preferences any time by clicking the above button. This will let you
+                    revisit the cookie consent banner and change your preferences or withdraw your consent right away.
+                </p>
+                <p>
+                    In addition to this, different browsers provide different methods to block and delete cookies used
+                    by websites. You can change the settings of your browser to block/delete the cookies. Listed below
+                    are the links to the support documents on how to manage and delete cookies from the major web
+                    browsers.
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-gray-300 pl-2">
+                    <li>
+                        Chrome: <a target="_blank" href="https://support.google.com/accounts/answer/32050"
+                                   class="text-purple-300 hover:text-white underline">https://support.google.com/accounts/answer/32050</a>
+                    </li>
+                    <li>
+                        Safari: <a target="_blank" href="https://support.apple.com/en-in/guide/safari/sfri11471/mac"
+                                   class="text-purple-300 hover:text-white underline">https://support.apple.com/en-in/guide/safari/sfri11471/mac</a>
+                    </li>
+                    <li>
+                        Firefox: <a target="_blank"
+                                    href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox?redirectslug=delete-cookies-remove-info-websites-stored&amp;redirectlocale=en-US"
+                                    class="text-purple-300 hover:text-white underline">https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox</a>
+                    </li>
+                    <li>
+                        Internet Explorer: <a target="_blank"
+                                              href="https://support.microsoft.com/en-us/topic/how-to-delete-cookie-files-in-internet-explorer-bca9446f-d873-78de-77ba-d42645fa52fc"
+                                              class="text-purple-300 hover:text-white underline">https://support.microsoft.com/en-us/topic/how-to-delete-cookie-files-in-internet-explorer-bca9446f-d873-78de-77ba-d42645fa52fc</a>
+                    </li>
+                </ul>
+                <p>
+                    If you are using any other web browser, please visit your browser’s official support documents.
+                </p>
+            </div>
         </div>
 
-        <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4">
-          <span class="w-2 h-2 rounded-full bg-purple-400"></span> Types of Cookies we use
-        </h5>
-        <div class="cky-audit-table-element"></div>
-
-        <h5 class="text-xl font-bold text-white flex items-center gap-2 pt-4 mb-2">
-          <span class="w-2 h-2 rounded-full bg-purple-400"></span> Manage cookie preferences
-        </h5>
-
-        <div class="my-4">
-          <a class="cky-banner-element">Cookie Settings</a>
+        <div class="mt-12 pt-6 border-t border-purple-500/10 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
+            <a href="/privacy-policy" class="text-purple-300 hover:underline">
+                <i class="fa-solid fa-shield-halved mr-1"></i> Consulta anche la nostra Privacy Policy
+            </a>
+            <span>Access Sphere IAM Security Solutions</span>
         </div>
-
-        <div class="space-y-4 pt-2 text-gray-300">
-          <p>
-            You can change your cookie preferences any time by clicking the above button. This will let you revisit the cookie consent banner and change your preferences or withdraw your consent right away.
-          </p>
-          <p>
-            In addition to this, different browsers provide different methods to block and delete cookies used by websites. You can change the settings of your browser to block/delete the cookies. Listed below are the links to the support documents on how to manage and delete cookies from the major web browsers.
-          </p>
-          <ul class="list-disc list-inside space-y-2 text-gray-300 pl-2">
-            <li>
-              Chrome: <a target="_blank" href="https://support.google.com/accounts/answer/32050" class="text-purple-300 hover:text-white underline">https://support.google.com/accounts/answer/32050</a>
-            </li>
-            <li>
-              Safari: <a target="_blank" href="https://support.apple.com/en-in/guide/safari/sfri11471/mac" class="text-purple-300 hover:text-white underline">https://support.apple.com/en-in/guide/safari/sfri11471/mac</a>
-            </li>
-            <li>
-              Firefox: <a target="_blank" href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox?redirectslug=delete-cookies-remove-info-websites-stored&amp;redirectlocale=en-US" class="text-purple-300 hover:text-white underline">https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox</a>
-            </li>
-            <li>
-              Internet Explorer: <a target="_blank" href="https://support.microsoft.com/en-us/topic/how-to-delete-cookie-files-in-internet-explorer-bca9446f-d873-78de-77ba-d42645fa52fc" class="text-purple-300 hover:text-white underline">https://support.microsoft.com/en-us/topic/how-to-delete-cookie-files-in-internet-explorer-bca9446f-d873-78de-77ba-d42645fa52fc</a>
-            </li>
-          </ul>
-          <p>
-            If you are using any other web browser, please visit your browser’s official support documents.
-          </p>
-        </div>
-      </div>
-
-      <div class="mt-12 pt-6 border-t border-purple-500/10 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-        <a href="/privacy-policy" class="text-purple-300 hover:underline">
-          <i class="fa-solid fa-shield-halved mr-1"></i> Consulta anche la nostra Privacy Policy
-        </a>
-        <span>Access Sphere IAM Security Solutions</span>
-      </div>
     </div>
-  </main>
+</main>
 
-  <footer class="glass-nav mt-auto border-t border-purple-500/10 py-8 px-6 text-center text-xs text-gray-500">
+<footer class="glass-nav mt-auto border-t border-purple-500/10 py-8 px-6 text-center text-xs text-gray-500">
     &copy; <span class="copyright-year">2026</span> Access Sphere. Tutti i diritti riservati.
-  </footer>
+</footer>
 
 </body>
 </html>

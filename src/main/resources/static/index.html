@@ -19,7 +19,8 @@
                     }
                 }
                 document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
-            } catch (e) {}
+            } catch (e) {
+            }
         })();
     </script>
 
@@ -36,11 +37,11 @@
           rel="stylesheet">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
-  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg"/>
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png"/>
 
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
@@ -204,13 +205,18 @@
             </a>
 
             <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-300">
-                <a href="#cosa-fa" class="hover:text-purple-300 transition-colors" data-i18n="landing_nav_about">Cos'è</a>
-                <a href="#funzionalita" class="hover:text-purple-300 transition-colors" data-i18n="landing_nav_features">Funzionalità</a>
-                <a href="#simulator" class="hover:text-purple-300 transition-colors" data-i18n="landing_nav_simulator">Simulatore OAuth2</a>
+                <a href="#cosa-fa" class="hover:text-purple-300 transition-colors"
+                   data-i18n="landing_nav_about">Cos'è</a>
+                <a href="#funzionalita" class="hover:text-purple-300 transition-colors"
+                   data-i18n="landing_nav_features">Funzionalità</a>
+                <a href="#simulator" class="hover:text-purple-300 transition-colors" data-i18n="landing_nav_simulator">Simulatore
+                    OAuth2</a>
                 <a href="#architettura" class="hover:text-purple-300 transition-colors" data-i18n="landing_nav_arch">Architettura</a>
-                <a href="/cookie-policy" class="hover:text-purple-300 transition-colors text-xs text-gray-400" data-i18n="landing_nav_cookie">Cookie
+                <a href="/cookie-policy" class="hover:text-purple-300 transition-colors text-xs text-gray-400"
+                   data-i18n="landing_nav_cookie">Cookie
                     Policy</a>
-                <a href="/privacy-policy" class="hover:text-purple-300 transition-colors text-xs text-gray-400" data-i18n="landing_nav_privacy">Privacy
+                <a href="/privacy-policy" class="hover:text-purple-300 transition-colors text-xs text-gray-400"
+                   data-i18n="landing_nav_privacy">Privacy
                     Policy</a>
             </nav>
 
@@ -233,11 +239,13 @@
                 <span class="text-purple-300 font-semibold">Material Expressive 3</span>-->
             </div>
 
-            <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.12] mb-6 text-gradient" data-i18n="landing_hero_title">
+            <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.12] mb-6 text-gradient"
+                data-i18n="landing_hero_title">
                 Identità, Client OAuth2 e Sicurezza Aziendale in una Sola Sfera.
             </h1>
 
-            <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed font-normal" data-i18n="landing_hero_desc">
+            <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed font-normal"
+               data-i18n="landing_hero_desc">
                 <strong class="text-white font-semibold">Access Sphere</strong> è il server di autorizzazione reattivo
                 ad alte prestazioni basato su Spring Boot WebFlux. Centralizza l'autenticazione, la gestione di utenti e
                 ruoli (RBAC), la registrazione di client OAuth2 con redirect URIs, la crittografia JWE e la verifica a
@@ -256,19 +264,28 @@
             <!-- Metric Bento Highlights -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full text-left">
                 <div class="m3-glass-card p-5">
-                    <div class="text-2xl sm:text-3xl font-bold text-white mb-1" data-i18n="landing_metric_oauth">OAuth 2.0</div>
+                    <div class="text-2xl sm:text-3xl font-bold text-white mb-1" data-i18n="landing_metric_oauth">OAuth
+                        2.0
+                    </div>
                     <div class="text-xs text-gray-400" data-i18n="landing_metric_oauth_sub">OIDC & PKCE Supportati</div>
                 </div>
                 <div class="m3-glass-card p-5">
-                    <div class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-1" data-i18n="landing_metric_latency">&lt; 20ms</div>
-                    <div class="text-xs text-gray-400" data-i18n="landing_metric_latency_sub">Latenza Token Reattiva</div>
+                    <div class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-1"
+                         data-i18n="landing_metric_latency">&lt; 20ms
+                    </div>
+                    <div class="text-xs text-gray-400" data-i18n="landing_metric_latency_sub">Latenza Token Reattiva
+                    </div>
                 </div>
                 <div class="m3-glass-card p-5">
-                    <div class="text-2xl sm:text-3xl font-bold text-purple-300 mb-1" data-i18n="landing_metric_mfa">MFA / 2FA</div>
+                    <div class="text-2xl sm:text-3xl font-bold text-purple-300 mb-1" data-i18n="landing_metric_mfa">MFA
+                        / 2FA
+                    </div>
                     <div class="text-xs text-gray-400" data-i18n="landing_metric_mfa_sub">TOTP & Email OTP</div>
                 </div>
                 <div class="m3-glass-card p-5">
-                    <div class="text-2xl sm:text-3xl font-bold text-pink-400 mb-1" data-i18n="landing_metric_ui">100% UI</div>
+                    <div class="text-2xl sm:text-3xl font-bold text-pink-400 mb-1" data-i18n="landing_metric_ui">100%
+                        UI
+                    </div>
                     <div class="text-xs text-gray-400" data-i18n="landing_metric_ui_sub">Gestione Client & Utenti</div>
                 </div>
             </div>
@@ -287,9 +304,11 @@
 
             <div class="text-center max-w-3xl mx-auto mb-16">
                 <div class="badge-m3 mb-3">
-                    <i class="fa-solid fa-layer-group"></i> <span data-i18n="landing_about_badge">Panoramica Dettagliata</span>
+                    <i class="fa-solid fa-layer-group"></i> <span
+                        data-i18n="landing_about_badge">Panoramica Dettagliata</span>
                 </div>
-                <h2 class="text-3xl sm:text-5xl font-bold text-white tracking-tight mb-4" data-i18n="landing_about_title">
+                <h2 class="text-3xl sm:text-5xl font-bold text-white tracking-tight mb-4"
+                    data-i18n="landing_about_title">
                     Cos'è esattamente Access Sphere e cosa puoi fare?
                 </h2>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed" data-i18n="landing_about_desc">
@@ -307,7 +326,8 @@
                         <div class="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-xl mb-6">
                             <i class="fa-solid fa-network-wired"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat1_title">Gestione Completa Client OAuth2 (CRUD)</h3>
+                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat1_title">Gestione Completa
+                            Client OAuth2 (CRUD)</h3>
                         <p class="text-gray-400 text-sm leading-relaxed mb-4" data-i18n="landing_feat1_desc">
                             Registra, modifica ed elimina al volo applicazioni terze e microservizi. Definisci <code>client_id</code>,
                             <code>client_secret</code>, redirect URI consentite, tipologia di token (JWT o JWE) e
@@ -315,7 +335,9 @@
                         </p>
                     </div>
                     <div class="pt-4 border-t border-purple-500/10 flex items-center justify-between text-xs text-purple-300 font-semibold">
-                        <a href="/app/clients" class="hover:underline flex items-center gap-1.5"><span data-i18n="landing_feat1_link">Vai alla schermata Client</span> <i class="fa-solid fa-arrow-right"></i></a>
+                        <a href="/app/clients" class="hover:underline flex items-center gap-1.5"><span
+                                data-i18n="landing_feat1_link">Vai alla schermata Client</span> <i
+                                class="fa-solid fa-arrow-right"></i></a>
                     </div>
                 </div>
 
@@ -325,7 +347,8 @@
                         <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-xl mb-6">
                             <i class="fa-solid fa-users-viewfinder"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat2_title">Gestione Utenti e Ruoli (RBAC)</h3>
+                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat2_title">Gestione Utenti e
+                            Ruoli (RBAC)</h3>
                         <p class="text-gray-400 text-sm leading-relaxed mb-4" data-i18n="landing_feat2_desc">
                             Pieno controllo sul ciclo di vita degli utenti: blocco/sblocco istantaneo degli account
                             malevoli, registrazione guidata, aggiornamento anagrafica e profilazione granulare tramite
@@ -333,7 +356,9 @@
                         </p>
                     </div>
                     <div class="pt-4 border-t border-purple-500/10 flex items-center justify-between text-xs text-emerald-300 font-semibold">
-                        <a href="/app/users" class="hover:underline flex items-center gap-1.5"><span data-i18n="landing_feat2_link">Vai alla schermata Utenti</span> <i class="fa-solid fa-arrow-right"></i></a>
+                        <a href="/app/users" class="hover:underline flex items-center gap-1.5"><span
+                                data-i18n="landing_feat2_link">Vai alla schermata Utenti</span> <i
+                                class="fa-solid fa-arrow-right"></i></a>
                     </div>
                 </div>
 
@@ -343,7 +368,8 @@
                         <div class="w-12 h-12 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300 text-xl mb-6">
                             <i class="fa-solid fa-shield-virus"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat3_title">Multi-Factor Authentication (MFA)</h3>
+                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat3_title">Multi-Factor
+                            Authentication (MFA)</h3>
                         <p class="text-gray-400 text-sm leading-relaxed mb-4" data-i18n="landing_feat3_desc">
                             Rafforza l'accesso con verifica a doppio fattore: supporto nativo per codici temporanei TOTP
                             su app come Google Authenticator o Microsoft Authenticator, e codici monouso OTP recapitati
@@ -362,7 +388,8 @@
                         <div class="w-12 h-12 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-300 text-xl mb-6">
                             <i class="fa-solid fa-file-shield"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat4_title">Crittografia Token JWT & JWE</h3>
+                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat4_title">Crittografia Token
+                            JWT & JWE</h3>
                         <p class="text-gray-400 text-sm leading-relaxed mb-4" data-i18n="landing_feat4_desc">
                             Genera token con firma digitale (JWS) o cifratura end-to-end (JWE) per schermare i claim da
                             occhi indiscreti su reti non protette. Configura chiavi di firma dedicate e tempi di vita
@@ -381,7 +408,8 @@
                         <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 text-xl mb-6">
                             <i class="fa-solid fa-bolt"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat5_title">Webhook Event-Driven</h3>
+                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat5_title">Webhook
+                            Event-Driven</h3>
                         <p class="text-gray-400 text-sm leading-relaxed mb-4" data-i18n="landing_feat5_desc">
                             Sincronizza automaticamente i tuoi sistemi esterni: invia notifiche webhook HTTP asincrone
                             in caso di login, registrazione utente, modifica ruoli, revoca token o rotazione chiavi
@@ -400,7 +428,8 @@
                         <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-300 text-xl mb-6">
                             <i class="fa-solid fa-gauge-high"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat6_title">Reattività Spring WebFlux</h3>
+                        <h3 class="text-xl font-bold text-white mb-3" data-i18n="landing_feat6_title">Reattività Spring
+                            WebFlux</h3>
                         <p class="text-gray-400 text-sm leading-relaxed mb-4" data-i18n="landing_feat6_desc">
                             Progettato su architettura asincrona non-bloccante Project Reactor. Gestisce picchi intensi
                             di richieste di autenticazione concorrenti senza saturare thread e con latenza inferiore ai
@@ -423,15 +452,14 @@
                                 </div>
                                 <span class="badge-m3 text-xs" data-i18n="landing_feat7_tag">Temi M3, i18n & Snapshot JSON</span>
                             </div>
-                            <h3 class="text-xl sm:text-2xl font-bold text-white mb-3" data-i18n="landing_feat7_title">Personalizzazione Piattaforma & Backup Hub</h3>
+                            <h3 class="text-xl sm:text-2xl font-bold text-white mb-3" data-i18n="landing_feat7_title">
+                                Personalizzazione Piattaforma & Backup Hub</h3>
                             <p class="text-gray-400 text-sm leading-relaxed" data-i18n="landing_feat7_desc">
-                                Personalizza al 100% l'applicazione: scegli tra 6 palette di colori dinamici Material 3, imposta il branding aziendale (nome, logo, favicon, tagline), configura la schermata di login con showcase o sfondo personalizzato, seleziona la lingua automatica o preferita, ed esporta o ripristina l'intero database in formato JSON con un clic.
+                                Personalizza al 100% l'applicazione: scegli tra 6 palette di colori dinamici Material 3,
+                                imposta il branding aziendale (nome, logo, favicon, tagline), configura la schermata di
+                                login con showcase o sfondo personalizzato, seleziona la lingua automatica o preferita,
+                                ed esporta o ripristina l'intero database in formato JSON con un clic.
                             </p>
-                        </div>
-                        <div class="flex sm:flex-col gap-3 shrink-0">
-                            <a href="/app/settings" class="m3-pill-btn m3-pill-btn-primary text-xs px-6 py-2.5 whitespace-nowrap justify-center">
-                                <i class="fa-solid fa-gear"></i> <span data-i18n="landing_feat7_link">Vai alle Impostazioni</span>
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -448,7 +476,8 @@
 
                 <div class="lg:w-1/2 text-left">
                     <div class="badge-m3 mb-3">
-                        <i class="fa-solid fa-terminal"></i> <span data-i18n="landing_sim_badge">Simulatore Interattivo</span>
+                        <i class="fa-solid fa-terminal"></i> <span
+                            data-i18n="landing_sim_badge">Simulatore Interattivo</span>
                     </div>
                     <h3 class="text-2xl sm:text-4xl font-bold text-white mb-4" data-i18n="landing_sim_title">
                         Prova dal vivo la generazione dei Token e i Flussi OAuth2
@@ -482,7 +511,8 @@
                 <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
                 <span class="ml-2 text-gray-300">token-payload.json</span>
               </span>
-                        <span id="sim-status" class="text-[10px] text-purple-400 font-semibold uppercase" data-i18n="landing_sim_ready">Pronto</span>
+                        <span id="sim-status" class="text-[10px] text-purple-400 font-semibold uppercase"
+                              data-i18n="landing_sim_ready">Pronto</span>
                     </div>
                     <pre id="sim-output" class="text-emerald-400 overflow-x-auto leading-relaxed max-h-[300px]">
 {
@@ -521,8 +551,10 @@
                                 <i class="fa-solid fa-server"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-white text-base" data-i18n="landing_arch_point1_title">Entità OAUTH_CLIENT</h4>
-                                <p class="text-gray-400" data-i18n="landing_arch_point1_desc">Ogni parametro nel database (id, clientId, redirect_uri,
+                                <h4 class="font-bold text-white text-base" data-i18n="landing_arch_point1_title">Entità
+                                    OAUTH_CLIENT</h4>
+                                <p class="text-gray-400" data-i18n="landing_arch_point1_desc">Ogni parametro nel
+                                    database (id, clientId, redirect_uri,
                                     scopes, jwtExpiration, webhooks) è ora gestibile direttamente da interfaccia grafica
                                     con pieno supporto CRUD.</p>
                             </div>
@@ -533,8 +565,10 @@
                                 <i class="fa-solid fa-users"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-white text-base" data-i18n="landing_arch_point2_title">Entità Utenti & Strapi Sync</h4>
-                                <p class="text-gray-400" data-i18n="landing_arch_point2_desc">Moderazione utenti istantanea con supporto fallback automatico
+                                <h4 class="font-bold text-white text-base" data-i18n="landing_arch_point2_title">Entità
+                                    Utenti & Strapi Sync</h4>
+                                <p class="text-gray-400" data-i18n="landing_arch_point2_desc">Moderazione utenti
+                                    istantanea con supporto fallback automatico
                                     tra CMS Strapi e Database relazionale locale.</p>
                             </div>
                         </div>
@@ -544,8 +578,10 @@
                                 <i class="fa-solid fa-gauge"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-white text-base" data-i18n="landing_arch_point3_title">Rate Limiting Adattivo</h4>
-                                <p class="text-gray-400" data-i18n="landing_arch_point3_desc">Protezione da attacchi a forza bruta su password e token
+                                <h4 class="font-bold text-white text-base" data-i18n="landing_arch_point3_title">Rate
+                                    Limiting Adattivo</h4>
+                                <p class="text-gray-400" data-i18n="landing_arch_point3_desc">Protezione da attacchi a
+                                    forza bruta su password e token
                                     endpoint con filtro Bucket4j attivo a livello gateway.</p>
                             </div>
                         </div>
@@ -556,42 +592,54 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <a href="/app/users" class="m3-glass-card p-6 block hover:border-purple-400/50 group">
                         <i class="fa-solid fa-users text-3xl text-purple-400 mb-4 group-hover:scale-110 transition-transform"></i>
-                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="landing_quick_users_title">Console Utenti</h3>
-                        <p class="text-xs text-gray-400 mb-4" data-i18n="landing_quick_users_desc">Visualizza la tabella utenti, blocca account, gestisci
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="landing_quick_users_title">Console
+                            Utenti</h3>
+                        <p class="text-xs text-gray-400 mb-4" data-i18n="landing_quick_users_desc">Visualizza la tabella
+                            utenti, blocca account, gestisci
                             ruoli.</p>
                         <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
-                <span data-i18n="landing_quick_users_btn">Apri Schermata</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <span data-i18n="landing_quick_users_btn">Apri Schermata</span> <i
+                                class="fa-solid fa-arrow-right text-[10px]"></i>
               </span>
                     </a>
 
                     <a href="/app/clients" class="m3-glass-card p-6 block hover:border-purple-400/50 group">
                         <i class="fa-solid fa-key text-3xl text-purple-400 mb-4 group-hover:scale-110 transition-transform"></i>
-                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="landing_quick_clients_title">Gestione Client</h3>
-                        <p class="text-xs text-gray-400 mb-4" data-i18n="landing_quick_clients_desc">Crea, modifica ed elimina client OAuth2 e redirect
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="landing_quick_clients_title">Gestione
+                            Client</h3>
+                        <p class="text-xs text-gray-400 mb-4" data-i18n="landing_quick_clients_desc">Crea, modifica ed
+                            elimina client OAuth2 e redirect
                             URIs.</p>
                         <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
-                <span data-i18n="landing_quick_clients_btn">Apri Schermata</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <span data-i18n="landing_quick_clients_btn">Apri Schermata</span> <i
+                                class="fa-solid fa-arrow-right text-[10px]"></i>
               </span>
                     </a>
 
                     <a href="/app/login" class="m3-glass-card p-6 block hover:border-purple-400/50 group">
                         <i class="fa-solid fa-user-lock text-3xl text-purple-400 mb-4 group-hover:scale-110 transition-transform"></i>
-                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="landing_quick_login_title">Pagina di Login</h3>
-                        <p class="text-xs text-gray-400 mb-4" data-i18n="landing_quick_login_desc">Accedi con le tue credenziali o richiedi accesso
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="landing_quick_login_title">Pagina di
+                            Login</h3>
+                        <p class="text-xs text-gray-400 mb-4" data-i18n="landing_quick_login_desc">Accedi con le tue
+                            credenziali o richiedi accesso
                             sicuro.</p>
                         <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
-                <span data-i18n="landing_quick_login_btn">Accedi</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <span data-i18n="landing_quick_login_btn">Accedi</span> <i
+                                class="fa-solid fa-arrow-right text-[10px]"></i>
               </span>
                     </a>
 
                     <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank"
                        class="m3-glass-card p-6 block hover:border-purple-400/50 group">
                         <i class="fa-brands fa-github text-3xl text-purple-400 mb-4 group-hover:scale-110 transition-transform"></i>
-                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="landing_quick_github_title">GitHub Repository</h3>
-                        <p class="text-xs text-gray-400 mb-4" data-i18n="landing_quick_github_desc">Esplora il codice sorgente, documentazione e
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="landing_quick_github_title">GitHub
+                            Repository</h3>
+                        <p class="text-xs text-gray-400 mb-4" data-i18n="landing_quick_github_desc">Esplora il codice
+                            sorgente, documentazione e
                             contributi.</p>
                         <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
-                <span data-i18n="landing_quick_github_btn">Apri GitHub</span> <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                <span data-i18n="landing_quick_github_btn">Apri GitHub</span> <i
+                                class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
               </span>
                     </a>
                 </div>
@@ -610,16 +658,20 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-6 text-xs text-gray-400">
-                <a href="/cookie-policy" class="hover:text-purple-300 transition-colors" data-i18n="landing_nav_cookie">Cookie Policy</a>
-                <a href="/privacy-policy" class="hover:text-purple-300 transition-colors" data-i18n="landing_nav_privacy">Privacy Policy</a>
+                <a href="/cookie-policy" class="hover:text-purple-300 transition-colors" data-i18n="landing_nav_cookie">Cookie
+                    Policy</a>
+                <a href="/privacy-policy" class="hover:text-purple-300 transition-colors"
+                   data-i18n="landing_nav_privacy">Privacy Policy</a>
                 <a href="https://github.com/giovannilamarmora" target="_blank"
                    class="hover:text-purple-300 transition-colors">
-                    <i class="fa-brands fa-github mr-1"></i> <span data-i18n="landing_footer_github">Profilo GitHub</span>
+                    <i class="fa-brands fa-github mr-1"></i> <span
+                        data-i18n="landing_footer_github">Profilo GitHub</span>
                 </a>
             </div>
 
             <div class="text-xs text-gray-500">
-                &copy; <span class="copyright-year">2026</span> <span class="app-brand-name">Access Sphere</span>. <span data-i18n="landing_footer_rights">Tutti i diritti riservati.</span>
+                &copy; <span class="copyright-year">2026</span> <span class="app-brand-name">Access Sphere</span>. <span
+                    data-i18n="landing_footer_rights">Tutti i diritti riservati.</span>
             </div>
 
         </div>
@@ -713,12 +765,54 @@
 
         // Dynamic 3D Scene Palette System
         const themeThreePalettes = {
-            "cosmic-purple": { ring1: 0xa855f7, ring2: 0xd0bcff, core: 0x4f378b, emissive: 0x381e72, wire: 0xd0bcff, particle: 0xd0bcff },
-            "midnight-ocean": { ring1: 0x0284c7, ring2: 0x38bdf8, core: 0x0369a1, emissive: 0x082f49, wire: 0x38bdf8, particle: 0x38bdf8 },
-            "emerald-matrix": { ring1: 0x10b981, ring2: 0x34d399, core: 0x065f46, emissive: 0x022c22, wire: 0x34d399, particle: 0x34d399 },
-            "amber-sunset": { ring1: 0xea580c, ring2: 0xfbbf24, core: 0x9a3412, emissive: 0x451a03, wire: 0xfbbf24, particle: 0xfbbf24 },
-            "titanium-slate": { ring1: 0x94a3b8, ring2: 0xcbd5e1, core: 0x334155, emissive: 0x0f172a, wire: 0xcbd5e1, particle: 0xcbd5e1 },
-            "crimson-cyber": { ring1: 0xf43f5e, ring2: 0xfda4af, core: 0x881337, emissive: 0x4c0519, wire: 0xfda4af, particle: 0xfda4af }
+            "cosmic-purple": {
+                ring1: 0xa855f7,
+                ring2: 0xd0bcff,
+                core: 0x4f378b,
+                emissive: 0x381e72,
+                wire: 0xd0bcff,
+                particle: 0xd0bcff
+            },
+            "midnight-ocean": {
+                ring1: 0x0284c7,
+                ring2: 0x38bdf8,
+                core: 0x0369a1,
+                emissive: 0x082f49,
+                wire: 0x38bdf8,
+                particle: 0x38bdf8
+            },
+            "emerald-matrix": {
+                ring1: 0x10b981,
+                ring2: 0x34d399,
+                core: 0x065f46,
+                emissive: 0x022c22,
+                wire: 0x34d399,
+                particle: 0x34d399
+            },
+            "amber-sunset": {
+                ring1: 0xea580c,
+                ring2: 0xfbbf24,
+                core: 0x9a3412,
+                emissive: 0x451a03,
+                wire: 0xfbbf24,
+                particle: 0xfbbf24
+            },
+            "titanium-slate": {
+                ring1: 0x94a3b8,
+                ring2: 0xcbd5e1,
+                core: 0x334155,
+                emissive: 0x0f172a,
+                wire: 0xcbd5e1,
+                particle: 0xcbd5e1
+            },
+            "crimson-cyber": {
+                ring1: 0xf43f5e,
+                ring2: 0xfda4af,
+                core: 0x881337,
+                emissive: 0x4c0519,
+                wire: 0xfda4af,
+                particle: 0xfda4af
+            }
         };
 
         function updateThreeColors(themeName) {
