@@ -1,404 +1,431 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Access Sphere - Dettagli Client OAuth2</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
-  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Access Sphere - Dettagli Client OAuth2</title>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap"
+          rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg"/>
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png"/>
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
-  <script src="/app/shared/sweetalert.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script src="/app/shared/config.js"></script>
-  <script src="/app/shared/utils.js"></script>
-  <script src="/app/shared/api/authorize.js"></script>
-  <script src="/app/shared/api/logout.js"></script>
-  <script src="/app/i18n/translations.js"></script>
-  <script src="/app/shared/api/rest.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/app/shared/sweetalert.css"/>
+    <script src="/app/shared/sweetalert.js"></script>
 
-  <link rel="stylesheet" href="/css/m3-dashboard.css" />
-  <link rel="stylesheet" href="/css/m3-themes.css" />
-  <script src="/app/shared/settings.js"></script>
+    <script src="/app/shared/config.js"></script>
+    <script src="/app/shared/utils.js"></script>
+    <script src="/app/shared/api/authorize.js"></script>
+    <script src="/app/shared/api/logout.js"></script>
+    <script src="/app/i18n/translations.js"></script>
+    <script src="/app/shared/api/rest.js"></script>
 
-  <style>
-    .detail-card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding-bottom: 0.6rem;
-      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
-      margin-bottom: 1.25rem;
-    }
-    .param-box {
-      background: rgba(var(--theme-surface-rgb, 14, 11, 20), 0.6);
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
-      border-radius: 14px;
-      padding: 0.75rem 1rem;
-    }
-    .param-label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      font-weight: 600;
-      color: var(--theme-accent, #D0BCFF);
-      margin-bottom: 0.25rem;
-      display: block;
-    }
-    .param-value {
-      font-size: 0.85rem;
-      color: #FFFFFF;
-      word-break: break-all;
-    }
-    .pill-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.35rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    .pill-active {
-      background: rgba(16, 185, 129, 0.15);
-      color: #6EE7B7;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    .pill-inactive {
-      background: rgba(156, 163, 175, 0.15);
-      color: #D1D5DB;
-      border: 1px solid rgba(156, 163, 175, 0.25);
-    }
-    .pill-info {
-      background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18);
-      color: var(--theme-accent, #D8B4FE);
-      border: 1px solid rgba(var(--theme-accent-rgb, 168, 85, 247), 0.3);
-    }
-    .table.repeater-table {
-      --bs-table-bg: transparent !important;
-      --bs-table-color: #FFFFFF !important;
-      color: #FFFFFF !important;
-      background-color: transparent !important;
-    }
-    .table.repeater-table > :not(caption) > * > * {
-      background-color: transparent !important;
-      color: #FFFFFF !important;
-    }
-    /* Intestazioni repeater-table: nessun border-bottom per evitare
-       il doppio divisore visivo con il border del .detail-card-title soprastante (Foto 1) */
-    .table.repeater-table th {
-      color: var(--theme-accent, #D0BCFF) !important;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      padding: 10px 14px;
-      border-bottom: none !important;
-      background: transparent !important;
-    }
-    .table.repeater-table td {
-      padding: 12px 14px;
-      vertical-align: middle;
-      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1) !important;
-      color: #E2E8F0 !important;
-      background: transparent !important;
-    }
-    .repeater-empty-state {
-      color: var(--theme-accent, #D0BCFF) !important;
-      opacity: 0.75;
-      font-style: italic;
-      text-align: center;
-      padding: 1.5rem 0 !important;
-    }
-    .role-desc-text {
-      color: #E2E8F0 !important;
-      line-height: 1.5;
-    }
-    /* =======================================================
-       CAMPO SECRET MASCHERATO (.masked-input)
-       =======================================================
-       Visualizza il valore del secret come pallini (●) quando type="password".
-       - max-width limitato a 120px: mostra solo ~8 pallini, evitando la lunga
-         fila di punti che occupava tutta la larghezza del container (Foto 1).
-       - Il valore completo è comunque preservato nell'attributo value per la copia
-         e per la rivelazione tramite toggleMask (toggle password ⇌ text).
-       - overflow/text-overflow gestiscono il troncamento visivo.
-       ======================================================= */
-    .masked-input {
-      background: transparent;
-      border: none;
-      color: #FFFFFF;
-      font-family: monospace;
-      font-size: 0.8rem;
-      outline: none;
-      width: 100%;
-      max-width: 120px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    /* Quando il campo è rivelato (type="text"), si espande al 100% per mostrare il valore intero */
-    .masked-input[type="text"] {
-      max-width: 100%;
-    }
-  </style>
+    <link rel="stylesheet" href="/css/m3-dashboard.css"/>
+    <link rel="stylesheet" href="/css/m3-themes.css"/>
+    <script src="/app/shared/settings.js"></script>
+
+    <style>
+        .detail-card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
+            margin-bottom: 1.25rem;
+        }
+
+        .param-box {
+            background: rgba(var(--theme-surface-rgb, 14, 11, 20), 0.6);
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
+            border-radius: 14px;
+            padding: 0.75rem 1rem;
+        }
+
+        .param-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--theme-accent, #D0BCFF);
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .param-value {
+            font-size: 0.85rem;
+            color: #FFFFFF;
+            word-break: break-all;
+        }
+
+        .pill-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .pill-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6EE7B7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .pill-inactive {
+            background: rgba(156, 163, 175, 0.15);
+            color: #D1D5DB;
+            border: 1px solid rgba(156, 163, 175, 0.25);
+        }
+
+        .pill-info {
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18);
+            color: var(--theme-accent, #D8B4FE);
+            border: 1px solid rgba(var(--theme-accent-rgb, 168, 85, 247), 0.3);
+        }
+
+        .table.repeater-table {
+            --bs-table-bg: transparent !important;
+            --bs-table-color: #FFFFFF !important;
+            color: #FFFFFF !important;
+            background-color: transparent !important;
+        }
+
+        .table.repeater-table > :not(caption) > * > * {
+            background-color: transparent !important;
+            color: #FFFFFF !important;
+        }
+
+        /* Intestazioni repeater-table: nessun border-bottom per evitare
+           il doppio divisore visivo con il border del .detail-card-title soprastante (Foto 1) */
+        .table.repeater-table th {
+            color: var(--theme-accent, #D0BCFF) !important;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            padding: 10px 14px;
+            border-bottom: none !important;
+            background: transparent !important;
+        }
+
+        .table.repeater-table td {
+            padding: 12px 14px;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1) !important;
+            color: #E2E8F0 !important;
+            background: transparent !important;
+        }
+
+        .repeater-empty-state {
+            color: var(--theme-accent, #D0BCFF) !important;
+            opacity: 0.75;
+            font-style: italic;
+            text-align: center;
+            padding: 1.5rem 0 !important;
+        }
+
+        .role-desc-text {
+            color: #E2E8F0 !important;
+            line-height: 1.5;
+        }
+
+        /* =======================================================
+           CAMPO SECRET MASCHERATO (.masked-input)
+           =======================================================
+           Visualizza il valore del secret come pallini (●) quando type="password".
+           - max-width limitato a 120px: mostra solo ~8 pallini, evitando la lunga
+             fila di punti che occupava tutta la larghezza del container (Foto 1).
+           - Il valore completo è comunque preservato nell'attributo value per la copia
+             e per la rivelazione tramite toggleMask (toggle password ⇌ text).
+           - overflow/text-overflow gestiscono il troncamento visivo.
+           ======================================================= */
+        .masked-input {
+            background: transparent;
+            border: none;
+            color: #FFFFFF;
+            font-family: monospace;
+            font-size: 0.8rem;
+            outline: none;
+            width: 100%;
+            /*max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;*/
+        }
+
+        /* Quando il campo è rivelato (type="text"), si espande al 100% per mostrare il valore intero */
+        .masked-input[type="text"] {
+            max-width: 100%;
+        }
+    </style>
 </head>
 <body>
 
-  <header class="glass-header">
+<header class="glass-header">
     <div class="header-container">
-      <div class="flex items-center gap-6">
-        <a href="/app" class="flex items-center gap-3 text-decoration-none group">
-          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
-          <div class="flex flex-col">
+        <div class="flex items-center gap-6">
+            <a href="/app" class="flex items-center gap-3 text-decoration-none group">
+                <img src="/img/logo-minimal.svg" alt="Access Sphere Logo"
+                     class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110"/>
+                <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
-            <span class="text-[11px] text-gray-400 font-medium" data-i18n="client_detail_nav_subtitle">Dettagli Configurazione Client</span>
-          </div>
-        </a>
+                    <span class="text-[11px] text-gray-400 font-medium" data-i18n="client_detail_nav_subtitle">Dettagli Configurazione Client</span>
+                </div>
+            </a>
 
-        <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
-          <a href="/app" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
-          </a>
-          <a href="/app/users" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
-          </a>
-          <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
-            <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
-          </a>
-          <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
-          </a>
-          <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
-          </a>
-        </nav>
-      </div>
+            <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+                <a href="/app" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
+                </a>
+                <a href="/app/users" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
+                </a>
+                <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
+                    <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
+                </a>
+                <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
+                </a>
+                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank"
+                   class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
+                </a>
+            </nav>
+        </div>
 
-      <div class="flex items-center gap-2">
-        <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client" data-i18n-title="client_detail_back">
-          <i class="fa-solid fa-arrow-left text-sm"></i>
-        </a>
-        <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
-          <i class="fa-solid fa-circle-info text-sm"></i>
-        </button>
-        <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
-          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
-        </button>
-      </div>
+        <div class="flex items-center gap-2">
+            <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client" data-i18n-title="client_detail_back">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+            </a>
+            <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
+            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+            </button>
+        </div>
     </div>
-  </header>
+</header>
 
-  <main class="dashboard-wide-container">
+<main class="dashboard-wide-container">
     <div id="client-detail-container" class="w-full">
-      <div class="m3-card p-12 text-center text-purple-300 flex flex-col items-center justify-center">
-        <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
-        <p class="text-sm" data-i18n="client_detail_loading">Caricamento scheda client in corso...</p>
-      </div>
+        <div class="m3-card p-12 text-center text-purple-300 flex flex-col items-center justify-center">
+            <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+            <p class="text-sm" data-i18n="client_detail_loading">Caricamento scheda client in corso...</p>
+        </div>
     </div>
-  </main>
+</main>
 
-  <script>
+<script>
     let currentClientData = null;
 
     function formatTimeMs(ms) {
-      if (!ms && ms !== 0) return "N/D";
-      const num = parseInt(ms);
-      if (isNaN(num)) return ms;
-      if (num >= 3600000) {
-        const hours = (num / 3600000).toFixed(1).replace(".0", "");
-        return `${num} ms (${hours} ${hours === "1" ? "ora" : "ore"})`;
-      } else if (num >= 60000) {
-        const mins = (num / 60000).toFixed(1).replace(".0", "");
-        return `${num} ms (${mins} min)`;
-      } else if (num >= 1000) {
-        const secs = (num / 1000).toFixed(1).replace(".0", "");
-        return `${num} ms (${secs} sec)`;
-      }
-      return `${num} ms`;
+        if (!ms && ms !== 0) return "N/D";
+        const num = parseInt(ms);
+        if (isNaN(num)) return ms;
+        if (num >= 3600000) {
+            const hours = (num / 3600000).toFixed(1).replace(".0", "");
+            return `${num} ms (${hours} ${hours === "1" ? "ora" : "ore"})`;
+        } else if (num >= 60000) {
+            const mins = (num / 60000).toFixed(1).replace(".0", "");
+            return `${num} ms (${mins} min)`;
+        } else if (num >= 1000) {
+            const secs = (num / 1000).toFixed(1).replace(".0", "");
+            return `${num} ms (${secs} sec)`;
+        }
+        return `${num} ms`;
     }
 
     function parseScopesArray(scopes) {
-      if (!scopes) return [];
-      if (Array.isArray(scopes)) return scopes;
-      if (typeof scopes === "string") {
-        try {
-          const parsed = JSON.parse(scopes);
-          if (Array.isArray(parsed)) return parsed;
-        } catch(e) {}
-        return scopes.split(/[\s,]+/).filter(Boolean);
-      }
-      if (typeof scopes === "object") return Object.values(scopes).filter(Boolean);
-      return [String(scopes)];
+        if (!scopes) return [];
+        if (Array.isArray(scopes)) return scopes;
+        if (typeof scopes === "string") {
+            try {
+                const parsed = JSON.parse(scopes);
+                if (Array.isArray(parsed)) return parsed;
+            } catch (e) {
+            }
+            return scopes.split(/[\s,]+/).filter(Boolean);
+        }
+        if (typeof scopes === "object") return Object.values(scopes).filter(Boolean);
+        return [String(scopes)];
     }
 
     function extractUriList(val) {
-      if (!val) return [];
-      if (Array.isArray(val)) {
-        return val.flatMap(item => extractUriList(item)).filter(Boolean);
-      }
-      if (typeof val === "object") {
-        return Object.values(val).flatMap(item => extractUriList(item)).filter(Boolean);
-      }
-      if (typeof val === "string") {
-        const trimmed = val.trim();
-        if (trimmed.startsWith("[") || (trimmed.startsWith("{") && !trimmed.startsWith("{\"http"))) {
-          try {
-            return extractUriList(JSON.parse(trimmed));
-          } catch (e) {}
+        if (!val) return [];
+        if (Array.isArray(val)) {
+            return val.flatMap(item => extractUriList(item)).filter(Boolean);
         }
-        return trimmed.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
-      }
-      return [String(val).trim()].filter(Boolean);
+        if (typeof val === "object") {
+            return Object.values(val).flatMap(item => extractUriList(item)).filter(Boolean);
+        }
+        if (typeof val === "string") {
+            const trimmed = val.trim();
+            if (trimmed.startsWith("[") || (trimmed.startsWith("{") && !trimmed.startsWith("{\"http"))) {
+                try {
+                    return extractUriList(JSON.parse(trimmed));
+                } catch (e) {
+                }
+            }
+            return trimmed.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+        }
+        return [String(val).trim()].filter(Boolean);
     }
 
     function parseRedirectMap(raw) {
-      let res = { redirect_uris: [], fallback_uris: [] };
-      if (!raw) return res;
-      if (typeof raw === "object" && !Array.isArray(raw)) {
-        res.redirect_uris = extractUriList(raw.redirect_uri || raw.redirect_uris || raw.redirectUri);
-        res.fallback_uris = extractUriList(raw.fallback_uri || raw.fallback_uris || raw.fallbackUri);
-        return res;
-      }
-      if (typeof raw === "string") {
-        try {
-          const parsed = JSON.parse(raw);
-          if (typeof parsed === "object" && !Array.isArray(parsed)) {
-            res.redirect_uris = extractUriList(parsed.redirect_uri || parsed.redirect_uris || parsed.redirectUri);
-            res.fallback_uris = extractUriList(parsed.fallback_uri || parsed.fallback_uris || parsed.fallbackUri);
+        let res = {redirect_uris: [], fallback_uris: []};
+        if (!raw) return res;
+        if (typeof raw === "object" && !Array.isArray(raw)) {
+            res.redirect_uris = extractUriList(raw.redirect_uri || raw.redirect_uris || raw.redirectUri);
+            res.fallback_uris = extractUriList(raw.fallback_uri || raw.fallback_uris || raw.fallbackUri);
             return res;
-          }
-        } catch(e) {}
-        res.redirect_uris = extractUriList(raw);
-      }
-      return res;
+        }
+        if (typeof raw === "string") {
+            try {
+                const parsed = JSON.parse(raw);
+                if (typeof parsed === "object" && !Array.isArray(parsed)) {
+                    res.redirect_uris = extractUriList(parsed.redirect_uri || parsed.redirect_uris || parsed.redirectUri);
+                    res.fallback_uris = extractUriList(parsed.fallback_uri || parsed.fallback_uris || parsed.fallbackUri);
+                    return res;
+                }
+            } catch (e) {
+            }
+            res.redirect_uris = extractUriList(raw);
+        }
+        return res;
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      loadClientDetails();
+        loadClientDetails();
     });
 
     window.addEventListener("languageChanged", () => {
-      if (currentClientData) {
-        renderClientDetail(currentClientData);
-      }
+        if (currentClientData) {
+            renderClientDetail(currentClientData);
+        }
     });
 
     function loadClientDetails() {
-      const path = window.location.href;
-      let clientId = null;
-      if (path.includes("details/")) {
-        clientId = decodeURIComponent(path.split("details/")[1].split("/")[0].split("?")[0].split("#")[0]);
-      } else {
-        clientId = new URLSearchParams(window.location.search).get("clientId") || new URLSearchParams(window.location.search).get("id");
-      }
+        const path = window.location.href;
+        let clientId = null;
+        if (path.includes("details/")) {
+            clientId = decodeURIComponent(path.split("details/")[1].split("/")[0].split("?")[0].split("#")[0]);
+        } else {
+            clientId = new URLSearchParams(window.location.search).get("clientId") || new URLSearchParams(window.location.search).get("id");
+        }
 
-      if (!clientId) {
-        document.getElementById("client-detail-container").innerHTML = `
+        if (!clientId) {
+            document.getElementById("client-detail-container").innerHTML = `
           <div class="m3-card p-8 text-center text-red-300">
             <p class="font-bold mb-2">Client ID non specificato.</p>
             <a href="/app/clients" class="m3-btn-outline text-xs mt-2">${typeof t === 'function' ? t('client_detail_back', 'Torna ai Client') : 'Torna ai Client'}</a>
           </div>
         `;
-        return;
-      }
+            return;
+        }
 
-      const token = getCookieOrStorage(config.access_token);
-      const url = window.location.origin + "/v1/clients";
+        const token = getCookieOrStorage(config.access_token);
+        const url = window.location.origin + "/v1/clients";
 
-      fetch(url, {
-        headers: { "Authorization": "Bearer " + token }
-      })
-      .then(async (res) => {
-        const data = await res.json();
-        const clients = data.data || [];
-        const client = clients.find(c => c.clientId === clientId);
-        if (client) {
-          currentClientData = client;
-          renderClientDetail(client);
-        } else {
-          document.getElementById("client-detail-container").innerHTML = `
+        fetch(url, {
+            headers: {"Authorization": "Bearer " + token}
+        })
+            .then(async (res) => {
+                const data = await res.json();
+                const clients = data.data || [];
+                const client = clients.find(c => c.clientId === clientId);
+                if (client) {
+                    currentClientData = client;
+                    renderClientDetail(client);
+                } else {
+                    document.getElementById("client-detail-container").innerHTML = `
             <div class="m3-card p-8 text-center text-red-300">
               <p class="font-bold mb-2">${typeof t === 'function' ? t('client_detail_no_client_found', 'Nessun client trovato con ID:') : 'Nessun client trovato con ID:'} ${clientId}</p>
               <a href="/app/clients" class="m3-btn-outline text-xs mt-2">${typeof t === 'function' ? t('client_detail_back', 'Torna ai Client') : 'Torna ai Client'}</a>
             </div>
           `;
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        document.getElementById("client-detail-container").innerHTML = `
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                document.getElementById("client-detail-container").innerHTML = `
           <div class="m3-card p-8 text-center text-red-300">
             <p class="font-bold mb-2">Errore di connessione durante il caricamento del client.</p>
             <a href="/app/clients" class="m3-btn-outline text-xs mt-2">${typeof t === 'function' ? t('client_detail_back', 'Torna ai Client') : 'Torna ai Client'}</a>
           </div>
         `;
-      });
+            });
     }
 
     function renderClientDetail(c) {
-      const container = document.getElementById("client-detail-container");
+        const container = document.getElementById("client-detail-container");
 
-      const authType = c.authType || c.type || "ALL_TYPE";
-      const tokenType = c.tokenType || "BEARER_JWT";
-      const accessType = c.accessType || "ONLINE";
-      const redirectStatus = c.authorize_redirect_status || "FOUND";
+        const authType = c.authType || c.type || "ALL_TYPE";
+        const tokenType = c.tokenType || "BEARER_JWT";
+        const accessType = c.accessType || "ONLINE";
+        const redirectStatus = c.authorize_redirect_status || "FOUND";
 
-      const mfaEnabled = (c.mfaEnabled !== undefined) ? !!c.mfaEnabled : !!c.mfa_enabled;
-      const idToken = (c.idToken !== undefined) ? !!c.idToken : !!c.id_token;
-      const accessToken = (c.accessToken !== undefined) ? !!c.accessToken : !!c.access_token;
-      const strapiToken = (c.strapiToken !== undefined) ? !!c.strapiToken : !!c.strapi_token;
+        const mfaEnabled = (c.mfaEnabled !== undefined) ? !!c.mfaEnabled : !!c.mfa_enabled;
+        const idToken = (c.idToken !== undefined) ? !!c.idToken : !!c.id_token;
+        const accessToken = (c.accessToken !== undefined) ? !!c.accessToken : !!c.access_token;
+        const strapiToken = (c.strapiToken !== undefined) ? !!c.strapiToken : !!c.strapi_token;
 
-      const scopesList = parseScopesArray(c.scopes);
-      const redirectInfo = parseRedirectMap(c.redirect_uri);
+        const scopesList = parseScopesArray(c.scopes);
+        const redirectInfo = parseRedirectMap(c.redirect_uri);
 
-      // Parse App Roles
-      let roles = [];
-      const rawRoles = c.appRoles || c.app_roles;
-      if (rawRoles) {
-        if (typeof rawRoles === "string") {
-          try { roles = JSON.parse(rawRoles); } catch(e) {}
-        } else if (Array.isArray(rawRoles)) {
-          roles = rawRoles;
+        // Parse App Roles
+        let roles = [];
+        const rawRoles = c.appRoles || c.app_roles;
+        if (rawRoles) {
+            if (typeof rawRoles === "string") {
+                try {
+                    roles = JSON.parse(rawRoles);
+                } catch (e) {
+                }
+            } else if (Array.isArray(rawRoles)) {
+                roles = rawRoles;
+            }
         }
-      }
 
-      // Parse Webhooks
-      let webhooks = [];
-      const rawWebhooks = c.webhooks;
-      if (rawWebhooks) {
-        if (typeof rawWebhooks === "string") {
-          try { webhooks = JSON.parse(rawWebhooks); } catch(e) {}
-        } else if (Array.isArray(rawWebhooks)) {
-          webhooks = rawWebhooks;
+        // Parse Webhooks
+        let webhooks = [];
+        const rawWebhooks = c.webhooks;
+        if (rawWebhooks) {
+            if (typeof rawWebhooks === "string") {
+                try {
+                    webhooks = JSON.parse(rawWebhooks);
+                } catch (e) {
+                }
+            } else if (Array.isArray(rawWebhooks)) {
+                webhooks = rawWebhooks;
+            }
         }
-      }
 
-      const activeLabel = typeof t === 'function' ? t('user_detail_active', 'ATTIVO') : 'ATTIVO';
-      const inactiveLabel = typeof t === 'function' ? t('user_detail_disabled_f', 'DISATTIVO') : 'DISATTIVO';
-      const yesLabel = typeof t === 'function' ? t('user_detail_yes', 'SI') : 'SI';
-      const noLabel = typeof t === 'function' ? (t('no', 'NO') || 'NO') : 'NO';
+        const activeLabel = typeof t === 'function' ? t('user_detail_active', 'ATTIVO') : 'ATTIVO';
+        const inactiveLabel = typeof t === 'function' ? t('user_detail_disabled_f', 'DISATTIVO') : 'DISATTIVO';
+        const yesLabel = typeof t === 'function' ? t('user_detail_yes', 'SI') : 'SI';
+        const noLabel = typeof t === 'function' ? (t('no', 'NO') || 'NO') : 'NO';
 
-      container.innerHTML = `
+        container.innerHTML = `
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
           
           <!-- COLONNA SINISTRA: SCHEDA PRINCIPALE & AZIONI RAPIDE -->
@@ -416,9 +443,9 @@
               <div class="flex flex-wrap items-center justify-center gap-2 mb-6">
                 <span class="pill-badge pill-info font-mono">${authType}</span>
                 <span class="pill-badge pill-info font-mono">${tokenType}</span>
-                ${mfaEnabled 
-                  ? `<span class="pill-badge pill-active"><i class="fa-solid fa-shield-check"></i> ${typeof t === 'function' ? t('client_detail_mfa_active', 'MFA ATTIVA') : 'MFA ATTIVA'}</span>` 
-                  : `<span class="pill-badge pill-inactive"><i class="fa-solid fa-shield-slash"></i> ${typeof t === 'function' ? t('client_detail_mfa_off', 'MFA OFF') : 'MFA OFF'}</span>`}
+                ${mfaEnabled
+            ? `<span class="pill-badge pill-active"><i class="fa-solid fa-shield-check"></i> ${typeof t === 'function' ? t('client_detail_mfa_active', 'MFA ATTIVA') : 'MFA ATTIVA'}</span>`
+            : `<span class="pill-badge pill-inactive"><i class="fa-solid fa-shield-slash"></i> ${typeof t === 'function' ? t('client_detail_mfa_off', 'MFA OFF') : 'MFA OFF'}</span>`}
               </div>
 
               <!-- CREDENZIALI CRITICHE -->
@@ -540,9 +567,9 @@
               <div class="param-box mb-4">
                 <span class="param-label">${typeof t === 'function' ? t('client_field_scopes', 'Scopes Autorizzati') : 'Scopes Autorizzati'}</span>
                 <div class="flex flex-wrap gap-1.5 mt-1">
-                  ${scopesList.length > 0 
-                    ? scopesList.map(s => `<span class="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/25 text-purple-300 font-mono text-xs">${s}</span>`).join('') 
-                    : `<span class="text-gray-400 text-xs italic">${typeof t === 'function' ? t('client_detail_no_scopes', 'Nessuno scope specificato') : 'Nessuno scope specificato'}</span>`}
+                  ${scopesList.length > 0
+            ? scopesList.map(s => `<span class="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/25 text-purple-300 font-mono text-xs">${s}</span>`).join('')
+            : `<span class="text-gray-400 text-xs italic">${typeof t === 'function' ? t('client_detail_no_scopes', 'Nessuno scope specificato') : 'Nessuno scope specificato'}</span>`}
                 </div>
               </div>
 
@@ -712,73 +739,73 @@
     }
 
     function toggleMask(inputId, eyeId) {
-      const input = document.getElementById(inputId);
-      const eye = document.getElementById(eyeId);
-      if (input.type === "password") {
-        input.type = "text";
-        eye.classList.remove("fa-eye");
-        eye.classList.add("fa-eye-slash");
-      } else {
-        input.type = "password";
-        eye.classList.remove("fa-eye-slash");
-        eye.classList.add("fa-eye");
-      }
+        const input = document.getElementById(inputId);
+        const eye = document.getElementById(eyeId);
+        if (input.type === "password") {
+            input.type = "text";
+            eye.classList.remove("fa-eye");
+            eye.classList.add("fa-eye-slash");
+        } else {
+            input.type = "password";
+            eye.classList.remove("fa-eye-slash");
+            eye.classList.add("fa-eye");
+        }
     }
 
     function copyValue(val, label) {
-      if (!val) {
-        sweetalert("warning", (typeof t === 'function' ? t('swal_missing_data_title', 'Dato Assente') : 'Dato Assente'), `${label} ` + (typeof t === 'function' ? t('swal_missing_data_desc', 'non è configurato.') : 'non è configurato.'));
-        return;
-      }
-      navigator.clipboard.writeText(val).then(() => {
-        sweetalert("info", (typeof t === 'function' ? t('swal_copied_title', 'Copiato!') : 'Copiato!'), `${label} ` + (typeof t === 'function' ? t('swal_copied_desc', 'copiato negli appunti.') : 'copiato negli appunti.'));
-      });
+        if (!val) {
+            sweetalert("warning", (typeof t === 'function' ? t('swal_missing_data_title', 'Dato Assente') : 'Dato Assente'), `${label} ` + (typeof t === 'function' ? t('swal_missing_data_desc', 'non è configurato.') : 'non è configurato.'));
+            return;
+        }
+        navigator.clipboard.writeText(val).then(() => {
+            sweetalert("info", (typeof t === 'function' ? t('swal_copied_title', 'Copiato!') : 'Copiato!'), `${label} ` + (typeof t === 'function' ? t('swal_copied_desc', 'copiato negli appunti.') : 'copiato negli appunti.'));
+        });
     }
 
     window.addEventListener("languageChanged", () => {
-      if (currentClientData) {
-        renderClientDetail(currentClientData);
-      }
+        if (currentClientData) {
+            renderClientDetail(currentClientData);
+        }
     });
 
     function copyFullConfigJson() {
-      if (!currentClientData) return;
-      const jsonStr = JSON.stringify(currentClientData, null, 2);
-      navigator.clipboard.writeText(jsonStr).then(() => {
-        sweetalert("success", (typeof t === 'function' ? t("swal_json_copied_title", "JSON Copiato!") : "JSON Copiato!"), (typeof t === 'function' ? t("swal_json_copied_desc", "La configurazione completa del client è stata copiata negli appunti in formato JSON.") : "La configurazione completa del client è stata copiata negli appunti in formato JSON."));
-      });
+        if (!currentClientData) return;
+        const jsonStr = JSON.stringify(currentClientData, null, 2);
+        navigator.clipboard.writeText(jsonStr).then(() => {
+            sweetalert("success", (typeof t === 'function' ? t("swal_json_copied_title", "JSON Copiato!") : "JSON Copiato!"), (typeof t === 'function' ? t("swal_json_copied_desc", "La configurazione completa del client è stata copiata negli appunti in formato JSON.") : "La configurazione completa del client è stata copiata negli appunti in formato JSON."));
+        });
     }
 
     function deleteClientAction(clientId) {
-      Swal.fire({
-        title: (typeof t === 'function' ? t("swal_delete_client_title", "Sei sicuro?") : "Sei sicuro?"),
-        text: (typeof t === 'function' ? t("swal_delete_client_desc", `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`).replace("#CLIENT_ID#", clientId) : `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`),
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: (typeof t === 'function' ? t("btn_delete_confirm", "Sì, elimina!") : "Sì, elimina!"),
-        cancelButtonText: (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla")
-      }).then((result) => {
-        if (result.isConfirmed) {
-          const token = getCookieOrStorage(config.access_token);
-          const url = window.location.origin + `/v1/client/${encodeURIComponent(clientId)}`;
+        Swal.fire({
+            title: (typeof t === 'function' ? t("swal_delete_client_title", "Sei sicuro?") : "Sei sicuro?"),
+            text: (typeof t === 'function' ? t("swal_delete_client_desc", `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`).replace("#CLIENT_ID#", clientId) : `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`),
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: (typeof t === 'function' ? t("btn_delete_confirm", "Sì, elimina!") : "Sì, elimina!"),
+            cancelButtonText: (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla")
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const token = getCookieOrStorage(config.access_token);
+                const url = window.location.origin + `/v1/client/${encodeURIComponent(clientId)}`;
 
-          fetch(url, {
-            method: "DELETE",
-            headers: { "Authorization": "Bearer " + token }
-          }).then(async (res) => {
-            if (res.ok) {
-              sweetalert("success", (typeof t === 'function' ? t("swal_deleted_title", "Eliminato") : "Eliminato"), (typeof t === 'function' ? t("swal_delete_client_success", `Il client ${clientId} è stato rimosso.`).replace("#CLIENT_ID#", clientId) : `Il client ${clientId} è stato rimosso.`));
-              setTimeout(() => {
-                window.location.href = "/app/clients";
-              }, 1500);
-            } else {
-              sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Errore") : "Errore"), (typeof t === 'function' ? t("swal_delete_client_error", "Impossibile eliminare il client.") : "Impossibile eliminare il client."));
+                fetch(url, {
+                    method: "DELETE",
+                    headers: {"Authorization": "Bearer " + token}
+                }).then(async (res) => {
+                    if (res.ok) {
+                        sweetalert("success", (typeof t === 'function' ? t("swal_deleted_title", "Eliminato") : "Eliminato"), (typeof t === 'function' ? t("swal_delete_client_success", `Il client ${clientId} è stato rimosso.`).replace("#CLIENT_ID#", clientId) : `Il client ${clientId} è stato rimosso.`));
+                        setTimeout(() => {
+                            window.location.href = "/app/clients";
+                        }, 1500);
+                    } else {
+                        sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Errore") : "Errore"), (typeof t === 'function' ? t("swal_delete_client_error", "Impossibile eliminare il client.") : "Impossibile eliminare il client."));
+                    }
+                });
             }
-          });
-        }
-      });
+        });
     }
-  </script>
+</script>
 
 </body>
 </html>
