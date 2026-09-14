@@ -131,16 +131,16 @@ jobs:
           fi
 
           cat <<EOF > release_notes.md
-          # Material Home Assistant ${TAG_NAME}
+          # Access Sphere ${TAG_NAME}
 
-          Nuova versione di **Material Home Assistant** compilata e distribuita con successo su GitHub Container Registry.
+          New version of **Access Sphere** successfully built and deployed to GitHub Container Registry.
 
-          ### 📦 Dettagli Rilascio
-          - **Versione:** \`${VERSION}\`
+          ### 📦 Release Details
+          - **Version:** \`${VERSION}\`
           - **Tag:** \`${TAG_NAME}\`
-          - **Immagine Docker:** \`${IMAGE_NAME}:${VERSION}\`
+          - **Docker Image:** \`${IMAGE_NAME}:${VERSION}\`
 
-          ### 🛠️ Modifiche incluse
+          ### 🛠️ Changes Included
           ${COMMITS}
           EOF
 
