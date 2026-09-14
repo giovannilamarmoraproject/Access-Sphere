@@ -429,9 +429,9 @@ table.dataTable {
 }
 
 table.dataTable thead th {
-  color: #D0BCFF !important;
+  color: var(--theme-accent, #D0BCFF) !important;
   background: transparent !important;
-  border-bottom: 1px solid rgba(208, 188, 255, 0.25) !important;
+  border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25) !important;
   font-weight: 700 !important;
   font-size: 0.82rem !important;
   text-transform: uppercase !important;
@@ -441,15 +441,15 @@ table.dataTable thead th {
 
 /* DARK TABLE ROWS - NO WHITE ROW ANYMORE */
 table.dataTable tbody tr {
-  background-color: rgba(26, 21, 40, 0.88) !important;
-  border: 1px solid rgba(208, 188, 255, 0.14) !important;
+  background-color: rgba(var(--theme-surface-rgb, 26, 21, 40), 0.88) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.14) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
   transition: all 0.2s ease !important;
 }
 
 table.dataTable tbody tr:hover {
-  background-color: rgba(46, 36, 72, 0.95) !important;
-  border-color: rgba(208, 188, 255, 0.35) !important;
+  background-color: rgba(var(--theme-primary-rgb, 46, 36, 72), 0.25) !important;
+  border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.4) !important;
   transform: translateY(-1px);
 }
 
@@ -755,7 +755,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 }
 
 .form-label {
-  color: #D0BCFF !important;
+  color: var(--theme-accent, #D0BCFF) !important;
   font-weight: 600 !important;
   font-size: 0.8rem !important;
   text-transform: uppercase !important;
@@ -846,12 +846,12 @@ div.dt-container .dt-paging button:hover:not(:disabled):not(.current),
 div.dt-container div.dt-paging button.dt-paging-button.current,
 div.dt-container .dt-paging button.current,
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-  background: linear-gradient(135deg, #A855F7 0%, #7E22CE 100%) !important;
+  background: var(--m3-primary-gradient, linear-gradient(135deg, #A855F7 0%, #7E22CE 100%)) !important;
   border: 2px solid #FFFFFF !important;
   color: #FFFFFF !important;
   -webkit-text-fill-color: #FFFFFF !important;
   font-weight: 700 !important;
-  box-shadow: 0 0 14px rgba(168, 85, 247, 0.75) !important;
+  box-shadow: 0 0 14px var(--theme-glow, rgba(168, 85, 247, 0.75)) !important;
   border-radius: 50% !important;
   width: 32px !important;
   height: 32px !important;
@@ -875,10 +875,10 @@ div.dt-container .dt-paging button:disabled,
    HUB HERO & RECAP CARDS
    ------------------------------------------- */
 .hub-hero-card {
-  background: rgba(24, 19, 38, 0.78);
+  background: rgba(var(--theme-surface-rgb, 24, 19, 38), 0.8);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(208, 188, 255, 0.18);
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
   border-radius: 28px;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -886,8 +886,8 @@ div.dt-container .dt-paging button:disabled,
 }
 .hub-hero-card:hover {
   transform: translateY(-6px);
-  border-color: rgba(208, 188, 255, 0.45);
-  box-shadow: 0 24px 48px -12px rgba(124, 77, 255, 0.35);
+  border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45);
+  box-shadow: 0 24px 48px -12px var(--theme-glow, rgba(124, 77, 255, 0.35));
 }
 .hub-hero-card::before {
   content: '';
@@ -900,10 +900,10 @@ div.dt-container .dt-paging button:disabled,
   transition: opacity 0.35s ease;
 }
 .hub-card-users::before {
-  background: linear-gradient(90deg, #A855F7, #EC4899);
+  background: var(--m3-primary-gradient, linear-gradient(90deg, #A855F7, #EC4899));
 }
 .hub-card-clients::before {
-  background: linear-gradient(90deg, #6366F1, #06B6D4);
+  background: var(--m3-primary-gradient, linear-gradient(90deg, #6366F1, #06B6D4));
 }
 .hub-hero-card:hover::before {
   opacity: 1;
@@ -914,9 +914,9 @@ div.dt-container .dt-paging button:disabled,
   gap: 6px;
   padding: 6px 14px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(208, 188, 255, 0.14);
-  color: #D0BCFF;
+  background: rgba(var(--theme-primary-rgb, 255, 255, 255), 0.06);
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
+  color: var(--theme-accent, #D0BCFF);
   font-size: 0.75rem;
   font-weight: 500;
 }
@@ -929,15 +929,15 @@ div.dt-container .dt-paging button:disabled,
   border-radius: 9999px !important;
   font-size: 0.85rem;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(208, 188, 255, 0.25);
-  color: #E6E1E5;
+  background: rgba(var(--theme-surface-rgb, 255, 255, 255), 0.6);
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);
+  color: var(--m3-on-surface, #E6E1E5);
   text-decoration: none;
   transition: all 0.25s ease;
 }
 .m3-btn-secondary:hover {
-  background: rgba(208, 188, 255, 0.15);
-  border-color: rgba(208, 188, 255, 0.5);
+  background: rgba(var(--theme-primary-rgb, 208, 188, 255), 0.2);
+  border-color: var(--theme-accent, #D0BCFF);
   color: #FFFFFF;
   transform: translateY(-1px);
 }
@@ -1170,18 +1170,23 @@ textarea.is-valid {
   -webkit-backdrop-filter: blur(24px);
   border-right: 1px solid rgba(208, 188, 255, 0.2);
   border-left: none;
-  box-shadow: 12px 0 36px rgba(0, 0, 0, 0.65);
+  box-shadow: none;
+  visibility: hidden;
+  pointer-events: none;
   z-index: 9999;
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s ease;
   padding: 1.5rem 1.25rem;
   overflow-y: auto;
 }
 
 .m3-mobile-drawer.active {
   transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+  box-shadow: 12px 0 36px rgba(0, 0, 0, 0.65);
 }
 
 .m3-mobile-nav-link {

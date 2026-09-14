@@ -514,6 +514,109 @@ textarea {
   box-shadow: 0 0 12px var(--theme-glow) !important;
 }
 
+/* =======================================================
+   HUB HERO & BOTTOM DASHBOARD CARDS ADAPTIVE THEME (Foto 1)
+   ======================================================= */
+[data-theme] .hub-hero-card,
+[data-theme] .hub-card-users,
+[data-theme] .hub-card-clients {
+  background: rgba(var(--theme-surface-rgb), 0.8) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.18) !important;
+}
+
+[data-theme] .hub-hero-card:hover {
+  border-color: rgba(var(--theme-accent-rgb), 0.45) !important;
+  box-shadow: 0 24px 48px -12px var(--theme-glow) !important;
+}
+
+[data-theme] .hub-card-users::before,
+[data-theme] .hub-card-clients::before {
+  background: var(--m3-primary-gradient) !important;
+}
+
+[data-theme] .hub-card-users .w-16.h-16,
+[data-theme] .hub-card-clients .w-16.h-16 {
+  background: linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.3) 0%, rgba(var(--theme-primary-rgb), 0.1) 100%) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.35) !important;
+  color: var(--theme-accent) !important;
+  box-shadow: 0 6px 18px var(--theme-glow) !important;
+}
+
+[data-theme] .hub-card-users .w-16.h-16 i,
+[data-theme] .hub-card-clients .w-16.h-16 i {
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] .hub-card-users span.rounded-full,
+[data-theme] .hub-card-clients span.rounded-full {
+  background-color: rgba(var(--theme-primary-rgb), 0.18) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.3) !important;
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] .pill-tag {
+  background: rgba(var(--theme-primary-rgb), 0.08) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.18) !important;
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] .pill-tag i {
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] .hub-hero-card .border-t {
+  border-top-color: rgba(var(--theme-accent-rgb), 0.18) !important;
+}
+
+[data-theme] .m3-btn-secondary {
+  background: rgba(var(--theme-surface-rgb), 0.6) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.25) !important;
+  color: var(--m3-on-surface) !important;
+}
+
+[data-theme] .m3-btn-secondary:hover {
+  background: rgba(var(--theme-primary-rgb), 0.2) !important;
+  border-color: var(--theme-accent) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme] .m3-btn-secondary i {
+  color: var(--theme-accent) !important;
+}
+
+/* Dashboard live status banner & overview cards */
+[data-theme] .bg-purple-950\/40 {
+  background-color: rgba(var(--theme-surface-rgb), 0.7) !important;
+}
+[data-theme] .border-purple-500\/20,
+[data-theme] .border-purple-500\/15,
+[data-theme] .border-purple-500\/30,
+[data-theme] .border-purple-500\/10 {
+  border-color: rgba(var(--theme-accent-rgb), 0.2) !important;
+}
+[data-theme] .bg-purple-500\/15,
+[data-theme] .bg-purple-500\/20,
+[data-theme] .bg-purple-500\/25,
+[data-theme] .bg-purple-500\/10,
+[data-theme] .bg-purple-500\/5 {
+  background-color: rgba(var(--theme-primary-rgb), 0.18) !important;
+}
+[data-theme] .text-purple-300,
+[data-theme] .text-purple-400,
+[data-theme] .text-purple-200 {
+  color: var(--theme-accent) !important;
+}
+
+/* =======================================================
+   FORM LABELS & REGISTRATION TEXT ADAPTIVE THEME (Foto 4)
+   ======================================================= */
+[data-theme] .form-label,
+[data-theme] label.form-label,
+[data-theme] label,
+[data-theme] .form-label-title {
+  color: var(--theme-accent) !important;
+}
+
 /* Registration & Edit Form Subcards, Section Titles & Inputs */
 [data-theme] .m3-subcard,
 [data-theme] .m3-switch-card,
@@ -538,6 +641,12 @@ textarea {
 [data-theme] .form-helper,
 [data-theme] .param-label,
 [data-theme] .input-group-text {
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] .pill-badge.pill-info {
+  background: rgba(var(--theme-primary-rgb), 0.2) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.3) !important;
   color: var(--theme-accent) !important;
 }
 
@@ -720,20 +829,102 @@ textarea {
   background-color: var(--theme-primary) !important;
 }
 
-/* Tables Adaptive Theme */
+/* =======================================================
+   TABLES & DATATABLES ADAPTIVE THEME (Foto 3)
+   ======================================================= */
+[data-theme] table.dataTable thead th,
 [data-theme] .table thead th,
 [data-theme] .m3-table thead th {
-  background-color: var(--theme-surface-container) !important;
+  background-color: transparent !important;
   color: var(--theme-accent) !important;
-  border-color: rgba(var(--theme-accent-rgb), 0.18) !important;
+  border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.25) !important;
 }
+
+[data-theme] table.dataTable tbody tr,
+[data-theme] .table tbody tr,
+[data-theme] .m3-table tbody tr {
+  background-color: rgba(var(--theme-surface-rgb), 0.85) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.16) !important;
+}
+
+[data-theme] table.dataTable tbody tr:hover,
 [data-theme] .table tbody tr:hover,
 [data-theme] .m3-table tbody tr:hover {
-  background-color: rgba(var(--theme-primary-rgb), 0.08) !important;
+  background-color: rgba(var(--theme-primary-rgb), 0.18) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.4) !important;
+  box-shadow: 0 4px 20px -4px var(--theme-glow) !important;
 }
-[data-theme] .table td,
+
+[data-theme] table.dataTable tbody td,
+[data-theme] .table tbody td,
 [data-theme] .m3-table td {
-  border-color: rgba(var(--theme-accent-rgb), 0.12) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.1) !important;
+}
+
+[data-theme] table.dataTable tbody td a {
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] table.dataTable tbody td a.text-white {
+  color: #FFFFFF !important;
+}
+
+[data-theme] .m3-action-edit {
+  background: rgba(var(--theme-accent-rgb), 0.12) !important;
+  color: var(--theme-accent) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.25) !important;
+}
+
+[data-theme] .m3-action-edit:hover {
+  background: var(--theme-primary) !important;
+  color: #FFFFFF !important;
+  border-color: var(--theme-accent) !important;
+}
+
+/* DataTables search input & page length select */
+[data-theme] .dataTables_wrapper .dataTables_filter input,
+[data-theme] div.dt-container div.dt-search input,
+[data-theme] .dataTables_wrapper .dataTables_length select,
+[data-theme] div.dt-container div.dt-length select {
+  background-color: var(--theme-input-bg) !important;
+  border: 1.5px solid rgba(var(--theme-accent-rgb), 0.28) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme] .dataTables_wrapper .dataTables_filter input:focus,
+[data-theme] div.dt-container div.dt-search input:focus,
+[data-theme] .dataTables_wrapper .dataTables_length select:focus,
+[data-theme] div.dt-container div.dt-length select:focus {
+  border-color: var(--theme-accent) !important;
+  box-shadow: 0 0 0 3px var(--theme-glow) !important;
+}
+
+/* DataTables pagination buttons */
+[data-theme] div.dt-container div.dt-paging button.dt-paging-button,
+[data-theme] div.dt-container .dt-paging button,
+[data-theme] .dataTables_wrapper .dataTables_paginate .paginate_button {
+  background: rgba(var(--theme-surface-rgb), 0.7) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.22) !important;
+  color: var(--m3-on-surface) !important;
+}
+
+[data-theme] div.dt-container div.dt-paging button.dt-paging-button:hover:not(.current):not(:disabled),
+[data-theme] div.dt-container .dt-paging button:hover:not(.current):not(:disabled),
+[data-theme] .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+  background: rgba(var(--theme-primary-rgb), 0.2) !important;
+  border-color: var(--theme-accent) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px var(--theme-glow) !important;
+}
+
+[data-theme] div.dt-container div.dt-paging button.dt-paging-button.current,
+[data-theme] div.dt-container .dt-paging button.current,
+[data-theme] .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: var(--m3-primary-gradient) !important;
+  border: 2px solid #FFFFFF !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  box-shadow: 0 0 16px var(--theme-glow) !important;
 }
 
 /* MFA OTP Inputs Adaptive Theme */

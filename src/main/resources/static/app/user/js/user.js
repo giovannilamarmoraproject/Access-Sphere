@@ -60,8 +60,8 @@ function getUser() {
 function renderCustomAttributesData(attributes) {
   if (!attributes || typeof attributes !== "object" || Object.keys(attributes).length === 0) {
     return `
-      <div class="p-6 text-center text-purple-300 flex items-center justify-center gap-3" style="background: rgba(26, 20, 42, 0.6); border: 1px solid rgba(208, 188, 255, 0.12); border-radius: 20px;">
-        <i class="fa-solid fa-sliders text-purple-400 text-lg"></i>
+      <div class="p-6 text-center flex items-center justify-center gap-3" style="background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.6); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border-radius: 20px; color: var(--theme-accent, #D0BCFF);">
+        <i class="fa-solid fa-sliders text-lg" style="color: var(--theme-accent, #A855F7);"></i>
         <span class="text-xs font-medium">${typeof t === 'function' ? t("user_detail_no_attributes", "Nessun attributo personalizzato presente per questo account.") : "Nessun attributo personalizzato presente per questo account."}</span>
       </div>
     `;
@@ -81,7 +81,7 @@ function renderCustomAttributesData(attributes) {
         let valueDisplay = "";
 
         if (typeof subVal === "string" && (subVal === "EUR" || subVal === "USD" || subVal.length <= 4)) {
-          valueDisplay = `<span class="px-2.5 py-0.5 font-mono font-bold text-xs" style="background: rgba(168, 85, 247, 0.2); color: #EADDFF; border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">${subVal}</span>`;
+          valueDisplay = `<span class="px-2.5 py-0.5 font-mono font-bold text-xs" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2); color: var(--theme-accent, #EADDFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); border-radius: 9999px;">${subVal}</span>`;
         } else if (subVal === "€" || subVal === "$") {
           valueDisplay = `<span class="px-2.5 py-0.5 font-bold font-mono text-sm" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px;">${subVal}</span>`;
         } else if (subVal === "ACTIVE" || subVal === "COMPLETED" || subVal === "TRUE" || subVal === true) {
@@ -93,26 +93,26 @@ function renderCustomAttributesData(attributes) {
         }
 
         subItemsHtml += `
-          <div class="p-3 flex flex-col justify-between min-w-0" style="background: rgba(14, 11, 20, 0.6); border: 1px solid rgba(208, 188, 255, 0.12); border-radius: 14px;">
-            <span class="text-[10px] text-purple-300/80 uppercase font-semibold tracking-wider truncate mb-1" title="${String(subLabel).replace(/"/g, '&quot;')}">${subLabel}</span>
+          <div class="p-3 flex flex-col justify-between min-w-0" style="background: rgba(var(--theme-surface-rgb, 14, 11, 20), 0.6); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12); border-radius: 14px;">
+            <span class="text-[10px] uppercase font-semibold tracking-wider truncate mb-1" style="color: var(--theme-accent, #C4B5FD);" title="${String(subLabel).replace(/"/g, '&quot;')}">${subLabel}</span>
             <div class="mt-1 flex items-center min-w-0">${valueDisplay}</div>
           </div>
         `;
       }
 
       sectionsHtml += `
-        <div class="p-4 sm:p-5 space-y-3.5" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 18px;">
-          <div class="flex items-center justify-between pb-3 gap-2" style="border-bottom: 1px solid rgba(208, 188, 255, 0.12);">
+        <div class="p-4 sm:p-5 space-y-3.5" style="background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.7); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border-radius: 18px;">
+          <div class="flex items-center justify-between pb-3 gap-2" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12);">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-xl flex items-center justify-center text-purple-300 flex-shrink-0" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(208, 188, 255, 0.25);">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); color: var(--theme-accent, #D0BCFF);">
                 <i class="fa-solid fa-layer-group text-xs"></i>
               </div>
               <div class="min-w-0">
                 <span class="text-xs sm:text-sm font-bold text-white block truncate uppercase">${formattedTitle}</span>
-                <span class="text-[10px] font-mono text-purple-300/80 block truncate">${key}</span>
+                <span class="text-[10px] font-mono block truncate" style="color: var(--theme-accent, #D0BCFF); opacity: 0.85;">${key}</span>
               </div>
             </div>
-            <span class="px-2.5 py-1 font-mono text-[10px] font-semibold whitespace-nowrap flex-shrink-0 rounded-full" style="background: rgba(208, 188, 255, 0.15); color: #EADDFF; border: 1px solid rgba(208, 188, 255, 0.2);">
+            <span class="px-2.5 py-1 font-mono text-[10px] font-semibold whitespace-nowrap flex-shrink-0 rounded-full" style="background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); color: var(--theme-accent, #EADDFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2);">
               ${typeof t === 'function' ? t("client_field_nested_obj", "Oggetto") : "Oggetto"} (${Object.keys(value).length})
             </span>
           </div>
@@ -131,15 +131,15 @@ function renderCustomAttributesData(attributes) {
 
       if (isToken) {
         sectionsHtml += `
-          <div class="p-4 sm:p-5 space-y-3" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 18px;">
+          <div class="p-4 sm:p-5 space-y-3" style="background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.7); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border-radius: 18px;">
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-purple-300 flex-shrink-0" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(208, 188, 255, 0.25);">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); color: var(--theme-accent, #D0BCFF);">
                   <i class="fa-solid fa-key text-xs"></i>
                 </div>
                 <div class="min-w-0">
                   <span class="text-xs sm:text-sm font-bold text-white block truncate uppercase">${formattedTitle}</span>
-                  <span class="text-[10px] font-mono text-purple-300/80 block truncate">${key}</span>
+                  <span class="text-[10px] font-mono block truncate" style="color: var(--theme-accent, #D0BCFF); opacity: 0.85;">${key}</span>
                 </div>
               </div>
               <span class="px-2.5 py-1 font-mono text-[10px] font-semibold whitespace-nowrap flex-shrink-0 rounded-full" style="background: rgba(245, 158, 11, 0.15); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.25);">
@@ -147,11 +147,11 @@ function renderCustomAttributesData(attributes) {
               </span>
             </div>
             <div class="flex items-center gap-2 pt-1">
-              <input type="password" id="${inputId}" readonly value="${safeVal}" class="form-control font-mono text-xs flex-1 min-w-0" style="background: #231B34; border: 1.5px solid rgba(208, 188, 255, 0.28); color: #fff; border-radius: 9999px; padding: 9px 16px;" />
-              <button type="button" class="flex-shrink-0" onclick="togglePasswordVisibility('${inputId}', this)" title="Mostra / Nascondi" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+              <input type="password" id="${inputId}" readonly value="${safeVal}" class="form-control font-mono text-xs flex-1 min-w-0" style="background: var(--theme-input-bg, #231B34); border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28); color: #fff; border-radius: 9999px; padding: 9px 16px;" />
+              <button type="button" class="flex-shrink-0" onclick="togglePasswordVisibility('${inputId}', this)" title="Mostra / Nascondi" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); color: var(--theme-accent, #FFFFFF); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i class="fa-solid fa-eye text-xs"></i>
               </button>
-              <button type="button" class="flex-shrink-0" onclick="copyTokenValue('${inputId}')" title="${typeof t === 'function' ? t("user_detail_copy_btn", "Copia") : "Copia"}" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(208, 188, 255, 0.12); border: 1px solid rgba(208, 188, 255, 0.25); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+              <button type="button" class="flex-shrink-0" onclick="copyTokenValue('${inputId}')" title="${typeof t === 'function' ? t("user_detail_copy_btn", "Copia") : "Copia"}" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); color: var(--theme-accent, #FFFFFF); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i class="fa-solid fa-copy text-xs"></i>
               </button>
             </div>
@@ -159,12 +159,12 @@ function renderCustomAttributesData(attributes) {
         `;
       } else {
         sectionsHtml += `
-          <div class="p-3.5 sm:p-4 flex items-center justify-between gap-3" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 18px;">
+          <div class="p-3.5 sm:p-4 flex items-center justify-between gap-3" style="background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.7); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border-radius: 18px;">
             <div class="min-w-0">
               <span class="text-xs font-bold text-white uppercase block truncate">${formattedTitle}</span>
-              <span class="text-[10px] font-mono text-purple-300/80 block truncate">${key}</span>
+              <span class="text-[10px] font-mono block truncate" style="color: var(--theme-accent, #D0BCFF); opacity: 0.85;">${key}</span>
             </div>
-            <span class="font-mono text-white text-xs font-semibold px-3 py-1 flex-shrink-0 truncate" style="background: rgba(208, 188, 255, 0.15); border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">${value}</span>
+            <span class="font-mono text-white text-xs font-semibold px-3 py-1 flex-shrink-0 truncate" style="background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); border-radius: 9999px;">${value}</span>
           </div>
         `;
       }
@@ -173,12 +173,12 @@ function renderCustomAttributesData(attributes) {
     else {
       const formattedTitle = key.replace(/_/g, " ").replace(/-/g, " ").toUpperCase();
       sectionsHtml += `
-        <div class="p-3.5 sm:p-4 flex items-center justify-between gap-3" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 18px;">
+        <div class="p-3.5 sm:p-4 flex items-center justify-between gap-3" style="background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.7); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border-radius: 18px;">
           <div class="min-w-0">
             <span class="text-xs font-bold text-white uppercase block truncate">${formattedTitle}</span>
-            <span class="text-[10px] font-mono text-purple-300/80 block truncate">${key}</span>
+            <span class="text-[10px] font-mono block truncate" style="color: var(--theme-accent, #D0BCFF); opacity: 0.85;">${key}</span>
           </div>
-          <span class="font-mono text-white text-xs font-semibold px-3 py-1 flex-shrink-0 truncate" style="background: rgba(208, 188, 255, 0.15); border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">${JSON.stringify(value)}</span>
+          <span class="font-mono text-white text-xs font-semibold px-3 py-1 flex-shrink-0 truncate" style="background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); border-radius: 9999px;">${JSON.stringify(value)}</span>
         </div>
       `;
     }
@@ -187,7 +187,7 @@ function renderCustomAttributesData(attributes) {
   return `
     <div class="space-y-4">
       <div class="flex items-center justify-between gap-2 pb-2">
-        <span class="text-xs text-purple-300 font-semibold flex items-center gap-1.5 truncate">
+        <span class="text-xs font-semibold flex items-center gap-1.5 truncate" style="color: var(--theme-accent, #D0BCFF);">
           <i class="fa-solid fa-check-double text-emerald-400 flex-shrink-0"></i>
           <span>${Object.keys(attributes).length} ${typeof t === 'function' ? t("user_detail_properties_count", "Proprietà") : "Proprietà"}</span>
         </span>
@@ -203,14 +203,14 @@ function renderCustomAttributesData(attributes) {
 
       <div id="raw-json-container" style="display: none;" class="mt-4">
         <div class="flex items-center justify-between pb-2 mb-1">
-          <span class="text-[11px] font-mono text-purple-300 font-semibold uppercase tracking-wider">
+          <span class="text-[11px] font-mono font-semibold uppercase tracking-wider" style="color: var(--theme-accent, #D0BCFF);">
             <i class="fa-solid fa-terminal mr-1"></i> ${typeof t === 'function' ? t("user_detail_json_source", "Codice Sorgente JSON") : "Codice Sorgente JSON"}
           </span>
           <button type="button" class="m3-btn-outline text-xs py-1 px-2.5 cursor-pointer" onclick="navigator.clipboard.writeText(document.getElementById('raw-json-pre').innerText).then(() => sweetalert('success', 'Copiato', 'JSON copiato negli appunti!'))">
             <i class="fa-solid fa-copy mr-1"></i> ${typeof t === 'function' ? t("user_detail_copy_btn", "Copia") : "Copia"}
           </button>
         </div>
-        <pre id="raw-json-pre" class="text-xs font-mono text-purple-200 p-4 overflow-x-auto" style="background: rgba(14, 11, 20, 0.85); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 16px;">${rawJson}</pre>
+        <pre id="raw-json-pre" class="text-xs font-mono p-4 overflow-x-auto" style="background: rgba(var(--theme-surface-rgb, 14, 11, 20), 0.85); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border-radius: 16px; color: var(--theme-accent, #D0BCFF);">${rawJson}</pre>
       </div>
     </div>
   `;
@@ -280,8 +280,8 @@ function displayUserData(user) {
   let rolesHtml = `<span class="text-xs text-gray-400">${typeof t === 'function' ? t("user_detail_no_roles", "Nessun ruolo assegnato") : "Nessun ruolo assegnato"}</span>`;
   if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
     rolesHtml = user.roles.map(r => `
-      <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-mono font-semibold mr-2 mb-2 shadow-sm" style="background: rgba(168, 85, 247, 0.18); color: #EADDFF; border: 1px solid rgba(208, 188, 255, 0.25); border-radius: 9999px;">
-        <i class="fa-solid fa-shield-halved text-purple-400 text-[11px]"></i>
+      <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-mono font-semibold mr-2 mb-2 shadow-sm" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18); color: var(--theme-accent, #EADDFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); border-radius: 9999px;">
+        <i class="fa-solid fa-shield-halved text-[11px]" style="color: var(--theme-accent, #A855F7);"></i>
         ${r}
       </span>
     `).join("");
@@ -302,15 +302,15 @@ function displayUserData(user) {
     mfaMethodsHtml = `
       <div class="space-y-3">
         ${mfaMethods.map(m => `
-          <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-purple-400/40" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">
+          <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all" style="background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.7); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border-radius: 20px;">
             <div class="flex items-center gap-3.5">
-              <div class="w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-inner" style="background: rgba(208, 188, 255, 0.1); border: 1px solid rgba(208, 188, 255, 0.2);">
+              <div class="w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-inner" style="background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2); color: var(--theme-accent, #D0BCFF);">
                 ${getMfaIcon(m.label)}
               </div>
               <div>
                 <div class="flex items-center gap-2">
                   <span class="text-sm font-bold text-white">${formatMfaLabel(m.label)}</span>
-                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full" style="background: rgba(168, 85, 247, 0.15); color: #D0BCFF; border: 1px solid rgba(208, 188, 255, 0.2);">${m.type || 'TOTP'}</span>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15); color: var(--theme-accent, #D0BCFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2);">${m.type || 'TOTP'}</span>
                 </div>
                 <div class="text-xs text-gray-400 mt-1 flex flex-wrap items-center gap-2">
                   <span>${typeof t === 'function' ? t("user_detail_state", "Stato:") : "Stato:"}</span>
@@ -338,8 +338,8 @@ function displayUserData(user) {
     `;
   } else {
     mfaMethodsHtml = `
-      <div class="p-6 text-center rounded-2xl" style="background: rgba(26, 20, 42, 0.5); border: 1px dashed rgba(208, 188, 255, 0.2);">
-        <i class="fa-solid fa-shield-virus text-3xl text-purple-400/50 mb-2 block"></i>
+      <div class="p-6 text-center rounded-2xl" style="background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.5); border: 1px dashed rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2);">
+        <i class="fa-solid fa-shield-virus text-3xl mb-2 block" style="color: var(--theme-accent, #A855F7); opacity: 0.5;"></i>
         <p class="text-sm text-gray-300 font-medium m-0">${typeof t === 'function' ? t("user_detail_no_mfa", "Nessun metodo di autenticazione a due fattori configurato.") : "Nessun metodo di autenticazione a due fattori configurato."}</p>
         <p class="text-xs text-gray-400 mt-1 mb-4">${typeof t === 'function' ? t("user_detail_no_mfa_desc", "Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account.") : "Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account."}</p>
         <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-5 inline-flex items-center gap-2 text-decoration-none shadow-md" style="border-radius: 9999px !important; color: #FFFFFF !important;">
@@ -359,27 +359,27 @@ function displayUserData(user) {
             src="${photo}"
             alt="${user.username}"
             class="w-36 h-36 rounded-full object-cover shadow-2xl"
-            style="border: 4px solid rgba(208, 188, 255, 0.25);"
+            style="border: 4px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);"
           />
           <span class="absolute bottom-2 right-2 w-5 h-5 rounded-full ${isBlocked ? 'bg-red-500' : 'bg-emerald-400'}" style="border: 2px solid #171324;" title="${isBlocked ? (typeof t === 'function' ? t('user_detail_blocked', 'Bloccato') : 'Bloccato') : (typeof t === 'function' ? t('user_detail_active', 'Attivo') : 'Attivo')}"></span>
         </div>
 
         <h3 class="text-2xl font-bold text-white mb-1">${user.name || ""} ${user.surname || ""}</h3>
-        <p class="text-purple-300 text-sm font-mono mb-3">@${user.username || ""}</p>
+        <p class="text-sm font-mono mb-3" style="color: var(--theme-accent, #D0BCFF);">@${user.username || ""}</p>
         <div class="mb-6">${statusBadge}</div>
 
         <!-- Box UUID ed Email SENZA BORDO BIANCO -->
-        <div class="w-full p-4 text-left text-xs text-gray-300 space-y-3 mb-6" style="background: rgba(26, 20, 42, 0.7); border: 1px solid rgba(208, 188, 255, 0.15); border-radius: 20px;">
+        <div class="w-full p-4 text-left text-xs text-gray-300 space-y-3 mb-6" style="background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.7); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15); border-radius: 20px;">
           <div>
-            <span class="block text-[11px] uppercase font-semibold mb-0.5" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_detail_uuid", "UUID Utente") : "UUID Utente"}</span>
-            <span class="font-mono text-purple-200 text-xs break-all select-all block leading-relaxed">${user.identifier || "N/D"}</span>
+            <span class="block text-[11px] uppercase font-semibold mb-0.5" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_detail_uuid", "UUID Utente") : "UUID Utente"}</span>
+            <span class="font-mono text-xs break-all select-all block leading-relaxed" style="color: var(--m3-on-surface, #FFFFFF); opacity: 0.9;">${user.identifier || "N/D"}</span>
           </div>
-          <div style="border-top: 1px solid rgba(208, 188, 255, 0.12); padding-top: 10px;">
-            <span class="block text-[11px] uppercase font-semibold mb-0.5" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_email", "Email") : "Email"}</span>
+          <div style="border-top: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12); padding-top: 10px;">
+            <span class="block text-[11px] uppercase font-semibold mb-0.5" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_email", "Email") : "Email"}</span>
             <span class="text-white text-xs break-all select-all block leading-relaxed">${user.email || "N/D"}</span>
           </div>
-          <div class="flex items-center justify-between" style="border-top: 1px solid rgba(208, 188, 255, 0.12); padding-top: 10px;">
-            <span class="text-[11px] uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_detail_confirmed", "Account Confermato") : "Account Confermato"}</span>
+          <div class="flex items-center justify-between" style="border-top: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12); padding-top: 10px;">
+            <span class="text-[11px] uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_detail_confirmed", "Account Confermato") : "Account Confermato"}</span>
             <span class="${isConfirmed ? 'text-emerald-300' : 'text-yellow-300'} font-semibold text-xs">${isConfirmed ? (typeof t === 'function' ? t("user_detail_yes", "Sì") : "Sì") : (typeof t === 'function' ? t("user_detail_waiting", "In attesa") : "In attesa")}</span>
           </div>
         </div>
@@ -392,8 +392,8 @@ function displayUserData(user) {
           </a>
           
           <div class="grid grid-cols-2 gap-2.5 w-full">
-            <a href="/app/users/roles/${encodeURIComponent(user.identifier)}" class="m3-action-pill py-2.5 px-3 text-center text-decoration-none shadow-sm hover:brightness-110 transition-all" style="background: rgba(168, 85, 247, 0.18); color: #FFFFFF !important; border: 1px solid rgba(208, 188, 255, 0.3); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;">
-              <i class="fa-solid fa-shield-halved text-sm" style="color: #D0BCFF;"></i>
+            <a href="/app/users/roles/${encodeURIComponent(user.identifier)}" class="m3-action-pill py-2.5 px-3 text-center text-decoration-none shadow-sm hover:brightness-110 transition-all" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18); color: #FFFFFF !important; border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;">
+              <i class="fa-solid fa-shield-halved text-sm" style="color: var(--theme-accent, #D0BCFF);"></i>
               <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_roles_btn", "Ruoli") : "Ruoli"}</span>
             </a>
             
@@ -422,57 +422,57 @@ function displayUserData(user) {
       <div class="lg:col-span-2 space-y-8">
         
         <div class="m3-card p-5 sm:p-8">
-          <h4 class="text-xl font-bold text-white mb-6 flex items-center gap-2.5 pb-4" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
-            <i class="fa-solid fa-id-card text-purple-400"></i> ${typeof t === 'function' ? t("user_detail_full_info", "Informazioni Anagrafiche Complete") : "Informazioni Anagrafiche Complete"}
+          <h4 class="text-xl font-bold text-white mb-6 flex items-center gap-2.5 pb-4" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
+            <i class="fa-solid fa-id-card" style="color: var(--theme-accent, #A855F7);"></i> ${typeof t === 'function' ? t("user_detail_full_info", "Informazioni Anagrafiche Complete") : "Informazioni Anagrafiche Complete"}
           </h4>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_name", "Nome") : "Nome"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_name", "Nome") : "Nome"}</span>
               <div class="text-white font-medium text-base mt-1">${user.name || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_surname", "Cognome") : "Cognome"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_surname", "Cognome") : "Cognome"}</span>
               <div class="text-white font-medium text-base mt-1">${user.surname || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_username", "Username") : "Username"}</span>
-              <div class="text-purple-300 font-medium text-base mt-1 font-mono">@${user.username || "N/D"}</div>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_username", "Username") : "Username"}</span>
+              <div class="font-medium text-base mt-1 font-mono" style="color: var(--theme-accent, #D0BCFF);">@${user.username || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_email", "Email") : "Email"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_email", "Email") : "Email"}</span>
               <div class="text-white font-medium text-base mt-1">${user.email || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_detail_phone", "Telefono") : "Telefono"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_detail_phone", "Telefono") : "Telefono"}</span>
               <div class="text-white font-medium text-base mt-1 font-mono">${user.phoneNumber || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_birthdate", "Data di Nascita") : "Data di Nascita"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_birthdate", "Data di Nascita") : "Data di Nascita"}</span>
               <div class="text-white font-medium text-base mt-1">${user.birthDate || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_gender", "Genere") : "Genere"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_gender", "Genere") : "Genere"}</span>
               <div class="text-white font-medium text-base mt-1">${user.gender || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_nationality", "Nazionalità") : "Nazionalità"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_nationality", "Nazionalità") : "Nazionalità"}</span>
               <div class="text-white font-medium text-base mt-1">${user.nationality || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_ssn", "Codice Fiscale / SSN") : "Codice Fiscale / SSN"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_ssn", "Codice Fiscale / SSN") : "Codice Fiscale / SSN"}</span>
               <div class="text-white font-medium text-base mt-1 font-mono">${user.ssn || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_occupation", "Occupazione") : "Occupazione"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_occupation", "Occupazione") : "Occupazione"}</span>
               <div class="text-white font-medium text-base mt-1">${user.occupation || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_field_education", "Istruzione") : "Istruzione"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_field_education", "Istruzione") : "Istruzione"}</span>
               <div class="text-white font-medium text-base mt-1">${user.education || "N/D"}</div>
             </div>
             <div>
-              <span class="text-xs uppercase font-semibold" style="color: #C4B5FD;">${typeof t === 'function' ? t("user_detail_mfa_sec", "Sicurezza 2FA (MFA)") : "Sicurezza 2FA (MFA)"}</span>
+              <span class="text-xs uppercase font-semibold" style="color: var(--theme-accent, #C4B5FD);">${typeof t === 'function' ? t("user_detail_mfa_sec", "Sicurezza 2FA (MFA)") : "Sicurezza 2FA (MFA)"}</span>
               <div class="mt-1">${mfaStatus}</div>
             </div>
           </div>
@@ -480,9 +480,9 @@ function displayUserData(user) {
 
         <!-- Card Ruoli Applicativi (RBAC) -->
         <div class="m3-card p-5 sm:p-8">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 gap-3" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
             <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
-              <i class="fa-solid fa-user-shield text-purple-400"></i> ${typeof t === 'function' ? t("user_detail_rbac_title", "Ruoli Applicativi (RBAC)") : "Ruoli Applicativi (RBAC)"}
+              <i class="fa-solid fa-user-shield" style="color: var(--theme-accent, #A855F7);"></i> ${typeof t === 'function' ? t("user_detail_rbac_title", "Ruoli Applicativi (RBAC)") : "Ruoli Applicativi (RBAC)"}
             </h4>
             <a href="/app/users/roles/${user.identifier}" class="m3-btn-primary text-xs py-2 px-5 text-decoration-none shadow-md w-full sm:w-auto justify-center" style="border-radius: 9999px !important; color: #FFFFFF !important;">
               <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_manage_roles", "Gestisci Ruoli") : "Gestisci Ruoli"}</span>
@@ -495,10 +495,10 @@ function displayUserData(user) {
 
         <!-- Card Autenticazione a Due Fattori (MFA) -->
         <div class="m3-card p-5 sm:p-8">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 gap-3" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
             <div class="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
               <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
-                <i class="fa-solid fa-shield-halved text-purple-400"></i> ${typeof t === 'function' ? t("user_detail_mfa_title", "Autenticazione a Due Fattori (MFA)") : "Autenticazione a Due Fattori (MFA)"}
+                <i class="fa-solid fa-shield-halved" style="color: var(--theme-accent, #A855F7);"></i> ${typeof t === 'function' ? t("user_detail_mfa_title", "Autenticazione a Due Fattori (MFA)") : "Autenticazione a Due Fattori (MFA)"}
               </h4>
               ${isMfaActive
                 ? `<span class="px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35);">${typeof t === 'function' ? t("user_detail_active_f", "ATTIVA") : "ATTIVA"}</span>`
@@ -526,11 +526,11 @@ function displayUserData(user) {
 
         <!-- Card Attributi Custom Trasformati in Dati Visivi -->
         <div class="m3-card p-5 sm:p-8">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-5 gap-3" style="border-bottom: 1px solid rgba(208, 188, 255, 0.15);">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-5 gap-3" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
             <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
-              <i class="fa-solid fa-sliders text-purple-400"></i> ${typeof t === 'function' ? t("user_detail_custom_attributes", "Attributi Personalizzati") : "Attributi Personalizzati"}
+              <i class="fa-solid fa-sliders" style="color: var(--theme-accent, #A855F7);"></i> ${typeof t === 'function' ? t("user_detail_custom_attributes", "Attributi Personalizzati") : "Attributi Personalizzati"}
             </h4>
-            <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2 px-3.5 text-decoration-none" style="color: #D0BCFF !important; border-color: rgba(208, 188, 255, 0.3) !important;">
+            <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2 px-3.5 text-decoration-none" style="color: var(--theme-accent, #D0BCFF) !important; border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;">
               <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_edit_attributes", "Modifica Attributi") : "Modifica Attributi"}</span>
             </a>
           </div>
