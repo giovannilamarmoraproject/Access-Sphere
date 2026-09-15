@@ -201,11 +201,11 @@
 
         <!-- Attributi Custom M3 (Supporto Oggetti Inestati & Editor JSON) -->
         <div class="col-12">
-          <div class="m3-subcard p-4 rounded-2xl" style="background: rgba(26, 20, 42, 0.6); border: 1px solid rgba(208, 188, 255, 0.15);">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 border-b border-purple-500/15 gap-3">
+          <div class="m3-subcard p-4 rounded-2xl">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 m3-attr-header-divider gap-3">
               <div>
                 <div class="form-section-title m-0 border-0 p-0 text-sm font-bold text-white flex items-center gap-2">
-                  <i class="fa-solid fa-sliders text-purple-400"></i> <span data-i18n="user_sec_attributes_title">Attributi Personalizzati (Custom Attributes)</span>
+                  <i class="fa-solid fa-sliders" style="color: var(--theme-accent);"></i> <span data-i18n="user_sec_attributes_title">Attributi Personalizzati (Custom Attributes)</span>
                 </div>
                 <span class="text-[11px] text-gray-400 mt-0.5 block" data-i18n="user_sec_attributes_desc">
                   Gestione completa di proprietà semplici e oggetti inestati (es. <code>app_settings</code>).
@@ -249,7 +249,7 @@
             <!-- VISTA 2: EDITOR DIRETTO JSON -->
             <div id="attributes-code-view" style="display: none;">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2">
-                <span class="text-[11px] text-purple-300 font-semibold uppercase tracking-wider">
+                <span class="text-[11px] font-semibold uppercase tracking-wider" style="color: var(--theme-accent);">
                   <i class="fa-solid fa-terminal mr-1"></i> <span data-i18n="user_attr_json_source">Codice Sorgente JSON</span>
                 </span>
                 <div class="flex items-center gap-2 w-full sm:w-auto">

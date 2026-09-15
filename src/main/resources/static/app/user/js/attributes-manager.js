@@ -112,7 +112,7 @@ function renderAttributesTable() {
     const btnExample = typeof t === "function" ? t("user_attr_btn_example", "Carica Esempio") : "Carica Esempio";
 
     container.innerHTML = `
-      <div class="p-6 text-center m3-attr-empty-state rounded-2xl border border-purple-500/20 bg-[#161124]/40">
+      <div class="p-6 text-center m3-attr-empty-state rounded-2xl">
         <i class="fa-solid fa-sliders text-2xl mb-2 block"></i>
         <p class="text-xs">${emptyDesc}</p>
         <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
@@ -170,16 +170,16 @@ function renderAttributesTable() {
 
       html += `
         <div class="m3-nested-card">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-purple-500/15 gap-2">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 m3-nested-card-divider gap-2">
             <div class="flex items-center gap-2 flex-1">
-              <div class="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 flex-shrink-0">
+              <div class="w-7 h-7 rounded-lg m3-nested-icon-badge flex items-center justify-center flex-shrink-0">
                 <i class="fa-solid fa-layer-group text-xs"></i>
               </div>
-              <input type="text" class="form-control font-mono text-xs font-bold text-purple-200 flex-1 max-w-xs"
+              <input type="text" class="form-control font-mono text-xs font-bold flex-1 max-w-xs" style="color: var(--theme-accent);"
                 value="${escapeHtmlAttr(item.key)}"
                 oninput="updateAttributeKey(${index}, this.value)"
                 placeholder="${escapeHtmlAttr(nestedNamePlaceholder)}" />
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex-shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold m3-nested-count-pill flex-shrink-0">
                 ${escapeHtmlAttr(item.key || "Object")} (${(item.subItems || []).length})
               </span>
             </div>
@@ -194,7 +194,7 @@ function renderAttributesTable() {
           </div>
 
           <div class="space-y-1 pl-2 sm:pl-3">
-            <div class="flex items-center gap-2 text-[10px] font-semibold text-purple-300/70 uppercase tracking-wider mb-1.5 px-1">
+            <div class="flex items-center gap-2 text-[10px] font-semibold m3-attr-sub-header uppercase tracking-wider mb-1.5 px-1">
               <span class="flex-1">${escapeHtmlAttr(subKeyLabel)}</span>
               <span class="flex-1">${escapeHtmlAttr(subValLabel)}</span>
               <span style="width: 36px;"></span>
@@ -207,7 +207,7 @@ function renderAttributesTable() {
       // Proprietà primitiva singola (es. strapi-token)
       const isToken = item.key.toLowerCase().includes("token") || (item.value && item.value.length > 30);
       html += `
-        <div class="p-3 mb-2 rounded-xl border border-purple-500/15 bg-[#161124]/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <div class="p-3 mb-2 m3-attr-prop-card flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div class="flex-1">
             <input type="text" class="form-control font-mono text-xs"
               value="${escapeHtmlAttr(item.key)}"
@@ -456,7 +456,7 @@ function validateJsonCodeEditor() {
   const rawVal = codeEditor.value.trim();
   if (rawVal === "" || rawVal === "{}") {
     feedbackEl.innerHTML = `<span class="text-gray-400 text-xs"><i class="fa-solid fa-circle-info mr-1"></i> JSON vuoto. Nessun attributo salvato.</span>`;
-    codeEditor.style.borderColor = "rgba(208, 188, 255, 0.25)";
+    codeEditor.style.borderColor = "rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25)";
     if (hiddenTextarea) hiddenTextarea.value = "";
     return;
   }

@@ -198,7 +198,7 @@ button.m3-btn-secondary:focus {
     color: #FFFFFF !important;
     text-decoration: none !important;
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(124, 77, 255, 0.2) !important;
+    box-shadow: 0 4px 14px var(--theme-glow, rgba(168, 85, 247, 0.25)) !important;
 }
 
 .m3-btn-outline:active,

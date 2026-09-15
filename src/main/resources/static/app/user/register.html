@@ -387,10 +387,10 @@
 
         <!-- SEZIONE 5: ATTRIBUTI PERSONALIZZATI (CUSTOM ATTRIBUTES - SUPPORTO OGGETTI INESTATI) -->
         <div class="m3-subcard">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 border-b border-purple-500/15 gap-3">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 m3-attr-header-divider gap-3">
             <div>
               <div class="form-section-title m-0 border-0 p-0 text-sm font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-sliders text-purple-400"></i> <span data-i18n="user_sec_attributes_title">5. Attributi Personalizzati (Custom Attributes)</span>
+                <i class="fa-solid fa-sliders" style="color: var(--theme-accent);"></i> <span data-i18n="user_sec_attributes_title">5. Attributi Personalizzati (Custom Attributes)</span>
               </div>
               <span class="text-[11px] text-gray-400 mt-0.5 block" data-i18n="user_sec_attributes_desc">
                 Supporto completo per token, proprietà primitive e oggetti inestati (es. <code>app_settings</code>).
@@ -434,7 +434,7 @@
           <!-- VISTA 2: EDITOR DIRETTO JSON -->
           <div id="attributes-code-view" style="display: none;">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2">
-              <span class="text-[11px] text-purple-300 font-semibold uppercase tracking-wider">
+              <span class="text-[11px] font-semibold uppercase tracking-wider" style="color: var(--theme-accent);">
                 <i class="fa-solid fa-terminal mr-1"></i> <span data-i18n="user_attr_json_source">Codice Sorgente JSON</span>
               </span>
               <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -459,7 +459,7 @@
         <!-- SEZIONE 6: TERMINI DI SERVIZIO & CONSENSI -->
         <div class="m3-subcard">
           <div class="flex items-start gap-3">
-            <input class="w-4 h-4 mt-1 rounded accent-purple-500 cursor-pointer" type="checkbox" value="true" id="invalidCheck2" required />
+            <input class="w-4 h-4 mt-1 rounded cursor-pointer" style="accent-color: var(--theme-primary);" type="checkbox" value="true" id="invalidCheck2" required />
             <label class="text-xs text-gray-300 cursor-pointer leading-relaxed" for="invalidCheck2" data-i18n="user_terms_checkbox">
               Accetto i <span class="font-semibold text-white">termini e le condizioni d'uso</span> del servizio, e confermo di aver letto e compreso la Privacy Policy e la Cookie Policy.
             </label>
@@ -467,7 +467,7 @@
         </div>
 
         <!-- BOTTONI AZIONE -->
-        <div class="pt-4 border-t border-purple-500/15 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
+        <div class="pt-4 border-t flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3" style="border-top-color: rgba(var(--theme-accent-rgb), 0.16);">
           <a href="/app/users" class="m3-btn-outline justify-center">
             <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
           </a>
