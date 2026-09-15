@@ -26,11 +26,13 @@ public class AppSettingsMapper {
           .cookiePolicyUrl("/cookie-policy")
           .loginBgOpacity(50)
           .hideHomeButton(false)
+          .navigationLayout("HEADER")
           .build();
     }
     PublicAppSettingsDTO dto = new PublicAppSettingsDTO();
     BeanUtils.copyProperties(entity, dto);
     dto.setHideHomeButton(entity.getHideHomeButton() != null ? entity.getHideHomeButton() : false);
+    dto.setNavigationLayout(entity.getNavigationLayout() != null ? entity.getNavigationLayout() : "HEADER");
     return dto;
   }
 
@@ -70,5 +72,6 @@ public class AppSettingsMapper {
     if (source.getCookiePolicyUrl() != null) target.setCookiePolicyUrl(source.getCookiePolicyUrl());
     if (source.getSupportEmail() != null) target.setSupportEmail(source.getSupportEmail());
     if (source.getHideHomeButton() != null) target.setHideHomeButton(source.getHideHomeButton());
+    if (source.getNavigationLayout() != null) target.setNavigationLayout(source.getNavigationLayout());
   }
 }

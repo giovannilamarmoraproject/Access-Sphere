@@ -114,6 +114,7 @@ function cleanStorageAndCookies() {
     "access_sphere_language",
     "app_language",
     "access_sphere_app_name",
+    "access_sphere_sidebar_collapsed",
   ];
   const preserved = {};
   preservedKeys.forEach((key) => {

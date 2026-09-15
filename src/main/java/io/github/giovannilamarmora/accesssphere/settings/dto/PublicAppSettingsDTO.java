@@ -27,4 +27,5 @@ public class PublicAppSettingsDTO {
   private String privacyPolicyUrl;
   private String cookiePolicyUrl;
   private Boolean hideHomeButton;
+  private String navigationLayout;
 }

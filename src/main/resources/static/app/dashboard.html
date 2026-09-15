@@ -838,6 +838,43 @@
             </div>
         </div>
 
+        <!-- ================= CARD: LAYOUT DI NAVIGAZIONE (HEADER VS SIDEBAR M3) ================= -->
+        <div class="m3-bento-card p-6 lg:col-span-3">
+            <div class="flex items-center gap-3.5 mb-4">
+                <div class="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-base shrink-0 aspect-square settings-card-icon">
+                    <i class="fa-solid fa-table-columns"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white" data-i18n="setting_nav_layout_title">Layout di Navigazione</h3>
+                    <p class="text-xs text-gray-400" data-i18n="setting_nav_layout_desc">Scegli se disporre la navigazione in un header orizzontale in alto o in una barra laterale (Sidebar) M3</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <label class="cursor-pointer">
+                    <input type="radio" name="navigation_layout_radio" id="nav-layout-header" value="HEADER" class="sr-only peer" checked onchange="handleNavigationLayoutChange('HEADER')">
+                    <div class="p-4 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
+                        <div class="flex items-center gap-2.5 mb-2">
+                            <i class="fa-solid fa-window-maximize text-purple-400 text-base"></i>
+                            <span class="text-sm font-bold text-white" data-i18n="setting_nav_layout_header">Header Superiore</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400" data-i18n="setting_nav_layout_header_desc">Barra orizzontale classica in cima allo schermo con logo, tab e comandi rapidi.</p>
+                    </div>
+                </label>
+
+                <label class="cursor-pointer">
+                    <input type="radio" name="navigation_layout_radio" id="nav-layout-sidebar" value="SIDEBAR" class="sr-only peer" onchange="handleNavigationLayoutChange('SIDEBAR')">
+                    <div class="p-4 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
+                        <div class="flex items-center gap-2.5 mb-2">
+                            <i class="fa-solid fa-table-columns text-purple-400 text-base"></i>
+                            <span class="text-sm font-bold text-white" data-i18n="setting_nav_layout_sidebar">Barra Laterale (Sidebar M3)</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400" data-i18n="setting_nav_layout_sidebar_desc">Sidebar fluttuante a scheda, espandibile o ridotta a sole icone con lo stesso stile e border-radius delle card.</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
         <!-- ================= CARD 3: TEMI & PALETTE COLORI ================= -->
         <div class="m3-bento-card p-6 lg:col-span-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -1519,6 +1556,43 @@
             }
         }
 
+        // Sincronizzazione visibilità e stato attivo nella Sidebar M3
+        const btnSidebarDashboard = document.getElementById("sidebar-btn-dashboard");
+        const btnSidebarUsers = document.getElementById("sidebar-btn-users");
+        const btnSidebarClients = document.getElementById("sidebar-btn-clients");
+        const btnSidebarSettings = document.getElementById("sidebar-btn-settings");
+        const sidebarPrimaryAction = document.getElementById("sidebar-primary-action");
+
+        if (btnSidebarDashboard) btnSidebarDashboard.classList.toggle("active", viewName === "dashboard");
+        if (btnSidebarUsers) btnSidebarUsers.classList.toggle("active", viewName === "users");
+        if (btnSidebarClients) btnSidebarClients.classList.toggle("active", viewName === "clients");
+        if (btnSidebarSettings) btnSidebarSettings.classList.toggle("active", viewName === "settings");
+
+        if (sidebarPrimaryAction) {
+            if (viewName === "clients") {
+                sidebarPrimaryAction.href = "/app/clients/register";
+                sidebarPrimaryAction.innerHTML = '<i class="fa-solid fa-plus"></i> <span class="sidebar-label" data-i18n="btn_new_client">Nuovo Client</span>';
+                sidebarPrimaryAction.style.display = "flex";
+            } else if (viewName === "users") {
+                sidebarPrimaryAction.href = "/app/users/register";
+                sidebarPrimaryAction.innerHTML = '<i class="fa-solid fa-user-plus"></i> <span class="sidebar-label" data-i18n="btn_new_user">Nuovo Utente</span>';
+                sidebarPrimaryAction.style.display = "flex";
+            } else {
+                sidebarPrimaryAction.style.display = "none";
+            }
+        }
+
+        // Aggiorna indicatore breadcrumb nell'header minimale
+        if (typeof AppSettings !== "undefined" && typeof AppSettings.updateHeaderBreadcrumb === "function") {
+            const breadcrumbMap = {
+                dashboard: (typeof t === "function" ? t("nav_overview", "Panoramica") : "Panoramica"),
+                users: (typeof t === "function" ? t("nav_users", "Utenti") : "Gestione Utenti"),
+                clients: (typeof t === "function" ? t("nav_clients", "Client OAuth2") : "Client OAuth2"),
+                settings: (typeof t === "function" ? t("nav_settings", "Impostazioni") : "Impostazioni")
+            };
+            AppSettings.updateHeaderBreadcrumb(breadcrumbMap[viewName] || "Panoramica");
+        }
+
         setTimeout(() => {
             if (typeof scrollToTop === "function") {
                 scrollToTop("instant");
@@ -1644,9 +1718,23 @@
             if (hideHomeBtn) hideHomeBtn.checked = Boolean(data.hideHomeButton);
         }
 
+        if (data.navigationLayout) {
+            const radioHeader = document.getElementById("nav-layout-header");
+            const radioSidebar = document.getElementById("nav-layout-sidebar");
+            if (data.navigationLayout === "SIDEBAR") {
+                if (radioSidebar) radioSidebar.checked = true;
+            } else {
+                if (radioHeader) radioHeader.checked = true;
+            }
+        }
+
         if (data.activeTheme) {
             updateThemeUISelection(data.activeTheme);
         }
+    }
+
+    function handleNavigationLayoutChange(layout) {
+        AppSettings.applyNavigationLayout({ navigationLayout: layout });
     }
 
     function selectTheme(themeName) {
@@ -1761,6 +1849,8 @@
         else if (radioEn && radioEn.checked) defaultLanguage = "en";
 
         const hideHomeButton = document.getElementById("setting-hide-home-btn") ? document.getElementById("setting-hide-home-btn").checked : false;
+        const isSidebar = document.getElementById("nav-layout-sidebar") && document.getElementById("nav-layout-sidebar").checked;
+        const navigationLayout = isSidebar ? "SIDEBAR" : "HEADER";
 
         const payload = {
             appName,
@@ -1775,6 +1865,7 @@
             loginBgUrl,
             loginBgOpacity,
             hideHomeButton,
+            navigationLayout,
             activeTheme,
             defaultLanguage
         };

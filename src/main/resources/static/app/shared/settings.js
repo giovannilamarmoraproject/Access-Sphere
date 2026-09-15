@@ -40,6 +40,12 @@ const AppSettings = (function () {
             }
             iconLink.href = s.faviconUrl;
           }
+          if (s && s.navigationLayout === "SIDEBAR" && isPostLoginPage()) {
+            document.documentElement.classList.add("layout-sidebar");
+            if (localStorage.getItem("access_sphere_sidebar_collapsed") === "true") {
+              document.documentElement.classList.add("sidebar-is-collapsed");
+            }
+          }
           if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", () => applyBrandingToDOM(s));
           } else {
@@ -127,6 +133,204 @@ const AppSettings = (function () {
 
     // 5. Login Page Background / Showcase Mode & Home Button
     applyLoginCustomization(settings);
+
+    // 6. Navigation Layout (Header vs Sidebar M3 Card)
+    applyNavigationLayout(settings);
+  }
+
+  /**
+   * Verifica se la pagina corrente è una pagina interna autenticata
+   * (esclude landing page '/', '/index.html', '/cookie-policy', '/privacy-policy' e '/app/login')
+   */
+  function isPostLoginPage() {
+    const p = window.location.pathname;
+    return p.startsWith("/app") && !p.startsWith("/app/login");
+  }
+
+  /**
+   * Alterna la modalità della sidebar tra espansa (260px con testo) e ridotta (76px solo icone)
+   */
+  function toggleSidebarCollapse() {
+    const sidebar = document.getElementById("m3-app-sidebar");
+    if (!sidebar) return;
+    const isNowCollapsed = !sidebar.classList.contains("collapsed");
+    if (isNowCollapsed) {
+      sidebar.classList.add("collapsed");
+      document.body.classList.add("sidebar-is-collapsed");
+      document.documentElement.classList.add("sidebar-is-collapsed");
+    } else {
+      sidebar.classList.remove("collapsed");
+      document.body.classList.remove("sidebar-is-collapsed");
+      document.documentElement.classList.remove("sidebar-is-collapsed");
+    }
+    localStorage.setItem("access_sphere_sidebar_collapsed", isNowCollapsed ? "true" : "false");
+
+    const icon = document.getElementById("sidebar-collapse-icon");
+    const text = document.getElementById("sidebar-collapse-text");
+    if (icon) icon.className = `fa-solid ${isNowCollapsed ? "fa-angles-right" : "fa-angles-left"}`;
+    if (text) text.textContent = isNowCollapsed ? (typeof t === "function" ? t("sidebar_expand", "Espandi") : "Espandi") : (typeof t === "function" ? t("sidebar_collapse", "Riduci") : "Riduci");
+  }
+
+  /**
+   * Genera e inietta la Sidebar a scheda (M3 Bento Card style)
+   * con border-radius 26px, effetto vetro e gap minimo.
+   * Contiene esclusivamente le opzioni di navigazione ("le opzioni solo sulla sidebar")
+   * e in basso il pulsante per collassare/espandere la barra.
+   * Il brand e i pulsanti d'azione (refresh, versione, nuovo utente/client, logout)
+   * rimangono nel vecchio header in alto.
+   */
+  function mountM3Sidebar(settings) {
+    if (!isPostLoginPage()) return;
+    let sidebar = document.getElementById("m3-app-sidebar");
+    const isCollapsed = localStorage.getItem("access_sphere_sidebar_collapsed") === "true";
+    document.body.classList.add("layout-sidebar");
+    if (isCollapsed) {
+      document.body.classList.add("sidebar-is-collapsed");
+    } else {
+      document.body.classList.remove("sidebar-is-collapsed");
+    }
+
+    if (!sidebar) {
+      sidebar = document.createElement("aside");
+      sidebar.id = "m3-app-sidebar";
+      sidebar.className = `m3-app-sidebar ${isCollapsed ? "collapsed" : ""}`;
+
+      const currentPath = window.location.pathname;
+      const isOverview = currentPath === "/app" || currentPath === "/app/" || currentPath === "/app/dashboard";
+      const isUsers = currentPath.includes("/user") && !currentPath.includes("/clients");
+      const isClients = currentPath.includes("/client");
+      const isSettings = currentPath.includes("/settings");
+
+      sidebar.innerHTML = `
+        <!-- Contenitore Categorie di Navigazione -->
+        <div class="sidebar-sections-container">
+
+          <!-- Categoria: Principale -->
+          <div class="sidebar-category">
+            <div class="sidebar-category-header">
+              <span class="sidebar-category-label" data-i18n="sidebar_cat_main">Principale</span>
+            </div>
+            <div class="sidebar-category-divider"></div>
+            <ul class="sidebar-nav-list">
+              <li>
+                <a href="/app" id="sidebar-btn-dashboard" class="sidebar-nav-item ${isOverview ? 'active' : ''}" title="Panoramica" onclick="if(typeof switchDashboardView === 'function'){switchDashboardView('dashboard'); return false;}">
+                  <i class="fa-solid fa-gauge-high"></i>
+                  <span class="sidebar-label" data-i18n="nav_overview">Panoramica</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Categoria: Identità & Accessi (IAM) -->
+          <div class="sidebar-category">
+            <div class="sidebar-category-header">
+              <span class="sidebar-category-label" data-i18n="sidebar_cat_iam">Identità & Accessi</span>
+            </div>
+            <div class="sidebar-category-divider"></div>
+            <ul class="sidebar-nav-list">
+              <li>
+                <a href="/app/users" id="sidebar-btn-users" class="sidebar-nav-item ${isUsers ? 'active' : ''}" title="Utenti" onclick="if(typeof switchDashboardView === 'function'){switchDashboardView('users'); return false;}">
+                  <i class="fa-solid fa-users"></i>
+                  <span class="sidebar-label" data-i18n="nav_users">Utenti</span>
+                </a>
+              </li>
+              <li>
+                <a href="/app/clients" id="sidebar-btn-clients" class="sidebar-nav-item ${isClients ? 'active' : ''}" title="Client OAuth2" onclick="if(typeof switchDashboardView === 'function'){switchDashboardView('clients'); return false;}">
+                  <i class="fa-solid fa-key"></i>
+                  <span class="sidebar-label" data-i18n="nav_clients">Client OAuth2</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Categoria: Sistema & Risorse -->
+          <div class="sidebar-category">
+            <div class="sidebar-category-header">
+              <span class="sidebar-category-label" data-i18n="sidebar_cat_system">Sistema & Risorse</span>
+            </div>
+            <div class="sidebar-category-divider"></div>
+            <ul class="sidebar-nav-list">
+              <li>
+                <a href="/app/settings" id="sidebar-btn-settings" class="sidebar-nav-item ${isSettings ? 'active' : ''}" title="Impostazioni" onclick="if(typeof switchDashboardView === 'function'){switchDashboardView('settings'); return false;}">
+                  <i class="fa-solid fa-gear"></i>
+                  <span class="sidebar-label" data-i18n="nav_settings">Impostazioni</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="sidebar-nav-item" title="API Docs">
+                  <i class="fa-solid fa-book"></i>
+                  <span class="sidebar-label" data-i18n="nav_docs">API Docs</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Sezione Inferiore: Pulsante Collassa / Espandi Sidebar -->
+        <div class="sidebar-footer-box">
+          <button type="button" id="sidebar-collapse-btn" onclick="AppSettings.toggleSidebarCollapse()" class="sidebar-collapse-btn" title="Riduci/Espandi barra">
+            <i id="sidebar-collapse-icon" class="fa-solid ${isCollapsed ? 'fa-angles-right' : 'fa-angles-left'}"></i>
+            <span class="sidebar-label text-[11px]" id="sidebar-collapse-text">${isCollapsed ? (typeof t === "function" ? t("sidebar_expand", "Espandi") : "Espandi") : (typeof t === "function" ? t("sidebar_collapse", "Riduci") : "Riduci")}</span>
+          </button>
+        </div>
+      `;
+
+      document.body.prepend(sidebar);
+      if (typeof translateDOM === "function") {
+        translateDOM(sidebar);
+      }
+    }
+  }
+
+  /**
+   * Determina il titolo della pagina o sezione corrente
+   */
+  function detectCurrentPageTitle() {
+    const p = window.location.pathname;
+    if (p.includes("/register")) return "Registrazione";
+    if (p.includes("/edit")) return "Modifica Profilo";
+    if (p.includes("/roles")) return "Ruoli & Permessi";
+    if (p.includes("/mfa")) return "Sicurezza MFA";
+    if (p.includes("/details") || p.endsWith("/user") || p.endsWith("/client")) return "Dettaglio";
+    if (p.includes("/client")) return "Client OAuth2";
+    if (p.includes("/user")) return "Gestione Utenti";
+    if (p.includes("/settings")) return "Impostazioni";
+    return "Panoramica";
+  }
+
+  /**
+   * Rimuove eventuale elemento breadcrumb nell'header:
+   * il vecchio header rimane intatto con brand a sinistra e controlli a destra.
+   */
+  function updateHeaderBreadcrumb(pageTitle) {
+    const existing = document.getElementById("header-breadcrumb-box");
+    if (existing) existing.remove();
+  }
+
+  /**
+   * Applica il layout di navigazione richiesto (HEADER vs SIDEBAR)
+   */
+  function applyNavigationLayout(settings) {
+    if (!settings) return;
+    const navLayout = settings.navigationLayout || "HEADER";
+    if (navLayout === "SIDEBAR" && isPostLoginPage()) {
+      document.documentElement.classList.add("layout-sidebar");
+      if (document.body) document.body.classList.add("layout-sidebar");
+      mountM3Sidebar(settings);
+      updateHeaderBreadcrumb();
+    } else {
+      document.documentElement.classList.remove("layout-sidebar");
+      document.documentElement.classList.remove("sidebar-is-collapsed");
+      if (document.body) {
+        document.body.classList.remove("layout-sidebar");
+        document.body.classList.remove("sidebar-is-collapsed");
+      }
+      const existing = document.getElementById("m3-app-sidebar");
+      if (existing) existing.remove();
+      const breadcrumb = document.getElementById("header-breadcrumb-box");
+      if (breadcrumb) breadcrumb.remove();
+    }
   }
 
   function applyLoginCustomization(settings) {
@@ -431,6 +635,11 @@ const AppSettings = (function () {
   return {
     applyTheme,
     applyBrandingToDOM,
+    applyNavigationLayout,
+    mountM3Sidebar,
+    toggleSidebarCollapse,
+    updateHeaderBreadcrumb,
+    isPostLoginPage,
     loadPublicSettings,
     loadAdminSettings,
     saveAdminSettings,

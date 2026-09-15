@@ -1420,3 +1420,310 @@ textarea.is-valid {
     color: rgba(208, 188, 255, 0.7) !important;
   }
 }
+
+/* =======================================================
+   M3 FLOATING CARD SIDEBAR (Post-Login Navigation)
+   =======================================================
+   Sidebar fluttuante con lo stesso stile e border-radius
+   delle card M3 Bento Card (26px), backdrop blur, glassmorphism
+   e un gap minimo dai bordi e dal contenuto principale.
+   Supporta modalità estesa (260px) e ridotta (76px solo icone).
+   ======================================================= */
+:root {
+  --sidebar-card-width: 260px;
+  --sidebar-card-collapsed-width: 76px;
+  --sidebar-card-gap: 1rem;
+}
+
+/* Base card styling for sidebar - Colore identico alla card Gestione Utenti (hub-card-users) */
+.m3-app-sidebar {
+  position: fixed;
+  top: var(--sidebar-card-gap);
+  bottom: var(--sidebar-card-gap);
+  left: var(--sidebar-card-gap);
+  height: calc(100vh - (var(--sidebar-card-gap) * 2));
+  width: var(--sidebar-card-width);
+  background: rgba(var(--theme-surface-rgb, 24, 19, 38), 0.8) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
+  border-radius: 28px !important;
+  color: #E6E1E5 !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+  z-index: 1040;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.15rem 0.85rem;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Rimosso l'effetto hover glow sulla card della sidebar su richiesta esplicita dell'utente */
+.m3-app-sidebar:hover {
+  /* Nessuna alterazione di ombre o bordi: la card rimane ferma e stabile */
+}
+
+/* Collapsed State (Solo icone) */
+.m3-app-sidebar.collapsed {
+  width: var(--sidebar-card-collapsed-width) !important;
+  padding: 1.15rem 0.5rem;
+}
+
+/* Hide labels when collapsed */
+.m3-app-sidebar.collapsed .sidebar-label,
+.m3-app-sidebar.collapsed .sidebar-category-header {
+  display: none !important;
+  opacity: 0;
+}
+
+/* Contenitore delle Categorie di Navigazione */
+.sidebar-sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-category {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebar-category-header {
+  padding: 0.35rem 0.75rem 0.2rem 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-category-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--theme-accent, #D0BCFF);
+  opacity: 0.7;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.sidebar-category-divider {
+  display: none;
+  height: 1px;
+  background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.14);
+  margin: 0.4rem 0.25rem;
+}
+
+/* Quando la sidebar è in modalità ridotta (collapsed / sole icone) */
+.m3-app-sidebar.collapsed .sidebar-category-header {
+  display: none !important;
+}
+
+.m3-app-sidebar.collapsed .sidebar-category-divider {
+  display: block !important;
+}
+
+.m3-app-sidebar.collapsed .sidebar-category:first-child .sidebar-category-divider {
+  display: none !important;
+}
+
+.m3-app-sidebar.collapsed .sidebar-sections-container {
+  gap: 0.25rem;
+}
+
+/* Navigation items in sidebar */
+.sidebar-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.95rem;
+  border-radius: 16px;
+  color: #C4C7C5;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sidebar-nav-item i {
+  font-size: 1.1rem;
+  width: 1.5rem;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--theme-accent, #D0BCFF);
+  transition: transform 0.2s ease;
+}
+
+.sidebar-nav-item:hover {
+  background: rgba(var(--theme-primary-rgb, 124, 77, 255), 0.14);
+  color: #FFFFFF;
+  border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);
+}
+
+.sidebar-nav-item:hover i {
+  transform: scale(1.1);
+  color: #FFFFFF;
+}
+
+.sidebar-nav-item.active {
+  background: var(--theme-primary-gradient, linear-gradient(135deg, rgba(var(--theme-primary-rgb, 124, 77, 255), 0.4), rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25))) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+.sidebar-nav-item.active i {
+  color: #FFFFFF !important;
+}
+
+.m3-app-sidebar.collapsed .sidebar-nav-item {
+  justify-content: center;
+  padding: 0.75rem 0;
+  gap: 0;
+}
+
+/* Action & Footer section in sidebar */
+.sidebar-actions-box,
+.sidebar-footer-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);
+  margin-top: auto;
+}
+
+.sidebar-quick-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 0.4rem;
+}
+
+.m3-app-sidebar.collapsed .sidebar-quick-controls {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Collapse Toggle Button */
+.sidebar-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.14);
+  color: #C4C7C5;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-collapse-btn:hover {
+  background: rgba(var(--theme-primary-rgb, 124, 77, 255), 0.18);
+  border-color: var(--theme-accent);
+  color: #FFFFFF;
+}
+
+.m3-app-sidebar.collapsed .sidebar-collapse-btn span {
+  display: none !important;
+}
+
+/* Quando layout-sidebar è attivo su schermi desktop (>=992px) */
+@media (min-width: 992px) {
+  /* Il vecchio header rimane a tutta larghezza in alto (80px), pulito e minimale con solo brand e pagina corrente */
+  html.layout-sidebar .glass-header,
+  body.layout-sidebar .glass-header {
+    display: block !important;
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-bottom: 1px solid var(--md-surface-border) !important;
+    height: 80px !important;
+    z-index: 100;
+  }
+
+  html.layout-sidebar .glass-header .header-container,
+  body.layout-sidebar .glass-header .header-container {
+    height: 80px !important;
+    max-width: 1750px !important;
+    padding: 0 2rem !important;
+  }
+
+  /* Nel layout con sidebar, il vecchio header a tutta larghezza viene preservato:
+     il brand (logo, nome app, console badge, sottotitolo) rimane a sinistra e i controlli di azione
+     (refresh, info versione, pulsante Nuovo Utente/Client, logout) rimangono a destra.
+     Vengono rimosse dall'header ESCLUSIVAMENTE le opzioni di navigazione (nav), che risiedono sulla sidebar. */
+  html.layout-sidebar .glass-header nav,
+  body.layout-sidebar .glass-header nav {
+    display: none !important;
+  }
+
+  /* La Sidebar a scheda si posiziona fluttuante sotto l'header (80px + gap) */
+  html.layout-sidebar .m3-app-sidebar,
+  body.layout-sidebar .m3-app-sidebar {
+    top: calc(80px + var(--sidebar-card-gap)) !important;
+    bottom: var(--sidebar-card-gap) !important;
+    left: var(--sidebar-card-gap) !important;
+    height: calc(100vh - 80px - (var(--sidebar-card-gap) * 2)) !important;
+    border-radius: 28px !important;
+    z-index: 90;
+  }
+
+  /* Spostamento del contenuto principale a destra della sidebar */
+  html.layout-sidebar .dashboard-content,
+  body.layout-sidebar .dashboard-content,
+  html.layout-sidebar .dashboard-wide-container,
+  body.layout-sidebar .dashboard-wide-container,
+  html.layout-sidebar main.main-content,
+  body.layout-sidebar main.main-content,
+  html.layout-sidebar .container-fluid:not(.modal-body),
+  body.layout-sidebar .container-fluid:not(.modal-body) {
+    margin-left: calc(var(--sidebar-card-width) + (var(--sidebar-card-gap) * 2)) !important;
+    width: calc(100% - (var(--sidebar-card-width) + (var(--sidebar-card-gap) * 3))) !important;
+    max-width: 100% !important;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html.layout-sidebar.sidebar-is-collapsed .dashboard-content,
+  body.layout-sidebar.sidebar-is-collapsed .dashboard-content,
+  html.layout-sidebar.sidebar-is-collapsed .dashboard-wide-container,
+  body.layout-sidebar.sidebar-is-collapsed .dashboard-wide-container,
+  html.layout-sidebar.sidebar-is-collapsed main.main-content,
+  body.layout-sidebar.sidebar-is-collapsed main.main-content,
+  html.layout-sidebar.sidebar-is-collapsed .container-fluid:not(.modal-body),
+  body.layout-sidebar.sidebar-is-collapsed .container-fluid:not(.modal-body) {
+    margin-left: calc(var(--sidebar-card-collapsed-width) + (var(--sidebar-card-gap) * 2)) !important;
+    width: calc(100% - (var(--sidebar-card-collapsed-width) + (var(--sidebar-card-gap) * 3))) !important;
+  }
+}
+
+/* Su schermi piccoli (<992px), la sidebar desktop viene nascosta e si usa il drawer standard mobile */
+@media (max-width: 991px) {
+  .m3-app-sidebar {
+    display: none !important;
+  }
+}

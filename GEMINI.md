@@ -98,10 +98,16 @@ Per garantire precisione operativa e zero sprechi di token, ogni attività deve 
 
 ## 6. Linee Guida di Sviluppo, Commenti & Risparmio Token
 
-- **Commenti al Codice Obbligatori**:
+- **Commenti Dettagliati e Interconnessioni Obbligatori**:
     - Ogni classe, metodo, blocco logico, funzione JS o porzione complessa di codice introdotta o modificata DEVE
-      includere commenti chiari e descrittivi che spieghino lo scopo e il funzionamento del codice sottostante.
-    - Mantenere la codebase sempre documentata e auto-esplicativa.
+      includere commenti chiari, costanti e descrittivi (a livello di riga e di metodo/funzione).
+    - I commenti devono spiegare non solo lo scopo del blocco, ma anche come funzioni e metodi sono **interconnessi**
+      tra loro, evidenziando il flusso dei dati e le dipendenze logiche tra componenti.
+    - Mantenere la codebase sempre documentata, auto-esplicativa e tracciabile.
+- **Sincronizzazione della Documentazione (`README.md`)**:
+    - Qualora un intervento introduca nuove feature, modifichi endpoint, aggiorni configurazioni, cambi la struttura dei
+      moduli o alteri il comportamento architetturale, l'agente DEVE aggiornare contestualmente il file `README.md` (o i
+      file di documentazione correlati) per riflettere lo stato attuale del sistema.
 - **Regola di Build Condizionale**:
     - Eseguire la build (`mvn test`, `mvn clean compile`, ecc.) **SOLO ED ESCLUSIVAMENTE** se sono stati modificati,
       aggiunti o eliminati file **Java** (`.java`).

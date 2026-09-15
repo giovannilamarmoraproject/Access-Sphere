@@ -74,4 +74,12 @@ public class AppSettingsEntity extends GenericEntity {
 
   @Column(name = "HIDE_HOME_BUTTON")
   private Boolean hideHomeButton = false;
+
+  /**
+   * Modalità di layout della navigazione per le pagine interne autenticate:
+   * "HEADER" (Navigazione orizzontale superiore predefinita) oppure
+   * "SIDEBAR" (Barra di navigazione laterale espandibile/collassabile M3).
+   */
+  @Column(name = "NAVIGATION_LAYOUT")
+  private String navigationLayout = "HEADER";
 }

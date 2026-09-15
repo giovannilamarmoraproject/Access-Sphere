@@ -135,6 +135,8 @@ public class ProjectInitializerService implements ApplicationRunner {
       settings.setPrivacyPolicyUrl("/privacy-policy");
       settings.setCookiePolicyUrl("/cookie-policy");
       settings.setSupportEmail("support@accesssphere.io");
+      settings.setHideHomeButton(false);
+      settings.setNavigationLayout("HEADER");
       appSettingsDAO.save(settings);
       LOG.info("✅ Default Application Settings successfully seeded in DB");
     } else {

@@ -816,7 +816,18 @@
     "privacy_sec6_desc": "La sicurezza dei tuoi dati è per noi di primaria importanza. Adottiamo misure tecniche e organizzative conformi agli standard di settore per prevenire la perdita, l'uso improprio o l'alterazione non autorizzata delle informazioni memorizzate.",
     "privacy_sec7_title": "Responsabile della Protezione Dati (DPO)",
     "privacy_sec7_desc": "Per qualsiasi chiarimento, domanda o richiesta di esercizio dei tuoi diritti in materia di privacy e protezione dei dati, puoi rivolgerti al nostro Responsabile della Protezione Dati.",
-    "privacy_link_cookie": "Consulta l'informativa sui Cookie"
+    "privacy_link_cookie": "Consulta l'informativa sui Cookie",
+    "setting_nav_layout_title": "Layout di Navigazione",
+    "setting_nav_layout_desc": "Scegli se disporre la navigazione in un header orizzontale in alto o in una barra laterale (Sidebar) M3",
+    "setting_nav_layout_header": "Header Superiore",
+    "setting_nav_layout_header_desc": "Barra orizzontale classica in cima allo schermo",
+    "setting_nav_layout_sidebar": "Barra Laterale (Sidebar M3)",
+    "setting_nav_layout_sidebar_desc": "Sidebar fluttuante a scheda, espandibile o ridotta a sole icone",
+    "sidebar_collapse": "Riduci a sole icone",
+    "sidebar_expand": "Espandi barra laterale",
+    "sidebar_cat_main": "Principale",
+    "sidebar_cat_iam": "Identità & Accessi",
+    "sidebar_cat_system": "Sistema & Risorse"
   },
   "en": {
     "login_page_tab_title": "Access Sphere - Login",
@@ -1635,6 +1646,17 @@
     "privacy_sec6_desc": "The security of your information is important to us and we will use reasonable security measures to prevent the loss, misuse or unauthorized alteration of your information under our control.",
     "privacy_sec7_title": "Data Protection Officer (DPO)",
     "privacy_sec7_desc": "If you have any queries or concerns about the processing of your information that is available with us, you may contact our Data Protection Officer.",
-    "privacy_link_cookie": "Check out the Cookie Policy"
+    "privacy_link_cookie": "Check out the Cookie Policy",
+    "setting_nav_layout_title": "Navigation Layout",
+    "setting_nav_layout_desc": "Choose whether to arrange navigation in a top horizontal header or a sleek M3 sidebar",
+    "setting_nav_layout_header": "Top Header",
+    "setting_nav_layout_header_desc": "Standard horizontal navigation bar at the top of the screen",
+    "setting_nav_layout_sidebar": "Sidebar Navigation (M3)",
+    "setting_nav_layout_sidebar_desc": "Floating card sidebar, expandable or compact with icons only",
+    "sidebar_collapse": "Collapse to icons only",
+    "sidebar_expand": "Expand sidebar",
+    "sidebar_cat_main": "Main",
+    "sidebar_cat_iam": "Identity & Access",
+    "sidebar_cat_system": "System & Resources"
   }
 }

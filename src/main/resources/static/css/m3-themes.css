@@ -542,9 +542,16 @@ textarea {
    ======================================================= */
 [data-theme] .hub-hero-card,
 [data-theme] .hub-card-users,
-[data-theme] .hub-card-clients {
+[data-theme] .hub-card-clients,
+[data-theme] .m3-app-sidebar {
     background: rgba(var(--theme-surface-rgb), 0.8) !important;
     border: 1px solid rgba(var(--theme-accent-rgb), 0.18) !important;
+}
+
+/* Rimosso effetto hover glow sulla card sidebar */
+[data-theme] .m3-app-sidebar:hover {
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.18) !important;
 }
 
 [data-theme] .hub-hero-card:hover {
@@ -1468,5 +1475,47 @@ textarea {
 
 [data-theme] .cky-audit-table-element tr:hover td {
     background: rgba(var(--theme-primary-rgb), 0.08) !important;
+}
+
+/* =======================================================
+   M3 CARD SIDEBAR ADAPTIVE THEME
+   =======================================================
+   Garantisce che la sidebar a scheda si integri armoniosamente
+   con la palette cromatica, sfondi e accenti di ogni tema.
+   ======================================================= */
+[data-theme] .m3-app-sidebar {
+    background: var(--md-surface-card) !important;
+    border-color: var(--md-surface-border) !important;
+}
+
+[data-theme] .m3-app-sidebar:hover {
+    border-color: rgba(var(--theme-accent-rgb), 0.4) !important;
+    box-shadow: 0 20px 40px -15px var(--theme-glow) !important;
+}
+
+[data-theme] .sidebar-nav-item:hover {
+    background: rgba(var(--theme-primary-rgb), 0.16) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.28) !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme] .sidebar-nav-item.active {
+    background: var(--theme-primary-gradient) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.45) !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme] .sidebar-brand-box,
+[data-theme] .sidebar-actions-box {
+    border-color: rgba(var(--theme-accent-rgb), 0.15) !important;
+}
+
+[data-theme] .sidebar-collapse-btn {
+    border-color: rgba(var(--theme-accent-rgb), 0.2) !important;
+}
+
+[data-theme] .sidebar-collapse-btn:hover {
+    background: rgba(var(--theme-primary-rgb), 0.2) !important;
+    border-color: var(--theme-accent) !important;
 }
 

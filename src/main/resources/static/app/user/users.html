@@ -1034,6 +1034,43 @@
         }
       }
 
+      // Sincronizzazione visibilità e stato attivo nella Sidebar M3
+      const btnSidebarDashboard = document.getElementById("sidebar-btn-dashboard");
+      const btnSidebarUsers = document.getElementById("sidebar-btn-users");
+      const btnSidebarClients = document.getElementById("sidebar-btn-clients");
+      const btnSidebarSettings = document.getElementById("sidebar-btn-settings");
+      const sidebarPrimaryAction = document.getElementById("sidebar-primary-action");
+
+      if (btnSidebarDashboard) btnSidebarDashboard.classList.toggle("active", viewName === "dashboard");
+      if (btnSidebarUsers) btnSidebarUsers.classList.toggle("active", viewName === "users");
+      if (btnSidebarClients) btnSidebarClients.classList.toggle("active", viewName === "clients");
+      if (btnSidebarSettings) btnSidebarSettings.classList.toggle("active", viewName === "settings");
+
+      if (sidebarPrimaryAction) {
+        if (viewName === "clients") {
+          sidebarPrimaryAction.href = "/app/clients/register";
+          sidebarPrimaryAction.innerHTML = '<i class="fa-solid fa-plus"></i> <span class="sidebar-label" data-i18n="btn_new_client">Nuovo Client</span>';
+          sidebarPrimaryAction.style.display = "flex";
+        } else if (viewName === "users") {
+          sidebarPrimaryAction.href = "/app/users/register";
+          sidebarPrimaryAction.innerHTML = '<i class="fa-solid fa-user-plus"></i> <span class="sidebar-label" data-i18n="btn_new_user">Nuovo Utente</span>';
+          sidebarPrimaryAction.style.display = "flex";
+        } else {
+          sidebarPrimaryAction.style.display = "none";
+        }
+      }
+
+      // Aggiorna indicatore breadcrumb nell'header minimale
+      if (typeof AppSettings !== "undefined" && typeof AppSettings.updateHeaderBreadcrumb === "function") {
+        const breadcrumbMap = {
+          dashboard: (typeof t === "function" ? t("nav_overview", "Panoramica") : "Panoramica"),
+          users: (typeof t === "function" ? t("nav_users", "Utenti") : "Gestione Utenti"),
+          clients: (typeof t === "function" ? t("nav_clients", "Client OAuth2") : "Client OAuth2"),
+          settings: (typeof t === "function" ? t("nav_settings", "Impostazioni") : "Impostazioni")
+        };
+        AppSettings.updateHeaderBreadcrumb(breadcrumbMap[viewName] || "Gestione Utenti");
+      }
+
       setTimeout(() => {
         if (typeof scrollToTop === "function") {
           scrollToTop("instant");

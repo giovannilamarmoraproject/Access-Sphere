@@ -821,5 +821,16 @@
   "privacy_sec6_desc": "The security of your information is important to us and we will use reasonable security measures to prevent the loss, misuse or unauthorized alteration of your information under our control.",
   "privacy_sec7_title": "Data Protection Officer (DPO)",
   "privacy_sec7_desc": "If you have any queries or concerns about the processing of your information that is available with us, you may contact our Data Protection Officer.",
-  "privacy_link_cookie": "Check out the Cookie Policy"
+  "privacy_link_cookie": "Check out the Cookie Policy",
+  "setting_nav_layout_title": "Navigation Layout",
+  "setting_nav_layout_desc": "Choose whether to arrange navigation in a top horizontal header or a sleek M3 sidebar",
+  "setting_nav_layout_header": "Top Header",
+  "setting_nav_layout_header_desc": "Standard horizontal navigation bar at the top of the screen",
+  "setting_nav_layout_sidebar": "Sidebar Navigation (M3)",
+  "setting_nav_layout_sidebar_desc": "Floating card sidebar, expandable or compact with icons only",
+  "sidebar_collapse": "Collapse to icons only",
+  "sidebar_expand": "Expand sidebar",
+  "sidebar_cat_main": "Main",
+  "sidebar_cat_iam": "Identity & Access",
+  "sidebar_cat_system": "System & Resources"
 }

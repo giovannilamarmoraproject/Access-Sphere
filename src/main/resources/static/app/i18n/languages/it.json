@@ -821,5 +821,16 @@
   "privacy_sec6_desc": "La sicurezza dei tuoi dati è per noi di primaria importanza. Adottiamo misure tecniche e organizzative conformi agli standard di settore per prevenire la perdita, l'uso improprio o l'alterazione non autorizzata delle informazioni memorizzate.",
   "privacy_sec7_title": "Responsabile della Protezione Dati (DPO)",
   "privacy_sec7_desc": "Per qualsiasi chiarimento, domanda o richiesta di esercizio dei tuoi diritti in materia di privacy e protezione dei dati, puoi rivolgerti al nostro Responsabile della Protezione Dati.",
-  "privacy_link_cookie": "Consulta l'informativa sui Cookie"
+  "privacy_link_cookie": "Consulta l'informativa sui Cookie",
+  "setting_nav_layout_title": "Layout di Navigazione",
+  "setting_nav_layout_desc": "Scegli se disporre la navigazione in un header orizzontale in alto o in una barra laterale (Sidebar) M3",
+  "setting_nav_layout_header": "Header Superiore",
+  "setting_nav_layout_header_desc": "Barra orizzontale classica in cima allo schermo",
+  "setting_nav_layout_sidebar": "Barra Laterale (Sidebar M3)",
+  "setting_nav_layout_sidebar_desc": "Sidebar fluttuante a scheda, espandibile o ridotta a sole icone",
+  "sidebar_collapse": "Riduci a sole icone",
+  "sidebar_expand": "Espandi barra laterale",
+  "sidebar_cat_main": "Principale",
+  "sidebar_cat_iam": "Identità & Accessi",
+  "sidebar_cat_system": "Sistema & Risorse"
 }

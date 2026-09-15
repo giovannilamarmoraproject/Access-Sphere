@@ -46,6 +46,7 @@
   - **Auto Scroll-to-Top**: Ripristino automatico e immediato della vista in cima alla pagina (`Y = 0`) ad ogni cambio sezione o navigazione browser.
   - Caching locale **Stale-While-Revalidate (SWR)** per visualizzazione istantanea di tabelle e KPI.
   - Design Bento Glassmorphism con layout ultra-wide e accenti reattivi.
+  - **Layout di Navigazione Flessibile (Header vs Sidebar M3 Card)**: Scelta nelle impostazioni tra l'header orizzontale classico superiore e la sidebar laterale fluttuante M3 in stile Bento Card (`border-radius: 26px`), con modalità estesa (260px) e compatta (76px solo icone), gap controllato ed esclusione automatica dalle pagine pre-login (landing e login).
 - 🎨 **Motore Multi-Palette & Temi Dinamici a 360°**:
   - 6 armonie cromatiche Material Expressive 3: **Cosmic Purple** (Default), **Midnight Ocean**, **Emerald Matrix**, **Amber Sunset**, **Titanium Slate** e **Crimson Cyber**.
   - Propagazione istantanea del tema all'intera piattaforma: Landing page (inclusa la scena 3D Three.js interattiva), schermata di login, dashboard e tutte le sezioni di gestione.
