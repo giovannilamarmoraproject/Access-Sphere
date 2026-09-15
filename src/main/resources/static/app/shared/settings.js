@@ -213,7 +213,7 @@ const AppSettings = (function () {
             <div class="sidebar-category-divider"></div>
             <ul class="sidebar-nav-list">
               <li>
-                <a href="/app" id="sidebar-btn-dashboard" class="sidebar-nav-item ${isOverview ? 'active' : ''}" title="Panoramica" onclick="if(typeof switchDashboardView === 'function'){switchDashboardView('dashboard'); return false;}">
+                <a href="/app" id="sidebar-btn-dashboard" class="sidebar-nav-item ${isOverview ? 'active' : ''}" title="Panoramica" onclick="if(typeof switchDashboardView === 'function' && document.getElementById('view-dashboard')){switchDashboardView('dashboard'); return false;}">
                   <i class="fa-solid fa-gauge-high"></i>
                   <span class="sidebar-label" data-i18n="nav_overview">Panoramica</span>
                 </a>
@@ -229,13 +229,13 @@ const AppSettings = (function () {
             <div class="sidebar-category-divider"></div>
             <ul class="sidebar-nav-list">
               <li>
-                <a href="/app/users" id="sidebar-btn-users" class="sidebar-nav-item ${isUsers ? 'active' : ''}" title="Utenti" onclick="if(typeof switchDashboardView === 'function'){switchDashboardView('users'); return false;}">
+                <a href="/app/users" id="sidebar-btn-users" class="sidebar-nav-item ${isUsers ? 'active' : ''}" title="Utenti" onclick="if(typeof switchDashboardView === 'function' && document.getElementById('view-users')){switchDashboardView('users'); return false;}">
                   <i class="fa-solid fa-users"></i>
                   <span class="sidebar-label" data-i18n="nav_users">Utenti</span>
                 </a>
               </li>
               <li>
-                <a href="/app/clients" id="sidebar-btn-clients" class="sidebar-nav-item ${isClients ? 'active' : ''}" title="Client OAuth2" onclick="if(typeof switchDashboardView === 'function'){switchDashboardView('clients'); return false;}">
+                <a href="/app/clients" id="sidebar-btn-clients" class="sidebar-nav-item ${isClients ? 'active' : ''}" title="Client OAuth2" onclick="if(typeof switchDashboardView === 'function' && document.getElementById('view-clients')){switchDashboardView('clients'); return false;}">
                   <i class="fa-solid fa-key"></i>
                   <span class="sidebar-label" data-i18n="nav_clients">Client OAuth2</span>
                 </a>
@@ -251,7 +251,7 @@ const AppSettings = (function () {
             <div class="sidebar-category-divider"></div>
             <ul class="sidebar-nav-list">
               <li>
-                <a href="/app/settings" id="sidebar-btn-settings" class="sidebar-nav-item ${isSettings ? 'active' : ''}" title="Impostazioni" onclick="if(typeof switchDashboardView === 'function'){switchDashboardView('settings'); return false;}">
+                <a href="/app/settings" id="sidebar-btn-settings" class="sidebar-nav-item ${isSettings ? 'active' : ''}" title="Impostazioni" onclick="if(typeof switchDashboardView === 'function' && document.getElementById('view-settings')){switchDashboardView('settings'); return false;}">
                   <i class="fa-solid fa-gear"></i>
                   <span class="sidebar-label" data-i18n="nav_settings">Impostazioni</span>
                 </a>

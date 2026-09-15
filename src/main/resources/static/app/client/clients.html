@@ -940,6 +940,10 @@
     }
 
     function switchDashboardView(viewName, pushState = true) {
+      if (viewName === "settings") {
+        window.location.href = "/app/settings";
+        return;
+      }
       if (typeof scrollToTop === "function") {
         scrollToTop("instant");
       } else {

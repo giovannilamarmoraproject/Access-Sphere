@@ -417,7 +417,9 @@ button.m3-action-pill i {
   overflow: hidden;
 }
 
-.m3-bento-card:hover {
+/* Card hover effects su Dashboard, Utenti (Foto 1) e Client: ripristinato translate e box-shadow */
+.m3-bento-card:hover,
+.m3-card:hover {
   transform: translateY(-4px);
   border-color: rgba(208, 188, 255, 0.45) !important;
   box-shadow: 0 20px 40px -15px rgba(124, 77, 255, 0.32) !important;
@@ -907,6 +909,7 @@ div.dt-container .dt-paging button:disabled,
   position: relative;
   overflow: hidden;
 }
+/* Card hover effects per le hero card della dashboard (IAM & Clients) */
 .hub-hero-card:hover {
   transform: translateY(-6px);
   border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45);
@@ -1449,7 +1452,7 @@ textarea.is-valid {
   border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
   border-radius: 28px !important;
   color: #E6E1E5 !important;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: none !important;
   z-index: 1040;
   display: flex;
   flex-direction: column;
@@ -1460,9 +1463,9 @@ textarea.is-valid {
   box-sizing: border-box;
 }
 
-/* Rimosso l'effetto hover glow sulla card della sidebar su richiesta esplicita dell'utente */
+/* Rimosso l'effetto hover glow e box-shadow sulla card della sidebar su richiesta esplicita dell'utente */
 .m3-app-sidebar:hover {
-  /* Nessuna alterazione di ombre o bordi: la card rimane ferma e stabile */
+  box-shadow: none !important;
 }
 
 /* Collapsed State (Solo icone) */

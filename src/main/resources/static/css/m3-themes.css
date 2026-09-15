@@ -255,6 +255,7 @@ body {
 .m3-glass-card:hover,
 .m3-bento-card:hover,
 .m3-card:hover {
+    transform: translateY(-4px);
     border-color: rgba(var(--theme-accent-rgb), 0.45) !important;
     box-shadow: 0 20px 40px -15px var(--theme-glow) !important;
 }
@@ -546,15 +547,17 @@ textarea {
 [data-theme] .m3-app-sidebar {
     background: rgba(var(--theme-surface-rgb), 0.8) !important;
     border: 1px solid rgba(var(--theme-accent-rgb), 0.18) !important;
+    box-shadow: none !important;
 }
 
-/* Rimosso effetto hover glow sulla card sidebar */
+/* Rimosso effetto hover glow e box-shadow sulla card sidebar */
 [data-theme] .m3-app-sidebar:hover {
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+    box-shadow: none !important;
     border-color: rgba(var(--theme-accent-rgb), 0.18) !important;
 }
 
 [data-theme] .hub-hero-card:hover {
+    transform: translateY(-6px);
     border-color: rgba(var(--theme-accent-rgb), 0.45) !important;
     box-shadow: 0 24px 48px -12px var(--theme-glow) !important;
 }

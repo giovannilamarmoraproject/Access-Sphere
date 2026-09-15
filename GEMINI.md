@@ -43,10 +43,10 @@ basata su **HTML5 / Tailwind CSS / Vanilla JS** con design system Google Materia
 > **REGOLA CRITICA**: Non alterare, riprogettare, distorcere o ricostruire la struttura della UI a meno che non sia
 > esplicitamente richiesto dall'utente. Mantenere una fedeltà pixel-perfect rispetto al design originale.
 
-1. **Layout Hero della Dashboard**:
-    - L'Hero di benvenuto ("Benvenuto nella Console di Amministrazione") risiede direttamente sullo sfondo della pagina
-      (`<div class="mb-8">`), NON racchiuso in una `.m3-bento-card` o in un riquadro con bordo.
-    - Il lato destro ospita il pill con l'orologio di sistema e il badge di stato del servizio.
+1. **Layout Hero della Dashboard e delle Impostazioni**:
+    - L'Hero di benvenuto ("Benvenuto nella Console di Amministrazione") e l'Hero della vista Impostazioni risiedono direttamente sullo sfondo della pagina
+      (`<div class="mb-8">`), NON racchiusi in una `.m3-bento-card` o in un riquadro con bordo.
+    - Il lato destro dell'Hero Dashboard ospita il pill con l'orologio di sistema e il badge di stato del servizio; l'Hero Impostazioni ospita i pulsanti Ripristina Predefiniti e Salva Impostazioni.
 2. **Bento Grid dei KPI**:
     - Le schede metriche (Utenti IAM, Client Registrati, MFA Attivo, ID Sessione) utilizzano `.m3-bento-card`.
     - **Invariante Dati Dinamici**: Non associare mai attributi `data-i18n` a elementi DOM il cui contenuto viene
