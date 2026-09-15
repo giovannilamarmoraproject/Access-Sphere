@@ -3,15 +3,17 @@ let errorCode = {};
 let currentLanguage = "en"; // Default language
 let currentTranslations = {};
 
+const SUPPORTED_LANGUAGES = ["it", "en", "fr", "es", "de"];
+
 function detectLanguage() {
   const savedLang = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language") || "auto";
-  if (savedLang === "it" || savedLang === "en") {
+  if (SUPPORTED_LANGUAGES.includes(savedLang)) {
     currentLanguage = savedLang;
     return;
   }
   // "auto" or undefined: detect from browser
   const browserLanguage = (navigator.language || navigator.userLanguage || "en").slice(0, 2).toLowerCase();
-  currentLanguage = (browserLanguage === "it") ? "it" : "en";
+  currentLanguage = SUPPORTED_LANGUAGES.includes(browserLanguage) ? browserLanguage : "en";
 }
 
 // 1. Synchronously populate from cache if present
@@ -24,7 +26,7 @@ try {
   }
 } catch (e) {}
 
-// 2. FOUC Guard: prevents flashing of Italian text when target language is English
+// 2. FOUC Guard: prevents flashing of Italian text when target language is not Italian
 (function initFoucGuard() {
   if (typeof document === "undefined") return;
   detectLanguage();
@@ -110,28 +112,30 @@ async function loadTranslations() {
   document.documentElement.classList.add("i18n-ready");
 }
 
-function t(key, fallback) {
+function t(key, defaultText = "") {
   const dict = currentTranslations || (typeof translations !== "undefined" ? translations[currentLanguage] : null);
-  if (dict && dict[key] !== undefined) {
-    return dict[key];
-  }
-  return fallback !== undefined ? fallback : key;
+  if (!dict) return defaultText || key;
+  return dict[key] !== undefined ? dict[key] : (defaultText || key);
 }
 window.t = t;
 
 function translateDOM() {
   const dict = currentTranslations || translations[currentLanguage];
   if (!dict) return;
+
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
-    if (dict[key] !== undefined) {
-      if (el.tagName === "TITLE") {
-        document.title = dict[key];
-      } else {
-        el.innerHTML = dict[key];
-      }
+    if (!key || dict[key] === undefined) return;
+    const translation = dict[key];
+
+    // Check if translation contains HTML markup
+    if (/<[a-z][\s\S]*>/i.test(translation)) {
+      el.innerHTML = translation;
+    } else {
+      el.textContent = translation;
     }
   });
+
   document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
     const key = el.getAttribute("data-i18n-placeholder");
     if (dict[key] !== undefined) {
@@ -149,28 +153,25 @@ function translateDOM() {
 function syncLanguageUI(lang) {
   const savedPref = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language") || "auto";
   const radioAuto = document.getElementById("lang-radio-auto");
-  const radioIt = document.getElementById("lang-radio-it");
-  const radioEn = document.getElementById("lang-radio-en");
-  if (radioAuto && radioIt && radioEn) {
-    radioAuto.checked = (savedPref === "auto");
-    radioIt.checked = (savedPref === "it");
-    radioEn.checked = (savedPref === "en");
-  } else if (radioIt && radioEn) {
-    radioIt.checked = (currentLanguage === "it");
-    radioEn.checked = (currentLanguage === "en");
-  }
+  if (radioAuto) radioAuto.checked = (savedPref === "auto");
+
+  SUPPORTED_LANGUAGES.forEach((code) => {
+    const radio = document.getElementById("lang-radio-" + code);
+    if (radio) {
+      radio.checked = (savedPref === code || (savedPref === "auto" && currentLanguage === code));
+    }
+    const btn = document.getElementById("lang-btn-" + code);
+    if (btn) {
+      btn.classList.toggle("text-purple-300", savedPref === code || (savedPref === "auto" && currentLanguage === code));
+      btn.classList.toggle("font-bold", savedPref === code || (savedPref === "auto" && currentLanguage === code));
+    }
+  });
 
   // Floating and Navigation Language Switcher Buttons
   const btnAuto = document.getElementById("lang-btn-auto");
-  const btnIt = document.getElementById("lang-btn-it");
-  const btnEn = document.getElementById("lang-btn-en");
-  if (btnAuto && btnIt && btnEn) {
+  if (btnAuto) {
     btnAuto.classList.toggle("text-purple-300", savedPref === "auto");
     btnAuto.classList.toggle("font-bold", savedPref === "auto");
-    btnIt.classList.toggle("text-purple-300", savedPref === "it");
-    btnIt.classList.toggle("font-bold", savedPref === "it");
-    btnEn.classList.toggle("text-purple-300", savedPref === "en");
-    btnEn.classList.toggle("font-bold", savedPref === "en");
   }
 }
 
@@ -180,7 +181,7 @@ async function switchLanguage(lang) {
     localStorage.setItem("app_language", "auto");
     detectLanguage();
   } else {
-    if (lang !== "it" && lang !== "en") lang = "en";
+    if (!SUPPORTED_LANGUAGES.includes(lang)) lang = "en";
     currentLanguage = lang;
     localStorage.setItem("access_sphere_language", lang);
     localStorage.setItem("app_language", lang);

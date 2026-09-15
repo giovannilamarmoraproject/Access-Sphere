@@ -1525,6 +1525,12 @@ textarea {
 /* =======================================================
    SWEETALERT2 ADAPTIVE PALETTE & CONTROLS (Foto 5)
    ======================================================= */
+[data-theme] .swal2-container {
+    background: radial-gradient(circle at 50% 50%, rgba(var(--theme-primary-rgb), 0.16) 0%, rgba(var(--theme-surface-rgb), 0.85) 100%) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+}
+
 [data-theme] .swal2-popup,
 [data-theme] .m3-swal-popup,
 [data-theme] .blur-effect {

@@ -713,7 +713,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
                     <label class="cursor-pointer block h-full">
                         <input type="radio" name="app_language_radio" id="lang-radio-auto" value="auto" class="sr-only peer" onchange="switchLanguage('auto')">
                         <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
@@ -722,7 +722,7 @@
                             </div>
                             <div class="min-w-0">
                                 <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_auto">Automatico</div>
-                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_auto_desc">Browser (IT / EN)</div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_auto_desc">Browser (IT / EN / FR / ES / DE)</div>
                             </div>
                         </div>
                     </label>
@@ -749,6 +749,45 @@
                             <div class="min-w-0">
                                 <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_en">English</div>
                                 <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_en_desc">Default EN</div>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer block h-full">
+                        <input type="radio" name="app_language_radio" id="lang-radio-fr" value="fr" class="sr-only peer" onchange="switchLanguage('fr')">
+                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-indigo-500/30">
+                                FR
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_fr">Français</div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_fr_desc">Prédéfini FR</div>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer block h-full">
+                        <input type="radio" name="app_language_radio" id="lang-radio-es" value="es" class="sr-only peer" onchange="switchLanguage('es')">
+                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-amber-500/30">
+                                ES
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_es">Español</div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_es_desc">Predeterminado ES</div>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer block h-full">
+                        <input type="radio" name="app_language_radio" id="lang-radio-de" value="de" class="sr-only peer" onchange="switchLanguage('de')">
+                        <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
+                            <div class="w-10 h-10 rounded-xl bg-yellow-500/20 text-yellow-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-yellow-500/30">
+                                DE
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_de">Deutsch</div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_de_desc">Standard DE</div>
                             </div>
                         </div>
                     </label>
@@ -1627,13 +1666,9 @@
     let currentFaviconDataUrl = null;
 
     async function loadSettingsView() {
-        const savedLang = localStorage.getItem("access_sphere_language") || (navigator.language.slice(0, 2) === "it" ? "it" : "en");
-        const rIt = document.getElementById("lang-radio-it");
-        const rEn = document.getElementById("lang-radio-en");
-        if (rIt && rEn) {
-            rIt.checked = (savedLang === "it");
-            rEn.checked = (savedLang === "en");
-        }
+        const savedLang = localStorage.getItem("access_sphere_language") || "auto";
+        const rSaved = document.getElementById("lang-radio-" + savedLang);
+        if (rSaved) rSaved.checked = true;
 
         const activeTheme = localStorage.getItem("access_sphere_theme") || "cosmic-purple";
         updateThemeUISelection(activeTheme);
@@ -1658,13 +1693,9 @@
 
     function populateSettingsForm(data) {
         if (!data) return;
-        if (data.defaultLanguage && (data.defaultLanguage === "it" || data.defaultLanguage === "en")) {
-            const radioIt = document.getElementById("lang-radio-it");
-            const radioEn = document.getElementById("lang-radio-en");
-            if (radioIt && radioEn) {
-                radioIt.checked = (data.defaultLanguage === "it");
-                radioEn.checked = (data.defaultLanguage === "en");
-            }
+        if (data.defaultLanguage) {
+            const r = document.getElementById("lang-radio-" + data.defaultLanguage);
+            if (r) r.checked = true;
         }
         if (data.appName) document.getElementById("setting-app-name").value = data.appName;
         if (data.appTagline) document.getElementById("setting-app-tagline").value = data.appTagline;
@@ -1845,12 +1876,8 @@
         const loginBgOpacity = parseInt(document.getElementById("setting-login-bg-opacity").value, 10);
         const activeTheme = localStorage.getItem("access_sphere_theme") || "cosmic-purple";
         let defaultLanguage = localStorage.getItem("access_sphere_language") || "auto";
-        const radioAuto = document.getElementById("lang-radio-auto");
-        const radioIt = document.getElementById("lang-radio-it");
-        const radioEn = document.getElementById("lang-radio-en");
-        if (radioAuto && radioAuto.checked) defaultLanguage = "auto";
-        else if (radioIt && radioIt.checked) defaultLanguage = "it";
-        else if (radioEn && radioEn.checked) defaultLanguage = "en";
+        const activeRadio = document.querySelector('input[name="app_language_radio"]:checked');
+        if (activeRadio) defaultLanguage = activeRadio.value;
 
         const hideHomeButton = document.getElementById("setting-hide-home-btn") ? document.getElementById("setting-hide-home-btn").checked : false;
         const isSidebar = document.getElementById("nav-layout-sidebar") && document.getElementById("nav-layout-sidebar").checked;
