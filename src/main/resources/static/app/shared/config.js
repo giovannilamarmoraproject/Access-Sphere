@@ -76,14 +76,40 @@ function applyAutoCopyright() {
       el.textContent = currentYear;
     });
 
-    // 2. Elementi con classe footer_copyright_text (se non gestiti direttamente da i18n)
-    document.querySelectorAll(".footer_copyright_text").forEach((el) => {
-      if (!el.getAttribute("data-i18n-managed")) {
-        el.innerHTML = `&copy; ${currentYear} Access Sphere - Tutti i diritti riservati`;
+    // 2. Recupera l'eventuale copyright o appName personalizzato da settings / localStorage
+    let customCopyright = null;
+    let appName = "Access Sphere";
+    try {
+      const s = localStorage.getItem("access_sphere_settings");
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (parsed.footerCopyright && parsed.footerCopyright.trim()) {
+          customCopyright = parsed.footerCopyright;
+        }
+        if (parsed.appName && parsed.appName.trim()) {
+          appName = parsed.appName.trim();
+        }
+      }
+      const directCopyright = localStorage.getItem("access_sphere_footer_copyright");
+      if (directCopyright && directCopyright.trim()) {
+        customCopyright = directCopyright.trim();
+      }
+      const savedName = localStorage.getItem("access_sphere_app_name");
+      if (savedName && savedName.trim()) {
+        appName = savedName.trim();
+      }
+    } catch (e) {}
+
+    // 3. Elementi con classe footer_copyright_text e app-footer-copyright
+    document.querySelectorAll(".footer_copyright_text, .app-footer-copyright").forEach((el) => {
+      if (customCopyright) {
+        el.innerHTML = customCopyright.replace("#YEAR#", currentYear).replace(/202[0-9]/g, currentYear);
+      } else {
+        el.innerHTML = `&copy; ${currentYear} ${appName} - Tutti i diritti riservati`;
       }
     });
 
-    // 3. Elementi generici con classe auto-copyright
+    // 4. Elementi generici con classe auto-copyright
     document.querySelectorAll(".auto-copyright").forEach((el) => {
       el.innerHTML = el.innerHTML.replace(/202[0-9](-202[0-9])?/g, currentYear);
     });

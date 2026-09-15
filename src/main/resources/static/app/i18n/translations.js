@@ -313,12 +313,45 @@ function applyTranslations() {
     dict.login_page_sign_up_text
   );
   if (dict.footer_copyright_text) {
-    applyLanguage(
-      ".footer_copyright_text",
-      dict.footer_copyright_text.replace(
+    let customCopyright = null;
+    let appName = "Access Sphere";
+    try {
+      const s = localStorage.getItem("access_sphere_settings");
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (parsed.footerCopyright && parsed.footerCopyright.trim()) {
+          customCopyright = parsed.footerCopyright;
+        }
+        if (parsed.appName && parsed.appName.trim()) {
+          appName = parsed.appName.trim();
+        }
+      }
+      const directCopyright = localStorage.getItem("access_sphere_footer_copyright");
+      if (directCopyright && directCopyright.trim()) {
+        customCopyright = directCopyright.trim();
+      }
+      const savedName = localStorage.getItem("access_sphere_app_name");
+      if (savedName && savedName.trim()) {
+        appName = savedName.trim();
+      }
+    } catch (e) {}
+
+    let textToApply = customCopyright;
+    if (!textToApply) {
+      textToApply = dict.footer_copyright_text.replace(
         "#YEAR#",
         new Date().getFullYear()
-      ),
+      );
+      if (appName && appName !== "Access Sphere") {
+        textToApply = textToApply.replace(/Access Sphere/g, appName);
+      }
+    } else {
+      textToApply = textToApply.replace("#YEAR#", new Date().getFullYear()).replace(/202[0-9]/g, new Date().getFullYear());
+    }
+
+    applyLanguage(
+      ".footer_copyright_text",
+      textToApply,
       true
     );
   }

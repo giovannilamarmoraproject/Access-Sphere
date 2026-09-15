@@ -136,9 +136,17 @@ const AppSettings = (function () {
         }
 
         // 4. Footer Copyright
-        if (settings.footerCopyright) {
+        const currentYear = new Date().getFullYear();
+        let copyrightText = null;
+        if (settings.footerCopyright && settings.footerCopyright.trim()) {
+            localStorage.setItem("access_sphere_footer_copyright", settings.footerCopyright);
+            copyrightText = settings.footerCopyright.replace("#YEAR#", currentYear).replace(/202[0-9]/g, currentYear);
+        } else if (settings.appName && settings.appName.trim()) {
+            copyrightText = `&copy; ${currentYear} ${settings.appName.trim()} - Tutti i diritti riservati`;
+        }
+        if (copyrightText) {
             document.querySelectorAll(".app-footer-copyright, .footer_copyright_text").forEach((el) => {
-                el.innerHTML = settings.footerCopyright;
+                el.innerHTML = copyrightText;
             });
         }
 

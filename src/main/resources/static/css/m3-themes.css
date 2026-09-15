@@ -761,13 +761,69 @@ textarea {
     color: var(--theme-accent) !important;
 }
 
-.bento-feature-badge {
-    border: 1.5px solid rgba(var(--theme-primary-rgb), 0.35) !important;
+/* =======================================================
+   LOGIN SHOWCASE BENTO BADGES, ICONS & FOOTER BORDER (Adaptive Theme)
+   ======================================================= */
+[data-theme] .bento-feature-badge {
+    background: var(--md-surface-card, rgba(var(--theme-surface-rgb), 0.78)) !important;
+    border: 1.5px solid rgba(var(--theme-accent-rgb), 0.25) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-radius: 20px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.bento-feature-badge:hover {
-    border-color: var(--theme-primary) !important;
+[data-theme] .bento-feature-badge:hover {
+    transform: translateY(-2px) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.5) !important;
+    background: rgba(var(--theme-surface-rgb), 0.88) !important;
     box-shadow: 0 10px 25px -5px var(--theme-glow) !important;
+}
+
+[data-theme] .bento-badge-icon {
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-theme] .bento-badge-icon-primary {
+    background: rgba(var(--theme-primary-rgb), 0.18) !important;
+    border: 1.5px solid rgba(var(--theme-primary-rgb), 0.45) !important;
+    color: var(--theme-accent) !important;
+}
+
+[data-theme] .bento-badge-icon-accent {
+    background: rgba(var(--theme-accent-rgb), 0.18) !important;
+    border: 1.5px solid rgba(var(--theme-accent-rgb), 0.45) !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme] .bento-badge-icon-secondary {
+    background: rgba(var(--theme-primary-rgb), 0.12) !important;
+    border: 1.5px solid rgba(var(--theme-accent-rgb), 0.35) !important;
+    color: var(--theme-accent) !important;
+}
+
+[data-theme] .bento-feature-badge:hover .bento-badge-icon-primary {
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 0 12px var(--theme-glow) !important;
+}
+
+[data-theme] .bento-feature-badge:hover .bento-badge-icon-accent {
+    border-color: #FFFFFF !important;
+    box-shadow: 0 0 12px var(--theme-glow) !important;
+}
+
+[data-theme] .bento-feature-badge:hover .bento-badge-icon-secondary {
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 0 12px var(--theme-glow) !important;
+}
+
+[data-theme] .showcase-footer-border {
+    border-top: 1px solid rgba(var(--theme-accent-rgb), 0.2) !important;
 }
 
 #loginButton,
