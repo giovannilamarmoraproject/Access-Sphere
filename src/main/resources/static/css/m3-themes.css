@@ -252,12 +252,34 @@ body {
     border-radius: 28px !important;
 }
 
+/* Regola generale: NESSUNA traslazione né box-shadow su tabelle, dettagli o impostazioni */
 .m3-glass-card:hover,
 .m3-bento-card:hover,
 .m3-card:hover {
-    transform: translateY(-4px);
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.35) !important;
+}
+
+/* Solo le card metriche KPI in alto (Foto 1) hanno translate e box-shadow coordinati con il tema */
+.grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 > .m3-card:hover,
+.grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 > .m3-bento-card:hover {
+    transform: translateY(-4px) !important;
     border-color: rgba(var(--theme-accent-rgb), 0.45) !important;
-    box-shadow: 0 20px 40px -15px var(--theme-glow) !important;
+    box-shadow: 0 16px 32px -10px var(--theme-glow) !important;
+}
+
+/* Protezione specifica per tabelle, dettagli utente/client e impostazioni */
+.m3-card:has(table):hover,
+.m3-bento-card:has(table):hover,
+.table-responsive:hover,
+#user-data .m3-card:hover,
+#client-data .m3-card:hover,
+#view-settings .m3-bento-card:hover,
+#view-settings .m3-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.35) !important;
 }
 
 /* Primary Action Buttons across Landing, App, and Modals */

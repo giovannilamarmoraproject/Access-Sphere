@@ -417,12 +417,36 @@ button.m3-action-pill i {
   overflow: hidden;
 }
 
-/* Card hover effects su Dashboard, Utenti (Foto 1) e Client: ripristinato translate e box-shadow */
+/* Regola generale hover per tutte le card (tabelle, dettagli, impostazioni, ecc.):
+   NESSUNA traslazione (translate: none) e NESSUN box-shadow (box-shadow: none).
+   Solo leggero effetto bordo come richiesto dall'utente. */
 .m3-bento-card:hover,
-.m3-card:hover {
-  transform: translateY(-4px);
+.m3-card:hover,
+.m3-glass-card:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: rgba(208, 188, 255, 0.35) !important;
+}
+
+/* Translate e box-shadow applicati SOLO ed ESCLUSIVAMENTE alle 4 card metriche KPI in alto (Foto 1) */
+.grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 > .m3-card:hover,
+.grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 > .m3-bento-card:hover {
+  transform: translateY(-4px) !important;
   border-color: rgba(208, 188, 255, 0.45) !important;
-  box-shadow: 0 20px 40px -15px rgba(124, 77, 255, 0.32) !important;
+  box-shadow: 0 16px 32px -10px rgba(124, 77, 255, 0.32) !important;
+}
+
+/* Protezione specifica: tabelle, dettagli utente/client, impostazioni e sidebar non hanno MAI traslazione né box-shadow */
+.m3-card:has(table):hover,
+.m3-bento-card:has(table):hover,
+.table-responsive:hover,
+#user-data .m3-card:hover,
+#client-data .m3-card:hover,
+#view-settings .m3-bento-card:hover,
+#view-settings .m3-card:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: rgba(208, 188, 255, 0.35) !important;
 }
 
 /* -------------------------------------------
