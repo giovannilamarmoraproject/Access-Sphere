@@ -153,19 +153,30 @@ function translateDOM() {
 function syncLanguageUI(lang) {
   const savedPref = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language") || "auto";
   const radioAuto = document.getElementById("lang-radio-auto");
-  if (radioAuto) radioAuto.checked = (savedPref === "auto");
 
-  SUPPORTED_LANGUAGES.forEach((code) => {
-    const radio = document.getElementById("lang-radio-" + code);
-    if (radio) {
-      radio.checked = (savedPref === code || (savedPref === "auto" && currentLanguage === code));
-    }
-    const btn = document.getElementById("lang-btn-" + code);
-    if (btn) {
-      btn.classList.toggle("text-purple-300", savedPref === code || (savedPref === "auto" && currentLanguage === code));
-      btn.classList.toggle("font-bold", savedPref === code || (savedPref === "auto" && currentLanguage === code));
-    }
-  });
+  if (savedPref === "auto") {
+    if (radioAuto) radioAuto.checked = true;
+    SUPPORTED_LANGUAGES.forEach((code) => {
+      const radio = document.getElementById("lang-radio-" + code);
+      if (radio) radio.checked = false;
+      const btn = document.getElementById("lang-btn-" + code);
+      if (btn) {
+        btn.classList.toggle("text-purple-300", currentLanguage === code);
+        btn.classList.toggle("font-bold", currentLanguage === code);
+      }
+    });
+  } else {
+    if (radioAuto) radioAuto.checked = false;
+    SUPPORTED_LANGUAGES.forEach((code) => {
+      const radio = document.getElementById("lang-radio-" + code);
+      if (radio) radio.checked = (savedPref === code);
+      const btn = document.getElementById("lang-btn-" + code);
+      if (btn) {
+        btn.classList.toggle("text-purple-300", savedPref === code);
+        btn.classList.toggle("font-bold", savedPref === code);
+      }
+    });
+  }
 
   // Floating and Navigation Language Switcher Buttons
   const btnAuto = document.getElementById("lang-btn-auto");
