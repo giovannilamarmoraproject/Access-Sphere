@@ -819,5 +819,10 @@
   "sidebar_cat_tools": "Herramientas y Acciones",
   "nav_clients_short": "Clientes",
   "btn_version_info": "Info de Versión",
-  "btn_back": "Volver"
+  "btn_back": "Volver",
+  "settings_login_hero_section_title": "Textos Hero Escaparate (Inicio de Sesión)",
+  "settings_login_hero_title_label": "Título Hero Escaparate",
+  "settings_login_hero_title_placeholder": "ej. Autenticación Segura y Modular",
+  "settings_login_hero_subtitle_label": "Subtítulo / Descripción Hero",
+  "settings_login_hero_subtitle_placeholder": "Descripción IAM del escaparate de inicio de sesión..."
 }

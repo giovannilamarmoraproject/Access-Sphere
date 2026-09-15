@@ -819,5 +819,10 @@
   "sidebar_cat_tools": "Tools & Aktionen",
   "nav_clients_short": "Clients",
   "btn_version_info": "Versionsinfo",
-  "btn_back": "Zurück"
+  "btn_back": "Zurück",
+  "settings_login_hero_section_title": "Showcase-Hero-Texte (Anmeldung)",
+  "settings_login_hero_title_label": "Showcase-Hero-Titel",
+  "settings_login_hero_title_placeholder": "z.B. Sichere und modulare Authentifizierung",
+  "settings_login_hero_subtitle_label": "Hero-Untertitel / Beschreibung",
+  "settings_login_hero_subtitle_placeholder": "IAM-Beschreibung für den Login-Showcase..."
 }

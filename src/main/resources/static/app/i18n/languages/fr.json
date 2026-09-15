@@ -819,5 +819,10 @@
   "sidebar_cat_tools": "Outils & Actions",
   "nav_clients_short": "Clients",
   "btn_version_info": "Infos de version",
-  "btn_back": "Retour"
+  "btn_back": "Retour",
+  "settings_login_hero_section_title": "Textes Hero Vitrine (Connexion)",
+  "settings_login_hero_title_label": "Titre Hero Vitrine",
+  "settings_login_hero_title_placeholder": "ex. Authentification Sécurisée & Modulaire",
+  "settings_login_hero_subtitle_label": "Sous-titre / Description Hero",
+  "settings_login_hero_subtitle_placeholder": "Description IAM de la vitrine de connexion..."
 }
