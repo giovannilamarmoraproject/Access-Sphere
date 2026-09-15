@@ -72,16 +72,18 @@ async function loadTranslations() {
         sessionStorage.setItem("i18n_cache_" + currentLanguage, JSON.stringify(currentTranslations));
       } catch (e) {}
     } else {
-      const fallback = await fetch("/app/i18n/translations.json");
-      translations = await fallback.json();
-      currentTranslations = translations[currentLanguage] || translations["en"] || {};
+      const fallbackLang = (currentLanguage === "en") ? "it" : "en";
+      const fallback = await fetch(`/app/i18n/languages/${fallbackLang}.json`);
+      currentTranslations = await fallback.json();
+      translations[currentLanguage] = currentTranslations;
     }
   } catch (error) {
-    console.warn("Falling back to translations.json:", error);
+    console.warn("Error loading language file, falling back to modular language json:", error);
     try {
-      const fallback = await fetch("/app/i18n/translations.json");
-      translations = await fallback.json();
-      currentTranslations = translations[currentLanguage] || translations["en"] || {};
+      const fallbackLang = (currentLanguage === "en") ? "it" : "en";
+      const fallback = await fetch(`/app/i18n/languages/${fallbackLang}.json`);
+      currentTranslations = await fallback.json();
+      translations[currentLanguage] = currentTranslations;
     } catch (e) {
       console.error("Error loading translations:", e);
     }
