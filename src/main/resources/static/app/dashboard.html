@@ -19,7 +19,8 @@
                     }
                 }
                 document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
-            } catch (e) {}
+            } catch (e) {
+            }
         })();
     </script>
 
@@ -157,7 +158,8 @@
 
         <!-- Quick Action Controls -->
         <div class="flex items-center gap-2">
-            <button id="btn-refresh-data" onclick="handleCurrentRefresh()" class="m3-icon-btn" title="Aggiorna dati" data-i18n-title="btn_refresh">
+            <button id="btn-refresh-data" onclick="handleCurrentRefresh()" class="m3-icon-btn" title="Aggiorna dati"
+                    data-i18n-title="btn_refresh">
                 <i id="refresh-icon" class="fa-solid fa-arrows-rotate text-sm"></i>
             </button>
             <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
@@ -176,7 +178,8 @@
                 </a>
             </div>
 
-            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout" data-i18n-title="btn_logout">
+            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout"
+                    data-i18n-title="btn_logout">
                 <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
             </button>
         </div>
@@ -211,7 +214,9 @@
                         <i class="fa-solid fa-clock text-base"></i>
                     </div>
                     <div>
-                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_system_clock">Orario Sistema</div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_system_clock">
+                            Orario Sistema
+                        </div>
                         <div id="live-clock" class="text-white font-mono font-bold text-sm">--:--:--</div>
                     </div>
                 </div>
@@ -221,7 +226,9 @@
                         <i class="fa-solid fa-signal text-base"></i>
                     </div>
                     <div>
-                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_service_status">Stato Servizi</div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_service_status">
+                            Stato Servizi
+                        </div>
                         <div class="text-emerald-300 font-semibold text-sm flex items-center gap-1.5">
                             <i class="fa-solid fa-check-circle text-xs"></i> <span data-i18n="dash_status_operational">Operativo</span>
                         </div>
@@ -237,7 +244,8 @@
         <!-- Card 1: Utenti Totali -->
         <div class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="dash_card_users_title">Utenti IAM</span>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                      data-i18n="dash_card_users_title">Utenti IAM</span>
                 <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300">
                     <i class="fa-solid fa-users text-lg"></i>
                 </div>
@@ -247,7 +255,8 @@
                 </div>
                 <div class="text-xs text-purple-300/80 mt-1 flex items-center gap-1.5">
                     <i class="fa-solid fa-user-check text-emerald-400"></i>
-                    <span id="stat-recap-active-users">--</span> <span data-i18n="dash_card_users_active">utenti attivi</span>
+                    <span id="stat-recap-active-users">--</span> <span
+                        data-i18n="dash_card_users_active">utenti attivi</span>
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-purple-500/15">
@@ -262,7 +271,8 @@
         <!-- Card 2: Client OAuth2 -->
         <div class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="dash_card_clients_title">Client OAuth 2.0</span>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                      data-i18n="dash_card_clients_title">Client OAuth 2.0</span>
                 <div class="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-300">
                     <i class="fa-solid fa-cubes text-lg"></i>
                 </div>
@@ -287,7 +297,8 @@
         <!-- Card 3: Sicurezza & Token -->
         <div class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="dash_card_security_title">Protezione Token</span>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                      data-i18n="dash_card_security_title">Protezione Token</span>
                 <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300">
                     <i class="fa-solid fa-lock text-lg"></i>
                 </div>
@@ -310,7 +321,8 @@
         <!-- Card 4: Sessione & Tracciamento -->
         <div class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="dash_card_session_title">Sessione Amministratore</span>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                      data-i18n="dash_card_session_title">Sessione Amministratore</span>
                 <div class="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center text-cyan-300">
                     <i class="fa-solid fa-fingerprint text-lg"></i>
                 </div>
@@ -472,7 +484,9 @@
             <div>
                 <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="kpi_total_users">Utenti Totali</span>
                 <div id="stat-total-users" class="text-3xl font-extrabold text-white mt-1">--</div>
-                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> <span data-i18n="kpi_users_active_desc">Anagrafica attiva</span></span>
+                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i
+                        class="fa-solid fa-database mr-1"></i> <span
+                        data-i18n="kpi_users_active_desc">Anagrafica attiva</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl">
                 <i class="fa-solid fa-users"></i>
@@ -484,7 +498,8 @@
                 <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="kpi_active_users">Utenti Attivi</span>
                 <div id="stat-active-users" class="text-3xl font-extrabold text-emerald-400 mt-1">--</div>
                 <span class="text-[11px] text-emerald-300 mt-1 inline-block"><i
-                        class="fa-solid fa-circle-check mr-1"></i> <span data-i18n="kpi_active_users_desc">Non bloccati</span></span>
+                        class="fa-solid fa-circle-check mr-1"></i> <span
+                        data-i18n="kpi_active_users_desc">Non bloccati</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-2xl">
                 <i class="fa-solid fa-user-check"></i>
@@ -495,7 +510,8 @@
             <div>
                 <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="kpi_blocked_users">Utenti Bloccati</span>
                 <div id="stat-blocked-users" class="text-3xl font-extrabold text-red-400 mt-1">--</div>
-                <span class="text-[11px] text-red-300 mt-1 inline-block"><i class="fa-solid fa-ban mr-1"></i> <span data-i18n="kpi_blocked_users_desc">Accesso revocato</span></span>
+                <span class="text-[11px] text-red-300 mt-1 inline-block"><i class="fa-solid fa-ban mr-1"></i> <span
+                        data-i18n="kpi_blocked_users_desc">Accesso revocato</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-300 text-2xl">
                 <i class="fa-solid fa-user-xmark"></i>
@@ -574,9 +590,12 @@
 
         <div class="m3-card p-6 flex items-center justify-between">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="client_kpi_total_clients">Client Registrati</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider"
+                      data-i18n="client_kpi_total_clients">Client Registrati</span>
                 <div id="stat-total-clients" class="text-3xl font-extrabold text-white mt-1">--</div>
-                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i class="fa-solid fa-database mr-1"></i> <span data-i18n="kpi_total_in_db">Totale in DB</span></span>
+                <span class="text-[11px] text-purple-300 mt-1 inline-block"><i
+                        class="fa-solid fa-database mr-1"></i> <span
+                        data-i18n="kpi_total_in_db">Totale in DB</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-2xl">
                 <i class="fa-solid fa-network-wired"></i>
@@ -585,9 +604,11 @@
 
         <div class="m3-card p-6 flex items-center justify-between">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="client_kpi_mfa_clients">Client con MFA</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider"
+                      data-i18n="client_kpi_mfa_clients">Client con MFA</span>
                 <div id="stat-mfa-clients" class="text-3xl font-extrabold text-pink-400 mt-1">--</div>
-                <span class="text-[11px] text-pink-300 mt-1 inline-block"><i class="fa-solid fa-shield-virus mr-1"></i> <span data-i18n="kpi_mfa_active_desc">Con 2FA attivo</span></span>
+                <span class="text-[11px] text-pink-300 mt-1 inline-block"><i class="fa-solid fa-shield-virus mr-1"></i> <span
+                        data-i18n="kpi_mfa_active_desc">Con 2FA attivo</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300 text-2xl">
                 <i class="fa-solid fa-fingerprint"></i>
@@ -596,9 +617,11 @@
 
         <div class="m3-card p-6 flex items-center justify-between">
             <div>
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="client_kpi_jwe_clients">Token JWE Cifrati</span>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider"
+                      data-i18n="client_kpi_jwe_clients">Token JWE Cifrati</span>
                 <div id="stat-jwe-clients" class="text-3xl font-extrabold text-blue-400 mt-1">--</div>
-                <span class="text-[11px] text-blue-300 mt-1 inline-block"><i class="fa-solid fa-lock mr-1"></i> <span data-i18n="kpi_jwe_active_desc">Crittografia JWE</span></span>
+                <span class="text-[11px] text-blue-300 mt-1 inline-block"><i class="fa-solid fa-lock mr-1"></i> <span
+                        data-i18n="kpi_jwe_active_desc">Crittografia JWE</span></span>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-300 text-2xl">
                 <i class="fa-solid fa-file-shield"></i>
@@ -639,7 +662,8 @@
 
             <div class="flex items-center gap-3">
                 <a href="/app/clients/register" class="m3-btn-primary text-decoration-none">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="btn_register_new_client">Registra Nuovo Client</span>
+                    <i class="fa-solid fa-plus"></i> <span
+                        data-i18n="btn_register_new_client">Registra Nuovo Client</span>
                 </a>
             </div>
         </div>
@@ -682,15 +706,18 @@
                     Impostazioni dell'Applicazione
                 </h1>
                 <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-2xl" data-i18n="settings_subtitle">
-                    Personalizza l'aspetto, il brand, la lingua, i temi grafici e gestisci il backup e ripristino di Access Sphere.
+                    Personalizza l'aspetto, il brand, la lingua, i temi grafici e gestisci il backup e ripristino di
+                    Access Sphere.
                 </p>
             </div>
 
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto shrink-0">
-                <button type="button" onclick="resetSettingsToDefault()" class="m3-btn-secondary w-full sm:w-auto justify-center px-4 py-2.5 text-xs">
+                <button type="button" onclick="resetSettingsToDefault()"
+                        class="m3-btn-secondary w-full sm:w-auto justify-center px-4 py-2.5 text-xs">
                     <i class="fa-solid fa-rotate-left mr-1"></i> <span data-i18n="btn_reset_defaults">Ripristina Predefiniti</span>
                 </button>
-                <button type="button" onclick="saveAllSettings()" class="m3-btn-primary w-full sm:w-auto justify-center px-6 py-3 text-sm font-bold shadow-lg">
+                <button type="button" onclick="saveAllSettings()"
+                        class="m3-btn-primary w-full sm:w-auto justify-center px-6 py-3 text-sm font-bold shadow-lg">
                     <i class="fa-solid fa-floppy-disk mr-1.5"></i> <span data-i18n="btn_save_settings">Salva Impostazioni</span>
                 </button>
             </div>
@@ -708,86 +735,113 @@
                         <i class="fa-solid fa-language"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_lang_title">Lingua & Localizzazione</h3>
-                        <p class="text-xs text-gray-400" data-i18n="settings_card_lang_desc">Scegli la lingua dell'interfaccia. Rilevata automaticamente dal browser se non impostata.</p>
+                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_lang_title">Lingua &
+                            Localizzazione</h3>
+                        <p class="text-xs text-gray-400" data-i18n="settings_card_lang_desc">Scegli la lingua
+                            dell'interfaccia. Rilevata automaticamente dal browser se non impostata.</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
                     <label class="cursor-pointer block h-full">
-                        <input type="radio" name="app_language_radio" id="lang-radio-auto" value="auto" class="sr-only peer" onchange="switchLanguage('auto')">
+                        <input type="radio" name="app_language_radio" id="lang-radio-auto" value="auto"
+                               class="sr-only peer" onchange="switchLanguage('auto')">
                         <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
                             <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/30">
                                 <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
                             </div>
                             <div class="min-w-0">
-                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_auto">Automatico</div>
-                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_auto_desc">Browser (IT / EN / FR / ES / DE)</div>
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_auto">
+                                    Automatico
+                                </div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_auto_desc">Browser
+                                    (IT / EN / FR / ES / DE)
+                                </div>
                             </div>
                         </div>
                     </label>
 
                     <label class="cursor-pointer block h-full">
-                        <input type="radio" name="app_language_radio" id="lang-radio-it" value="it" class="sr-only peer" onchange="switchLanguage('it')">
+                        <input type="radio" name="app_language_radio" id="lang-radio-it" value="it" class="sr-only peer"
+                               onchange="switchLanguage('it')">
                         <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
                             <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-emerald-500/30">
                                 IT
                             </div>
                             <div class="min-w-0">
-                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_it">Italiano</div>
-                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_it_desc">Predefinito IT</div>
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_it">Italiano
+                                </div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_it_desc">
+                                    Predefinito IT
+                                </div>
                             </div>
                         </div>
                     </label>
 
                     <label class="cursor-pointer block h-full">
-                        <input type="radio" name="app_language_radio" id="lang-radio-en" value="en" class="sr-only peer" onchange="switchLanguage('en')">
+                        <input type="radio" name="app_language_radio" id="lang-radio-en" value="en" class="sr-only peer"
+                               onchange="switchLanguage('en')">
                         <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
                             <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-blue-500/30">
                                 EN
                             </div>
                             <div class="min-w-0">
-                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_en">English</div>
-                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_en_desc">Default EN</div>
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_en">English
+                                </div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_en_desc">Default
+                                    EN
+                                </div>
                             </div>
                         </div>
                     </label>
 
                     <label class="cursor-pointer block h-full">
-                        <input type="radio" name="app_language_radio" id="lang-radio-fr" value="fr" class="sr-only peer" onchange="switchLanguage('fr')">
+                        <input type="radio" name="app_language_radio" id="lang-radio-fr" value="fr" class="sr-only peer"
+                               onchange="switchLanguage('fr')">
                         <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
                             <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-indigo-500/30">
                                 FR
                             </div>
                             <div class="min-w-0">
-                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_fr">Français</div>
-                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_fr_desc">Prédéfini FR</div>
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_fr">Français
+                                </div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_fr_desc">Prédéfini
+                                    FR
+                                </div>
                             </div>
                         </div>
                     </label>
 
                     <label class="cursor-pointer block h-full">
-                        <input type="radio" name="app_language_radio" id="lang-radio-es" value="es" class="sr-only peer" onchange="switchLanguage('es')">
+                        <input type="radio" name="app_language_radio" id="lang-radio-es" value="es" class="sr-only peer"
+                               onchange="switchLanguage('es')">
                         <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
                             <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-amber-500/30">
                                 ES
                             </div>
                             <div class="min-w-0">
-                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_es">Español</div>
-                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_es_desc">Predeterminado ES</div>
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_es">Español
+                                </div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_es_desc">
+                                    Predeterminado ES
+                                </div>
                             </div>
                         </div>
                     </label>
 
                     <label class="cursor-pointer block h-full">
-                        <input type="radio" name="app_language_radio" id="lang-radio-de" value="de" class="sr-only peer" onchange="switchLanguage('de')">
+                        <input type="radio" name="app_language_radio" id="lang-radio-de" value="de" class="sr-only peer"
+                               onchange="switchLanguage('de')">
                         <div class="p-3.5 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex items-center gap-3 transition-all hover:bg-white/5 h-full min-h-[72px]">
                             <div class="w-10 h-10 rounded-xl bg-yellow-500/20 text-yellow-300 flex items-center justify-center font-bold text-xs shrink-0 tracking-wider border border-yellow-500/30">
                                 DE
                             </div>
                             <div class="min-w-0">
-                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_de">Deutsch</div>
-                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_de_desc">Standard DE</div>
+                                <div class="text-sm font-bold text-white truncate" data-i18n="lang_mode_de">Deutsch
+                                </div>
+                                <div class="text-[10px] text-gray-400 truncate" data-i18n="lang_mode_de_desc">Standard
+                                    DE
+                                </div>
                             </div>
                         </div>
                     </label>
@@ -808,71 +862,97 @@
                         <i class="fa-solid fa-image"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_login_title">Personalizzazione Pagina di Accesso (Login)</h3>
-                        <p class="text-xs text-gray-400" data-i18n="settings_card_login_desc">Scegli tra la vetrina con le card informative (Foto 1) o uno sfondo personalizzato oscurato.</p>
+                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_login_title">Personalizzazione
+                            Pagina di Accesso (Login)</h3>
+                        <p class="text-xs text-gray-400" data-i18n="settings_card_login_desc">Scegli tra la vetrina con
+                            le card informative (Foto 1) o uno sfondo personalizzato oscurato.</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     <label class="cursor-pointer">
-                        <input type="radio" name="login_mode_radio" id="login-mode-showcase" value="SHOWCASE" class="sr-only peer" checked onchange="handleLoginModeChange('SHOWCASE')">
+                        <input type="radio" name="login_mode_radio" id="login-mode-showcase" value="SHOWCASE"
+                               class="sr-only peer" checked onchange="handleLoginModeChange('SHOWCASE')">
                         <div class="p-4 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
                             <div class="flex items-center gap-2.5 mb-2">
                                 <i class="fa-solid fa-list-check text-purple-400 text-base"></i>
                                 <span class="text-sm font-bold text-white" data-i18n="login_mode_showcase">Vetrina Funzionalità (Foto 1)</span>
                             </div>
-                            <p class="text-[11px] text-gray-400" data-i18n="login_mode_showcase_desc">Mostra il testo hero ("Autenticazione Sicura & Modulare") e le tre Bento card (Zero-Trust, OAuth 2.0, MFA).</p>
+                            <p class="text-[11px] text-gray-400" data-i18n="login_mode_showcase_desc">Mostra il testo
+                                hero ("Autenticazione Sicura & Modulare") e le tre Bento card (Zero-Trust, OAuth 2.0,
+                                MFA).</p>
                         </div>
                     </label>
 
                     <label class="cursor-pointer">
-                        <input type="radio" name="login_mode_radio" id="login-mode-custom-bg" value="CUSTOM_BACKGROUND" class="sr-only peer" onchange="handleLoginModeChange('CUSTOM_BACKGROUND')">
+                        <input type="radio" name="login_mode_radio" id="login-mode-custom-bg" value="CUSTOM_BACKGROUND"
+                               class="sr-only peer" onchange="handleLoginModeChange('CUSTOM_BACKGROUND')">
                         <div class="p-4 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
                             <div class="flex items-center gap-2.5 mb-2">
                                 <i class="fa-solid fa-wand-magic-sparkles text-purple-400 text-base"></i>
                                 <span class="text-sm font-bold text-white" data-i18n="login_mode_custom_bg">Sfondo Personalizzato</span>
                             </div>
-                            <p class="text-[11px] text-gray-400" data-i18n="login_mode_custom_bg_desc">Imposta una splendida immagine a tutto schermo con filtro oscurato per risaltare il form di login.</p>
+                            <p class="text-[11px] text-gray-400" data-i18n="login_mode_custom_bg_desc">Imposta una
+                                splendida immagine a tutto schermo con filtro oscurato per risaltare il form di
+                                login.</p>
                         </div>
                     </label>
                 </div>
 
                 <!-- Showcase Hero Customization Section (Visible ONLY in Showcase mode) -->
-                <div id="login-showcase-container" class="mt-4 p-4 rounded-xl bg-purple-950/25 border border-purple-500/20">
+                <div id="login-showcase-container"
+                     class="mt-4 p-4 rounded-xl bg-purple-950/25 border border-purple-500/20">
                     <div class="flex items-center gap-2 mb-3">
                         <i class="fa-solid fa-pen-to-square text-purple-400 text-xs"></i>
-                        <span class="text-xs font-bold text-white uppercase tracking-wider" data-i18n="settings_login_hero_section_title">Testi Hero Vetrina (Login)</span>
+                        <span class="text-xs font-bold text-white uppercase tracking-wider"
+                              data-i18n="settings_login_hero_section_title">Testi Hero Vetrina (Login)</span>
                     </div>
                     <div class="space-y-3">
                         <div>
-                            <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="settings_login_hero_title_label">Titolo Hero Vetrina</label>
-                            <input type="text" id="setting-login-hero-title" class="form-control text-sm" value="Autenticazione Sicura & Modulare" placeholder="es. Autenticazione Sicura & Modulare" data-i18n-placeholder="settings_login_hero_title_placeholder">
+                            <label class="text-xs font-semibold text-gray-300 mb-1 block"
+                                   data-i18n="settings_login_hero_title_label">Titolo Hero Vetrina</label>
+                            <input type="text" id="setting-login-hero-title" class="form-control text-sm"
+                                   value="Autenticazione Sicura & Modulare"
+                                   placeholder="es. Autenticazione Sicura & Modulare"
+                                   data-i18n-placeholder="settings_login_hero_title_placeholder">
                         </div>
                         <div>
-                            <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="settings_login_hero_subtitle_label">Sottotitolo / Descrizione Hero</label>
-                            <textarea id="setting-login-hero-subtitle" rows="3" class="form-control text-xs resize-y" placeholder="Descrizione IAM della vetrina di login..." data-i18n-placeholder="settings_login_hero_subtitle_placeholder">Piattaforma moderna per la gestione delle identità (IAM), federazione OAuth 2.0 / OpenID Connect e protezione avanzata con crittografia JWT e JWE.</textarea>
+                            <label class="text-xs font-semibold text-gray-300 mb-1 block"
+                                   data-i18n="settings_login_hero_subtitle_label">Sottotitolo / Descrizione Hero</label>
+                            <textarea id="setting-login-hero-subtitle" rows="3" class="form-control text-xs resize-y"
+                                      placeholder="Descrizione IAM della vetrina di login..."
+                                      data-i18n-placeholder="settings_login_hero_subtitle_placeholder">Piattaforma moderna per la gestione delle identità (IAM), federazione OAuth 2.0 / OpenID Connect e protezione avanzata con crittografia JWT e JWE.</textarea>
                         </div>
                     </div>
                 </div>
 
                 <!-- Custom Background Upload Section -->
-                <div id="login-bg-upload-container" class="mt-4 p-4 rounded-xl bg-purple-950/30 border border-purple-500/20" style="display: none;">
+                <div id="login-bg-upload-container"
+                     class="mt-4 p-4 rounded-xl bg-purple-950/30 border border-purple-500/20" style="display: none;">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
                         <div class="sm:col-span-2">
-                            <label class="text-xs font-semibold text-gray-300 mb-1.5 block" data-i18n="upload_bg_label">Carica Immagine di Sfondo</label>
-                            <input type="file" id="setting-login-bg-file" accept="image/*" class="form-control text-xs" onchange="handleBgFileUpload(event)">
+                            <label class="text-xs font-semibold text-gray-300 mb-1.5 block" data-i18n="upload_bg_label">Carica
+                                Immagine di Sfondo</label>
+                            <input type="file" id="setting-login-bg-file" accept="image/*" class="form-control text-xs"
+                                   onchange="handleBgFileUpload(event)">
                             <div class="flex items-center gap-3 mt-3">
-                                <label class="text-xs font-semibold text-gray-300 whitespace-nowrap" data-i18n="bg_dimming_label">Livello Oscuramento (%):</label>
-                                <input type="range" id="setting-login-bg-opacity" min="10" max="90" value="50" class="w-full accent-purple-500" oninput="updateBgOpacityPreview(this.value)">
-                                <span id="bg-opacity-val" class="text-xs font-mono font-bold text-purple-300 min-w-[32px]">50%</span>
+                                <label class="text-xs font-semibold text-gray-300 whitespace-nowrap"
+                                       data-i18n="bg_dimming_label">Livello Oscuramento (%):</label>
+                                <input type="range" id="setting-login-bg-opacity" min="10" max="90" value="50"
+                                       class="w-full accent-purple-500" oninput="updateBgOpacityPreview(this.value)">
+                                <span id="bg-opacity-val"
+                                      class="text-xs font-mono font-bold text-purple-300 min-w-[32px]">50%</span>
                             </div>
                         </div>
 
                         <div class="sm:col-span-1">
-                            <div class="text-[11px] text-gray-400 mb-1" data-i18n="bg_preview_label">Anteprima Sfondo:</div>
-                            <div id="bg-preview-box" class="h-20 w-full rounded-lg border border-purple-500/30 bg-cover bg-center relative overflow-hidden flex items-center justify-center">
+                            <div class="text-[11px] text-gray-400 mb-1" data-i18n="bg_preview_label">Anteprima Sfondo:
+                            </div>
+                            <div id="bg-preview-box"
+                                 class="h-20 w-full rounded-lg border border-purple-500/30 bg-cover bg-center relative overflow-hidden flex items-center justify-center">
                                 <div id="bg-preview-overlay" class="absolute inset-0 bg-[#0E0B16]/50"></div>
-                                <span class="relative z-10 text-[10px] text-gray-300 font-bold px-2 py-0.5 rounded bg-black/40" data-i18n="preview_badge">Anteprima</span>
+                                <span class="relative z-10 text-[10px] text-gray-300 font-bold px-2 py-0.5 rounded bg-black/40"
+                                      data-i18n="preview_badge">Anteprima</span>
                             </div>
                         </div>
                     </div>
@@ -885,7 +965,9 @@
                             <i class="fa-solid fa-arrow-left text-purple-400"></i>
                             <span data-i18n="settings_hide_home_btn_title">Nascondi Pulsante "Torna alla Home"</span>
                         </div>
-                        <div class="text-[11px] text-gray-400" data-i18n="settings_hide_home_btn_desc">Nasconde il pulsante per tornare alla home page dalla schermata di login.</div>
+                        <div class="text-[11px] text-gray-400" data-i18n="settings_hide_home_btn_desc">Nasconde il
+                            pulsante per tornare alla home page dalla schermata di login.
+                        </div>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
                         <input type="checkbox" id="setting-hide-home-btn" class="sr-only peer">
@@ -902,31 +984,38 @@
                     <i class="fa-solid fa-table-columns"></i>
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-white" data-i18n="setting_nav_layout_title">Layout di Navigazione</h3>
-                    <p class="text-xs text-gray-400" data-i18n="setting_nav_layout_desc">Scegli se disporre la navigazione in un header orizzontale in alto o in una barra laterale (Sidebar) M3</p>
+                    <h3 class="text-lg font-bold text-white" data-i18n="setting_nav_layout_title">Layout di
+                        Navigazione</h3>
+                    <p class="text-xs text-gray-400" data-i18n="setting_nav_layout_desc">Scegli se disporre la
+                        navigazione in un header orizzontale in alto o in una barra laterale (Sidebar) M3</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <label class="cursor-pointer">
-                    <input type="radio" name="navigation_layout_radio" id="nav-layout-header" value="HEADER" class="sr-only peer" checked onchange="handleNavigationLayoutChange('HEADER')">
+                    <input type="radio" name="navigation_layout_radio" id="nav-layout-header" value="HEADER"
+                           class="sr-only peer" checked onchange="handleNavigationLayoutChange('HEADER')">
                     <div class="p-4 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
                         <div class="flex items-center gap-2.5 mb-2">
                             <i class="fa-solid fa-window-maximize text-purple-400 text-base"></i>
                             <span class="text-sm font-bold text-white" data-i18n="setting_nav_layout_header">Header Superiore</span>
                         </div>
-                        <p class="text-[11px] text-gray-400" data-i18n="setting_nav_layout_header_desc">Barra orizzontale classica in cima allo schermo con logo, tab e comandi rapidi.</p>
+                        <p class="text-[11px] text-gray-400" data-i18n="setting_nav_layout_header_desc">Barra
+                            orizzontale classica in cima allo schermo con logo, tab e comandi rapidi.</p>
                     </div>
                 </label>
 
                 <label class="cursor-pointer">
-                    <input type="radio" name="navigation_layout_radio" id="nav-layout-sidebar" value="SIDEBAR" class="sr-only peer" onchange="handleNavigationLayoutChange('SIDEBAR')">
+                    <input type="radio" name="navigation_layout_radio" id="nav-layout-sidebar" value="SIDEBAR"
+                           class="sr-only peer" onchange="handleNavigationLayoutChange('SIDEBAR')">
                     <div class="p-4 rounded-xl border border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/15 flex flex-col justify-between h-full transition-all hover:bg-white/5">
                         <div class="flex items-center gap-2.5 mb-2">
                             <i class="fa-solid fa-table-columns text-purple-400 text-base"></i>
                             <span class="text-sm font-bold text-white" data-i18n="setting_nav_layout_sidebar">Barra Laterale (Sidebar M3)</span>
                         </div>
-                        <p class="text-[11px] text-gray-400" data-i18n="setting_nav_layout_sidebar_desc">Sidebar fluttuante a scheda, espandibile o ridotta a sole icone con lo stesso stile e border-radius delle card.</p>
+                        <p class="text-[11px] text-gray-400" data-i18n="setting_nav_layout_sidebar_desc">Sidebar
+                            fluttuante a scheda, espandibile o ridotta a sole icone con lo stesso stile e border-radius
+                            delle card.</p>
                     </div>
                 </label>
             </div>
@@ -940,8 +1029,10 @@
                         <i class="fa-solid fa-palette"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_theme_title">Palette Colori & Tema Interfaccia</h3>
-                        <p class="text-xs text-gray-400" data-i18n="settings_card_theme_desc">Seleziona una delle 6 palette grafiche. L'intera interfaccia si aggiorna istantaneamente in tempo reale.</p>
+                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_theme_title">Palette Colori &
+                            Tema Interfaccia</h3>
+                        <p class="text-xs text-gray-400" data-i18n="settings_card_theme_desc">Seleziona una delle 6
+                            palette grafiche. L'intera interfaccia si aggiorna istantaneamente in tempo reale.</p>
                     </div>
                 </div>
                 <span class="text-xs px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium self-start sm:self-center">
@@ -952,9 +1043,12 @@
             <!-- Palettes Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4" id="theme-palette-grid">
                 <!-- Theme 1: Cosmic Purple (Default) -->
-                <div onclick="selectTheme('cosmic-purple')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-purple-400 transition-all bg-[#0E0B16] flex flex-col justify-between relative group" data-theme-choice="cosmic-purple">
+                <div onclick="selectTheme('cosmic-purple')"
+                     class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-purple-400 transition-all bg-[#0E0B16] flex flex-col justify-between relative group"
+                     data-theme-choice="cosmic-purple">
                     <div>
-                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%);">
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden"
+                             style="background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%);">
                             <span class="text-white font-bold text-xs drop-shadow">Default</span>
                         </div>
                         <div class="font-bold text-white text-xs mb-1">Cosmic Purple</div>
@@ -963,14 +1057,18 @@
                     <div class="mt-3 flex items-center gap-1.5">
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #A855F7;"></span>
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #6750A4;"></span>
-                        <span class="w-3.5 h-3.5 rounded-full" style="background: #0E0B16; border: 1px solid rgba(255,255,255,0.2);"></span>
+                        <span class="w-3.5 h-3.5 rounded-full"
+                              style="background: #0E0B16; border: 1px solid rgba(255,255,255,0.2);"></span>
                     </div>
                 </div>
 
                 <!-- Theme 2: Midnight Ocean -->
-                <div onclick="selectTheme('midnight-ocean')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-sky-400 transition-all bg-[#060D18] flex flex-col justify-between relative group" data-theme-choice="midnight-ocean">
+                <div onclick="selectTheme('midnight-ocean')"
+                     class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-sky-400 transition-all bg-[#060D18] flex flex-col justify-between relative group"
+                     data-theme-choice="midnight-ocean">
                     <div>
-                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);">
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden"
+                             style="background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);">
                             <span class="text-white font-bold text-xs drop-shadow">Oceanic</span>
                         </div>
                         <div class="font-bold text-white text-xs mb-1">Midnight Ocean</div>
@@ -979,14 +1077,18 @@
                     <div class="mt-3 flex items-center gap-1.5">
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #38BDF8;"></span>
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #0284C7;"></span>
-                        <span class="w-3.5 h-3.5 rounded-full" style="background: #060D18; border: 1px solid rgba(255,255,255,0.2);"></span>
+                        <span class="w-3.5 h-3.5 rounded-full"
+                              style="background: #060D18; border: 1px solid rgba(255,255,255,0.2);"></span>
                     </div>
                 </div>
 
                 <!-- Theme 3: Emerald Matrix -->
-                <div onclick="selectTheme('emerald-matrix')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-emerald-400 transition-all bg-[#05130E] flex flex-col justify-between relative group" data-theme-choice="emerald-matrix">
+                <div onclick="selectTheme('emerald-matrix')"
+                     class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-emerald-400 transition-all bg-[#05130E] flex flex-col justify-between relative group"
+                     data-theme-choice="emerald-matrix">
                     <div>
-                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #34D399 0%, #059669 100%);">
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden"
+                             style="background: linear-gradient(135deg, #34D399 0%, #059669 100%);">
                             <span class="text-white font-bold text-xs drop-shadow">Matrix</span>
                         </div>
                         <div class="font-bold text-white text-xs mb-1">Emerald Matrix</div>
@@ -995,14 +1097,18 @@
                     <div class="mt-3 flex items-center gap-1.5">
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #34D399;"></span>
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #059669;"></span>
-                        <span class="w-3.5 h-3.5 rounded-full" style="background: #05130E; border: 1px solid rgba(255,255,255,0.2);"></span>
+                        <span class="w-3.5 h-3.5 rounded-full"
+                              style="background: #05130E; border: 1px solid rgba(255,255,255,0.2);"></span>
                     </div>
                 </div>
 
                 <!-- Theme 4: Amber Sunset -->
-                <div onclick="selectTheme('amber-sunset')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-amber-400 transition-all bg-[#140C07] flex flex-col justify-between relative group" data-theme-choice="amber-sunset">
+                <div onclick="selectTheme('amber-sunset')"
+                     class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-amber-400 transition-all bg-[#140C07] flex flex-col justify-between relative group"
+                     data-theme-choice="amber-sunset">
                     <div>
-                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #F59E0B 0%, #EA580C 100%);">
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden"
+                             style="background: linear-gradient(135deg, #F59E0B 0%, #EA580C 100%);">
                             <span class="text-white font-bold text-xs drop-shadow">Sunset</span>
                         </div>
                         <div class="font-bold text-white text-xs mb-1">Amber Sunset</div>
@@ -1011,14 +1117,18 @@
                     <div class="mt-3 flex items-center gap-1.5">
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #F59E0B;"></span>
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #EA580C;"></span>
-                        <span class="w-3.5 h-3.5 rounded-full" style="background: #140C07; border: 1px solid rgba(255,255,255,0.2);"></span>
+                        <span class="w-3.5 h-3.5 rounded-full"
+                              style="background: #140C07; border: 1px solid rgba(255,255,255,0.2);"></span>
                     </div>
                 </div>
 
                 <!-- Theme 5: Titanium Slate -->
-                <div onclick="selectTheme('titanium-slate')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-slate-400 transition-all bg-[#0F172A] flex flex-col justify-between relative group" data-theme-choice="titanium-slate">
+                <div onclick="selectTheme('titanium-slate')"
+                     class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-slate-400 transition-all bg-[#0F172A] flex flex-col justify-between relative group"
+                     data-theme-choice="titanium-slate">
                     <div>
-                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #94A3B8 0%, #475569 100%);">
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden"
+                             style="background: linear-gradient(135deg, #94A3B8 0%, #475569 100%);">
                             <span class="text-white font-bold text-xs drop-shadow">Slate</span>
                         </div>
                         <div class="font-bold text-white text-xs mb-1">Titanium Slate</div>
@@ -1027,14 +1137,18 @@
                     <div class="mt-3 flex items-center gap-1.5">
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #CBD5E1;"></span>
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #64748B;"></span>
-                        <span class="w-3.5 h-3.5 rounded-full" style="background: #0F172A; border: 1px solid rgba(255,255,255,0.2);"></span>
+                        <span class="w-3.5 h-3.5 rounded-full"
+                              style="background: #0F172A; border: 1px solid rgba(255,255,255,0.2);"></span>
                     </div>
                 </div>
 
                 <!-- Theme 6: Crimson Cyber -->
-                <div onclick="selectTheme('crimson-cyber')" class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-rose-400 transition-all bg-[#14080D] flex flex-col justify-between relative group" data-theme-choice="crimson-cyber">
+                <div onclick="selectTheme('crimson-cyber')"
+                     class="theme-card cursor-pointer p-3.5 rounded-2xl border border-white/10 hover:border-rose-400 transition-all bg-[#14080D] flex flex-col justify-between relative group"
+                     data-theme-choice="crimson-cyber">
                     <div>
-                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden" style="background: linear-gradient(135deg, #FB7185 0%, #E11D48 100%);">
+                        <div class="h-16 w-full rounded-xl mb-3 flex items-center justify-center shadow-inner relative overflow-hidden"
+                             style="background: linear-gradient(135deg, #FB7185 0%, #E11D48 100%);">
                             <span class="text-white font-bold text-xs drop-shadow">Cyber</span>
                         </div>
                         <div class="font-bold text-white text-xs mb-1">Crimson Cyber</div>
@@ -1043,7 +1157,8 @@
                     <div class="mt-3 flex items-center gap-1.5">
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #F43F5E;"></span>
                         <span class="w-3.5 h-3.5 rounded-full" style="background: #881337;"></span>
-                        <span class="w-3.5 h-3.5 rounded-full" style="background: #14080D; border: 1px solid rgba(255,255,255,0.2);"></span>
+                        <span class="w-3.5 h-3.5 rounded-full"
+                              style="background: #14080D; border: 1px solid rgba(255,255,255,0.2);"></span>
                     </div>
                 </div>
             </div>
@@ -1056,61 +1171,84 @@
                     <i class="fa-solid fa-crown"></i>
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-white" data-i18n="settings_card_brand_title">Branding & Identità Piattaforma</h3>
-                    <p class="text-xs text-gray-400" data-i18n="settings_card_brand_desc">Sostituisci il nome dell'applicazione, il logo e la favicon per personalizzare interamente la piattaforma.</p>
+                    <h3 class="text-lg font-bold text-white" data-i18n="settings_card_brand_title">Branding & Identità
+                        Piattaforma</h3>
+                    <p class="text-xs text-gray-400" data-i18n="settings_card_brand_desc">Sostituisci il nome
+                        dell'applicazione, il logo e la favicon per personalizzare interamente la piattaforma.</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="app_name_label">Nome Applicazione</label>
-                    <input type="text" id="setting-app-name" class="form-control text-sm" value="Access Sphere" placeholder="es. Acme Identity Hub">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="app_name_label">Nome
+                        Applicazione</label>
+                    <input type="text" id="setting-app-name" class="form-control text-sm" value="Access Sphere"
+                           placeholder="es. Acme Identity Hub">
                 </div>
                 <div>
-                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="app_tagline_label">Slogan / Sottotitolo</label>
-                    <input type="text" id="setting-app-tagline" class="form-control text-sm" value="Gestione Identità & Accessi" placeholder="es. Single Sign-On Enterprise">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="app_tagline_label">Slogan /
+                        Sottotitolo</label>
+                    <input type="text" id="setting-app-tagline" class="form-control text-sm"
+                           value="Gestione Identità & Accessi" placeholder="es. Single Sign-On Enterprise">
                 </div>
 
                 <!-- Logo Upload -->
                 <div>
-                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="upload_logo_label">Logo Personalizzato (PNG, SVG)</label>
-                    <input type="text" id="setting-logo-url" class="form-control text-xs mb-2" placeholder="URL o carica file sotto..." oninput="handleLogoUrlInput(this.value)">
-                    <input type="file" id="setting-logo-file" accept="image/*" class="form-control text-xs" onchange="handleLogoUpload(event)">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="upload_logo_label">Logo
+                        Personalizzato (PNG, SVG)</label>
+                    <input type="text" id="setting-logo-url" class="form-control text-xs mb-2"
+                           placeholder="URL o carica file sotto..." oninput="handleLogoUrlInput(this.value)">
+                    <input type="file" id="setting-logo-file" accept="image/*" class="form-control text-xs"
+                           onchange="handleLogoUpload(event)">
                     <div class="flex items-center gap-3 mt-2">
-                        <img id="logo-preview-img" src="/img/logo-minimal.svg" class="w-9 h-9 rounded-lg bg-black/40 p-1 border border-white/10 object-contain" alt="Logo preview">
+                        <img id="logo-preview-img" src="/img/logo-minimal.svg"
+                             class="w-9 h-9 rounded-lg bg-black/40 p-1 border border-white/10 object-contain"
+                             alt="Logo preview">
                         <span class="text-[11px] text-gray-400" data-i18n="logo_preview_label">Anteprima Logo</span>
                     </div>
                 </div>
 
                 <!-- Favicon Upload -->
                 <div>
-                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="upload_favicon_label">Favicon (.ico, PNG, SVG)</label>
-                    <input type="text" id="setting-favicon-url" class="form-control text-xs mb-2" placeholder="URL o carica file sotto..." oninput="handleFaviconUrlInput(this.value)">
-                    <input type="file" id="setting-favicon-file" accept="image/*" class="form-control text-xs" onchange="handleFaviconUpload(event)">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="upload_favicon_label">Favicon
+                        (.ico, PNG, SVG)</label>
+                    <input type="text" id="setting-favicon-url" class="form-control text-xs mb-2"
+                           placeholder="URL o carica file sotto..." oninput="handleFaviconUrlInput(this.value)">
+                    <input type="file" id="setting-favicon-file" accept="image/*" class="form-control text-xs"
+                           onchange="handleFaviconUpload(event)">
                     <div class="flex items-center gap-3 mt-2">
-                        <img id="favicon-preview-img" src="/img/logo-minimal.svg" class="w-6 h-6 rounded bg-black/40 p-0.5 border border-white/10 object-contain" alt="Favicon preview">
-                        <span class="text-[11px] text-gray-400" data-i18n="favicon_preview_label">Anteprima Favicon</span>
+                        <img id="favicon-preview-img" src="/img/logo-minimal.svg"
+                             class="w-6 h-6 rounded bg-black/40 p-0.5 border border-white/10 object-contain"
+                             alt="Favicon preview">
+                        <span class="text-[11px] text-gray-400"
+                              data-i18n="favicon_preview_label">Anteprima Favicon</span>
                     </div>
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="footer_copyright_label">Testo Copyright Footer</label>
-                    <input type="text" id="setting-footer-copyright" class="form-control text-sm" value="© 2026 Access Sphere" placeholder="es. © 2026 Acme Corp. Tutti i diritti riservati.">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="footer_copyright_label">Testo
+                        Copyright Footer</label>
+                    <input type="text" id="setting-footer-copyright" class="form-control text-sm"
+                           value="© 2026 Access Sphere" placeholder="es. © 2026 Acme Corp. Tutti i diritti riservati.">
                 </div>
 
                 <div>
-                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="privacy_policy_url_label">URL Privacy Policy</label>
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="privacy_policy_url_label">URL
+                        Privacy Policy</label>
                     <input type="text" id="setting-privacy-url" class="form-control text-sm" value="/privacy-policy">
                 </div>
 
                 <div>
-                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="cookie_policy_url_label">URL Cookie Policy</label>
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="cookie_policy_url_label">URL
+                        Cookie Policy</label>
                     <input type="text" id="setting-cookie-url" class="form-control text-sm" value="/cookie-policy">
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="support_email_label">Email o Link di Supporto</label>
-                    <input type="text" id="setting-support-email" class="form-control text-sm" value="support@accesssphere.io" placeholder="es. helpdesk@company.com">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block" data-i18n="support_email_label">Email
+                        o Link di Supporto</label>
+                    <input type="text" id="setting-support-email" class="form-control text-sm"
+                           value="support@accesssphere.io" placeholder="es. helpdesk@company.com">
                 </div>
             </div>
         </div>
@@ -1123,18 +1261,23 @@
                         <i class="fa-solid fa-database"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_backup_title">Backup & Ripristino</h3>
-                        <p class="text-xs text-gray-400" data-i18n="settings_card_backup_desc">Esporta l'intero stato dell'applicazione (utenti, client, impostazioni) o ripristinalo.</p>
+                        <h3 class="text-lg font-bold text-white" data-i18n="settings_card_backup_title">Backup &
+                            Ripristino</h3>
+                        <p class="text-xs text-gray-400" data-i18n="settings_card_backup_desc">Esporta l'intero stato
+                            dell'applicazione (utenti, client, impostazioni) o ripristinalo.</p>
                     </div>
                 </div>
 
                 <!-- Export Section -->
                 <div class="p-4 rounded-xl bg-purple-950/25 border border-purple-500/20 mb-4">
                     <div class="text-xs font-bold text-white mb-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-arrow-down text-purple-400"></i> <span data-i18n="backup_export_title">Esportazione Dati</span>
+                        <i class="fa-solid fa-cloud-arrow-down text-purple-400"></i> <span
+                            data-i18n="backup_export_title">Esportazione Dati</span>
                     </div>
-                    <p class="text-[11px] text-gray-400 mb-3" data-i18n="backup_export_desc">Genera un archivio JSON istantaneo con tutti gli utenti, ruoli, client OAuth e impostazioni.</p>
-                    <button type="button" onclick="handleExportBackup()" class="m3-btn-secondary w-full justify-center py-2.5 text-xs font-semibold">
+                    <p class="text-[11px] text-gray-400 mb-3" data-i18n="backup_export_desc">Genera un archivio JSON
+                        istantaneo con tutti gli utenti, ruoli, client OAuth e impostazioni.</p>
+                    <button type="button" onclick="handleExportBackup()"
+                            class="m3-btn-secondary w-full justify-center py-2.5 text-xs font-semibold">
                         <i class="fa-solid fa-download mr-1.5"></i> <span data-i18n="btn_export_backup">Esporta Backup Completo</span>
                     </button>
                 </div>
@@ -1144,9 +1287,11 @@
                     <div class="text-xs font-bold text-rose-300 mb-1 flex items-center gap-1.5">
                         <i class="fa-solid fa-cloud-arrow-up text-rose-400"></i> <span data-i18n="backup_restore_title">Ripristino Snapshot</span>
                     </div>
-                    <p class="text-[11px] text-gray-400 mb-2" data-i18n="backup_restore_desc">Carica un file JSON di backup precedente per effettuare il restore.</p>
+                    <p class="text-[11px] text-gray-400 mb-2" data-i18n="backup_restore_desc">Carica un file JSON di
+                        backup precedente per effettuare il restore.</p>
                     <input type="file" id="setting-restore-file" accept=".json" class="form-control text-xs mb-3">
-                    <button type="button" onclick="handleRestoreBackup()" class="m3-btn-danger w-full justify-center py-2.5 text-xs font-semibold">
+                    <button type="button" onclick="handleRestoreBackup()"
+                            class="m3-btn-danger w-full justify-center py-2.5 text-xs font-semibold">
                         <i class="fa-solid fa-arrow-rotate-left mr-1.5"></i> <span data-i18n="btn_restore_backup">Ripristina da File</span>
                     </button>
                 </div>
@@ -1207,15 +1352,18 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-                        <span class="text-[11px] text-gray-400 uppercase" data-i18n="table_col_access_type">Tipo Accesso</span>
+                        <span class="text-[11px] text-gray-400 uppercase"
+                              data-i18n="table_col_access_type">Tipo Accesso</span>
                         <div id="detail-accessType" class="text-purple-300 font-bold text-sm mt-1">ONLINE</div>
                     </div>
                     <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-                        <span class="text-[11px] text-gray-400 uppercase" data-i18n="table_col_token_type">Tipo Token</span>
+                        <span class="text-[11px] text-gray-400 uppercase"
+                              data-i18n="table_col_token_type">Tipo Token</span>
                         <div id="detail-tokenType" class="text-blue-300 font-bold text-sm mt-1">JWT</div>
                     </div>
                     <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
-                        <span class="text-[11px] text-gray-400 uppercase" data-i18n="table_col_auth_type">Auth Type</span>
+                        <span class="text-[11px] text-gray-400 uppercase"
+                              data-i18n="table_col_auth_type">Auth Type</span>
                         <div id="detail-authType" class="text-yellow-300 font-bold text-sm mt-1">BEARER</div>
                     </div>
                     <div class="bg-black/30 p-3 rounded-xl border border-purple-500/10 text-center">
@@ -1234,7 +1382,8 @@
                         <div id="detail-scopes" class="text-purple-300 text-xs font-mono mt-1">--</div>
                     </div>
                     <div class="bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
-                        <span class="text-xs text-gray-400 uppercase font-semibold" data-i18n="client_sec_webhooks_title">Webhooks</span>
+                        <span class="text-xs text-gray-400 uppercase font-semibold"
+                              data-i18n="client_sec_webhooks_title">Webhooks</span>
                         <div id="detail-webhooks" class="text-gray-300 text-xs font-mono break-all mt-1">--</div>
                     </div>
                     <div class="flex items-center justify-between bg-purple-500/10 p-3.5 rounded-xl border border-purple-500/15">
@@ -1275,16 +1424,19 @@
                 <form id="clientForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_client_id">Client ID *</label>
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_client_id">Client ID *</label>
                         <input type="text" id="form-clientId" class="form-control text-sm"
                                placeholder="es. MY-FRONTEND-APP" required/>
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_client_secret">Client Secret</label>
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_client_secret">Client Secret</label>
                         <div class="flex gap-2">
                             <input type="text" id="form-clientSecret" class="form-control text-sm"
-                                   placeholder="Lascia vuoto per auto-generazione" data-i18n-placeholder="client_btn_generate_secret_placeholder"/>
+                                   placeholder="Lascia vuoto per auto-generazione"
+                                   data-i18n-placeholder="client_btn_generate_secret_placeholder"/>
                             <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateSecret()"
                                     title="Genera Secret Sicuro" data-i18n-title="client_btn_generate_secret">
                                 <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
@@ -1293,7 +1445,8 @@
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="table_col_access_type">Access Type</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="table_col_access_type">Access
+                            Type</label>
                         <select id="form-accessType" class="form-select text-sm">
                             <option value="ONLINE">ONLINE</option>
                             <option value="OFFLINE">OFFLINE</option>
@@ -1301,7 +1454,8 @@
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="table_col_token_type">Token Type</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="table_col_token_type">Token
+                            Type</label>
                         <select id="form-tokenType" class="form-select text-sm">
                             <option value="JWT">JWT (Standard Bearer)</option>
                             <option value="JWE">JWE (Crittografato)</option>
@@ -1309,7 +1463,8 @@
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="table_col_auth_type">Auth Type</label>
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="table_col_auth_type">Auth
+                            Type</label>
                         <select id="form-authType" class="form-select text-sm">
                             <option value="BEARER">BEARER</option>
                             <option value="BASIC">BASIC</option>
@@ -1317,26 +1472,30 @@
                     </div>
 
                     <div class="col-span-1">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwt_expiration">Scadenza Token (secondi)</label>
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_jwt_expiration">Scadenza Token (secondi)</label>
                         <input type="number" id="form-jwtExpiration" class="form-control text-sm" value="3600"/>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_redirect_uris">Redirect URIs (separate da virgola
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_redirect_uris">Redirect URIs (separate da virgola
                             o JSON)</label>
                         <input type="text" id="form-redirectUri" class="form-control text-sm font-mono"
                                placeholder="http://localhost:8080/callback"/>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_scopes">Scopes (separati da
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_scopes">Scopes
+                            (separati da
                             virgola)</label>
                         <input type="text" id="form-scopes" class="form-control text-sm font-mono"
                                placeholder="openid, profile, email"/>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_sec_webhooks_title">Webhooks (opzionale)</label>
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_sec_webhooks_title">Webhooks (opzionale)</label>
                         <input type="text" id="form-webhooks" class="form-control text-sm font-mono"
                                placeholder="https://api.domain.com/webhook"/>
                     </div>
@@ -1344,7 +1503,8 @@
                     <div class="col-span-2 flex items-center gap-3 pt-2">
                         <input type="checkbox" id="form-mfaEnabled"
                                class="w-4 h-4 rounded accent-purple-500 cursor-pointer"/>
-                        <label for="form-mfaEnabled" class="text-xs font-semibold text-gray-300 cursor-pointer" data-i18n="client_field_mfa_required">
+                        <label for="form-mfaEnabled" class="text-xs font-semibold text-gray-300 cursor-pointer"
+                               data-i18n="client_field_mfa_required">
                             Richiedi autenticazione a due fattori (MFA / 2FA) per questo client
                         </label>
                     </div>
@@ -1403,7 +1563,7 @@
 
         // Load Users KPI
         try {
-            const cachedUsers = localStorage.getItem(cfg.client_id + "_usersData");
+            let cachedUsers = localStorage.getItem(cfg.client_id + "_usersData");
             if (cachedUsers) {
                 const parsed = JSON.parse(cachedUsers);
                 renderUsersKpi(parsed);
@@ -1704,7 +1864,8 @@
                 try {
                     const parsed = JSON.parse(cached);
                     populateSettingsForm(parsed);
-                } catch (err) {}
+                } catch (err) {
+                }
             }
         }
     }
@@ -1796,7 +1957,7 @@
     }
 
     function handleNavigationLayoutChange(layout) {
-        AppSettings.applyNavigationLayout({ navigationLayout: layout });
+        AppSettings.applyNavigationLayout({navigationLayout: layout});
     }
 
     function selectTheme(themeName) {
@@ -1854,7 +2015,7 @@
     async function handleLogoUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-        const b64 = await AppSettings.fileToBase64(file, { maxWidth: 512, maxHeight: 512, quality: 0.9 });
+        const b64 = await AppSettings.fileToBase64(file, {maxWidth: 512, maxHeight: 512, quality: 0.9});
         currentLogoDataUrl = b64;
         const logoImg = document.getElementById("logo-preview-img");
         if (logoImg) logoImg.src = b64;
@@ -1865,7 +2026,7 @@
     async function handleFaviconUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-        const b64 = await AppSettings.fileToBase64(file, { maxWidth: 128, maxHeight: 128, quality: 0.9 });
+        const b64 = await AppSettings.fileToBase64(file, {maxWidth: 128, maxHeight: 128, quality: 0.9});
         currentFaviconDataUrl = b64;
         const favImg = document.getElementById("favicon-preview-img");
         if (favImg) favImg.src = b64;
@@ -1876,7 +2037,7 @@
     async function handleBgFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-        const b64 = await AppSettings.fileToBase64(file, { maxWidth: 1920, maxHeight: 1080, quality: 0.85 });
+        const b64 = await AppSettings.fileToBase64(file, {maxWidth: 1920, maxHeight: 1080, quality: 0.85});
         currentLoginBgDataUrl = b64;
         const previewBox = document.getElementById("bg-preview-box");
         if (previewBox) previewBox.style.backgroundImage = `url('${b64}')`;
