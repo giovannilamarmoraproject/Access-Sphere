@@ -1770,6 +1770,25 @@ textarea {
     border-color: rgba(var(--theme-accent-rgb), 0.38) !important;
 }
 
+/* User RBAC Add Role Form Alignment */
+.user-add-role-card .form-select,
+.user-add-role-card #add_role_btn,
+[data-theme] .user-add-role-card .form-select,
+[data-theme] .user-add-role-card #add_role_btn {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    box-sizing: border-box !important;
+}
+
+.user-add-role-card #add_role_btn,
+[data-theme] .user-add-role-card #add_role_btn {
+    padding: 0 16px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
 /* Adaptive Role Chips */
 [data-theme] .role-chip {
     background: rgba(var(--theme-primary-rgb), 0.16) !important;
