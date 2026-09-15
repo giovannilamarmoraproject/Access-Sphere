@@ -506,12 +506,12 @@ function displayUserData(user) {
             </div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               ${isMfaActive ? `
-                <button type="button" onclick="toggleMfaStatus('${user.identifier}', false)" class="m3-btn-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" style="color: #FCD34D !important; border-color: rgba(245, 158, 11, 0.4) !important;" title="${typeof t === 'function' ? t("user_detail_disable_mfa", "Disattiva MFA") : "Disattiva MFA"}">
-                  <i class="fa-solid fa-power-off text-xs" style="color: #FCD34D;"></i> ${typeof t === 'function' ? t("user_detail_disable_mfa", "Disattiva MFA") : "Disattiva MFA"}
+                <button type="button" onclick="toggleMfaStatus('${user.identifier}', false)" class="m3-btn-outline m3-btn-warning-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" title="${typeof t === 'function' ? t("user_detail_disable_mfa", "Disattiva MFA") : "Disattiva MFA"}">
+                  <i class="fa-solid fa-power-off text-xs" style="color: #FCD34D !important;"></i> ${typeof t === 'function' ? t("user_detail_disable_mfa", "Disattiva MFA") : "Disattiva MFA"}
                 </button>
               ` : (hasMfaMethods ? `
-                <button type="button" onclick="toggleMfaStatus('${user.identifier}', true)" class="m3-btn-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" style="color: #6EE7B7 !important; border-color: rgba(16, 185, 129, 0.4) !important;" title="${typeof t === 'function' ? t("user_detail_enable_mfa", "Attiva MFA") : "Attiva MFA"}">
-                  <i class="fa-solid fa-toggle-on text-xs" style="color: #6EE7B7;"></i> ${typeof t === 'function' ? t("user_detail_enable_mfa", "Attiva MFA") : "Attiva MFA"}
+                <button type="button" onclick="toggleMfaStatus('${user.identifier}', true)" class="m3-btn-outline m3-btn-success-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" title="${typeof t === 'function' ? t("user_detail_enable_mfa", "Attiva MFA") : "Attiva MFA"}">
+                  <i class="fa-solid fa-toggle-on text-xs" style="color: #6EE7B7 !important;"></i> ${typeof t === 'function' ? t("user_detail_enable_mfa", "Attiva MFA") : "Attiva MFA"}
                 </button>
               ` : '')}
               <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-4 text-decoration-none shadow-md justify-center flex items-center gap-1.5" style="border-radius: 9999px !important; color: #FFFFFF !important;">

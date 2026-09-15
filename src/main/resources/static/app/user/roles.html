@@ -1,210 +1,231 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Access Sphere - Gestione Ruoli</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
-  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Access Sphere - Gestione Ruoli</title>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap"
+          rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg"/>
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png"/>
 
-  <!-- SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
-  <script src="/app/shared/sweetalert.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Core Scripts -->
-  <script src="/app/shared/config.js"></script>
-  <script src="/app/shared/utils.js"></script>
-  <script src="/app/shared/api/authorize.js"></script>
-  <script src="/app/shared/api/logout.js"></script>
-  <script src="/app/i18n/translations.js"></script>
-  <script src="/app/shared/api/rest.js"></script>
-  <script src="/app/user/js/roles.js?v=2.1.1"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/app/shared/sweetalert.css"/>
+    <script src="/app/shared/sweetalert.js"></script>
 
-  <!-- Unified M3 Dashboard Theme -->
-  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.3" />
-  <link rel="stylesheet" href="/css/m3-themes.css" />
-  <script src="/app/shared/settings.js"></script>
+    <!-- Core Scripts -->
+    <script src="/app/shared/config.js"></script>
+    <script src="/app/shared/utils.js"></script>
+    <script src="/app/shared/api/authorize.js"></script>
+    <script src="/app/shared/api/logout.js"></script>
+    <script src="/app/i18n/translations.js"></script>
+    <script src="/app/shared/api/rest.js"></script>
+    <script src="/app/user/js/roles.js?v=2.1.1"></script>
+
+    <!-- Unified M3 Dashboard Theme -->
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.3"/>
+    <link rel="stylesheet" href="/css/m3-themes.css"/>
+    <script src="/app/shared/settings.js"></script>
 </head>
 <body>
 
-  <!-- Wide Unified Header -->
-  <header class="glass-header">
+<!-- Wide Unified Header -->
+<header class="glass-header">
     <div class="header-container">
-      <div class="flex items-center gap-6">
-        <a href="/app" class="flex items-center gap-3 text-decoration-none group">
-          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
-          <div class="flex flex-col">
+        <div class="flex items-center gap-6">
+            <a href="/app" class="flex items-center gap-3 text-decoration-none group">
+                <img src="/img/logo-minimal.svg" alt="Access Sphere Logo"
+                     class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110"/>
+                <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
-            <span id="header-subtitle" class="header-subtitle text-[11px] text-gray-400 font-medium">Gestione Ruoli Utente (RBAC)</span>
-          </div>
-        </a>
+                    <span id="header-subtitle" class="header-subtitle text-[11px] text-gray-400 font-medium">Gestione Ruoli Utente (RBAC)</span>
+                </div>
+            </a>
 
-        <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
-          <a href="/app" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gauge-high"></i> Panoramica
-          </a>
-          <a href="/app/users" class="nav-tab-m3 active text-decoration-none">
-            <i class="fa-solid fa-users"></i> Utenti
-          </a>
-          <a href="/app/clients" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-key"></i> Client OAuth2
-          </a>
-          <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
-          </a>
-          <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-book"></i> API Docs
-          </a>
-        </nav>
-      </div>
+            <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+                <a href="/app" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gauge-high"></i> Panoramica
+                </a>
+                <a href="/app/users" class="nav-tab-m3 active text-decoration-none">
+                    <i class="fa-solid fa-users"></i> Utenti
+                </a>
+                <a href="/app/clients" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-key"></i> Client OAuth2
+                </a>
+                <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
+                </a>
+                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank"
+                   class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-book"></i> API Docs
+                </a>
+            </nav>
+        </div>
 
-      <div class="flex items-center gap-2">
-        <a href="/app/users" class="m3-icon-btn" title="Torna agli Utenti">
-          <i class="fa-solid fa-arrow-left text-sm"></i>
-        </a>
-        <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
-          <i class="fa-solid fa-circle-info text-sm"></i>
-        </button>
-        <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
-          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
-        </button>
-      </div>
+        <div class="flex items-center gap-2">
+            <a href="/app/users" class="m3-icon-btn" title="Torna agli Utenti">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+            </a>
+            <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
+            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+            </button>
+        </div>
     </div>
-  </header>
+</header>
 
-  <!-- Roles Main Card -->
-  <main class="dashboard-wide-container">
+<!-- Roles Main Card -->
+<main class="dashboard-wide-container">
     <div class="m3-card p-4 sm:p-12">
-      
-      <!-- Top Title & Navigation -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-purple-500/15">
-        <div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <i class="fa-solid fa-shield-halved text-purple-400"></i>
-            <span>Gestione Ruoli Utente (RBAC)</span>
-          </h2>
-          <p class="text-xs text-purple-300 mt-1">
-            Visualizza, assegna o rimuovi i ruoli autorizzativi dell'utente sulle diverse applicazioni OAuth2.
-          </p>
-        </div>
-        <a href="/app/users" class="m3-btn-outline w-full sm:w-auto justify-center">
-          <i class="fa-solid fa-arrow-left text-xs"></i> Torna agli Utenti
-        </a>
-      </div>
 
-      <!-- User Profile Header Banner -->
-      <div id="user-header-banner" class="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-gradient-to-b from-purple-500/15 to-purple-950/30 border border-purple-500/25 mb-8 text-center sm:text-left shadow-lg">
-        <div class="flex flex-col sm:flex-row items-center gap-3.5 sm:gap-5 w-full sm:w-auto">
-          <div class="relative flex-shrink-0">
-            <img id="user-avatar-img" src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Avatar" class="w-16 h-16 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-purple-400/50 shadow-md ring-4 ring-purple-500/15" />
-          </div>
-          <div class="flex flex-col items-center sm:items-start min-w-0">
-            <h3 id="user-full-name" class="text-xl sm:text-lg font-extrabold sm:font-bold text-white tracking-tight mb-1">Caricamento utente...</h3>
-            <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs">
-              <span id="user-username-badge" class="font-mono text-purple-300 font-semibold">@username</span>
-              <span class="text-gray-500 hidden sm:inline">•</span>
-              <span id="user-email-text" class="text-gray-300 break-all">email@example.com</span>
+        <!-- Top Title & Navigation -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-purple-500/15">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--theme-accent);"></i>
+                    <span>Gestione Ruoli Utente (RBAC)</span>
+                </h2>
+                <p class="text-xs mt-1" style="color: var(--theme-accent);">
+                    Visualizza, assegna o rimuovi i ruoli autorizzativi dell'utente sulle diverse applicazioni OAuth2.
+                </p>
             </div>
-          </div>
+            <a href="/app/users" class="m3-btn-outline w-full sm:w-auto justify-center">
+                <i class="fa-solid fa-arrow-left text-xs"></i> Torna agli Utenti
+            </a>
         </div>
-        <div class="w-full sm:w-auto flex justify-center sm:justify-end pt-3 sm:pt-0 border-t sm:border-t-0 border-purple-500/15">
-          <span id="user-roles-count-badge" class="px-4 py-2 rounded-2xl bg-purple-500/25 text-purple-200 text-xs font-mono font-bold border border-purple-500/40 shadow-sm inline-flex items-center gap-2">
-            <i class="fa-solid fa-shield-halved text-purple-400"></i>
+
+        <!-- User Profile Header Banner -->
+        <div id="user-header-banner"
+             class="user-rbac-card flex flex-col sm:flex-row items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl mb-8 text-center sm:text-left shadow-lg">
+            <div class="flex flex-col sm:flex-row items-center gap-3.5 sm:gap-5 w-full sm:w-auto">
+                <div class="relative flex-shrink-0">
+                    <img id="user-avatar-img" src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Avatar"
+                         class="user-rbac-avatar w-16 h-16 sm:w-14 sm:h-14 rounded-full object-cover shadow-md"/>
+                </div>
+                <div class="flex flex-col items-center sm:items-start min-w-0">
+                    <h3 id="user-full-name"
+                        class="text-xl sm:text-lg font-extrabold sm:font-bold text-white tracking-tight mb-1">
+                        Caricamento utente...</h3>
+                    <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs">
+                        <span id="user-username-badge" class="font-mono font-semibold"
+                              style="color: var(--theme-accent);">@username</span>
+                        <span class="text-gray-500 hidden sm:inline">•</span>
+                        <span id="user-email-text" class="text-gray-300 break-all">email@example.com</span>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full sm:w-auto flex justify-center sm:justify-end pt-3 sm:pt-0 border-t sm:border-t-0"
+                 style="border-top-color: rgba(var(--theme-accent-rgb), 0.15);">
+          <span id="user-roles-count-badge"
+                class="user-rbac-badge px-4 py-2 rounded-2xl text-xs font-mono font-bold shadow-sm inline-flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved" style="color: var(--theme-accent);"></i>
             <span>0 Ruoli Assegnati</span>
           </span>
+            </div>
         </div>
-      </div>
 
-      <!-- Current Assigned Roles Section -->
-      <div class="mb-8">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 mb-3">
-          <label class="text-xs uppercase font-bold text-purple-300 tracking-wider flex items-center gap-2 m-0">
-            <i class="fa-solid fa-shield-halved text-purple-400"></i> Ruoli Attualmente Assegnati:
-          </label>
-          <span class="text-[11px] text-gray-400 flex items-center gap-1">
+        <!-- Current Assigned Roles Section -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 mb-3">
+                <label class="text-xs uppercase font-bold tracking-wider flex items-center gap-2 m-0"
+                       style="color: var(--theme-accent);">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--theme-accent);"></i> Ruoli Attualmente
+                    Assegnati:
+                </label>
+                <span class="text-[11px] text-gray-400 flex items-center gap-1">
             Fai clic su <i class="fa-solid fa-xmark text-red-400 px-0.5"></i> per revocare un ruolo
           </span>
+            </div>
+            <div id="role_container"
+                 class="user-assigned-roles-box border flex flex-col sm:flex-row sm:flex-wrap gap-2.5 sm:gap-3 p-3.5 sm:p-5 rounded-2xl">
+                <span class="text-xs py-2" style="color: var(--theme-accent);">Caricamento ruoli in corso...</span>
+            </div>
         </div>
-        <div id="role_container" class="flex flex-col sm:flex-row sm:flex-wrap gap-2.5 sm:gap-3 p-3.5 sm:p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20">
-          <span class="text-xs text-purple-300 py-2">Caricamento ruoli in corso...</span>
+
+        <!-- Add New Role Section (Dedicated Elevated Surface) -->
+        <div class="user-add-role-card border p-4 sm:p-6 rounded-2xl mb-8">
+            <h4 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle" style="color: var(--theme-accent);"></i> Assegna un Nuovo Ruolo
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                <div class="md:col-span-5">
+                    <label for="client_id_select"
+                           class="form-label text-xs font-semibold text-gray-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-cube text-xs" style="color: var(--theme-accent);"></i> 1. Scegli
+                        Applicazione (Client)
+                    </label>
+                    <select class="form-select" id="client_id_select">
+                        <option id="register_form_client_choose" selected disabled value="">Caricamento Client...
+                        </option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-5">
+                    <label for="role_select"
+                           class="form-label text-xs font-semibold text-gray-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-id-badge text-xs" style="color: var(--theme-accent);"></i> 2. Scegli Ruolo
+                        Disponibile
+                    </label>
+                    <select class="form-select" id="role_select" disabled>
+                        <option id="register_form_roles_choose" selected disabled value="">Seleziona prima un
+                            Client...
+                        </option>
+                    </select>
+                    <div id="validationRoles" class="text-red-400 text-xs mt-1"></div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <button
+                            onclick="addRole()"
+                            id="add_role_btn"
+                            class="m3-btn-primary w-full justify-center py-3 text-xs font-bold rounded-xl"
+                            disabled
+                    >
+                        <i class="fa-solid fa-plus mr-1"></i> Assegna
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <!-- Add New Role Section (Dedicated Elevated Surface) -->
-      <div class="p-4 sm:p-6 rounded-2xl bg-purple-500/10 border border-purple-500/25 mb-8">
-        <h4 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-plus-circle text-purple-400"></i> Assegna un Nuovo Ruolo
-        </h4>
-
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-          <div class="md:col-span-5">
-            <label for="client_id_select" class="form-label text-xs font-semibold text-gray-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-cube text-purple-400 text-xs"></i> 1. Scegli Applicazione (Client)
-            </label>
-            <select class="form-select" id="client_id_select">
-              <option id="register_form_client_choose" selected disabled value="">Caricamento Client...</option>
-            </select>
-          </div>
-
-          <div class="md:col-span-5">
-            <label for="role_select" class="form-label text-xs font-semibold text-gray-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-id-badge text-purple-400 text-xs"></i> 2. Scegli Ruolo Disponibile
-            </label>
-            <select class="form-select" id="role_select" disabled>
-              <option id="register_form_roles_choose" selected disabled value="">Seleziona prima un Client...</option>
-            </select>
-            <div id="validationRoles" class="text-red-400 text-xs mt-1"></div>
-          </div>
-
-          <div class="md:col-span-2">
+        <!-- Footer Actions -->
+        <div class="pt-6 border-t flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3"
+             style="border-top-color: rgba(var(--theme-accent-rgb), 0.16);">
+            <a href="/app/users" class="m3-btn-outline justify-center">
+                <i class="fa-solid fa-xmark"></i> Annulla
+            </a>
             <button
-              onclick="addRole()"
-              id="add_role_btn"
-              class="m3-btn-primary w-full justify-center py-3 text-xs font-bold rounded-xl"
-              disabled
+                    disabled
+                    id="save_role_btn"
+                    onclick="changeRoles()"
+                    class="m3-btn-primary px-8 py-3 text-xs font-bold rounded-full shadow-lg justify-center"
             >
-              <i class="fa-solid fa-plus mr-1"></i> Assegna
+                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Salva Modifiche Ruoli
             </button>
-          </div>
         </div>
-      </div>
-
-      <!-- Footer Actions -->
-      <div class="pt-6 border-t border-purple-500/15 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
-        <a href="/app/users" class="m3-btn-outline justify-center">
-          <i class="fa-solid fa-xmark"></i> Annulla
-        </a>
-        <button
-          disabled
-          id="save_role_btn"
-          onclick="changeRoles()"
-          class="m3-btn-primary px-8 py-3 text-xs font-bold rounded-full shadow-lg justify-center"
-        >
-          <i class="fa-solid fa-floppy-disk mr-1.5"></i> Salva Modifiche Ruoli
-        </button>
-      </div>
 
     </div>
-  </main>
+</main>
 
 </body>
 </html>

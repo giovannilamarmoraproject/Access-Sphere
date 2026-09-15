@@ -98,7 +98,7 @@ function addRole() {
         <div class="role-chip-icon">
           <i class="fa-solid fa-shield-halved text-xs"></i>
         </div>
-        <span data-role="${selectedRole}" class="font-mono text-xs font-bold text-purple-200 truncate">${selectedRole}</span>
+        <span data-role="${selectedRole}" class="font-mono text-xs font-bold text-white truncate">${selectedRole}</span>
       </div>
       <button type="button" class="remove-role" title="Revoca Ruolo">
         <i class="fa-solid fa-xmark text-xs"></i>
@@ -128,11 +128,11 @@ function updateStoredRoles() {
     .map((_, el) => $(el).attr("data-role"))
     .get();
   localStorage.setItem("selected_roles", JSON.stringify(roles));
-  $("#user-roles-count-badge").html(`<i class="fa-solid fa-shield-halved text-purple-400"></i><span>${roles.length} Ruoli Assegnati</span>`);
+  $("#user-roles-count-badge").html(`<i class="fa-solid fa-shield-halved" style="color: var(--theme-accent);"></i><span>${roles.length} Ruoli Assegnati</span>`);
   $("#save_role_btn").prop("disabled", false);
 
   if (roles.length === 0) {
-    $("#role_container").html('<span class="text-xs text-purple-300 py-2">Nessun ruolo assegnato. Seleziona un ruolo nel riquadro sottostante per assegnarlo.</span>');
+    $("#role_container").html('<span class="text-xs py-2" style="color: var(--theme-accent);">Nessun ruolo assegnato. Seleziona un ruolo nel riquadro sottostante per assegnarlo.</span>');
   }
 }
 

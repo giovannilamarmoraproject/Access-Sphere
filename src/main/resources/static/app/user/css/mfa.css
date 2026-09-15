@@ -2,27 +2,28 @@
    ACCESS SPHERE - MFA CONFIGURATION (MATERIAL EXPRESSIVE 3)
    ======================================================= */
 
-/* QR Code Box (High-Contrast Clean White Container with Violet Glow) */
+/* QR Code Box (High-Contrast Clean Container with Theme Glow) */
 .mfa-qrcode-box {
   background: #FFFFFF;
-  padding: 16px;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.35);
+  padding: 18px;
+  border-radius: 26px;
+  box-shadow: 0 10px 36px var(--theme-glow, rgba(168, 85, 247, 0.35));
   display: inline-block;
   margin: 0 auto;
-  border: 4px solid rgba(208, 188, 255, 0.35);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 4px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.4);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mfa-qrcode-box:hover {
   transform: scale(1.03);
+  box-shadow: 0 14px 44px var(--theme-glow, rgba(168, 85, 247, 0.45));
 }
 
 .mfa-qrcode-box img {
   max-width: 220px;
   height: auto;
   display: block;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 /* OTP 6-Digit Inputs (Material Expressive 3) */
@@ -42,8 +43,8 @@
   font-size: 1.6rem !important;
   font-weight: 700 !important;
   color: #FFFFFF !important;
-  background: rgba(26, 20, 42, 0.85) !important;
-  border: 1.5px solid rgba(208, 188, 255, 0.25) !important;
+  background: var(--theme-input-bg, rgba(26, 20, 42, 0.85)) !important;
+  border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25) !important;
   border-radius: 18px !important;
   outline: none !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -51,9 +52,9 @@
 }
 
 .otp-input:focus {
-  background: rgba(36, 28, 58, 0.95) !important;
-  border-color: #A855F7 !important;
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.35), 0 8px 24px rgba(168, 85, 247, 0.25) !important;
+  background: var(--theme-input-focus, rgba(36, 28, 58, 0.95)) !important;
+  border-color: var(--theme-accent, #A855F7) !important;
+  box-shadow: 0 0 0 3px rgba(var(--theme-accent-rgb, 168, 85, 247), 0.35), 0 8px 24px rgba(var(--theme-accent-rgb, 168, 85, 247), 0.25) !important;
   transform: translateY(-2px);
 }
 
@@ -74,9 +75,9 @@
 
 /* Select element M3 dark glass */
 #mfa-method {
-  background-color: rgba(26, 20, 42, 0.8) !important;
+  background-color: var(--theme-input-bg, rgba(26, 20, 42, 0.8)) !important;
   color: #FFFFFF !important;
-  border: 1.5px solid rgba(208, 188, 255, 0.25) !important;
+  border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
   border-radius: 9999px !important;
   padding: 12px 20px !important;
   font-size: 0.9rem !important;
@@ -87,13 +88,119 @@
 }
 
 #mfa-method:focus {
-  border-color: #A855F7 !important;
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3) !important;
+  border-color: var(--theme-accent, #A855F7) !important;
+  box-shadow: 0 0 0 3px rgba(var(--theme-accent-rgb, 168, 85, 247), 0.3) !important;
 }
 
 #mfa-method option {
-  background-color: #171226 !important;
+  background-color: var(--md-surface, #171226) !important;
   color: #FFFFFF !important;
+}
+
+/* Phase 0 Cards: Info Box, Benefit Cards, Apps Card */
+.mfa-info-box {
+  background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.6) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
+}
+
+.mfa-benefit-card {
+  background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.6) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mfa-benefit-card:hover {
+  background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.8) !important;
+  border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45) !important;
+  box-shadow: 0 6px 18px rgba(var(--theme-accent-rgb, 168, 85, 247), 0.16) !important;
+  transform: translateY(-2px);
+}
+
+.mfa-benefit-icon-badge {
+  background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;
+  color: var(--theme-accent, #D0BCFF) !important;
+}
+
+.mfa-apps-card {
+  background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2) !important;
+}
+
+.mfa-app-item {
+  background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.7) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.14) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mfa-app-item:hover {
+  background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.9) !important;
+  border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35) !important;
+  transform: translateX(3px);
+}
+
+.mfa-app-badge {
+  background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.25) !important;
+  color: var(--theme-accent, #D0BCFF) !important;
+}
+
+.mfa-step-icon-badge {
+  background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.32) !important;
+  color: var(--theme-accent, #D0BCFF) !important;
+}
+
+/* Toggle Manual MFA Key Button & Card */
+.mfa-manual-toggle-btn {
+  background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.24) !important;
+  border-radius: 16px !important;
+  padding: 8px 16px !important;
+  color: var(--theme-accent, #D0BCFF) !important;
+  font-weight: 600 !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.mfa-manual-toggle-btn:hover {
+  background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.14) !important;
+  border-color: var(--theme-accent, #D0BCFF) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 18px rgba(var(--theme-accent-rgb, 168, 85, 247), 0.28) !important;
+  transform: translateY(-1px);
+}
+
+.mfa-manual-key-card {
+  background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.75) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.22) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+.mfa-secret-input {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
+  color: var(--theme-accent, #EADDFF) !important;
+  transition: border-color 0.2s ease;
+}
+
+.mfa-secret-input:focus {
+  border-color: var(--theme-accent, #A855F7) !important;
+  box-shadow: 0 0 0 3px rgba(var(--theme-accent-rgb, 168, 85, 247), 0.25) !important;
+}
+
+#btn-copy-mfa-secret {
+  background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.35) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35) !important;
+  color: var(--theme-accent, #EADDFF) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+#btn-copy-mfa-secret:hover {
+  background: var(--m3-primary-gradient, linear-gradient(135deg, #A855F7, #6750A4)) !important;
+  border-color: var(--theme-accent, #D0BCFF) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(var(--theme-accent-rgb, 168, 85, 247), 0.35) !important;
+  transform: translateY(-1px);
 }
 
 /* Button States */
@@ -115,9 +222,9 @@ button:disabled,
   gap: 8px;
   padding: 9px 22px;
   border-radius: 9999px;
-  background: rgba(208, 188, 255, 0.08);
-  border: 1px solid rgba(208, 188, 255, 0.2);
-  color: #D0BCFF !important;
+  background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08);
+  border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2);
+  color: var(--theme-accent, #D0BCFF) !important;
   font-size: 0.84rem;
   font-weight: 600;
   text-decoration: none !important;
@@ -126,9 +233,10 @@ button:disabled,
 }
 
 .mfa-back-pill:hover {
-  background: rgba(208, 188, 255, 0.18);
-  border-color: rgba(208, 188, 255, 0.45);
+  background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
+  border-color: var(--theme-accent, rgba(208, 188, 255, 0.45));
   color: #FFFFFF !important;
   transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(var(--theme-accent-rgb, 168, 85, 247), 0.25);
 }
 

@@ -1739,3 +1739,90 @@ textarea {
     border-color: var(--theme-accent) !important;
 }
 
+/* =======================================================
+   RBAC USER ROLES & PERMISSIONS ADAPTIVE THEME
+   ======================================================= */
+[data-theme] .user-rbac-card {
+    background: rgba(var(--theme-surface-rgb), 0.75) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.22) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme] .user-rbac-avatar {
+    background: linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.35) 0%, rgba(var(--theme-accent-rgb), 0.25) 100%) !important;
+    border: 2px solid rgba(var(--theme-accent-rgb), 0.4) !important;
+    box-shadow: 0 4px 16px var(--theme-glow) !important;
+}
+
+[data-theme] .user-rbac-badge {
+    background: rgba(var(--theme-primary-rgb), 0.18) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.32) !important;
+    color: var(--theme-accent) !important;
+}
+
+[data-theme] .user-assigned-roles-box,
+[data-theme] .user-add-role-card {
+    background: rgba(var(--theme-surface-rgb), 0.65) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.2) !important;
+}
+
+[data-theme] .user-add-role-card:hover {
+    border-color: rgba(var(--theme-accent-rgb), 0.38) !important;
+}
+
+/* Adaptive Role Chips */
+[data-theme] .role-chip {
+    background: rgba(var(--theme-primary-rgb), 0.16) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.28) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme] .role-chip:hover {
+    background: rgba(var(--theme-primary-rgb), 0.26) !important;
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 4px 14px var(--theme-glow) !important;
+}
+
+[data-theme] .role-chip-icon {
+    background: rgba(var(--theme-accent-rgb), 0.25) !important;
+    color: var(--theme-accent) !important;
+}
+
+/* =======================================================
+   USER DETAILS MFA TOGGLE BUTTONS ADAPTIVE STYLING
+   ======================================================= */
+[data-theme] .m3-btn-warning-outline {
+    border-color: rgba(245, 158, 11, 0.45) !important;
+    color: #FBBF24 !important;
+    background: rgba(245, 158, 11, 0.08) !important;
+}
+
+[data-theme] .m3-btn-warning-outline:hover {
+    background: rgba(245, 158, 11, 0.2) !important;
+    border-color: #F59E0B !important;
+    color: #FCD34D !important;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+}
+
+[data-theme] .m3-btn-warning-outline i {
+    color: #FCD34D !important;
+}
+
+[data-theme] .m3-btn-success-outline {
+    border-color: rgba(16, 185, 129, 0.45) !important;
+    color: #34D399 !important;
+    background: rgba(16, 185, 129, 0.08) !important;
+}
+
+[data-theme] .m3-btn-success-outline:hover {
+    background: rgba(16, 185, 129, 0.2) !important;
+    border-color: #10B981 !important;
+    color: #6EE7B7 !important;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
+}
+
+[data-theme] .m3-btn-success-outline i {
+    color: #6EE7B7 !important;
+}
+
