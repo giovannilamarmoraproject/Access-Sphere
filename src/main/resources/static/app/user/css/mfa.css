@@ -191,6 +191,7 @@
 #btn-copy-mfa-secret {
   background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.35) !important;
   border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35) !important;
+  border-radius: 12px !important;
   color: var(--theme-accent, #EADDFF) !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
@@ -198,6 +199,7 @@
 #btn-copy-mfa-secret:hover {
   background: var(--m3-primary-gradient, linear-gradient(135deg, #A855F7, #6750A4)) !important;
   border-color: var(--theme-accent, #D0BCFF) !important;
+  border-radius: 12px !important;
   color: #FFFFFF !important;
   box-shadow: 0 4px 14px rgba(var(--theme-accent-rgb, 168, 85, 247), 0.35) !important;
   transform: translateY(-1px);
