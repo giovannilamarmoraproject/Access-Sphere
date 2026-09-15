@@ -150,7 +150,7 @@
 
         body {
             font-family: 'Google Sans Flex', sans-serif;
-            background-color: var(--theme-surface, #0E0B16) !important;
+            background-color: var(--m3-surface) !important;
             color: var(--md-on-surface, #E6E1E5);
             margin: 0;
             padding: 0;
@@ -207,6 +207,7 @@
             color: var(--theme-accent, #D0BCFF);
             transition: color 0.2s ease;
         }
+
         .policy-link:hover {
             color: #FFFFFF;
         }
@@ -256,7 +257,8 @@
         </a>
 
         <div class="flex items-center gap-3">
-            <button type="button" onclick="togglePolicyLanguage()" id="policy-lang-toggle" class="m3-pill-btn-outline text-xs" title="Cambia lingua / Switch language">
+            <button type="button" onclick="togglePolicyLanguage()" id="policy-lang-toggle"
+                    class="m3-pill-btn-outline text-xs" title="Cambia lingua / Switch language">
                 <i class="fa-solid fa-globe mr-1.5 text-xs"></i> <span id="policy-lang-label">IT</span>
             </button>
             <a href="/cookie-policy" class="m3-pill-btn-outline text-xs">
@@ -275,21 +277,27 @@
             <i class="fa-solid fa-user-shield"></i> <span data-i18n="privacy_badge">Privacy Policy</span>
         </div>
 
-        <h1 class="privacy-policy-h1 text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-2" data-i18n="privacy_title">
+        <h1 class="privacy-policy-h1 text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-2"
+            data-i18n="privacy_title">
             Privacy Policy
         </h1>
         <p class="text-xs text-gray-400 mb-8 border-b border-white/10 pb-4">
-            <span data-i18n="privacy_effective_date">Effective Date: 23-Jan-2025</span> <br/>
-            <span data-i18n="privacy_last_updated">Last Updated: 23-Jan-2025</span>
+            <span data-i18n="privacy_effective_date">Effective Date: 15 Sep 2026</span> <br/>
+            <span data-i18n="privacy_last_updated">Last Updated: 15 Sep 2026</span>
         </p>
 
         <div class="space-y-6 text-gray-300 text-sm sm:text-base leading-relaxed">
             <p class="privacy-policy-p" data-i18n="privacy_intro_p1">
-                This Privacy Policy describes the policies of Access Sphere on the collection, use and disclosure of your information that we collect when you use our website and security services. By accessing or using the Service, you are consenting to the collection, use and disclosure of your information in accordance with this Privacy Policy.
+                This Privacy Policy describes the policies of Access Sphere on the collection, use and disclosure of
+                your information that we collect when you use our website and security services. By accessing or using
+                the Service, you are consenting to the collection, use and disclosure of your information in accordance
+                with this Privacy Policy.
             </p>
 
             <p class="privacy-policy-p" data-i18n="privacy_intro_p2">
-                We may modify this Privacy Policy at any time without any prior notice to you and will post the revised Privacy Policy on the Service. The revised Policy will be effective from when it is posted in the Service and your continued access or use of the Service after such time will constitute your acceptance.
+                We may modify this Privacy Policy at any time without any prior notice to you and will post the revised
+                Privacy Policy on the Service. The revised Policy will be effective from when it is posted in the
+                Service and your continued access or use of the Service after such time will constitute your acceptance.
             </p>
 
             <div class="space-y-6 pt-2">
@@ -335,7 +343,8 @@
                     <p class="privacy-policy-p text-gray-300" data-i18n="privacy_sec3_desc">
                         We will retain your personal information with us for 90 days to 2 years after users terminate
                         their accounts or for as long as we need it to fulfill the purposes for which it was collected
-                        as detailed in this Privacy Policy. Residual anonymous information and aggregate information may be stored indefinitely.
+                        as detailed in this Privacy Policy. Residual anonymous information and aggregate information may
+                        be stored indefinitely.
                     </p>
                 </section>
 
@@ -344,7 +353,10 @@
                         <span class="w-2 h-2 rounded-full policy-dot"></span> <span data-i18n="privacy_sec4_title">Your Rights</span>
                     </h2>
                     <p class="privacy-policy-p text-gray-300 mb-3" data-i18n="privacy_sec4_desc">
-                        Depending on the law that applies (GDPR), you may have a right to access and rectify or erase your personal data or receive a copy of your personal data, restrict or object to the active processing of your data, ask us to share (port) your personal information to another entity, and withdraw any consent you provided.
+                        Depending on the law that applies (GDPR), you may have a right to access and rectify or erase
+                        your personal data or receive a copy of your personal data, restrict or object to the active
+                        processing of your data, ask us to share (port) your personal information to another entity, and
+                        withdraw any consent you provided.
                     </p>
                     <p class="privacy-policy-p text-gray-300" data-i18n="privacy_sec4_warn">
                         Do note that if you do not allow us to collect or process the required personal information or
@@ -395,7 +407,8 @@
 </main>
 
 <footer class="glass-nav mt-auto border-t border-white/10 py-8 px-6 text-center text-xs text-gray-400">
-    &copy; <span class="copyright-year">2026</span> <span class="app-brand-name">Access Sphere</span>. <span data-i18n="policy_footer_rights">Tutti i diritti riservati.</span>
+    &copy; <span class="copyright-year">2026</span> <span class="app-brand-name">Access Sphere</span>. <span
+        data-i18n="policy_footer_rights">Tutti i diritti riservati.</span>
 </footer>
 
 <!-- Language Switcher & Localization Script -->

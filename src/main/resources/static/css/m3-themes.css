@@ -1583,7 +1583,8 @@ textarea {
 }
 
 [data-theme] .sidebar-brand-box,
-[data-theme] .sidebar-actions-box {
+[data-theme] .sidebar-actions-box,
+[data-theme] .sidebar-footer-box {
     border-color: rgba(var(--theme-accent-rgb), 0.15) !important;
 }
 

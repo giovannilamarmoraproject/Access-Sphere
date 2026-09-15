@@ -170,7 +170,7 @@
 
         body {
             font-family: 'Google Sans Flex', sans-serif;
-            background-color: var(--theme-surface, #0E0B16) !important;
+            background-color: var(--m3-surface) !important;
             color: var(--md-on-surface, #E6E1E5);
             margin: 0;
             padding: 0;
@@ -227,6 +227,7 @@
             color: var(--theme-accent, #D0BCFF);
             transition: color 0.2s ease;
         }
+
         .policy-link:hover {
             color: #FFFFFF;
         }
@@ -368,7 +369,8 @@
         </a>
 
         <div class="flex items-center gap-3">
-            <button type="button" onclick="togglePolicyLanguage()" id="policy-lang-toggle" class="m3-pill-btn-outline text-xs" title="Cambia lingua / Switch language">
+            <button type="button" onclick="togglePolicyLanguage()" id="policy-lang-toggle"
+                    class="m3-pill-btn-outline text-xs" title="Cambia lingua / Switch language">
                 <i class="fa-solid fa-globe mr-1.5 text-xs"></i> <span id="policy-lang-label">IT</span>
             </button>
             <a href="/privacy-policy" class="m3-pill-btn-outline text-xs">
@@ -387,12 +389,13 @@
             <i class="fa-solid fa-cookie-bite"></i> <span data-i18n="cookie_badge">Cookie Policy</span>
         </div>
 
-        <h1 class="cookie-policy-h1 text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-2" data-i18n="cookie_title">
+        <h1 class="cookie-policy-h1 text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-2"
+            data-i18n="cookie_title">
             Cookie Policy
         </h1>
         <p class="text-xs text-gray-400 mb-8 border-b border-white/10 pb-4">
-            <span data-i18n="cookie_effective_date">Effective Date: 23-Jan-2025</span> <br/>
-            <span data-i18n="cookie_last_updated">Last Updated: 23-Jan-2025</span>
+            <span data-i18n="cookie_effective_date">Effective Date: 15 Sep 2026</span> <br/>
+            <span data-i18n="cookie_last_updated">Last Updated: 15 Sep 2026</span>
         </p>
 
         <div class="space-y-6 text-gray-300 text-sm sm:text-base leading-relaxed">
@@ -490,7 +493,8 @@
 </main>
 
 <footer class="glass-nav mt-auto border-t border-white/10 py-8 px-6 text-center text-xs text-gray-400">
-    &copy; <span class="copyright-year">2026</span> <span class="app-brand-name">Access Sphere</span>. <span data-i18n="policy_footer_rights">Tutti i diritti riservati.</span>
+    &copy; <span class="copyright-year">2026</span> <span class="app-brand-name">Access Sphere</span>. <span
+        data-i18n="policy_footer_rights">Tutti i diritti riservati.</span>
 </footer>
 
 <!-- Language Switcher & Localization Script -->
