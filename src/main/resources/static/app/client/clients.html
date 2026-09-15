@@ -1050,6 +1050,10 @@
       if (btnSidebarClients) btnSidebarClients.classList.toggle("active", viewName === "clients");
       if (btnSidebarSettings) btnSidebarSettings.classList.toggle("active", viewName === "settings");
 
+      if (typeof syncMobileNavState === "function") {
+        syncMobileNavState(viewName);
+      }
+
       if (sidebarPrimaryAction) {
         if (viewName === "clients") {
           sidebarPrimaryAction.href = "/app/clients/register";

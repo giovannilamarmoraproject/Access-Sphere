@@ -832,5 +832,9 @@
   "sidebar_expand": "Espandi barra laterale",
   "sidebar_cat_main": "Principale",
   "sidebar_cat_iam": "Identità & Accessi",
-  "sidebar_cat_system": "Sistema & Risorse"
+  "sidebar_cat_system": "Sistema & Risorse",
+  "sidebar_cat_tools": "Strumenti & Azioni",
+  "nav_clients_short": "Client",
+  "btn_version_info": "Info Versione",
+  "btn_back": "Torna Indietro"
 }

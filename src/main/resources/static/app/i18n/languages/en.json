@@ -832,5 +832,9 @@
   "sidebar_expand": "Expand sidebar",
   "sidebar_cat_main": "Main",
   "sidebar_cat_iam": "Identity & Access",
-  "sidebar_cat_system": "System & Resources"
+  "sidebar_cat_system": "System & Resources",
+  "sidebar_cat_tools": "Tools & Actions",
+  "nav_clients_short": "Clients",
+  "btn_version_info": "Version Info",
+  "btn_back": "Back"
 }

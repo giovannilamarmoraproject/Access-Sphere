@@ -686,11 +686,11 @@
                 </p>
             </div>
 
-            <div class="flex items-center gap-3 shrink-0">
-                <button type="button" onclick="resetSettingsToDefault()" class="m3-btn-secondary px-4 py-2.5 text-xs">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto shrink-0">
+                <button type="button" onclick="resetSettingsToDefault()" class="m3-btn-secondary w-full sm:w-auto justify-center px-4 py-2.5 text-xs">
                     <i class="fa-solid fa-rotate-left mr-1"></i> <span data-i18n="btn_reset_defaults">Ripristina Predefiniti</span>
                 </button>
-                <button type="button" onclick="saveAllSettings()" class="m3-btn-primary px-6 py-3 text-sm font-bold shadow-lg">
+                <button type="button" onclick="saveAllSettings()" class="m3-btn-primary w-full sm:w-auto justify-center px-6 py-3 text-sm font-bold shadow-lg">
                     <i class="fa-solid fa-floppy-disk mr-1.5"></i> <span data-i18n="btn_save_settings">Salva Impostazioni</span>
                 </button>
             </div>
@@ -1567,6 +1567,10 @@
         if (btnSidebarUsers) btnSidebarUsers.classList.toggle("active", viewName === "users");
         if (btnSidebarClients) btnSidebarClients.classList.toggle("active", viewName === "clients");
         if (btnSidebarSettings) btnSidebarSettings.classList.toggle("active", viewName === "settings");
+
+        if (typeof syncMobileNavState === "function") {
+            syncMobileNavState(viewName);
+        }
 
         if (sidebarPrimaryAction) {
             if (viewName === "clients") {

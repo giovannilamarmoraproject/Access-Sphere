@@ -74,7 +74,7 @@ const AppSettings = (function () {
   function applyBrandingToDOM(settings) {
     if (!settings) return;
 
-    // 1. App Name in Document Title
+    // 1. App Name in Document Title and Brand Elements
     if (settings.appName) {
       localStorage.setItem("access_sphere_app_name", settings.appName);
       // Update any element with class app-brand-name
@@ -89,10 +89,15 @@ const AppSettings = (function () {
       if (loginTabTitle) {
         loginTabTitle.textContent = `${settings.appName} - Login`;
       }
+      const mobileDrawerName = document.getElementById("mobile-drawer-brand-name");
+      if (mobileDrawerName) {
+        mobileDrawerName.textContent = settings.appName;
+      }
     }
 
     // 2. Logo
     if (settings.logoUrl) {
+      localStorage.setItem("access_sphere_logo_url", settings.logoUrl);
       // Aggiorna tutti i logo del brand evitando di sovrascrivere l'anteprima favicon
       document.querySelectorAll(".app-brand-logo, .login-logo-glow, .mobile-logo-badge img, .app-brand-icon").forEach((img) => {
         if (img.id !== "favicon-preview-img") {
@@ -102,6 +107,10 @@ const AppSettings = (function () {
       const logoPreview = document.getElementById("logo-preview-img");
       if (logoPreview) {
         logoPreview.src = settings.logoUrl;
+      }
+      const mobileDrawerLogo = document.getElementById("mobile-drawer-brand-logo");
+      if (mobileDrawerLogo) {
+        mobileDrawerLogo.src = settings.logoUrl;
       }
     }
 

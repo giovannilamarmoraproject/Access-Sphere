@@ -827,7 +827,11 @@
     "sidebar_expand": "Espandi barra laterale",
     "sidebar_cat_main": "Principale",
     "sidebar_cat_iam": "Identità & Accessi",
-    "sidebar_cat_system": "Sistema & Risorse"
+    "sidebar_cat_system": "Sistema & Risorse",
+    "sidebar_cat_tools": "Strumenti & Azioni",
+    "nav_clients_short": "Client",
+    "btn_version_info": "Info Versione",
+    "btn_back": "Torna Indietro"
   },
   "en": {
     "login_page_tab_title": "Access Sphere - Login",
@@ -1657,6 +1661,10 @@
     "sidebar_expand": "Expand sidebar",
     "sidebar_cat_main": "Main",
     "sidebar_cat_iam": "Identity & Access",
-    "sidebar_cat_system": "System & Resources"
+    "sidebar_cat_system": "System & Resources",
+    "sidebar_cat_tools": "Tools & Actions",
+    "nav_clients_short": "Clients",
+    "btn_version_info": "Version Info",
+    "btn_back": "Back"
   }
 }

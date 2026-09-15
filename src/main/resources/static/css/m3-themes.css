@@ -33,6 +33,7 @@
     --theme-glow: rgba(168, 85, 247, 0.38);
     --theme-ambient-1: rgba(168, 85, 247, 0.22);
     --theme-ambient-2: rgba(103, 80, 164, 0.28);
+    --theme-primary-gradient: linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.38) 0%, rgba(var(--theme-accent-rgb), 0.24) 100%);
     --theme-primary-hover-grad: linear-gradient(135deg, #B56BF9 0%, #7961BC 100%);
     --theme-input-bg: #231B34;
     --theme-input-hover: #2A203F;
@@ -276,7 +277,8 @@ body {
 #user-data .m3-card:hover,
 #client-data .m3-card:hover,
 #view-settings .m3-bento-card:hover,
-#view-settings .m3-card:hover {
+#view-settings .m3-card:hover,
+[data-theme] .m3-app-sidebar:hover {
     transform: none !important;
     box-shadow: none !important;
     border-color: rgba(var(--theme-accent-rgb), 0.35) !important;
@@ -565,17 +567,50 @@ textarea {
    ======================================================= */
 [data-theme] .hub-hero-card,
 [data-theme] .hub-card-users,
-[data-theme] .hub-card-clients,
-[data-theme] .m3-app-sidebar {
+[data-theme] .hub-card-clients {
     background: rgba(var(--theme-surface-rgb), 0.8) !important;
     border: 1px solid rgba(var(--theme-accent-rgb), 0.18) !important;
     box-shadow: none !important;
 }
 
-/* Rimosso effetto hover glow e box-shadow sulla card sidebar */
-[data-theme] .m3-app-sidebar:hover {
-    box-shadow: none !important;
-    border-color: rgba(var(--theme-accent-rgb), 0.18) !important;
+/* Palette multi-tema per Sidebar Mobile (Drawer) e Bottom Navigation Bar (M3 Expressive) */
+[data-theme] .m3-mobile-drawer {
+    background: rgba(var(--theme-surface-rgb), 0.95) !important;
+    border-right: 1px solid rgba(var(--theme-accent-rgb), 0.18) !important;
+}
+
+[data-theme] .m3-mobile-bottom-nav {
+    background: rgba(var(--theme-surface-rgb), 0.88) !important;
+    border-top: none !important;
+    border: none !important;
+}
+
+[data-theme] .m3-mobile-nav-link:hover {
+    background: rgba(var(--theme-primary-rgb), 0.14) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.25) !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme] .m3-mobile-nav-link.active {
+    background: linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.38) 0%, rgba(var(--theme-accent-rgb), 0.24) 100%) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.45) !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme] .m3-mobile-nav-link.active i {
+    color: var(--theme-accent) !important;
+}
+
+[data-theme] .m3-bottom-nav-item.active .m3-bottom-nav-pill {
+    background: rgba(var(--theme-accent-rgb), 0.22) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.35) !important;
+}
+
+[data-theme] .m3-bottom-nav-item.active .m3-bottom-nav-pill i,
+[data-theme] .m3-bottom-nav-item.active .m3-bottom-nav-label {
+    color: var(--theme-accent) !important;
 }
 
 [data-theme] .hub-hero-card:hover {
@@ -1510,12 +1545,17 @@ textarea {
    ======================================================= */
 [data-theme] .m3-app-sidebar {
     background: var(--md-surface-card) !important;
-    border-color: var(--md-surface-border) !important;
+    border: 1px solid var(--md-surface-border) !important;
+    transition: border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none !important;
 }
 
+/* Sidebar hover: nessun glow né box-shadow, solo evidenziazione fluida del bordo coordinata con il tema */
 [data-theme] .m3-app-sidebar:hover {
-    border-color: rgba(var(--theme-accent-rgb), 0.4) !important;
-    box-shadow: 0 20px 40px -15px var(--theme-glow) !important;
+    background: var(--md-surface-card) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.38) !important;
+    box-shadow: none !important;
+    transform: none !important;
 }
 
 [data-theme] .sidebar-nav-item:hover {
@@ -1525,9 +1565,21 @@ textarea {
 }
 
 [data-theme] .sidebar-nav-item.active {
-    background: var(--theme-primary-gradient) !important;
-    border-color: rgba(var(--theme-accent-rgb), 0.45) !important;
+    background: linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.38) 0%, rgba(var(--theme-accent-rgb), 0.24) 100%) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.45) !important;
     color: #FFFFFF !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme] .sidebar-nav-item.active i {
+    color: var(--theme-accent) !important;
+    transform: scale(1.08);
+}
+
+[data-theme] .sidebar-nav-item.active .sidebar-label {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
 }
 
 [data-theme] .sidebar-brand-box,
