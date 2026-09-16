@@ -8,6 +8,8 @@ import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.email.IEmailTemplateDAO;
+import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
 import java.util.Collections;
@@ -28,6 +30,7 @@ class ProjectInitializerServiceTest {
   @Mock private IClientDAO clientDAO;
   @Mock private IUserDAO userDAO;
   @Mock private IAppSettingsDAO appSettingsDAO;
+  @Mock private IEmailTemplateDAO emailTemplateDAO;
 
   @InjectMocks private ProjectInitializerService projectInitializerService;
 
@@ -46,6 +49,8 @@ class ProjectInitializerServiceTest {
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))
         .thenReturn(null);
     when(appSettingsDAO.findAll()).thenReturn(Collections.emptyList());
+    when(emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD"))
+        .thenReturn(Collections.emptyList());
 
     projectInitializerService.run(null);
 
@@ -76,21 +81,34 @@ class ProjectInitializerServiceTest {
     assertEquals("Access Sphere", savedSettings.getAppName());
     assertEquals("cosmic-purple", savedSettings.getActiveTheme());
     assertEquals("SHOWCASE", savedSettings.getLoginMode());
+
+    // Verify Email Template Seed
+    ArgumentCaptor<EmailTemplateEntity> templateCaptor =
+        ArgumentCaptor.forClass(EmailTemplateEntity.class);
+    verify(emailTemplateDAO, times(1)).save(templateCaptor.capture());
+    EmailTemplateEntity savedTemplate = templateCaptor.getValue();
+    assertEquals("ACCESS_SPHERE_CODE_RESET_PASSWORD", savedTemplate.getIdentifier());
+    assertEquals("Reset Password", savedTemplate.getSubject());
+    assertNotNull(savedTemplate.getTemplate());
+    assertNotNull(savedTemplate.getParams());
   }
 
   @Test
-  @DisplayName("run does not seed when client, user, and settings already exist")
+  @DisplayName("run does not seed when client, user, settings, and email templates already exist")
   void testRunSkipsWhenAlreadyPresent() {
     when(clientDAO.findByClientId("ACCESS-SPHERE-TECH"))
         .thenReturn(new ClientCredentialEntity());
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))
         .thenReturn(new UserEntity());
     when(appSettingsDAO.findAll()).thenReturn(List.of(new AppSettingsEntity()));
+    when(emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD"))
+        .thenReturn(List.of(new EmailTemplateEntity()));
 
     projectInitializerService.run(null);
 
     verify(clientDAO, never()).save(any());
     verify(userDAO, never()).save(any());
     verify(appSettingsDAO, never()).save(any());
+    verify(emailTemplateDAO, never()).save(any());
   }
 }

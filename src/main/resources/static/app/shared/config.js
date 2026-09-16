@@ -180,6 +180,8 @@ function initInstantNavigation() {
       prefetchRoute("/app/clients/register");
       prefetchRoute("/app/users");
       prefetchRoute("/app/clients");
+      prefetchRoute("/app/emails");
+      prefetchRoute("/app/settings");
     }
   });
 }
@@ -259,6 +261,8 @@ function getConfig() {
     edit_user_url: urlConfig.baseUrl + urlConfig.edit,
     delete_user_url: urlConfig.baseUrl + urlConfig.delete,
     verify_otp_url: urlConfig.baseUrl + urlConfig.verifyOTP,
+    email_templates_url: urlConfig.baseUrl + "/v1/email-templates",
+    email_templates_test_url: urlConfig.baseUrl + "/v1/email-templates/send-test",
   };
 }
 

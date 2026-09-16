@@ -42,8 +42,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import io.github.giovannilamarmora.accesssphere.email.EmailTemplateService;
 
 @Service
 @Logged
@@ -55,6 +57,7 @@ public class UserService {
   @Autowired private ClientService clientService;
   @Autowired private TokenService tokenService;
   @Autowired private StrapiService strapiService;
+  @Autowired private EmailTemplateService emailTemplateService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private AccessTokenData accessTokenData;
   @Autowired private TechUserService techUserService;
@@ -369,10 +372,21 @@ public class UserService {
                                       return "en-GB";
                                     })));
 
+    // Reperimento del template email dal database locale (EmailTemplateService)
+    // sostituendo la precedente chiamata a Strapi per il flusso di reset password.
+    // Supporta fallback automatico per locale/lingua singola o generica.
     Mono<StrapiEmailTemplate> strapiEmailTemplateMono =
-        finalLocaleMono.flatMap(
-            finalLocale ->
-                strapiService.getTemplateById(changePassword.getTemplateId(), finalLocale));
+        finalLocaleMono
+            .onErrorResume(e -> Mono.just(locale != null ? locale : "en-GB"))
+            .flatMap(
+                finalLocale -> {
+                  String templateIdentifier =
+                      StringUtils.hasText(changePassword.getTemplateId())
+                          ? changePassword.getTemplateId()
+                          : "ACCESS_SPHERE_CODE_RESET_PASSWORD";
+                  return emailTemplateService.getTemplateByIdentifierAndLocale(
+                      templateIdentifier, finalLocale);
+                });
 
     return Mono.zip(userMono, strapiEmailTemplateMono)
         .flatMap(

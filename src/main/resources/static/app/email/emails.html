@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Sphere - Template Email</title>
+  
+  <!-- Immediate Zero-Flicker Theme Application -->
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem("access_sphere_theme");
+        if (!theme) {
+          var s = localStorage.getItem("access_sphere_settings");
+          if (s) {
+            var parsed = JSON.parse(s);
+            theme = parsed.activeTheme;
+          }
+        }
+        document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
+  
+  <!-- JQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Shared Loader & SweetAlert2 -->
+  <link rel="stylesheet" href="/app/shared/loader/loader.css" />
+  <script src="/app/shared/loader/loader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
+  <script src="/app/shared/sweetalert.js"></script>
+
+  <!-- Access Sphere Core Scripts -->
+  <script src="/app/shared/config.js"></script>
+  <script src="/app/shared/utils.js"></script>
+  <script src="/app/shared/api/authorize.js"></script>
+  <script src="/app/shared/api/logout.js"></script>
+  <script src="/app/i18n/translations.js"></script>
+  <script src="/app/shared/api/rest.js"></script>
+
+  <!-- Unified M3 Dashboard Theme & Themes Palette -->
+  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0" />
+  <link rel="stylesheet" href="/css/m3-themes.css" />
+  <script src="/app/shared/settings.js"></script>
+
+  <!-- Custom Email View Logic -->
+  <script src="/app/email/js/emails.js"></script>
+
+  <style>
+    /* Styling per Anteprima Live Iframe e Editor Split */
+    .preview-device-desktop {
+      width: 100%;
+      height: 520px;
+      transition: all 0.3s ease;
+      border: 0;
+      border-radius: 12px;
+      background: #ffffff;
+    }
+    .preview-device-mobile {
+      width: 375px;
+      height: 560px;
+      max-width: 100%;
+      margin: 0 auto;
+      border-radius: 28px;
+      border: 8px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+      background: #ffffff;
+      transition: all 0.3s ease;
+      display: block;
+    }
+    .code-editor-textarea {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      tab-size: 2;
+      background: rgba(10, 10, 20, 0.65);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      resize: vertical;
+    }
+    .code-editor-textarea:focus {
+      outline: none;
+      border-color: var(--md-sys-color-primary, #a855f7);
+      box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.25);
+    }
+    .param-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      color: #d8b4fe;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .locale-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .locale-badge-it {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+    .locale-badge-en {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #93c5fd;
+    }
+    .locale-badge-generic {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fcd34d;
+    }
+  </style>
+</head>
+<body>
+  <div id="loader" class="loader"></div>
+
+  <!-- Wide Unified Header -->
+  <header class="glass-header">
+    <div class="header-container">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-6">
+        <a href="/app" class="flex items-center gap-3 text-decoration-none group">
+          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
+          <div class="flex flex-col">
+            <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <span class="app-brand-name">Access Sphere</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
+            </span>
+            <span id="header-subtitle" class="text-[11px] text-gray-400 font-medium" data-i18n="header_subtitle">Gestione Identità & Accessi</span>
+          </div>
+        </a>
+
+        <!-- Fast Navigation Tabs -->
+        <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+          <a href="/app" id="nav-btn-dashboard" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
+          </a>
+          <a href="/app/users" id="nav-btn-users" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
+          </a>
+          <a href="/app/clients" id="nav-btn-clients" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
+          </a>
+          <a href="/app/emails" id="nav-btn-emails" class="nav-tab-m3 active text-decoration-none">
+            <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
+          </a>
+          <a href="/app/settings" id="nav-btn-settings" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
+          </a>
+          <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
+            <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="flex items-center gap-2">
+        <button id="btn-refresh-data" onclick="loadEmailTemplates()" class="m3-icon-btn" title="Aggiorna dati" data-i18n-title="btn_refresh_data">
+          <i id="refresh-icon" class="fa-solid fa-arrows-rotate text-sm"></i>
+        </button>
+        <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione" data-i18n-title="btn_version_info">
+          <i class="fa-solid fa-circle-info text-sm"></i>
+        </button>
+        
+        <!-- Primary Action: Create New Template -->
+        <button onclick="openCreateTemplateModal()" class="m3-btn-primary ml-2">
+          <i class="fa-solid fa-plus"></i> <span data-i18n="btn_new_template">Nuovo Template</span>
+        </button>
+
+        <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout" data-i18n-title="btn_logout">
+          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="dashboard-wide-container">
+
+    <!-- Welcome & Live Status Hero (Directly on page background as required by Rule 4.1) -->
+    <div class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-semibold mb-3">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="app-brand-name">Access Sphere</span> Email Hub
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight" data-i18n="email_hero_title">
+            Gestione Template Email
+          </h1>
+          <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-2xl" data-i18n="email_hero_desc">
+            Crea, personalizza e collauda i template HTML delle email transazionali e di sistema con parametri dinamici, supporto multilingua e anteprima in tempo reale.
+          </p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-purple-950/40 p-4 rounded-2xl border border-purple-500/20 shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300">
+              <i class="fa-solid fa-clock text-base"></i>
+            </div>
+            <div>
+              <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_system_clock">Orario Sistema</div>
+              <div id="live-clock" class="text-white font-mono font-bold text-sm">--:--:--</div>
+            </div>
+          </div>
+          <div class="hidden sm:block h-8 w-px bg-purple-500/20"></div>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300">
+              <i class="fa-solid fa-signal text-base"></i>
+            </div>
+            <div>
+              <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_service_status">Stato Servizi</div>
+              <div class="text-emerald-300 font-semibold text-sm flex items-center gap-1.5">
+                <i class="fa-solid fa-check-circle text-xs"></i> <span data-i18n="dash_status_operational">Operativo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bento Grid Summary KPIs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      
+      <!-- Card 1: Template Totali -->
+      <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_total">Template Totali</span>
+          <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300">
+            <i class="fa-solid fa-envelope-open-text text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <!-- Invariante: nessun data-i18n su elementi con valori dinamici -->
+          <div id="stat-total-templates" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
+          <div class="text-xs text-purple-300/80 mt-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-database text-purple-400"></i>
+            <span id="stat-db-status">Censiti nel database</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Lingue Attive -->
+      <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_locales">Lingue Attive</span>
+          <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center text-blue-300">
+            <i class="fa-solid fa-language text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <div id="stat-total-locales" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
+          <div class="text-xs text-blue-300/80 mt-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-globe text-blue-400"></i>
+            <span id="stat-locales-summary">Multilingua & Fallback</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Parametri Configurati -->
+      <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_params">Parametri Censiti</span>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-300">
+            <i class="fa-solid fa-code text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <div id="stat-total-params" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
+          <div class="text-xs text-amber-300/80 mt-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-tags text-amber-400"></i>
+            <span>Segnaposto dinamici {{KEY}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Reset Password Engine -->
+      <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_reset_pwd">Reset Password</span>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300">
+            <i class="fa-solid fa-shield-keyhole text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <div id="stat-reset-pwd-status" class="text-lg font-bold text-emerald-300 tracking-tight flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i> Standalone DB
+          </div>
+          <div class="text-xs text-emerald-300/80 mt-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt text-emerald-400"></i>
+            <span>Sostituzione Strapi attiva</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Content Bento Card: Template List & Search -->
+    <div class="m3-bento-card p-6 mb-8">
+      
+      <!-- Toolbar: Search & Locale Filter -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+        <div class="relative w-full sm:w-80">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <input
+            type="text"
+            id="email-search-input"
+            class="m3-form-input w-full pl-10 pr-4 py-2 text-sm"
+            placeholder="Cerca template per ID, nome, oggetto..."
+            data-i18n-placeholder="email_search_placeholder"
+            oninput="handleSearch(this.value)"
+          />
+        </div>
+
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <select id="locale-filter-select" class="m3-form-input text-sm py-2 px-3 shrink-0" onchange="handleLocaleFilter(this.value)">
+            <option value="ALL" data-i18n="email_filter_locale_all">Tutte le lingue</option>
+            <option value="it" data-i18n="email_filter_locale_it">Italiano (it)</option>
+            <option value="en-GB" data-i18n="email_filter_locale_en">Inglese (en-GB)</option>
+            <option value="fr" data-i18n="email_filter_locale_fr">Francese (fr)</option>
+            <option value="es" data-i18n="email_filter_locale_es">Spagnolo (es)</option>
+            <option value="de" data-i18n="email_filter_locale_de">Tedesco (de)</option>
+            <option value="GENERIC" data-i18n="email_filter_locale_generic">Generico / Predefinito</option>
+          </select>
+
+          <button onclick="loadEmailTemplates()" class="m3-icon-btn shrink-0" title="Ricarica elenco" data-i18n-title="btn_refresh_data">
+            <i class="fa-solid fa-rotate-right text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Templates Container: Cards / Table View -->
+      <div id="email-templates-container" class="space-y-4">
+        <!-- Rendered dynamically via JavaScript -->
+        <div class="text-center py-12 text-gray-400">
+          <i class="fa-solid fa-spinner fa-spin text-2xl text-purple-400 mb-3"></i>
+          <p>Caricamento template in corso...</p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= MODALE 1: EDITOR TEMPLATE CON ANTEPRIMA LIVE (SPLIT-VIEW) ================= -->
+  <div class="modal fade" id="emailEditorModal" tabindex="-1" aria-labelledby="emailEditorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+      <div class="modal-content bg-[#0b0c16] text-white border-0">
+        
+        <!-- Header Modale -->
+        <div class="modal-header border-b border-purple-500/20 px-6 py-4 flex items-center justify-between bg-[#121324]/80 backdrop-blur-md">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300">
+              <i class="fa-solid fa-pen-ruler"></i>
+            </div>
+            <div>
+              <h5 class="modal-title font-bold text-lg text-white" id="emailEditorModalLabel" data-i18n="modal_email_editor_title">
+                Editor Template Email
+              </h5>
+              <p class="text-xs text-gray-400 mb-0">Configura metadati, parametri e visualizza il markup renderizzato in tempo reale</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button type="button" class="m3-btn-secondary py-1.5 px-4 text-xs" data-bs-dismiss="modal">
+              <i class="fa-solid fa-xmark mr-1.5"></i> Annulla
+            </button>
+            <button type="button" class="m3-btn-primary py-1.5 px-5 text-xs" onclick="saveTemplateForm()">
+              <i class="fa-solid fa-floppy-disk mr-1.5"></i> Salva Template
+            </button>
+          </div>
+        </div>
+
+        <!-- Body Split: Form a Sinistra, Live Preview a Destra -->
+        <div class="modal-body p-0 overflow-hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-12 h-full">
+            
+            <!-- Colonna Sinistra: Configurazione & HTML (Col 6) -->
+            <div class="lg:col-span-6 p-6 overflow-y-auto h-[calc(100vh-80px)] border-r border-purple-500/15 space-y-5">
+              <input type="hidden" id="editor-template-id" value="" />
+
+              <!-- Metadati Base Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_identifier">
+                    Identificatore Univoco *
+                  </label>
+                  <input
+                    type="text"
+                    id="editor-identifier"
+                    class="m3-form-input w-full text-sm font-mono"
+                    placeholder="es. ACCESS_SPHERE_CODE_RESET_PASSWORD"
+                    required
+                  />
+                  <span class="text-[11px] text-gray-400 mt-1 block">Identificatore chiamato dal backend/microservizio</span>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_name">
+                    Nome Template *
+                  </label>
+                  <input
+                    type="text"
+                    id="editor-name"
+                    class="m3-form-input w-full text-sm"
+                    placeholder="es. Reset Password Utente"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_subject">
+                    Oggetto Email *
+                  </label>
+                  <input
+                    type="text"
+                    id="editor-subject"
+                    class="m3-form-input w-full text-sm"
+                    placeholder="es. Reimpostazione della Password"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_locale">
+                    Lingua / Locale
+                  </label>
+                  <select id="editor-locale" class="m3-form-input w-full text-sm">
+                    <option value="">Nessuno (Globale / Fallback per tutte le lingue)</option>
+                    <option value="it">Italiano (it)</option>
+                    <option value="it-IT">Italiano - Italia (it-IT)</option>
+                    <option value="en-GB">Inglese - UK (en-GB)</option>
+                    <option value="en-US">Inglese - US (en-US)</option>
+                    <option value="fr">Francese (fr)</option>
+                    <option value="es">Spagnolo (es)</option>
+                    <option value="de">Tedesco (de)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_desc">
+                  Descrizione
+                </label>
+                <input
+                  type="text"
+                  id="editor-description"
+                  class="m3-form-input w-full text-sm"
+                  placeholder="es. Inviato quando un utente richiede il ripristino password"
+                />
+              </div>
+
+              <!-- Gestore Parametri Dinamici Personalizzati -->
+              <div class="p-4 rounded-xl bg-purple-950/20 border border-purple-500/20">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <h6 class="text-sm font-bold text-white mb-0 flex items-center gap-2">
+                      <i class="fa-solid fa-sliders text-purple-400"></i> Parametri Dinamici Personalizzati
+                    </h6>
+                    <span class="text-[11px] text-gray-400">Definisci chiavi segnaposto {{KEY}} e valori per l'anteprima</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button type="button" onclick="autoExtractParamsFromHtml()" class="m3-btn-secondary text-[11px] py-1 px-2.5">
+                      <i class="fa-solid fa-wand-magic-sparkles mr-1 text-purple-400"></i> Rileva da HTML
+                    </button>
+                    <button type="button" onclick="addParamRow()" class="m3-btn-primary text-[11px] py-1 px-2.5">
+                      <i class="fa-solid fa-plus mr-1"></i> Aggiungi Parametro
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Lista Parametri (Rows) -->
+                <div id="editor-params-list" class="space-y-2">
+                  <!-- Inseriti dinamicamente via JS -->
+                </div>
+              </div>
+
+              <!-- Editor Markup HTML -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-0" data-i18n="email_label_html">
+                    Markup HTML del Template *
+                  </label>
+                  <span class="text-[11px] text-purple-300/80 font-mono">Digitazione con live preview istantaneo</span>
+                </div>
+                <textarea
+                  id="editor-template-html"
+                  rows="14"
+                  class="code-editor-textarea w-full p-4"
+                  placeholder="<!DOCTYPE html><html><body><h1>Ciao {{NAME}}</h1></body></html>"
+                  oninput="handleHtmlInput(this.value)"
+                  required
+                ></textarea>
+              </div>
+
+            </div>
+
+            <!-- Colonna Destra: Live Preview (Col 6) -->
+            <div class="lg:col-span-6 p-6 flex flex-col h-[calc(100vh-80px)] bg-[#070711] overflow-y-auto">
+              
+              <!-- Toolbar Anteprima Live -->
+              <div class="flex items-center justify-between pb-4 mb-4 border-b border-purple-500/15">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                    <i class="fa-solid fa-eye text-emerald-400"></i> Anteprima in Tempo Reale
+                  </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <!-- Toggle Switch: Sostituisci Parametri nell'anteprima -->
+                  <label class="flex items-center gap-2 cursor-pointer mr-3">
+                    <input type="checkbox" id="preview-inject-params" class="form-check-input mt-0" checked onchange="updateLivePreview()" />
+                    <span class="text-xs text-gray-300">Sostituisci {{Parametri}}</span>
+                  </label>
+
+                  <!-- Switch Dispositivo: Desktop / Mobile -->
+                  <div class="inline-flex rounded-lg bg-purple-950/40 p-0.5 border border-purple-500/20">
+                    <button
+                      type="button"
+                      id="btn-preview-desktop"
+                      class="px-2.5 py-1 rounded-md text-xs font-medium text-white bg-purple-600 transition-all"
+                      onclick="setPreviewDevice('desktop')"
+                    >
+                      <i class="fa-solid fa-desktop mr-1"></i> Desktop
+                    </button>
+                    <button
+                      type="button"
+                      id="btn-preview-mobile"
+                      class="px-2.5 py-1 rounded-md text-xs font-medium text-gray-400 hover:text-white transition-all"
+                      onclick="setPreviewDevice('mobile')"
+                    >
+                      <i class="fa-solid fa-mobile-screen mr-1"></i> Mobile
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contenitore Iframe Isolato -->
+              <div class="flex-1 flex items-center justify-center overflow-auto p-2 bg-[#05050c] rounded-2xl border border-purple-500/20 shadow-inner">
+                <iframe id="live-preview-iframe" class="preview-device-desktop" sandbox="allow-same-origin"></iframe>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODALE 2: INVIA EMAIL DI TEST ================= -->
+  <div class="modal fade" id="emailTestSendModal" tabindex="-1" aria-labelledby="emailTestSendModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-[#121324] text-white border border-purple-500/30 rounded-2xl shadow-2xl">
+        
+        <div class="modal-header border-b border-purple-500/20 px-6 py-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300">
+              <i class="fa-solid fa-paper-plane"></i>
+            </div>
+            <div>
+              <h5 class="modal-title font-bold text-lg text-white" id="emailTestSendModalLabel" data-i18n="modal_email_test_title">
+                Invia Email di Test
+              </h5>
+              <p class="text-xs text-gray-400 mb-0">Collauda l'invio reale tramite il microservizio email compilando i parametri</p>
+            </div>
+          </div>
+          <button type="button" class="m3-icon-btn" data-bs-dismiss="modal">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form id="test-email-form" onsubmit="executeSendTestEmail(event)">
+          <div class="modal-body px-6 py-5 space-y-4">
+            <input type="hidden" id="test-template-id" />
+            <input type="hidden" id="test-template-identifier" />
+            <input type="hidden" id="test-template-locale" />
+
+            <div class="p-3.5 rounded-xl bg-purple-950/30 border border-purple-500/20 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-gray-400 block">Template Selezionato:</span>
+                <span id="test-modal-template-name" class="font-bold text-sm text-purple-300">--</span>
+              </div>
+              <div id="test-modal-locale-badge"></div>
+            </div>
+
+            <!-- Destinatario & Oggetto -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_test_recipient">
+                  Destinatario Email *
+                </label>
+                <input
+                  type="email"
+                  id="test-email-to"
+                  class="m3-form-input w-full text-sm"
+                  placeholder="mario.rossi@example.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_subject">
+                  Oggetto Email *
+                </label>
+                <input
+                  type="text"
+                  id="test-email-subject"
+                  class="m3-form-input w-full text-sm"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Valori Parametri Dinamici -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                Valori per i Segnaposto del Template
+              </label>
+              <div id="test-email-params-container" class="space-y-3 p-4 rounded-xl bg-[#090915] border border-purple-500/15">
+                <!-- Generato dinamicamente via JS in base ai parametri del template -->
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer border-t border-purple-500/20 px-6 py-4 flex items-center justify-end gap-3">
+            <button type="button" class="m3-btn-secondary" data-bs-dismiss="modal">
+              Annulla
+            </button>
+            <button type="submit" id="btn-submit-test-email" class="m3-btn-primary">
+              <i class="fa-solid fa-paper-plane mr-1.5"></i> <span data-i18n="email_test_btn_submit">Invia Ora</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODALE 3: ANTEPRIMA RAPIDA (SOLO LETTURA) ================= -->
+  <div class="modal fade" id="quickPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content bg-[#101124] text-white border border-purple-500/30 rounded-2xl overflow-hidden shadow-2xl">
+        <div class="modal-header border-b border-purple-500/20 px-6 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div>
+              <h5 class="modal-title font-bold text-base text-white" id="quick-preview-title">Anteprima Template</h5>
+              <p class="text-[11px] text-gray-400 mb-0" id="quick-preview-subtitle">Rendering completo HTML</p>
+            </div>
+          </div>
+          <button type="button" class="m3-icon-btn" data-bs-dismiss="modal">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body p-4 bg-[#05050f]">
+          <iframe id="quick-preview-iframe" class="w-full h-[550px] rounded-xl bg-white border-0"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

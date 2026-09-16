@@ -14,10 +14,12 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderClien
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiClient;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
+import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import java.util.*;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -70,6 +72,7 @@ public class UserServiceTest {
   @MockBean private IAccessTokenDAO accessTokenDAO;
   @MockBean private EmailSenderClient emailSenderClient;
   @MockBean private IUserDAO userDAO;
+  @MockBean private io.github.giovannilamarmora.accesssphere.email.EmailTemplateService emailTemplateService;
   private MockedStatic<GoogleGrpcService> mockStatic;
   private final ObjectMapper mapper = MapperUtils.mapper().failOnUnknownProprieties().build();
 
@@ -858,6 +861,17 @@ public class UserServiceTest {
             new ClassPathResource("mock/Template.json").getInputStream(), new TypeReference<>() {});
     when(strapiClient.getTemplateById(any(), anyString()))
         .thenReturn(Mono.just(ResponseEntity.ok(templates)));
+
+    StrapiEmailTemplate emailTemplate = new StrapiEmailTemplate();
+    emailTemplate.setName("TEST");
+    emailTemplate.setSubject("Reset Password");
+    emailTemplate.setTemplate("Hello {{NAME}}, code is {{RESET_CODE}}");
+    Map<String, String> emailParams = new HashMap<>();
+    emailParams.put("RESET_CODE", "123456");
+    emailParams.put("NAME", "Mario");
+    emailTemplate.setParams(emailParams);
+    when(emailTemplateService.getTemplateByIdentifierAndLocale(any(), any()))
+        .thenReturn(Mono.just(emailTemplate));
 
     List<StrapiLocale> locales =
         mapper.readValue(

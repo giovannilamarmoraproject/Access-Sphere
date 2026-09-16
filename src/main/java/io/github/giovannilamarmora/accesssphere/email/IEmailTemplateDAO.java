@@ -1,0 +1,22 @@
+package io.github.giovannilamarmora.accesssphere.email;
+
+import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Data Access Object (JPA Repository) per la gestione dei Template Email su Database.
+ */
+@Repository
+public interface IEmailTemplateDAO extends JpaRepository<EmailTemplateEntity, Long> {
+
+  Optional<EmailTemplateEntity> findByIdentifierAndLocale(String identifier, String locale);
+
+  List<EmailTemplateEntity> findByIdentifier(String identifier);
+
+  Optional<EmailTemplateEntity> findFirstByIdentifier(String identifier);
+
+  List<EmailTemplateEntity> findAllByOrderByCreationDateDesc();
+}

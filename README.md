@@ -56,12 +56,18 @@
 - 💾 **Backup & Restore Completo a 1-Click**:
   - Esportazione istantanea dell'intero database (utenti, credenziali, ruoli, client OAuth2, impostazioni) in un unico file JSON strutturato.
   - Procedura di ripristino con validazione schema e zero downtime per migrazioni e disaster recovery.
+- ✉️ **Gestione Template Email & Live Preview Engine**:
+  - Configurazione completa dei template email transazionali memorizzati direttamente nel database (`EMAIL_TEMPLATES`).
+  - Parametri segnaposto dinamici personalizzati (`{{KEY}}`) con rilevamento ed estrazione automatica dal markup HTML.
+  - Editor interattivo split-screen con anteprima live isolata (iframe) in tempo reale su viewport Desktop e Mobile.
+  - Sostituzione autonoma del servizio Strapi legacy per il flusso di reset password con smart fallback multilingua.
+  - Collaudo immediato con invio di email di test compilando parametri e destinatario direttamente dalla UI.
 - 🌐 **Internazionalizzazione (i18n) & Zero-Flicker Rendering**:
-  - Supporto completo per Italiano e Inglese con 330+ chiavi di traduzione (Landing page, Login, Dashboard, Gestione Utenti, Gestione Client, Modali ed Error Code).
-  - Selezione flessibile della lingua: **Automatico (Browser)** con fallback intelligente, oppure forzatura manuale (**Italiano** o **English**).
+  - Supporto multilingua esteso per **Italiano**, **Inglese**, **Francese**, **Spagnolo** e **Tedesco** con 400+ chiavi di traduzione (Landing page, Login, Dashboard, Gestione Utenti, Gestione Client, Template Email, Modali ed Error Code).
+  - Selezione flessibile della lingua: **Automatico (Browser)** con fallback intelligente, oppure forzatura manuale dall'interfaccia.
   - Rendering istantaneo senza sfarfallio (FOUC) tramite cache sincrona e CSS anti-flicker guard.
 - 🚀 **Technical Seed & Bootstrap Automatico**:
-  - Creazione automatica all'avvio a DB vuoto dell'utenza tecnica e del client tecnico OAuth2 configurabili da variabili d'ambiente.
+  - Creazione automatica all'avvio a DB vuoto dell'utenza tecnica, del client tecnico OAuth2 e del template email predefinito per il reset della password (`ACCESS_SPHERE_CODE_RESET_PASSWORD`).
 - 📱 **Progressive Web App (PWA)**: Supporto offline tramite Service Worker dedicato, manifest PWA e asset multi-risoluzione.
 - 📖 **Documentazione Interattiva OpenAPI / Swagger 3.0**: Esplorazione e test immediato delle API tramite Swagger UI integrata.
 

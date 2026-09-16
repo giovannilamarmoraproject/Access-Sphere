@@ -83,4 +83,13 @@ public class RedirectControllerImpl {
   public String editClient(Model model) {
     return "app/client/edit";
   }
+
+  /**
+   * Routing per la pagina di gestione dei template email e invio test.
+   * Restituisce la vista Thymeleaf statica "app/email/emails.html".
+   */
+  @GetMapping({"/app/emails", "/app/email"})
+  public String emails(Model model) {
+    return "app/email/emails";
+  }
 }

@@ -218,6 +218,7 @@ const AppSettings = (function () {
             const isOverview = currentPath === "/app" || currentPath === "/app/" || currentPath === "/app/dashboard";
             const isUsers = currentPath.includes("/user") && !currentPath.includes("/clients");
             const isClients = currentPath.includes("/client");
+            const isEmails = currentPath.includes("/email");
             const isSettings = currentPath.includes("/settings");
 
             sidebar.innerHTML = `
@@ -257,6 +258,12 @@ const AppSettings = (function () {
                 <a href="/app/clients" id="sidebar-btn-clients" class="sidebar-nav-item ${isClients ? 'active' : ''}" title="Client OAuth2" onclick="if(typeof switchDashboardView === 'function' && document.getElementById('view-clients')){switchDashboardView('clients'); return false;}">
                   <i class="fa-solid fa-key"></i>
                   <span class="sidebar-label" data-i18n="nav_clients">Client OAuth2</span>
+                </a>
+              </li>
+              <li>
+                <a href="/app/emails" id="sidebar-btn-emails" class="sidebar-nav-item ${isEmails ? 'active' : ''}" title="Template Email">
+                  <i class="fa-solid fa-envelope"></i>
+                  <span class="sidebar-label" data-i18n="nav_emails">Template Email</span>
                 </a>
               </li>
             </ul>
@@ -314,6 +321,7 @@ const AppSettings = (function () {
         if (p.includes("/roles")) return "Ruoli & Permessi";
         if (p.includes("/mfa")) return "Sicurezza MFA";
         if (p.includes("/details") || p.endsWith("/user") || p.endsWith("/client")) return "Dettaglio";
+        if (p.includes("/emails") || p.includes("/email")) return "Template Email";
         if (p.includes("/client")) return "Client OAuth2";
         if (p.includes("/user")) return "Gestione Utenti";
         if (p.includes("/settings")) return "Impostazioni";
