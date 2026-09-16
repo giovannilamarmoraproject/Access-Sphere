@@ -101,7 +101,7 @@ public class ClientService {
   public void addClientToDatabase(ClientCredential clientCredential) {
     LOG.info("Inserting new client into Database: {}", clientCredential.getClientId());
     ClientCredentialEntity clientEntity =
-        ClientMapper.fromClientCredentialToClientCredentialEntity(clientCredential);
+        ClientMapper.toEntity(clientCredential);
     iClientDAO.save(clientEntity);
     LOG.debug("Client {} successfully inserted", clientCredential.getClientId());
   }
@@ -117,7 +117,7 @@ public class ClientService {
     ClientCredentialEntity existingClientEntity =
         iClientDAO.findByClientId(clientCredential.getClientId());
     if (!ObjectUtils.isEmpty(existingClientEntity)) {
-      ClientMapper.updateEntityFields(existingClientEntity, clientCredential);
+      ClientMapper.updateEntity(existingClientEntity, clientCredential);
       iClientDAO.save(existingClientEntity);
       LOG.debug("Client {} successfully updated", clientCredential.getClientId());
     } else {

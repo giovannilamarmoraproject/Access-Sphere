@@ -23,7 +23,7 @@ public class ClientMapper {
   private static final ObjectMapper mapper = MapperUtils.mapper().build();
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static ClientCredential fromClientCredentialEntityToClientCredential(
+  public static ClientCredential toDTO(
       ClientCredentialEntity clientCredentialEntity) {
     try {
       ClientCredential clientCredential =
@@ -70,7 +70,7 @@ public class ClientMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static ClientCredentialEntity fromClientCredentialToClientCredentialEntity(
+  public static ClientCredentialEntity toEntity(
       ClientCredential clientCredential) {
     return new ClientCredentialEntity(
         clientCredential.getId(),
@@ -104,7 +104,7 @@ public class ClientMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static void updateEntityFields(
+  public static void updateEntity(
       ClientCredentialEntity existingClient, ClientCredential clientCredential) {
     // Aggiorna i campi dell'entità esistente con i valori del ClientCredential
     existingClient.setExternalClientId(clientCredential.getExternalClientId());
@@ -140,10 +140,10 @@ public class ClientMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static List<ClientCredential> fromClientCredentialEntitiesToClientCredential(
+  public static List<ClientCredential> toDTOList(
       List<ClientCredentialEntity> clientCredentialEntities) {
     return clientCredentialEntities.stream()
-        .map(ClientMapper::fromClientCredentialEntityToClientCredential)
+        .map(ClientMapper::toDTO)
         .toList();
   }
 }
