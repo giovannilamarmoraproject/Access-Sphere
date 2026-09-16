@@ -13,6 +13,8 @@ let cachedTemplates = [];
 let currentFilterLocale = "ALL";
 let currentSearchQuery = "";
 let currentPreviewDevice = "desktop";
+let currentDetailTemplate = null;
+let currentDetailDevice = "desktop";
 let editorDebounceTimer = null;
 
 // =========================================================================
@@ -180,7 +182,7 @@ function renderTemplatesList(templates) {
   if (filtered.length === 0) {
     container.innerHTML = `
       <div class="text-center py-16 px-4">
-        <div class="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-300 text-2xl mx-auto mb-4">
+        <div class="w-16 h-16 rounded-2xl theme-icon-box flex items-center justify-center text-2xl mx-auto mb-4">
           <i class="fa-solid fa-envelope-open"></i>
         </div>
         <h3 class="text-lg font-bold text-white mb-1">Nessun Template Email Trovato</h3>
@@ -209,12 +211,12 @@ function renderTemplatesList(templates) {
     const lastUpdated = item.updateDate ? new Date(item.updateDate).toLocaleString() : (item.creationDate ? new Date(item.creationDate).toLocaleString() : "N/D");
 
     html += `
-      <div class="p-5 rounded-2xl bg-purple-950/20 border border-purple-500/20 hover:border-purple-500/40 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+      <div class="p-5 rounded-2xl theme-surface-box hover:brightness-125 transition-all cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5 group" onclick="openEmailDetailModal(${item.id})">
         
         <!-- Info Principali Template -->
         <div class="space-y-2 flex-1">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="font-mono text-xs font-bold text-purple-300 bg-purple-500/15 px-2.5 py-1 rounded-lg border border-purple-500/30">
+            <span class="font-mono text-xs font-bold theme-badge px-2.5 py-1 rounded-lg">
               ${escapeHtml(item.identifier || "SENZA_ID")}
             </span>
             ${localeBadge}
@@ -224,9 +226,9 @@ function renderTemplatesList(templates) {
           </div>
 
           <div>
-            <h4 class="text-base font-bold text-white mb-0.5">${escapeHtml(item.name || "Template Senza Nome")}</h4>
+            <h4 class="text-base font-bold text-white mb-0.5 group-hover:opacity-90 transition-colors">${escapeHtml(item.name || "Template Senza Nome")}</h4>
             <div class="text-xs text-gray-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-heading text-purple-400 text-[10px]"></i>
+              <i class="fa-solid fa-heading theme-text-accent text-[10px]"></i>
               <strong>Oggetto:</strong> ${escapeHtml(item.subject || "--")}
             </div>
             ${item.description ? `<p class="text-xs text-gray-400 mt-1 mb-0">${escapeHtml(item.description)}</p>` : ""}
@@ -239,17 +241,17 @@ function renderTemplatesList(templates) {
         </div>
 
         <!-- Pulsanti Azione Rapida -->
-        <div class="flex flex-wrap items-center gap-2 shrink-0">
-          <button onclick="openQuickPreview(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="Visualizza Anteprima">
-            <i class="fa-solid fa-eye text-emerald-400 mr-1.5"></i> Anteprima
+        <div class="flex flex-wrap items-center gap-2 shrink-0" onclick="event.stopPropagation()">
+          <button type="button" onclick="event.stopPropagation(); openEmailDetailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="Visualizza Dettaglio">
+            <i class="fa-solid fa-eye text-emerald-400 mr-1.5"></i> Dettaglio
           </button>
-          <button onclick="openTestEmailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="Invia Email di Prova">
+          <button type="button" onclick="event.stopPropagation(); openTestEmailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="Invia Email di Prova">
             <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> Invia Test
           </button>
-          <button onclick="openEditTemplateModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="Modifica Template">
+          <button type="button" onclick="event.stopPropagation(); openEditTemplateModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="Modifica Template">
             <i class="fa-solid fa-pen-to-square text-amber-400 mr-1.5"></i> Modifica
           </button>
-          <button onclick="confirmDeleteTemplate(${item.id}, '${escapeHtml(item.identifier)}')" class="m3-icon-btn m3-icon-btn-danger text-xs" title="Elimina Template">
+          <button type="button" onclick="event.stopPropagation(); confirmDeleteTemplate(${item.id}, '${escapeHtml(item.identifier)}')" class="m3-icon-btn m3-icon-btn-danger text-xs" title="Elimina Template">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         </div>
@@ -300,20 +302,20 @@ function addParamRow(key = "", val = "") {
   const rowHtml = `
     <div id="${rowId}" class="flex items-center gap-2">
       <div class="relative w-2/5">
-        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 font-mono text-xs">{{</span>
+        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 theme-text-accent font-mono text-xs font-bold pointer-events-none select-none z-10">{{</span>
         <input
           type="text"
-          class="m3-form-input w-full pl-6 pr-6 py-1.5 text-xs font-mono param-key-input uppercase"
+          class="m3-form-input rounded-xl w-full py-1.5 text-xs font-mono param-key-input uppercase"
           placeholder="CHIAVE"
           value="${escapeHtml(key)}"
           oninput="handleParamChange()"
         />
-        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 font-mono text-xs">}}</span>
+        <span class="absolute right-3.5 top-1/2 -translate-y-1/2 theme-text-accent font-mono text-xs font-bold pointer-events-none select-none z-10">}}</span>
       </div>
       <div class="w-3/5">
         <input
           type="text"
-          class="m3-form-input w-full py-1.5 text-xs param-val-input"
+          class="m3-form-input rounded-xl w-full py-1.5 px-3 text-xs param-val-input"
           placeholder="Valore di default / esempio per l'anteprima"
           value="${escapeHtml(val)}"
           oninput="handleParamChange()"
@@ -424,20 +426,46 @@ function setPreviewDevice(device) {
   const btnDesktop = document.getElementById("btn-preview-desktop");
   const btnMobile = document.getElementById("btn-preview-mobile");
 
+  if (!iframe || !btnDesktop || !btnMobile) return;
+
   if (device === "mobile") {
     iframe.className = "preview-device-mobile";
-    btnMobile.className = "px-2.5 py-1 rounded-md text-xs font-medium text-white bg-purple-600 transition-all";
-    btnDesktop.className = "px-2.5 py-1 rounded-md text-xs font-medium text-gray-400 hover:text-white transition-all";
+    btnMobile.classList.add("active");
+    btnDesktop.classList.remove("active");
   } else {
     iframe.className = "preview-device-desktop";
-    btnDesktop.className = "px-2.5 py-1 rounded-md text-xs font-medium text-white bg-purple-600 transition-all";
-    btnMobile.className = "px-2.5 py-1 rounded-md text-xs font-medium text-gray-400 hover:text-white transition-all";
+    btnDesktop.classList.add("active");
+    btnMobile.classList.remove("active");
   }
 }
 
 /**
+ * Genera il blocco CSS per la barra di scorrimento iniettata dinamicamente negli iframe di anteprima,
+ * sincronizzata con i colori e le variabili della palette del tema attualmente selezionato.
+ *
+ * @param {string} id Identificativo univoco del tag style
+ * @returns {string} Tag <style> contenente le regole CSS per le scrollbar coerenti con il tema
+ */
+function getThemeInjectedScrollbarCss(id = "as-injected-scrollbar") {
+  const rootStyles = getComputedStyle(document.documentElement);
+  const accentRgb = rootStyles.getPropertyValue("--theme-accent-rgb").trim() || "208, 188, 255";
+  const surface = rootStyles.getPropertyValue("--md-surface").trim() || "#0E0B16";
+  return `
+    <style id="${id}">
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: ${surface} !important; }
+      ::-webkit-scrollbar-thumb { background: rgba(${accentRgb}, 0.35) !important; border-radius: 9999px !important; border: 2px solid ${surface} !important; }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(${accentRgb}, 0.6) !important; }
+      ::-webkit-scrollbar-button { display: none !important; width: 0 !important; height: 0 !important; }
+      * { scrollbar-width: thin; scrollbar-color: rgba(${accentRgb}, 0.35) ${surface} !important; }
+      html, body { scrollbar-color: rgba(${accentRgb}, 0.35) ${surface} !important; }
+    </style>
+  `;
+}
+
+/**
  * Renderizza l'anteprima HTML dentro l'iframe isolato applicando opzionalmente
- * la sostituzione dei parametri {{KEY}}
+ * la sostituzione dei parametri {{KEY}} e iniettando la scrollbar coerente con il tema.
  */
 function updateLivePreview() {
   const iframe = document.getElementById("live-preview-iframe");
@@ -459,6 +487,9 @@ function updateLivePreview() {
     rawHtml = `
       <!DOCTYPE html>
       <html>
+        <head>
+          <meta charset="utf-8">
+        </head>
         <body style="margin:0; padding:60px 20px; font-family:sans-serif; text-align:center; background:#0f1026; color:#94a3b8;">
           <div style="font-size:36px; margin-bottom:12px;">✉️</div>
           <h2 style="color:#ffffff; margin:0 0 8px 0; font-size:18px;">Nessun Contenuto HTML</h2>
@@ -466,6 +497,15 @@ function updateLivePreview() {
         </body>
       </html>
     `;
+  }
+
+  // Inietta lo stile della scrollbar del tema attivo all'interno del documento renderizzato
+  const scrollbarCss = getThemeInjectedScrollbarCss("as-injected-scrollbar");
+
+  if (rawHtml.includes("</head>")) {
+    rawHtml = rawHtml.replace("</head>", scrollbarCss + "</head>");
+  } else {
+    rawHtml = scrollbarCss + rawHtml;
   }
 
   const doc = iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
@@ -696,13 +736,13 @@ function openTestEmailModal(id) {
       const html = `
         <div>
           <label class="block text-xs font-semibold text-gray-300 font-mono mb-1 flex items-center gap-1.5">
-            <span class="text-purple-400">{{${escapeHtml(k)}}}</span>
+            <span class="theme-text-accent">{{${escapeHtml(k)}}}</span>
           </label>
           <input
             type="text"
             id="${fieldId}"
             data-param-key="${escapeHtml(k)}"
-            class="m3-form-input w-full text-xs test-param-input"
+            class="m3-form-input rounded-xl w-full text-xs py-2 px-3 test-param-input"
             value="${escapeHtml(String(val))}"
             placeholder="Valore per ${escapeHtml(k)}"
             required
@@ -783,34 +823,191 @@ function executeSendTestEmail(e) {
 }
 
 // =========================================================================
-// 7. Anteprima Rapida e Cancellazione
+// 7. Modale Dettaglio Email, Anteprima Avanzata e Cancellazione
 // =========================================================================
 
-function openQuickPreview(id) {
+/**
+ * Apre la schermata di dettaglio avanzata per un template email.
+ * Si attiva al clic sulla riga del template o sul pulsante "Dettaglio".
+ * Mostra le proprietà censite, i parametri dinamici con i valori di fallback,
+ * e il rendering live interattivo (Desktop/Mobile).
+ * 
+ * Interconnessioni:
+ * - Riceve l'id del template selezionato da renderTemplatesList()
+ * - Permette di scatenare direttamente openTestEmailModal() o openEditTemplateModal()
+ * 
+ * @param {number} id - Identificativo primario del template nel database
+ */
+function openEmailDetailModal(id) {
   const template = cachedTemplates.find((t) => t.id === id);
-  if (!template) return;
+  if (!template) {
+    sweetalert("warning", "Template non trovato", "Impossibile reperire i dettagli del template richiesto.");
+    return;
+  }
 
-  document.getElementById("quick-preview-title").textContent = `${template.name} (${template.identifier})`;
-  document.getElementById("quick-preview-subtitle").textContent = `Oggetto: "${template.subject}" | Lingua: ${template.locale || "Globale"}`;
+  currentDetailTemplate = template;
+  currentDetailDevice = "desktop";
 
-  let renderedHtml = template.template || "";
-  const params = template.params || {};
+  // 1. Titolo, Identificatore e Locale Badge
+  const nameEl = document.getElementById("detail-modal-name");
+  if (nameEl) nameEl.textContent = template.name || "Template Email";
 
-  Object.keys(params).forEach((key) => {
-    const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "g");
-    renderedHtml = renderedHtml.replace(regex, params[key]);
-  });
+  const idBadgeEl = document.getElementById("detail-modal-identifier-badge");
+  if (idBadgeEl) idBadgeEl.textContent = template.identifier || "SENZA_ID";
 
-  const iframe = document.getElementById("quick-preview-iframe");
+  const localeBadgeEl = document.getElementById("detail-modal-locale-badge");
+  if (localeBadgeEl) localeBadgeEl.innerHTML = getLocaleBadgeHtml(template.locale);
+
+  // 2. Data di creazione/aggiornamento
+  const lastUpdated = template.updateDate ? new Date(template.updateDate).toLocaleString() : (template.creationDate ? new Date(template.creationDate).toLocaleString() : "N/D");
+  const updatedEl = document.getElementById("detail-modal-updated");
+  if (updatedEl) updatedEl.textContent = `Ultimo aggiornamento: ${lastUpdated}`;
+
+  // 3. Oggetto e Descrizione del Template
+  const subjEl = document.getElementById("detail-modal-subject");
+  if (subjEl) {
+    subjEl.innerHTML = `<i class="fa-solid fa-heading theme-text-accent text-xs"></i> <span>${escapeHtml(template.subject || "Nessun oggetto configurato")}</span>`;
+  }
+
+  const descEl = document.getElementById("detail-modal-desc");
+  if (descEl) {
+    descEl.textContent = template.description || "Nessuna descrizione specificata per questo template.";
+  }
+
+  // 4. Parametri Dinamici censiti con layout dettagliato chiave => default
+  const paramsContainer = document.getElementById("detail-modal-params-list");
+  const paramsCountEl = document.getElementById("detail-params-count");
+  const identSubEl = document.getElementById("detail-modal-ident-sub");
+  const localeSubEl = document.getElementById("detail-modal-locale-sub");
+
+  if (identSubEl) identSubEl.textContent = template.identifier || "--";
+  if (localeSubEl) localeSubEl.innerHTML = getLocaleBadgeHtml(template.locale);
+
+  if (paramsContainer) {
+    paramsContainer.innerHTML = "";
+    const params = template.params || {};
+    const keys = Object.keys(params);
+    if (paramsCountEl) paramsCountEl.textContent = keys.length;
+
+    if (keys.length === 0) {
+      paramsContainer.innerHTML = `<p class="text-xs text-gray-500 italic mb-0">Nessun segnaposto configurato per questo template.</p>`;
+    } else {
+      keys.forEach((key) => {
+        const val = params[key];
+        const row = `
+          <div class="flex items-center justify-between p-2.5 rounded-xl theme-surface-box-subtle text-xs">
+            <span class="font-mono theme-text-accent font-bold">{{${escapeHtml(key)}}}</span>
+            <span class="text-gray-300 font-mono text-[11px] bg-black/40 px-2.5 py-1 rounded-lg theme-border max-w-[180px] truncate" title="${escapeHtml(String(val || 'Nessun valore di fallback'))}">
+              ${escapeHtml(String(val !== undefined && val !== null && val !== "" ? val : "Nessun fallback"))}
+            </span>
+          </div>
+        `;
+        paramsContainer.insertAdjacentHTML("beforeend", row);
+      });
+    }
+  }
+
+  // 5. Interconnessione pulsanti azione rapida dell'header del dettaglio
+  const btnTest = document.getElementById("btn-detail-test-send");
+  if (btnTest) {
+    btnTest.onclick = () => {
+      const modalEl = document.getElementById("emailDetailModal");
+      const modalInst = bootstrap.Modal.getInstance(modalEl);
+      if (modalInst) modalInst.hide();
+      openTestEmailModal(template.id);
+    };
+  }
+
+  const btnEdit = document.getElementById("btn-detail-edit");
+  if (btnEdit) {
+    btnEdit.onclick = () => {
+      const modalEl = document.getElementById("emailDetailModal");
+      const modalInst = bootstrap.Modal.getInstance(modalEl);
+      if (modalInst) modalInst.hide();
+      openEditTemplateModal(template.id);
+    };
+  }
+
+  // 6. Reset viewport e rendering dell'anteprima
+  setDetailDevice("desktop");
+  updateDetailPreview();
+
+  // 7. Visualizzazione Modale Bootstrap a tutto schermo
+  const modalEl = document.getElementById("emailDetailModal");
+  if (modalEl) {
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  }
+}
+
+/**
+ * Aggiorna il rendering HTML all'interno dell'iframe isolato del modale di dettaglio.
+ * Sostituisce i segnaposto dinamici {{KEY}} se la spunta è attiva e inietta la scrollbar coerente con il tema.
+ */
+function updateDetailPreview() {
+  if (!currentDetailTemplate) return;
+
+  const injectParamsCheckbox = document.getElementById("detail-inject-params");
+  const injectParams = injectParamsCheckbox ? injectParamsCheckbox.checked : true;
+  let renderedHtml = currentDetailTemplate.template || "";
+
+  if (injectParams) {
+    const params = currentDetailTemplate.params || {};
+    Object.keys(params).forEach((key) => {
+      const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "g");
+      renderedHtml = renderedHtml.replace(regex, params[key]);
+    });
+  }
+
+  // Inietta lo stile della scrollbar del tema attivo all'interno del documento renderizzato
+  const scrollbarCss = getThemeInjectedScrollbarCss("as-injected-detail-scrollbar");
+
+  if (renderedHtml.includes("</head>")) {
+    renderedHtml = renderedHtml.replace("</head>", scrollbarCss + "</head>");
+  } else {
+    renderedHtml = scrollbarCss + renderedHtml;
+  }
+
+  const iframe = document.getElementById("detail-preview-iframe");
+  if (!iframe) return;
+
   const doc = iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
   if (doc) {
     doc.open();
     doc.write(renderedHtml);
     doc.close();
   }
+}
 
-  const modal = new bootstrap.Modal(document.getElementById("quickPreviewModal"));
-  modal.show();
+/**
+ * Commuta la risoluzione del simulatore viewport nel modale di dettaglio (Desktop 100% vs Mobile 375px).
+ * @param {'desktop' | 'mobile'} device 
+ */
+function setDetailDevice(device) {
+  currentDetailDevice = device;
+  const iframe = document.getElementById("detail-preview-iframe");
+  const btnDesktop = document.getElementById("btn-detail-desktop");
+  const btnMobile = document.getElementById("btn-detail-mobile");
+
+  if (!iframe || !btnDesktop || !btnMobile) return;
+
+  if (device === "mobile") {
+    iframe.className = "preview-device-mobile";
+    btnMobile.classList.add("active");
+    btnDesktop.classList.remove("active");
+  } else {
+    iframe.className = "preview-device-desktop";
+    btnDesktop.classList.add("active");
+    btnMobile.classList.remove("active");
+  }
+}
+
+/**
+ * Wrapper di retrocompatibilità: apre la visualizzazione dettagliata del template
+ * @param {number} id 
+ */
+function openQuickPreview(id) {
+  openEmailDetailModal(id);
 }
 
 function confirmDeleteTemplate(id, identifier) {
