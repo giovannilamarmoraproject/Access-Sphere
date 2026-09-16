@@ -59,7 +59,7 @@ public class EmailTemplateService {
                       () ->
                           new ResponseStatusException(
                               HttpStatus.NOT_FOUND,
-                              "Template email con ID " + id + " non trovato"));
+                              "Email template with ID " + id + " not found"));
           return EmailTemplateMapper.toDTO(entity);
         });
   }
@@ -83,7 +83,7 @@ public class EmailTemplateService {
           if (templates.isEmpty()) {
             LOG.error("No email template found for identifier=[{}]", identifier);
             throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Template email non trovato per identifier: " + identifier);
+                HttpStatus.NOT_FOUND, "Email template not found for identifier: " + identifier);
           }
 
           // 1. Corrispondenza esatta di locale
@@ -341,11 +341,11 @@ public class EmailTemplateService {
             String clientDesc =
                 clientId != null
                     ? ("Client [" + clientId + "]")
-                    : "Globale (Access Sphere Default)";
-            String localeDesc = locale != null ? ("Lingua [" + locale + "]") : "Globale / Fallback";
+                    : "Global (Access Sphere Default)";
+            String localeDesc = locale != null ? ("Locale [" + locale + "]") : "Global / Fallback";
             String errorMsg =
                 String.format(
-                    "Esiste già un template registrato per la categoria [%s], %s e %s.",
+                    "An email template already exists for category [%s], %s and %s.",
                     category, clientDesc, localeDesc);
             LOG.warn("Email template duplicate conflict: {}", errorMsg);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMsg);
@@ -360,7 +360,7 @@ public class EmailTemplateService {
                         () ->
                             new ResponseStatusException(
                                 HttpStatus.NOT_FOUND,
-                                "Template email con ID " + dto.getId() + " non trovato"));
+                                "Email template with ID " + dto.getId() + " not found"));
             EmailTemplateMapper.updateEntity(entity, dto);
           } else {
             entity = EmailTemplateMapper.toEntity(dto);
@@ -383,7 +383,7 @@ public class EmailTemplateService {
             () -> {
               if (!emailTemplateDAO.existsById(id)) {
                 throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Template email con ID " + id + " non trovato");
+                    HttpStatus.NOT_FOUND, "Email template with ID " + id + " not found");
               }
               emailTemplateDAO.deleteById(id);
               LOG.info("Email template successfully deleted: ID=[{}]", id);
@@ -414,7 +414,7 @@ public class EmailTemplateService {
                             () ->
                                 new ResponseStatusException(
                                     HttpStatus.NOT_FOUND,
-                                    "Template ID " + request.getTemplateId() + " non trovato"));
+                                    "Template ID " + request.getTemplateId() + " not found"));
                 rawHtml = entity.getTemplate();
                 if (ObjectToolkit.isNullOrEmpty(subject)) subject = entity.getSubject();
               } else if (!ObjectToolkit.isNullOrEmpty(request.getIdentifier())) {
@@ -423,7 +423,7 @@ public class EmailTemplateService {
                 if (list.isEmpty()) {
                   throw new ResponseStatusException(
                       HttpStatus.NOT_FOUND,
-                      "Template identifier " + request.getIdentifier() + " non trovato");
+                      "Template identifier " + request.getIdentifier() + " not found");
                 }
                 EmailTemplateEntity entity = list.get(0);
                 rawHtml = entity.getTemplate();
@@ -431,7 +431,7 @@ public class EmailTemplateService {
               } else {
                 throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "E necessario specificare un templateId, identifier o customHtml");
+                    "A templateId, identifier or customHtml is required");
               }
 
               // Sostituzione segnaposto {{CHIAVE}}
@@ -461,7 +461,7 @@ public class EmailTemplateService {
                           if (res.getBody() == null) {
                             throw new ResponseStatusException(
                                 HttpStatus.INTERNAL_SERVER_ERROR,
-                                "Il microservizio emailSender non ha restituito una risposta valida");
+                                "The emailSender microservice did not return a valid response");
                           }
                           return Mono.just(res.getBody());
                         }));
