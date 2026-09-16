@@ -82,7 +82,7 @@ public class AppSettingsService {
           if (list.isEmpty()) {
             entity = AppSettingsMapper.toEntity(dto);
           } else {
-            entity = list.get(0);
+            entity = list.getFirst();
             AppSettingsMapper.updateEntity(entity, dto);
           }
           AppSettingsEntity saved = appSettingsDAO.save(entity);
@@ -104,7 +104,7 @@ public class AppSettingsService {
         () -> {
           LOG.info("Creating complete application backup initiated by {}", exportedBy);
           List<AppSettingsEntity> settingsList = appSettingsDAO.findAll();
-          AppSettingsEntity settings = settingsList.isEmpty() ? null : settingsList.get(0);
+          AppSettingsEntity settings = settingsList.isEmpty() ? null : settingsList.getFirst();
           List<ClientCredentialEntity> clients = clientDAO.findAll();
           List<UserEntity> users = userDAO.findAll();
 
@@ -136,7 +136,7 @@ public class AppSettingsService {
             AppSettingsEntity importedSettings = backupData.getSettings();
             List<AppSettingsEntity> current = appSettingsDAO.findAll();
             if (!current.isEmpty()) {
-              importedSettings.setId(current.get(0).getId());
+              importedSettings.setId(current.getFirst().getId());
             } else {
               importedSettings.setId(null);
             }
