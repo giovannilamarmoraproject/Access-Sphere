@@ -53,6 +53,7 @@ public class AppSettingsService {
           if (list.isEmpty()) {
             AppSettingsEntity defaultEntity = new AppSettingsEntity();
             entity = appSettingsDAO.save(defaultEntity);
+            appSettingsDAO.flush();
           } else {
             entity = list.get(0);
           }
@@ -86,9 +87,14 @@ public class AppSettingsService {
             AppSettingsMapper.updateEntity(entity, dto);
           }
           AppSettingsEntity saved = appSettingsDAO.save(entity);
+          appSettingsDAO.flush();
           PublicAppSettingsDTO pubDto = AppSettingsMapper.toPublicDTO(saved);
           publicCache.set(pubDto);
-          LOG.info("Application settings updated successfully");
+          LOG.info(
+              "Application settings updated successfully: appName='{}', theme='{}', lang='{}'",
+              saved.getAppName(),
+              saved.getActiveTheme(),
+              saved.getDefaultLanguage());
           return AppSettingsMapper.toDTO(saved);
         });
   }
@@ -136,8 +142,9 @@ public class AppSettingsService {
               importedSettings.setId(null);
             }
             importedSettings.syncCategoryMapsBeforeSave();
-            appSettingsDAO.save(importedSettings);
-            publicCache.set(AppSettingsMapper.toPublicDTO(importedSettings));
+            AppSettingsEntity saved = appSettingsDAO.save(importedSettings);
+            appSettingsDAO.flush();
+            publicCache.set(AppSettingsMapper.toPublicDTO(saved));
           }
 
           if (backupData.getClients() != null && !backupData.getClients().isEmpty()) {

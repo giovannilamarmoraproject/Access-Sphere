@@ -71,7 +71,8 @@ public class AppSettingsEntity extends GenericEntity {
 
   // =========================================================================
   // Proprietà transitorie (Non persistite come colonne singole sul DB,
-  // raggruppate all'interno delle mappe serializzate JSON soprastanti)
+  // raggruppate all'interno delle mappe serializzate JSON soprastanti:
+  // BRANDING_SETTINGS, LOGIN_SETTINGS, POLICY_SETTINGS).
   // =========================================================================
 
   @Transient
@@ -284,9 +285,8 @@ public class AppSettingsEntity extends GenericEntity {
         Object val = this.loginSettings.get("hideHomeButton");
         if (val instanceof Boolean b) this.hideHomeButton = b;
       }
-    } else {
-      syncLoginSettingsMap();
     }
+    syncLoginSettingsMap();
 
     if (this.brandingSettings != null && !this.brandingSettings.isEmpty()) {
       if (this.brandingSettings.containsKey("appName") && this.brandingSettings.get("appName") != null)
@@ -301,18 +301,16 @@ public class AppSettingsEntity extends GenericEntity {
         this.footerCopyright = this.brandingSettings.get("footerCopyright") != null ? this.brandingSettings.get("footerCopyright").toString() : null;
       if (this.brandingSettings.containsKey("supportEmail"))
         this.supportEmail = this.brandingSettings.get("supportEmail") != null ? this.brandingSettings.get("supportEmail").toString() : null;
-    } else {
-      syncBrandingSettingsMap();
     }
+    syncBrandingSettingsMap();
 
     if (this.policySettings != null && !this.policySettings.isEmpty()) {
       if (this.policySettings.containsKey("privacyPolicyUrl"))
         this.privacyPolicyUrl = this.policySettings.get("privacyPolicyUrl") != null ? this.policySettings.get("privacyPolicyUrl").toString() : null;
       if (this.policySettings.containsKey("cookiePolicyUrl"))
         this.cookiePolicyUrl = this.policySettings.get("cookiePolicyUrl") != null ? this.policySettings.get("cookiePolicyUrl").toString() : null;
-    } else {
-      syncPolicySettingsMap();
     }
+    syncPolicySettingsMap();
   }
 
   /** Ritorna la mappa deserializzata della categoria Login. */

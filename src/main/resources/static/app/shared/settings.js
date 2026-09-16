@@ -17,22 +17,50 @@ const AppSettings = (function () {
         const login = s.loginSettings || {};
         const policy = s.policySettings || {};
 
-        const appName = s.appName !== undefined && s.appName !== null ? s.appName : branding.appName;
-        const appTagline = s.appTagline !== undefined && s.appTagline !== null ? s.appTagline : branding.appTagline;
-        const logoUrl = s.logoUrl !== undefined && s.logoUrl !== null ? s.logoUrl : branding.logoUrl;
-        const faviconUrl = s.faviconUrl !== undefined && s.faviconUrl !== null ? s.faviconUrl : branding.faviconUrl;
-        const footerCopyright = s.footerCopyright !== undefined && s.footerCopyright !== null ? s.footerCopyright : branding.footerCopyright;
-        const supportEmail = s.supportEmail !== undefined && s.supportEmail !== null ? s.supportEmail : branding.supportEmail;
+        const appName = s.appName !== undefined && s.appName !== null && s.appName !== "" 
+            ? s.appName 
+            : (branding.appName !== undefined && branding.appName !== null ? branding.appName : (branding.app_name || "Access Sphere"));
+        const appTagline = s.appTagline !== undefined && s.appTagline !== null 
+            ? s.appTagline 
+            : (branding.appTagline !== undefined && branding.appTagline !== null ? branding.appTagline : (branding.app_tagline || "Gestione Identità & Accessi"));
+        const logoUrl = s.logoUrl !== undefined && s.logoUrl !== null 
+            ? s.logoUrl 
+            : (branding.logoUrl !== undefined && branding.logoUrl !== null ? branding.logoUrl : (branding.logo_url || "/img/logo-minimal.svg"));
+        const faviconUrl = s.faviconUrl !== undefined && s.faviconUrl !== null 
+            ? s.faviconUrl 
+            : (branding.faviconUrl !== undefined && branding.faviconUrl !== null ? branding.faviconUrl : (branding.favicon_url || "/img/logo-minimal.svg"));
+        const footerCopyright = s.footerCopyright !== undefined && s.footerCopyright !== null 
+            ? s.footerCopyright 
+            : (branding.footerCopyright !== undefined && branding.footerCopyright !== null ? branding.footerCopyright : (branding.footer_copyright || "© 2026 Access Sphere"));
+        const supportEmail = s.supportEmail !== undefined && s.supportEmail !== null 
+            ? s.supportEmail 
+            : (branding.supportEmail !== undefined && branding.supportEmail !== null ? branding.supportEmail : (branding.support_email || "support@accesssphere.io"));
 
-        const loginMode = s.loginMode !== undefined && s.loginMode !== null ? s.loginMode : (login.loginMode || "SHOWCASE");
-        const loginBgUrl = s.loginBgUrl !== undefined && s.loginBgUrl !== null ? s.loginBgUrl : login.loginBgUrl;
-        const loginBgOpacity = s.loginBgOpacity !== undefined && s.loginBgOpacity !== null ? s.loginBgOpacity : (login.loginBgOpacity !== undefined ? login.loginBgOpacity : 50);
-        const loginHeroTitle = s.loginHeroTitle !== undefined && s.loginHeroTitle !== null ? s.loginHeroTitle : login.loginHeroTitle;
-        const loginHeroSubtitle = s.loginHeroSubtitle !== undefined && s.loginHeroSubtitle !== null ? s.loginHeroSubtitle : login.loginHeroSubtitle;
-        const hideHomeButton = s.hideHomeButton !== undefined && s.hideHomeButton !== null ? s.hideHomeButton : (login.hideHomeButton !== undefined ? login.hideHomeButton : false);
+        const loginMode = s.loginMode !== undefined && s.loginMode !== null 
+            ? s.loginMode 
+            : (login.loginMode !== undefined && login.loginMode !== null ? login.loginMode : (login.login_mode || "SHOWCASE"));
+        const loginBgUrl = s.loginBgUrl !== undefined && s.loginBgUrl !== null 
+            ? s.loginBgUrl 
+            : (login.loginBgUrl !== undefined && login.loginBgUrl !== null ? login.loginBgUrl : (login.login_bg_url || null));
+        const loginBgOpacity = s.loginBgOpacity !== undefined && s.loginBgOpacity !== null 
+            ? s.loginBgOpacity 
+            : (login.loginBgOpacity !== undefined && login.loginBgOpacity !== null ? login.loginBgOpacity : (login.login_bg_opacity !== undefined ? login.login_bg_opacity : 50));
+        const loginHeroTitle = s.loginHeroTitle !== undefined && s.loginHeroTitle !== null 
+            ? s.loginHeroTitle 
+            : (login.loginHeroTitle !== undefined && login.loginHeroTitle !== null ? login.loginHeroTitle : (login.login_hero_title || "Autenticazione Sicura & Modulare"));
+        const loginHeroSubtitle = s.loginHeroSubtitle !== undefined && s.loginHeroSubtitle !== null 
+            ? s.loginHeroSubtitle 
+            : (login.loginHeroSubtitle !== undefined && login.loginHeroSubtitle !== null ? login.loginHeroSubtitle : (login.login_hero_subtitle || ""));
+        const hideHomeButton = s.hideHomeButton !== undefined && s.hideHomeButton !== null 
+            ? s.hideHomeButton 
+            : (login.hideHomeButton !== undefined && login.hideHomeButton !== null ? login.hideHomeButton : (login.hide_home_button !== undefined ? login.hide_home_button : false));
 
-        const privacyPolicyUrl = s.privacyPolicyUrl !== undefined && s.privacyPolicyUrl !== null ? s.privacyPolicyUrl : policy.privacyPolicyUrl;
-        const cookiePolicyUrl = s.cookiePolicyUrl !== undefined && s.cookiePolicyUrl !== null ? s.cookiePolicyUrl : policy.cookiePolicyUrl;
+        const privacyPolicyUrl = s.privacyPolicyUrl !== undefined && s.privacyPolicyUrl !== null 
+            ? s.privacyPolicyUrl 
+            : (policy.privacyPolicyUrl !== undefined && policy.privacyPolicyUrl !== null ? policy.privacyPolicyUrl : (policy.privacy_policy_url || "/privacy-policy"));
+        const cookiePolicyUrl = s.cookiePolicyUrl !== undefined && s.cookiePolicyUrl !== null 
+            ? s.cookiePolicyUrl 
+            : (policy.cookiePolicyUrl !== undefined && policy.cookiePolicyUrl !== null ? policy.cookiePolicyUrl : (policy.cookie_policy_url || "/cookie-policy"));
 
         const activeTheme = s.activeTheme || localStorage.getItem(THEME_KEY) || DEFAULT_THEME;
         const defaultLanguage = s.defaultLanguage || "auto";
@@ -58,27 +86,27 @@ const AppSettings = (function () {
             defaultLanguage,
             navigationLayout,
             brandingSettings: {
+                ...branding,
                 appName,
                 appTagline,
                 logoUrl,
                 faviconUrl,
                 footerCopyright,
-                supportEmail,
-                ...branding
+                supportEmail
             },
             loginSettings: {
+                ...login,
                 loginMode,
                 loginBgUrl,
                 loginBgOpacity,
                 loginHeroTitle,
                 loginHeroSubtitle,
-                hideHomeButton,
-                ...login
+                hideHomeButton
             },
             policySettings: {
+                ...policy,
                 privacyPolicyUrl,
-                cookiePolicyUrl,
-                ...policy
+                cookiePolicyUrl
             }
         };
     }
@@ -529,6 +557,10 @@ const AppSettings = (function () {
             const tok = getCookieOrStorage(key);
             if (tok) return tok;
         }
+        if (typeof authConfig !== "undefined" && authConfig && authConfig.access_token_name) {
+            const tok = localStorage.getItem(authConfig.access_token_name);
+            if (tok) return tok;
+        }
         const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-TECH";
         return (
             localStorage.getItem(`${clientId}_access-token`) ||
@@ -543,8 +575,8 @@ const AppSettings = (function () {
     async function loadPublicSettings() {
         try {
             const res = await fetch("/v1/app/settings/public");
-            if (!res.ok) return;
-            const data = await res.json();
+            if (!res.ok) return null;
+            const data = await res.json().catch(() => ({}));
             if (data && data.data) {
                 const s = normalizeSettings(data.data);
                 localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
@@ -561,8 +593,10 @@ const AppSettings = (function () {
                 applyBrandingToDOM(s);
                 return s;
             }
+            return null;
         } catch (e) {
             console.warn("Could not load public settings:", e);
+            return null;
         }
     }
 
@@ -571,21 +605,31 @@ const AppSettings = (function () {
             token = getAuthToken();
         }
         const headers = {
-            Authorization: "Bearer " + token,
             Accept: "application/json",
         };
+        if (token) {
+            const cleanToken = token.startsWith("Bearer ") ? token.substring(7).trim() : token.trim();
+            if (cleanToken) {
+                headers["Authorization"] = "Bearer " + cleanToken;
+            }
+        }
         if (typeof getSavedHeaders === "function") {
             Object.assign(headers, getSavedHeaders());
         }
-        const res = await fetch("/v1/app/settings", {
-            headers: headers,
-        });
-        if (!res.ok) {
-            console.warn("Could not load admin settings:", res.status);
+        try {
+            const res = await fetch("/v1/app/settings", {
+                headers: headers,
+            });
+            if (!res.ok) {
+                console.warn("Could not load admin settings:", res.status);
+                return null;
+            }
+            const json = await res.json().catch(() => ({}));
+            return json.data ? normalizeSettings(json.data) : null;
+        } catch (err) {
+            console.warn("Network error loading admin settings:", err);
             return null;
         }
-        const json = await res.json().catch(() => ({}));
-        return json.data ? normalizeSettings(json.data) : null;
     }
 
     async function saveAdminSettings(settingsData, token) {
@@ -595,11 +639,17 @@ const AppSettings = (function () {
         const normalizedPayload = normalizeSettings(settingsData);
         const headers = {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + token,
         };
+        if (token) {
+            const cleanToken = token.startsWith("Bearer ") ? token.substring(7).trim() : token.trim();
+            if (cleanToken) {
+                headers["Authorization"] = "Bearer " + cleanToken;
+            }
+        }
         if (typeof getSavedHeaders === "function") {
             Object.assign(headers, getSavedHeaders());
         }
+        console.log("📤 Sending AppSettings PUT request to /v1/app/settings...", normalizedPayload);
         const res = await fetch("/v1/app/settings", {
             method: "PUT",
             headers: headers,
@@ -607,9 +657,10 @@ const AppSettings = (function () {
         });
         const json = await res.json().catch(() => ({}));
         if (!res.ok) {
-            console.error("Save settings failed:", res.status, json);
+            console.error("❌ Save settings failed:", res.status, json);
             throw new Error((json && (json.message || json.exception)) || `HTTP ${res.status}`);
         }
+        console.log("📥 AppSettings saved successfully response:", json);
         if (json.data) {
             const s = normalizeSettings(json.data);
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
@@ -632,9 +683,14 @@ const AppSettings = (function () {
             token = getAuthToken();
         }
         const headers = {
-            Authorization: "Bearer " + token,
             Accept: "application/json",
         };
+        if (token) {
+            const cleanToken = token.startsWith("Bearer ") ? token.substring(7).trim() : token.trim();
+            if (cleanToken) {
+                headers["Authorization"] = "Bearer " + cleanToken;
+            }
+        }
         if (typeof getSavedHeaders === "function") {
             Object.assign(headers, getSavedHeaders());
         }
@@ -665,8 +721,13 @@ const AppSettings = (function () {
         }
         const headers = {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + token,
         };
+        if (token) {
+            const cleanToken = token.startsWith("Bearer ") ? token.substring(7).trim() : token.trim();
+            if (cleanToken) {
+                headers["Authorization"] = "Bearer " + cleanToken;
+            }
+        }
         if (typeof getSavedHeaders === "function") {
             Object.assign(headers, getSavedHeaders());
         }

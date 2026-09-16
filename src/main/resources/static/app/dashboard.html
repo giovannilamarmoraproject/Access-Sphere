@@ -1856,7 +1856,19 @@
         updateThemeUISelection(activeTheme);
 
         try {
-            const data = await AppSettings.loadAdminSettings();
+            let data = await AppSettings.loadAdminSettings();
+            if (!data) {
+                console.info("Falling back to public settings for settings view");
+                data = await AppSettings.loadPublicSettings();
+            }
+            if (!data) {
+                const cached = localStorage.getItem("access_sphere_settings");
+                if (cached) {
+                    try {
+                        data = JSON.parse(cached);
+                    } catch (err) {}
+                }
+            }
             if (data) {
                 currentSettingsData = data;
                 populateSettingsForm(data);
@@ -2126,8 +2138,10 @@
 
         try {
             if (typeof showLoader === "function") showLoader();
-            await AppSettings.saveAdminSettings(payload);
-            AppSettings.applyBrandingToDOM(payload);
+            console.log("Saving settings payload:", payload);
+            const saved = await AppSettings.saveAdminSettings(payload);
+            console.log("Saved settings result:", saved);
+            AppSettings.applyBrandingToDOM(saved || payload);
             if (typeof hideLoader === "function") hideLoader();
             if (window.Swal) {
                 Swal.fire({
