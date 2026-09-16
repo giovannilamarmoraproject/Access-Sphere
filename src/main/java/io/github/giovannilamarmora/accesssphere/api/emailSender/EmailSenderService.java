@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.api.emailSender;
 
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
+import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -25,13 +25,11 @@ public class EmailSenderService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<EmailResponse> sendEmail(
-      StrapiEmailTemplate strapiEmailTemplate,
-      Map<String, String> params,
-      EmailContent emailContent)
+      EmailTemplateDTO emailTemplateDTO, Map<String, String> params, EmailContent emailContent)
       throws UtilsException {
-    String template = strapiEmailTemplate.getTemplate();
+    String template = emailTemplateDTO.getTemplate();
     Map<String, String> finalParam =
-        Utils.getFinalMapFromValue(params, strapiEmailTemplate.getParams());
+        Utils.getFinalMapFromValue(params, emailTemplateDTO.getParams());
     for (String key : finalParam.keySet()) {
       template = template.replace("{{" + key + "}}", finalParam.get(key));
     }

@@ -3,12 +3,10 @@ package io.github.giovannilamarmora.accesssphere.email;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderClient;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailSendTestRequest;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
 import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory;
-import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -19,17 +17,16 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 /**
- * Service per la gestione dei Template Email salvati a Database.
- * Permette operazioni CRUD sui template, risoluzione multilingua flessibile
- * (supporta sia template localizzati che template unici validi per tutte le lingue),
- * rendering dinamico con sostituzione dei segnaposto e invio diretto di email di test tramite EmailSenderClient.
+ * Service per la gestione dei Template Email salvati a Database. Permette operazioni CRUD sui
+ * template, risoluzione multilingua flessibile (supporta sia template localizzati che template
+ * unici validi per tutte le lingue), rendering dinamico con sostituzione dei segnaposto e invio
+ * diretto di email di test tramite EmailSenderClient.
  */
 @Service
 @Logged
@@ -60,24 +57,23 @@ public class EmailTemplateService {
                   .orElseThrow(
                       () ->
                           new ResponseStatusException(
-                              HttpStatus.NOT_FOUND, "Template email con ID " + id + " non trovato"));
+                              HttpStatus.NOT_FOUND,
+                              "Template email con ID " + id + " non trovato"));
           return EmailTemplateMapper.toDTO(entity);
         });
   }
 
   /**
-   * Risolve il template email dato il suo identificatore e il locale richiesto.
-   * Strategia di fallback intelligente:
-   * 1. Cerca per identificatore e locale esatto (es. "it-IT" o "en-GB").
-   * 2. Se non trovato, cerca per prefisso lingua (es. "it" o "en").
-   * 3. Se non trovato, cerca per template con locale nullo, "default" o generico.
-   * 4. Se ancora non trovato, restituisce il primo template disponibile per quell'identificatore.
-   * Questo garantisce che se l'amministratore configura il template in una sola lingua,
-   * tale template viene comunque utilizzato senza generare errori.
+   * Risolve il template email dato il suo identificatore e il locale richiesto. Strategia di
+   * fallback intelligente: 1. Cerca per identificatore e locale esatto (es. "it-IT" o "en-GB"). 2.
+   * Se non trovato, cerca per prefisso lingua (es. "it" o "en"). 3. Se non trovato, cerca per
+   * template con locale nullo, "default" o generico. 4. Se ancora non trovato, restituisce il primo
+   * template disponibile per quell'identificatore. Questo garantisce che se l'amministratore
+   * configura il template in una sola lingua, tale template viene comunque utilizzato senza
+   * generare errori.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<StrapiEmailTemplate> getTemplateByIdentifierAndLocale(
-      String identifier, String locale) {
+  public Mono<EmailTemplateDTO> getTemplateByIdentifierAndLocale(String identifier, String locale) {
     return Mono.fromCallable(
         () -> {
           LOG.info("Ricerca template email per identifier=[{}] e locale=[{}]", identifier, locale);
@@ -86,18 +82,15 @@ public class EmailTemplateService {
           if (templates.isEmpty()) {
             LOG.error("Nessun template email trovato per identifier=[{}]", identifier);
             throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Template email non trovato per identifier: " + identifier);
+                HttpStatus.NOT_FOUND, "Template email non trovato per identifier: " + identifier);
           }
 
           // 1. Corrispondenza esatta di locale
           if (!ObjectToolkit.isNullOrEmpty(locale)) {
             Optional<EmailTemplateEntity> exact =
-                templates.stream()
-                    .filter(t -> locale.equalsIgnoreCase(t.getLocale()))
-                    .findFirst();
+                templates.stream().filter(t -> locale.equalsIgnoreCase(t.getLocale())).findFirst();
             if (exact.isPresent()) {
-              return EmailTemplateMapper.toStrapiEmailTemplate(exact.get());
+              return EmailTemplateMapper.toDTO(exact.get());
             }
 
             // 2. Corrispondenza per prefisso lingua (es. "it" per "it-IT")
@@ -108,10 +101,12 @@ public class EmailTemplateService {
                         t ->
                             t.getLocale() != null
                                 && (t.getLocale().equalsIgnoreCase(langPrefix)
-                                    || t.getLocale().toLowerCase().startsWith(langPrefix.toLowerCase() + "-")))
+                                    || t.getLocale()
+                                        .toLowerCase()
+                                        .startsWith(langPrefix.toLowerCase() + "-")))
                     .findFirst();
             if (prefixMatch.isPresent()) {
-              return EmailTemplateMapper.toStrapiEmailTemplate(prefixMatch.get());
+              return EmailTemplateMapper.toDTO(prefixMatch.get());
             }
           }
 
@@ -124,7 +119,7 @@ public class EmailTemplateService {
                               || "default".equalsIgnoreCase(t.getLocale()))
                   .findFirst();
           if (defaultMatch.isPresent()) {
-            return EmailTemplateMapper.toStrapiEmailTemplate(defaultMatch.get());
+            return EmailTemplateMapper.toDTO(defaultMatch.get());
           }
 
           // 4. Fallback sul primo template disponibile per quell'identificatore
@@ -132,24 +127,22 @@ public class EmailTemplateService {
               "Nessuna corrispondenza di lingua per identifier=[{}], locale=[{}]. Utilizzo primo template disponibile con locale=[{}]",
               identifier,
               locale,
-              templates.get(0).getLocale());
-          return EmailTemplateMapper.toStrapiEmailTemplate(templates.get(0));
+              templates.getFirst().getLocale());
+          return EmailTemplateMapper.toDTO(templates.getFirst());
         });
   }
 
   /**
    * Risoluzione avanzata del template email basata su Categoria, Locale e Client (Multi-Tenant).
-   * Risolve a cascata:
-   * 1. Match per Client specifico + Categoria + Locale esatto.
-   * 2. Match per Client specifico + Categoria + Prefisso lingua (es. "it").
-   * 3. Match per Client specifico + Categoria + Locale nullo/default.
-   * 4. Fallback Globale (clientId IS NULL): Categoria + Locale esatto.
-   * 5. Fallback Globale (clientId IS NULL): Categoria + Prefisso lingua.
-   * 6. Fallback Globale (clientId IS NULL): Categoria + Locale nullo/default.
-   * 7. Fallback per retrocompatibilita su identifier diretto.
+   * Risolve a cascata: 1. Match per Client specifico + Categoria + Locale esatto. 2. Match per
+   * Client specifico + Categoria + Prefisso lingua (es. "it"). 3. Match per Client specifico +
+   * Categoria + Locale nullo/default. 4. Fallback Globale (clientId IS NULL): Categoria + Locale
+   * esatto. 5. Fallback Globale (clientId IS NULL): Categoria + Prefisso lingua. 6. Fallback
+   * Globale (clientId IS NULL): Categoria + Locale nullo/default. 7. Fallback per
+   * retrocompatibilita su identifier diretto.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<StrapiEmailTemplate> getTemplateByCategoryLocaleAndClient(
+  public Mono<EmailTemplateDTO> getTemplateByCategoryLocaleAndClient(
       String category, String locale, String clientId) {
     return Mono.fromCallable(
         () -> {
@@ -173,7 +166,7 @@ public class EmailTemplateService {
                   "Template trovato per Client dedicato=[{}], ID=[{}]",
                   clientId,
                   clientMatch.get().getId());
-              return EmailTemplateMapper.toStrapiEmailTemplate(clientMatch.get());
+              return EmailTemplateMapper.toDTO(clientMatch.get());
             }
             LOG.warn(
                 "Nessun template specifico trovato per clientId=[{}] e category=[{}]. Eseguo fallback su template Globale Access Sphere",
@@ -192,7 +185,7 @@ public class EmailTemplateService {
                   "Template trovato per Client Tecnico ACCESS-SPHERE-TECH per category=[{}], ID=[{}]",
                   effectiveCategory,
                   techMatch.get().getId());
-              return EmailTemplateMapper.toStrapiEmailTemplate(techMatch.get());
+              return EmailTemplateMapper.toDTO(techMatch.get());
             }
           }
 
@@ -206,7 +199,7 @@ public class EmailTemplateService {
                 "Template Globale Access Sphere trovato per category=[{}], ID=[{}]",
                 effectiveCategory,
                 globalMatch.get().getId());
-            return EmailTemplateMapper.toStrapiEmailTemplate(globalMatch.get());
+            return EmailTemplateMapper.toDTO(globalMatch.get());
           }
 
           // 3. Fallback per retrocompatibilita: ricerca per identifier globale esatto
@@ -216,7 +209,7 @@ public class EmailTemplateService {
             Optional<EmailTemplateEntity> legacyMatch =
                 resolveTemplateFromList(legacyTemplates, locale);
             if (legacyMatch.isPresent()) {
-              return EmailTemplateMapper.toStrapiEmailTemplate(legacyMatch.get());
+              return EmailTemplateMapper.toDTO(legacyMatch.get());
             }
           }
 
@@ -228,11 +221,12 @@ public class EmailTemplateService {
             Optional<EmailTemplateEntity> defMatch =
                 resolveTemplateFromList(defaultIdTemplates, locale);
             if (defMatch.isPresent()) {
-              return EmailTemplateMapper.toStrapiEmailTemplate(defMatch.get());
+              return EmailTemplateMapper.toDTO(defMatch.get());
             }
           }
 
-          // 5. Fallback retrocompatibilita: se RESET_PASSWORD verifica anche legacy ACCESS_SPHERE_CODE_RESET_PASSWORD
+          // 5. Fallback retrocompatibilita: se RESET_PASSWORD verifica anche legacy
+          // ACCESS_SPHERE_CODE_RESET_PASSWORD
           if (catEnum == EmailTemplateCategory.RESET_PASSWORD) {
             List<EmailTemplateEntity> legacyOldTemplates =
                 emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD");
@@ -240,7 +234,7 @@ public class EmailTemplateService {
               Optional<EmailTemplateEntity> oldMatch =
                   resolveTemplateFromList(legacyOldTemplates, locale);
               if (oldMatch.isPresent()) {
-                return EmailTemplateMapper.toStrapiEmailTemplate(oldMatch.get());
+                return EmailTemplateMapper.toDTO(oldMatch.get());
               }
             }
           }
@@ -263,9 +257,7 @@ public class EmailTemplateService {
     // 1. Corrispondenza esatta di locale
     if (!ObjectToolkit.isNullOrEmpty(locale)) {
       Optional<EmailTemplateEntity> exact =
-          templates.stream()
-              .filter(t -> locale.equalsIgnoreCase(t.getLocale()))
-              .findFirst();
+          templates.stream().filter(t -> locale.equalsIgnoreCase(t.getLocale())).findFirst();
       if (exact.isPresent()) return exact;
 
       // 2. Corrispondenza per prefisso lingua (es. "it" per "it-IT")
@@ -276,7 +268,9 @@ public class EmailTemplateService {
                   t ->
                       t.getLocale() != null
                           && (t.getLocale().equalsIgnoreCase(langPrefix)
-                              || t.getLocale().toLowerCase().startsWith(langPrefix.toLowerCase() + "-")))
+                              || t.getLocale()
+                                  .toLowerCase()
+                                  .startsWith(langPrefix.toLowerCase() + "-")))
               .findFirst();
       if (prefixMatch.isPresent()) return prefixMatch;
     }
@@ -315,7 +309,8 @@ public class EmailTemplateService {
             dto.setIdentifier(dto.getIdentifier().trim());
           }
 
-          // Normalizzazione Client ID (se vuoto o "GLOBAL", diventa null per indicare template Globale)
+          // Normalizzazione Client ID (se vuoto o "GLOBAL", diventa null per indicare template
+          // Globale)
           String clientId =
               (dto.getClientId() != null
                       && !dto.getClientId().trim().isEmpty()
@@ -324,7 +319,8 @@ public class EmailTemplateService {
                   : null;
           dto.setClientId(clientId);
 
-          // Normalizzazione Locale (se vuoto o "ALL"/"GENERIC", diventa null per indicare lingua Globale)
+          // Normalizzazione Locale (se vuoto o "ALL"/"GENERIC", diventa null per indicare lingua
+          // Globale)
           String locale =
               (dto.getLocale() != null
                       && !dto.getLocale().trim().isEmpty()
@@ -340,7 +336,9 @@ public class EmailTemplateService {
               emailTemplateDAO.findConflictingTemplates(clientId, category, locale, dto.getId());
           if (!conflicts.isEmpty()) {
             String clientDesc =
-                clientId != null ? ("Client [" + clientId + "]") : "Globale (Access Sphere Default)";
+                clientId != null
+                    ? ("Client [" + clientId + "]")
+                    : "Globale (Access Sphere Default)";
             String localeDesc = locale != null ? ("Lingua [" + locale + "]") : "Globale / Fallback";
             String errorMsg =
                 String.format(
@@ -392,8 +390,8 @@ public class EmailTemplateService {
   }
 
   /**
-   * Invia un'email di prova compilata direttamente dall'interfaccia di amministrazione.
-   * Esegue la sostituzione dei segnaposto {{KEY}} con i valori specificati nella richiesta.
+   * Invia un'email di prova compilata direttamente dall'interfaccia di amministrazione. Esegue la
+   * sostituzione dei segnaposto {{KEY}} con i valori specificati nella richiesta.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<EmailResponse> sendTestEmail(EmailSendTestRequest request) {
@@ -417,7 +415,8 @@ public class EmailTemplateService {
                 rawHtml = entity.getTemplate();
                 if (ObjectToolkit.isNullOrEmpty(subject)) subject = entity.getSubject();
               } else if (!ObjectToolkit.isNullOrEmpty(request.getIdentifier())) {
-                List<EmailTemplateEntity> list = emailTemplateDAO.findByIdentifier(request.getIdentifier());
+                List<EmailTemplateEntity> list =
+                    emailTemplateDAO.findByIdentifier(request.getIdentifier());
                 if (list.isEmpty()) {
                   throw new ResponseStatusException(
                       HttpStatus.NOT_FOUND,
@@ -433,23 +432,22 @@ public class EmailTemplateService {
               }
 
               // Sostituzione segnaposto {{CHIAVE}}
-              Map<String, String> params = request.getParams() != null ? request.getParams() : new HashMap<>();
+              Map<String, String> params =
+                  request.getParams() != null ? request.getParams() : new HashMap<>();
               String renderedHtml = rawHtml;
               for (Map.Entry<String, String> entry : params.entrySet()) {
                 if (entry.getKey() != null && entry.getValue() != null) {
-                  renderedHtml = renderedHtml.replace("{{" + entry.getKey() + "}}", entry.getValue());
+                  renderedHtml =
+                      renderedHtml.replace("{{" + entry.getKey() + "}}", entry.getValue());
                 }
               }
 
-              EmailContent emailContent =
-                  EmailContent.builder()
-                      .to(request.getTo())
-                      .subject(subject)
-                      .text(renderedHtml)
-                      .sentDate(new Date())
-                      .build();
-
-              return emailContent;
+              return EmailContent.builder()
+                  .to(request.getTo())
+                  .subject(subject)
+                  .text(renderedHtml)
+                  .sentDate(new Date())
+                  .build();
             })
         .flatMap(
             emailContent ->

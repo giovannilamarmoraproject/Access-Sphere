@@ -1,24 +1,19 @@
 package io.github.giovannilamarmora.accesssphere.email.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.Date;
+import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-/**
- * Data Transfer Object per la gestione dei Template Email via API REST.
- */
+/** Data Transfer Object per la gestione dei Template Email via API REST. */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EmailTemplateDTO {
+public class EmailTemplateDTO extends GenericDTO {
 
-  private Long id;
   private String identifier;
   private String category;
   private String clientId;
@@ -26,8 +21,6 @@ public class EmailTemplateDTO {
   private String subject;
   private String description;
   private String template;
-  private Map<String, Object> params;
+  private Map<String, String> params;
   private String locale;
-  private Date creationDate;
-  private Date lastUpdate;
 }

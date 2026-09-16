@@ -6,8 +6,6 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailRespons
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.UserDataService;
@@ -15,6 +13,8 @@ import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.email.EmailTemplateService;
+import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
@@ -45,7 +45,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import io.github.giovannilamarmora.accesssphere.email.EmailTemplateService;
 
 @Service
 @Logged
@@ -328,8 +327,6 @@ public class UserService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid field email, try again!");
     }
 
-    Mono<List<StrapiLocale>> strapiLocaleMono = strapiService.locales();
-
     Mono<User> userMono =
         dataService
             .getUserByEmail(changePassword.getEmail())
@@ -340,54 +337,19 @@ public class UserService {
                   return user;
                 });
 
-    Mono<String> finalLocaleMono =
-        strapiLocaleMono.map(
-            strapiLocales ->
-                strapiLocales.stream()
-                    .filter(loc -> loc.getCode().equals(locale))
-                    .findFirst()
-                    .map(
-                        foundLocale -> {
-                          LOG.info("Locale found: {}", foundLocale.getCode());
-                          return foundLocale.getCode();
-                        })
-                    .orElseGet(
-                        () ->
-                            strapiLocales.stream()
-                                .filter(loc -> Boolean.TRUE.equals(loc.getIsDefault()))
-                                .findFirst()
-                                .map(
-                                    defaultLocale -> {
-                                      LOG.warn(
-                                          "Locale '{}' not found. Using default locale: {}",
-                                          locale,
-                                          defaultLocale.getCode());
-                                      return defaultLocale.getCode();
-                                    })
-                                .orElseGet(
-                                    () -> {
-                                      LOG.error(
-                                          "Locale '{}' not found and no default locale available. Using fallback: en-GB",
-                                          locale);
-                                      return "en-GB";
-                                    })));
-
     // Reperimento del template email dal database locale (EmailTemplateService)
-    // con supporto multi-tenant a cascata: cerca prima per client specifico (se fornito in changePassword),
+    // con supporto multi-tenant a cascata: cerca prima per client specifico (se fornito in
+    // changePassword),
     // poi esegue il fallback sul template Globale di Access Sphere per la categoria RESET_PASSWORD.
-    Mono<StrapiEmailTemplate> strapiEmailTemplateMono =
-        finalLocaleMono
-            .onErrorResume(e -> Mono.just(locale != null ? locale : "it"))
-            .flatMap(
-                finalLocale -> {
-                  String categoryOrId =
-                      StringUtils.hasText(changePassword.getTemplateId())
-                          ? changePassword.getTemplateId()
-                          : "RESET_PASSWORD";
-                  String requestedClientId = changePassword.getClientId();
-                  return emailTemplateService.getTemplateByCategoryLocaleAndClient(
-                      categoryOrId, finalLocale, requestedClientId);
-                });
+    String categoryOrId =
+        StringUtils.hasText(changePassword.getTemplateId())
+            ? changePassword.getTemplateId()
+            : "RESET_PASSWORD";
+    String requestedClientId = changePassword.getClientId();
+
+    Mono<EmailTemplateDTO> strapiEmailTemplateMono =
+        emailTemplateService.getTemplateByCategoryLocaleAndClient(
+            categoryOrId, locale, requestedClientId);
 
     return Mono.zip(userMono, strapiEmailTemplateMono)
         .flatMap(

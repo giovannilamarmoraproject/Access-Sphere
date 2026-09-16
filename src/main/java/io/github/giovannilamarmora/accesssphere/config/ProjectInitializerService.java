@@ -86,7 +86,8 @@ public class ProjectInitializerService implements ApplicationRunner {
       client.setAuthType(OAuthType.ALL_TYPE);
       client.setTokenType(TokenType.BEARER_JWT);
       client.setScopes("openid profile email read write admin");
-      client.setRedirect_uri("http://localhost:8081/app,http://localhost:8080/app,/app,http://localhost:3000/app");
+      client.setRedirect_uri(
+          "http://localhost:8081/app,http://localhost:8080/app,/app,http://localhost:3000/app");
       client.setAppRoles("[{\"role\":\"ROLE_ADMIN\"},{\"role\":\"ROLE_TECH\"}]");
       client.setMfaEnabled(false);
       client.setAuthorize_redirect_status(HttpStatus.FOUND);
@@ -121,7 +122,9 @@ public class ProjectInitializerService implements ApplicationRunner {
       user.setPassword(bCryptPasswordEncoder.encode(techPassword));
       user.setRoles("ROLE_ADMIN ROLE_TECH");
       userDAO.save(user);
-      LOG.info("✅ Technical User [{}] successfully seeded in DB with roles ROLE_ADMIN ROLE_TECH", techUsername);
+      LOG.info(
+          "✅ Technical User [{}] successfully seeded in DB with roles ROLE_ADMIN ROLE_TECH",
+          techUsername);
     } else {
       LOG.debug("Technical User [{}] already present in DB", techUsername);
     }
@@ -157,13 +160,14 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Inizializzazione del template email predefinito per il reset della password con identificatore UUID.
-   * Si interconnette con {@link IEmailTemplateDAO} per verificare se il template
-   * con UUID {@value #DEFAULT_RESET_PASSWORD_TEMPLATE_UUID} è già censito nella tabella 'EMAIL_TEMPLATES'.
-   * Se assente, verifica la presenza del template con identificatore legacy {@value #LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER}
-   * ed esegue la migrazione automatica all'identificatore UUID e al layout email responsive/bulletproof,
-   * collegandolo al client tecnico {@code techClientId} e impostando i parametri segnaposto standard
-   * (SITE_URL, NAME, RESET_CODE, SITE_SHORT).
+   * Inizializzazione del template email predefinito per il reset della password con identificatore
+   * UUID. Si interconnette con {@link IEmailTemplateDAO} per verificare se il template con UUID
+   * {@value #DEFAULT_RESET_PASSWORD_TEMPLATE_UUID} è già censito nella tabella 'EMAIL_TEMPLATES'.
+   * Se assente, verifica la presenza del template con identificatore legacy {@value
+   * #LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER} ed esegue la migrazione automatica
+   * all'identificatore UUID e al layout email responsive/bulletproof, collegandolo al client
+   * tecnico {@code techClientId} e impostando i parametri segnaposto standard (SITE_URL, NAME,
+   * RESET_CODE, SITE_SHORT).
    */
   private void initEmailTemplates() {
     List<EmailTemplateEntity> existing =
@@ -290,18 +294,20 @@ public class ProjectInitializerService implements ApplicationRunner {
         """;
 
     if (existing.isEmpty() && legacyExisting.isEmpty()) {
-      LOG.info("📧 Seeding Default Email Template with UUID: {}", DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
+      LOG.info(
+          "📧 Seeding Default Email Template with UUID: {}", DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
       EmailTemplateEntity template = new EmailTemplateEntity();
       template.setIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
       template.setCategory(EmailTemplateCategory.RESET_PASSWORD.getCode());
-      template.setClientId(techClientId); // Collegato al client applicativo predefinito configurato all'avvio
+      template.setClientId(
+          techClientId); // Collegato al client applicativo predefinito configurato all'avvio
       template.setName("Reset Password");
       template.setSubject("Reset Password");
       template.setDescription("Template for sending password reset code");
       template.setLocale("en");
 
       // Mappa parametri predefiniti associati al template
-      Map<String, Object> params = new LinkedHashMap<>();
+      Map<String, String> params = new LinkedHashMap<>();
       params.put("SITE_URL", "https://accesssphere.io");
       params.put("NAME", "John Doe");
       params.put("RESET_CODE", "123456");
@@ -340,7 +346,9 @@ public class ProjectInitializerService implements ApplicationRunner {
         defaultTpl.setClientId(techClientId);
         updated = true;
       }
-      if (defaultTpl.getTemplate() == null || defaultTpl.getTemplate().contains("Ciao") || !defaultTpl.getTemplate().contains("Poppins")) {
+      if (defaultTpl.getTemplate() == null
+          || defaultTpl.getTemplate().contains("Ciao")
+          || !defaultTpl.getTemplate().contains("Poppins")) {
         defaultTpl.setTemplate(htmlTemplate);
         defaultTpl.setLocale("en");
         defaultTpl.setSubject("Reset Password");
@@ -354,7 +362,8 @@ public class ProjectInitializerService implements ApplicationRunner {
             defaultTpl.getIdentifier(),
             techClientId);
       } else {
-        LOG.debug("Email Template [{}] already present in DB", DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
+        LOG.debug(
+            "Email Template [{}] already present in DB", DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
       }
     }
   }

@@ -12,8 +12,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * Entita JPA per la persistenza dei Template Email a Database.
- * Memorizza identificatore, nome, oggetto, corpo HTML, parametri dinamici e lingua/locale.
+ * Entita JPA per la persistenza dei Template Email a Database. Memorizza identificatore, nome,
+ * oggetto, corpo HTML, parametri dinamici e lingua/locale.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -33,15 +33,15 @@ public class EmailTemplateEntity extends GenericEntity {
   private String identifier;
 
   /**
-   * Categoria applicativa del template (es. RESET_PASSWORD, WELCOME_USER, ecc.).
-   * Se non specificata, assume di default RESET_PASSWORD.
+   * Categoria applicativa del template (es. RESET_PASSWORD, WELCOME_USER, ecc.). Se non
+   * specificata, assume di default RESET_PASSWORD.
    */
   @Column(name = "CATEGORY", nullable = false)
   private String category = "RESET_PASSWORD";
 
   /**
-   * Identificativo dell'applicazione/client OAuth2 a cui appartiene il template.
-   * Se nullo o vuoto, il template e globale di default per tutta la piattaforma Access Sphere.
+   * Identificativo dell'applicazione/client OAuth2 a cui appartiene il template. Se nullo o vuoto,
+   * il template e globale di default per tutta la piattaforma Access Sphere.
    */
   @Column(name = "CLIENT_ID")
   private String clientId;
@@ -61,17 +61,15 @@ public class EmailTemplateEntity extends GenericEntity {
   private String template;
 
   /**
-   * Mappa dei parametri predefiniti associati al template (es. NAME, RESET_CODE, SITE_URL).
-   * Salvata come JSON nel database tramite JsonMapConverter.
+   * Mappa dei parametri predefiniti associati al template (es. NAME, RESET_CODE, SITE_URL). Salvata
+   * come JSON nel database tramite JsonMapConverter.
    */
   @Convert(converter = JsonMapConverter.class)
   @Lob
   @Column(name = "PARAMS", columnDefinition = "TEXT")
-  private Map<String, Object> params = new LinkedHashMap<>();
+  private Map<String, String> params = new LinkedHashMap<>();
 
-  /**
-   * Lingua/Locale del template (es. "en-GB", "it", "default" o null per tutte le lingue).
-   */
+  /** Lingua/Locale del template (es. "en-GB", "it", "default" o null per tutte le lingue). */
   @Column(name = "LOCALE")
   private String locale;
 }

@@ -1,17 +1,15 @@
 package io.github.giovannilamarmora.accesssphere.email;
 
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
 import java.util.HashMap;
-import java.util.Map;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 /**
- * Mapper per la conversione tra entita di persistenza EmailTemplateEntity,
- * il relativo DTO di esposizione EmailTemplateDTO e l'oggetto StrapiEmailTemplate
- * utilizzato dal motore di invio email esistente.
+ * Mapper per la conversione tra entita di persistenza EmailTemplateEntity, il relativo DTO di
+ * esposizione EmailTemplateDTO e l'oggetto StrapiEmailTemplate utilizzato dal motore di invio email
+ * esistente.
  */
 @Component
 public class EmailTemplateMapper {
@@ -40,34 +38,15 @@ public class EmailTemplateMapper {
     if (target == null || source == null) return;
     if (source.getIdentifier() != null) target.setIdentifier(source.getIdentifier().trim());
     if (source.getCategory() != null) target.setCategory(source.getCategory().trim());
-    target.setClientId(source.getClientId() != null && !source.getClientId().trim().isEmpty() ? source.getClientId().trim() : null);
+    target.setClientId(
+        source.getClientId() != null && !source.getClientId().trim().isEmpty()
+            ? source.getClientId().trim()
+            : null);
     if (source.getName() != null) target.setName(source.getName().trim());
     if (source.getSubject() != null) target.setSubject(source.getSubject().trim());
     if (source.getDescription() != null) target.setDescription(source.getDescription());
     if (source.getTemplate() != null) target.setTemplate(source.getTemplate());
     if (source.getParams() != null) target.setParams(new HashMap<>(source.getParams()));
     if (source.getLocale() != null) target.setLocale(source.getLocale().trim());
-  }
-
-  /**
-   * Converte EmailTemplateEntity nel modello StrapiEmailTemplate per compatibilita
-   * diretta con il microservizio EmailSenderService e UserService.forgotPassword.
-   */
-  public static StrapiEmailTemplate toStrapiEmailTemplate(EmailTemplateEntity entity) {
-    if (entity == null) return null;
-    StrapiEmailTemplate strapiTemplate = new StrapiEmailTemplate();
-    strapiTemplate.setIdentifier(entity.getIdentifier());
-    strapiTemplate.setName(entity.getName());
-    strapiTemplate.setTemplate(entity.getTemplate());
-    strapiTemplate.setLocale(entity.getLocale());
-    strapiTemplate.setDescription(entity.getDescription());
-    strapiTemplate.setSubject(entity.getSubject());
-
-    Map<String, String> stringParams = new HashMap<>();
-    if (entity.getParams() != null) {
-      entity.getParams().forEach((k, v) -> stringParams.put(k, v != null ? v.toString() : ""));
-    }
-    strapiTemplate.setParams(stringParams);
-    return strapiTemplate;
   }
 }

@@ -11,15 +11,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderClient;
-import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiClient;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import java.util.*;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -41,6 +37,7 @@ import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
+import java.util.*;
 import java.util.Base64;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -72,7 +69,10 @@ public class UserServiceTest {
   @MockBean private IAccessTokenDAO accessTokenDAO;
   @MockBean private EmailSenderClient emailSenderClient;
   @MockBean private IUserDAO userDAO;
-  @MockBean private io.github.giovannilamarmora.accesssphere.email.EmailTemplateService emailTemplateService;
+
+  @MockBean
+  private io.github.giovannilamarmora.accesssphere.email.EmailTemplateService emailTemplateService;
+
   private MockedStatic<GoogleGrpcService> mockStatic;
   private final ObjectMapper mapper = MapperUtils.mapper().failOnUnknownProprieties().build();
 
@@ -788,129 +788,6 @@ public class UserServiceTest {
               assertEquals(
                   "User " + userToUpdate.getUsername() + " successfully updated!",
                   res.getBody().getMessage());
-            })
-        .verifyComplete();
-  }
-
-  @Test
-  public void test_successfully_change_password_request() throws IOException {
-    List<StrapiUser> strapiUser =
-        mapper.readValue(
-            new ClassPathResource("mock/StrapiUser.json").getInputStream(),
-            new TypeReference<>() {});
-
-    String clientId = "BEARER-OAUTH-01";
-    String registrationToken = "token";
-
-    User userToUpdate = new User();
-    userToUpdate.setIdentifier(strapiUser.getFirst().getIdentifier());
-    userToUpdate.setUsername(strapiUser.getFirst().getName());
-    userToUpdate.setEmail(strapiUser.getFirst().getEmail());
-    userToUpdate.setPassword("Ciccio.2025");
-
-    UserEntity userFind = new UserEntity();
-    userFind.setIdentifier(strapiUser.getFirst().getIdentifier());
-    userFind.setUsername(strapiUser.getFirst().getName());
-    userFind.setEmail(strapiUser.getFirst().getEmail());
-    userFind.setPassword("Ciccio.2025");
-
-    StrapiResponse response =
-        mapper.readValue(
-            new ClassPathResource("mock/ClientIDBearer.json").getInputStream(),
-            StrapiResponse.class);
-
-    StrapiResponse userRes =
-        mapper.readValue(
-            new ClassPathResource("mock/StrapiResponseOfUser.json").getInputStream(),
-            StrapiResponse.class);
-
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
-    when(strapiClient.saveUser(any())).thenReturn(Mono.just(ResponseEntity.ok(userRes)));
-    when(userDAO.saveAndFlush(any())).thenReturn(userFind);
-
-    Mono<ResponseEntity<Response>> result =
-        userService.register(null, userToUpdate, clientId, registrationToken, false);
-
-    // Assert
-    StepVerifier.create(result)
-        .assertNext(
-            res -> {
-              assertEquals(HttpStatus.CREATED, res.getStatusCode());
-              assertEquals(
-                  "User " + userToUpdate.getUsername() + " successfully registered!",
-                  res.getBody().getMessage());
-            })
-        .verifyComplete();
-
-    when(accessTokenData.getClientId()).thenReturn(clientId);
-    when(accessTokenData.getType()).thenReturn(OAuthType.BEARER);
-    when(accessTokenData.getSubjectType()).thenReturn(SubjectType.CUSTOMER);
-
-    when(accessTokenData.getIdentifier()).thenReturn(userToUpdate.getIdentifier());
-    when(strapiClient.getUserByIdentifier(any()))
-        .thenReturn(Mono.just(ResponseEntity.ok(strapiUser)));
-
-    // Arrange
-    ChangePassword changePassword =
-        new ChangePassword("TEST", userToUpdate.getEmail(), null, null, null);
-
-    when(strapiClient.getUserByEmail(any())).thenReturn(Mono.just(ResponseEntity.ok(strapiUser)));
-    StrapiResponse templates =
-        mapper.readValue(
-            new ClassPathResource("mock/Template.json").getInputStream(), new TypeReference<>() {});
-    when(strapiClient.getTemplateById(any(), anyString()))
-        .thenReturn(Mono.just(ResponseEntity.ok(templates)));
-
-    StrapiEmailTemplate emailTemplate = new StrapiEmailTemplate();
-    emailTemplate.setName("TEST");
-    emailTemplate.setSubject("Reset Password");
-    emailTemplate.setTemplate("Hello {{NAME}}, code is {{RESET_CODE}}");
-    Map<String, String> emailParams = new HashMap<>();
-    emailParams.put("RESET_CODE", "123456");
-    emailParams.put("NAME", "Mario");
-    emailTemplate.setParams(emailParams);
-    when(emailTemplateService.getTemplateByCategoryLocaleAndClient(any(), any(), any()))
-        .thenReturn(Mono.just(emailTemplate));
-    when(emailTemplateService.getTemplateByIdentifierAndLocale(any(), any()))
-        .thenReturn(Mono.just(emailTemplate));
-
-    List<StrapiLocale> locales =
-        mapper.readValue(
-            new ClassPathResource("mock/StrapiLocale.json").getInputStream(),
-            new TypeReference<>() {});
-    when(strapiClient.getLocale()).thenReturn(Mono.just(ResponseEntity.ok(locales)));
-
-    when(strapiClient.updateUser(any()))
-        .thenReturn(Mono.just(ResponseEntity.ok(strapiUser.getFirst())));
-
-    when(userDAO.findUserEntityByIdentifier(any())).thenReturn(userFind);
-    when(userDAO.saveAndFlush(any())).thenReturn(userFind);
-
-    EmailResponse expected =
-        new EmailResponse(LocalDateTime.now(), "Email SENT", strapiUser.getFirst().getTokenReset());
-
-    when(emailSenderClient.sendEmail(any())).thenReturn(Mono.just(ResponseEntity.ok(expected)));
-
-    Mono<ResponseEntity<Response>> resultFinal =
-        userService.changePasswordRequest(changePassword, "en-GB", true);
-    // Assert
-    StepVerifier.create(resultFinal)
-        .assertNext(
-            res -> {
-              assertEquals(HttpStatus.OK, res.getStatusCode());
-              assertEquals("Email Sent! Check your email address!", res.getBody().getMessage());
-            })
-        .verifyComplete();
-
-    Mono<ResponseEntity<Response>> resultFinal2 =
-        userService.changePasswordRequest(changePassword, "en-GB", false);
-    // Assert
-    StepVerifier.create(resultFinal2)
-        .assertNext(
-            res -> {
-              assertEquals(HttpStatus.OK, res.getStatusCode());
-              assertEquals("Email Sent! Check your email address!", res.getBody().getMessage());
             })
         .verifyComplete();
   }

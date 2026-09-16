@@ -1,6 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.api.strapi;
 
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLocale;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiLogin;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiResponse;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiUser;
@@ -19,17 +18,6 @@ import reactor.core.publisher.Mono;
 @Component
 @Logged
 public class StrapiClient extends StrapiConfig {
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public Mono<ResponseEntity<List<StrapiLocale>>> getLocale() {
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
-
-    return webClientRest.performList(
-        HttpMethod.GET, UtilsUriBuilder.buildUri(localesUrl, null), headers, StrapiLocale.class);
-  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public Mono<ResponseEntity<StrapiResponse>> getClientByClientID(String clientID) {
@@ -221,24 +209,6 @@ public class StrapiClient extends StrapiConfig {
         user,
         headers,
         StrapiUser.class);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public Mono<ResponseEntity<StrapiResponse>> getTemplateById(String templateId, String locale) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("filters[identifier][$eq]", templateId);
-    params.put("locale", locale);
-    params.put("populate", "*");
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
-
-    return webClientRest.perform(
-        HttpMethod.GET,
-        UtilsUriBuilder.buildUri(templateUrl, params),
-        headers,
-        StrapiResponse.class);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)

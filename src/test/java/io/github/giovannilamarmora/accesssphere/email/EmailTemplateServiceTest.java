@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderClient;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTemplate;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailSendTestRequest;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
@@ -26,10 +25,9 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 /**
- * Test unitari per {@link EmailTemplateService}.
- * Verifica il recupero di tutti i template, la ricerca per ID,
- * la logica di fallback a 4 livelli per lingua e template generico/singolo,
- * il salvataggio, l'eliminazione e l'invio dell'email di test.
+ * Test unitari per {@link EmailTemplateService}. Verifica il recupero di tutti i template, la
+ * ricerca per ID, la logica di fallback a 4 livelli per lingua e template generico/singolo, il
+ * salvataggio, l'eliminazione e l'invio dell'email di test.
  */
 @ExtendWith(MockitoExtension.class)
 class EmailTemplateServiceTest {
@@ -52,7 +50,7 @@ class EmailTemplateServiceTest {
     sampleEntity.setDescription("Template per il reset password");
     sampleEntity.setTemplate("<html><body>Codice: {{RESET_CODE}} per {{NAME}}</body></html>");
 
-    Map<String, Object> params = new LinkedHashMap<>();
+    Map<String, String> params = new LinkedHashMap<>();
     params.put("RESET_CODE", "123456");
     params.put("NAME", "Mario Rossi");
     sampleEntity.setParams(params);
@@ -67,7 +65,8 @@ class EmailTemplateServiceTest {
         .assertNext(
             templates -> {
               assertEquals(1, templates.size());
-              assertEquals("c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95", templates.get(0).getIdentifier());
+              assertEquals(
+                  "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95", templates.get(0).getIdentifier());
               assertEquals("it", templates.get(0).getLocale());
             })
         .verifyComplete();
@@ -121,7 +120,8 @@ class EmailTemplateServiceTest {
   }
 
   @Test
-  @DisplayName("getTemplateByIdentifierAndLocale supporta fallback se l'utente ha configurato una sola lingua")
+  @DisplayName(
+      "getTemplateByIdentifierAndLocale supporta fallback se l'utente ha configurato una sola lingua")
   void testGetTemplateSingleLanguageFallback() {
     // Il database contiene solo la versione "it", ma la richiesta richiede "de" o "fr"
     when(emailTemplateDAO.findByIdentifier("c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95"))
@@ -147,11 +147,13 @@ class EmailTemplateServiceTest {
     dto.setSubject("Oggetto");
     dto.setTemplate("<p>HTML</p>");
 
-    when(emailTemplateDAO.save(any(EmailTemplateEntity.class))).thenAnswer(invocation -> {
-      EmailTemplateEntity entity = invocation.getArgument(0);
-      entity.setId(10L);
-      return entity;
-    });
+    when(emailTemplateDAO.save(any(EmailTemplateEntity.class)))
+        .thenAnswer(
+            invocation -> {
+              EmailTemplateEntity entity = invocation.getArgument(0);
+              entity.setId(10L);
+              return entity;
+            });
 
     StepVerifier.create(emailTemplateService.saveTemplate(dto))
         .assertNext(
