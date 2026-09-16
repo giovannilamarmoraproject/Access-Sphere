@@ -483,7 +483,7 @@
             <div>
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full theme-badge text-xs font-semibold mb-3">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="app-brand-name">Access Sphere</span> Email Hub
+                    <span class="app-brand-name">Access Sphere</span> <span>•</span> Email Hub
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight" data-i18n="email_hero_title">
                     Gestione Template Email
@@ -624,9 +624,9 @@
                 />
             </div>
 
-            <div class="flex items-center gap-3 w-full sm:w-auto">
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
                 <select id="locale-filter-select"
-                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 shrink-0"
+                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-56 min-w-0"
                         onchange="handleLocaleFilter(this.value)">
                     <option value="ALL" data-i18n="email_filter_locale_all">Tutte le lingue</option>
                     <option value="it" data-i18n="email_filter_locale_it">Italiano (it)</option>
@@ -977,7 +977,8 @@
                 <div class="modal-footer px-6 py-4 flex items-center justify-end gap-3"
                      style="border-top: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
                     <button type="button"
-                            class="px-5 py-2.5 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all cursor-pointer"
+                            class="m3-btn-secondary px-6 py-2.5 text-xs font-semibold cursor-pointer"
+                            style="border-radius: 9999px !important;"
                             data-bs-dismiss="modal">
                         Annulla
                     </button>
