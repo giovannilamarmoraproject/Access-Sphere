@@ -826,6 +826,7 @@
   "settings_login_hero_subtitle_label": "Sottotitolo / Descrizione Hero",
   "settings_login_hero_subtitle_placeholder": "Descrizione IAM della vetrina di login...",
   "nav_emails": "Template Email",
+  "nav_emails_short": "Email",
   "email_hero_title": "Gestione Template Email",
   "email_hero_desc": "Crea, personalizza e collauda i template HTML delle email transazionali e di sistema con parametri dinamici, supporto multilingua e anteprima in tempo reale.",
   "email_kpi_total": "Template Totali",

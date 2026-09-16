@@ -427,46 +427,47 @@ function renderTemplatesList(templates) {
         const paramKeys = Object.keys(paramsMap);
 
         const paramsPillsHtml = paramKeys.length > 0
-            ? paramKeys.slice(0, 6).map(k => `<span class="param-pill" title="${lblDefaultVal} ${escapeHtml(String(paramsMap[k]))}">{{${escapeHtml(k)}}}</span>`).join(" ") + (paramKeys.length > 6 ? ` <span class="text-xs text-gray-400">+${paramKeys.length - 6} ${lblMore}</span>` : "")
+            ? paramKeys.slice(0, 6).map(k => `<span class="param-pill truncate max-w-[160px]" title="${lblDefaultVal} ${escapeHtml(String(paramsMap[k]))}">{{${escapeHtml(k)}}}</span>`).join(" ") + (paramKeys.length > 6 ? ` <span class="text-xs text-gray-400 shrink-0">+${paramKeys.length - 6} ${lblMore}</span>` : "")
             : `<span class="text-gray-500 text-xs italic">${lblNoParams}</span>`;
 
         const lastUpdated = item.updateDate ? new Date(item.updateDate).toLocaleString() : (item.creationDate ? new Date(item.creationDate).toLocaleString() : "N/D");
 
         html += `
-      <div class="p-4.5 rounded-2xl theme-surface-box hover:brightness-125 transition-all cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5 group" onclick="openEmailDetailModal(${item.id})">
+      <div class="p-4 sm:p-5 rounded-2xl theme-surface-box hover:brightness-125 transition-all cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-4 group overflow-hidden" onclick="openEmailDetailModal(${item.id})">
         
-        <!-- Info Principali Template -->
-        <div class="space-y-2 flex-1">
-          <div class="flex flex-wrap items-center gap-2">
+        <!-- Info Principali Template con Truncate Responsive -->
+        <div class="space-y-2 flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
             ${categoryBadge}
             ${clientBadge}
-            <span class="font-mono text-xs font-bold theme-badge px-2.5 py-1 rounded-lg">
+            <span class="font-mono text-xs font-bold theme-badge px-2.5 py-1 rounded-lg truncate max-w-[200px] sm:max-w-xs" title="${escapeHtml(item.identifier || "SENZA_ID")}">
               ${escapeHtml(item.identifier || "SENZA_ID")}
             </span>
             ${localeBadge}
             ${statusBadge}
-            <span class="text-xs text-gray-400 flex items-center gap-1 ml-auto lg:ml-2">
+            <span class="text-xs text-gray-400 flex items-center gap-1 ml-auto lg:ml-2 shrink-0">
               <i class="fa-solid fa-clock-rotate-left text-[11px]"></i> ${lastUpdated}
             </span>
           </div>
 
-          <div>
-            <h4 class="text-base font-bold text-white mb-0.5 group-hover:opacity-90 transition-colors">${escapeHtml(item.name || lblUntitled)}</h4>
-            <div class="text-xs text-gray-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-heading theme-text-accent text-[10px]"></i>
-              <strong>${lblSubject}</strong> ${escapeHtml(item.subject || "--")}
+          <div class="min-w-0">
+            <h4 class="text-base font-bold text-white mb-1 group-hover:opacity-90 transition-colors truncate" title="${escapeHtml(item.name || lblUntitled)}">${escapeHtml(item.name || lblUntitled)}</h4>
+            <div class="text-xs text-gray-300 flex items-center gap-1.5 min-w-0">
+              <i class="fa-solid fa-heading theme-text-accent text-[10px] shrink-0"></i>
+              <strong class="shrink-0">${lblSubject}</strong> 
+              <span class="truncate" title="${escapeHtml(item.subject || "--")}">${escapeHtml(item.subject || "--")}</span>
             </div>
-            ${item.description ? `<p class="text-xs text-gray-400 mt-1 mb-0">${escapeHtml(item.description)}</p>` : ""}
+            ${item.description ? `<p class="text-xs text-gray-400 mt-1 mb-0 line-clamp-2 break-words" title="${escapeHtml(item.description)}">${escapeHtml(item.description)}</p>` : ""}
           </div>
 
-          <div class="pt-1 flex flex-wrap items-center gap-1.5">
-            <span class="text-[11px] text-gray-400 uppercase font-semibold mr-1">${lblParams}</span>
+          <div class="pt-1 flex flex-wrap items-center gap-1.5 min-w-0">
+            <span class="text-[11px] text-gray-400 uppercase font-semibold mr-1 shrink-0">${lblParams}</span>
             ${paramsPillsHtml}
           </div>
         </div>
 
         <!-- Pulsanti Azione Rapida -->
-        <div class="flex flex-wrap items-center gap-2 shrink-0" onclick="event.stopPropagation()">
+        <div class="flex flex-wrap items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-white/5" onclick="event.stopPropagation()">
           <button type="button" onclick="event.stopPropagation(); openEmailDetailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="${lblDetail}">
             <i class="fa-solid fa-eye text-emerald-400 mr-1.5"></i> ${lblDetail}
           </button>
@@ -1035,7 +1036,12 @@ function openEditTemplateModal(id) {
     }
 
     const editPrefix = typeof t === "function" ? t("email_action_edit", "Modifica") : "Modifica";
-    document.getElementById("emailEditorModalLabel").textContent = `${editPrefix}: ${template.name || template.identifier}`;
+    const modalLabelEl = document.getElementById("emailEditorModalLabel");
+    if (modalLabelEl) {
+        const fullTitle = `${editPrefix}: ${template.name || template.identifier}`;
+        modalLabelEl.textContent = fullTitle;
+        modalLabelEl.title = fullTitle;
+    }
 
     const modal = new bootstrap.Modal(document.getElementById("emailEditorModal"));
     modal.show();
@@ -1156,7 +1162,11 @@ function openTestEmailModal(id) {
     const displayName = (template.name && template.name !== template.identifier)
         ? `${template.name} (${template.identifier})`
         : (template.name || template.identifier || "--");
-    document.getElementById("test-modal-template-name").textContent = displayName;
+    const nameEl = document.getElementById("test-modal-template-name");
+    if (nameEl) {
+        nameEl.textContent = displayName;
+        nameEl.title = displayName;
+    }
     document.getElementById("test-modal-locale-badge").innerHTML = getLocaleBadgeHtml(template.locale);
 
     document.getElementById("test-email-subject").value = template.subject || "";
@@ -1315,10 +1325,18 @@ function openEmailDetailModal(id) {
 
     // 1. Titolo, Identificatore e Locale Badge
     const nameEl = document.getElementById("detail-modal-name");
-    if (nameEl) nameEl.textContent = template.name || (typeof t === "function" ? t("email_untitled", "Template Senza Nome") : "Template Senza Nome");
+    if (nameEl) {
+        const titleText = template.name || (typeof t === "function" ? t("email_untitled", "Template Senza Nome") : "Template Senza Nome");
+        nameEl.textContent = titleText;
+        nameEl.title = titleText;
+    }
 
     const idBadgeEl = document.getElementById("detail-modal-identifier-badge");
-    if (idBadgeEl) idBadgeEl.textContent = template.identifier || "SENZA_ID";
+    if (idBadgeEl) {
+        const idText = template.identifier || "SENZA_ID";
+        idBadgeEl.textContent = idText;
+        idBadgeEl.title = idText;
+    }
 
     const localeBadgeEl = document.getElementById("detail-modal-locale-badge");
     if (localeBadgeEl) localeBadgeEl.innerHTML = getLocaleBadgeHtml(template.locale);
@@ -1371,7 +1389,11 @@ function openEmailDetailModal(id) {
         }
     }
 
-    if (identSubEl) identSubEl.textContent = template.identifier || "--";
+    if (identSubEl) {
+        const identVal = template.identifier || "--";
+        identSubEl.textContent = identVal;
+        identSubEl.title = identVal;
+    }
     if (localeSubEl) localeSubEl.innerHTML = getLocaleBadgeHtml(template.locale);
 
     if (paramsContainer) {
@@ -1389,12 +1411,12 @@ function openEmailDetailModal(id) {
                 const val = params[key];
                 const displayVal = (val !== undefined && val !== null && val !== "") ? val : noFallbackLabel;
                 const row = `
-          <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.05] transition-all text-xs">
-            <span class="font-mono theme-text-accent font-semibold flex items-center gap-1.5">
-              <i class="fa-solid fa-code text-[10px] opacity-70"></i>
-              <span>{{${escapeHtml(key)}}}</span>
+          <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.05] transition-all text-xs gap-2 min-w-0">
+            <span class="font-mono theme-text-accent font-semibold flex items-center gap-1.5 min-w-0 truncate">
+              <i class="fa-solid fa-code text-[10px] opacity-70 shrink-0"></i>
+              <span class="truncate" title="{{${escapeHtml(key)}}}">{{${escapeHtml(key)}}}</span>
             </span>
-            <span class="font-mono text-[11px] text-gray-300 bg-black/40 px-2.5 py-1 rounded-lg border border-white/10 max-w-[200px] truncate" title="${escapeHtml(String(displayVal))}">
+            <span class="font-mono text-[11px] text-gray-300 bg-black/40 px-2.5 py-1 rounded-lg border border-white/10 max-w-[130px] sm:max-w-[200px] truncate shrink-0" title="${escapeHtml(String(displayVal))}">
               ${escapeHtml(String(displayVal))}
             </span>
           </div>

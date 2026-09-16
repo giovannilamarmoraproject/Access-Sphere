@@ -317,6 +317,7 @@ function isPostLoginPage() {
 
 function detectCurrentNavView() {
   const currentPath = window.location.pathname;
+  if (currentPath.includes("/emails") || currentPath.includes("/email")) return "emails";
   if (currentPath.includes("/settings")) return "settings";
   if (currentPath.includes("/client")) return "clients";
   if (currentPath.includes("/user")) return "users";
@@ -333,36 +334,43 @@ function syncMobileNavState(viewName) {
   const isOverview = viewName === "dashboard" || viewName === "overview";
   const isUsers = viewName === "users";
   const isClients = viewName === "clients";
+  const isEmails = viewName === "emails";
   const isSettings = viewName === "settings";
 
   // 1. Bottom Navigation Bar Mobile
   const bDash = document.getElementById("bottom-nav-dashboard");
   const bUsers = document.getElementById("bottom-nav-users");
   const bClients = document.getElementById("bottom-nav-clients");
+  const bEmails = document.getElementById("bottom-nav-emails");
   const bSettings = document.getElementById("bottom-nav-settings");
   if (bDash) bDash.classList.toggle("active", isOverview);
   if (bUsers) bUsers.classList.toggle("active", isUsers);
   if (bClients) bClients.classList.toggle("active", isClients);
+  if (bEmails) bEmails.classList.toggle("active", isEmails);
   if (bSettings) bSettings.classList.toggle("active", isSettings);
 
   // 2. Mobile Navigation Drawer
   const mDash = document.getElementById("mobile-nav-dashboard");
   const mUsers = document.getElementById("mobile-nav-users");
   const mClients = document.getElementById("mobile-nav-clients");
+  const mEmails = document.getElementById("mobile-nav-emails");
   const mSettings = document.getElementById("mobile-nav-settings");
   if (mDash) mDash.classList.toggle("active", isOverview);
   if (mUsers) mUsers.classList.toggle("active", isUsers);
   if (mClients) mClients.classList.toggle("active", isClients);
+  if (mEmails) mEmails.classList.toggle("active", isEmails);
   if (mSettings) mSettings.classList.toggle("active", isSettings);
 
   // 3. Desktop Sidebar M3
   const sDash = document.getElementById("sidebar-btn-dashboard");
   const sUsers = document.getElementById("sidebar-btn-users");
   const sClients = document.getElementById("sidebar-btn-clients");
+  const sEmails = document.getElementById("sidebar-btn-emails");
   const sSettings = document.getElementById("sidebar-btn-settings");
   if (sDash) sDash.classList.toggle("active", isOverview);
   if (sUsers) sUsers.classList.toggle("active", isUsers);
   if (sClients) sClients.classList.toggle("active", isClients);
+  if (sEmails) sEmails.classList.toggle("active", isEmails);
   if (sSettings) sSettings.classList.toggle("active", isSettings);
 }
 
@@ -417,6 +425,7 @@ function initMobileNavigation() {
   const isOverview = currentView === "dashboard";
   const isUsers = currentView === "users";
   const isClients = currentView === "clients";
+  const isEmails = currentView === "emails";
   const isSettings = currentView === "settings";
 
   // 2. Drawer & Overlay laterale per mobile
@@ -477,6 +486,10 @@ function initMobileNavigation() {
           <a href="/app/clients" id="mobile-nav-clients" onclick="return navigateToSection('/app/clients', 'clients');" class="m3-mobile-nav-link ${isClients ? 'active' : ''}">
             <i class="fa-solid fa-key"></i>
             <span data-i18n="nav_clients">Client OAuth 2.0</span>
+          </a>
+          <a href="/app/emails" id="mobile-nav-emails" onclick="return navigateToSection('/app/emails', 'emails');" class="m3-mobile-nav-link ${isEmails ? 'active' : ''}">
+            <i class="fa-solid fa-envelope"></i>
+            <span data-i18n="nav_emails">Template Email</span>
           </a>
         </div>
 
@@ -562,6 +575,12 @@ function initMobileNavigation() {
         </div>
         <span class="m3-bottom-nav-label" data-i18n="nav_clients_short">Client</span>
       </a>
+      <a href="/app/emails" id="bottom-nav-emails" class="m3-bottom-nav-item ${isEmails ? 'active' : ''}" onclick="return navigateToSection('/app/emails', 'emails');">
+        <div class="m3-bottom-nav-pill">
+          <i class="fa-solid fa-envelope"></i>
+        </div>
+        <span class="m3-bottom-nav-label" data-i18n="nav_emails_short">Email</span>
+      </a>
       <a href="/app/settings" id="bottom-nav-settings" class="m3-bottom-nav-item ${isSettings ? 'active' : ''}" onclick="return navigateToSection('/app/settings', 'settings');">
         <div class="m3-bottom-nav-pill">
           <i class="fa-solid fa-gear"></i>
@@ -583,6 +602,18 @@ function initMobileNavigation() {
     if (b) translateDOM(b);
   }
 }
+
+// Nasconde la bottom nav mobile all'apertura di modali Bootstrap per evitare sovrapposizioni con footer/pulsanti
+document.addEventListener("show.bs.modal", function () {
+  const nav = document.getElementById("m3-mobile-bottom-nav");
+  if (nav) nav.classList.add("hidden-by-modal");
+});
+document.addEventListener("hidden.bs.modal", function () {
+  if (!document.querySelector(".modal.show")) {
+    const nav = document.getElementById("m3-mobile-bottom-nav");
+    if (nav) nav.classList.remove("hidden-by-modal");
+  }
+});
 
 // Global exports
 window.isPostLoginPage = isPostLoginPage;

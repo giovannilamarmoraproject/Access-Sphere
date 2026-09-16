@@ -1453,9 +1453,16 @@ textarea.is-valid {
     align-items: center;
     justify-content: space-around;
     padding: 0 0.5rem;
-    z-index: 9995;
+    z-index: 1040;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
     box-sizing: border-box;
+}
+
+/* Nasconde la bottom nav mobile all'apertura di modali o sweetalert per non sovrapporsi al footer e pulsanti */
+body.modal-open .m3-mobile-bottom-nav,
+body.swal2-shown .m3-mobile-bottom-nav,
+.m3-mobile-bottom-nav.hidden-by-modal {
+    display: none !important;
 }
 
 @media (min-width: 992px) {

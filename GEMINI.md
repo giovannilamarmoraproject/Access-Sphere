@@ -126,7 +126,7 @@ Per garantire precisione operativa e zero sprechi di token, ogni attività deve 
     - Qualora un intervento introduca nuove feature, modifichi endpoint, aggiorni configurazioni, cambi la struttura dei
       moduli o alteri il comportamento architetturale, l'agente DEVE aggiornare contestualmente il file `README.md` (o i
       file di documentazione correlati) per riflettere lo stato attuale del sistema.
-- **Convenzione Messaggi di Commit Git (Solo Suggerimento)**:
+- **Convenzione Messaggi di Commit Git (Solo Suggerimento) in Inglese**:
     - L'agente **NON deve MAI eseguire autonomamente il commit Git** (`git commit`).
     - Al termine di ogni implementazione o modifica, l'agente deve **stampare nella risposta** il messaggio di commit
       pronto per essere copiato dall'utente, formattato in un blocco di codice:

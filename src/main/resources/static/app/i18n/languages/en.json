@@ -826,6 +826,7 @@
   "settings_login_hero_subtitle_label": "Hero Subtitle / Description",
   "settings_login_hero_subtitle_placeholder": "IAM description for the login showcase...",
   "nav_emails": "Email Templates",
+  "nav_emails_short": "Email",
   "email_hero_title": "Email Templates Management",
   "email_hero_desc": "Create, customize, and test transactional and system email HTML templates with dynamic parameters, multi-language support, and real-time preview.",
   "email_kpi_total": "Total Templates",

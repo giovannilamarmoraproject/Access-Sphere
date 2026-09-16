@@ -826,6 +826,7 @@
   "settings_login_hero_subtitle_label": "Hero-Untertitel / Beschreibung",
   "settings_login_hero_subtitle_placeholder": "IAM-Beschreibung für den Login-Showcase...",
   "nav_emails": "E-Mail-Vorlagen",
+  "nav_emails_short": "E-Mails",
   "email_hero_title": "E-Mail-Vorlagenverwaltung",
   "email_hero_desc": "Erstellen, anpassen und testen Sie HTML-E-Mail-Vorlagen mit dynamischen Parametern, mehrsprachiger Unterstützung und Echtzeit-Vorschau.",
   "email_kpi_total": "Vorlagen Gesamt",

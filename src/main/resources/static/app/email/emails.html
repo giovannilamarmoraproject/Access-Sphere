@@ -772,37 +772,40 @@
         <div class="modal-content theme-modal-content text-white border-0">
 
             <!-- Header Modale -->
-            <div class="modal-header theme-modal-header px-6 py-4 flex items-center justify-between backdrop-blur-md">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl theme-icon-box flex items-center justify-center">
+            <div class="modal-header theme-modal-header px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between backdrop-blur-md gap-3">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl theme-icon-box flex items-center justify-center shrink-0">
                         <i class="fa-solid fa-pen-ruler"></i>
                     </div>
-                    <div>
-                        <h5 class="modal-title font-bold text-lg text-white" id="emailEditorModalLabel"
+                    <div class="min-w-0 flex-1">
+                        <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate" id="emailEditorModalLabel"
                             data-i18n="modal_email_editor_title">
                             Editor Template Email
                         </h5>
-                        <p class="text-xs text-gray-400 mb-0" data-i18n="email_editor_subtitle">Configura metadati, parametri e visualizza il markup
+                        <p class="text-xs text-gray-400 mb-0 truncate hidden sm:block" data-i18n="email_editor_subtitle">Configura metadati, parametri e visualizza il markup
                             renderizzato in tempo reale</p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3">
-                    <button type="button" class="m3-btn-secondary py-1.5 px-4 text-xs" style="border-radius: 9999px !important;" data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark mr-1.5"></i> <span data-i18n="btn_cancel">Annulla</span>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="button" class="m3-btn-secondary py-1.5 px-3 sm:px-4 text-xs" style="border-radius: 9999px !important;" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark mr-1"></i> <span class="hidden sm:inline" data-i18n="btn_cancel">Annulla</span>
                     </button>
-                    <button type="button" class="m3-btn-primary py-1.5 px-5 text-xs" onclick="saveTemplateForm()">
-                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> <span data-i18n="email_btn_save_template">Salva Template</span>
+                    <button type="button" class="m3-btn-primary py-1.5 px-3 sm:px-5 text-xs" onclick="saveTemplateForm()">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="email_btn_save_template">Salva</span>
+                    </button>
+                    <button type="button" class="m3-icon-btn shrink-0 ml-1" data-bs-dismiss="modal" aria-label="Chiudi" title="Chiudi">
+                        <i class="fa-solid fa-xmark text-sm"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Body Split: Form a Sinistra, Live Preview a Destra -->
-            <div class="modal-body p-0 overflow-hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-12 h-full">
+            <div class="modal-body p-0 overflow-y-auto lg:overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 h-auto lg:h-full">
 
                     <!-- Colonna Sinistra: Configurazione & HTML (Col 6) -->
-                    <div class="lg:col-span-6 p-6 overflow-y-auto h-[calc(100vh-80px)] border-r theme-divider space-y-5">
+                    <div class="lg:col-span-6 p-4 sm:p-6 overflow-y-auto lg:h-[calc(100vh-80px)] border-r theme-divider space-y-4 sm:space-y-5">
                         <input type="hidden" id="editor-template-id" value=""/>
 
                         <!-- Metadati Base Grid: Categoria e Client Scoping -->
@@ -993,10 +996,10 @@
                     </div>
 
                     <!-- Colonna Destra: Live Preview (Col 6) -->
-                    <div class="lg:col-span-6 p-6 flex flex-col h-[calc(100vh-80px)] theme-preview-stage overflow-y-auto">
+                    <div class="lg:col-span-6 p-4 sm:p-6 flex flex-col min-h-[460px] lg:h-[calc(100vh-80px)] theme-preview-stage overflow-y-auto">
 
                         <!-- Toolbar Anteprima Live -->
-                        <div class="flex items-center justify-between pb-4 mb-4 border-b theme-divider">
+                        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b theme-divider">
                             <div class="flex items-center gap-2">
                   <span class="text-xs font-bold uppercase tracking-wider theme-text-accent flex items-center gap-1.5">
                     <i class="fa-solid fa-eye text-emerald-400"></i> <span data-i18n="email_preview_realtime_title">Anteprima in Tempo Reale</span>
@@ -1055,43 +1058,45 @@
         <div class="modal-content border border-white/10 shadow-2xl"
              style="border-radius: 24px; background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.95); backdrop-filter: blur(24px);">
 
-            <div class="modal-header px-6 py-4 flex items-center justify-between"
+            <div class="modal-header px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3"
                  style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl theme-icon-box flex items-center justify-center text-base">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="w-10 h-10 rounded-2xl theme-icon-box flex items-center justify-center text-base shrink-0">
                         <i class="fa-solid fa-paper-plane"></i>
                     </div>
-                    <div>
-                        <h5 class="modal-title font-bold text-lg text-white mb-0" id="emailTestSendModalLabel"
+                    <div class="min-w-0 flex-1">
+                        <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate" id="emailTestSendModalLabel"
                             data-i18n="modal_email_test_title">
                             Invia Email di Test
                         </h5>
-                        <p class="text-xs text-gray-400 mb-0" data-i18n="email_test_subtitle">Collauda l'invio reale tramite il microservizio compilando
+                        <p class="text-xs text-gray-400 mb-0 truncate hidden sm:block" data-i18n="email_test_subtitle">Collauda l'invio reale tramite il microservizio compilando
                             i parametri</p>
                     </div>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-1" data-bs-dismiss="modal"
-                        aria-label="Chiudi"></button>
+                <button type="button" class="m3-icon-btn shrink-0 ml-2" data-bs-dismiss="modal"
+                        aria-label="Chiudi" title="Chiudi">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
             </div>
 
             <form id="test-email-form" onsubmit="executeSendTestEmail(event)">
-                <div class="modal-body px-6 py-4 space-y-4">
+                <div class="modal-body px-4 sm:px-6 py-4 space-y-4">
                     <input type="hidden" id="test-template-id"/>
                     <input type="hidden" id="test-template-identifier"/>
                     <input type="hidden" id="test-template-locale"/>
 
-                    <div class="p-4 rounded-2xl flex items-center justify-between"
+                    <div class="p-3.5 sm:p-4 rounded-2xl flex items-center justify-between gap-3 overflow-hidden"
                          style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.6); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl theme-icon-box flex items-center justify-center text-xs">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <div class="w-9 h-9 rounded-xl theme-icon-box flex items-center justify-center text-xs shrink-0">
                                 <i class="fa-solid fa-envelope-open-text"></i>
                             </div>
-                            <div>
+                            <div class="min-w-0 flex-1">
                                 <span class="text-[10px] text-gray-400 uppercase font-semibold block" data-i18n="email_test_selected_template">Template Selezionato</span>
-                                <span id="test-modal-template-name" class="font-bold text-sm text-white">--</span>
+                                <span id="test-modal-template-name" class="font-bold text-xs sm:text-sm text-white block truncate" title="--">--</span>
                             </div>
                         </div>
-                        <div id="test-modal-locale-badge"></div>
+                        <div id="test-modal-locale-badge" class="shrink-0"></div>
                     </div>
 
                     <!-- Destinatario & Oggetto -->
@@ -1141,16 +1146,16 @@
 
                 </div>
 
-                <div class="modal-footer px-6 py-4 flex items-center justify-end gap-1"
+                <div class="modal-footer px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-end gap-2"
                      style="border-top: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
                     <button type="button"
-                            class="m3-btn-secondary px-6 py-2.5 text-xs font-semibold cursor-pointer"
+                            class="m3-btn-secondary px-5 py-2 text-xs font-semibold cursor-pointer"
                             style="border-radius: 9999px !important;"
                             data-bs-dismiss="modal">
                         <span data-i18n="btn_cancel">Annulla</span>
                     </button>
                     <button type="submit" id="btn-submit-test-email"
-                            class="m3-btn-primary px-6 py-2.5 rounded-full text-xs font-semibold cursor-pointer">
+                            class="m3-btn-primary px-6 py-2 rounded-full text-xs font-semibold cursor-pointer">
                         <i class="fa-solid fa-paper-plane mr-1.5"></i> <span
                             data-i18n="email_test_btn_submit">Invia Ora</span>
                     </button>
@@ -1167,42 +1172,44 @@
         <div class="modal-content theme-modal-content text-white border-0">
 
             <!-- Header Dettaglio a Tutto Schermo -->
-            <div class="modal-header theme-modal-header px-6 py-4 flex items-center justify-between backdrop-blur-md">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl theme-icon-box flex items-center justify-center text-lg">
+            <div class="modal-header theme-modal-header px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between backdrop-blur-md gap-3">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="w-10 h-10 rounded-xl theme-icon-box flex items-center justify-center text-lg shrink-0">
                         <i class="fa-solid fa-envelope-open-text"></i>
                     </div>
-                    <div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h5 class="modal-title font-bold text-lg text-white mb-0" id="detail-modal-name">Dettaglio
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate max-w-[180px] sm:max-w-md" id="detail-modal-name">Dettaglio
                                 Template</h5>
                             <span id="detail-modal-identifier-badge"
-                                  class="font-mono text-xs font-bold theme-badge px-2.5 py-0.5 rounded-lg">--</span>
-                            <span id="detail-modal-locale-badge"></span>
+                                  class="font-mono text-xs font-bold theme-badge px-2.5 py-0.5 rounded-lg truncate max-w-[150px] sm:max-w-xs">--</span>
+                            <span id="detail-modal-locale-badge" class="shrink-0"></span>
                         </div>
-                        <p class="text-xs text-gray-400 mb-0 mt-0.5"><span data-i18n="email_detail_last_updated">Ultimo aggiornamento:</span> <span id="detail-modal-updated">--</span></p>
+                        <p class="text-xs text-gray-400 mb-0 mt-0.5 truncate"><span data-i18n="email_detail_last_updated">Ultimo aggiornamento:</span> <span id="detail-modal-updated">--</span></p>
                     </div>
                 </div>
 
-                <!-- Pulsanti Azione Header -->
-                <div class="flex items-center gap-3">
-                    <button type="button" id="btn-detail-test-send" class="m3-btn-secondary text-xs py-2 px-4">
-                        <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> <span data-i18n="btn_test_send">Invia Test</span>
+                <!-- Pulsanti Azione Header e Tasto Chiudi X sempre visibile -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="button" id="btn-detail-test-send" class="m3-btn-secondary text-xs py-1.5 px-3 sm:px-4" title="Invia Test">
+                        <i class="fa-solid fa-paper-plane text-blue-400"></i> <span class="hidden sm:inline ml-1" data-i18n="btn_test_send">Invia Test</span>
                     </button>
-                    <button type="button" id="btn-detail-edit" class="m3-btn-primary text-xs py-2 px-4">
-                        <i class="fa-solid fa-pen-to-square mr-1.5"></i> <span data-i18n="btn_edit_template">Modifica Template</span>
+                    <button type="button" id="btn-detail-edit" class="m3-btn-primary text-xs py-1.5 px-3 sm:px-4" title="Modifica Template">
+                        <i class="fa-solid fa-pen-to-square"></i> <span class="hidden sm:inline ml-1" data-i18n="btn_edit_template">Modifica Template</span>
                     </button>
-                    <button type="button" class="btn-close btn-close-white ml-2" data-bs-dismiss="modal"
-                            aria-label="Chiudi"></button>
+                    <button type="button" class="m3-icon-btn shrink-0 ml-1" data-bs-dismiss="modal"
+                            aria-label="Chiudi" title="Chiudi">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
                 </div>
             </div>
 
             <!-- Body Split a Tutto Schermo: Metadati a Sinistra, Rendering a Destra -->
-            <div class="modal-body p-0 overflow-hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-12 h-full">
+            <div class="modal-body p-0 overflow-y-auto lg:overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 h-auto lg:h-full">
 
                     <!-- Colonna Sinistra (Col 4): Scheda Metadati, Oggetto, Descrizione e Parametri -->
-                    <div class="lg:col-span-4 p-6 overflow-y-auto h-[calc(100vh-80px)] space-y-5"
+                    <div class="lg:col-span-4 p-4 sm:p-6 overflow-y-auto lg:h-[calc(100vh-80px)] space-y-4 sm:space-y-5"
                          style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.65); border-right: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
 
                         <!-- Card: Informazioni Principali -->
@@ -1226,14 +1233,14 @@
                                 <p id="detail-modal-desc" class="text-xs text-gray-300 mb-0 leading-relaxed">--</p>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-3 pt-2">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-2">
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
                                     <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_cat_label">Categoria</span>
                                     <span id="detail-modal-category-sub" class="text-xs font-bold text-white block">--</span>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
                                     <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_client_label">Applicazione / Client</span>
-                                    <span id="detail-modal-client-sub" class="text-xs font-mono font-bold text-white block">--</span>
+                                    <span id="detail-modal-client-sub" class="text-xs font-mono font-bold text-white block break-words">--</span>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
                                     <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_detail_identifier">Identificatore</span>
@@ -1266,11 +1273,11 @@
                     </div>
 
                     <!-- Colonna Destra (Col 8): Visualizzatore Rendering Live Completo -->
-                    <div class="lg:col-span-8 p-6 flex flex-col h-[calc(100vh-80px)] overflow-hidden"
+                    <div class="lg:col-span-8 p-4 sm:p-6 flex flex-col min-h-[460px] lg:h-[calc(100vh-80px)] overflow-hidden"
                          style="background: rgba(0, 0, 0, 0.2);">
 
                         <!-- Toolbar Superiore Rendering -->
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3"
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3"
                              style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-eye text-emerald-400 text-sm"></i>

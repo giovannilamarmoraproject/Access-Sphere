@@ -826,6 +826,7 @@
   "settings_login_hero_subtitle_label": "Subtítulo / Descripción Hero",
   "settings_login_hero_subtitle_placeholder": "Descripción IAM del escaparate de inicio de sesión...",
   "nav_emails": "Plantillas de Correo",
+  "nav_emails_short": "Correos",
   "email_hero_title": "Gestión de Plantillas de Correo",
   "email_hero_desc": "Crea, personaliza y prueba plantillas HTML de correos transaccionales con parámetros dinámicos, soporte multilenguaje y vista previa en tiempo real.",
   "email_kpi_total": "Plantillas Totales",

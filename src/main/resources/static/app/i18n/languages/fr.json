@@ -826,6 +826,7 @@
   "settings_login_hero_subtitle_label": "Sous-titre / Description Hero",
   "settings_login_hero_subtitle_placeholder": "Description IAM de la vitrine de connexion...",
   "nav_emails": "Modèles d'email",
+  "nav_emails_short": "E-mails",
   "email_hero_title": "Gestion des Modèles d'Email",
   "email_hero_desc": "Créez, personnalisez et testez les modèles HTML d'e-mails transactionnels avec paramètres dynamiques, support multilingue et aperçu en temps réel.",
   "email_kpi_total": "Total Modèles",
