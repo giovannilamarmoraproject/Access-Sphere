@@ -174,20 +174,28 @@ function loadOAuthClients() {
 
 /**
  * Popola dinamicamente le select dei client (filtro nella barra strumenti ed editor)
+ * Collegando il client predefinito a quello configurato all'avvio dell'app (ACCESS-SPHERE-TECH)
  */
 function populateClientSelects() {
     const filterSelect = document.getElementById("client-filter-select");
     const editorSelect = document.getElementById("editor-client");
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-TECH";
 
     if (filterSelect) {
         const currentVal = filterSelect.value || "ALL";
+        const lblAll = typeof t === "function" ? t("email_filter_client_all", "Tutte le applicazioni") : "Tutte le applicazioni";
+        const lblDefault = typeof t === "function" ? t("email_client_default", `${defaultClientId} (Predefinito)`) : `${defaultClientId} (Predefinito)`;
+        const lblGlobal = typeof t === "function" ? t("email_client_global", "Globale (Senza Client)") : "Globale (Senza Client)";
+
         let filterHtml = `
-            <option value="ALL" data-i18n="email_filter_client_all">${typeof t === "function" ? t("email_filter_client_all", "Tutte le applicazioni") : "Tutte le applicazioni"}</option>
-            <option value="GLOBAL" data-i18n="email_client_global">${typeof t === "function" ? t("email_client_global", "Access Sphere (Globale / Predefinito)") : "Access Sphere (Globale / Predefinito)"}</option>
+            <option value="ALL" data-i18n="email_filter_client_all">${escapeHtml(lblAll)}</option>
+            <option value="${escapeHtml(defaultClientId)}" data-i18n="email_client_default">${escapeHtml(lblDefault)}</option>
+            <option value="GLOBAL" data-i18n="email_client_global">${escapeHtml(lblGlobal)}</option>
         `;
         cachedClients.forEach((c) => {
             const cid = c.clientId || c.id;
-            if (cid) {
+            if (cid && cid.toUpperCase() !== defaultClientId.toUpperCase()) {
                 filterHtml += `<option value="${escapeHtml(cid)}">${escapeHtml(cid)}</option>`;
             }
         });
@@ -196,13 +204,17 @@ function populateClientSelects() {
     }
 
     if (editorSelect) {
-        const currentVal = editorSelect.value || "";
+        const currentVal = editorSelect.value !== undefined && editorSelect.value !== "" ? editorSelect.value : defaultClientId;
+        const lblDefaultOption = typeof t === "function" ? t("email_client_default", `${defaultClientId} (Predefinito)`) : `${defaultClientId} (Predefinito)`;
+        const lblNoneGlobal = typeof t === "function" ? t("email_client_none_global", "Nessun Client (Globale per tutti i client)") : "Nessun Client (Globale per tutti i client)";
+
         let editorHtml = `
-            <option value="" data-i18n="email_client_global">${typeof t === "function" ? t("email_client_global", "Access Sphere (Globale / Predefinito)") : "Access Sphere (Globale / Predefinito)"}</option>
+            <option value="${escapeHtml(defaultClientId)}" data-i18n="email_client_default">${escapeHtml(lblDefaultOption)}</option>
+            <option value="" data-i18n="email_client_none_global">${escapeHtml(lblNoneGlobal)}</option>
         `;
         cachedClients.forEach((c) => {
             const cid = c.clientId || c.id;
-            if (cid) {
+            if (cid && cid.toUpperCase() !== defaultClientId.toUpperCase()) {
                 editorHtml += `<option value="${escapeHtml(cid)}">${escapeHtml(cid)}</option>`;
             }
         });
@@ -493,10 +505,18 @@ function getCategoryBadgeHtml(catKey) {
 }
 
 function getClientBadgeHtml(clientId) {
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-TECH";
+
     if (!clientId || clientId.trim() === "") {
         const lblGlobal = typeof t === "function" ? t("email_client_badge_global", "Globale") : "Globale";
-        return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-white/5 border border-white/10 text-gray-300 flex items-center gap-1" title="${typeof t === "function" ? t("email_client_global", "Access Sphere (Globale / Predefinito)") : "Access Sphere (Globale / Predefinito)"}"><i class="fa-solid fa-earth-americas text-[10px] opacity-70"></i> ${lblGlobal}</span>`;
+        return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-white/5 border border-white/10 text-gray-300 flex items-center gap-1" title="${typeof t === "function" ? t("email_client_global", "Globale (Senza Client)") : "Globale (Senza Client)"}"><i class="fa-solid fa-earth-americas text-[10px] opacity-70"></i> ${lblGlobal}</span>`;
     }
+
+    if (clientId.toUpperCase() === defaultClientId.toUpperCase()) {
+        return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-blue-500/10 border border-blue-500/30 text-blue-300 flex items-center gap-1" title="Client Applicativo Predefinito"><i class="fa-solid fa-cube text-[10px]"></i> ${escapeHtml(clientId)}</span>`;
+    }
+
     return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-purple-500/10 border border-purple-500/30 text-purple-300 flex items-center gap-1"><i class="fa-solid fa-cubes text-[10px]"></i> ${escapeHtml(clientId)}</span>`;
 }
 
@@ -800,7 +820,9 @@ function handleCategoryChange(catCode) {
     const isEdit = Boolean(document.getElementById("editor-template-id").value);
     if (!isEdit && meta) {
         const identInput = document.getElementById("editor-identifier");
-        if (identInput) identInput.value = meta.identifier;
+        if (identInput && !identInput.value.trim()) {
+            generateRandomTemplateUuid();
+        }
 
         const nameInput = document.getElementById("editor-name");
         const defaultTranslatedName = typeof t === "function" ? t("email_cat_" + cat.toLowerCase(), meta.defaultName) : meta.defaultName;
@@ -824,6 +846,24 @@ function handleCategoryChange(catCode) {
     }
 
     checkDuplicateConflictDebounced();
+}
+
+/**
+ * Genera un identificatore UUID casuale per il template e lo inserisce nel campo editor-identifier
+ * @returns {string} L'UUID generato
+ */
+function generateRandomTemplateUuid() {
+    const uuid = (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
+        ? crypto.randomUUID()
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    const identInput = document.getElementById("editor-identifier");
+    if (identInput) {
+        identInput.value = uuid;
+    }
+    return uuid;
 }
 
 /**
@@ -875,6 +915,9 @@ function checkDuplicateConflictDebounced() {
 }
 
 function openCreateTemplateModal() {
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-TECH";
+
     document.getElementById("editor-template-id").value = "";
     document.getElementById("editor-identifier").value = "";
     document.getElementById("editor-identifier").readOnly = false;
@@ -887,12 +930,13 @@ function openCreateTemplateModal() {
     if (catSelect) catSelect.value = "RESET_PASSWORD";
 
     const clientSelect = document.getElementById("editor-client");
-    if (clientSelect) clientSelect.value = "";
+    if (clientSelect) clientSelect.value = defaultClientId;
 
     const warningBanner = document.getElementById("editor-duplicate-warning");
     if (warningBanner) warningBanner.classList.add("hidden");
 
     handleCategoryChange("RESET_PASSWORD");
+    generateRandomTemplateUuid();
 
     // Template HTML di partenza ben strutturato
     const defaultHtml = `<!DOCTYPE html>
@@ -1312,10 +1356,17 @@ function openEmailDetailModal(id) {
     }
 
     if (clientSubEl) {
+        const cfg = typeof getConfig === "function" ? getConfig() : null;
+        const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-TECH";
+
         if (template.clientId) {
-            clientSubEl.innerHTML = `<i class="fa-solid fa-cubes text-purple-400 mr-1.5"></i> <span class="text-purple-300">${escapeHtml(template.clientId)}</span>`;
+            const isDefault = template.clientId.toUpperCase() === defaultClientId.toUpperCase();
+            const colorClass = isDefault ? "text-blue-400" : "text-purple-400";
+            const textClass = isDefault ? "text-blue-300" : "text-purple-300";
+            const labelSuffix = isDefault ? ` (${typeof t === "function" ? t("email_client_default_short", "Predefinito") : "Predefinito"})` : "";
+            clientSubEl.innerHTML = `<i class="fa-solid ${isDefault ? 'fa-cube' : 'fa-cubes'} ${colorClass} mr-1.5"></i> <span class="${textClass}">${escapeHtml(template.clientId)}${escapeHtml(labelSuffix)}</span>`;
         } else {
-            const lblGlobal = typeof t === "function" ? t("email_client_global", "Access Sphere (Globale / Predefinito)") : "Access Sphere (Globale / Predefinito)";
+            const lblGlobal = typeof t === "function" ? t("email_client_none_global", "Nessun Client (Globale)") : "Nessun Client (Globale)";
             clientSubEl.innerHTML = `<i class="fa-solid fa-earth-americas text-gray-400 mr-1.5"></i> <span class="text-gray-300">${escapeHtml(lblGlobal)}</span>`;
         }
     }

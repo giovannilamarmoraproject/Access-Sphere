@@ -952,5 +952,9 @@
   "email_status_coming_soon": "Próximamente",
   "email_swal_duplicate_error_title": "Plantilla ya existente",
   "email_swal_duplicate_error_desc": "Ya existe una plantilla registrada para esta combinación de Categoría, Aplicación e Idioma.",
-  "email_client_hint": "Sobrescribe la plantilla global solo para la aplicación seleccionada"
+  "email_client_hint": "Sobrescribe la plantilla global solo para la aplicación seleccionada",
+  "email_btn_generate_uuid": "Generar UUID aleatorio",
+  "email_client_default": "ACCESS-SPHERE-TECH (Predeterminado)",
+  "email_client_none_global": "Sin cliente (Global para todos los clientes)",
+  "email_client_default_short": "Predeterminado"
 }

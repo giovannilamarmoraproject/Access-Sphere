@@ -952,5 +952,9 @@
   "email_status_coming_soon": "Predisposto",
   "email_swal_duplicate_error_title": "Template Già Esistente",
   "email_swal_duplicate_error_desc": "Esiste già un template registrato per questa combinazione di Categoria, Applicazione e Lingua.",
-  "email_client_hint": "Sovrascrive il template globale solo per l'applicazione selezionata"
+  "email_client_hint": "Sovrascrive il template globale solo per l'applicazione selezionata",
+  "email_btn_generate_uuid": "Genera nuovo UUID casuale",
+  "email_client_default": "ACCESS-SPHERE-TECH (Predefinito)",
+  "email_client_none_global": "Nessun Client (Globale per tutti i client)",
+  "email_client_default_short": "Predefinito"
 }

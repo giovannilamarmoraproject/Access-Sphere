@@ -610,9 +610,9 @@
     <!-- Main Content Bento Card: Template List & Search -->
     <div class="m3-bento-card p-6 mb-8">
 
-        <!-- Toolbar: Search & Locale Filter -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-            <div class="relative w-full sm:w-80">
+        <!-- Toolbar: Search & Filters arranged side-by-side -->
+        <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3 mb-6">
+            <div class="relative w-full xl:w-72 2xl:w-80 shrink-0">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none z-10"></i>
                 <input
                         type="text"
@@ -624,10 +624,11 @@
                 />
             </div>
 
-            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+            <!-- Contenitore Filtri allineati orizzontalmente uno accanto all'altro -->
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto justify-start xl:justify-end shrink-0">
                 <!-- Filtro per Categoria -->
                 <select id="category-filter-select"
-                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-48 min-w-0"
+                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-44 min-w-0"
                         onchange="handleCategoryFilter(this.value)">
                     <option value="ALL" data-i18n="email_filter_cat_all">Tutte le categorie</option>
                     <option value="RESET_PASSWORD" data-i18n="email_cat_reset_password">Reimpostazione Password</option>
@@ -642,13 +643,14 @@
                         class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-48 min-w-0"
                         onchange="handleClientFilter(this.value)">
                     <option value="ALL" data-i18n="email_filter_client_all">Tutte le applicazioni</option>
-                    <option value="GLOBAL" data-i18n="email_client_global">Access Sphere (Globale / Predefinito)</option>
+                    <option value="ACCESS-SPHERE-TECH" data-i18n="email_client_default">ACCESS-SPHERE-TECH (Predefinito)</option>
+                    <option value="GLOBAL" data-i18n="email_client_global">Globale (Senza Client)</option>
                     <!-- Client OAuth2 caricati dinamicamente via JS -->
                 </select>
 
                 <!-- Filtro per Lingua / Locale -->
                 <select id="locale-filter-select"
-                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-44 min-w-0"
+                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-40 min-w-0"
                         onchange="handleLocaleFilter(this.value)">
                     <option value="ALL" data-i18n="email_filter_locale_all">Tutte le lingue</option>
                     <option value="it" data-i18n="email_locale_it">Italiano (it)</option>
@@ -661,7 +663,7 @@
 
                 <button onclick="loadEmailTemplates()" class="m3-icon-btn shrink-0" title="Ricarica elenco"
                         data-i18n-title="btn_refresh_data">
-                    <i class="fa-solid fa-rotate-right text-sm"></i>
+                    <i class="fa-solid fa-rotate-right text-sm" id="refresh-icon"></i>
                 </button>
             </div>
         </div>
@@ -811,17 +813,28 @@
                             <div>
                                 <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
                                        data-i18n="email_label_identifier">
-                                    Identificatore Tecnico *
+                                    Identificatore Tecnico (UUID) *
                                 </label>
-                                <input
-                                        type="text"
-                                        id="editor-identifier"
-                                        class="form-control m3-form-input rounded-xl w-full text-sm font-mono"
-                                        placeholder="es. ACCESS_SPHERE_CODE_RESET_PASSWORD"
-                                        data-i18n-placeholder="email_placeholder_identifier"
-                                        required
-                                />
-                                <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="email_editor_ident_hint">Identificatore chiamato dal backend/microservizio</span>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                            type="text"
+                                            id="editor-identifier"
+                                            class="form-control m3-form-input rounded-xl w-full text-sm font-mono"
+                                            placeholder="es. 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                                            data-i18n-placeholder="email_placeholder_identifier"
+                                            required
+                                    />
+                                    <button
+                                            type="button"
+                                            onclick="generateRandomTemplateUuid()"
+                                            class="m3-icon-btn shrink-0"
+                                            title="Genera nuovo UUID casuale"
+                                            data-i18n-title="email_btn_generate_uuid"
+                                    >
+                                        <i class="fa-solid fa-arrows-rotate text-sm theme-text-accent"></i>
+                                    </button>
+                                </div>
+                                <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="email_editor_ident_hint">Identificatore univoco o UUID generabile casualmente</span>
                             </div>
                         </div>
 

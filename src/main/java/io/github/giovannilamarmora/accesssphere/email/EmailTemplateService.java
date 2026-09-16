@@ -181,7 +181,22 @@ public class EmailTemplateService {
                 effectiveCategory);
           }
 
-          // 2. Ricerca tra i template Globali di Access Sphere (clientId IS NULL)
+          // 2. Ricerca tra i template del Client Tecnico predefinito ("ACCESS-SPHERE-TECH")
+          if (!"ACCESS-SPHERE-TECH".equalsIgnoreCase(clientId)) {
+            List<EmailTemplateEntity> techClientTemplates =
+                emailTemplateDAO.findByClientIdAndCategory("ACCESS-SPHERE-TECH", effectiveCategory);
+            Optional<EmailTemplateEntity> techMatch =
+                resolveTemplateFromList(techClientTemplates, locale);
+            if (techMatch.isPresent()) {
+              LOG.info(
+                  "Template trovato per Client Tecnico ACCESS-SPHERE-TECH per category=[{}], ID=[{}]",
+                  effectiveCategory,
+                  techMatch.get().getId());
+              return EmailTemplateMapper.toStrapiEmailTemplate(techMatch.get());
+            }
+          }
+
+          // 3. Ricerca tra i template Globali di Access Sphere (clientId IS NULL)
           List<EmailTemplateEntity> globalTemplates =
               emailTemplateDAO.findByClientIdIsNullAndCategory(effectiveCategory);
           Optional<EmailTemplateEntity> globalMatch =

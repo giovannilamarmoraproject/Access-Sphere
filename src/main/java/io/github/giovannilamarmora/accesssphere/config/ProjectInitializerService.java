@@ -166,7 +166,7 @@ public class ProjectInitializerService implements ApplicationRunner {
       EmailTemplateEntity template = new EmailTemplateEntity();
       template.setIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD");
       template.setCategory("RESET_PASSWORD");
-      template.setClientId(null); // Template predefinito Globale di Access Sphere
+      template.setClientId(techClientId); // Collegato al client applicativo predefinito configurato all'avvio
       template.setName("ACCESS_SPHERE_CODE_RESET_PASSWORD");
       template.setSubject("Reset Password");
       template.setDescription("Template per invio codice recupero password");
@@ -361,9 +361,16 @@ public class ProjectInitializerService implements ApplicationRunner {
       // Persistenza template a database
       emailTemplateDAO.save(template);
       LOG.info(
-          "✅ Default Email Template [ACCESS_SPHERE_CODE_RESET_PASSWORD] successfully seeded in DB");
+          "✅ Default Email Template [ACCESS_SPHERE_CODE_RESET_PASSWORD] successfully seeded in DB with clientId [{}]", techClientId);
     } else {
-      LOG.debug("Email Template [ACCESS_SPHERE_CODE_RESET_PASSWORD] already present in DB");
+      EmailTemplateEntity defaultTpl = existing.get(0);
+      if (defaultTpl.getClientId() == null) {
+        defaultTpl.setClientId(techClientId);
+        emailTemplateDAO.save(defaultTpl);
+        LOG.info("🔄 Migrated Default Email Template [{}] to technical client [{}]", defaultTpl.getIdentifier(), techClientId);
+      } else {
+        LOG.debug("Email Template [ACCESS_SPHERE_CODE_RESET_PASSWORD] already present in DB");
+      }
     }
   }
 }

@@ -952,5 +952,9 @@
   "email_status_coming_soon": "Bientôt disponible",
   "email_swal_duplicate_error_title": "Modèle déjà existant",
   "email_swal_duplicate_error_desc": "Un modèle est déjà enregistré pour cette combinaison de Catégorie, Application et Langue.",
-  "email_client_hint": "Remplace le modèle global uniquement pour l'application sélectionnée"
+  "email_client_hint": "Remplace le modèle global uniquement pour l'application sélectionnée",
+  "email_btn_generate_uuid": "Générer un UUID aléatoire",
+  "email_client_default": "ACCESS-SPHERE-TECH (Par défaut)",
+  "email_client_none_global": "Aucun client (Global pour tous les clients)",
+  "email_client_default_short": "Par défaut"
 }
