@@ -21,7 +21,7 @@ public enum EmailTemplateCategory {
 
   WELCOME_USER(
       "WELCOME_USER",
-      "ACCESS_SPHERE_WELCOME_USER",
+      "e4589c6a-9ccc-4c65-a000-302da1ebcfac",
       "Benvenuto Utente",
       "Email di benvenuto e conferma attivazione nuovo account utente",
       false,
@@ -29,7 +29,7 @@ public enum EmailTemplateCategory {
 
   EMAIL_VERIFICATION(
       "EMAIL_VERIFICATION",
-      "ACCESS_SPHERE_EMAIL_VERIFICATION",
+      "9cfc8a62-9989-4776-aa5d-b7d3b3765534",
       "Verifica Indirizzo Email",
       "Invio del codice di verifica per confermare l'indirizzo email",
       false,
@@ -37,7 +37,7 @@ public enum EmailTemplateCategory {
 
   MFA_OTP(
       "MFA_OTP",
-      "ACCESS_SPHERE_MFA_OTP",
+      "f5b7de80-7057-4a3c-8e63-c81a8ce04eaa",
       "Codice OTP MFA",
       "Invio del codice monouso per l'autenticazione a due fattori via email",
       false,
@@ -45,7 +45,7 @@ public enum EmailTemplateCategory {
 
   ACCOUNT_LOCKED(
       "ACCOUNT_LOCKED",
-      "ACCESS_SPHERE_ACCOUNT_LOCKED",
+      "b26d7eee-efd4-49d9-8eab-d25c5d2f894a",
       "Avviso Account Bloccato",
       "Notifica all'utente in seguito a troppi tentativi falliti di autenticazione",
       false,
@@ -82,7 +82,15 @@ public enum EmailTemplateCategory {
           || cat.name().equalsIgnoreCase(code.trim())
           || cat.getDefaultIdentifier().equalsIgnoreCase(code.trim())
           || (cat == RESET_PASSWORD
-              && "ACCESS_SPHERE_CODE_RESET_PASSWORD".equalsIgnoreCase(code.trim()))) {
+              && "ACCESS_SPHERE_CODE_RESET_PASSWORD".equalsIgnoreCase(code.trim()))
+          || (cat == WELCOME_USER
+              && "ACCESS_SPHERE_WELCOME_USER".equalsIgnoreCase(code.trim()))
+          || (cat == EMAIL_VERIFICATION
+              && "ACCESS_SPHERE_EMAIL_VERIFICATION".equalsIgnoreCase(code.trim()))
+          || (cat == MFA_OTP
+              && "ACCESS_SPHERE_MFA_OTP".equalsIgnoreCase(code.trim()))
+          || (cat == ACCOUNT_LOCKED
+              && "ACCESS_SPHERE_ACCOUNT_LOCKED".equalsIgnoreCase(code.trim()))) {
         return cat;
       }
     }

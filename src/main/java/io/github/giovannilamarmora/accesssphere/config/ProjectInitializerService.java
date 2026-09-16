@@ -174,7 +174,7 @@ public class ProjectInitializerService implements ApplicationRunner {
     String htmlTemplate =
         """
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml" lang="it">
+        <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
           <head>
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -224,17 +224,17 @@ public class ProjectInitializerService implements ApplicationRunner {
                             <td align="center" style="padding: 40px 32px;">
                               <!-- Salutation -->
                               <h2 style="color: #a78bfa; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                Ciao {{NAME}},
+                                Hello {{NAME}},
                               </h2>
                               <!-- Main Title -->
                               <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; line-height: 1.35; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                Hai richiesto il reset della password
+                                You have requested to reset your password
                               </h1>
                               <!-- Gradient Line Separator -->
                               <div style="display: inline-block; vertical-align: middle; margin: 24px auto; border-bottom: 2px solid #7c3aed; width: 60px;"></div>
                               <!-- Instructional Text -->
                               <p style="color: #cbd5e1; font-size: 15px; line-height: 24px; margin: 0 0 24px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                Usa il seguente codice di sicurezza per completare il ripristino della password del tuo account. Se non hai richiesto tu questa modifica, puoi ignorare questo messaggio in totale sicurezza.
+                                Use the following security code to complete your password reset. If you did not request a reset, please ignore this email.
                               </p>
                               <!-- Verification Code Highlight Block -->
                               <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 20px auto;">
@@ -248,14 +248,14 @@ public class ProjectInitializerService implements ApplicationRunner {
                               </table>
                               <!-- Expiration Warning -->
                               <p style="color: #94a3b8; font-size: 13px; line-height: 20px; margin: 16px 0 0 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                <i style="display: inline-block;">&#9201;</i> Il codice di verifica &egrave; valido per <strong>15 minuti</strong>.
+                                <i style="display: inline-block;">&#9201;</i> The code is valid for <strong>15 minutes</strong>.
                               </p>
                               <!-- CTA Button to Platform -->
                               <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-top: 32px;">
                                 <tr>
                                   <td align="center" style="border-radius: 50px; background-color: #7c3aed;">
                                     <a href="{{SITE_URL}}" target="_blank" style="font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 50px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;">
-                                      Reimposta Password
+                                      Reset Password
                                     </a>
                                   </td>
                                 </tr>
@@ -272,7 +272,7 @@ public class ProjectInitializerService implements ApplicationRunner {
                           &copy; <strong>{{SITE_SHORT}}</strong> &bull; Identity &amp; Access Management
                         </p>
                         <p style="font-size: 12px; color: #475569; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                          Messaggio automatico di sicurezza generato da <a href="{{SITE_URL}}" target="_blank" style="color: #a78bfa; text-decoration: none;">Access Sphere</a>.
+                          Automated security notification generated by <a href="{{SITE_URL}}" target="_blank" style="color: #a78bfa; text-decoration: none;">Access Sphere</a>.
                         </p>
                       </td>
                     </tr>
@@ -297,13 +297,13 @@ public class ProjectInitializerService implements ApplicationRunner {
       template.setClientId(techClientId); // Collegato al client applicativo predefinito configurato all'avvio
       template.setName("Reset Password");
       template.setSubject("Reset Password");
-      template.setDescription("Template per invio codice recupero password");
-      template.setLocale("it");
+      template.setDescription("Template for sending password reset code");
+      template.setLocale("en");
 
       // Mappa parametri predefiniti associati al template
       Map<String, Object> params = new LinkedHashMap<>();
       params.put("SITE_URL", "https://accesssphere.io");
-      params.put("NAME", "Mario Rossi");
+      params.put("NAME", "John Doe");
       params.put("RESET_CODE", "123456");
       params.put("SITE_SHORT", "Access Sphere");
       template.setParams(params);
@@ -320,13 +320,16 @@ public class ProjectInitializerService implements ApplicationRunner {
       EmailTemplateEntity legacyTpl = legacyExisting.get(0);
       legacyTpl.setIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
       legacyTpl.setCategory(EmailTemplateCategory.RESET_PASSWORD.getCode());
+      legacyTpl.setLocale("en");
+      legacyTpl.setSubject("Reset Password");
+      legacyTpl.setDescription("Template for sending password reset code");
       if (legacyTpl.getClientId() == null) {
         legacyTpl.setClientId(techClientId);
       }
       legacyTpl.setTemplate(htmlTemplate);
       emailTemplateDAO.save(legacyTpl);
       LOG.info(
-          "🔄 Migrated Legacy Email Template [{}] to UUID [{}] and refreshed email-safe template with clientId [{}]",
+          "🔄 Migrated Legacy Email Template [{}] to UUID [{}] and refreshed English email-safe template with clientId [{}]",
           LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER,
           DEFAULT_RESET_PASSWORD_TEMPLATE_UUID,
           legacyTpl.getClientId());
@@ -337,14 +340,17 @@ public class ProjectInitializerService implements ApplicationRunner {
         defaultTpl.setClientId(techClientId);
         updated = true;
       }
-      if (defaultTpl.getTemplate() == null || !defaultTpl.getTemplate().contains("Poppins")) {
+      if (defaultTpl.getTemplate() == null || defaultTpl.getTemplate().contains("Ciao") || !defaultTpl.getTemplate().contains("Poppins")) {
         defaultTpl.setTemplate(htmlTemplate);
+        defaultTpl.setLocale("en");
+        defaultTpl.setSubject("Reset Password");
+        defaultTpl.setDescription("Template for sending password reset code");
         updated = true;
       }
       if (updated) {
         emailTemplateDAO.save(defaultTpl);
         LOG.info(
-            "🔄 Updated Default Email Template [{}] with technical client [{}] and modern email-safe template",
+            "🔄 Updated Default Email Template [{}] with technical client [{}] and modern English email-safe template",
             defaultTpl.getIdentifier(),
             techClientId);
       } else {

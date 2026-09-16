@@ -267,6 +267,58 @@ a.m3-btn-secondary:visited {
     color: #E6E1E5 !important;
 }
 
+/* Danger Action Pill Button (M3 Error / Rose Container) */
+.m3-btn-danger,
+a.m3-btn-danger,
+button.m3-btn-danger {
+    background: rgba(244, 63, 94, 0.16) !important;
+    color: #FFB4AB !important;
+    border-radius: 9999px !important;
+    padding: 9px 20px !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    border: 1.5px solid rgba(244, 63, 94, 0.42) !important;
+    outline: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 10px rgba(244, 63, 94, 0.18) !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+.m3-btn-danger:hover,
+a.m3-btn-danger:hover,
+button.m3-btn-danger:hover,
+.m3-btn-danger:focus,
+a.m3-btn-danger:focus,
+button.m3-btn-danger:focus {
+    background: rgba(244, 63, 94, 0.3) !important;
+    border-color: rgba(244, 63, 94, 0.8) !important;
+    color: #FFFFFF !important;
+    text-decoration: none !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 18px rgba(244, 63, 94, 0.4) !important;
+}
+
+.m3-btn-danger:active,
+a.m3-btn-danger:active,
+button.m3-btn-danger:active {
+    transform: translateY(0) !important;
+    background: rgba(244, 63, 94, 0.38) !important;
+    color: #FFFFFF !important;
+}
+
+.m3-btn-danger i,
+a.m3-btn-danger i,
+button.m3-btn-danger i {
+    color: inherit !important;
+}
+
 /* User details & Action pill buttons (identical typography and size) */
 .m3-action-pill,
 a.m3-action-pill,

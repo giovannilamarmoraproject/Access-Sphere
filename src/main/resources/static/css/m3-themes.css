@@ -1549,6 +1549,32 @@ textarea {
     color: var(--theme-accent) !important;
 }
 
+[data-theme] .m3-btn-danger,
+[data-theme] a.m3-btn-danger,
+[data-theme] button.m3-btn-danger {
+    background: rgba(244, 63, 94, 0.16) !important;
+    color: #FFB4AB !important;
+    border: 1.5px solid rgba(244, 63, 94, 0.42) !important;
+    border-radius: 9999px !important;
+}
+
+[data-theme] .m3-btn-danger:hover,
+[data-theme] a.m3-btn-danger:hover,
+[data-theme] button.m3-btn-danger:hover {
+    background: rgba(244, 63, 94, 0.3) !important;
+    border-color: rgba(244, 63, 94, 0.8) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 18px rgba(244, 63, 94, 0.4) !important;
+}
+
+[data-theme] .m3-btn-danger:active,
+[data-theme] a.m3-btn-danger:active,
+[data-theme] button.m3-btn-danger:active {
+    background: rgba(244, 63, 94, 0.38) !important;
+    color: #FFFFFF !important;
+}
+
+
 /* =======================================================
    SWEETALERT2 ADAPTIVE PALETTE & CONTROLS (Foto 5)
    ======================================================= */

@@ -44,7 +44,7 @@ const EMAIL_CATEGORIES = {
     },
     WELCOME_USER: {
         code: "WELCOME_USER",
-        identifier: "ACCESS_SPHERE_WELCOME_USER",
+        identifier: "e4589c6a-9ccc-4c65-a000-302da1ebcfac",
         icon: "fa-user-plus",
         colorClass: "text-blue-400",
         badgeBg: "bg-blue-500/10 border-blue-500/30 text-blue-300",
@@ -59,7 +59,7 @@ const EMAIL_CATEGORIES = {
     },
     EMAIL_VERIFICATION: {
         code: "EMAIL_VERIFICATION",
-        identifier: "ACCESS_SPHERE_EMAIL_VERIFICATION",
+        identifier: "9cfc8a62-9989-4776-aa5d-b7d3b3765534",
         icon: "fa-envelope-circle-check",
         colorClass: "text-emerald-400",
         badgeBg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-300",
@@ -75,7 +75,7 @@ const EMAIL_CATEGORIES = {
     },
     MFA_OTP: {
         code: "MFA_OTP",
-        identifier: "ACCESS_SPHERE_MFA_OTP",
+        identifier: "f5b7de80-7057-4a3c-8e63-c81a8ce04eaa",
         icon: "fa-shield-halved",
         colorClass: "text-cyan-400",
         badgeBg: "bg-cyan-500/10 border-cyan-500/30 text-cyan-300",
@@ -90,7 +90,7 @@ const EMAIL_CATEGORIES = {
     },
     ACCOUNT_LOCKED: {
         code: "ACCOUNT_LOCKED",
-        identifier: "ACCESS_SPHERE_ACCOUNT_LOCKED",
+        identifier: "b26d7eee-efd4-49d9-8eab-d25c5d2f894a",
         icon: "fa-lock",
         colorClass: "text-rose-400",
         badgeBg: "bg-rose-500/10 border-rose-500/30 text-rose-300",
@@ -941,7 +941,7 @@ function openCreateTemplateModal() {
 
     // Template HTML di partenza responsive, compatibile con i principali client email (Outlook, Gmail, Apple Mail)
     const defaultHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="it">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -991,17 +991,17 @@ function openCreateTemplateModal() {
                     <td align="center" style="padding: 40px 32px;">
                       <!-- Salutation -->
                       <h2 style="color: #a78bfa; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                        Ciao {{NAME}},
+                        Hello {{NAME}},
                       </h2>
                       <!-- Main Title -->
                       <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; line-height: 1.35; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                        Hai richiesto il reset della password
+                        You have requested to reset your password
                       </h1>
                       <!-- Gradient Line Separator -->
                       <div style="display: inline-block; vertical-align: middle; margin: 24px auto; border-bottom: 2px solid #7c3aed; width: 60px;"></div>
                       <!-- Instructional Text -->
                       <p style="color: #cbd5e1; font-size: 15px; line-height: 24px; margin: 0 0 24px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                        Usa il seguente codice di sicurezza per completare il ripristino della password del tuo account. Se non hai richiesto tu questa modifica, puoi ignorare questo messaggio in totale sicurezza.
+                        Use the following security code to complete your password reset. If you did not request a reset, please ignore this email.
                       </p>
                       <!-- Verification Code Highlight Block -->
                       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 20px auto;">
@@ -1015,14 +1015,14 @@ function openCreateTemplateModal() {
                       </table>
                       <!-- Expiration Warning -->
                       <p style="color: #94a3b8; font-size: 13px; line-height: 20px; margin: 16px 0 0 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                        <i style="display: inline-block;">&#9201;</i> Il codice di verifica &egrave; valido per <strong>15 minuti</strong>.
+                        <i style="display: inline-block;">&#9201;</i> The code is valid for <strong>15 minutes</strong>.
                       </p>
                       <!-- CTA Button to Platform -->
                       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-top: 32px;">
                         <tr>
                           <td align="center" style="border-radius: 50px; background-color: #7c3aed;">
                             <a href="{{SITE_URL}}" target="_blank" style="font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 50px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;">
-                              Reimposta Password
+                              Reset Password
                             </a>
                           </td>
                         </tr>
@@ -1039,7 +1039,7 @@ function openCreateTemplateModal() {
                   &copy; <strong>{{SITE_SHORT}}</strong> &bull; Identity &amp; Access Management
                 </p>
                 <p style="font-size: 12px; color: #475569; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                  Messaggio automatico di sicurezza generato da <a href="{{SITE_URL}}" target="_blank" style="color: #a78bfa; text-decoration: none;">Access Sphere</a>.
+                  Automated security notification generated by <a href="{{SITE_URL}}" target="_blank" style="color: #a78bfa; text-decoration: none;">Access Sphere</a>.
                 </p>
               </td>
             </tr>
