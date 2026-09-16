@@ -23,13 +23,26 @@ public class EmailSenderService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   @Autowired private EmailSenderClient emailSenderClient;
 
+  /**
+   * Compiles the email template with the provided parameters and sends the email using the EmailSenderClient.
+   *
+   * @param emailTemplateDTO the DTO containing the template text and default parameters
+   * @param params           dynamic parameters to inject into the template
+   * @param emailContent     the email context (e.g., sender, receiver, subject)
+   * @return a {@link Mono} emitting an {@link EmailResponse} with the result of the sending operation
+   * @throws UtilsException if generic utility processing fails
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<EmailResponse> sendEmail(
       EmailTemplateDTO emailTemplateDTO, Map<String, String> params, EmailContent emailContent)
       throws UtilsException {
+    
+    LOG.info("Starting email preparation for recipient: {}", emailContent.getTo());
     String template = emailTemplateDTO.getTemplate();
     Map<String, String> finalParam =
         Utils.getFinalMapFromValue(params, emailTemplateDTO.getParams());
+        
+    LOG.debug("Replacing placeholders in the template with provided parameters");
     for (String key : finalParam.keySet()) {
       template = template.replace("{{" + key + "}}", finalParam.get(key));
     }
@@ -42,14 +55,17 @@ public class EmailSenderService {
     }
 
     emailContent.setText(template);
+    LOG.info("Email template successfully compiled, proceeding with sending via EmailSenderClient");
+    
     return emailSenderClient
         .sendEmail(emailContent)
         .flatMap(
             emailResponseResponseEntity -> {
               if (ObjectUtils.isEmpty(emailResponseResponseEntity.getBody())) {
-                LOG.error("Send email returned a empty object");
-                throw new EmailException("Invalid Data Provided");
+                LOG.error("Email sending returned an empty response from the client");
+                return Mono.error(new EmailException("Invalid Data Provided"));
               }
+              LOG.info("Email successfully sent to recipient: {}", emailContent.getTo());
               return Mono.just(emailResponseResponseEntity.getBody());
             });
   }

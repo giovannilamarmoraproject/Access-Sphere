@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.client.model;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
@@ -75,8 +75,6 @@ public class ClientCredential extends GenericDTO {
   @JsonAlias({"accessToken", "access_token"})
   private Boolean accessToken;
 
-  @JsonAlias({"strapiToken", "strapi_token"})
-  private Boolean strapiToken;
 
   @JsonAlias({"authorize_redirect_status", "authorizeRedirectStatus"})
   private HttpStatus authorize_redirect_status;

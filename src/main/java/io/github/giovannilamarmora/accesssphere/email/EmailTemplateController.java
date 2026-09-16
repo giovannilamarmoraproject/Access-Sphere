@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.email;
 
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailSendTestRequest;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
-import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
+import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -11,27 +11,30 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Arrays;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-/**
- * Controller REST per la gestione completa dei Template Email e per l'invio di email di test.
- */
+/** Controller REST per la gestione completa dei Template Email e per l'invio di email di test. */
 @Logged
 @RestController
 @RequestMapping("/v1/email-templates")
-@Tag(name = "Email Templates", description = "API per la gestione dei template email dinamici e test di invio")
+@Tag(
+    name = "Email Templates",
+    description = "API per la gestione dei template email dinamici e test di invio")
 public class EmailTemplateController {
 
   @Autowired private EmailTemplateService emailTemplateService;
 
   @GetMapping
-  @Operation(summary = "Ottieni tutti i template email", description = "Restituisce la lista di tutti i template email configurati a database")
+  @Operation(
+      summary = "Get all email templates",
+      description = "Returns the list of all configured email templates from the database")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> getAllTemplates(ServerHttpRequest request) {
     return emailTemplateService
@@ -41,25 +44,28 @@ public class EmailTemplateController {
                 ResponseEntity.ok(
                     new Response(
                         HttpStatus.OK.value(),
-                        "Lista Template Email",
+                        "Email Templates List",
                         TraceUtils.getSpanID(),
                         templates)));
   }
 
   @GetMapping("/categories")
-  @Operation(summary = "Ottieni categorie template email", description = "Restituisce l'elenco delle categorie di template supportate con stato di attivazione e parametri di default")
+  @Operation(
+      summary = "Get email template categories",
+      description =
+          "Returns the list of supported template categories with their active status and default parameters")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> getCategories(ServerHttpRequest request) {
     return Mono.just(
         ResponseEntity.ok(
             new Response(
                 HttpStatus.OK.value(),
-                "Categorie Template Email",
+                "Email Template Categories",
                 TraceUtils.getSpanID(),
-                java.util.Arrays.stream(io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory.values())
+                Arrays.stream(EmailTemplateCategory.values())
                     .map(
                         cat -> {
-                          java.util.Map<String, Object> map = new java.util.LinkedHashMap<>();
+                          Map<String, Object> map = new java.util.LinkedHashMap<>();
                           map.put("code", cat.getCode());
                           map.put("defaultIdentifier", cat.getDefaultIdentifier());
                           map.put("defaultTitle", cat.getDefaultTitle());
@@ -72,7 +78,9 @@ public class EmailTemplateController {
   }
 
   @GetMapping("/{id}")
-  @Operation(summary = "Ottieni template per ID", description = "Recupera il template email corrispondente all'ID specificato")
+  @Operation(
+      summary = "Get template by ID",
+      description = "Retrieves the email template corresponding to the specified ID")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> getTemplateById(
       @PathVariable("id") Long id, ServerHttpRequest request) {
@@ -83,13 +91,16 @@ public class EmailTemplateController {
                 ResponseEntity.ok(
                     new Response(
                         HttpStatus.OK.value(),
-                        "Dettaglio Template Email",
+                        "Email Template Detail",
                         TraceUtils.getSpanID(),
                         template)));
   }
 
   @GetMapping("/identifier/{identifier}")
-  @Operation(summary = "Ottieni template per identificatore e lingua", description = "Recupera il template email per identificatore con supporto fallback multilingua")
+  @Operation(
+      summary = "Get template by identifier and locale",
+      description =
+          "Retrieves the email template by identifier with multilingual fallback support")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> getTemplateByIdentifier(
       @PathVariable("identifier") String identifier,
@@ -102,13 +113,15 @@ public class EmailTemplateController {
                 ResponseEntity.ok(
                     new Response(
                         HttpStatus.OK.value(),
-                        "Template Email per Identificatore",
+                        "Email Template by Identifier",
                         TraceUtils.getSpanID(),
                         template)));
   }
 
   @PostMapping
-  @Operation(summary = "Crea nuovo template email", description = "Salva un nuovo template email con parametri dinamici sul database")
+  @Operation(
+      summary = "Create new email template",
+      description = "Saves a new email template with dynamic parameters to the database")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> createTemplate(
       @Valid @RequestBody EmailTemplateDTO dto, ServerHttpRequest request) {
@@ -120,13 +133,15 @@ public class EmailTemplateController {
                     .body(
                         new Response(
                             HttpStatus.CREATED.value(),
-                            "Template Email creato con successo",
+                            "Email Template successfully created",
                             TraceUtils.getSpanID(),
                             saved)));
   }
 
   @PutMapping("/{id}")
-  @Operation(summary = "Aggiorna template email esistente", description = "Modifica il template email con l'ID specificato")
+  @Operation(
+      summary = "Update existing email template",
+      description = "Modifies the email template with the specified ID")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> updateTemplate(
       @PathVariable("id") Long id,
@@ -140,13 +155,15 @@ public class EmailTemplateController {
                 ResponseEntity.ok(
                     new Response(
                         HttpStatus.OK.value(),
-                        "Template Email aggiornato con successo",
+                        "Email Template successfully updated",
                         TraceUtils.getSpanID(),
                         updated)));
   }
 
   @DeleteMapping("/{id}")
-  @Operation(summary = "Elimina template email", description = "Cancella definitivamente il template email dal database")
+  @Operation(
+      summary = "Delete email template",
+      description = "Permanently deletes the email template from the database")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> deleteTemplate(
       @PathVariable("id") Long id, ServerHttpRequest request) {
@@ -156,13 +173,16 @@ public class EmailTemplateController {
             ResponseEntity.ok(
                 new Response(
                     HttpStatus.OK.value(),
-                    "Template Email eliminato con successo",
+                    "Email Template successfully deleted",
                     TraceUtils.getSpanID(),
                     null)));
   }
 
   @PostMapping("/send-test")
-  @Operation(summary = "Invia email di prova", description = "Compila il template con i parametri specificati ed effettua l'invio tramite EmailSenderClient")
+  @Operation(
+      summary = "Send test email",
+      description =
+          "Compiles the template with the specified parameters and sends it via EmailSenderClient")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> sendTestEmail(
       @Valid @RequestBody EmailSendTestRequest testRequest, ServerHttpRequest request) {

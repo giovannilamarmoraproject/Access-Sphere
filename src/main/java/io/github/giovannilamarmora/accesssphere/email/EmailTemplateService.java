@@ -76,11 +76,11 @@ public class EmailTemplateService {
   public Mono<EmailTemplateDTO> getTemplateByIdentifierAndLocale(String identifier, String locale) {
     return Mono.fromCallable(
         () -> {
-          LOG.info("Ricerca template email per identifier=[{}] e locale=[{}]", identifier, locale);
+          LOG.info("Searching for email template for identifier=[{}] and locale=[{}]", identifier, locale);
           List<EmailTemplateEntity> templates = emailTemplateDAO.findByIdentifier(identifier);
 
           if (templates.isEmpty()) {
-            LOG.error("Nessun template email trovato per identifier=[{}]", identifier);
+            LOG.error("No email template found for identifier=[{}]", identifier);
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Template email non trovato per identifier: " + identifier);
           }
@@ -124,7 +124,7 @@ public class EmailTemplateService {
 
           // 4. Fallback sul primo template disponibile per quell'identificatore
           LOG.warn(
-              "Nessuna corrispondenza di lingua per identifier=[{}], locale=[{}]. Utilizzo primo template disponibile con locale=[{}]",
+              "No language match found for identifier=[{}], locale=[{}]. Using first available template with locale=[{}]",
               identifier,
               locale,
               templates.getFirst().getLocale());
@@ -147,7 +147,7 @@ public class EmailTemplateService {
     return Mono.fromCallable(
         () -> {
           LOG.info(
-              "Ricerca template email per category=[{}], locale=[{}], clientId=[{}]",
+              "Searching for email template for category=[{}], locale=[{}], clientId=[{}]",
               category,
               locale,
               clientId);
@@ -163,13 +163,13 @@ public class EmailTemplateService {
                 resolveTemplateFromList(clientTemplates, locale);
             if (clientMatch.isPresent()) {
               LOG.info(
-                  "Template trovato per Client dedicato=[{}], ID=[{}]",
+                  "Template found for dedicated Client=[{}], ID=[{}]",
                   clientId,
                   clientMatch.get().getId());
               return EmailTemplateMapper.toDTO(clientMatch.get());
             }
             LOG.warn(
-                "Nessun template specifico trovato per clientId=[{}] e category=[{}]. Eseguo fallback su template Globale Access Sphere",
+                "No specific template found for clientId=[{}] and category=[{}]. Falling back to Global Access Sphere template",
                 clientId,
                 effectiveCategory);
           }
@@ -182,7 +182,7 @@ public class EmailTemplateService {
                 resolveTemplateFromList(techClientTemplates, locale);
             if (techMatch.isPresent()) {
               LOG.info(
-                  "Template trovato per Client Tecnico ACCESS-SPHERE-TECH per category=[{}], ID=[{}]",
+                  "Template found for Tech Client ACCESS-SPHERE-TECH for category=[{}], ID=[{}]",
                   effectiveCategory,
                   techMatch.get().getId());
               return EmailTemplateMapper.toDTO(techMatch.get());
@@ -196,7 +196,7 @@ public class EmailTemplateService {
               resolveTemplateFromList(globalTemplates, locale);
           if (globalMatch.isPresent()) {
             LOG.info(
-                "Template Globale Access Sphere trovato per category=[{}], ID=[{}]",
+                "Global Access Sphere Template found for category=[{}], ID=[{}]",
                 effectiveCategory,
                 globalMatch.get().getId());
             return EmailTemplateMapper.toDTO(globalMatch.get());
@@ -240,7 +240,7 @@ public class EmailTemplateService {
           }
 
           LOG.error(
-              "Nessun template email trovato per category=[{}], locale=[{}], clientId=[{}]",
+              "No email template found for category=[{}], locale=[{}], clientId=[{}]",
               category,
               locale,
               clientId);
@@ -344,7 +344,7 @@ public class EmailTemplateService {
                 String.format(
                     "Esiste già un template registrato per la categoria [%s], %s e %s.",
                     category, clientDesc, localeDesc);
-            LOG.warn("Conflitto duplicato template email: {}", errorMsg);
+            LOG.warn("Email template duplicate conflict: {}", errorMsg);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMsg);
           }
 
@@ -364,7 +364,7 @@ public class EmailTemplateService {
           }
           EmailTemplateEntity saved = emailTemplateDAO.save(entity);
           LOG.info(
-              "Template email salvato con successo: ID=[{}], category=[{}], clientId=[{}], locale=[{}]",
+              "Email template successfully saved: ID=[{}], category=[{}], clientId=[{}], locale=[{}]",
               saved.getId(),
               saved.getCategory(),
               saved.getClientId(),
@@ -383,7 +383,7 @@ public class EmailTemplateService {
                     HttpStatus.NOT_FOUND, "Template email con ID " + id + " non trovato");
               }
               emailTemplateDAO.deleteById(id);
-              LOG.info("Template email eliminato con successo: ID=[{}]", id);
+              LOG.info("Email template successfully deleted: ID=[{}]", id);
               return true;
             })
         .then();

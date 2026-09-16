@@ -80,8 +80,6 @@ public class ClientCredentialEntity extends GenericEntity {
   @Column(name = "ACCESS_TOKEN")
   private Boolean accessToken;
 
-  @Column(name = "STRAPI_TOKEN")
-  private Boolean strapiToken;
 
   @Column(name = "AUTHORIZE_REDIRECT_STATUS")
   private HttpStatus authorize_redirect_status;

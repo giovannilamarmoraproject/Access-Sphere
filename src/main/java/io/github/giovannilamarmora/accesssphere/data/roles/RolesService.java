@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.data.roles;
 
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.roles.dto.UserRoles;

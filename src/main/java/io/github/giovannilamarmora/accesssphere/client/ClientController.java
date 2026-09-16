@@ -60,6 +60,14 @@ public class ClientController {
   }
 
   @PostMapping("/client")
+  @Operation(
+      description = "API to create a new Client (Only Tech User)",
+      summary = "Create Client",
+      tags = OpenAPI.Tag.CLIENT)
+  @ApiResponse(
+      responseCode = "200",
+      description = "Client successfully created",
+      content = @Content(schema = @Schema(implementation = Response.class)))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> createClient(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
@@ -76,6 +84,14 @@ public class ClientController {
   }
 
   @PutMapping("/client")
+  @Operation(
+      description = "API to update an existing Client (Only Tech User)",
+      summary = "Update Client",
+      tags = OpenAPI.Tag.CLIENT)
+  @ApiResponse(
+      responseCode = "200",
+      description = "Client successfully updated",
+      content = @Content(schema = @Schema(implementation = Response.class)))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> updateClient(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
@@ -92,6 +108,14 @@ public class ClientController {
   }
 
   @DeleteMapping("/client/{clientId}")
+  @Operation(
+      description = "API to delete an existing Client (Only Tech User)",
+      summary = "Delete Client",
+      tags = OpenAPI.Tag.CLIENT)
+  @ApiResponse(
+      responseCode = "200",
+      description = "Client successfully deleted",
+      content = @Content(schema = @Schema(implementation = Response.class)))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> deleteClient(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,

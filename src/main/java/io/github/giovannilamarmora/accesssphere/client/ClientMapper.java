@@ -56,7 +56,6 @@ public class ClientMapper {
                       clientCredentialEntity.getAppRoles(), new TypeReference<>() {}),
               clientCredentialEntity.getIdToken(),
               clientCredentialEntity.getAccessToken(),
-              clientCredentialEntity.getStrapiToken(),
               clientCredentialEntity.getAuthorize_redirect_status(),
               clientCredentialEntity.getMfaEnabled(),
               ObjectUtils.isEmpty(clientCredentialEntity.getWebhooks())
@@ -97,7 +96,6 @@ public class ClientMapper {
             : Mapper.writeObjectToString(clientCredential.getAppRoles()),
         clientCredential.getIdToken(),
         clientCredential.getAccessToken(),
-        clientCredential.getStrapiToken(),
         clientCredential.getAuthorize_redirect_status(),
         clientCredential.getMfaEnabled(),
         ObjectUtils.isEmpty(clientCredential.getWebhooks())
@@ -133,7 +131,6 @@ public class ClientMapper {
             : Mapper.writeObjectToString(clientCredential.getAppRoles()));
     existingClient.setIdToken(clientCredential.getIdToken());
     existingClient.setAccessToken(clientCredential.getAccessToken());
-    existingClient.setStrapiToken(clientCredential.getStrapiToken());
     existingClient.setAuthorize_redirect_status(clientCredential.getAuthorize_redirect_status());
     existingClient.setMfaEnabled(clientCredential.getMfaEnabled());
     existingClient.setWebhooks(

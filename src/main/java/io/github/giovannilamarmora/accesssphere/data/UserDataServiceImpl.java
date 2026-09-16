@@ -1,6 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.data;
 
-import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiException;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -21,74 +20,26 @@ public class UserDataServiceImpl implements UserDataService {
 
   @Autowired @Lazy private UserLogicService logicService;
 
-  @Override
-  public Boolean isStrapiEnabled() {
-    return logicService.getIsStrapiEnabled();
-  }
-
-  @Override
-  public void setStrapiEnabled(boolean status) {
-    logicService.setIsStrapiEnabled(status);
-  }
-
   /**
-   * Retrieves a {@link User} by its unique identifier, checking the configured source.
-   *
-   * <p>If Strapi is enabled, it attempts to fetch the user from Strapi. Otherwise, it falls back to
-   * the local database.
+   * Retrieves a {@link User} by its unique identifier from the local database.
    *
    * @param identifier the unique identifier of the user (e.g., username or email)
    * @return a {@link Mono} emitting the found {@link User}, or empty if not found
    */
   @Override
   public Mono<User> getUserByIdentifier(String identifier) {
-    return logicService.getUserByIdentifier(identifier, false);
+    return logicService.getUserByIdentifier(identifier);
   }
 
   /**
-   * Retrieves a {@link User} by its unique identifier, with optional Strapi lookup.
-   *
-   * <p>If {@code getStrapiId} is {@code true} and Strapi is enabled, this method fetches the user
-   * from Strapi. If Strapi is disabled or {@code getStrapiId} is {@code false}, it retrieves the
-   * user from the local database.
-   *
-   * @param identifier the unique identifier of the user (e.g., username or email)
-   * @param getStrapiId if {@code true}, attempts to fetch the user from Strapi (if enabled)
-   * @return a {@link Mono} emitting the found {@link User}, or empty if not found
-   */
-  @Override
-  public Mono<User> getUserByIdentifier(String identifier, boolean getStrapiId) {
-    return logicService.getUserByIdentifier(identifier, getStrapiId);
-  }
-
-  /**
-   * Retrieves a {@link User} by their email, based on the active data source.
-   *
-   * <p>If Strapi is enabled, the user is fetched from Strapi. Otherwise, the method falls back to
-   * the local database.
+   * Retrieves a {@link User} by their email from the local database.
    *
    * @param email the email address of the user
    * @return a {@link Mono} emitting the found {@link User}, or empty if not found
    */
   @Override
   public Mono<User> getUserByEmail(String email) {
-    return logicService.getUserByEmail(email, false);
-  }
-
-  /**
-   * Retrieves a {@link User} by their email, with optional Strapi lookup.
-   *
-   * <p>If {@code getStrapiId} is {@code true} and Strapi is enabled, the user is fetched from
-   * Strapi. If Strapi is disabled or {@code getStrapiId} is {@code false}, the user is retrieved
-   * from the local database.
-   *
-   * @param email the email address of the user
-   * @param getStrapiId if {@code true}, attempts to fetch the user from Strapi (if enabled)
-   * @return a {@link Mono} emitting the found {@link User}, or empty if not found
-   */
-  @Override
-  public Mono<User> getUserByEmail(String email, boolean getStrapiId) {
-    return logicService.getUserByEmail(email, getStrapiId);
+    return logicService.getUserByEmail(email);
   }
 
   /**
@@ -178,8 +129,7 @@ public class UserDataServiceImpl implements UserDataService {
    * Updates a user in the system without modifying the user's password.
    *
    * <p>This method delegates the user update process, including updating the user entity in the
-   * database. If Strapi integration is enabled, it may also synchronize user information with
-   * Strapi, but the password is not updated in this case.
+   * database.
    *
    * @param userToUpdate the user data to be updated, containing the fields to be modified
    * @return a {@link Mono} emitting the updated {@link User}, after the update process is complete
@@ -187,7 +137,7 @@ public class UserDataServiceImpl implements UserDataService {
    */
   @Override
   public Mono<User> updateUser(User userToUpdate) {
-    return logicService.updateUser(userToUpdate, false, true);
+    return logicService.updateUser(userToUpdate, false);
   }
 
   /**
@@ -195,7 +145,7 @@ public class UserDataServiceImpl implements UserDataService {
    *
    * <p>This method delegates the user update process, including updating the user entity in the
    * database and optionally updating the user's password based on the {@code isUpdatePassword}
-   * flag. If Strapi integration is enabled, it may also synchronize user information with Strapi.
+   * flag.
    *
    * @param userToUpdate the user data to be updated, containing the fields to be modified
    * @param isUpdatePassword flag indicating whether the user's password should be updated
@@ -204,70 +154,23 @@ public class UserDataServiceImpl implements UserDataService {
    */
   @Override
   public Mono<User> updateUser(User userToUpdate, boolean isUpdatePassword) {
-    return logicService.updateUser(userToUpdate, isUpdatePassword, true);
+    return logicService.updateUser(userToUpdate, isUpdatePassword);
   }
 
   /**
-   * Updates a user in the system, with an option to fetch the user's Strapi information before
-   * performing the update.
+   * Deletes a user from the system based on the provided identifier.
    *
-   * <p>This method allows you to decide whether to first retrieve the user's data from Strapi
-   * (using the user's identifier) before proceeding with the update. If Strapi integration is
-   * enabled and {@code callStrapiUserByIdentifier} is {@code true}, the user data is synchronized
-   * with Strapi before the update process. If Strapi is not enabled or the flag is {@code false},
-   * the update is performed directly on the local database.
-   *
-   * @param callStrapiUserByIdentifier flag indicating whether to fetch the user data from Strapi
-   *     before performing the update
-   * @param userToUpdate the user data to be updated, containing the fields to be modified
-   * @return a {@link Mono} emitting the updated {@link User}, after the update process is complete
-   * @throws UserException if any error occurs during the update process or if the user's data is
-   *     invalid
-   */
-  @Override
-  public Mono<User> updateUser(boolean callStrapiUserByIdentifier, User userToUpdate) {
-    return logicService.updateUser(userToUpdate, false, callStrapiUserByIdentifier);
-  }
-
-  /**
-   * Updates a user in the local database and optionally synchronizes with Strapi.
-   *
-   * <p>This method handles the user update process by updating the user entity in the database and,
-   * if Strapi is enabled, synchronizing user information with Strapi based on the provided
-   * parameters. It also supports password updates and validation based on the {@code
-   * isUpdatePassword} flag.
-   *
-   * @param userToUpdate the user data to be updated, containing the fields to be modified
-   * @param isUpdatePassword flag indicating whether the user's password should be updated
-   * @param callStrapiUserByIdentifier flag indicating whether to retrieve the user's Strapi
-   *     information before updating (if Strapi is enabled)
-   * @return a {@link Mono} emitting the updated {@link User}, either from the database or Strapi
-   * @throws UserException if the password format is invalid or any other update error occurs
-   */
-  @Override
-  public Mono<User> updateUserProcess(
-      User userToUpdate, boolean isUpdatePassword, boolean callStrapiUserByIdentifier) {
-    return logicService.updateUser(userToUpdate, isUpdatePassword, callStrapiUserByIdentifier);
-  }
-
-  /**
-   * Deletes a user from the system based on the provided identifier and Strapi token.
-   *
-   * <p>This method removes the user either from the local database or synchronizes the removal with
-   * Strapi, depending on the configuration. The provided {@code strapi_token} is used for
-   * authenticating the request with Strapi, and the {@code identifier} specifies which user to
-   * delete.
+   * <p>This method removes the user from the local database.
    *
    * @param identifier the unique identifier of the user to be deleted (e.g., username, email, or
    *     ID)
-   * @param strapi_token the authentication token used for validating the request with Strapi
    * @return a {@link Mono} emitting a {@link Response} indicating the outcome of the delete
    *     operation
    */
   @Override
   public Mono<Response> deleteUser(
-      String identifier, String strapi_token, String bearer, ServerWebExchange exchange) {
-    return logicService.deleteUser(identifier, strapi_token, bearer, exchange);
+      String identifier, String bearer, ServerWebExchange exchange) {
+    return logicService.deleteUser(identifier, bearer, exchange);
   }
 
   /**
@@ -309,23 +212,6 @@ public class UserDataServiceImpl implements UserDataService {
   @Override
   public Mono<Void> logout(AccessTokenData accessTokenData) {
     return logicService.logout(accessTokenData);
-  }
-
-  /**
-   * Retrieves a list of users from Strapi using the provided bearer token.
-   *
-   * <p>This method interacts with Strapi to fetch the list of users. The {@code strapi_bearer}
-   * token is used for authenticating the request to Strapi. The response is returned as a list of
-   * {@link User} objects, wrapped in a {@link Mono} to support reactive programming.
-   *
-   * @param strapi_bearer the bearer token used to authenticate the request with Strapi
-   * @return a {@link Mono} emitting a list of {@link User} objects retrieved from Strapi or an
-   *     empty list if no users are found or the request fails
-   * @throws StrapiException if there is an error when retrieving users from Strapi
-   */
-  @Override
-  public Mono<List<User>> getStrapiUsers(String strapi_bearer) {
-    return logicService.getStrapiUsers(strapi_bearer);
   }
 
   /**

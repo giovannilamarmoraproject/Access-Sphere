@@ -4,8 +4,6 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderServi
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
-import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
-import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.UserDataService;
@@ -55,7 +53,6 @@ public class UserService {
   @Autowired private UserDataService dataService;
   @Autowired private ClientService clientService;
   @Autowired private TokenService tokenService;
-  @Autowired private StrapiService strapiService;
   @Autowired private EmailTemplateService emailTemplateService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private AccessTokenData accessTokenData;
@@ -285,25 +282,24 @@ public class UserService {
     return clientCredentialMono.flatMap(
         clientCredential -> {
           TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
-          return strapiService
+          return dataService
               .getUserByIdentifier(identifier)
               .flatMap(
-                  strapiUser -> {
-                    strapiUser.setBlocked(block);
-                    return strapiService
-                        .updateUser(strapiUser)
+                  user -> {
+                    user.setBlocked(block);
+                    return dataService
+                        .updateUser(user, false)
                         .flatMap(
-                            strapiUser1 -> {
-                              User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                            user1 -> {
                               Response response =
                                   new Response(
                                       HttpStatus.OK.value(),
                                       "User "
-                                          + userRes.getUsername()
+                                          + user1.getUsername()
                                           + " successfully "
                                           + (block ? "locked!" : "unlocked!"),
                                       TraceUtils.getSpanID(),
-                                      userRes);
+                                      user1);
                               return Mono.just(ResponseEntity.ok(response));
                             });
                   })
@@ -347,11 +343,11 @@ public class UserService {
             : "RESET_PASSWORD";
     String requestedClientId = changePassword.getClientId();
 
-    Mono<EmailTemplateDTO> strapiEmailTemplateMono =
+    Mono<EmailTemplateDTO> emailTemplateMono =
         emailTemplateService.getTemplateByCategoryLocaleAndClient(
             categoryOrId, locale, requestedClientId);
 
-    return Mono.zip(userMono, strapiEmailTemplateMono)
+    return Mono.zip(userMono, emailTemplateMono)
         .flatMap(
             objects -> {
               Mono<User> updatedUserMono = dataService.updateUser(objects.getT1());
@@ -460,9 +456,8 @@ public class UserService {
         .flatMap(
             clientCredential -> {
               TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
-              String strapi_token = OAuthMapper.getStrapiAccessToken(accessTokenData);
               return dataService
-                  .getStrapiUsers(strapi_token)
+                  .getUsers()
                   .flatMap(
                       users -> {
                         Response response =
@@ -491,9 +486,8 @@ public class UserService {
     return clientCredentialMono.flatMap(
         clientCredential -> {
           TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
-          String strapi_token = OAuthMapper.getStrapiAccessToken(accessTokenData);
           return dataService
-              .deleteUser(identifier, strapi_token, bearer, exchange)
+              .deleteUser(identifier, bearer, exchange)
               .flatMap(response -> Mono.just(ResponseEntity.ok(response)))
               .doOnSuccess(
                   responseResponseEntity ->

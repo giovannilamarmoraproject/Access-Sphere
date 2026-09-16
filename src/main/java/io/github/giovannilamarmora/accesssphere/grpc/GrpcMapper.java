@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.grpc;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;

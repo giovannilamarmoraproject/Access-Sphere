@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Mapper per la conversione tra entita di persistenza EmailTemplateEntity, il relativo DTO di
- * esposizione EmailTemplateDTO e l'oggetto StrapiEmailTemplate utilizzato dal motore di invio email
+ * esposizione EmailTemplateDTO e l'oggetto EmailTemplateDTO utilizzato dal motore di invio email
  * esistente.
  */
 @Component
