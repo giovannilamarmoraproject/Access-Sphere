@@ -836,7 +836,7 @@
   "email_search_placeholder": "Vorlage nach ID, Name, Betreff suchen...",
   "email_filter_locale_all": "Alle Sprachen",
   "email_filter_locale_it": "Italienisch (it)",
-  "email_filter_locale_en": "Englisch (en-GB)",
+  "email_filter_locale_en": "Englisch (en)",
   "email_filter_locale_fr": "Französisch (fr)",
   "email_filter_locale_es": "Spanisch (es)",
   "email_filter_locale_de": "Deutsch (de)",
@@ -930,5 +930,11 @@
   "email_swal_test_sent_desc": "Die Test-E-Mail wurde erfolgreich an den angegebenen Empfänger zugestellt.",
   "email_swal_test_error_title": "Fehler beim Testsenden",
   "email_swal_load_error_title": "Ladefehler",
-  "email_swal_load_error_desc": "E-Mail-Vorlagen konnten nicht abgerufen werden."
+  "email_swal_load_error_desc": "E-Mail-Vorlagen konnten nicht abgerufen werden.",
+  "btn_edit": "Bearbeiten",
+  "email_locale_it": "Italienisch (it)",
+  "email_locale_en": "Englisch (en)",
+  "email_locale_fr": "Französisch (fr)",
+  "email_locale_es": "Spanisch (es)",
+  "email_locale_de": "Deutsch (de)"
 }

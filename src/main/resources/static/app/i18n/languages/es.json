@@ -836,7 +836,7 @@
   "email_search_placeholder": "Buscar por ID, nombre, asunto...",
   "email_filter_locale_all": "Todos los idiomas",
   "email_filter_locale_it": "Italiano (it)",
-  "email_filter_locale_en": "Inglés (en-GB)",
+  "email_filter_locale_en": "Inglés (en)",
   "email_filter_locale_fr": "Francés (fr)",
   "email_filter_locale_es": "Español (es)",
   "email_filter_locale_de": "Alemán (de)",
@@ -930,5 +930,11 @@
   "email_swal_test_sent_desc": "El correo de prueba se entregó con éxito al destinatario especificado.",
   "email_swal_test_error_title": "Error al Enviar Prueba",
   "email_swal_load_error_title": "Error de Carga",
-  "email_swal_load_error_desc": "No se pudieron recuperar las plantillas de correo."
+  "email_swal_load_error_desc": "No se pudieron recuperar las plantillas de correo.",
+  "btn_edit": "Editar",
+  "email_locale_it": "Italiano (it)",
+  "email_locale_en": "Inglés (en)",
+  "email_locale_fr": "Francés (fr)",
+  "email_locale_es": "Español (es)",
+  "email_locale_de": "Alemán (de)"
 }

@@ -836,7 +836,7 @@
   "email_search_placeholder": "Search template by ID, name, subject...",
   "email_filter_locale_all": "All languages",
   "email_filter_locale_it": "Italian (it)",
-  "email_filter_locale_en": "English (en-GB)",
+  "email_filter_locale_en": "English (en)",
   "email_filter_locale_fr": "French (fr)",
   "email_filter_locale_es": "Spanish (es)",
   "email_filter_locale_de": "German (de)",
@@ -930,5 +930,11 @@
   "email_swal_test_sent_desc": "The test email was successfully delivered to the specified recipient.",
   "email_swal_test_error_title": "Test Send Error",
   "email_swal_load_error_title": "Loading Error",
-  "email_swal_load_error_desc": "Unable to retrieve email templates."
+  "email_swal_load_error_desc": "Unable to retrieve email templates.",
+  "btn_edit": "Edit",
+  "email_locale_it": "Italian (it)",
+  "email_locale_en": "English (en)",
+  "email_locale_fr": "French (fr)",
+  "email_locale_es": "Spanish (es)",
+  "email_locale_de": "German (de)"
 }

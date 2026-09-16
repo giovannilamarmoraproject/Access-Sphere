@@ -836,7 +836,7 @@
   "email_search_placeholder": "Rechercher par identifiant, nom, objet...",
   "email_filter_locale_all": "Toutes les langues",
   "email_filter_locale_it": "Italien (it)",
-  "email_filter_locale_en": "Anglais (en-GB)",
+  "email_filter_locale_en": "Anglais (en)",
   "email_filter_locale_fr": "Français (fr)",
   "email_filter_locale_es": "Espagnol (es)",
   "email_filter_locale_de": "Allemand (de)",
@@ -930,5 +930,11 @@
   "email_swal_test_sent_desc": "L'e-mail de test a été remis avec succès au destinataire spécifié.",
   "email_swal_test_error_title": "Erreur d'envoi du test",
   "email_swal_load_error_title": "Erreur de chargement",
-  "email_swal_load_error_desc": "Impossible de récupérer les modèles d'e-mail."
+  "email_swal_load_error_desc": "Impossible de récupérer les modèles d'e-mail.",
+  "btn_edit": "Modifier",
+  "email_locale_it": "Italien (it)",
+  "email_locale_en": "Anglais (en)",
+  "email_locale_fr": "Français (fr)",
+  "email_locale_es": "Espagnol (es)",
+  "email_locale_de": "Allemand (de)"
 }

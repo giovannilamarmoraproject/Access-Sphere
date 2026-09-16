@@ -221,7 +221,7 @@ function renderTemplatesList(templates) {
     const lblUntitled = typeof t === "function" ? t("email_untitled", "Template Senza Nome") : "Template Senza Nome";
     const lblDetail = typeof t === "function" ? t("btn_detail", "Dettaglio") : "Dettaglio";
     const lblTestSend = typeof t === "function" ? t("btn_test_send", "Invia Test") : "Invia Test";
-    const lblEdit = typeof t === "function" ? t("btn_edit", "Modifica") : "Modifica";
+    const lblEdit = typeof t === "function" ? t("email_action_edit", t("btn_edit", "Modifica")) : "Modifica";
     const lblDeleteTitle = typeof t === "function" ? t("email_action_delete_title", "Elimina Template") : "Elimina Template";
 
     filtered.forEach((item) => {

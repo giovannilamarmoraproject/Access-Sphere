@@ -836,7 +836,7 @@
   "email_search_placeholder": "Cerca template per ID, nome, oggetto...",
   "email_filter_locale_all": "Tutte le lingue",
   "email_filter_locale_it": "Italiano (it)",
-  "email_filter_locale_en": "Inglese (en-GB)",
+  "email_filter_locale_en": "Inglese (en)",
   "email_filter_locale_fr": "Francese (fr)",
   "email_filter_locale_es": "Spagnolo (es)",
   "email_filter_locale_de": "Tedesco (de)",
@@ -930,5 +930,11 @@
   "email_swal_test_sent_desc": "L'email di collaudo è stata recapitata con successo al destinatario specificato.",
   "email_swal_test_error_title": "Errore Invio Test",
   "email_swal_load_error_title": "Errore Caricamento",
-  "email_swal_load_error_desc": "Impossibile recuperare i template email."
+  "email_swal_load_error_desc": "Impossibile recuperare i template email.",
+  "btn_edit": "Modifica",
+  "email_locale_it": "Italiano (it)",
+  "email_locale_en": "Inglese (en)",
+  "email_locale_fr": "Francese (fr)",
+  "email_locale_es": "Spagnolo (es)",
+  "email_locale_de": "Tedesco (de)"
 }
