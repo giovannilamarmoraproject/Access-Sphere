@@ -54,7 +54,7 @@ public class AppSettingsService {
             entity = appSettingsDAO.save(defaultEntity);
             appSettingsDAO.flush();
           } else {
-            entity = list.get(0);
+            entity = list.getFirst();
           }
           AppSettingsDTO dto = AppSettingsMapper.toDTO(entity);
           publicCache.set(dto);
