@@ -28,8 +28,7 @@ public class AppSettingsDTO {
   private LoginSettingsDTO loginSettings;
   private PolicySettingsDTO policySettings;
 
-  @JsonIgnore
-  public void setBrandingSettings(java.util.Map<String, Object> map) {
+  public void setBrandingSettingsMap(java.util.Map<String, Object> map) {
     this.brandingSettings = io.github.giovannilamarmora.accesssphere.settings.AppSettingsMapper.toBrandingDTO(map);
   }
 
@@ -37,8 +36,7 @@ public class AppSettingsDTO {
     this.brandingSettings = brandingSettings;
   }
 
-  @JsonIgnore
-  public void setLoginSettings(java.util.Map<String, Object> map) {
+  public void setLoginSettingsMap(java.util.Map<String, Object> map) {
     this.loginSettings = io.github.giovannilamarmora.accesssphere.settings.AppSettingsMapper.toLoginDTO(map);
   }
 
@@ -46,8 +44,7 @@ public class AppSettingsDTO {
     this.loginSettings = loginSettings;
   }
 
-  @JsonIgnore
-  public void setPolicySettings(java.util.Map<String, Object> map) {
+  public void setPolicySettingsMap(java.util.Map<String, Object> map) {
     this.policySettings = io.github.giovannilamarmora.accesssphere.settings.AppSettingsMapper.toPolicyDTO(map);
   }
 

@@ -224,17 +224,17 @@ class AppSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     AppSettingsDTO updateDTO = new AppSettingsDTO();
-    updateDTO.setBrandingSettings(
+    updateDTO.setBrandingSettingsMap(
         java.util.Map.of(
             "appName", "Mapped App Name",
             "appTagline", "Mapped Tagline",
             "supportEmail", "mapped@test.com"));
-    updateDTO.setLoginSettings(
+    updateDTO.setLoginSettingsMap(
         java.util.Map.of(
             "loginMode", "CUSTOM_BACKGROUND",
             "loginBgOpacity", 80,
             "loginHeroTitle", "Custom Hero Title"));
-    updateDTO.setPolicySettings(
+    updateDTO.setPolicySettingsMap(
         java.util.Map.of(
             "privacyPolicyUrl", "/custom-privacy",
             "cookiePolicyUrl", "/custom-cookie"));
