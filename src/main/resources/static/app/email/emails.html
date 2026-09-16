@@ -402,6 +402,91 @@
             border: 1px solid rgba(245, 158, 11, 0.3);
             color: #fcd34d;
         }
+
+        /* =======================================================
+           TOOLBAR FILTRI TABELLA TEMPLATE EMAIL
+           - Mobile (< 768px): disposizione verticale a tutta larghezza (una sotto l'altra)
+           - Tablet / Laptop (768px - 1199px): barra di ricerca su riga 1, filtri affiancati su riga 2
+           - Desktop (>= 1200px): ricerca a sinistra e filtri affiancati a destra su riga singola
+           ======================================================= */
+        .email-toolbar-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+            width: 100%;
+        }
+
+        .email-search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .email-filters-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .email-filter-select {
+            width: 100% !important;
+            display: block !important;
+        }
+
+        @media (min-width: 768px) {
+            .email-filters-group {
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+                width: 100%;
+                flex-wrap: nowrap;
+            }
+
+            .email-filter-select {
+                flex: 1 1 0 !important;
+                width: auto !important;
+                min-width: 0 !important;
+                display: inline-block !important;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .email-toolbar-grid {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+            }
+
+            .email-search-wrapper {
+                max-width: 320px;
+                flex: 1 1 auto;
+                width: auto;
+            }
+
+            .email-filters-group {
+                width: auto;
+                flex-shrink: 0;
+                justify-content: flex-end;
+            }
+
+            .email-filter-select {
+                flex: 0 0 auto !important;
+            }
+
+            #category-filter-select.email-filter-select {
+                width: 210px !important;
+            }
+
+            #client-filter-select.email-filter-select {
+                width: 230px !important;
+            }
+
+            #locale-filter-select.email-filter-select {
+                width: 175px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -610,9 +695,9 @@
     <!-- Main Content Bento Card: Template List & Search -->
     <div class="m3-bento-card p-6 mb-8">
 
-        <!-- Toolbar: Search & Filters arranged side-by-side -->
-        <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3 mb-6">
-            <div class="relative w-full xl:w-72 2xl:w-80 shrink-0">
+        <!-- Toolbar: Search & Filters arranged side-by-side on desktop, stacked on mobile -->
+        <div class="email-toolbar-grid">
+            <div class="email-search-wrapper">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none z-10"></i>
                 <input
                         type="text"
@@ -624,11 +709,11 @@
                 />
             </div>
 
-            <!-- Contenitore Filtri allineati orizzontalmente uno accanto all'altro -->
-            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto justify-start xl:justify-end shrink-0">
+            <!-- Contenitore Filtri: affiancati su desktop, impilati su mobile -->
+            <div class="email-filters-group">
                 <!-- Filtro per Categoria -->
                 <select id="category-filter-select"
-                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-44 min-w-0"
+                        class="form-select m3-form-input m3-select-input email-filter-select rounded-xl text-sm py-2"
                         onchange="handleCategoryFilter(this.value)">
                     <option value="ALL" data-i18n="email_filter_cat_all">Tutte le categorie</option>
                     <option value="RESET_PASSWORD" data-i18n="email_cat_reset_password">Reimpostazione Password</option>
@@ -640,7 +725,7 @@
 
                 <!-- Filtro per Applicazione / Client -->
                 <select id="client-filter-select"
-                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-48 min-w-0"
+                        class="form-select m3-form-input m3-select-input email-filter-select rounded-xl text-sm py-2"
                         onchange="handleClientFilter(this.value)">
                     <option value="ALL" data-i18n="email_filter_client_all">Tutte le applicazioni</option>
                     <option value="ACCESS-SPHERE-TECH" data-i18n="email_client_default">ACCESS-SPHERE-TECH (Predefinito)</option>
@@ -650,7 +735,7 @@
 
                 <!-- Filtro per Lingua / Locale -->
                 <select id="locale-filter-select"
-                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-40 min-w-0"
+                        class="form-select m3-form-input m3-select-input email-filter-select rounded-xl text-sm py-2"
                         onchange="handleLocaleFilter(this.value)">
                     <option value="ALL" data-i18n="email_filter_locale_all">Tutte le lingue</option>
                     <option value="it" data-i18n="email_locale_it">Italiano (it)</option>
