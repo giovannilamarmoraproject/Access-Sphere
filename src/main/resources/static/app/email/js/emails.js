@@ -10,12 +10,100 @@
  */
 
 let cachedTemplates = [];
+let cachedClients = [];
+let currentFilterCategory = "ALL";
+let currentFilterClient = "ALL";
 let currentFilterLocale = "ALL";
 let currentSearchQuery = "";
 let currentPreviewDevice = "desktop";
 let currentDetailTemplate = null;
 let currentDetailDevice = "desktop";
 let editorDebounceTimer = null;
+let duplicateCheckTimer = null;
+
+/**
+ * Mappatura semantica e metadati per le categorie di template censite nel sistema.
+ * Definisce icone, badge di stile, identificatori tecnici consigliati e parametri standard.
+ */
+const EMAIL_CATEGORIES = {
+    RESET_PASSWORD: {
+        code: "RESET_PASSWORD",
+        identifier: "ACCESS_SPHERE_CODE_RESET_PASSWORD",
+        icon: "fa-key",
+        colorClass: "text-purple-400",
+        badgeBg: "bg-purple-500/10 border-purple-500/30 text-purple-300",
+        activeInCode: true,
+        defaultName: "Reimpostazione Password",
+        defaultSubject: "Reimposta la tua password",
+        defaultParams: {
+            SITE_URL: "https://accesssphere.io",
+            NAME: "Mario Rossi",
+            RESET_CODE: "123456",
+            SITE_SHORT: "AS"
+        }
+    },
+    WELCOME_USER: {
+        code: "WELCOME_USER",
+        identifier: "ACCESS_SPHERE_WELCOME_USER",
+        icon: "fa-user-plus",
+        colorClass: "text-blue-400",
+        badgeBg: "bg-blue-500/10 border-blue-500/30 text-blue-300",
+        activeInCode: false,
+        defaultName: "Benvenuto Utente",
+        defaultSubject: "Benvenuto in Access Sphere",
+        defaultParams: {
+            SITE_URL: "https://accesssphere.io",
+            NAME: "Mario Rossi",
+            USERNAME: "mario.rossi"
+        }
+    },
+    EMAIL_VERIFICATION: {
+        code: "EMAIL_VERIFICATION",
+        identifier: "ACCESS_SPHERE_EMAIL_VERIFICATION",
+        icon: "fa-envelope-circle-check",
+        colorClass: "text-emerald-400",
+        badgeBg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-300",
+        activeInCode: false,
+        defaultName: "Verifica Indirizzo Email",
+        defaultSubject: "Verifica il tuo indirizzo email",
+        defaultParams: {
+            SITE_URL: "https://accesssphere.io",
+            NAME: "Mario Rossi",
+            VERIFY_URL: "https://accesssphere.io/verify?token=xyz",
+            VERIFY_CODE: "654321"
+        }
+    },
+    MFA_OTP: {
+        code: "MFA_OTP",
+        identifier: "ACCESS_SPHERE_MFA_OTP",
+        icon: "fa-shield-halved",
+        colorClass: "text-cyan-400",
+        badgeBg: "bg-cyan-500/10 border-cyan-500/30 text-cyan-300",
+        activeInCode: false,
+        defaultName: "Codice OTP MFA",
+        defaultSubject: "Il tuo codice di sicurezza MFA",
+        defaultParams: {
+            NAME: "Mario Rossi",
+            OTP_CODE: "890123",
+            EXPIRE_MINUTES: "10"
+        }
+    },
+    ACCOUNT_LOCKED: {
+        code: "ACCOUNT_LOCKED",
+        identifier: "ACCESS_SPHERE_ACCOUNT_LOCKED",
+        icon: "fa-lock",
+        colorClass: "text-rose-400",
+        badgeBg: "bg-rose-500/10 border-rose-500/30 text-rose-300",
+        activeInCode: false,
+        defaultName: "Avviso Account Bloccato",
+        defaultSubject: "Avviso di sicurezza: Account temporaneamente bloccato",
+        defaultParams: {
+            NAME: "Mario Rossi",
+            LOCK_REASON: "Troppi tentativi di accesso falliti",
+            SUPPORT_URL: "https://accesssphere.io/support"
+        }
+    }
+};
 
 // =========================================================================
 // 1. Inizializzazione e Caricamento Dati
@@ -32,6 +120,7 @@ window.addEventListener("languageChanged", () => {
         updateKpiMetrics(cachedTemplates);
         renderTemplatesList(cachedTemplates);
     }
+    populateClientSelects();
 });
 
 function initClock() {
@@ -58,6 +147,68 @@ function checkAuthAndLoad() {
     }
 
     loadEmailTemplates();
+    loadOAuthClients();
+}
+
+/**
+ * Recupera l'elenco dei client OAuth2 registrati per popolare il filtro della toolbar e la select di scoping dell'editor.
+ */
+function loadOAuthClients() {
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const tokenKey = cfg ? cfg.access_token : "access-token";
+    const token = typeof getCookieOrStorage === "function" ? getCookieOrStorage(tokenKey) : localStorage.getItem(tokenKey);
+    const url = cfg && cfg.client_id_url ? cfg.client_id_url : (window.location.origin + "/v1/clients");
+
+    GET(url, token)
+        .then(async (res) => {
+            const data = await res.json();
+            if (data && !data.error && Array.isArray(data.data)) {
+                cachedClients = data.data;
+                populateClientSelects();
+            }
+        })
+        .catch((err) => {
+            console.warn("Impossibile caricare i client OAuth2 per i template email:", err);
+        });
+}
+
+/**
+ * Popola dinamicamente le select dei client (filtro nella barra strumenti ed editor)
+ */
+function populateClientSelects() {
+    const filterSelect = document.getElementById("client-filter-select");
+    const editorSelect = document.getElementById("editor-client");
+
+    if (filterSelect) {
+        const currentVal = filterSelect.value || "ALL";
+        let filterHtml = `
+            <option value="ALL" data-i18n="email_filter_client_all">${typeof t === "function" ? t("email_filter_client_all", "Tutte le applicazioni") : "Tutte le applicazioni"}</option>
+            <option value="GLOBAL" data-i18n="email_client_global">${typeof t === "function" ? t("email_client_global", "Access Sphere (Globale / Predefinito)") : "Access Sphere (Globale / Predefinito)"}</option>
+        `;
+        cachedClients.forEach((c) => {
+            const cid = c.clientId || c.id;
+            if (cid) {
+                filterHtml += `<option value="${escapeHtml(cid)}">${escapeHtml(cid)}</option>`;
+            }
+        });
+        filterSelect.innerHTML = filterHtml;
+        filterSelect.value = currentVal;
+    }
+
+    if (editorSelect) {
+        const currentVal = editorSelect.value || "";
+        let editorHtml = `
+            <option value="" data-i18n="email_client_global">${typeof t === "function" ? t("email_client_global", "Access Sphere (Globale / Predefinito)") : "Access Sphere (Globale / Predefinito)"}</option>
+        `;
+        cachedClients.forEach((c) => {
+            const cid = c.clientId || c.id;
+            if (cid) {
+                editorHtml += `<option value="${escapeHtml(cid)}">${escapeHtml(cid)}</option>`;
+            }
+        });
+        editorSelect.innerHTML = editorHtml;
+        editorSelect.value = currentVal;
+    }
 }
 
 /**
@@ -152,9 +303,38 @@ function handleLocaleFilter(locale) {
     renderTemplatesList(cachedTemplates);
 }
 
+function handleCategoryFilter(category) {
+    currentFilterCategory = category || "ALL";
+    renderTemplatesList(cachedTemplates);
+}
+
+function handleClientFilter(client) {
+    currentFilterClient = client || "ALL";
+    renderTemplatesList(cachedTemplates);
+}
+
 function getFilteredTemplates(templates) {
     return templates.filter((t) => {
-        // Filtro per locale
+        // 1. Filtro per Categoria
+        if (currentFilterCategory !== "ALL") {
+            const cat = (t.category || "RESET_PASSWORD").toUpperCase();
+            if (cat !== currentFilterCategory) {
+                return false;
+            }
+        }
+
+        // 2. Filtro per Applicazione / Client Scoping
+        if (currentFilterClient !== "ALL") {
+            if (currentFilterClient === "GLOBAL") {
+                if (t.clientId && t.clientId.trim() !== "") return false;
+            } else {
+                if (!t.clientId || t.clientId.toUpperCase() !== currentFilterClient.toUpperCase()) {
+                    return false;
+                }
+            }
+        }
+
+        // 3. Filtro per Lingua / Locale
         if (currentFilterLocale !== "ALL") {
             if (currentFilterLocale === "GENERIC") {
                 if (t.locale && t.locale.trim() !== "") return false;
@@ -165,13 +345,15 @@ function getFilteredTemplates(templates) {
             }
         }
 
-        // Filtro per testo di ricerca
+        // 4. Filtro per testo di ricerca
         if (currentSearchQuery) {
             const idMatch = (t.identifier || "").toLowerCase().includes(currentSearchQuery);
             const nameMatch = (t.name || "").toLowerCase().includes(currentSearchQuery);
             const subjMatch = (t.subject || "").toLowerCase().includes(currentSearchQuery);
             const descMatch = (t.description || "").toLowerCase().includes(currentSearchQuery);
-            return idMatch || nameMatch || subjMatch || descMatch;
+            const catMatch = (t.category || "").toLowerCase().includes(currentSearchQuery);
+            const clientMatch = (t.clientId || "").toLowerCase().includes(currentSearchQuery);
+            return idMatch || nameMatch || subjMatch || descMatch || catMatch || clientMatch;
         }
 
         return true;
@@ -225,7 +407,10 @@ function renderTemplatesList(templates) {
     const lblDeleteTitle = typeof t === "function" ? t("email_action_delete_title", "Elimina Template") : "Elimina Template";
 
     filtered.forEach((item) => {
+        const categoryBadge = getCategoryBadgeHtml(item.category);
+        const clientBadge = getClientBadgeHtml(item.clientId);
         const localeBadge = getLocaleBadgeHtml(item.locale);
+        const statusBadge = getCategoryStatusBadgeHtml(item.category);
         const paramsMap = item.params || {};
         const paramKeys = Object.keys(paramsMap);
 
@@ -241,10 +426,13 @@ function renderTemplatesList(templates) {
         <!-- Info Principali Template -->
         <div class="space-y-2 flex-1">
           <div class="flex flex-wrap items-center gap-2">
+            ${categoryBadge}
+            ${clientBadge}
             <span class="font-mono text-xs font-bold theme-badge px-2.5 py-1 rounded-lg">
               ${escapeHtml(item.identifier || "SENZA_ID")}
             </span>
             ${localeBadge}
+            ${statusBadge}
             <span class="text-xs text-gray-400 flex items-center gap-1 ml-auto lg:ml-2">
               <i class="fa-solid fa-clock-rotate-left text-[11px]"></i> ${lastUpdated}
             </span>
@@ -287,6 +475,41 @@ function renderTemplatesList(templates) {
 
     html += `</div>`;
     container.innerHTML = html;
+}
+
+function getCategoryBadgeHtml(catKey) {
+    const cat = (catKey || "RESET_PASSWORD").toUpperCase();
+    const meta = EMAIL_CATEGORIES[cat] || {
+        icon: "fa-envelope",
+        badgeBg: "bg-white/5 border-white/10 text-gray-300"
+    };
+    const translatedName = typeof t === "function" ? t("email_cat_" + cat.toLowerCase(), cat) : cat;
+    return `
+        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border ${meta.badgeBg}">
+            <i class="fa-solid ${meta.icon} text-[10px]"></i>
+            <span>${escapeHtml(translatedName)}</span>
+        </span>
+    `;
+}
+
+function getClientBadgeHtml(clientId) {
+    if (!clientId || clientId.trim() === "") {
+        const lblGlobal = typeof t === "function" ? t("email_client_badge_global", "Globale") : "Globale";
+        return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-white/5 border border-white/10 text-gray-300 flex items-center gap-1" title="${typeof t === "function" ? t("email_client_global", "Access Sphere (Globale / Predefinito)") : "Access Sphere (Globale / Predefinito)"}"><i class="fa-solid fa-earth-americas text-[10px] opacity-70"></i> ${lblGlobal}</span>`;
+    }
+    return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-purple-500/10 border border-purple-500/30 text-purple-300 flex items-center gap-1"><i class="fa-solid fa-cubes text-[10px]"></i> ${escapeHtml(clientId)}</span>`;
+}
+
+function getCategoryStatusBadgeHtml(catKey) {
+    const cat = (catKey || "RESET_PASSWORD").toUpperCase();
+    const isActive = cat === "RESET_PASSWORD";
+    if (isActive) {
+        const lblActive = typeof t === "function" ? t("email_status_active_in_code", "Attivo nel codice") : "Attivo nel codice";
+        return `<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i class="fa-solid fa-check text-[9px] mr-1"></i>${lblActive}</span>`;
+    } else {
+        const lblPlanned = typeof t === "function" ? t("email_status_coming_soon", "Predisposto") : "Predisposto";
+        return `<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20"><i class="fa-solid fa-clock text-[9px] mr-1"></i>${lblPlanned}</span>`;
+    }
 }
 
 function getLocaleBadgeHtml(locale) {
@@ -550,6 +773,107 @@ function updateLivePreview() {
 // 5. Creazione, Modifica e Salvataggio Template
 // =========================================================================
 
+/**
+ * Gestisce il cambio di categoria nell'editor:
+ * - Aggiorna il badge di stato (Attivo nel codice vs Predisposto)
+ * - Se in fase di creazione di un nuovo template, pre-compila nome, identificatore, oggetto e parametri consigliati
+ * - Ricalcola immediatamente la verifica duplicati
+ */
+function handleCategoryChange(catCode) {
+    const cat = (catCode || "RESET_PASSWORD").toUpperCase();
+    const meta = EMAIL_CATEGORIES[cat];
+    const statusBadgeEl = document.getElementById("editor-cat-status-badge");
+
+    if (statusBadgeEl) {
+        if (cat === "RESET_PASSWORD") {
+            const activeText = typeof t === "function" ? t("email_status_active_in_code", "Attivo nel codice") : "Attivo nel codice";
+            statusBadgeEl.className = "text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
+            statusBadgeEl.innerHTML = `<i class="fa-solid fa-circle-check text-[9px] mr-1"></i><span>${escapeHtml(activeText)}</span>`;
+        } else {
+            const plannedText = typeof t === "function" ? t("email_status_coming_soon", "Predisposto") : "Predisposto";
+            statusBadgeEl.className = "text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30";
+            statusBadgeEl.innerHTML = `<i class="fa-solid fa-clock text-[9px] mr-1"></i><span>${escapeHtml(plannedText)}</span>`;
+        }
+    }
+
+    // Se stiamo creando un nuovo template (non in modalità modifica), compiliamo suggerimenti coerenti
+    const isEdit = Boolean(document.getElementById("editor-template-id").value);
+    if (!isEdit && meta) {
+        const identInput = document.getElementById("editor-identifier");
+        if (identInput) identInput.value = meta.identifier;
+
+        const nameInput = document.getElementById("editor-name");
+        const defaultTranslatedName = typeof t === "function" ? t("email_cat_" + cat.toLowerCase(), meta.defaultName) : meta.defaultName;
+        if (nameInput) {
+            nameInput.value = defaultTranslatedName;
+        }
+
+        const subjInput = document.getElementById("editor-subject");
+        if (subjInput) {
+            subjInput.value = meta.defaultSubject;
+        }
+
+        // Popola i parametri standard di default per questa categoria
+        const paramsList = document.getElementById("editor-params-list");
+        if (paramsList) {
+            paramsList.innerHTML = "";
+            Object.keys(meta.defaultParams).forEach((k) => {
+                addParamRow(k, meta.defaultParams[k]);
+            });
+        }
+    }
+
+    checkDuplicateConflictDebounced();
+}
+
+/**
+ * Verifica in tempo reale se esiste già un template registrato con la medesima combinazione di Categoria, Client e Lingua.
+ * Mostra o nasconde il banner di avviso nell'editor.
+ *
+ * @returns {boolean} true se è presente una collisione duplicata, false altrimenti
+ */
+function checkDuplicateConflict() {
+    const currentId = document.getElementById("editor-template-id") ? document.getElementById("editor-template-id").value : "";
+    const categoryEl = document.getElementById("editor-category");
+    const clientEl = document.getElementById("editor-client");
+    const localeEl = document.getElementById("editor-locale");
+
+    if (!categoryEl || !clientEl || !localeEl) return false;
+
+    const category = (categoryEl.value || "RESET_PASSWORD").trim().toUpperCase();
+    const clientId = (clientEl.value || "").trim().toUpperCase();
+    const rawLocale = (localeEl.value || "").trim().toLowerCase();
+    const locale = rawLocale === "" ? null : rawLocale;
+
+    const warningBanner = document.getElementById("editor-duplicate-warning");
+
+    const isDuplicate = cachedTemplates.some((t) => {
+        if (currentId && String(t.id) === String(currentId)) {
+            return false;
+        }
+        const tCat = (t.category || "RESET_PASSWORD").trim().toUpperCase();
+        const tClient = (t.clientId || "").trim().toUpperCase();
+        const tLocale = (t.locale || "").trim().toLowerCase() || null;
+
+        return tCat === category && tClient === clientId && tLocale === locale;
+    });
+
+    if (warningBanner) {
+        if (isDuplicate) {
+            warningBanner.classList.remove("hidden");
+        } else {
+            warningBanner.classList.add("hidden");
+        }
+    }
+
+    return isDuplicate;
+}
+
+function checkDuplicateConflictDebounced() {
+    if (duplicateCheckTimer) clearTimeout(duplicateCheckTimer);
+    duplicateCheckTimer = setTimeout(checkDuplicateConflict, 150);
+}
+
 function openCreateTemplateModal() {
     document.getElementById("editor-template-id").value = "";
     document.getElementById("editor-identifier").value = "";
@@ -559,10 +883,16 @@ function openCreateTemplateModal() {
     document.getElementById("editor-locale").value = "";
     document.getElementById("editor-description").value = "";
 
-    // Svuota parametri e aggiungi parametri predefiniti consigliati
-    document.getElementById("editor-params-list").innerHTML = "";
-    addParamRow("SITE_URL", "https://accesssphere.io");
-    addParamRow("NAME", "Mario Rossi");
+    const catSelect = document.getElementById("editor-category");
+    if (catSelect) catSelect.value = "RESET_PASSWORD";
+
+    const clientSelect = document.getElementById("editor-client");
+    if (clientSelect) clientSelect.value = "";
+
+    const warningBanner = document.getElementById("editor-duplicate-warning");
+    if (warningBanner) warningBanner.classList.add("hidden");
+
+    handleCategoryChange("RESET_PASSWORD");
 
     // Template HTML di partenza ben strutturato
     const defaultHtml = `<!DOCTYPE html>
@@ -587,7 +917,7 @@ function openCreateTemplateModal() {
       <div class="content">
         <h2 style="color: #ffffff; margin-top: 0;">Ciao {{NAME}},</h2>
         <p>Questo è un messaggio inviato dalla piattaforma sicura Access Sphere.</p>
-        <p>Puoi personalizzare questo testo e aggiungere tutti i parametri necessari per il tuo microservizio.</p>
+        <p>Il tuo codice di verifica / reimpostazione è: <strong style="color:#a855f7; font-size: 18px;">{{RESET_CODE}}</strong></p>
         <div style="text-align: center;">
           <a href="{{SITE_URL}}" class="cta-button">Accedi al Servizio</a>
         </div>
@@ -607,6 +937,7 @@ function openCreateTemplateModal() {
 
     setTimeout(() => {
         updateLivePreview();
+        checkDuplicateConflict();
     }, 300);
 }
 
@@ -625,6 +956,18 @@ function openEditTemplateModal(id) {
     document.getElementById("editor-locale").value = template.locale || "";
     document.getElementById("editor-description").value = template.description || "";
     document.getElementById("editor-template-html").value = template.template || "";
+
+    const catSelect = document.getElementById("editor-category");
+    if (catSelect) {
+        catSelect.value = (template.category || "RESET_PASSWORD").toUpperCase();
+    }
+
+    const clientSelect = document.getElementById("editor-client");
+    if (clientSelect) {
+        clientSelect.value = template.clientId || "";
+    }
+
+    handleCategoryChange(template.category || "RESET_PASSWORD");
 
     // Popola parametri
     const paramsContainer = document.getElementById("editor-params-list");
@@ -655,16 +998,21 @@ function openEditTemplateModal(id) {
 
     setTimeout(() => {
         updateLivePreview();
+        checkDuplicateConflict();
     }, 300);
 }
 
 /**
- * Salva il template tramite POST o PUT a /v1/email-templates
+ * Salva il template tramite POST o PUT a /v1/email-templates.
+ * Valida i campi obbligatori, esegue il controllo preventivo dei duplicati (Category, Client, Locale)
+ * e inoltra la richiesta al backend.
  */
 function saveTemplateForm() {
     const idVal = document.getElementById("editor-template-id").value;
     const isEdit = Boolean(idVal);
 
+    const category = (document.getElementById("editor-category").value || "RESET_PASSWORD").trim().toUpperCase();
+    const clientId = (document.getElementById("editor-client").value || "").trim().toUpperCase();
     const identifier = document.getElementById("editor-identifier").value.trim();
     const name = document.getElementById("editor-name").value.trim();
     const subject = document.getElementById("editor-subject").value.trim();
@@ -682,7 +1030,19 @@ function saveTemplateForm() {
         return;
     }
 
+    // Controllo preventivo duplicazione su memoria locale
+    if (checkDuplicateConflict()) {
+        sweetalert(
+            "warning",
+            typeof t === "function" ? t("email_swal_duplicate_error_title", "Template Già Esistente") : "Template Già Esistente",
+            typeof t === "function" ? t("email_swal_duplicate_error_desc", "Esiste già un template registrato per questa combinazione di Categoria, Applicazione e Lingua.") : "Esiste già un template registrato per questa combinazione di Categoria, Applicazione e Lingua."
+        );
+        return;
+    }
+
     const payload = {
+        category: category,
+        clientId: clientId || null,
         identifier: identifier,
         name: name,
         subject: subject,
@@ -939,8 +1299,26 @@ function openEmailDetailModal(id) {
     // 4. Parametri Dinamici censiti con layout dettagliato chiave => default
     const paramsContainer = document.getElementById("detail-modal-params-list");
     const paramsCountEl = document.getElementById("detail-params-count");
+    const catSubEl = document.getElementById("detail-modal-category-sub");
+    const clientSubEl = document.getElementById("detail-modal-client-sub");
     const identSubEl = document.getElementById("detail-modal-ident-sub");
     const localeSubEl = document.getElementById("detail-modal-locale-sub");
+
+    if (catSubEl) {
+        const catKey = (template.category || "RESET_PASSWORD").toUpperCase();
+        const catMeta = EMAIL_CATEGORIES[catKey] || { icon: "fa-envelope" };
+        const translatedCat = typeof t === "function" ? t("email_cat_" + catKey.toLowerCase(), catKey) : catKey;
+        catSubEl.innerHTML = `<i class="fa-solid ${catMeta.icon} mr-1.5 theme-text-accent"></i> <span>${escapeHtml(translatedCat)}</span>`;
+    }
+
+    if (clientSubEl) {
+        if (template.clientId) {
+            clientSubEl.innerHTML = `<i class="fa-solid fa-cubes text-purple-400 mr-1.5"></i> <span class="text-purple-300">${escapeHtml(template.clientId)}</span>`;
+        } else {
+            const lblGlobal = typeof t === "function" ? t("email_client_global", "Access Sphere (Globale / Predefinito)") : "Access Sphere (Globale / Predefinito)";
+            clientSubEl.innerHTML = `<i class="fa-solid fa-earth-americas text-gray-400 mr-1.5"></i> <span class="text-gray-300">${escapeHtml(lblGlobal)}</span>`;
+        }
+    }
 
     if (identSubEl) identSubEl.textContent = template.identifier || "--";
     if (localeSubEl) localeSubEl.innerHTML = getLocaleBadgeHtml(template.locale);

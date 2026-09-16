@@ -936,5 +936,21 @@
   "email_locale_en": "Inglese (en)",
   "email_locale_fr": "Francese (fr)",
   "email_locale_es": "Spagnolo (es)",
-  "email_locale_de": "Tedesco (de)"
+  "email_locale_de": "Tedesco (de)",
+  "email_cat_label": "Categoria Template *",
+  "email_client_label": "Applicazione / Client",
+  "email_client_global": "Access Sphere (Globale / Predefinito)",
+  "email_client_badge_global": "Globale",
+  "email_filter_client_all": "Tutte le applicazioni",
+  "email_filter_cat_all": "Tutte le categorie",
+  "email_cat_reset_password": "Reimpostazione Password",
+  "email_cat_welcome_user": "Benvenuto Utente",
+  "email_cat_email_verification": "Verifica Indirizzo Email",
+  "email_cat_mfa_otp": "Codice OTP MFA",
+  "email_cat_account_locked": "Avviso Account Bloccato",
+  "email_status_active_in_code": "Attivo nel codice",
+  "email_status_coming_soon": "Predisposto",
+  "email_swal_duplicate_error_title": "Template Già Esistente",
+  "email_swal_duplicate_error_desc": "Esiste già un template registrato per questa combinazione di Categoria, Applicazione e Lingua.",
+  "email_client_hint": "Sovrascrive il template globale solo per l'applicazione selezionata"
 }

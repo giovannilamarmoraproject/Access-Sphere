@@ -39,6 +39,8 @@ public class EmailTemplateMapper {
   public static void updateEntity(EmailTemplateEntity target, EmailTemplateDTO source) {
     if (target == null || source == null) return;
     if (source.getIdentifier() != null) target.setIdentifier(source.getIdentifier().trim());
+    if (source.getCategory() != null) target.setCategory(source.getCategory().trim());
+    target.setClientId(source.getClientId() != null && !source.getClientId().trim().isEmpty() ? source.getClientId().trim() : null);
     if (source.getName() != null) target.setName(source.getName().trim());
     if (source.getSubject() != null) target.setSubject(source.getSubject().trim());
     if (source.getDescription() != null) target.setDescription(source.getDescription());

@@ -46,6 +46,31 @@ public class EmailTemplateController {
                         templates)));
   }
 
+  @GetMapping("/categories")
+  @Operation(summary = "Ottieni categorie template email", description = "Restituisce l'elenco delle categorie di template supportate con stato di attivazione e parametri di default")
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> getCategories(ServerHttpRequest request) {
+    return Mono.just(
+        ResponseEntity.ok(
+            new Response(
+                HttpStatus.OK.value(),
+                "Categorie Template Email",
+                TraceUtils.getSpanID(),
+                java.util.Arrays.stream(io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory.values())
+                    .map(
+                        cat -> {
+                          java.util.Map<String, Object> map = new java.util.LinkedHashMap<>();
+                          map.put("code", cat.getCode());
+                          map.put("defaultIdentifier", cat.getDefaultIdentifier());
+                          map.put("defaultTitle", cat.getDefaultTitle());
+                          map.put("defaultDescription", cat.getDefaultDescription());
+                          map.put("activeInCode", cat.isActiveInCode());
+                          map.put("defaultParams", cat.getDefaultParams());
+                          return map;
+                        })
+                    .toList())));
+  }
+
   @GetMapping("/{id}")
   @Operation(summary = "Ottieni template per ID", description = "Recupera il template email corrispondente all'ID specificato")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)

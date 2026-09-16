@@ -32,6 +32,20 @@ public class EmailTemplateEntity extends GenericEntity {
   @Column(name = "IDENTIFIER", nullable = false)
   private String identifier;
 
+  /**
+   * Categoria applicativa del template (es. RESET_PASSWORD, WELCOME_USER, ecc.).
+   * Se non specificata, assume di default RESET_PASSWORD.
+   */
+  @Column(name = "CATEGORY", nullable = false)
+  private String category = "RESET_PASSWORD";
+
+  /**
+   * Identificativo dell'applicazione/client OAuth2 a cui appartiene il template.
+   * Se nullo o vuoto, il template e globale di default per tutta la piattaforma Access Sphere.
+   */
+  @Column(name = "CLIENT_ID")
+  private String clientId;
+
   @Column(name = "NAME", nullable = false)
   private String name;
 

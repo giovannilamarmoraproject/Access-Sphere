@@ -936,5 +936,21 @@
   "email_locale_en": "Inglés (en)",
   "email_locale_fr": "Francés (fr)",
   "email_locale_es": "Español (es)",
-  "email_locale_de": "Alemán (de)"
+  "email_locale_de": "Alemán (de)",
+  "email_cat_label": "Categoría de plantilla *",
+  "email_client_label": "Aplicación / Cliente",
+  "email_client_global": "Access Sphere (Global / Predeterminado)",
+  "email_client_badge_global": "Global",
+  "email_filter_client_all": "Todas las aplicaciones",
+  "email_filter_cat_all": "Todas las categorías",
+  "email_cat_reset_password": "Restablecer contraseña",
+  "email_cat_welcome_user": "Bienvenido Usuario",
+  "email_cat_email_verification": "Verificación de correo electrónico",
+  "email_cat_mfa_otp": "Código OTP MFA",
+  "email_cat_account_locked": "Aviso de cuenta bloqueada",
+  "email_status_active_in_code": "Activo en el código",
+  "email_status_coming_soon": "Próximamente",
+  "email_swal_duplicate_error_title": "Plantilla ya existente",
+  "email_swal_duplicate_error_desc": "Ya existe una plantilla registrada para esta combinación de Categoría, Aplicación e Idioma.",
+  "email_client_hint": "Sobrescribe la plantilla global solo para la aplicación seleccionada"
 }

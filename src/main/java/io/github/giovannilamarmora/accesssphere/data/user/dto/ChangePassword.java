@@ -15,5 +15,19 @@ public class ChangePassword {
   private String email;
   private String password;
   private String token;
+  private String clientId;
   private Map<String, String> params;
+
+  public ChangePassword(
+      String templateId,
+      String email,
+      String password,
+      String token,
+      Map<String, String> params) {
+    this.templateId = templateId;
+    this.email = email;
+    this.password = password;
+    this.token = token;
+    this.params = params;
+  }
 }

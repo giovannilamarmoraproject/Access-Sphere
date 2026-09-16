@@ -936,5 +936,21 @@
   "email_locale_en": "English (en)",
   "email_locale_fr": "French (fr)",
   "email_locale_es": "Spanish (es)",
-  "email_locale_de": "German (de)"
+  "email_locale_de": "German (de)",
+  "email_cat_label": "Template Category *",
+  "email_client_label": "Application / Client",
+  "email_client_global": "Access Sphere (Global / Default)",
+  "email_client_badge_global": "Global",
+  "email_filter_client_all": "All applications",
+  "email_filter_cat_all": "All categories",
+  "email_cat_reset_password": "Reset Password",
+  "email_cat_welcome_user": "Welcome User",
+  "email_cat_email_verification": "Email Address Verification",
+  "email_cat_mfa_otp": "MFA OTP Code",
+  "email_cat_account_locked": "Account Locked Alert",
+  "email_status_active_in_code": "Active in code",
+  "email_status_coming_soon": "Coming soon",
+  "email_swal_duplicate_error_title": "Template Already Exists",
+  "email_swal_duplicate_error_desc": "A template is already registered for this combination of Category, Application, and Language.",
+  "email_client_hint": "Overrides the global template only for the selected application"
 }

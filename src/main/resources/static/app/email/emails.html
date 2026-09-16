@@ -624,9 +624,31 @@
                 />
             </div>
 
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                <!-- Filtro per Categoria -->
+                <select id="category-filter-select"
+                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-48 min-w-0"
+                        onchange="handleCategoryFilter(this.value)">
+                    <option value="ALL" data-i18n="email_filter_cat_all">Tutte le categorie</option>
+                    <option value="RESET_PASSWORD" data-i18n="email_cat_reset_password">Reimpostazione Password</option>
+                    <option value="WELCOME_USER" data-i18n="email_cat_welcome_user">Benvenuto Utente</option>
+                    <option value="EMAIL_VERIFICATION" data-i18n="email_cat_email_verification">Verifica Indirizzo Email</option>
+                    <option value="MFA_OTP" data-i18n="email_cat_mfa_otp">Codice OTP MFA</option>
+                    <option value="ACCOUNT_LOCKED" data-i18n="email_cat_account_locked">Avviso Account Bloccato</option>
+                </select>
+
+                <!-- Filtro per Applicazione / Client -->
+                <select id="client-filter-select"
+                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-48 min-w-0"
+                        onchange="handleClientFilter(this.value)">
+                    <option value="ALL" data-i18n="email_filter_client_all">Tutte le applicazioni</option>
+                    <option value="GLOBAL" data-i18n="email_client_global">Access Sphere (Globale / Predefinito)</option>
+                    <!-- Client OAuth2 caricati dinamicamente via JS -->
+                </select>
+
+                <!-- Filtro per Lingua / Locale -->
                 <select id="locale-filter-select"
-                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-56 min-w-0"
+                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 flex-1 sm:flex-none sm:w-44 min-w-0"
                         onchange="handleLocaleFilter(this.value)">
                     <option value="ALL" data-i18n="email_filter_locale_all">Tutte le lingue</option>
                     <option value="it" data-i18n="email_locale_it">Italiano (it)</option>
@@ -696,24 +718,46 @@
                     <div class="lg:col-span-6 p-6 overflow-y-auto h-[calc(100vh-80px)] border-r theme-divider space-y-5">
                         <input type="hidden" id="editor-template-id" value=""/>
 
-                        <!-- Metadati Base Grid -->
+                        <!-- Metadati Base Grid: Categoria e Client Scoping -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
-                                       data-i18n="email_label_identifier">
-                                    Identificatore Univoco *
+                                       data-i18n="email_cat_label">
+                                    Categoria Template *
                                 </label>
-                                <input
-                                        type="text"
-                                        id="editor-identifier"
-                                        class="form-control m3-form-input rounded-xl w-full text-sm font-mono"
-                                        placeholder="es. ACCESS_SPHERE_CODE_RESET_PASSWORD"
-                                        data-i18n-placeholder="email_placeholder_identifier"
-                                        required
-                                />
-                                <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="email_editor_ident_hint">Identificatore chiamato dal backend/microservizio</span>
+                                <select id="editor-category"
+                                        class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm"
+                                        onchange="handleCategoryChange(this.value)">
+                                    <option value="RESET_PASSWORD" data-i18n="email_cat_reset_password">Reimpostazione Password</option>
+                                    <option value="WELCOME_USER" data-i18n="email_cat_welcome_user">Benvenuto Utente</option>
+                                    <option value="EMAIL_VERIFICATION" data-i18n="email_cat_email_verification">Verifica Indirizzo Email</option>
+                                    <option value="MFA_OTP" data-i18n="email_cat_mfa_otp">Codice OTP MFA</option>
+                                    <option value="ACCOUNT_LOCKED" data-i18n="email_cat_account_locked">Avviso Account Bloccato</option>
+                                </select>
+                                <div class="flex items-center gap-1.5 mt-1.5">
+                                    <span id="editor-cat-status-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                        <i class="fa-solid fa-circle-check text-[9px] mr-1"></i><span data-i18n="email_status_active_in_code">Attivo nel codice</span>
+                                    </span>
+                                </div>
                             </div>
 
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
+                                       data-i18n="email_client_label">
+                                    Applicazione / Client
+                                </label>
+                                <select id="editor-client"
+                                        class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm"
+                                        onchange="checkDuplicateConflictDebounced()">
+                                    <option value="" data-i18n="email_client_global">Access Sphere (Globale / Predefinito)</option>
+                                    <!-- Client registrati iniettati dinamicamente via JS -->
+                                </select>
+                                <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="email_client_hint">Sovrascrive il template globale solo per l'app selezionata</span>
+                            </div>
+                        </div>
+
+                        <!-- Metadati Nome e Lingua -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
                                        data-i18n="email_label_name">
@@ -728,8 +772,26 @@
                                         required
                                 />
                             </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
+                                       data-i18n="email_label_locale">
+                                    Lingua / Locale
+                                </label>
+                                <select id="editor-locale"
+                                        class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm"
+                                        onchange="checkDuplicateConflictDebounced()">
+                                    <option value="" data-i18n="email_editor_locale_default">Nessuno (Globale / Fallback per tutte le lingue)</option>
+                                    <option value="it" data-i18n="email_locale_it">Italiano (it)</option>
+                                    <option value="en" data-i18n="email_locale_en">Inglese (en)</option>
+                                    <option value="fr" data-i18n="email_locale_fr">Francese (fr)</option>
+                                    <option value="es" data-i18n="email_locale_es">Spagnolo (es)</option>
+                                    <option value="de" data-i18n="email_locale_de">Tedesco (de)</option>
+                                </select>
+                            </div>
                         </div>
 
+                        <!-- Metadati Oggetto e Identificatore Tecnico -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
@@ -748,21 +810,22 @@
 
                             <div>
                                 <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
-                                       data-i18n="email_label_locale">
-                                    Lingua / Locale
+                                       data-i18n="email_label_identifier">
+                                    Identificatore Tecnico *
                                 </label>
-                                <select id="editor-locale"
-                                        class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm">
-                                    <option value="" data-i18n="email_editor_locale_default">Nessuno (Globale / Fallback per tutte le lingue)</option>
-                                    <option value="it" data-i18n="email_locale_it">Italiano (it)</option>
-                                    <option value="en" data-i18n="email_locale_en">Inglese (en)</option>
-                                    <option value="fr" data-i18n="email_locale_fr">Francese (fr)</option>
-                                    <option value="es" data-i18n="email_locale_es">Spagnolo (es)</option>
-                                    <option value="de" data-i18n="email_locale_de">Tedesco (de)</option>
-                                </select>
+                                <input
+                                        type="text"
+                                        id="editor-identifier"
+                                        class="form-control m3-form-input rounded-xl w-full text-sm font-mono"
+                                        placeholder="es. ACCESS_SPHERE_CODE_RESET_PASSWORD"
+                                        data-i18n-placeholder="email_placeholder_identifier"
+                                        required
+                                />
+                                <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="email_editor_ident_hint">Identificatore chiamato dal backend/microservizio</span>
                             </div>
                         </div>
 
+                        <!-- Descrizione -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
                                    data-i18n="email_label_desc">
@@ -775,6 +838,12 @@
                                     placeholder="es. Inviato quando un utente richiede il ripristino password"
                                     data-i18n-placeholder="email_placeholder_desc"
                             />
+                        </div>
+
+                        <!-- Banner di Avviso Duplicazione (Invisibile per default, mostrato se conflitto rilevato) -->
+                        <div id="editor-duplicate-warning" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-sm shrink-0"></i>
+                            <span data-i18n="email_swal_duplicate_error_desc">Esiste già un template registrato per questa combinazione di Categoria, Applicazione e Lingua.</span>
                         </div>
 
                         <!-- Gestore Parametri Dinamici Personalizzati -->
@@ -1060,6 +1129,14 @@
                             </div>
 
                             <div class="grid grid-cols-2 gap-3 pt-2">
+                                <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_cat_label">Categoria</span>
+                                    <span id="detail-modal-category-sub" class="text-xs font-bold text-white block">--</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_client_label">Applicazione / Client</span>
+                                    <span id="detail-modal-client-sub" class="text-xs font-mono font-bold text-white block">--</span>
+                                </div>
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
                                     <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_detail_identifier">Identificatore</span>
                                     <span id="detail-modal-ident-sub"

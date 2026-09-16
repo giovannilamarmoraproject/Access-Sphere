@@ -373,19 +373,20 @@ public class UserService {
                                     })));
 
     // Reperimento del template email dal database locale (EmailTemplateService)
-    // sostituendo la precedente chiamata a Strapi per il flusso di reset password.
-    // Supporta fallback automatico per locale/lingua singola o generica.
+    // con supporto multi-tenant a cascata: cerca prima per client specifico (se fornito in changePassword),
+    // poi esegue il fallback sul template Globale di Access Sphere per la categoria RESET_PASSWORD.
     Mono<StrapiEmailTemplate> strapiEmailTemplateMono =
         finalLocaleMono
-            .onErrorResume(e -> Mono.just(locale != null ? locale : "en-GB"))
+            .onErrorResume(e -> Mono.just(locale != null ? locale : "it"))
             .flatMap(
                 finalLocale -> {
-                  String templateIdentifier =
+                  String categoryOrId =
                       StringUtils.hasText(changePassword.getTemplateId())
                           ? changePassword.getTemplateId()
-                          : "ACCESS_SPHERE_CODE_RESET_PASSWORD";
-                  return emailTemplateService.getTemplateByIdentifierAndLocale(
-                      templateIdentifier, finalLocale);
+                          : "RESET_PASSWORD";
+                  String requestedClientId = changePassword.getClientId();
+                  return emailTemplateService.getTemplateByCategoryLocaleAndClient(
+                      categoryOrId, finalLocale, requestedClientId);
                 });
 
     return Mono.zip(userMono, strapiEmailTemplateMono)

@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiEmailTempla
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailSendTestRequest;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
+import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -136,11 +137,191 @@ public class EmailTemplateService {
         });
   }
 
+  /**
+   * Risoluzione avanzata del template email basata su Categoria, Locale e Client (Multi-Tenant).
+   * Risolve a cascata:
+   * 1. Match per Client specifico + Categoria + Locale esatto.
+   * 2. Match per Client specifico + Categoria + Prefisso lingua (es. "it").
+   * 3. Match per Client specifico + Categoria + Locale nullo/default.
+   * 4. Fallback Globale (clientId IS NULL): Categoria + Locale esatto.
+   * 5. Fallback Globale (clientId IS NULL): Categoria + Prefisso lingua.
+   * 6. Fallback Globale (clientId IS NULL): Categoria + Locale nullo/default.
+   * 7. Fallback per retrocompatibilita su identifier diretto.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<StrapiEmailTemplate> getTemplateByCategoryLocaleAndClient(
+      String category, String locale, String clientId) {
+    return Mono.fromCallable(
+        () -> {
+          LOG.info(
+              "Ricerca template email per category=[{}], locale=[{}], clientId=[{}]",
+              category,
+              locale,
+              clientId);
+
+          String effectiveCategory =
+              !ObjectToolkit.isNullOrEmpty(category) ? category.trim() : "RESET_PASSWORD";
+
+          // 1. Se e specificato un clientId, cerca tra i template dedicati a quel client
+          if (!ObjectToolkit.isNullOrEmpty(clientId)) {
+            List<EmailTemplateEntity> clientTemplates =
+                emailTemplateDAO.findByClientIdAndCategory(clientId.trim(), effectiveCategory);
+            Optional<EmailTemplateEntity> clientMatch =
+                resolveTemplateFromList(clientTemplates, locale);
+            if (clientMatch.isPresent()) {
+              LOG.info(
+                  "Template trovato per Client dedicato=[{}], ID=[{}]",
+                  clientId,
+                  clientMatch.get().getId());
+              return EmailTemplateMapper.toStrapiEmailTemplate(clientMatch.get());
+            }
+            LOG.warn(
+                "Nessun template specifico trovato per clientId=[{}] e category=[{}]. Eseguo fallback su template Globale Access Sphere",
+                clientId,
+                effectiveCategory);
+          }
+
+          // 2. Ricerca tra i template Globali di Access Sphere (clientId IS NULL)
+          List<EmailTemplateEntity> globalTemplates =
+              emailTemplateDAO.findByClientIdIsNullAndCategory(effectiveCategory);
+          Optional<EmailTemplateEntity> globalMatch =
+              resolveTemplateFromList(globalTemplates, locale);
+          if (globalMatch.isPresent()) {
+            LOG.info(
+                "Template Globale Access Sphere trovato per category=[{}], ID=[{}]",
+                effectiveCategory,
+                globalMatch.get().getId());
+            return EmailTemplateMapper.toStrapiEmailTemplate(globalMatch.get());
+          }
+
+          // 3. Fallback per retrocompatibilita: ricerca per identifier globale esatto
+          List<EmailTemplateEntity> legacyTemplates =
+              emailTemplateDAO.findByIdentifier(effectiveCategory);
+          if (!legacyTemplates.isEmpty()) {
+            Optional<EmailTemplateEntity> legacyMatch =
+                resolveTemplateFromList(legacyTemplates, locale);
+            if (legacyMatch.isPresent()) {
+              return EmailTemplateMapper.toStrapiEmailTemplate(legacyMatch.get());
+            }
+          }
+
+          // 4. Default identifier della categoria
+          EmailTemplateCategory catEnum = EmailTemplateCategory.fromCode(effectiveCategory);
+          List<EmailTemplateEntity> defaultIdTemplates =
+              emailTemplateDAO.findByIdentifier(catEnum.getDefaultIdentifier());
+          if (!defaultIdTemplates.isEmpty()) {
+            Optional<EmailTemplateEntity> defMatch =
+                resolveTemplateFromList(defaultIdTemplates, locale);
+            if (defMatch.isPresent()) {
+              return EmailTemplateMapper.toStrapiEmailTemplate(defMatch.get());
+            }
+          }
+
+          LOG.error(
+              "Nessun template email trovato per category=[{}], locale=[{}], clientId=[{}]",
+              category,
+              locale,
+              clientId);
+          throw new ResponseStatusException(
+              HttpStatus.NOT_FOUND,
+              "Template email non trovato per la categoria: " + effectiveCategory);
+        });
+  }
+
+  private Optional<EmailTemplateEntity> resolveTemplateFromList(
+      List<EmailTemplateEntity> templates, String locale) {
+    if (templates == null || templates.isEmpty()) return Optional.empty();
+
+    // 1. Corrispondenza esatta di locale
+    if (!ObjectToolkit.isNullOrEmpty(locale)) {
+      Optional<EmailTemplateEntity> exact =
+          templates.stream()
+              .filter(t -> locale.equalsIgnoreCase(t.getLocale()))
+              .findFirst();
+      if (exact.isPresent()) return exact;
+
+      // 2. Corrispondenza per prefisso lingua (es. "it" per "it-IT")
+      String langPrefix = locale.contains("-") ? locale.split("-")[0] : locale;
+      Optional<EmailTemplateEntity> prefixMatch =
+          templates.stream()
+              .filter(
+                  t ->
+                      t.getLocale() != null
+                          && (t.getLocale().equalsIgnoreCase(langPrefix)
+                              || t.getLocale().toLowerCase().startsWith(langPrefix.toLowerCase() + "-")))
+              .findFirst();
+      if (prefixMatch.isPresent()) return prefixMatch;
+    }
+
+    // 3. Fallback su locale 'default' o nullo/vuoto
+    Optional<EmailTemplateEntity> defaultMatch =
+        templates.stream()
+            .filter(
+                t ->
+                    ObjectToolkit.isNullOrEmpty(t.getLocale())
+                        || "default".equalsIgnoreCase(t.getLocale()))
+            .findFirst();
+    if (defaultMatch.isPresent()) return defaultMatch;
+
+    // 4. Primo template disponibile
+    return Optional.of(templates.get(0));
+  }
+
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<EmailTemplateDTO> saveTemplate(EmailTemplateDTO dto) {
     return Mono.fromCallable(
         () -> {
+          // Normalizzazione Categoria
+          String category =
+              (dto.getCategory() != null && !dto.getCategory().trim().isEmpty())
+                  ? dto.getCategory().trim().toUpperCase()
+                  : "RESET_PASSWORD";
+          dto.setCategory(category);
+
+          // Normalizzazione Identifier (se non specificato, assegna default della categoria)
+          EmailTemplateCategory catEnum = EmailTemplateCategory.fromCode(category);
+          if (dto.getIdentifier() == null || dto.getIdentifier().trim().isEmpty()) {
+            dto.setIdentifier(catEnum.getDefaultIdentifier());
+          } else {
+            dto.setIdentifier(dto.getIdentifier().trim());
+          }
+
+          // Normalizzazione Client ID (se vuoto o "GLOBAL", diventa null per indicare template Globale)
+          String clientId =
+              (dto.getClientId() != null
+                      && !dto.getClientId().trim().isEmpty()
+                      && !"GLOBAL".equalsIgnoreCase(dto.getClientId().trim()))
+                  ? dto.getClientId().trim()
+                  : null;
+          dto.setClientId(clientId);
+
+          // Normalizzazione Locale (se vuoto o "ALL"/"GENERIC", diventa null per indicare lingua Globale)
+          String locale =
+              (dto.getLocale() != null
+                      && !dto.getLocale().trim().isEmpty()
+                      && !"GENERIC".equalsIgnoreCase(dto.getLocale().trim())
+                      && !"ALL".equalsIgnoreCase(dto.getLocale().trim()))
+                  ? dto.getLocale().trim()
+                  : null;
+          dto.setLocale(locale);
+
+          // Controllo rigoroso di unicita:
+          // Non possono esistere due template con stessa Categoria, stesso ClientId e stessa Lingua
+          List<EmailTemplateEntity> conflicts =
+              emailTemplateDAO.findConflictingTemplates(clientId, category, locale, dto.getId());
+          if (!conflicts.isEmpty()) {
+            String clientDesc =
+                clientId != null ? ("Client [" + clientId + "]") : "Globale (Access Sphere Default)";
+            String localeDesc = locale != null ? ("Lingua [" + locale + "]") : "Globale / Fallback";
+            String errorMsg =
+                String.format(
+                    "Esiste già un template registrato per la categoria [%s], %s e %s.",
+                    category, clientDesc, localeDesc);
+            LOG.warn("Conflitto duplicato template email: {}", errorMsg);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMsg);
+          }
+
           EmailTemplateEntity entity;
           if (dto.getId() != null) {
             entity =
@@ -156,7 +337,12 @@ public class EmailTemplateService {
             entity = EmailTemplateMapper.toEntity(dto);
           }
           EmailTemplateEntity saved = emailTemplateDAO.save(entity);
-          LOG.info("Template email salvato con successo: ID=[{}], identifier=[{}]", saved.getId(), saved.getIdentifier());
+          LOG.info(
+              "Template email salvato con successo: ID=[{}], category=[{}], clientId=[{}], locale=[{}]",
+              saved.getId(),
+              saved.getCategory(),
+              saved.getClientId(),
+              saved.getLocale());
           return EmailTemplateMapper.toDTO(saved);
         });
   }

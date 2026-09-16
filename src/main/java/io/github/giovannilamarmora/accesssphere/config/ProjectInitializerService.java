@@ -165,6 +165,8 @@ public class ProjectInitializerService implements ApplicationRunner {
       LOG.info("📧 Seeding Default Email Template: ACCESS_SPHERE_CODE_RESET_PASSWORD");
       EmailTemplateEntity template = new EmailTemplateEntity();
       template.setIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD");
+      template.setCategory("RESET_PASSWORD");
+      template.setClientId(null); // Template predefinito Globale di Access Sphere
       template.setName("ACCESS_SPHERE_CODE_RESET_PASSWORD");
       template.setSubject("Reset Password");
       template.setDescription("Template per invio codice recupero password");

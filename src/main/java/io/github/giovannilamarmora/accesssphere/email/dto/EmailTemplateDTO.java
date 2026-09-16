@@ -20,6 +20,8 @@ public class EmailTemplateDTO {
 
   private Long id;
   private String identifier;
+  private String category;
+  private String clientId;
   private String name;
   private String subject;
   private String description;

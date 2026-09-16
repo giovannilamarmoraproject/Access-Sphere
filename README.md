@@ -58,9 +58,11 @@
   - Procedura di ripristino con validazione schema e zero downtime per migrazioni e disaster recovery.
 - ✉️ **Gestione Template Email & Live Preview Engine**:
   - Configurazione completa dei template email transazionali memorizzati direttamente nel database (`EMAIL_TEMPLATES`).
+  - **Categorizzazione & Scoping Applicativo (Multi-tenancy)**: Template organizzati per categorie semantiche (`RESET_PASSWORD`, `WELCOME_USER`, `EMAIL_VERIFICATION`, `MFA_OTP`, `ACCOUNT_LOCKED`) con supporto a configurazioni custom per singolo Client OAuth2 e fallback trasparente sui template globali di Access Sphere.
+  - **Validazione di Unicità**: Prevenzione automatica e validazione server-side/client-side di duplicati su tripla `(Categoria, Client, Lingua)`.
   - Parametri segnaposto dinamici personalizzati (`{{KEY}}`) con rilevamento ed estrazione automatica dal markup HTML.
   - Editor interattivo split-screen con anteprima live isolata (iframe) in tempo reale su viewport Desktop e Mobile.
-  - Sostituzione autonoma del servizio Strapi legacy per il flusso di reset password con smart fallback multilingua.
+  - Sostituzione autonoma del servizio Strapi legacy per il flusso di reset password con smart fallback multilingua e per-client override.
   - Collaudo immediato con invio di email di test compilando parametri e destinatario direttamente dalla UI.
 - 🌐 **Internazionalizzazione (i18n) & Zero-Flicker Rendering**:
   - Supporto multilingua esteso per **Italiano**, **Inglese**, **Francese**, **Spagnolo** e **Tedesco** con 400+ chiavi di traduzione (Landing page, Login, Dashboard, Gestione Utenti, Gestione Client, Template Email, Modali ed Error Code).
@@ -222,9 +224,20 @@ La documentazione OpenAPI 3.0 interattiva è accessibile a runtime all'indirizzo
 | `POST` | `/v1/mfa/setup` | Genera secret TOTP, URL `otpauth://` e QR code con brand logo | Bearer Token |
 | `POST` | `/v1/mfa/confirm` | Verifica il primo codice OTP a 6 cifre e attiva definitivamente il metodo MFA | Bearer Token |
 | `POST` | `/v1/mfa/verify` | Valida il codice OTP durante il login multi-fattore | Session / Bearer |
-| `POST` | `/v1/mfa/manage` | Gestione metodi MFA (abilitazione, disabilitazione o rimozione: `ENABLE`, `DISABLE`, `DELETE`) | Bearer Token |
+### 6. ✉️ **Email Template Controller** (`/v1/email-templates`)
+
+| Metodo | Endpoint | Descrizione | Autenticazione |
+|---|---|---|---|
+| `GET` | `/v1/email-templates` | Elenco di tutti i template email censiti | Bearer (Admin) |
+| `GET` | `/v1/email-templates/{id}` | Recupera un template email per ID | Bearer (Admin) |
+| `GET` | `/v1/email-templates/categories` | Elenco delle categorie supportate e relativi metadati | Bearer (Admin) |
+| `POST` | `/v1/email-templates` | Crea un nuovo template email con vincolo di unicità `(Category, Client, Locale)` | Bearer (Admin) |
+| `PUT` | `/v1/email-templates` | Aggiorna un template email esistente | Bearer (Admin) |
+| `DELETE` | `/v1/email-templates/{id}` | Elimina un template email | Bearer (Admin) |
+| `POST` | `/v1/email-templates/send-test` | Invia un'email di collaudo con parametri compilati | Bearer (Admin) |
 
 ---
+
 
 ## 🛠️ **Requisiti di Sistema**
 

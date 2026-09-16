@@ -936,5 +936,21 @@
   "email_locale_en": "Anglais (en)",
   "email_locale_fr": "Français (fr)",
   "email_locale_es": "Espagnol (es)",
-  "email_locale_de": "Allemand (de)"
+  "email_locale_de": "Allemand (de)",
+  "email_cat_label": "Catégorie du modèle *",
+  "email_client_label": "Application / Client",
+  "email_client_global": "Access Sphere (Global / Par défaut)",
+  "email_client_badge_global": "Global",
+  "email_filter_client_all": "Toutes les applications",
+  "email_filter_cat_all": "Toutes les catégories",
+  "email_cat_reset_password": "Réinitialisation du mot de passe",
+  "email_cat_welcome_user": "Bienvenue Utilisateur",
+  "email_cat_email_verification": "Vérification de l'adresse email",
+  "email_cat_mfa_otp": "Code OTP MFA",
+  "email_cat_account_locked": "Alerte de compte verrouillé",
+  "email_status_active_in_code": "Actif dans le code",
+  "email_status_coming_soon": "Bientôt disponible",
+  "email_swal_duplicate_error_title": "Modèle déjà existant",
+  "email_swal_duplicate_error_desc": "Un modèle est déjà enregistré pour cette combinaison de Catégorie, Application et Langue.",
+  "email_client_hint": "Remplace le modèle global uniquement pour l'application sélectionnée"
 }
