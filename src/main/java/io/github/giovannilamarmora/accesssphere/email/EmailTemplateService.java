@@ -37,6 +37,7 @@ public class EmailTemplateService {
 
   @Autowired private IEmailTemplateDAO emailTemplateDAO;
   @Autowired private EmailSenderClient emailSenderClient;
+  @Autowired private io.github.giovannilamarmora.accesssphere.data.tech.TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<EmailTemplateDTO>> getAllTemplates() {
@@ -174,15 +175,17 @@ public class EmailTemplateService {
                 effectiveCategory);
           }
 
-          // 2. Ricerca tra i template del Client Tecnico predefinito ("ACCESS-SPHERE-TECH")
-          if (!"ACCESS-SPHERE-TECH".equalsIgnoreCase(clientId)) {
+          // 2. Ricerca tra i template del Client Tecnico predefinito
+          String techClientId = techUserService.getTech_client_id();
+          if (!techClientId.equalsIgnoreCase(clientId)) {
             List<EmailTemplateEntity> techClientTemplates =
-                emailTemplateDAO.findByClientIdAndCategory("ACCESS-SPHERE-TECH", effectiveCategory);
+                emailTemplateDAO.findByClientIdAndCategory(techClientId, effectiveCategory);
             Optional<EmailTemplateEntity> techMatch =
                 resolveTemplateFromList(techClientTemplates, locale);
             if (techMatch.isPresent()) {
               LOG.info(
-                  "Template found for Tech Client ACCESS-SPHERE-TECH for category=[{}], ID=[{}]",
+                  "Template found for Tech Client {} for category=[{}], ID=[{}]",
+                  techClientId,
                   effectiveCategory,
                   techMatch.get().getId());
               return EmailTemplateMapper.toDTO(techMatch.get());

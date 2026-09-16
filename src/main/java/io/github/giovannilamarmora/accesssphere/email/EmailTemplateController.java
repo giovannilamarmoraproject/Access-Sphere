@@ -99,8 +99,7 @@ public class EmailTemplateController {
   @GetMapping("/identifier/{identifier}")
   @Operation(
       summary = "Get template by identifier and locale",
-      description =
-          "Retrieves the email template by identifier with multilingual fallback support")
+      description = "Retrieves the email template by identifier with multilingual fallback support")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> getTemplateByIdentifier(
       @PathVariable("identifier") String identifier,
