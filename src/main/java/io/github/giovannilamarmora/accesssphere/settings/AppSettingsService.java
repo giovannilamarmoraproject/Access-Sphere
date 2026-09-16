@@ -6,7 +6,6 @@ import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.settings.dto.AppSettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.dto.BackupDataDTO;
-import io.github.giovannilamarmora.accesssphere.settings.dto.PublicAppSettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -38,11 +37,11 @@ public class AppSettingsService {
   @Autowired private IClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
 
-  private final AtomicReference<PublicAppSettingsDTO> publicCache = new AtomicReference<>();
+  private final AtomicReference<AppSettingsDTO> publicCache = new AtomicReference<>();
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<PublicAppSettingsDTO> getPublicSettings() {
-    PublicAppSettingsDTO cached = publicCache.get();
+  public Mono<AppSettingsDTO> getPublicSettings() {
+    AppSettingsDTO cached = publicCache.get();
     if (cached != null) {
       return Mono.just(cached);
     }
@@ -57,7 +56,7 @@ public class AppSettingsService {
           } else {
             entity = list.get(0);
           }
-          PublicAppSettingsDTO dto = AppSettingsMapper.toPublicDTO(entity);
+          AppSettingsDTO dto = AppSettingsMapper.toDTO(entity);
           publicCache.set(dto);
           return dto;
         });
@@ -88,14 +87,14 @@ public class AppSettingsService {
           }
           AppSettingsEntity saved = appSettingsDAO.save(entity);
           appSettingsDAO.flush();
-          PublicAppSettingsDTO pubDto = AppSettingsMapper.toPublicDTO(saved);
-          publicCache.set(pubDto);
+          AppSettingsDTO savedDto = AppSettingsMapper.toDTO(saved);
+          publicCache.set(savedDto);
           LOG.info(
               "Application settings updated successfully: appName='{}', theme='{}', lang='{}'",
               saved.getAppName(),
               saved.getActiveTheme(),
               saved.getDefaultLanguage());
-          return AppSettingsMapper.toDTO(saved);
+          return savedDto;
         });
   }
 
@@ -144,7 +143,7 @@ public class AppSettingsService {
             importedSettings.syncCategoryMapsBeforeSave();
             AppSettingsEntity saved = appSettingsDAO.save(importedSettings);
             appSettingsDAO.flush();
-            publicCache.set(AppSettingsMapper.toPublicDTO(saved));
+            publicCache.set(AppSettingsMapper.toDTO(saved));
           }
 
           if (backupData.getClients() != null && !backupData.getClients().isEmpty()) {

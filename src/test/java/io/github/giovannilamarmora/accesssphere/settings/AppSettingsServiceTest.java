@@ -10,7 +10,9 @@ import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.settings.dto.AppSettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.dto.BackupDataDTO;
-import io.github.giovannilamarmora.accesssphere.settings.dto.PublicAppSettingsDTO;
+import io.github.giovannilamarmora.accesssphere.settings.dto.BrandingSettingsDTO;
+import io.github.giovannilamarmora.accesssphere.settings.dto.LoginSettingsDTO;
+import io.github.giovannilamarmora.accesssphere.settings.dto.PolicySettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -251,11 +253,62 @@ class AppSettingsServiceTest {
               assertEquals("/custom-cookie", result.getCookiePolicyUrl());
 
               assertNotNull(result.getBrandingSettings());
-              assertEquals("Mapped App Name", result.getBrandingSettings().get("appName"));
+              assertEquals("Mapped App Name", result.getBrandingSettings().getAppName());
               assertNotNull(result.getLoginSettings());
-              assertEquals("CUSTOM_BACKGROUND", result.getLoginSettings().get("loginMode"));
+              assertEquals("CUSTOM_BACKGROUND", result.getLoginSettings().getLoginMode());
               assertNotNull(result.getPolicySettings());
-              assertEquals("/custom-privacy", result.getPolicySettings().get("privacyPolicyUrl"));
+              assertEquals("/custom-privacy", result.getPolicySettings().getPrivacyPolicyUrl());
+            })
+        .verifyComplete();
+
+    verify(appSettingsDAO, times(1)).save(any(AppSettingsEntity.class));
+  }
+
+  @Test
+  @DisplayName("updateSettings modifies entity using typed category DTOs")
+  void testUpdateSettingsViaTypedCategoryDTOs() {
+    when(appSettingsDAO.findAll()).thenReturn(List.of(sampleEntity));
+    when(appSettingsDAO.save(any(AppSettingsEntity.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    AppSettingsDTO updateDTO = new AppSettingsDTO();
+    updateDTO.setBrandingSettings(
+        BrandingSettingsDTO.builder()
+            .appName("Typed App Name")
+            .appTagline("Typed Tagline")
+            .supportEmail("typed@test.com")
+            .build());
+    updateDTO.setLoginSettings(
+        LoginSettingsDTO.builder()
+            .loginMode("CUSTOM_BACKGROUND")
+            .loginBgOpacity(90)
+            .loginHeroTitle("Typed Hero Title")
+            .build());
+    updateDTO.setPolicySettings(
+        PolicySettingsDTO.builder()
+            .privacyPolicyUrl("/typed-privacy")
+            .cookiePolicyUrl("/typed-cookie")
+            .build());
+
+    StepVerifier.create(appSettingsService.updateSettings(updateDTO))
+        .assertNext(
+            result -> {
+              assertNotNull(result);
+              assertEquals("Typed App Name", result.getAppName());
+              assertEquals("Typed Tagline", result.getAppTagline());
+              assertEquals("typed@test.com", result.getSupportEmail());
+              assertEquals("CUSTOM_BACKGROUND", result.getLoginMode());
+              assertEquals(90, result.getLoginBgOpacity());
+              assertEquals("Typed Hero Title", result.getLoginHeroTitle());
+              assertEquals("/typed-privacy", result.getPrivacyPolicyUrl());
+              assertEquals("/typed-cookie", result.getCookiePolicyUrl());
+
+              assertNotNull(result.getBrandingSettings());
+              assertEquals("Typed App Name", result.getBrandingSettings().getAppName());
+              assertNotNull(result.getLoginSettings());
+              assertEquals("CUSTOM_BACKGROUND", result.getLoginSettings().getLoginMode());
+              assertNotNull(result.getPolicySettings());
+              assertEquals("/typed-privacy", result.getPolicySettings().getPrivacyPolicyUrl());
             })
         .verifyComplete();
 

@@ -1,16 +1,13 @@
 package io.github.giovannilamarmora.accesssphere.settings.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
-import io.github.giovannilamarmora.utils.utilities.Mapper;
 import jakarta.persistence.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -42,307 +39,372 @@ public class AppSettingsEntity extends GenericEntity {
   /**
    * Colonna mappa persistita sul DB per raggruppare le impostazioni della categoria "Personalizzazione Login".
    * Include: loginMode, loginBgUrl, loginBgOpacity, loginHeroTitle, loginHeroSubtitle, hideHomeButton.
-   * Migliora la pulizia e leggibilità delle colonne a livello di Database.
    */
   @Convert(converter = JsonMapConverter.class)
   @Lob
   @Column(name = "LOGIN_SETTINGS", columnDefinition = "LONGTEXT")
-  private Map<String, Object> loginSettings = new LinkedHashMap<>();
+  private Map<String, Object> loginSettings = defaultLoginSettings();
 
   /**
    * Colonna mappa persistita sul DB per raggruppare le impostazioni della categoria "Branding & Identità".
    * Include: appName, appTagline, logoUrl, faviconUrl, footerCopyright, supportEmail.
-   * Migliora la pulizia e leggibilità delle colonne a livello di Database.
    */
   @Convert(converter = JsonMapConverter.class)
   @Lob
   @Column(name = "BRANDING_SETTINGS", columnDefinition = "LONGTEXT")
-  private Map<String, Object> brandingSettings = new LinkedHashMap<>();
+  private Map<String, Object> brandingSettings = defaultBrandingSettings();
 
   /**
    * Colonna mappa persistita sul DB per raggruppare le impostazioni della categoria "Conformità & Politiche".
    * Include: privacyPolicyUrl, cookiePolicyUrl.
-   * Migliora la pulizia e leggibilità delle colonne a livello di Database.
    */
   @Convert(converter = JsonMapConverter.class)
   @Lob
   @Column(name = "POLICY_SETTINGS", columnDefinition = "TEXT")
-  private Map<String, Object> policySettings = new LinkedHashMap<>();
-
-  // =========================================================================
-  // Proprietà transitorie (Non persistite come colonne singole sul DB,
-  // raggruppate all'interno delle mappe serializzate JSON soprastanti:
-  // BRANDING_SETTINGS, LOGIN_SETTINGS, POLICY_SETTINGS).
-  // =========================================================================
-
-  @Transient
-  private String appName = "Access Sphere";
-
-  @Transient
-  private String appTagline = "Gestione Identità & Accessi";
-
-  @Transient
-  private String logoUrl = "/img/logo-minimal.svg";
-
-  @Transient
-  private String faviconUrl = "/img/logo-minimal.svg";
-
-  @Transient
-  private String loginMode = "SHOWCASE"; // "SHOWCASE" or "CUSTOM_BACKGROUND"
-
-  @Transient
-  private String loginBgUrl;
-
-  @Transient
-  private Integer loginBgOpacity = 50; // Dimming overlay percentage (0-100)
-
-  @Transient
-  private String loginHeroTitle = "Autenticazione Sicura & Modulare";
-
-  @Transient
-  private String loginHeroSubtitle =
-      "Piattaforma moderna per la gestione delle identità (IAM), federazione OAuth 2.0 / OpenID Connect e protezione avanzata con crittografia JWT e JWE.";
-
-  @Transient
-  private String footerCopyright = "© 2026 Access Sphere";
-
-  @Transient
-  private String privacyPolicyUrl = "/privacy-policy";
-
-  @Transient
-  private String cookiePolicyUrl = "/cookie-policy";
-
-  @Transient
-  private String supportEmail = "support@accesssphere.io";
-
-  @Transient
-  private Boolean hideHomeButton = false;
+  private Map<String, Object> policySettings = defaultPolicySettings();
 
   public AppSettingsEntity() {
-    syncCategoryMapsBeforeSave();
+    this.loginSettings = defaultLoginSettings();
+    this.brandingSettings = defaultBrandingSettings();
+    this.policySettings = defaultPolicySettings();
+  }
+
+  // =========================================================================
+  // Valori predefiniti per le mappe di categoria
+  // =========================================================================
+
+  public static Map<String, Object> defaultBrandingSettings() {
+    Map<String, Object> map = new LinkedHashMap<>();
+    map.put("appName", "Access Sphere");
+    map.put("appTagline", "Gestione Identità & Accessi");
+    map.put("logoUrl", "/img/logo-minimal.svg");
+    map.put("faviconUrl", "/img/logo-minimal.svg");
+    map.put("footerCopyright", "© 2026 Access Sphere");
+    map.put("supportEmail", "support@accesssphere.io");
+    return map;
+  }
+
+  public static Map<String, Object> defaultLoginSettings() {
+    Map<String, Object> map = new LinkedHashMap<>();
+    map.put("loginMode", "SHOWCASE");
+    map.put("loginBgUrl", null);
+    map.put("loginBgOpacity", 50);
+    map.put("loginHeroTitle", "Autenticazione Sicura & Modulare");
+    map.put(
+        "loginHeroSubtitle",
+        "Piattaforma moderna per la gestione delle identità (IAM), federazione OAuth 2.0 / OpenID"
+            + " Connect e protezione avanzata con crittografia JWT e JWE.");
+    map.put("hideHomeButton", false);
+    return map;
+  }
+
+  public static Map<String, Object> defaultPolicySettings() {
+    Map<String, Object> map = new LinkedHashMap<>();
+    map.put("privacyPolicyUrl", "/privacy-policy");
+    map.put("cookiePolicyUrl", "/cookie-policy");
+    return map;
+  }
+
+  // =========================================================================
+  // Setters dedicati per le mappe per garantire creazione di nuove istanze (dirty checking Hibernate)
+  // =========================================================================
+
+  public void setBrandingSettings(Map<String, Object> brandingSettings) {
+    this.brandingSettings =
+        brandingSettings != null
+            ? new LinkedHashMap<>(brandingSettings)
+            : defaultBrandingSettings();
+  }
+
+  public void setLoginSettings(Map<String, Object> loginSettings) {
+    this.loginSettings =
+        loginSettings != null ? new LinkedHashMap<>(loginSettings) : defaultLoginSettings();
+  }
+
+  public void setPolicySettings(Map<String, Object> policySettings) {
+    this.policySettings =
+        policySettings != null ? new LinkedHashMap<>(policySettings) : defaultPolicySettings();
+  }
+
+  // =========================================================================
+  // Metodi delegati getter/setter che leggono/scrivono direttamente nelle mappe
+  // =========================================================================
+
+  public String getAppName() {
+    if (this.brandingSettings != null
+        && this.brandingSettings.containsKey("appName")
+        && this.brandingSettings.get("appName") != null) {
+      return this.brandingSettings.get("appName").toString();
+    }
+    return "Access Sphere";
   }
 
   public void setAppName(String appName) {
-    this.appName = appName;
-    if (this.brandingSettings != null) {
-      this.brandingSettings.put("appName", appName);
+    if (this.brandingSettings == null) {
+      this.brandingSettings = defaultBrandingSettings();
     }
+    this.brandingSettings.put("appName", appName);
+  }
+
+  public String getAppTagline() {
+    if (this.brandingSettings != null
+        && this.brandingSettings.containsKey("appTagline")
+        && this.brandingSettings.get("appTagline") != null) {
+      return this.brandingSettings.get("appTagline").toString();
+    }
+    return "Gestione Identità & Accessi";
   }
 
   public void setAppTagline(String appTagline) {
-    this.appTagline = appTagline;
-    if (this.brandingSettings != null) {
-      this.brandingSettings.put("appTagline", appTagline);
+    if (this.brandingSettings == null) {
+      this.brandingSettings = defaultBrandingSettings();
     }
+    this.brandingSettings.put("appTagline", appTagline);
+  }
+
+  public String getLogoUrl() {
+    if (this.brandingSettings != null
+        && this.brandingSettings.containsKey("logoUrl")
+        && this.brandingSettings.get("logoUrl") != null) {
+      return this.brandingSettings.get("logoUrl").toString();
+    }
+    return "/img/logo-minimal.svg";
   }
 
   public void setLogoUrl(String logoUrl) {
-    this.logoUrl = logoUrl;
-    if (this.brandingSettings != null) {
-      this.brandingSettings.put("logoUrl", logoUrl);
+    if (this.brandingSettings == null) {
+      this.brandingSettings = defaultBrandingSettings();
     }
+    this.brandingSettings.put("logoUrl", logoUrl);
+  }
+
+  public String getFaviconUrl() {
+    if (this.brandingSettings != null
+        && this.brandingSettings.containsKey("faviconUrl")
+        && this.brandingSettings.get("faviconUrl") != null) {
+      return this.brandingSettings.get("faviconUrl").toString();
+    }
+    return "/img/logo-minimal.svg";
   }
 
   public void setFaviconUrl(String faviconUrl) {
-    this.faviconUrl = faviconUrl;
-    if (this.brandingSettings != null) {
-      this.brandingSettings.put("faviconUrl", faviconUrl);
+    if (this.brandingSettings == null) {
+      this.brandingSettings = defaultBrandingSettings();
     }
+    this.brandingSettings.put("faviconUrl", faviconUrl);
+  }
+
+  public String getFooterCopyright() {
+    if (this.brandingSettings != null
+        && this.brandingSettings.containsKey("footerCopyright")
+        && this.brandingSettings.get("footerCopyright") != null) {
+      return this.brandingSettings.get("footerCopyright").toString();
+    }
+    return "© 2026 Access Sphere";
   }
 
   public void setFooterCopyright(String footerCopyright) {
-    this.footerCopyright = footerCopyright;
-    if (this.brandingSettings != null) {
-      this.brandingSettings.put("footerCopyright", footerCopyright);
+    if (this.brandingSettings == null) {
+      this.brandingSettings = defaultBrandingSettings();
     }
+    this.brandingSettings.put("footerCopyright", footerCopyright);
+  }
+
+  public String getSupportEmail() {
+    if (this.brandingSettings != null
+        && this.brandingSettings.containsKey("supportEmail")
+        && this.brandingSettings.get("supportEmail") != null) {
+      return this.brandingSettings.get("supportEmail").toString();
+    }
+    return "support@accesssphere.io";
   }
 
   public void setSupportEmail(String supportEmail) {
-    this.supportEmail = supportEmail;
-    if (this.brandingSettings != null) {
-      this.brandingSettings.put("supportEmail", supportEmail);
+    if (this.brandingSettings == null) {
+      this.brandingSettings = defaultBrandingSettings();
     }
+    this.brandingSettings.put("supportEmail", supportEmail);
+  }
+
+  public String getLoginMode() {
+    if (this.loginSettings != null
+        && this.loginSettings.containsKey("loginMode")
+        && this.loginSettings.get("loginMode") != null) {
+      return this.loginSettings.get("loginMode").toString();
+    }
+    return "SHOWCASE";
   }
 
   public void setLoginMode(String loginMode) {
-    this.loginMode = loginMode;
-    if (this.loginSettings != null) {
-      this.loginSettings.put("loginMode", loginMode);
+    if (this.loginSettings == null) {
+      this.loginSettings = defaultLoginSettings();
     }
+    this.loginSettings.put("loginMode", loginMode);
+  }
+
+  public String getLoginBgUrl() {
+    if (this.loginSettings != null
+        && this.loginSettings.containsKey("loginBgUrl")
+        && this.loginSettings.get("loginBgUrl") != null) {
+      return this.loginSettings.get("loginBgUrl").toString();
+    }
+    return null;
   }
 
   public void setLoginBgUrl(String loginBgUrl) {
-    this.loginBgUrl = loginBgUrl;
-    if (this.loginSettings != null) {
-      this.loginSettings.put("loginBgUrl", loginBgUrl);
+    if (this.loginSettings == null) {
+      this.loginSettings = defaultLoginSettings();
     }
+    this.loginSettings.put("loginBgUrl", loginBgUrl);
+  }
+
+  public Integer getLoginBgOpacity() {
+    if (this.loginSettings != null && this.loginSettings.containsKey("loginBgOpacity")) {
+      Object val = this.loginSettings.get("loginBgOpacity");
+      if (val instanceof Number num) return num.intValue();
+      if (val != null) {
+        try {
+          return Integer.parseInt(val.toString());
+        } catch (NumberFormatException ignored) {
+        }
+      }
+    }
+    return 50;
   }
 
   public void setLoginBgOpacity(Integer loginBgOpacity) {
-    this.loginBgOpacity = loginBgOpacity;
-    if (this.loginSettings != null) {
-      this.loginSettings.put("loginBgOpacity", loginBgOpacity);
+    if (this.loginSettings == null) {
+      this.loginSettings = defaultLoginSettings();
     }
+    this.loginSettings.put("loginBgOpacity", loginBgOpacity != null ? loginBgOpacity : 50);
+  }
+
+  public String getLoginHeroTitle() {
+    if (this.loginSettings != null
+        && this.loginSettings.containsKey("loginHeroTitle")
+        && this.loginSettings.get("loginHeroTitle") != null) {
+      return this.loginSettings.get("loginHeroTitle").toString();
+    }
+    return "Autenticazione Sicura & Modulare";
   }
 
   public void setLoginHeroTitle(String loginHeroTitle) {
-    this.loginHeroTitle = loginHeroTitle;
-    if (this.loginSettings != null) {
-      this.loginSettings.put("loginHeroTitle", loginHeroTitle);
+    if (this.loginSettings == null) {
+      this.loginSettings = defaultLoginSettings();
     }
+    this.loginSettings.put("loginHeroTitle", loginHeroTitle);
+  }
+
+  public String getLoginHeroSubtitle() {
+    if (this.loginSettings != null
+        && this.loginSettings.containsKey("loginHeroSubtitle")
+        && this.loginSettings.get("loginHeroSubtitle") != null) {
+      return this.loginSettings.get("loginHeroSubtitle").toString();
+    }
+    return null;
   }
 
   public void setLoginHeroSubtitle(String loginHeroSubtitle) {
-    this.loginHeroSubtitle = loginHeroSubtitle;
-    if (this.loginSettings != null) {
-      this.loginSettings.put("loginHeroSubtitle", loginHeroSubtitle);
+    if (this.loginSettings == null) {
+      this.loginSettings = defaultLoginSettings();
     }
+    this.loginSettings.put("loginHeroSubtitle", loginHeroSubtitle);
+  }
+
+  public Boolean getHideHomeButton() {
+    if (this.loginSettings != null && this.loginSettings.containsKey("hideHomeButton")) {
+      Object val = this.loginSettings.get("hideHomeButton");
+      if (val instanceof Boolean b) return b;
+      if (val != null) return Boolean.parseBoolean(val.toString());
+    }
+    return false;
   }
 
   public void setHideHomeButton(Boolean hideHomeButton) {
-    this.hideHomeButton = hideHomeButton;
-    if (this.loginSettings != null) {
-      this.loginSettings.put("hideHomeButton", hideHomeButton);
+    if (this.loginSettings == null) {
+      this.loginSettings = defaultLoginSettings();
     }
+    this.loginSettings.put("hideHomeButton", hideHomeButton != null ? hideHomeButton : false);
+  }
+
+  public String getPrivacyPolicyUrl() {
+    if (this.policySettings != null
+        && this.policySettings.containsKey("privacyPolicyUrl")
+        && this.policySettings.get("privacyPolicyUrl") != null) {
+      return this.policySettings.get("privacyPolicyUrl").toString();
+    }
+    return "/privacy-policy";
   }
 
   public void setPrivacyPolicyUrl(String privacyPolicyUrl) {
-    this.privacyPolicyUrl = privacyPolicyUrl;
-    if (this.policySettings != null) {
-      this.policySettings.put("privacyPolicyUrl", privacyPolicyUrl);
+    if (this.policySettings == null) {
+      this.policySettings = defaultPolicySettings();
     }
+    this.policySettings.put("privacyPolicyUrl", privacyPolicyUrl);
+  }
+
+  public String getCookiePolicyUrl() {
+    if (this.policySettings != null
+        && this.policySettings.containsKey("cookiePolicyUrl")
+        && this.policySettings.get("cookiePolicyUrl") != null) {
+      return this.policySettings.get("cookiePolicyUrl").toString();
+    }
+    return "/cookie-policy";
   }
 
   public void setCookiePolicyUrl(String cookiePolicyUrl) {
-    this.cookiePolicyUrl = cookiePolicyUrl;
-    if (this.policySettings != null) {
-      this.policySettings.put("cookiePolicyUrl", cookiePolicyUrl);
+    if (this.policySettings == null) {
+      this.policySettings = defaultPolicySettings();
     }
+    this.policySettings.put("cookiePolicyUrl", cookiePolicyUrl);
   }
 
-  /**
-   * Sincronizza le mappe di categoria prima di ogni operazione di INSERT o UPDATE sul database.
-   * Popola le tre mappe raggruppate (LOGIN_SETTINGS, BRANDING_SETTINGS, POLICY_SETTINGS) creando
-   * nuove istanze di mappa per garantire che Hibernate rilevi la modifica (dirty-check).
-   */
+  // =========================================================================
+  // Metodi di sincronizzazione ciclo di vita JPA (@PrePersist, @PreUpdate, @PostLoad)
+  // =========================================================================
+
   @PrePersist
   @PreUpdate
   public void syncCategoryMapsBeforeSave() {
-    syncLoginSettingsMap();
-    syncBrandingSettingsMap();
-    syncPolicySettingsMap();
-  }
-
-  public void syncLoginSettingsMap() {
-    Map<String, Object> map = new LinkedHashMap<>();
-    if (this.loginSettings != null) {
-      map.putAll(this.loginSettings);
+    if (this.loginSettings == null) {
+      this.loginSettings = defaultLoginSettings();
+    } else {
+      this.loginSettings = new LinkedHashMap<>(this.loginSettings);
+      defaultLoginSettings().forEach(this.loginSettings::putIfAbsent);
     }
-    map.put("loginMode", this.loginMode != null ? this.loginMode : "SHOWCASE");
-    map.put("loginBgUrl", this.loginBgUrl);
-    map.put("loginBgOpacity", this.loginBgOpacity != null ? this.loginBgOpacity : 50);
-    map.put("loginHeroTitle", this.loginHeroTitle != null ? this.loginHeroTitle : "Autenticazione Sicura & Modulare");
-    map.put("loginHeroSubtitle", this.loginHeroSubtitle);
-    map.put("hideHomeButton", this.hideHomeButton != null ? this.hideHomeButton : false);
-    this.loginSettings = map;
-  }
 
-  public void syncBrandingSettingsMap() {
-    Map<String, Object> map = new LinkedHashMap<>();
-    if (this.brandingSettings != null) {
-      map.putAll(this.brandingSettings);
+    if (this.brandingSettings == null) {
+      this.brandingSettings = defaultBrandingSettings();
+    } else {
+      this.brandingSettings = new LinkedHashMap<>(this.brandingSettings);
+      defaultBrandingSettings().forEach(this.brandingSettings::putIfAbsent);
     }
-    map.put("appName", this.appName != null ? this.appName : "Access Sphere");
-    map.put("appTagline", this.appTagline != null ? this.appTagline : "Gestione Identità & Accessi");
-    map.put("logoUrl", this.logoUrl != null ? this.logoUrl : "/img/logo-minimal.svg");
-    map.put("faviconUrl", this.faviconUrl != null ? this.faviconUrl : "/img/logo-minimal.svg");
-    map.put("footerCopyright", this.footerCopyright != null ? this.footerCopyright : "© 2026 Access Sphere");
-    map.put("supportEmail", this.supportEmail != null ? this.supportEmail : "support@accesssphere.io");
-    this.brandingSettings = map;
-  }
 
-  public void syncPolicySettingsMap() {
-    Map<String, Object> map = new LinkedHashMap<>();
-    if (this.policySettings != null) {
-      map.putAll(this.policySettings);
+    if (this.policySettings == null) {
+      this.policySettings = defaultPolicySettings();
+    } else {
+      this.policySettings = new LinkedHashMap<>(this.policySettings);
+      defaultPolicySettings().forEach(this.policySettings::putIfAbsent);
     }
-    map.put("privacyPolicyUrl", this.privacyPolicyUrl != null ? this.privacyPolicyUrl : "/privacy-policy");
-    map.put("cookiePolicyUrl", this.cookiePolicyUrl != null ? this.cookiePolicyUrl : "/cookie-policy");
-    this.policySettings = map;
   }
 
-  /**
-   * Sincronizza i valori delle proprietà dopo il caricamento dal database (@PostLoad).
-   * Estrae i valori salvati nelle mappe serializzate JSON per valorizzare i campi transitori.
-   */
   @PostLoad
   public void syncCategoryMapsAfterLoad() {
-    if (this.loginSettings != null && !this.loginSettings.isEmpty()) {
-      if (this.loginSettings.containsKey("loginMode") && this.loginSettings.get("loginMode") != null)
-        this.loginMode = this.loginSettings.get("loginMode").toString();
-      if (this.loginSettings.containsKey("loginBgUrl") && this.loginSettings.get("loginBgUrl") != null)
-        this.loginBgUrl = this.loginSettings.get("loginBgUrl").toString();
-      if (this.loginSettings.containsKey("loginBgOpacity")) {
-        Object val = this.loginSettings.get("loginBgOpacity");
-        if (val instanceof Number num) this.loginBgOpacity = num.intValue();
-      }
-      if (this.loginSettings.containsKey("loginHeroTitle"))
-        this.loginHeroTitle = this.loginSettings.get("loginHeroTitle") != null ? this.loginSettings.get("loginHeroTitle").toString() : null;
-      if (this.loginSettings.containsKey("loginHeroSubtitle"))
-        this.loginHeroSubtitle = this.loginSettings.get("loginHeroSubtitle") != null ? this.loginSettings.get("loginHeroSubtitle").toString() : null;
-      if (this.loginSettings.containsKey("hideHomeButton")) {
-        Object val = this.loginSettings.get("hideHomeButton");
-        if (val instanceof Boolean b) this.hideHomeButton = b;
-      }
-    }
-    syncLoginSettingsMap();
-
-    if (this.brandingSettings != null && !this.brandingSettings.isEmpty()) {
-      if (this.brandingSettings.containsKey("appName") && this.brandingSettings.get("appName") != null)
-        this.appName = this.brandingSettings.get("appName").toString();
-      if (this.brandingSettings.containsKey("appTagline"))
-        this.appTagline = this.brandingSettings.get("appTagline") != null ? this.brandingSettings.get("appTagline").toString() : null;
-      if (this.brandingSettings.containsKey("logoUrl") && this.brandingSettings.get("logoUrl") != null)
-        this.logoUrl = this.brandingSettings.get("logoUrl").toString();
-      if (this.brandingSettings.containsKey("faviconUrl") && this.brandingSettings.get("faviconUrl") != null)
-        this.faviconUrl = this.brandingSettings.get("faviconUrl").toString();
-      if (this.brandingSettings.containsKey("footerCopyright"))
-        this.footerCopyright = this.brandingSettings.get("footerCopyright") != null ? this.brandingSettings.get("footerCopyright").toString() : null;
-      if (this.brandingSettings.containsKey("supportEmail"))
-        this.supportEmail = this.brandingSettings.get("supportEmail") != null ? this.brandingSettings.get("supportEmail").toString() : null;
-    }
-    syncBrandingSettingsMap();
-
-    if (this.policySettings != null && !this.policySettings.isEmpty()) {
-      if (this.policySettings.containsKey("privacyPolicyUrl"))
-        this.privacyPolicyUrl = this.policySettings.get("privacyPolicyUrl") != null ? this.policySettings.get("privacyPolicyUrl").toString() : null;
-      if (this.policySettings.containsKey("cookiePolicyUrl"))
-        this.cookiePolicyUrl = this.policySettings.get("cookiePolicyUrl") != null ? this.policySettings.get("cookiePolicyUrl").toString() : null;
-    }
-    syncPolicySettingsMap();
+    syncCategoryMapsBeforeSave();
   }
 
   /** Ritorna la mappa deserializzata della categoria Login. */
   public Map<String, Object> getLoginSettingsMap() {
-    if (this.loginSettings == null || this.loginSettings.isEmpty()) {
-      syncLoginSettingsMap();
-    }
-    return this.loginSettings;
+    return getLoginSettings();
   }
 
   /** Ritorna la mappa deserializzata della categoria Branding. */
   public Map<String, Object> getBrandingSettingsMap() {
-    if (this.brandingSettings == null || this.brandingSettings.isEmpty()) {
-      syncBrandingSettingsMap();
-    }
-    return this.brandingSettings;
+    return getBrandingSettings();
   }
 
   /** Ritorna la mappa deserializzata della categoria Policy. */
   public Map<String, Object> getPolicySettingsMap() {
-    if (this.policySettings == null || this.policySettings.isEmpty()) {
-      syncPolicySettingsMap();
-    }
-    return this.policySettings;
+    return getPolicySettings();
   }
 }

@@ -2,7 +2,6 @@ package io.github.giovannilamarmora.accesssphere.settings;
 
 import io.github.giovannilamarmora.accesssphere.settings.dto.AppSettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.dto.BackupDataDTO;
-import io.github.giovannilamarmora.accesssphere.settings.dto.PublicAppSettingsDTO;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
