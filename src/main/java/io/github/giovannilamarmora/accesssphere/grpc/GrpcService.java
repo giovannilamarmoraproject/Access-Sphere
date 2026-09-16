@@ -27,6 +27,15 @@ public class GrpcService {
 
   private static final Logger LOG = LoggerFilter.getLogger(GrpcService.class);
 
+  /**
+   * Genera l'URL per iniziare il flusso di autorizzazione OAuth2 con Google.
+   *
+   * @param scope Scope richiesti per l'autorizzazione.
+   * @param redirectUri URI di reindirizzamento dopo il login.
+   * @param accessType Tipo di accesso (es. offline).
+   * @param clientCredential Credenziali del Client configurato in Access Sphere.
+   * @return L'URI della pagina di login di Google.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public static URI getGoogleOAuthLocation(
       String scope, String redirectUri, String accessType, ClientCredential clientCredential) {
@@ -40,11 +49,20 @@ public class GrpcService {
               clientCredential.getClientSecret());
       return new URI(redirect);
     } catch (IOException | GeneralSecurityException | URISyntaxException e) {
-      LOG.error("An error happen during oAuth Google Authorization, message is {}", e.getMessage());
+      LOG.error("An error happened during oAuth Google Authorization, message is {}", e.getMessage());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 
+  /**
+   * Autentica un utente tramite Google OAuth scambiando l'authorization code con i token (Access e ID Token).
+   *
+   * @param code Codice di autorizzazione restituito da Google.
+   * @param scope Scope autorizzati.
+   * @param redirectUri URI di reindirizzamento originario.
+   * @param clientCredential Credenziali del Client Access Sphere.
+   * @return Modello unificato contenente Token, UserInfo e JWTData.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public static GoogleModel authenticateOAuth(
       String code, String scope, String redirectUri, ClientCredential clientCredential) {
@@ -70,11 +88,18 @@ public class GrpcService {
           userInfo,
           GrpcMapper.fromGoogleDataToJWTData(userInfo, clientCredential));
     } catch (IOException | GeneralSecurityException e) {
-      LOG.error("An error happen during oAuth Google Login, message is {}", e.getMessage());
+      LOG.error("An error happened during oAuth Google Login, message is {}", e.getMessage());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 
+  /**
+   * Recupera i dati dell'utente (UserInfo) partendo da un ID Token di Google.
+   *
+   * @param idToken Token ID di Google.
+   * @param clientCredential Credenziali del Client Access Sphere.
+   * @return Modello contenente le informazioni utente estratte.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public static GoogleModel userInfo(String idToken, ClientCredential clientCredential) {
     LOG.debug("Starting google userInfo with client_id {}", clientCredential.getClientId());
@@ -84,17 +109,29 @@ public class GrpcService {
       LOG.debug("Obtained userInfo is {}", Utils.mapper().writeValueAsString(userInfo));
       return new GoogleModel(null, userInfo, null);
     } catch (IOException | GeneralSecurityException e) {
-      LOG.error("An error happen during oAuth Google UserInfo, message is {}", e.getMessage());
+      LOG.error("An error happened during oAuth Google UserInfo, message is {}", e.getMessage());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 
+  /**
+   * Revoca il token di accesso direttamente presso i server di Google (Logout).
+   *
+   * @param accessToken Access Token di Google da revocare.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public static void logout(String accessToken) {
     LOG.debug("Starting google revoke");
     GoogleGrpcService.logout(accessToken);
   }
 
+  /**
+   * Aggiorna i token di accesso di Google usando il refresh token.
+   *
+   * @param refreshToken Refresh Token di Google.
+   * @param clientCredential Credenziali del Client Access Sphere.
+   * @return Modello contenente i nuovi token aggiornati.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public static GoogleModel refreshToken(String refreshToken, ClientCredential clientCredential) {
     LOG.debug("Starting google refresh token");
@@ -115,7 +152,7 @@ public class GrpcService {
           userInfo,
           GrpcMapper.fromGoogleDataToJWTData(userInfo, clientCredential));
     } catch (IOException | GeneralSecurityException e) {
-      LOG.error("An error happen during oAuth Google Refresh Token, message is {}", e.getMessage());
+      LOG.error("An error happened during oAuth Google Refresh Token, message is {}", e.getMessage());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
