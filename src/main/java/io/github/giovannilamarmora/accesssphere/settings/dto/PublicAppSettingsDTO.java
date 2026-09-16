@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.settings.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,4 +29,9 @@ public class PublicAppSettingsDTO {
   private String cookiePolicyUrl;
   private Boolean hideHomeButton;
   private String navigationLayout;
+
+  // Mappe raggruppate per categoria
+  private Map<String, Object> loginSettings;
+  private Map<String, Object> brandingSettings;
+  private Map<String, Object> policySettings;
 }

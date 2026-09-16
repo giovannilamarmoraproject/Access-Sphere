@@ -213,4 +213,52 @@ class AppSettingsServiceTest {
     verify(userDAO, times(1)).save(restoreUser);
     assertEquals(20L, restoreUser.getId());
   }
+
+  @Test
+  @DisplayName("updateSettings modifies entity using grouped category maps")
+  void testUpdateSettingsViaCategoryMaps() {
+    when(appSettingsDAO.findAll()).thenReturn(List.of(sampleEntity));
+    when(appSettingsDAO.save(any(AppSettingsEntity.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    AppSettingsDTO updateDTO = new AppSettingsDTO();
+    updateDTO.setBrandingSettings(
+        java.util.Map.of(
+            "appName", "Mapped App Name",
+            "appTagline", "Mapped Tagline",
+            "supportEmail", "mapped@test.com"));
+    updateDTO.setLoginSettings(
+        java.util.Map.of(
+            "loginMode", "CUSTOM_BACKGROUND",
+            "loginBgOpacity", 80,
+            "loginHeroTitle", "Custom Hero Title"));
+    updateDTO.setPolicySettings(
+        java.util.Map.of(
+            "privacyPolicyUrl", "/custom-privacy",
+            "cookiePolicyUrl", "/custom-cookie"));
+
+    StepVerifier.create(appSettingsService.updateSettings(updateDTO))
+        .assertNext(
+            result -> {
+              assertNotNull(result);
+              assertEquals("Mapped App Name", result.getAppName());
+              assertEquals("Mapped Tagline", result.getAppTagline());
+              assertEquals("mapped@test.com", result.getSupportEmail());
+              assertEquals("CUSTOM_BACKGROUND", result.getLoginMode());
+              assertEquals(80, result.getLoginBgOpacity());
+              assertEquals("Custom Hero Title", result.getLoginHeroTitle());
+              assertEquals("/custom-privacy", result.getPrivacyPolicyUrl());
+              assertEquals("/custom-cookie", result.getCookiePolicyUrl());
+
+              assertNotNull(result.getBrandingSettings());
+              assertEquals("Mapped App Name", result.getBrandingSettings().get("appName"));
+              assertNotNull(result.getLoginSettings());
+              assertEquals("CUSTOM_BACKGROUND", result.getLoginSettings().get("loginMode"));
+              assertNotNull(result.getPolicySettings());
+              assertEquals("/custom-privacy", result.getPolicySettings().get("privacyPolicyUrl"));
+            })
+        .verifyComplete();
+
+    verify(appSettingsDAO, times(1)).save(any(AppSettingsEntity.class));
+  }
 }

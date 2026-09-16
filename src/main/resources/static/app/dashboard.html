@@ -1874,18 +1874,21 @@
         }
     }
 
-    function populateSettingsForm(data) {
-        if (!data) return;
+    function populateSettingsForm(rawData) {
+        if (!rawData) return;
+        const data = (typeof AppSettings !== "undefined" && typeof AppSettings.normalizeSettings === "function")
+            ? AppSettings.normalizeSettings(rawData)
+            : rawData;
         if (data.defaultLanguage) {
             const r = document.getElementById("lang-radio-" + data.defaultLanguage);
             if (r) r.checked = true;
         }
-        if (data.appName) document.getElementById("setting-app-name").value = data.appName;
-        if (data.appTagline) document.getElementById("setting-app-tagline").value = data.appTagline;
-        if (data.footerCopyright) document.getElementById("setting-footer-copyright").value = data.footerCopyright;
-        if (data.privacyPolicyUrl) document.getElementById("setting-privacy-url").value = data.privacyPolicyUrl;
-        if (data.cookiePolicyUrl) document.getElementById("setting-cookie-url").value = data.cookiePolicyUrl;
-        if (data.supportEmail) document.getElementById("setting-support-email").value = data.supportEmail;
+        if (data.appName !== undefined) document.getElementById("setting-app-name").value = data.appName || "";
+        if (data.appTagline !== undefined) document.getElementById("setting-app-tagline").value = data.appTagline || "";
+        if (data.footerCopyright !== undefined) document.getElementById("setting-footer-copyright").value = data.footerCopyright || "";
+        if (data.privacyPolicyUrl !== undefined) document.getElementById("setting-privacy-url").value = data.privacyPolicyUrl || "";
+        if (data.cookiePolicyUrl !== undefined) document.getElementById("setting-cookie-url").value = data.cookiePolicyUrl || "";
+        if (data.supportEmail !== undefined) document.getElementById("setting-support-email").value = data.supportEmail || "";
 
         if (data.logoUrl) {
             currentLogoDataUrl = data.logoUrl;
@@ -2098,7 +2101,27 @@
             hideHomeButton,
             navigationLayout,
             activeTheme,
-            defaultLanguage
+            defaultLanguage,
+            brandingSettings: {
+                appName,
+                appTagline,
+                logoUrl,
+                faviconUrl,
+                footerCopyright,
+                supportEmail
+            },
+            loginSettings: {
+                loginMode,
+                loginBgUrl,
+                loginBgOpacity,
+                loginHeroTitle,
+                loginHeroSubtitle,
+                hideHomeButton
+            },
+            policySettings: {
+                privacyPolicyUrl,
+                cookiePolicyUrl
+            }
         };
 
         try {

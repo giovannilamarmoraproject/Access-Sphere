@@ -7,6 +7,82 @@ const AppSettings = (function () {
     const SETTINGS_KEY = "access_sphere_settings";
     const DEFAULT_THEME = "cosmic-purple";
 
+    /**
+     * Normalizza l'oggetto impostazioni supportando sia la struttura piatta sia le mappe categorizzate
+     * (brandingSettings, loginSettings, policySettings). Garantisce che i campi siano sempre leggibili e scrivibili.
+     */
+    function normalizeSettings(s) {
+        if (!s || typeof s !== "object") return {};
+        const branding = s.brandingSettings || {};
+        const login = s.loginSettings || {};
+        const policy = s.policySettings || {};
+
+        const appName = s.appName !== undefined && s.appName !== null ? s.appName : branding.appName;
+        const appTagline = s.appTagline !== undefined && s.appTagline !== null ? s.appTagline : branding.appTagline;
+        const logoUrl = s.logoUrl !== undefined && s.logoUrl !== null ? s.logoUrl : branding.logoUrl;
+        const faviconUrl = s.faviconUrl !== undefined && s.faviconUrl !== null ? s.faviconUrl : branding.faviconUrl;
+        const footerCopyright = s.footerCopyright !== undefined && s.footerCopyright !== null ? s.footerCopyright : branding.footerCopyright;
+        const supportEmail = s.supportEmail !== undefined && s.supportEmail !== null ? s.supportEmail : branding.supportEmail;
+
+        const loginMode = s.loginMode !== undefined && s.loginMode !== null ? s.loginMode : (login.loginMode || "SHOWCASE");
+        const loginBgUrl = s.loginBgUrl !== undefined && s.loginBgUrl !== null ? s.loginBgUrl : login.loginBgUrl;
+        const loginBgOpacity = s.loginBgOpacity !== undefined && s.loginBgOpacity !== null ? s.loginBgOpacity : (login.loginBgOpacity !== undefined ? login.loginBgOpacity : 50);
+        const loginHeroTitle = s.loginHeroTitle !== undefined && s.loginHeroTitle !== null ? s.loginHeroTitle : login.loginHeroTitle;
+        const loginHeroSubtitle = s.loginHeroSubtitle !== undefined && s.loginHeroSubtitle !== null ? s.loginHeroSubtitle : login.loginHeroSubtitle;
+        const hideHomeButton = s.hideHomeButton !== undefined && s.hideHomeButton !== null ? s.hideHomeButton : (login.hideHomeButton !== undefined ? login.hideHomeButton : false);
+
+        const privacyPolicyUrl = s.privacyPolicyUrl !== undefined && s.privacyPolicyUrl !== null ? s.privacyPolicyUrl : policy.privacyPolicyUrl;
+        const cookiePolicyUrl = s.cookiePolicyUrl !== undefined && s.cookiePolicyUrl !== null ? s.cookiePolicyUrl : policy.cookiePolicyUrl;
+
+        const activeTheme = s.activeTheme || localStorage.getItem(THEME_KEY) || DEFAULT_THEME;
+        const defaultLanguage = s.defaultLanguage || "auto";
+        const navigationLayout = s.navigationLayout || "HEADER";
+
+        return {
+            ...s,
+            appName,
+            appTagline,
+            logoUrl,
+            faviconUrl,
+            footerCopyright,
+            supportEmail,
+            loginMode,
+            loginBgUrl,
+            loginBgOpacity,
+            loginHeroTitle,
+            loginHeroSubtitle,
+            hideHomeButton,
+            privacyPolicyUrl,
+            cookiePolicyUrl,
+            activeTheme,
+            defaultLanguage,
+            navigationLayout,
+            brandingSettings: {
+                appName,
+                appTagline,
+                logoUrl,
+                faviconUrl,
+                footerCopyright,
+                supportEmail,
+                ...branding
+            },
+            loginSettings: {
+                loginMode,
+                loginBgUrl,
+                loginBgOpacity,
+                loginHeroTitle,
+                loginHeroSubtitle,
+                hideHomeButton,
+                ...login
+            },
+            policySettings: {
+                privacyPolicyUrl,
+                cookiePolicyUrl,
+                ...policy
+            }
+        };
+    }
+
     // 1. Instant Synchronous Initialization (Zero flicker)
     function initEarlyTheme() {
         try {
@@ -15,7 +91,8 @@ const AppSettings = (function () {
                 const cachedRaw = localStorage.getItem(SETTINGS_KEY);
                 if (cachedRaw) {
                     try {
-                        const s = JSON.parse(cachedRaw);
+                        const raw = JSON.parse(cachedRaw);
+                        const s = normalizeSettings(raw);
                         if (s && s.activeTheme) savedTheme = s.activeTheme;
                     } catch (err) {
                     }
@@ -31,7 +108,8 @@ const AppSettings = (function () {
             const cachedRaw = localStorage.getItem(SETTINGS_KEY);
             if (cachedRaw) {
                 try {
-                    const s = JSON.parse(cachedRaw);
+                    const raw = JSON.parse(cachedRaw);
+                    const s = normalizeSettings(raw);
                     if (s && s.faviconUrl && document.head) {
                         let iconLink = document.querySelector("link[rel*='icon']");
                         if (!iconLink) {
@@ -75,6 +153,7 @@ const AppSettings = (function () {
 
     function applyBrandingToDOM(settings) {
         if (!settings) return;
+        settings = normalizeSettings(settings);
 
         // 1. App Name in Document Title and Brand Elements
         if (settings.appName) {
@@ -467,7 +546,7 @@ const AppSettings = (function () {
             if (!res.ok) return;
             const data = await res.json();
             if (data && data.data) {
-                const s = data.data;
+                const s = normalizeSettings(data.data);
                 localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
                 const activeTheme = s.activeTheme || localStorage.getItem(THEME_KEY);
                 if (activeTheme) {
@@ -506,13 +585,14 @@ const AppSettings = (function () {
             return null;
         }
         const json = await res.json().catch(() => ({}));
-        return json.data;
+        return json.data ? normalizeSettings(json.data) : null;
     }
 
     async function saveAdminSettings(settingsData, token) {
         if (!token) {
             token = getAuthToken();
         }
+        const normalizedPayload = normalizeSettings(settingsData);
         const headers = {
             "Content-Type": "application/json",
             Authorization: "Bearer " + token,
@@ -523,7 +603,7 @@ const AppSettings = (function () {
         const res = await fetch("/v1/app/settings", {
             method: "PUT",
             headers: headers,
-            body: JSON.stringify(settingsData),
+            body: JSON.stringify(normalizedPayload),
         });
         const json = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -531,16 +611,18 @@ const AppSettings = (function () {
             throw new Error((json && (json.message || json.exception)) || `HTTP ${res.status}`);
         }
         if (json.data) {
-            localStorage.setItem(SETTINGS_KEY, JSON.stringify(json.data));
-            if (json.data.activeTheme) {
-                applyTheme(json.data.activeTheme);
+            const s = normalizeSettings(json.data);
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+            if (s.activeTheme) {
+                applyTheme(s.activeTheme);
             }
-            if (json.data.defaultLanguage && json.data.defaultLanguage !== "auto") {
+            if (s.defaultLanguage && s.defaultLanguage !== "auto") {
                 if (typeof switchLanguage === "function") {
-                    switchLanguage(json.data.defaultLanguage);
+                    switchLanguage(s.defaultLanguage);
                 }
             }
-            applyBrandingToDOM(json.data);
+            applyBrandingToDOM(s);
+            return s;
         }
         return json;
     }
@@ -669,6 +751,7 @@ const AppSettings = (function () {
         toggleSidebarCollapse,
         updateHeaderBreadcrumb,
         isPostLoginPage,
+        normalizeSettings,
         loadPublicSettings,
         loadAdminSettings,
         saveAdminSettings,

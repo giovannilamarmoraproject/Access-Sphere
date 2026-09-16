@@ -12,35 +12,25 @@ public class AppSettingsMapper {
 
   public static PublicAppSettingsDTO toPublicDTO(AppSettingsEntity entity) {
     if (entity == null) {
-      return PublicAppSettingsDTO.builder()
-          .appName("Access Sphere")
-          .appTagline("Gestione Identità & Accessi")
-          .logoUrl("/img/logo-minimal.svg")
-          .faviconUrl("/img/logo-minimal.svg")
-          .activeTheme("cosmic-purple")
-          .defaultLanguage("auto")
-          .loginMode("SHOWCASE")
-          .loginHeroTitle("Autenticazione Sicura & Modulare")
-          .loginHeroSubtitle(
-              "Piattaforma moderna per la gestione delle identità (IAM), federazione OAuth 2.0 / OpenID Connect e protezione avanzata con crittografia JWT e JWE.")
-          .footerCopyright("© 2026 Access Sphere")
-          .privacyPolicyUrl("/privacy-policy")
-          .cookiePolicyUrl("/cookie-policy")
-          .loginBgOpacity(50)
-          .hideHomeButton(false)
-          .navigationLayout("HEADER")
-          .build();
+      entity = new AppSettingsEntity();
     }
+    entity.syncCategoryMapsBeforeSave();
+
     PublicAppSettingsDTO dto = new PublicAppSettingsDTO();
     BeanUtils.copyProperties(entity, dto);
     dto.setHideHomeButton(entity.getHideHomeButton() != null && entity.getHideHomeButton());
     dto.setNavigationLayout(
         entity.getNavigationLayout() != null ? entity.getNavigationLayout() : "HEADER");
+    dto.setLoginSettings(entity.getLoginSettingsMap());
+    dto.setBrandingSettings(entity.getBrandingSettingsMap());
+    dto.setPolicySettings(entity.getPolicySettingsMap());
     return dto;
   }
 
   public static AppSettingsDTO toDTO(AppSettingsEntity entity) {
     if (entity == null) return new AppSettingsDTO();
+    entity.syncCategoryMapsBeforeSave();
+
     AppSettingsDTO dto = new AppSettingsDTO();
     BeanUtils.copyProperties(entity, dto);
     dto.setLoginSettings(entity.getLoginSettingsMap());
@@ -52,103 +42,124 @@ public class AppSettingsMapper {
   public static AppSettingsEntity toEntity(AppSettingsDTO dto) {
     if (dto == null) return new AppSettingsEntity();
     AppSettingsEntity entity = new AppSettingsEntity();
-    BeanUtils.copyProperties(dto, entity);
+    updateEntity(entity, dto);
     return entity;
   }
 
   public static void updateEntity(AppSettingsEntity target, AppSettingsDTO source) {
     if (source == null || target == null) return;
-    if (source.getAppName() != null) target.setAppName(source.getAppName());
-    if (source.getAppTagline() != null) target.setAppTagline(source.getAppTagline());
-    if (source.getLogoUrl() != null) {
-      target.setLogoUrl(
-          source.getLogoUrl().isBlank() ? "/img/logo-minimal.svg" : source.getLogoUrl());
-    }
-    if (source.getFaviconUrl() != null) {
-      target.setFaviconUrl(
-          source.getFaviconUrl().isBlank() ? "/img/logo-minimal.svg" : source.getFaviconUrl());
-    }
+
     if (source.getActiveTheme() != null) target.setActiveTheme(source.getActiveTheme());
     if (source.getDefaultLanguage() != null) target.setDefaultLanguage(source.getDefaultLanguage());
-    if (source.getLoginMode() != null) target.setLoginMode(source.getLoginMode());
-    if (source.getLoginBgUrl() != null) target.setLoginBgUrl(source.getLoginBgUrl());
-    if (source.getLoginBgOpacity() != null) target.setLoginBgOpacity(source.getLoginBgOpacity());
-    if (source.getLoginHeroTitle() != null) target.setLoginHeroTitle(source.getLoginHeroTitle());
-    if (source.getLoginHeroSubtitle() != null)
-      target.setLoginHeroSubtitle(source.getLoginHeroSubtitle());
-    if (source.getFooterCopyright() != null) target.setFooterCopyright(source.getFooterCopyright());
-    if (source.getPrivacyPolicyUrl() != null)
-      target.setPrivacyPolicyUrl(source.getPrivacyPolicyUrl());
-    if (source.getCookiePolicyUrl() != null) target.setCookiePolicyUrl(source.getCookiePolicyUrl());
-    if (source.getSupportEmail() != null) target.setSupportEmail(source.getSupportEmail());
-    if (source.getHideHomeButton() != null) target.setHideHomeButton(source.getHideHomeButton());
     if (source.getNavigationLayout() != null)
       target.setNavigationLayout(source.getNavigationLayout());
 
-    // Supporto per aggiornamento tramite mappa raggruppata "loginSettings"
-    if (source.getLoginSettings() != null) {
-      Map<String, Object> map = source.getLoginSettings();
-      if (map.containsKey("loginMode")
-          && source.getLoginMode() == null
-          && map.get("loginMode") != null) target.setLoginMode(map.get("loginMode").toString());
-      if (map.containsKey("loginBgUrl")
-          && source.getLoginBgUrl() == null
-          && map.get("loginBgUrl") != null) target.setLoginBgUrl(map.get("loginBgUrl").toString());
-      if (map.containsKey("loginBgOpacity")
-          && source.getLoginBgOpacity() == null
-          && map.get("loginBgOpacity") != null) {
-        if (map.get("loginBgOpacity") instanceof Number num)
-          target.setLoginBgOpacity(num.intValue());
-      }
-      if (map.containsKey("loginHeroTitle")
-          && source.getLoginHeroTitle() == null
-          && map.get("loginHeroTitle") != null)
-        target.setLoginHeroTitle(map.get("loginHeroTitle").toString());
-      if (map.containsKey("loginHeroSubtitle")
-          && source.getLoginHeroSubtitle() == null
-          && map.get("loginHeroSubtitle") != null)
-        target.setLoginHeroSubtitle(map.get("loginHeroSubtitle").toString());
-      if (map.containsKey("hideHomeButton")
-          && source.getHideHomeButton() == null
-          && map.get("hideHomeButton") != null) {
-        if (map.get("hideHomeButton") instanceof Boolean b) target.setHideHomeButton(b);
-      }
+    // Branding: check flat fields first, fallback to brandingSettings map
+    if (source.getAppName() != null) {
+      target.setAppName(source.getAppName());
+    } else if (source.getBrandingSettings() != null
+        && source.getBrandingSettings().get("appName") != null) {
+      target.setAppName(source.getBrandingSettings().get("appName").toString());
     }
 
-    // Supporto per aggiornamento tramite mappa raggruppata "brandingSettings"
-    if (source.getBrandingSettings() != null) {
-      Map<String, Object> map = source.getBrandingSettings();
-      if (map.containsKey("appName") && source.getAppName() == null && map.get("appName") != null)
-        target.setAppName(map.get("appName").toString());
-      if (map.containsKey("appTagline")
-          && source.getAppTagline() == null
-          && map.get("appTagline") != null) target.setAppTagline(map.get("appTagline").toString());
-      if (map.containsKey("logoUrl") && source.getLogoUrl() == null && map.get("logoUrl") != null)
-        target.setLogoUrl(map.get("logoUrl").toString());
-      if (map.containsKey("faviconUrl")
-          && source.getFaviconUrl() == null
-          && map.get("faviconUrl") != null) target.setFaviconUrl(map.get("faviconUrl").toString());
-      if (map.containsKey("footerCopyright")
-          && source.getFooterCopyright() == null
-          && map.get("footerCopyright") != null)
-        target.setFooterCopyright(map.get("footerCopyright").toString());
-      if (map.containsKey("supportEmail")
-          && source.getSupportEmail() == null
-          && map.get("supportEmail") != null)
-        target.setSupportEmail(map.get("supportEmail").toString());
+    if (source.getAppTagline() != null) {
+      target.setAppTagline(source.getAppTagline());
+    } else if (source.getBrandingSettings() != null
+        && source.getBrandingSettings().get("appTagline") != null) {
+      target.setAppTagline(source.getBrandingSettings().get("appTagline").toString());
     }
 
-    // Supporto per aggiornamento tramite mappa raggruppata "policySettings"
-    if (source.getPolicySettings() != null) {
-      Map<String, Object> map = source.getPolicySettings();
-      if (map.containsKey("privacyPolicyUrl")
-          && source.getPrivacyPolicyUrl() == null
-          && map.get("privacyPolicyUrl") != null)
-        target.setPrivacyPolicyUrl(map.get("privacyPolicyUrl").toString());
-      if (map.containsKey("cookiePolicyUrl")
-          && source.getCookiePolicyUrl() == null
-          && map.get("cookiePolicyUrl") != null)
-        target.setCookiePolicyUrl(map.get("cookiePolicyUrl").toString());
+    if (source.getLogoUrl() != null) {
+      target.setLogoUrl(
+          source.getLogoUrl().isBlank() ? "/img/logo-minimal.svg" : source.getLogoUrl());
+    } else if (source.getBrandingSettings() != null
+        && source.getBrandingSettings().get("logoUrl") != null) {
+      target.setLogoUrl(source.getBrandingSettings().get("logoUrl").toString());
     }
+
+    if (source.getFaviconUrl() != null) {
+      target.setFaviconUrl(
+          source.getFaviconUrl().isBlank() ? "/img/logo-minimal.svg" : source.getFaviconUrl());
+    } else if (source.getBrandingSettings() != null
+        && source.getBrandingSettings().get("faviconUrl") != null) {
+      target.setFaviconUrl(source.getBrandingSettings().get("faviconUrl").toString());
+    }
+
+    if (source.getFooterCopyright() != null) {
+      target.setFooterCopyright(source.getFooterCopyright());
+    } else if (source.getBrandingSettings() != null
+        && source.getBrandingSettings().get("footerCopyright") != null) {
+      target.setFooterCopyright(source.getBrandingSettings().get("footerCopyright").toString());
+    }
+
+    if (source.getSupportEmail() != null) {
+      target.setSupportEmail(source.getSupportEmail());
+    } else if (source.getBrandingSettings() != null
+        && source.getBrandingSettings().get("supportEmail") != null) {
+      target.setSupportEmail(source.getBrandingSettings().get("supportEmail").toString());
+    }
+
+    // Login Settings: check flat fields first, fallback to loginSettings map
+    if (source.getLoginMode() != null) {
+      target.setLoginMode(source.getLoginMode());
+    } else if (source.getLoginSettings() != null
+        && source.getLoginSettings().get("loginMode") != null) {
+      target.setLoginMode(source.getLoginSettings().get("loginMode").toString());
+    }
+
+    if (source.getLoginBgUrl() != null) {
+      target.setLoginBgUrl(source.getLoginBgUrl());
+    } else if (source.getLoginSettings() != null
+        && source.getLoginSettings().get("loginBgUrl") != null) {
+      target.setLoginBgUrl(source.getLoginSettings().get("loginBgUrl").toString());
+    }
+
+    if (source.getLoginBgOpacity() != null) {
+      target.setLoginBgOpacity(source.getLoginBgOpacity());
+    } else if (source.getLoginSettings() != null
+        && source.getLoginSettings().get("loginBgOpacity") != null) {
+      Object val = source.getLoginSettings().get("loginBgOpacity");
+      if (val instanceof Number num) target.setLoginBgOpacity(num.intValue());
+    }
+
+    if (source.getLoginHeroTitle() != null) {
+      target.setLoginHeroTitle(source.getLoginHeroTitle());
+    } else if (source.getLoginSettings() != null
+        && source.getLoginSettings().get("loginHeroTitle") != null) {
+      target.setLoginHeroTitle(source.getLoginSettings().get("loginHeroTitle").toString());
+    }
+
+    if (source.getLoginHeroSubtitle() != null) {
+      target.setLoginHeroSubtitle(source.getLoginHeroSubtitle());
+    } else if (source.getLoginSettings() != null
+        && source.getLoginSettings().get("loginHeroSubtitle") != null) {
+      target.setLoginHeroSubtitle(source.getLoginSettings().get("loginHeroSubtitle").toString());
+    }
+
+    if (source.getHideHomeButton() != null) {
+      target.setHideHomeButton(source.getHideHomeButton());
+    } else if (source.getLoginSettings() != null
+        && source.getLoginSettings().get("hideHomeButton") != null) {
+      Object val = source.getLoginSettings().get("hideHomeButton");
+      if (val instanceof Boolean b) target.setHideHomeButton(b);
+    }
+
+    // Policy Settings: check flat fields first, fallback to policySettings map
+    if (source.getPrivacyPolicyUrl() != null) {
+      target.setPrivacyPolicyUrl(source.getPrivacyPolicyUrl());
+    } else if (source.getPolicySettings() != null
+        && source.getPolicySettings().get("privacyPolicyUrl") != null) {
+      target.setPrivacyPolicyUrl(source.getPolicySettings().get("privacyPolicyUrl").toString());
+    }
+
+    if (source.getCookiePolicyUrl() != null) {
+      target.setCookiePolicyUrl(source.getCookiePolicyUrl());
+    } else if (source.getPolicySettings() != null
+        && source.getPolicySettings().get("cookiePolicyUrl") != null) {
+      target.setCookiePolicyUrl(source.getPolicySettings().get("cookiePolicyUrl").toString());
+    }
+
+    // Explicitly synchronize category maps before persisting so Hibernate marks the entity as dirty
+    target.syncCategoryMapsBeforeSave();
   }
 }

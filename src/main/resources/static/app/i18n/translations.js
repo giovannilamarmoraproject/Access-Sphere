@@ -331,11 +331,14 @@ function applyTranslations() {
       const s = localStorage.getItem("access_sphere_settings");
       if (s) {
         const parsed = JSON.parse(s);
-        if (parsed.footerCopyright && parsed.footerCopyright.trim()) {
-          customCopyright = parsed.footerCopyright;
+        const branding = parsed.brandingSettings || {};
+        const fc = parsed.footerCopyright || branding.footerCopyright;
+        if (fc && fc.trim()) {
+          customCopyright = fc.trim();
         }
-        if (parsed.appName && parsed.appName.trim()) {
-          appName = parsed.appName.trim();
+        const an = parsed.appName || branding.appName;
+        if (an && an.trim()) {
+          appName = an.trim();
         }
       }
       const directCopyright = localStorage.getItem("access_sphere_footer_copyright");

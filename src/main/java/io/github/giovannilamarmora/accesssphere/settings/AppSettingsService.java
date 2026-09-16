@@ -135,6 +135,7 @@ public class AppSettingsService {
             } else {
               importedSettings.setId(null);
             }
+            importedSettings.syncCategoryMapsBeforeSave();
             appSettingsDAO.save(importedSettings);
             publicCache.set(AppSettingsMapper.toPublicDTO(importedSettings));
           }

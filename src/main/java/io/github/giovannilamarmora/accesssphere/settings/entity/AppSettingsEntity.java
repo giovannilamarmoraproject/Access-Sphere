@@ -121,32 +121,144 @@ public class AppSettingsEntity extends GenericEntity {
     syncCategoryMapsBeforeSave();
   }
 
+  public void setAppName(String appName) {
+    this.appName = appName;
+    if (this.brandingSettings != null) {
+      this.brandingSettings.put("appName", appName);
+    }
+  }
+
+  public void setAppTagline(String appTagline) {
+    this.appTagline = appTagline;
+    if (this.brandingSettings != null) {
+      this.brandingSettings.put("appTagline", appTagline);
+    }
+  }
+
+  public void setLogoUrl(String logoUrl) {
+    this.logoUrl = logoUrl;
+    if (this.brandingSettings != null) {
+      this.brandingSettings.put("logoUrl", logoUrl);
+    }
+  }
+
+  public void setFaviconUrl(String faviconUrl) {
+    this.faviconUrl = faviconUrl;
+    if (this.brandingSettings != null) {
+      this.brandingSettings.put("faviconUrl", faviconUrl);
+    }
+  }
+
+  public void setFooterCopyright(String footerCopyright) {
+    this.footerCopyright = footerCopyright;
+    if (this.brandingSettings != null) {
+      this.brandingSettings.put("footerCopyright", footerCopyright);
+    }
+  }
+
+  public void setSupportEmail(String supportEmail) {
+    this.supportEmail = supportEmail;
+    if (this.brandingSettings != null) {
+      this.brandingSettings.put("supportEmail", supportEmail);
+    }
+  }
+
+  public void setLoginMode(String loginMode) {
+    this.loginMode = loginMode;
+    if (this.loginSettings != null) {
+      this.loginSettings.put("loginMode", loginMode);
+    }
+  }
+
+  public void setLoginBgUrl(String loginBgUrl) {
+    this.loginBgUrl = loginBgUrl;
+    if (this.loginSettings != null) {
+      this.loginSettings.put("loginBgUrl", loginBgUrl);
+    }
+  }
+
+  public void setLoginBgOpacity(Integer loginBgOpacity) {
+    this.loginBgOpacity = loginBgOpacity;
+    if (this.loginSettings != null) {
+      this.loginSettings.put("loginBgOpacity", loginBgOpacity);
+    }
+  }
+
+  public void setLoginHeroTitle(String loginHeroTitle) {
+    this.loginHeroTitle = loginHeroTitle;
+    if (this.loginSettings != null) {
+      this.loginSettings.put("loginHeroTitle", loginHeroTitle);
+    }
+  }
+
+  public void setLoginHeroSubtitle(String loginHeroSubtitle) {
+    this.loginHeroSubtitle = loginHeroSubtitle;
+    if (this.loginSettings != null) {
+      this.loginSettings.put("loginHeroSubtitle", loginHeroSubtitle);
+    }
+  }
+
+  public void setHideHomeButton(Boolean hideHomeButton) {
+    this.hideHomeButton = hideHomeButton;
+    if (this.loginSettings != null) {
+      this.loginSettings.put("hideHomeButton", hideHomeButton);
+    }
+  }
+
+  public void setPrivacyPolicyUrl(String privacyPolicyUrl) {
+    this.privacyPolicyUrl = privacyPolicyUrl;
+    if (this.policySettings != null) {
+      this.policySettings.put("privacyPolicyUrl", privacyPolicyUrl);
+    }
+  }
+
+  public void setCookiePolicyUrl(String cookiePolicyUrl) {
+    this.cookiePolicyUrl = cookiePolicyUrl;
+    if (this.policySettings != null) {
+      this.policySettings.put("cookiePolicyUrl", cookiePolicyUrl);
+    }
+  }
+
   /**
    * Sincronizza le mappe di categoria prima di ogni operazione di INSERT o UPDATE sul database.
-   * Popola le tre mappe raggruppate (LOGIN_SETTINGS, BRANDING_SETTINGS, POLICY_SETTINGS).
+   * Popola le tre mappe raggruppate (LOGIN_SETTINGS, BRANDING_SETTINGS, POLICY_SETTINGS) creando
+   * nuove istanze di mappa per garantire che Hibernate rilevi la modifica (dirty-check).
    */
   @PrePersist
   @PreUpdate
   public void syncCategoryMapsBeforeSave() {
-    if (this.loginSettings == null) this.loginSettings = new LinkedHashMap<>();
-    this.loginSettings.put("loginMode", this.loginMode != null ? this.loginMode : "SHOWCASE");
-    this.loginSettings.put("loginBgUrl", this.loginBgUrl);
-    this.loginSettings.put("loginBgOpacity", this.loginBgOpacity != null ? this.loginBgOpacity : 50);
-    this.loginSettings.put("loginHeroTitle", this.loginHeroTitle != null ? this.loginHeroTitle : "Autenticazione Sicura & Modulare");
-    this.loginSettings.put("loginHeroSubtitle", this.loginHeroSubtitle);
-    this.loginSettings.put("hideHomeButton", this.hideHomeButton != null ? this.hideHomeButton : false);
+    syncLoginSettingsMap();
+    syncBrandingSettingsMap();
+    syncPolicySettingsMap();
+  }
 
-    if (this.brandingSettings == null) this.brandingSettings = new LinkedHashMap<>();
-    this.brandingSettings.put("appName", this.appName != null ? this.appName : "Access Sphere");
-    this.brandingSettings.put("appTagline", this.appTagline != null ? this.appTagline : "Gestione Identità & Accessi");
-    this.brandingSettings.put("logoUrl", this.logoUrl != null ? this.logoUrl : "/img/logo-minimal.svg");
-    this.brandingSettings.put("faviconUrl", this.faviconUrl != null ? this.faviconUrl : "/img/logo-minimal.svg");
-    this.brandingSettings.put("footerCopyright", this.footerCopyright != null ? this.footerCopyright : "© 2026 Access Sphere");
-    this.brandingSettings.put("supportEmail", this.supportEmail != null ? this.supportEmail : "support@accesssphere.io");
+  public void syncLoginSettingsMap() {
+    Map<String, Object> map = new LinkedHashMap<>();
+    map.put("loginMode", this.loginMode != null ? this.loginMode : "SHOWCASE");
+    map.put("loginBgUrl", this.loginBgUrl);
+    map.put("loginBgOpacity", this.loginBgOpacity != null ? this.loginBgOpacity : 50);
+    map.put("loginHeroTitle", this.loginHeroTitle != null ? this.loginHeroTitle : "Autenticazione Sicura & Modulare");
+    map.put("loginHeroSubtitle", this.loginHeroSubtitle);
+    map.put("hideHomeButton", this.hideHomeButton != null ? this.hideHomeButton : false);
+    this.loginSettings = map;
+  }
 
-    if (this.policySettings == null) this.policySettings = new LinkedHashMap<>();
-    this.policySettings.put("privacyPolicyUrl", this.privacyPolicyUrl != null ? this.privacyPolicyUrl : "/privacy-policy");
-    this.policySettings.put("cookiePolicyUrl", this.cookiePolicyUrl != null ? this.cookiePolicyUrl : "/cookie-policy");
+  public void syncBrandingSettingsMap() {
+    Map<String, Object> map = new LinkedHashMap<>();
+    map.put("appName", this.appName != null ? this.appName : "Access Sphere");
+    map.put("appTagline", this.appTagline != null ? this.appTagline : "Gestione Identità & Accessi");
+    map.put("logoUrl", this.logoUrl != null ? this.logoUrl : "/img/logo-minimal.svg");
+    map.put("faviconUrl", this.faviconUrl != null ? this.faviconUrl : "/img/logo-minimal.svg");
+    map.put("footerCopyright", this.footerCopyright != null ? this.footerCopyright : "© 2026 Access Sphere");
+    map.put("supportEmail", this.supportEmail != null ? this.supportEmail : "support@accesssphere.io");
+    this.brandingSettings = map;
+  }
+
+  public void syncPolicySettingsMap() {
+    Map<String, Object> map = new LinkedHashMap<>();
+    map.put("privacyPolicyUrl", this.privacyPolicyUrl != null ? this.privacyPolicyUrl : "/privacy-policy");
+    map.put("cookiePolicyUrl", this.cookiePolicyUrl != null ? this.cookiePolicyUrl : "/cookie-policy");
+    this.policySettings = map;
   }
 
   /**
@@ -155,38 +267,58 @@ public class AppSettingsEntity extends GenericEntity {
    */
   @PostLoad
   public void syncCategoryMapsAfterLoad() {
-    if (this.loginSettings != null) {
-      if (this.loginSettings.containsKey("loginMode")) this.loginMode = (String) this.loginSettings.get("loginMode");
-      if (this.loginSettings.containsKey("loginBgUrl")) this.loginBgUrl = (String) this.loginSettings.get("loginBgUrl");
+    if (this.loginSettings != null && !this.loginSettings.isEmpty()) {
+      if (this.loginSettings.containsKey("loginMode") && this.loginSettings.get("loginMode") != null)
+        this.loginMode = this.loginSettings.get("loginMode").toString();
+      if (this.loginSettings.containsKey("loginBgUrl") && this.loginSettings.get("loginBgUrl") != null)
+        this.loginBgUrl = this.loginSettings.get("loginBgUrl").toString();
       if (this.loginSettings.containsKey("loginBgOpacity")) {
         Object val = this.loginSettings.get("loginBgOpacity");
         if (val instanceof Number num) this.loginBgOpacity = num.intValue();
       }
-      if (this.loginSettings.containsKey("loginHeroTitle")) this.loginHeroTitle = (String) this.loginSettings.get("loginHeroTitle");
-      if (this.loginSettings.containsKey("loginHeroSubtitle")) this.loginHeroSubtitle = (String) this.loginSettings.get("loginHeroSubtitle");
+      if (this.loginSettings.containsKey("loginHeroTitle"))
+        this.loginHeroTitle = this.loginSettings.get("loginHeroTitle") != null ? this.loginSettings.get("loginHeroTitle").toString() : null;
+      if (this.loginSettings.containsKey("loginHeroSubtitle"))
+        this.loginHeroSubtitle = this.loginSettings.get("loginHeroSubtitle") != null ? this.loginSettings.get("loginHeroSubtitle").toString() : null;
       if (this.loginSettings.containsKey("hideHomeButton")) {
         Object val = this.loginSettings.get("hideHomeButton");
         if (val instanceof Boolean b) this.hideHomeButton = b;
       }
+    } else {
+      syncLoginSettingsMap();
     }
-    if (this.brandingSettings != null) {
-      if (this.brandingSettings.containsKey("appName")) this.appName = (String) this.brandingSettings.get("appName");
-      if (this.brandingSettings.containsKey("appTagline")) this.appTagline = (String) this.brandingSettings.get("appTagline");
-      if (this.brandingSettings.containsKey("logoUrl")) this.logoUrl = (String) this.brandingSettings.get("logoUrl");
-      if (this.brandingSettings.containsKey("faviconUrl")) this.faviconUrl = (String) this.brandingSettings.get("faviconUrl");
-      if (this.brandingSettings.containsKey("footerCopyright")) this.footerCopyright = (String) this.brandingSettings.get("footerCopyright");
-      if (this.brandingSettings.containsKey("supportEmail")) this.supportEmail = (String) this.brandingSettings.get("supportEmail");
+
+    if (this.brandingSettings != null && !this.brandingSettings.isEmpty()) {
+      if (this.brandingSettings.containsKey("appName") && this.brandingSettings.get("appName") != null)
+        this.appName = this.brandingSettings.get("appName").toString();
+      if (this.brandingSettings.containsKey("appTagline"))
+        this.appTagline = this.brandingSettings.get("appTagline") != null ? this.brandingSettings.get("appTagline").toString() : null;
+      if (this.brandingSettings.containsKey("logoUrl") && this.brandingSettings.get("logoUrl") != null)
+        this.logoUrl = this.brandingSettings.get("logoUrl").toString();
+      if (this.brandingSettings.containsKey("faviconUrl") && this.brandingSettings.get("faviconUrl") != null)
+        this.faviconUrl = this.brandingSettings.get("faviconUrl").toString();
+      if (this.brandingSettings.containsKey("footerCopyright"))
+        this.footerCopyright = this.brandingSettings.get("footerCopyright") != null ? this.brandingSettings.get("footerCopyright").toString() : null;
+      if (this.brandingSettings.containsKey("supportEmail"))
+        this.supportEmail = this.brandingSettings.get("supportEmail") != null ? this.brandingSettings.get("supportEmail").toString() : null;
+    } else {
+      syncBrandingSettingsMap();
     }
-    if (this.policySettings != null) {
-      if (this.policySettings.containsKey("privacyPolicyUrl")) this.privacyPolicyUrl = (String) this.policySettings.get("privacyPolicyUrl");
-      if (this.policySettings.containsKey("cookiePolicyUrl")) this.cookiePolicyUrl = (String) this.policySettings.get("cookiePolicyUrl");
+
+    if (this.policySettings != null && !this.policySettings.isEmpty()) {
+      if (this.policySettings.containsKey("privacyPolicyUrl"))
+        this.privacyPolicyUrl = this.policySettings.get("privacyPolicyUrl") != null ? this.policySettings.get("privacyPolicyUrl").toString() : null;
+      if (this.policySettings.containsKey("cookiePolicyUrl"))
+        this.cookiePolicyUrl = this.policySettings.get("cookiePolicyUrl") != null ? this.policySettings.get("cookiePolicyUrl").toString() : null;
+    } else {
+      syncPolicySettingsMap();
     }
   }
 
   /** Ritorna la mappa deserializzata della categoria Login. */
   public Map<String, Object> getLoginSettingsMap() {
     if (this.loginSettings == null || this.loginSettings.isEmpty()) {
-      syncCategoryMapsBeforeSave();
+      syncLoginSettingsMap();
     }
     return this.loginSettings;
   }
@@ -194,7 +326,7 @@ public class AppSettingsEntity extends GenericEntity {
   /** Ritorna la mappa deserializzata della categoria Branding. */
   public Map<String, Object> getBrandingSettingsMap() {
     if (this.brandingSettings == null || this.brandingSettings.isEmpty()) {
-      syncCategoryMapsBeforeSave();
+      syncBrandingSettingsMap();
     }
     return this.brandingSettings;
   }
@@ -202,7 +334,7 @@ public class AppSettingsEntity extends GenericEntity {
   /** Ritorna la mappa deserializzata della categoria Policy. */
   public Map<String, Object> getPolicySettingsMap() {
     if (this.policySettings == null || this.policySettings.isEmpty()) {
-      syncCategoryMapsBeforeSave();
+      syncPolicySettingsMap();
     }
     return this.policySettings;
   }
