@@ -24,8 +24,8 @@ import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 /**
- * Service per la gestione dei Client OAuth2. Fornisce funzionalita di base
- * (lettura, inserimento, aggiornamento, eliminazione) basate esclusivamente sul database locale.
+ * Service per la gestione dei Client OAuth2. Fornisce funzionalita di base (lettura, inserimento,
+ * aggiornamento, eliminazione) basate esclusivamente sul database locale.
  */
 @Logged
 @Service
@@ -51,13 +51,10 @@ public class ClientService {
       LOG.error("Client with ID: {} not found in Database", clientID);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
-    return Mono.just(clientCredentialEntity)
-        .map(ClientMapper::fromClientCredentialEntityToClientCredential);
+    return Mono.just(clientCredentialEntity).map(ClientMapper::toDTO);
   }
 
-  /**
-   * Recupera la lista di tutti i Client restituiti come oggetto Response reattivo.
-   */
+  /** Recupera la lista di tutti i Client restituiti come oggetto Response reattivo. */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> getClients() {
     Response response =
@@ -72,8 +69,8 @@ public class ClientService {
   }
 
   /**
-   * Recupera la lista di tutti i ClientCredential dal database.
-   * Applica validazione sui permessi del tech client.
+   * Recupera la lista di tutti i ClientCredential dal database. Applica validazione sui permessi
+   * del tech client.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<ClientCredential>> getClientCredentials() {
@@ -84,7 +81,7 @@ public class ClientService {
       return Mono.error(new OAuthException(ExceptionMap.ERR_OAUTH_404, "Clients not found!"));
     }
     return Mono.just(clientCredentialEntity)
-        .map(ClientMapper::fromClientCredentialEntitiesToClientCredential)
+        .map(ClientMapper::toDTOList)
         .map(
             client -> {
               TechUserValidator.validateTechClient(
@@ -93,21 +90,19 @@ public class ClientService {
             });
   }
 
-  /**
-   * Inserisce un nuovo ClientCredential a database.
-   */
+  /** Inserisce un nuovo ClientCredential a database. */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void addClientToDatabase(ClientCredential clientCredential) {
     LOG.info("Inserting new client into Database: {}", clientCredential.getClientId());
-    ClientCredentialEntity clientEntity =
-        ClientMapper.toEntity(clientCredential);
+    ClientCredentialEntity clientEntity = ClientMapper.toEntity(clientCredential);
     iClientDAO.save(clientEntity);
     LOG.debug("Client {} successfully inserted", clientCredential.getClientId());
   }
 
   /**
    * Aggiorna un ClientCredential esistente a database.
+   *
    * @throws IllegalArgumentException se il client non esiste.
    */
   @Transactional
@@ -126,9 +121,7 @@ public class ClientService {
     }
   }
 
-  /**
-   * Rimuove un ClientCredential dal database.
-   */
+  /** Rimuove un ClientCredential dal database. */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteClientFromDatabase(ClientCredential clientCredential) {
