@@ -20,39 +20,6 @@ import reactor.core.publisher.Mono;
 public class StrapiClient extends StrapiConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public Mono<ResponseEntity<StrapiResponse>> getClientByClientID(String clientID) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("filters[clientId][$eq]", clientID);
-    params.put("populate", "*");
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
-
-    return webClientRest.perform(
-        HttpMethod.GET,
-        UtilsUriBuilder.buildUri(clientIdUrl, params),
-        headers,
-        StrapiResponse.class);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
-  public Mono<ResponseEntity<StrapiResponse>> getClients() {
-    Map<String, Object> params = new HashMap<>();
-    params.put("populate", "*");
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + strapiToken);
-
-    return webClientRest.perform(
-        HttpMethod.GET,
-        UtilsUriBuilder.buildUri(clientIdUrl, params),
-        headers,
-        StrapiResponse.class);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.EXTERNAL)
   public Mono<ResponseEntity<StrapiResponse>> saveUser(StrapiUser user) {
     Map<String, Object> params = new HashMap<>();
 

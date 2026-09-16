@@ -2,13 +2,10 @@ package io.github.giovannilamarmora.accesssphere.api.strapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.giovannilamarmora.accesssphere.api.strapi.dto.*;
-import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
-import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.utilities.CryptoUtils;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -24,63 +21,6 @@ import org.springframework.util.ObjectUtils;
 public class StrapiMapper {
 
   private static final ObjectMapper mapper = MapperUtils.mapper().failOnEmptyBean().build();
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static ClientCredential mapFromStrapiResponseToClientCredential(
-      StrapiResponse strapiResponse) {
-    OAuthStrapiClient strapiClient =
-        mapper.convertValue(
-            strapiResponse.getData().getFirst().getAttributes(), OAuthStrapiClient.class);
-    return mapFromOAuthStrapiClientToClientCredential(strapiClient);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static List<ClientCredential> mapFromStrapiResponseToClientCredentials(
-      StrapiResponse strapiResponse) {
-    List<StrapiResponse.StrapiData> strapiDataList = strapiResponse.getData();
-
-    return strapiDataList.stream()
-        .map(
-            strapiData ->
-                mapFromOAuthStrapiClientToClientCredential(
-                    mapper.convertValue(strapiData.getAttributes(), OAuthStrapiClient.class)))
-        .toList();
-  }
-
-  private static ClientCredential mapFromOAuthStrapiClientToClientCredential(
-      OAuthStrapiClient strapiClient) {
-    List<String> scopes =
-        ObjectToolkit.isNullOrEmpty(strapiClient.getScopes())
-            ? null
-            : List.of(strapiClient.getScopes().split("\\s+"));
-    return new ClientCredential(
-        strapiClient.getClientId(),
-        strapiClient.getExternalClientId(),
-        strapiClient.getClientSecret(),
-        scopes,
-        ObjectUtils.isEmpty(strapiClient.getRedirectUri()) ? null : strapiClient.getRedirectUri(),
-        ObjectUtils.isEmpty(strapiClient.getAccessType())
-            ? null
-            : AccessType.valueOf(strapiClient.getAccessType()),
-        ObjectUtils.isEmpty(strapiClient.getType())
-            ? null
-            : OAuthType.valueOf(strapiClient.getType()),
-        ObjectUtils.isEmpty(strapiClient.getTokenType())
-            ? null
-            : TokenType.valueOf(strapiClient.getTokenType()),
-        strapiClient.getJwtSecret(),
-        strapiClient.getJwtExpiration(),
-        strapiClient.getJweSecret(),
-        strapiClient.getJweExpiration(),
-        strapiClient.getRegistrationToken(),
-        strapiClient.getApp_roles(),
-        strapiClient.getId_token(),
-        strapiClient.getAccess_token(),
-        strapiClient.getStrapi_token(),
-        strapiClient.getAuthorize_redirect_status(),
-        strapiClient.getMfa_enabled(),
-        mapFromStrapiWebhooksToWebhooks(strapiClient.getWebhooks()));
-  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static StrapiUser mapFromUserToStrapiUser(User user, ClientCredential clientCredential) {

@@ -89,9 +89,6 @@ public class OAuthServiceTest {
             new ClassPathResource("mock/ClientIDGoogle.json").getInputStream(),
             StrapiResponse.class);
 
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
-
     Mockito.when(
             GoogleGrpcService.startGoogleAuthorization(
                 any(), anyString(), anyString(), anyString(), anyString()))
@@ -143,9 +140,6 @@ public class OAuthServiceTest {
         mapper.readValue(
             new ClassPathResource("mock/ClientIDGoogle.json").getInputStream(),
             StrapiResponse.class);
-
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
 
     TokenResponse tokenResponse = new TokenResponse();
     tokenResponse.set("id_token", "token");
@@ -217,9 +211,6 @@ public class OAuthServiceTest {
         mapper.readValue(
             new ClassPathResource("mock/ClientIDGoogle.json").getInputStream(),
             StrapiResponse.class);
-
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
 
     TokenResponse tokenResponse = new TokenResponse();
     tokenResponse.set("id_token", "token");
@@ -299,9 +290,6 @@ public class OAuthServiceTest {
             new ClassPathResource("mock/ClientIDBearer.json").getInputStream(),
             StrapiResponse.class);
 
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
-
     StrapiResponse responseUser =
         mapper.readValue(
             new ClassPathResource("mock/StrapiResponseOfUser.json").getInputStream(),
@@ -370,9 +358,6 @@ public class OAuthServiceTest {
         mapper.readValue(
             new ClassPathResource("mock/ClientIDBearer.json").getInputStream(),
             StrapiResponse.class);
-
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
 
     StrapiResponse responseUser =
         mapper.readValue(
@@ -476,9 +461,6 @@ public class OAuthServiceTest {
             new ClassPathResource("mock/ClientIDBearer.json").getInputStream(),
             StrapiResponse.class);
 
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
-
     String payload = "{\"access_token\": \"token\", \"refresh_token\": \"token\"}";
 
     AccessTokenData accessToken =
@@ -568,9 +550,6 @@ public class OAuthServiceTest {
         mapper.readValue(
             new ClassPathResource("mock/ClientIDGoogle.json").getInputStream(),
             StrapiResponse.class);
-
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
 
     String payload = "{\"access_token\": \"token\", \"refresh_token\": \"token\"}";
 
@@ -679,9 +658,6 @@ public class OAuthServiceTest {
             new ClassPathResource("mock/ClientIDGoogle.json").getInputStream(),
             StrapiResponse.class);
 
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
-
     String payload = "{\"access_token\": \"token\", \"refresh_token\": \"token\"}";
 
     AccessTokenData accessToken =
@@ -780,9 +756,6 @@ public class OAuthServiceTest {
             new ClassPathResource("mock/ClientIDGoogle.json").getInputStream(),
             StrapiResponse.class);
 
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
-
     String payload = "{\"access_token\": \"token\", \"refresh_token\": \"token\"}";
 
     AccessTokenData accessToken =
@@ -810,8 +783,6 @@ public class OAuthServiceTest {
     when(accessTokenData.getType()).thenReturn(accessToken.getType());
 
     Mockito.doNothing().when(accessTokenService).revokeTokenByIdentifier(anyString());
-
-    when(strapiClient.logout(any())).thenReturn(Mono.just(ResponseEntity.ok(null)));
 
     ServerWebExchange exchange =
         MockServerWebExchange.from(MockServerHttpRequest.get("/logout").build());
@@ -841,9 +812,6 @@ public class OAuthServiceTest {
             new ClassPathResource("mock/ClientIDBearer.json").getInputStream(),
             StrapiResponse.class);
 
-    when(strapiClient.getClientByClientID(clientId))
-        .thenReturn(Mono.just(ResponseEntity.ok(response)));
-
     String payload = "{\"access_token\": \"token\", \"refresh_token\": \"token\"}";
 
     AccessTokenData accessToken =
@@ -871,8 +839,6 @@ public class OAuthServiceTest {
     when(accessTokenData.getType()).thenReturn(accessToken.getType());
 
     Mockito.doNothing().when(accessTokenService).revokeTokenByIdentifier(anyString());
-
-    when(strapiClient.logout(any())).thenReturn(Mono.just(ResponseEntity.ok(null)));
 
     ServerWebExchange exchange =
         MockServerWebExchange.from(MockServerHttpRequest.get("/logout").build());
