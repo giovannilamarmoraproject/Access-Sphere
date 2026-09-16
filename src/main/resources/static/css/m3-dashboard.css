@@ -705,8 +705,8 @@ table, table *, .table, .table *, table.dataTable, table.dataTable * {
 select.m3-form-input,
 textarea.m3-form-input,
 textarea.form-control {
-    background-color: #231B34 !important;
-    border: 1.5px solid rgba(208, 188, 255, 0.28) !important;
+    background-color: var(--theme-input-bg, #231B34) !important;
+    border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
     color: #FFFFFF !important;
     border-radius: 14px !important;
     padding: 12px 16px !important;
@@ -721,8 +721,8 @@ textarea.form-control {
 select.m3-form-input:hover,
 textarea.form-control:hover,
 textarea.m3-form-input:hover {
-    background-color: #2A203F !important;
-    border-color: rgba(208, 188, 255, 0.45) !important;
+    background-color: var(--theme-input-hover, #2A203F) !important;
+    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45) !important;
 }
 
 .form-control:focus,
@@ -731,9 +731,9 @@ textarea.m3-form-input:hover {
 select.m3-form-input:focus,
 textarea.form-control:focus,
 textarea.m3-form-input:focus {
-    background-color: #31254A !important;
-    border-color: #D0BCFF !important;
-    box-shadow: 0 0 0 3.5px rgba(208, 188, 255, 0.3) !important;
+    background-color: var(--theme-input-focus, #31254A) !important;
+    border-color: var(--theme-accent, #D0BCFF) !important;
+    box-shadow: 0 0 0 3.5px var(--theme-glow, rgba(208, 188, 255, 0.3)) !important;
     color: #FFFFFF !important;
     outline: none !important;
 }
@@ -744,11 +744,14 @@ textarea.m3-form-input:focus {
     padding-right: 1.25rem !important;
 }
 
-/* Select dropdown icon right padding */
+/* Select dropdown icon right padding and detached appearance */
 select.m3-form-input,
 .m3-select-input {
-    padding-right: 2.5rem !important;
-    background-position: right 1rem center !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    padding-right: 3rem !important;
+    background-position: calc(100% - 1.25rem) center !important;
 }
 
 /* High-Contrast Legible Placeholders */
@@ -771,13 +774,18 @@ textarea::placeholder {
 }
 
 /* Select Dropdowns (Chevron, Options & Popups) */
-.form-select {
+.form-select,
+select.m3-form-input,
+select.m3-select-input {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23D0BCFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
     background-repeat: no-repeat !important;
-    background-position: right 1rem center !important;
-    background-size: 16px 12px !important;
+    background-position: right 1.25rem center !important;
+    background-size: 14px 10px !important;
     cursor: pointer !important;
-    padding-right: 2.75rem !important;
+    padding-right: 3rem !important;
 }
 
 .form-select option,

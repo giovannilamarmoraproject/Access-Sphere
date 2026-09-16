@@ -305,7 +305,7 @@ function addParamRow(key = "", val = "") {
         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 theme-text-accent font-mono text-xs font-bold pointer-events-none select-none z-10">{{</span>
         <input
           type="text"
-          class="m3-form-input rounded-xl w-full py-1.5 text-xs font-mono param-key-input uppercase"
+          class="form-control m3-form-input rounded-xl w-full py-1.5 text-xs font-mono param-key-input uppercase"
           placeholder="CHIAVE"
           value="${escapeHtml(key)}"
           oninput="handleParamChange()"
@@ -315,7 +315,7 @@ function addParamRow(key = "", val = "") {
       <div class="w-3/5">
         <input
           type="text"
-          class="m3-form-input rounded-xl w-full py-1.5 px-3 text-xs param-val-input"
+          class="form-control m3-form-input rounded-xl w-full py-1.5 px-3 text-xs param-val-input"
           placeholder="Valore di default / esempio per l'anteprima"
           value="${escapeHtml(val)}"
           oninput="handleParamChange()"
@@ -714,7 +714,10 @@ function openTestEmailModal(id) {
   document.getElementById("test-template-identifier").value = template.identifier || "";
   document.getElementById("test-template-locale").value = template.locale || "";
 
-  document.getElementById("test-modal-template-name").textContent = `${template.name} (${template.identifier})`;
+  const displayName = (template.name && template.name !== template.identifier)
+    ? `${template.name} (${template.identifier})`
+    : (template.name || template.identifier || "--");
+  document.getElementById("test-modal-template-name").textContent = displayName;
   document.getElementById("test-modal-locale-badge").innerHTML = getLocaleBadgeHtml(template.locale);
 
   document.getElementById("test-email-subject").value = template.subject || "";
@@ -728,21 +731,21 @@ function openTestEmailModal(id) {
   const keys = Object.keys(paramsMap);
 
   if (keys.length === 0) {
-    paramsContainer.innerHTML = `<p class="text-xs text-gray-400 mb-0 italic">Nessun parametro richiesto da questo template.</p>`;
+    paramsContainer.innerHTML = `<p class="text-xs text-gray-400 mb-0 italic col-span-2">Nessun parametro dinamico richiesto da questo template.</p>`;
   } else {
     keys.forEach((k) => {
       const val = paramsMap[k] || "";
       const fieldId = "test-param-" + k;
       const html = `
-        <div>
-          <label class="block text-xs font-semibold text-gray-300 font-mono mb-1 flex items-center gap-1.5">
-            <span class="theme-text-accent">{{${escapeHtml(k)}}}</span>
+        <div class="space-y-1">
+          <label class="block text-xs font-mono theme-text-accent font-semibold mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-code text-[10px] opacity-70"></i> {{${escapeHtml(k)}}}
           </label>
           <input
             type="text"
             id="${fieldId}"
             data-param-key="${escapeHtml(k)}"
-            class="m3-form-input rounded-xl w-full text-xs py-2 px-3 test-param-input"
+            class="form-control m3-form-input test-param-input rounded-xl w-full text-xs py-2 px-3"
             value="${escapeHtml(String(val))}"
             placeholder="Valore per ${escapeHtml(k)}"
             required
@@ -892,12 +895,13 @@ function openEmailDetailModal(id) {
     if (keys.length === 0) {
       paramsContainer.innerHTML = `<p class="text-xs text-gray-500 italic mb-0">Nessun segnaposto configurato per questo template.</p>`;
     } else {
-      keys.forEach((key) => {
-        const val = params[key];
         const row = `
-          <div class="flex items-center justify-between p-2.5 rounded-xl theme-surface-box-subtle text-xs">
-            <span class="font-mono theme-text-accent font-bold">{{${escapeHtml(key)}}}</span>
-            <span class="text-gray-300 font-mono text-[11px] bg-black/40 px-2.5 py-1 rounded-lg theme-border max-w-[180px] truncate" title="${escapeHtml(String(val || 'Nessun valore di fallback'))}">
+          <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.05] transition-all text-xs">
+            <span class="font-mono theme-text-accent font-semibold flex items-center gap-1.5">
+              <i class="fa-solid fa-code text-[10px] opacity-70"></i>
+              <span>{{${escapeHtml(key)}}}</span>
+            </span>
+            <span class="font-mono text-[11px] text-gray-300 bg-black/40 px-2.5 py-1 rounded-lg border border-white/10 max-w-[200px] truncate" title="${escapeHtml(String(val || 'Nessun fallback'))}">
               ${escapeHtml(String(val !== undefined && val !== null && val !== "" ? val : "Nessun fallback"))}
             </span>
           </div>

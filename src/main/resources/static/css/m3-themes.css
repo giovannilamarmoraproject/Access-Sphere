@@ -1221,6 +1221,15 @@ textarea {
    ======================================================= */
 [data-theme] .form-control,
 [data-theme] .form-select,
+[data-theme] .m3-form-input,
+[data-theme] select.m3-form-input,
+[data-theme] .m3-select-input,
+[data-theme] .m3-search-input,
+[data-theme] .param-key-input,
+[data-theme] .param-val-input,
+[data-theme] .test-param-input,
+[data-theme] .code-editor-textarea,
+[data-theme] textarea.m3-form-input,
 [data-theme] textarea.form-control,
 [data-theme] input.form-control {
     background-color: var(--theme-input-bg) !important;
@@ -1230,6 +1239,15 @@ textarea {
 
 [data-theme] .form-control:hover,
 [data-theme] .form-select:hover,
+[data-theme] .m3-form-input:hover,
+[data-theme] select.m3-form-input:hover,
+[data-theme] .m3-select-input:hover,
+[data-theme] .m3-search-input:hover,
+[data-theme] .param-key-input:hover,
+[data-theme] .param-val-input:hover,
+[data-theme] .test-param-input:hover,
+[data-theme] .code-editor-textarea:hover,
+[data-theme] textarea.m3-form-input:hover,
 [data-theme] textarea.form-control:hover,
 [data-theme] input.form-control:hover {
     background-color: var(--theme-input-hover) !important;
@@ -1238,6 +1256,15 @@ textarea {
 
 [data-theme] .form-control:focus,
 [data-theme] .form-select:focus,
+[data-theme] .m3-form-input:focus,
+[data-theme] select.m3-form-input:focus,
+[data-theme] .m3-select-input:focus,
+[data-theme] .m3-search-input:focus,
+[data-theme] .param-key-input:focus,
+[data-theme] .param-val-input:focus,
+[data-theme] .test-param-input:focus,
+[data-theme] .code-editor-textarea:focus,
+[data-theme] textarea.m3-form-input:focus,
 [data-theme] textarea.form-control:focus,
 [data-theme] input.form-control:focus {
     background-color: var(--theme-input-focus) !important;

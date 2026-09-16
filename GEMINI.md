@@ -44,9 +44,11 @@ basata su **HTML5 / Tailwind CSS / Vanilla JS** con design system Google Materia
 > esplicitamente richiesto dall'utente. Mantenere una fedeltà pixel-perfect rispetto al design originale.
 
 1. **Layout Hero della Dashboard e delle Impostazioni**:
-    - L'Hero di benvenuto ("Benvenuto nella Console di Amministrazione") e l'Hero della vista Impostazioni risiedono direttamente sullo sfondo della pagina
-      (`<div class="mb-8">`), NON racchiusi in una `.m3-bento-card` o in un riquadro con bordo.
-    - Il lato destro dell'Hero Dashboard ospita il pill con l'orologio di sistema e il badge di stato del servizio; l'Hero Impostazioni ospita i pulsanti Ripristina Predefiniti e Salva Impostazioni.
+    - L'Hero di benvenuto ("Benvenuto nella Console di Amministrazione") e l'Hero della vista Impostazioni risiedono
+      direttamente sullo sfondo della pagina (`<div class="mb-8">`), NON racchiusi in una `.m3-bento-card` o in un
+      riquadro con bordo.
+    - Il lato destro dell'Hero Dashboard ospita il pill con l'orologio di sistema e il badge di stato del servizio;
+      l'Hero Impostazioni ospita i pulsanti Ripristina Predefiniti e Salva Impostazioni.
 2. **Bento Grid dei KPI**:
     - Le schede metriche (Utenti IAM, Client Registrati, MFA Attivo, ID Sessione) utilizzano `.m3-bento-card`.
     - **Invariante Dati Dinamici**: Non associare mai attributi `data-i18n` a elementi DOM il cui contenuto viene
@@ -77,6 +79,14 @@ basata su **HTML5 / Tailwind CSS / Vanilla JS** con design system Google Materia
       predefinita.
     - Alla modifica e salvataggio impostazioni, `saveAdminSettings()` aggiorna il backend e persiste le preferenze in
       `localStorage`.
+6. **Conformità Cromatica e Rispetto Rigoroso della Palette**:
+    - Ogni singolo elemento, componente, testo, bordo, badge, modale o icona aggiunto o modificato nella UI DEVE
+      rispettare rigorosamente la palette colori del design system Material Design 3 e i token definiti nei file di
+      stile (`m3-dashboard.css`, `m3-themes.css`).
+    - È fatto divieto assoluto di introdurre colori hex, rgb o classi arbitrarie hardcoded che rompano l'armonia
+      cromatica o che non si adattino al tema dinamico attivo (es. Cosmic Purple, Emerald Matrix, Ocean Blue, ecc.).
+    - Utilizzare esclusivamente le variabili CSS del tema (es. `--md-sys-color-primary`, `--md-sys-color-surface`,
+      `--md-sys-color-outline`, ecc.) o le classi di utility coerenti con lo schema grafico esistente.
 
 ---
 
@@ -108,6 +118,22 @@ Per garantire precisione operativa e zero sprechi di token, ogni attività deve 
     - Qualora un intervento introduca nuove feature, modifichi endpoint, aggiorni configurazioni, cambi la struttura dei
       moduli o alteri il comportamento architetturale, l'agente DEVE aggiornare contestualmente il file `README.md` (o i
       file di documentazione correlati) per riflettere lo stato attuale del sistema.
+- **Convenzione Messaggi di Commit Git (Solo Suggerimento)**:
+    - L'agente **NON deve MAI eseguire autonomamente il commit Git** (`git commit`).
+    - Al termine di ogni implementazione o modifica, l'agente deve **stampare nella risposta** il messaggio di commit
+      pronto per essere copiato dall'utente, formattato in un blocco di codice:
+      ```text
+      <tipo>(<ambito>): <emoji> <titolo breve>
+
+      <descrizione completa e dettagliata>
+      ```
+    - **Regole di formattazione**:
+        - `<tipo>`: `feat`, `fix`, `refactor`, `docs`, `style`, `perf`, `test`, `chore`.
+        - `<ambito>`: il modulo o componente toccato (es. `oauth`, `user-iam`, `mfa`, `settings`, `ui`).
+        - `<emoji>`: emoji contestuale (es. ✨ `feat`, 🐛 `fix`, 📝 `docs`, ♻️ `refactor`, 🔒 `security`).
+        - `<titolo breve>`: sintesi chiara dell'azione.
+        - **Body**: separato da una riga vuota, con la spiegazione esaustiva del *cosa*, *perché* e degli impatti logici
+          delle modifiche apportate.
 - **Regola di Build Condizionale**:
     - Eseguire la build (`mvn test`, `mvn clean compile`, ecc.) **SOLO ED ESCLUSIVAMENTE** se sono stati modificati,
       aggiunti o eliminati file **Java** (`.java`).
