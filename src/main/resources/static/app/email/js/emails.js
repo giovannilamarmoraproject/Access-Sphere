@@ -28,7 +28,7 @@ let duplicateCheckTimer = null;
 const EMAIL_CATEGORIES = {
     RESET_PASSWORD: {
         code: "RESET_PASSWORD",
-        identifier: "ACCESS_SPHERE_CODE_RESET_PASSWORD",
+        identifier: "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95",
         icon: "fa-key",
         colorClass: "text-purple-400",
         badgeBg: "bg-purple-500/10 border-purple-500/30 text-purple-300",
@@ -278,7 +278,7 @@ function updateKpiMetrics(templates) {
         if (t.params && typeof t.params === "object") {
             totalParamsCount += Object.keys(t.params).length;
         }
-        if (t.identifier === "ACCESS_SPHERE_CODE_RESET_PASSWORD") {
+        if (t.identifier === "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95" || t.identifier === "ACCESS_SPHERE_CODE_RESET_PASSWORD" || t.category === "RESET_PASSWORD") {
             hasResetPwd = true;
         }
     });
@@ -939,38 +939,119 @@ function openCreateTemplateModal() {
     handleCategoryChange("RESET_PASSWORD");
     generateRandomTemplateUuid();
 
-    // Template HTML di partenza ben strutturato
-    const defaultHtml = `<!DOCTYPE html>
-<html>
+    // Template HTML di partenza responsive, compatibile con i principali client email (Outlook, Gmail, Apple Mail)
+    const defaultHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="it">
   <head>
-    <meta charset="utf-8">
-    <title>Comunicazione Access Sphere</title>
-    <style>
-      body { margin: 0; padding: 0; background: #0c0d1e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-      .container { max-width: 600px; margin: 40px auto; background: #16172e; border-radius: 16px; border: 1px solid rgba(168, 85, 247, 0.2); overflow: hidden; color: #ffffff; }
-      .header { padding: 32px; text-align: center; background: linear-gradient(135deg, #1f143a 0%, #111226 100%); }
-      .content { padding: 32px; font-size: 15px; line-height: 1.6; color: #cbd5e1; }
-      .cta-button { display: inline-block; padding: 12px 28px; background: #a855f7; color: #ffffff !important; text-decoration: none; border-radius: 50px; font-weight: bold; margin-top: 20px; }
-      .footer { padding: 20px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reset Password</title>
+    <!--[if mso]>
+    <noscript>
+      <xml>
+        <o:OfficeDocumentSettings>
+          <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+      </xml>
+    </noscript>
+    <![endif]-->
+    <style type="text/css">
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+      body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+      table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+      img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+      body { margin: 0; padding: 0; width: 100% !important; background-color: #0c0d1e; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+      a:hover { opacity: 0.9 !important; text-decoration: none !important; }
     </style>
   </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1 style="margin:0; font-size: 24px; color: #f8fafc;">Access Sphere</h1>
-      </div>
-      <div class="content">
-        <h2 style="color: #ffffff; margin-top: 0;">Ciao {{NAME}},</h2>
-        <p>Questo è un messaggio inviato dalla piattaforma sicura Access Sphere.</p>
-        <p>Il tuo codice di verifica / reimpostazione è: <strong style="color:#a855f7; font-size: 18px;">{{RESET_CODE}}</strong></p>
-        <div style="text-align: center;">
-          <a href="{{SITE_URL}}" class="cta-button">Accedi al Servizio</a>
-        </div>
-      </div>
-      <div class="footer">
-        &copy; Access Sphere - Tutti i diritti riservati.
-      </div>
-    </div>
+  <body style="margin: 0; padding: 0; background-color: #0c0d1e; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+    <!-- 100% background wrapper table -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0c0d1e; min-width: 100%;">
+      <tr>
+        <td align="center" style="padding: 40px 16px;">
+          <!--[if (gte mso 9)|(IE)]>
+          <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+          <tr>
+          <td>
+          <![endif]-->
+          <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+            <!-- Brand Logo Header -->
+            <tr>
+              <td align="center" style="padding-bottom: 24px;">
+                <a href="{{SITE_URL}}" target="_blank" title="Access Sphere" style="text-decoration: none; display: inline-block;">
+                  <img src="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png" alt="Access Sphere Logo" width="72" height="72" style="display: block; width: 72px; height: 72px; border-radius: 50%; border: 1px solid rgba(168, 85, 247, 0.35); background-color: #16172e;" />
+                </a>
+              </td>
+            </tr>
+            <!-- Card Container -->
+            <tr>
+              <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #16172e; border-radius: 20px; border: 1px solid #292a4d; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); overflow: hidden;">
+                  <tr>
+                    <td align="center" style="padding: 40px 32px;">
+                      <!-- Salutation -->
+                      <h2 style="color: #a78bfa; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                        Ciao {{NAME}},
+                      </h2>
+                      <!-- Main Title -->
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; line-height: 1.35; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                        Hai richiesto il reset della password
+                      </h1>
+                      <!-- Gradient Line Separator -->
+                      <div style="display: inline-block; vertical-align: middle; margin: 24px auto; border-bottom: 2px solid #7c3aed; width: 60px;"></div>
+                      <!-- Instructional Text -->
+                      <p style="color: #cbd5e1; font-size: 15px; line-height: 24px; margin: 0 0 24px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                        Usa il seguente codice di sicurezza per completare il ripristino della password del tuo account. Se non hai richiesto tu questa modifica, puoi ignorare questo messaggio in totale sicurezza.
+                      </p>
+                      <!-- Verification Code Highlight Block -->
+                      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 20px auto;">
+                        <tr>
+                          <td align="center" style="background-color: #201f3d; border: 1px dashed #a855f7; border-radius: 14px; padding: 16px 32px;">
+                            <span style="font-family: 'Courier New', Courier, monospace, 'Poppins', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #f5f3ff; display: inline-block;">
+                              {{RESET_CODE}}
+                            </span>
+                          </td>
+                        </tr>
+                      </table>
+                      <!-- Expiration Warning -->
+                      <p style="color: #94a3b8; font-size: 13px; line-height: 20px; margin: 16px 0 0 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                        <i style="display: inline-block;">&#9201;</i> Il codice di verifica &egrave; valido per <strong>15 minuti</strong>.
+                      </p>
+                      <!-- CTA Button to Platform -->
+                      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-top: 32px;">
+                        <tr>
+                          <td align="center" style="border-radius: 50px; background-color: #7c3aed;">
+                            <a href="{{SITE_URL}}" target="_blank" style="font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 50px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;">
+                              Reimposta Password
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- Email Footer -->
+            <tr>
+              <td align="center" style="padding-top: 24px;">
+                <p style="font-size: 13px; color: #64748b; line-height: 18px; margin: 0 0 6px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                  &copy; <strong>{{SITE_SHORT}}</strong> &bull; Identity &amp; Access Management
+                </p>
+                <p style="font-size: 12px; color: #475569; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                  Messaggio automatico di sicurezza generato da <a href="{{SITE_URL}}" target="_blank" style="color: #a78bfa; text-decoration: none;">Access Sphere</a>.
+                </p>
+              </td>
+            </tr>
+          </table>
+          <!--[if (gte mso 9)|(IE)]>
+          </td>
+          </tr>
+          </table>
+          <![endif]-->
+        </td>
+      </tr>
+    </table>
   </body>
 </html>`;
 

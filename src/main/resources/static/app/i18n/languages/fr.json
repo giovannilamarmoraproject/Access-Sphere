@@ -891,7 +891,7 @@
   "email_editor_subtitle": "Configurez les métadonnées, les paramètres et affichez le balisage en temps réel",
   "email_btn_save_template": "Enregistrer le modèle",
   "email_editor_ident_hint": "Identifiant appelé par le backend/microservice",
-  "email_placeholder_identifier": "ex. ACCESS_SPHERE_CODE_RESET_PASSWORD",
+  "email_placeholder_identifier": "ex. c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95",
   "email_placeholder_name": "ex. Réinitialisation du mot de passe",
   "email_placeholder_subject": "ex. Réinitialisation de votre mot de passe",
   "email_editor_locale_default": "Aucun (Global / Secours pour toutes les langues)",

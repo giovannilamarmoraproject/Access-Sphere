@@ -41,7 +41,7 @@ function forgotPassword() {
   const email = document.getElementById("forgotEmailInput").value;
   const browserLanguage = navigator.language;
   const body = {
-    templateId: "ACCESS_SPHERE_CODE_RESET_PASSWORD",
+    templateId: "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95",
     email: email,
   };
   const forgotUrl = config.forgot_password_url + "?locale=" + browserLanguage;

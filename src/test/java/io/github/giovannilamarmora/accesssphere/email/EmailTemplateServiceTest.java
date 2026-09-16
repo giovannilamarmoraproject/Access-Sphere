@@ -45,7 +45,7 @@ class EmailTemplateServiceTest {
   void setUp() {
     sampleEntity = new EmailTemplateEntity();
     sampleEntity.setId(1L);
-    sampleEntity.setIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD");
+    sampleEntity.setIdentifier("c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95");
     sampleEntity.setName("Reset Password");
     sampleEntity.setSubject("Reimposta la tua password");
     sampleEntity.setLocale("it");
@@ -67,7 +67,7 @@ class EmailTemplateServiceTest {
         .assertNext(
             templates -> {
               assertEquals(1, templates.size());
-              assertEquals("ACCESS_SPHERE_CODE_RESET_PASSWORD", templates.get(0).getIdentifier());
+              assertEquals("c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95", templates.get(0).getIdentifier());
               assertEquals("it", templates.get(0).getLocale());
             })
         .verifyComplete();
@@ -82,7 +82,7 @@ class EmailTemplateServiceTest {
         .assertNext(
             dto -> {
               assertEquals(1L, dto.getId());
-              assertEquals("ACCESS_SPHERE_CODE_RESET_PASSWORD", dto.getIdentifier());
+              assertEquals("c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95", dto.getIdentifier());
               assertEquals("Reset Password", dto.getName());
             })
         .verifyComplete();
@@ -105,12 +105,12 @@ class EmailTemplateServiceTest {
   @Test
   @DisplayName("getTemplateByIdentifierAndLocale trova corrispondenza esatta per locale")
   void testGetTemplateExactLocale() {
-    when(emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD"))
+    when(emailTemplateDAO.findByIdentifier("c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95"))
         .thenReturn(List.of(sampleEntity));
 
     StepVerifier.create(
             emailTemplateService.getTemplateByIdentifierAndLocale(
-                "ACCESS_SPHERE_CODE_RESET_PASSWORD", "it"))
+                "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95", "it"))
         .assertNext(
             strapiTemplate -> {
               assertEquals("Reset Password", strapiTemplate.getName());
@@ -124,12 +124,12 @@ class EmailTemplateServiceTest {
   @DisplayName("getTemplateByIdentifierAndLocale supporta fallback se l'utente ha configurato una sola lingua")
   void testGetTemplateSingleLanguageFallback() {
     // Il database contiene solo la versione "it", ma la richiesta richiede "de" o "fr"
-    when(emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD"))
+    when(emailTemplateDAO.findByIdentifier("c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95"))
         .thenReturn(List.of(sampleEntity));
 
     StepVerifier.create(
             emailTemplateService.getTemplateByIdentifierAndLocale(
-                "ACCESS_SPHERE_CODE_RESET_PASSWORD", "de"))
+                "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95", "de"))
         .assertNext(
             strapiTemplate -> {
               assertNotNull(strapiTemplate);

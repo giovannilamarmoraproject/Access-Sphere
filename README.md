@@ -69,7 +69,7 @@
   - Selezione flessibile della lingua: **Automatico (Browser)** con fallback intelligente, oppure forzatura manuale dall'interfaccia.
   - Rendering istantaneo senza sfarfallio (FOUC) tramite cache sincrona e CSS anti-flicker guard.
 - 🚀 **Technical Seed & Bootstrap Automatico**:
-  - Creazione automatica all'avvio a DB vuoto dell'utenza tecnica, del client tecnico OAuth2 e del template email predefinito per il reset della password (`ACCESS_SPHERE_CODE_RESET_PASSWORD`).
+  - Creazione automatica all'avvio a DB vuoto dell'utenza tecnica, del client tecnico OAuth2 e del template email predefinito per il reset della password (`c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95`, con backward compatibility automatica per `ACCESS_SPHERE_CODE_RESET_PASSWORD`).
 - 📱 **Progressive Web App (PWA)**: Supporto offline tramite Service Worker dedicato, manifest PWA e asset multi-risoluzione.
 - 📖 **Documentazione Interattiva OpenAPI / Swagger 3.0**: Esplorazione e test immediato delle API tramite Swagger UI integrata.
 

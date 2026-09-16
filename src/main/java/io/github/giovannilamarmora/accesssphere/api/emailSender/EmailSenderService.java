@@ -35,6 +35,13 @@ public class EmailSenderService {
     for (String key : finalParam.keySet()) {
       template = template.replace("{{" + key + "}}", finalParam.get(key));
     }
+    if (params != null) {
+      for (String key : params.keySet()) {
+        if (params.get(key) != null) {
+          template = template.replace("{{" + key + "}}", params.get(key));
+        }
+      }
+    }
 
     emailContent.setText(template);
     return emailSenderClient

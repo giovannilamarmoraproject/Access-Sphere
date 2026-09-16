@@ -21,6 +21,8 @@ public enum TemplateParam {
     param.put("USER.SURNAME", user.getSurname());
     param.put("USER.EMAIL", user.getEmail());
     param.put("USER.RESET_TOKEN", user.getTokenReset());
+    param.put("NAME", user.getName());
+    param.put("RESET_CODE", user.getTokenReset());
     return param;
   }
 }

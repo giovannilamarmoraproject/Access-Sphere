@@ -8,6 +8,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.email.IEmailTemplateDAO;
 import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
+import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
@@ -34,6 +35,11 @@ public class ProjectInitializerService implements ApplicationRunner {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
+  public static final String DEFAULT_RESET_PASSWORD_TEMPLATE_UUID =
+      "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95";
+  public static final String LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER =
+      "ACCESS_SPHERE_CODE_RESET_PASSWORD";
 
   @Value("${app.tech-user.username:tech_admin}")
   private String techUsername;
@@ -151,23 +157,145 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Inizializzazione del template email predefinito per il reset della password.
+   * Inizializzazione del template email predefinito per il reset della password con identificatore UUID.
    * Si interconnette con {@link IEmailTemplateDAO} per verificare se il template
-   * 'ACCESS_SPHERE_CODE_RESET_PASSWORD' è già censito nella tabella 'EMAIL_TEMPLATES'.
-   * Se assente, viene inserito il template HTML reattivo con i relativi parametri segnaposto
-   * (SITE_URL, NAME, RESET_CODE, SITE_SHORT) utilizzati poi da {@link io.github.giovannilamarmora.accesssphere.email.EmailTemplateService}
-   * e {@link io.github.giovannilamarmora.accesssphere.data.user.UserService#changePasswordRequest}.
+   * con UUID {@value #DEFAULT_RESET_PASSWORD_TEMPLATE_UUID} è già censito nella tabella 'EMAIL_TEMPLATES'.
+   * Se assente, verifica la presenza del template con identificatore legacy {@value #LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER}
+   * ed esegue la migrazione automatica all'identificatore UUID e al layout email responsive/bulletproof,
+   * collegandolo al client tecnico {@code techClientId} e impostando i parametri segnaposto standard
+   * (SITE_URL, NAME, RESET_CODE, SITE_SHORT).
    */
   private void initEmailTemplates() {
     List<EmailTemplateEntity> existing =
-        emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD");
-    if (existing.isEmpty()) {
-      LOG.info("📧 Seeding Default Email Template: ACCESS_SPHERE_CODE_RESET_PASSWORD");
+        emailTemplateDAO.findByIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
+    List<EmailTemplateEntity> legacyExisting =
+        emailTemplateDAO.findByIdentifier(LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER);
+
+    String htmlTemplate =
+        """
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml" lang="it">
+          <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Reset Password</title>
+            <!--[if mso]>
+            <noscript>
+              <xml>
+                <o:OfficeDocumentSettings>
+                  <o:PixelsPerInch>96</o:PixelsPerInch>
+                </o:OfficeDocumentSettings>
+              </xml>
+            </noscript>
+            <![endif]-->
+            <style type="text/css">
+              @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+              body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+              table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+              img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+              body { margin: 0; padding: 0; width: 100% !important; background-color: #0c0d1e; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+              a:hover { opacity: 0.9 !important; text-decoration: none !important; }
+            </style>
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #0c0d1e; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+            <!-- 100% background wrapper table -->
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0c0d1e; min-width: 100%;">
+              <tr>
+                <td align="center" style="padding: 40px 16px;">
+                  <!--[if (gte mso 9)|(IE)]>
+                  <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+                  <tr>
+                  <td>
+                  <![endif]-->
+                  <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+                    <!-- Brand Logo Header -->
+                    <tr>
+                      <td align="center" style="padding-bottom: 24px;">
+                        <a href="{{SITE_URL}}" target="_blank" title="Access Sphere" style="text-decoration: none; display: inline-block;">
+                          <img src="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png" alt="Access Sphere Logo" width="72" height="72" style="display: block; width: 72px; height: 72px; border-radius: 50%; border: 1px solid rgba(168, 85, 247, 0.35); background-color: #16172e;" />
+                        </a>
+                      </td>
+                    </tr>
+                    <!-- Card Container -->
+                    <tr>
+                      <td align="center">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #16172e; border-radius: 20px; border: 1px solid #292a4d; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); overflow: hidden;">
+                          <tr>
+                            <td align="center" style="padding: 40px 32px;">
+                              <!-- Salutation -->
+                              <h2 style="color: #a78bfa; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                Ciao {{NAME}},
+                              </h2>
+                              <!-- Main Title -->
+                              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; line-height: 1.35; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                Hai richiesto il reset della password
+                              </h1>
+                              <!-- Gradient Line Separator -->
+                              <div style="display: inline-block; vertical-align: middle; margin: 24px auto; border-bottom: 2px solid #7c3aed; width: 60px;"></div>
+                              <!-- Instructional Text -->
+                              <p style="color: #cbd5e1; font-size: 15px; line-height: 24px; margin: 0 0 24px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                Usa il seguente codice di sicurezza per completare il ripristino della password del tuo account. Se non hai richiesto tu questa modifica, puoi ignorare questo messaggio in totale sicurezza.
+                              </p>
+                              <!-- Verification Code Highlight Block -->
+                              <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 20px auto;">
+                                <tr>
+                                  <td align="center" style="background-color: #201f3d; border: 1px dashed #a855f7; border-radius: 14px; padding: 16px 32px;">
+                                    <span style="font-family: 'Courier New', Courier, monospace, 'Poppins', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #f5f3ff; display: inline-block;">
+                                      {{RESET_CODE}}
+                                    </span>
+                                  </td>
+                                </tr>
+                              </table>
+                              <!-- Expiration Warning -->
+                              <p style="color: #94a3b8; font-size: 13px; line-height: 20px; margin: 16px 0 0 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                <i style="display: inline-block;">&#9201;</i> Il codice di verifica &egrave; valido per <strong>15 minuti</strong>.
+                              </p>
+                              <!-- CTA Button to Platform -->
+                              <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-top: 32px;">
+                                <tr>
+                                  <td align="center" style="border-radius: 50px; background-color: #7c3aed;">
+                                    <a href="{{SITE_URL}}" target="_blank" style="font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 50px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;">
+                                      Reimposta Password
+                                    </a>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <!-- Email Footer -->
+                    <tr>
+                      <td align="center" style="padding-top: 24px;">
+                        <p style="font-size: 13px; color: #64748b; line-height: 18px; margin: 0 0 6px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                          &copy; <strong>{{SITE_SHORT}}</strong> &bull; Identity &amp; Access Management
+                        </p>
+                        <p style="font-size: 12px; color: #475569; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                          Messaggio automatico di sicurezza generato da <a href="{{SITE_URL}}" target="_blank" style="color: #a78bfa; text-decoration: none;">Access Sphere</a>.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                  <!--[if (gte mso 9)|(IE)]>
+                  </td>
+                  </tr>
+                  </table>
+                  <![endif]-->
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+        """;
+
+    if (existing.isEmpty() && legacyExisting.isEmpty()) {
+      LOG.info("📧 Seeding Default Email Template with UUID: {}", DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
       EmailTemplateEntity template = new EmailTemplateEntity();
-      template.setIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD");
-      template.setCategory("RESET_PASSWORD");
+      template.setIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
+      template.setCategory(EmailTemplateCategory.RESET_PASSWORD.getCode());
       template.setClientId(techClientId); // Collegato al client applicativo predefinito configurato all'avvio
-      template.setName("ACCESS_SPHERE_CODE_RESET_PASSWORD");
+      template.setName("Reset Password");
       template.setSubject("Reset Password");
       template.setDescription("Template per invio codice recupero password");
       template.setLocale("it");
@@ -179,197 +307,48 @@ public class ProjectInitializerService implements ApplicationRunner {
       params.put("RESET_CODE", "123456");
       params.put("SITE_SHORT", "Access Sphere");
       template.setParams(params);
-
-      // Markup HTML reattivo con glassmorphism per email di reimpostazione password
-      String htmlTemplate =
-          """
-          <!DOCTYPE html>
-          <html lang="en-GB">
-            <head>
-              <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-              <title>Reset Password</title>
-              <meta content="Reset Password Email Template." name="description" />
-              <style type="text/css">
-                a:hover {
-                  text-decoration: underline !important;
-                }
-              </style>
-            </head>
-
-            <body
-              marginheight="0"
-              topmargin="0"
-              marginwidth="0"
-              style="
-                margin: 0px;
-                background-color: #f2f3f8;
-                background: linear-gradient(135deg, #101022 0%, #05050f 100%);
-              "
-              leftmargin="0"
-            >
-              <!--100% body table-->
-              <table
-                cellspacing="0"
-                border="0"
-                cellpadding="0"
-                width="100%"
-                bgcolor="#f2f3f8"
-                style="
-                  @import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700);
-                  font-family: 'Open Sans', sans-serif;
-                  background: linear-gradient(135deg, #101022 0%, #05050f 100%);
-                "
-              >
-                <tr>
-                  <td>
-                    <table
-                      style="background-color: #f2f3f8; max-width: 670px; margin: 0 auto; background: linear-gradient(135deg, #101022 0%, #05050f 100%);"
-                      width="100%"
-                      border="0"
-                      align="center"
-                      cellpadding="0"
-                      cellspacing="0"
-                    >
-                      <tr>
-                        <td style="height: 80px">&nbsp;</td>
-                      </tr>
-                      <tr>
-                        <td style="text-align: center">
-                          <a href="{{SITE_URL}}" title="logo" target="_blank">
-                            <img
-                              style="border-radius: 50%"
-                              width="100"
-                              src="https://raw.githubusercontent.com/giovannilamarmora/giovannilamarmora/main/assets/brand/app-logo.png"
-                              title="logo"
-                              alt="logo"
-                            />
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="height: 20px">&nbsp;</td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <table
-                            width="95%"
-                            border="0"
-                            align="center"
-                            cellpadding="0"
-                            cellspacing="0"
-                            style="
-                              max-width: 670px;
-                              background: #191933;
-                              border-radius: 3px;
-                              text-align: center;
-                              -webkit-box-shadow: 0 6px 18px 0 rgba(0, 0, 0, 0.06);
-                              -moz-box-shadow: 0 6px 18px 0 rgba(0, 0, 0, 0.06);
-                              box-shadow: 0 6px 18px 0 rgba(0, 0, 0, 0.06);
-                            "
-                          >
-                            <tr>
-                              <td style="height: 40px">&nbsp;</td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 0 35px">
-                                <h1
-                                  style="
-                                    color: #ffffffe6;
-                                    font-weight: 500;
-                                    margin: 0;
-                                    font-size: 32px;
-                                    font-family: 'Rubik', sans-serif;
-                                  "
-                                >
-                                  Hai richiesto il reset della password
-                                </h1>
-                                <span
-                                  style="
-                                    display: inline-block;
-                                    vertical-align: middle;
-                                    margin: 29px 0 26px;
-                                    border-bottom: 1px solid #cecece;
-                                    width: 100px;
-                                  "
-                                ></span>
-                                <p
-                                  style="
-                                    color: #ffffff99;
-                                    font-size: 15px;
-                                    line-height: 24px;
-                                    margin: 0;
-                                  "
-                                >
-                                  Ciao {{NAME}}, non possiamo semplicemente inviarti la tua vecchia password.
-                                  E' stato generato un codice temporaneo per reimpostare la tua password.
-                                  Per reimpostare la password, usa il seguente codice sul sito.
-                                </p>
-                                <p
-                                  style="
-                                    background: #ff5722;
-                                    text-decoration: none !important;
-                                    font-weight: 500;
-                                    margin-top: 35px;
-                                    color: #fff;
-                                    text-transform: uppercase;
-                                    font-size: 18px;
-                                    padding: 10px 24px;
-                                    display: inline-block;
-                                    border-radius: 50px;
-                                  "
-                                >
-                                  {{RESET_CODE}}
-                                </p>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style="height: 40px">&nbsp;</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="height: 20px">&nbsp;</td>
-                      </tr>
-                      <tr>
-                        <td style="text-align: center">
-                          <p
-                            style="
-                              font-size: 14px;
-                              color: rgba(69, 80, 86, 0.7411764705882353);
-                              line-height: 18px;
-                              margin: 0 0 0;
-                            "
-                          >
-                            &copy; <strong>{{SITE_SHORT}}</strong>
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="height: 80px">&nbsp;</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              <!--/100% body table-->
-            </body>
-          </html>
-          """;
       template.setTemplate(htmlTemplate);
 
       // Persistenza template a database
       emailTemplateDAO.save(template);
       LOG.info(
-          "✅ Default Email Template [ACCESS_SPHERE_CODE_RESET_PASSWORD] successfully seeded in DB with clientId [{}]", techClientId);
+          "✅ Default Email Template [{}] successfully seeded in DB with clientId [{}]",
+          DEFAULT_RESET_PASSWORD_TEMPLATE_UUID,
+          techClientId);
+    } else if (existing.isEmpty() && !legacyExisting.isEmpty()) {
+      // Migrazione automatica da identificatore legacy ad identificatore UUID
+      EmailTemplateEntity legacyTpl = legacyExisting.get(0);
+      legacyTpl.setIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
+      legacyTpl.setCategory(EmailTemplateCategory.RESET_PASSWORD.getCode());
+      if (legacyTpl.getClientId() == null) {
+        legacyTpl.setClientId(techClientId);
+      }
+      legacyTpl.setTemplate(htmlTemplate);
+      emailTemplateDAO.save(legacyTpl);
+      LOG.info(
+          "🔄 Migrated Legacy Email Template [{}] to UUID [{}] and refreshed email-safe template with clientId [{}]",
+          LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER,
+          DEFAULT_RESET_PASSWORD_TEMPLATE_UUID,
+          legacyTpl.getClientId());
     } else {
       EmailTemplateEntity defaultTpl = existing.get(0);
+      boolean updated = false;
       if (defaultTpl.getClientId() == null) {
         defaultTpl.setClientId(techClientId);
+        updated = true;
+      }
+      if (defaultTpl.getTemplate() == null || !defaultTpl.getTemplate().contains("Poppins")) {
+        defaultTpl.setTemplate(htmlTemplate);
+        updated = true;
+      }
+      if (updated) {
         emailTemplateDAO.save(defaultTpl);
-        LOG.info("🔄 Migrated Default Email Template [{}] to technical client [{}]", defaultTpl.getIdentifier(), techClientId);
+        LOG.info(
+            "🔄 Updated Default Email Template [{}] with technical client [{}] and modern email-safe template",
+            defaultTpl.getIdentifier(),
+            techClientId);
       } else {
-        LOG.debug("Email Template [ACCESS_SPHERE_CODE_RESET_PASSWORD] already present in DB");
+        LOG.debug("Email Template [{}] already present in DB", DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
       }
     }
   }

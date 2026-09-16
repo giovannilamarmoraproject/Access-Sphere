@@ -891,7 +891,7 @@
   "email_editor_subtitle": "Configura metadatos, parámetros y visualiza el marcado en tiempo real",
   "email_btn_save_template": "Guardar plantilla",
   "email_editor_ident_hint": "Identificador invocado por el backend/microservicio",
-  "email_placeholder_identifier": "ej. ACCESS_SPHERE_CODE_RESET_PASSWORD",
+  "email_placeholder_identifier": "ej. c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95",
   "email_placeholder_name": "ej. Restablecimiento de contraseña",
   "email_placeholder_subject": "ej. Restablecimiento de su contraseña",
   "email_editor_locale_default": "Ninguno (Global / Fallback para todos los idiomas)",

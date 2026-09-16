@@ -870,6 +870,8 @@ public class UserServiceTest {
     emailParams.put("RESET_CODE", "123456");
     emailParams.put("NAME", "Mario");
     emailTemplate.setParams(emailParams);
+    when(emailTemplateService.getTemplateByCategoryLocaleAndClient(any(), any(), any()))
+        .thenReturn(Mono.just(emailTemplate));
     when(emailTemplateService.getTemplateByIdentifierAndLocale(any(), any()))
         .thenReturn(Mono.just(emailTemplate));
 

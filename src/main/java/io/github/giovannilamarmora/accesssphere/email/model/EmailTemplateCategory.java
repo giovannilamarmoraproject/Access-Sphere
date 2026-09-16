@@ -5,15 +5,15 @@ import java.util.Map;
 import lombok.Getter;
 
 /**
- * Categorie applicative strutturate per i Template Email di Access Sphere.
- * Collega ciascun template a un preciso scopo del flusso di autenticazione e sicurezza,
- * fornendo i parametri segnaposto standard e indicando se il flusso e attualmente attivo nel codice.
+ * Categorie applicative strutturate per i Template Email di Access Sphere. Collega ciascun template
+ * a un preciso scopo del flusso di autenticazione e sicurezza, fornendo i parametri segnaposto
+ * standard e indicando se il flusso e attualmente attivo nel codice.
  */
 @Getter
 public enum EmailTemplateCategory {
   RESET_PASSWORD(
       "RESET_PASSWORD",
-      "ACCESS_SPHERE_CODE_RESET_PASSWORD",
+      "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95",
       "Reimpostazione Password",
       "Invio del codice di sicurezza o link per il ripristino della password dimenticata",
       true,
@@ -80,7 +80,9 @@ public enum EmailTemplateCategory {
     for (EmailTemplateCategory cat : values()) {
       if (cat.getCode().equalsIgnoreCase(code.trim())
           || cat.name().equalsIgnoreCase(code.trim())
-          || cat.getDefaultIdentifier().equalsIgnoreCase(code.trim())) {
+          || cat.getDefaultIdentifier().equalsIgnoreCase(code.trim())
+          || (cat == RESET_PASSWORD
+              && "ACCESS_SPHERE_CODE_RESET_PASSWORD".equalsIgnoreCase(code.trim()))) {
         return cat;
       }
     }

@@ -232,6 +232,19 @@ public class EmailTemplateService {
             }
           }
 
+          // 5. Fallback retrocompatibilita: se RESET_PASSWORD verifica anche legacy ACCESS_SPHERE_CODE_RESET_PASSWORD
+          if (catEnum == EmailTemplateCategory.RESET_PASSWORD) {
+            List<EmailTemplateEntity> legacyOldTemplates =
+                emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD");
+            if (!legacyOldTemplates.isEmpty()) {
+              Optional<EmailTemplateEntity> oldMatch =
+                  resolveTemplateFromList(legacyOldTemplates, locale);
+              if (oldMatch.isPresent()) {
+                return EmailTemplateMapper.toStrapiEmailTemplate(oldMatch.get());
+              }
+            }
+          }
+
           LOG.error(
               "Nessun template email trovato per category=[{}], locale=[{}], clientId=[{}]",
               category,

@@ -891,7 +891,7 @@
   "email_editor_subtitle": "Metadaten und Parameter konfigurieren und das gerenderte Markup in Echtzeit anzeigen",
   "email_btn_save_template": "Vorlage speichern",
   "email_editor_ident_hint": "Vom Backend/Microservice aufgerufener Bezeichner",
-  "email_placeholder_identifier": "z.B. ACCESS_SPHERE_CODE_RESET_PASSWORD",
+  "email_placeholder_identifier": "z.B. c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95",
   "email_placeholder_name": "z.B. Benutzer-Passwort zurücksetzen",
   "email_placeholder_subject": "z.B. Passwort zurücksetzen",
   "email_editor_locale_default": "Keiner (Global / Fallback für alle Sprachen)",

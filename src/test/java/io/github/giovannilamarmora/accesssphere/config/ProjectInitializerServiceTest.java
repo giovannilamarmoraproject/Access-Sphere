@@ -49,7 +49,9 @@ class ProjectInitializerServiceTest {
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))
         .thenReturn(null);
     when(appSettingsDAO.findAll()).thenReturn(Collections.emptyList());
-    when(emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD"))
+    when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID))
+        .thenReturn(Collections.emptyList());
+    when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER))
         .thenReturn(Collections.emptyList());
 
     projectInitializerService.run(null);
@@ -87,9 +89,10 @@ class ProjectInitializerServiceTest {
         ArgumentCaptor.forClass(EmailTemplateEntity.class);
     verify(emailTemplateDAO, times(1)).save(templateCaptor.capture());
     EmailTemplateEntity savedTemplate = templateCaptor.getValue();
-    assertEquals("ACCESS_SPHERE_CODE_RESET_PASSWORD", savedTemplate.getIdentifier());
+    assertEquals(ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID, savedTemplate.getIdentifier());
     assertEquals("Reset Password", savedTemplate.getSubject());
     assertNotNull(savedTemplate.getTemplate());
+    assertTrue(savedTemplate.getTemplate().contains("Poppins"));
     assertNotNull(savedTemplate.getParams());
   }
 
@@ -101,8 +104,14 @@ class ProjectInitializerServiceTest {
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))
         .thenReturn(new UserEntity());
     when(appSettingsDAO.findAll()).thenReturn(List.of(new AppSettingsEntity()));
-    when(emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD"))
-        .thenReturn(List.of(new EmailTemplateEntity()));
+    EmailTemplateEntity existingTpl = new EmailTemplateEntity();
+    existingTpl.setIdentifier(ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
+    existingTpl.setClientId("ACCESS-SPHERE-TECH");
+    existingTpl.setTemplate("<html>Poppins</html>");
+    when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID))
+        .thenReturn(List.of(existingTpl));
+    when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER))
+        .thenReturn(Collections.emptyList());
 
     projectInitializerService.run(null);
 
