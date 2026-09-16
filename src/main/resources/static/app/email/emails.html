@@ -1,1045 +1,1152 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Access Sphere - Template Email</title>
-  
-  <!-- Immediate Zero-Flicker Theme Application -->
-  <script>
-    (function () {
-      try {
-        var theme = localStorage.getItem("access_sphere_theme");
-        if (!theme) {
-          var s = localStorage.getItem("access_sphere_settings");
-          if (s) {
-            var parsed = JSON.parse(s);
-            theme = parsed.activeTheme;
-          }
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Access Sphere - Template Email</title>
+
+    <!-- Immediate Zero-Flicker Theme Application -->
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem("access_sphere_theme");
+                if (!theme) {
+                    var s = localStorage.getItem("access_sphere_settings");
+                    if (s) {
+                        var parsed = JSON.parse(s);
+                        theme = parsed.activeTheme;
+                    }
+                }
+                document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
+            } catch (e) {
+            }
+        })();
+    </script>
+
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&family=JetBrains+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg"/>
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png"/>
+
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Shared Loader & SweetAlert2 -->
+    <link rel="stylesheet" href="/app/shared/loader/loader.css"/>
+    <script src="/app/shared/loader/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/app/shared/sweetalert.css"/>
+    <script src="/app/shared/sweetalert.js"></script>
+
+    <!-- Access Sphere Core Scripts -->
+    <script src="/app/shared/config.js"></script>
+    <script src="/app/shared/utils.js"></script>
+    <script src="/app/shared/api/authorize.js"></script>
+    <script src="/app/shared/api/logout.js"></script>
+    <script src="/app/i18n/translations.js"></script>
+    <script src="/app/shared/api/rest.js"></script>
+
+    <!-- Unified M3 Dashboard Theme & Themes Palette -->
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0"/>
+    <link rel="stylesheet" href="/css/m3-themes.css"/>
+    <script src="/app/shared/settings.js"></script>
+
+    <!-- Custom Email View Logic -->
+    <script src="/app/email/js/emails.js"></script>
+
+    <style>
+        /* =======================================================
+           CUSTOM SLEEK DARK GLASSMORPHIC SCROLLBAR
+           Rimuove la scrollbar bianca di default del browser e le frecce,
+           applicando una barra scura coordinata con il tema attivo.
+           ======================================================= */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
         }
-        document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
-      } catch (e) {}
-    })();
-  </script>
 
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
-  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
-  
-  <!-- JQuery -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  
-  <!-- TailwindCSS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        ::-webkit-scrollbar-track {
+            background: var(--md-surface, #0E0B16) !important;
+        }
 
-  <!-- Shared Loader & SweetAlert2 -->
-  <link rel="stylesheet" href="/app/shared/loader/loader.css" />
-  <script src="/app/shared/loader/loader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
-  <script src="/app/shared/sweetalert.js"></script>
+        ::-webkit-scrollbar-thumb {
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
+            border-radius: 9999px !important;
+            border: 2px solid var(--md-surface, #0E0B16) !important;
+            background-clip: padding-box;
+            transition: background 0.2s ease;
+        }
 
-  <!-- Access Sphere Core Scripts -->
-  <script src="/app/shared/config.js"></script>
-  <script src="/app/shared/utils.js"></script>
-  <script src="/app/shared/api/authorize.js"></script>
-  <script src="/app/shared/api/logout.js"></script>
-  <script src="/app/i18n/translations.js"></script>
-  <script src="/app/shared/api/rest.js"></script>
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.55) !important;
+        }
 
-  <!-- Unified M3 Dashboard Theme & Themes Palette -->
-  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0" />
-  <link rel="stylesheet" href="/css/m3-themes.css" />
-  <script src="/app/shared/settings.js"></script>
+        ::-webkit-scrollbar-thumb:active {
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.8) !important;
+        }
 
-  <!-- Custom Email View Logic -->
-  <script src="/app/email/js/emails.js"></script>
+        ::-webkit-scrollbar-button {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
 
-  <style>
-    /* =======================================================
-       CUSTOM SLEEK DARK GLASSMORPHIC SCROLLBAR
-       Rimuove la scrollbar bianca di default del browser e le frecce,
-       applicando una barra scura coordinata con il tema attivo.
-       ======================================================= */
-    ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--md-surface, #0E0B16) !important;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
-      border-radius: 9999px !important;
-      border: 2px solid var(--md-surface, #0E0B16) !important;
-      background-clip: padding-box;
-      transition: background 0.2s ease;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.55) !important;
-    }
-    ::-webkit-scrollbar-thumb:active {
-      background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.8) !important;
-    }
-    ::-webkit-scrollbar-button {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-    ::-webkit-scrollbar-corner {
-      background: transparent !important;
-    }
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) var(--md-surface, #0E0B16);
-    }
-    html {
-      scrollbar-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) var(--md-surface, #0E0B16);
-    }
+        ::-webkit-scrollbar-corner {
+            background: transparent !important;
+        }
 
-    /* Assicura border-radius uniforme e coerente M3 (14px) a tutti gli input, textarea e select */
-    .m3-form-input,
-    input.m3-form-input,
-    select.m3-form-input,
-    textarea.m3-form-input,
-    .code-editor-textarea,
-    .param-key-input,
-    .param-val-input,
-    .test-param-input,
-    input[type="text"],
-    input[type="email"],
-    input[type="search"],
-    select {
-      border-radius: 14px !important;
-    }
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) var(--md-surface, #0E0B16);
+        }
 
-    /* Segmented Control per Switch Desktop / Mobile coerente con la palette tema */
-    .preview-device-switch {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85);
-      padding: 3px;
-      border-radius: 14px;
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.22);
-    }
-    .preview-device-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      font-size: 11px;
-      font-weight: 600;
-      border-radius: 10px !important;
-      color: var(--theme-accent, #c4b5fd);
-      background: transparent;
-      border: none;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      user-select: none;
-    }
-    .preview-device-btn:hover {
-      color: #ffffff;
-      background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12);
-    }
-    .preview-device-btn.active {
-      color: var(--md-on-primary, #ffffff) !important;
-      background: var(--md-primary, #7c3aed) !important;
-      box-shadow: 0 2px 8px var(--theme-glow, rgba(124, 58, 237, 0.35));
-    }
+        html {
+            scrollbar-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) var(--md-surface, #0E0B16);
+        }
 
-    /* Allineamento e centratura per checkbox parametri con colore d'accento tema */
-    .preview-checkbox-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      user-select: none;
-      margin: 0;
-      line-height: 1;
-    }
-    .preview-checkbox-input {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.4);
-      background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85);
-      display: inline-grid;
-      place-content: center;
-      margin: 0 !important;
-      padding: 0;
-      cursor: pointer;
-      vertical-align: middle;
-      transition: all 0.15s ease;
-      flex-shrink: 0;
-    }
-    .preview-checkbox-input:checked {
-      background: var(--theme-primary, #7c3aed) !important;
-      border-color: var(--theme-primary, #7c3aed) !important;
-    }
-    .preview-checkbox-input:checked::before {
-      content: "";
-      width: 8px;
-      height: 5px;
-      border-left: 2px solid #ffffff;
-      border-bottom: 2px solid #ffffff;
-      transform: rotate(-45deg) translate(0.5px, -0.5px);
-    }
+        /* Assicura border-radius uniforme e coerente M3 (14px) a tutti gli input, textarea e select */
+        .m3-form-input,
+        input.m3-form-input,
+        select.m3-form-input,
+        textarea.m3-form-input,
+        .code-editor-textarea,
+        .param-key-input,
+        .param-val-input,
+        .test-param-input,
+        input[type="text"],
+        input[type="email"],
+        input[type="search"],
+        select {
+            border-radius: 14px !important;
+        }
 
-    /* Spaziatura specifica per Input di Ricerca (Foto 1) */
-    .m3-search-input {
-      padding-left: 2.75rem !important;
-      padding-right: 1.25rem !important;
-    }
+        /* Segmented Control per Switch Desktop / Mobile coerente con la palette tema */
+        .preview-device-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85);
+            padding: 3px;
+            border-radius: 14px;
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.22);
+        }
 
-    /* Spaziatura e inset freccia per Select (Foto 2) */
-    select.m3-form-input,
-    .m3-select-input {
-      appearance: none !important;
-      -webkit-appearance: none !important;
-      -moz-appearance: none !important;
-      padding-right: 3rem !important;
-      background-position: calc(100% - 1.25rem) center !important;
-      cursor: pointer;
-    }
+        .preview-device-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 10px !important;
+            color: var(--theme-accent, #c4b5fd);
+            background: transparent;
+            border: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            user-select: none;
+        }
 
-    /* Spaziatura per Input Segnaposto Parametri {{KEY}} (Foto 4) */
-    .param-key-input {
-      padding-left: 2.5rem !important;
-      padding-right: 2.5rem !important;
-      letter-spacing: 0.5px;
-    }
+        .preview-device-btn:hover {
+            color: #ffffff;
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12);
+        }
 
-    /* Styling per Anteprima Live Iframe e Editor Split */
-    .preview-device-desktop {
-      width: 100%;
-      height: 520px;
-      transition: all 0.3s ease;
-      border: 0;
-      border-radius: 12px;
-      background: #ffffff;
-    }
-    .preview-device-mobile {
-      width: 375px;
-      height: 560px;
-      max-width: 100%;
-      margin: 0 auto;
-      border-radius: 24px;
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25) !important;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
-      background: #ffffff;
-      transition: all 0.3s ease;
-      display: block;
-    }
-    .code-editor-textarea {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      line-height: 1.5;
-      tab-size: 2;
-      background: var(--theme-input-bg, rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85)) !important;
-      color: #e2e8f0 !important;
-      border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
-      border-radius: 14px !important;
-      resize: vertical;
-    }
-    .code-editor-textarea:focus {
-      outline: none !important;
-      border-color: var(--theme-accent, #a855f7) !important;
-      box-shadow: 0 0 0 3.5px var(--theme-glow, rgba(168, 85, 247, 0.25)) !important;
-    }
-    .param-pill {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 8px;
-      background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15) !important;
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;
-      color: var(--theme-accent, #d8b4fe) !important;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
+        .preview-device-btn.active {
+            color: var(--md-on-primary, #ffffff) !important;
+            background: var(--md-primary, #7c3aed) !important;
+            box-shadow: 0 2px 8px var(--theme-glow, rgba(124, 58, 237, 0.35));
+        }
 
-    /* =======================================================
-       CLASSI DINAMICHE REATTIVE AL TEMA ATTIVO (MULTI-PALETTE)
-       ======================================================= */
-    .theme-surface-box {
-      background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5) !important;
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
-      transition: all 0.25s ease;
-    }
-    .theme-surface-box:hover {
-      border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35) !important;
-    }
-    .theme-surface-box-subtle {
-      background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.35) !important;
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12) !important;
-    }
-    .theme-badge {
-      background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15) !important;
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;
-      color: var(--theme-accent, #D0BCFF) !important;
-    }
-    .theme-icon-box {
-      background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15) !important;
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2) !important;
-      color: var(--theme-accent, #D0BCFF) !important;
-    }
-    .theme-text-accent {
-      color: var(--theme-accent, #D0BCFF) !important;
-    }
-    .theme-text-primary {
-      color: var(--theme-primary, #A855F7) !important;
-    }
-    .theme-divider {
-      border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
-    }
-    .theme-rule {
-      background-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
-    }
-    .theme-border {
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2) !important;
-    }
-    .theme-modal-content {
-      background: var(--md-surface, #0E0B16) !important;
-      border: 1px solid var(--md-surface-border, rgba(208, 188, 255, 0.2)) !important;
-    }
-    .theme-modal-header {
-      background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85) !important;
-      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
-    }
-    .theme-sidebar-bg {
-      background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.7) !important;
-      border-right: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16) !important;
-    }
-    .theme-preview-stage {
-      background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.4) !important;
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12) !important;
-    }
-    .theme-preview-container {
-      background: rgba(0, 0, 0, 0.45) !important;
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2) !important;
-    }
-    .locale-badge {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 9999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .locale-badge-it {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #6ee7b7;
-    }
-    .locale-badge-en {
-      background: rgba(59, 130, 246, 0.15);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      color: #93c5fd;
-    }
-    .locale-badge-generic {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      color: #fcd34d;
-    }
-  </style>
+        /* Allineamento e centratura per checkbox parametri con colore d'accento tema */
+        .preview-checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .preview-checkbox-input {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.4);
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85);
+            display: inline-grid;
+            place-content: center;
+            margin: 0 !important;
+            padding: 0;
+            cursor: pointer;
+            vertical-align: middle;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .preview-checkbox-input:checked {
+            background: var(--theme-primary, #7c3aed) !important;
+            border-color: var(--theme-primary, #7c3aed) !important;
+        }
+
+        .preview-checkbox-input:checked::before {
+            content: "";
+            width: 8px;
+            height: 5px;
+            border-left: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            transform: rotate(-45deg) translate(0.5px, -0.5px);
+        }
+
+        /* Spaziatura specifica per Input di Ricerca (Foto 1) */
+        .m3-search-input {
+            padding-left: 2.75rem !important;
+            padding-right: 1.25rem !important;
+        }
+
+        /* Spaziatura e inset freccia per Select (Foto 2) */
+        select.m3-form-input,
+        .m3-select-input {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            padding-right: 3rem !important;
+            background-position: calc(100% - 1.25rem) center !important;
+            cursor: pointer;
+        }
+
+        /* Spaziatura per Input Segnaposto Parametri {{KEY}} (Foto 4) */
+        .param-key-input {
+            padding-left: 2.5rem !important;
+            padding-right: 2.5rem !important;
+            letter-spacing: 0.5px;
+        }
+
+        /* Styling per Anteprima Live Iframe e Editor Split */
+        .preview-device-desktop {
+            width: 100%;
+            height: 520px;
+            transition: all 0.3s ease;
+            border: 0;
+            border-radius: 12px;
+            background: #ffffff;
+        }
+
+        .preview-device-mobile {
+            width: 375px;
+            height: 560px;
+            max-width: 100%;
+            margin: 0 auto;
+            border-radius: 24px;
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .code-editor-textarea {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            tab-size: 2;
+            background: var(--theme-input-bg, rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85)) !important;
+            color: #e2e8f0 !important;
+            border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
+            border-radius: 14px !important;
+            resize: vertical;
+        }
+
+        .code-editor-textarea:focus {
+            outline: none !important;
+            border-color: var(--theme-accent, #a855f7) !important;
+            box-shadow: 0 0 0 3.5px var(--theme-glow, rgba(168, 85, 247, 0.25)) !important;
+        }
+
+        .param-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15) !important;
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;
+            color: var(--theme-accent, #d8b4fe) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* =======================================================
+           CLASSI DINAMICHE REATTIVE AL TEMA ATTIVO (MULTI-PALETTE)
+           ======================================================= */
+        .theme-surface-box {
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5) !important;
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
+            transition: all 0.25s ease;
+        }
+
+        .theme-surface-box:hover {
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35) !important;
+        }
+
+        .theme-surface-box-subtle {
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.35) !important;
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12) !important;
+        }
+
+        .theme-badge {
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15) !important;
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;
+            color: var(--theme-accent, #D0BCFF) !important;
+        }
+
+        .theme-icon-box {
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15) !important;
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2) !important;
+            color: var(--theme-accent, #D0BCFF) !important;
+        }
+
+        .theme-text-accent {
+            color: var(--theme-accent, #D0BCFF) !important;
+        }
+
+        .theme-text-primary {
+            color: var(--theme-primary, #A855F7) !important;
+        }
+
+        .theme-divider {
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
+        }
+
+        .theme-rule {
+            background-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
+        }
+
+        .theme-border {
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2) !important;
+        }
+
+        .theme-modal-content {
+            background: var(--md-surface, #0E0B16) !important;
+            border: 1px solid var(--md-surface-border, rgba(208, 188, 255, 0.2)) !important;
+        }
+
+        .theme-modal-header {
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85) !important;
+            border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
+        }
+
+        .theme-sidebar-bg {
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.7) !important;
+            border-right: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16) !important;
+        }
+
+        .theme-preview-stage {
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.4) !important;
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12) !important;
+        }
+
+        .theme-preview-container {
+            background: rgba(0, 0, 0, 0.45) !important;
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2) !important;
+        }
+
+        .locale-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .locale-badge-it {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .locale-badge-en {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        .locale-badge-generic {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fcd34d;
+        }
+    </style>
 </head>
 <body>
-  <div id="loader" class="loader"></div>
+<div id="loader" class="loader"></div>
 
-  <!-- Wide Unified Header -->
-  <header class="glass-header">
+<!-- Wide Unified Header -->
+<header class="glass-header">
     <div class="header-container">
-      
-      <!-- Brand & Title -->
-      <div class="flex items-center gap-6">
-        <a href="/app" class="flex items-center gap-3 text-decoration-none group">
-          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
-          <div class="flex flex-col">
+
+        <!-- Brand & Title -->
+        <div class="flex items-center gap-6">
+            <a href="/app" class="flex items-center gap-3 text-decoration-none group">
+                <img src="/img/logo-minimal.svg" alt="Access Sphere Logo"
+                     class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110"/>
+                <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full theme-badge font-mono">Console</span>
             </span>
-            <span id="header-subtitle" class="text-[11px] text-gray-400 font-medium" data-i18n="header_subtitle">Gestione Identità & Accessi</span>
-          </div>
-        </a>
+                    <span id="header-subtitle" class="text-[11px] text-gray-400 font-medium"
+                          data-i18n="header_subtitle">Gestione Identità & Accessi</span>
+                </div>
+            </a>
 
-        <!-- Fast Navigation Tabs -->
-        <nav class="hidden md:flex items-center gap-2 border-l theme-divider pl-6">
-          <a href="/app" id="nav-btn-dashboard" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
-          </a>
-          <a href="/app/users" id="nav-btn-users" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
-          </a>
-          <a href="/app/clients" id="nav-btn-clients" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
-          </a>
-          <a href="/app/emails" id="nav-btn-emails" class="nav-tab-m3 active text-decoration-none">
-            <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
-          </a>
-          <a href="/app/settings" id="nav-btn-settings" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
-          </a>
-          <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
-          </a>
-        </nav>
-      </div>
+            <!-- Fast Navigation Tabs -->
+            <nav class="hidden md:flex items-center gap-2 border-l theme-divider pl-6">
+                <a href="/app" id="nav-btn-dashboard" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
+                </a>
+                <a href="/app/users" id="nav-btn-users" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
+                </a>
+                <a href="/app/clients" id="nav-btn-clients" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
+                </a>
+                <a href="/app/emails" id="nav-btn-emails" class="nav-tab-m3 active text-decoration-none">
+                    <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
+                </a>
+                <a href="/app/settings" id="nav-btn-settings" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
+                </a>
+                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank"
+                   class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
+                </a>
+            </nav>
+        </div>
 
-      <!-- Quick Action Controls -->
-      <div class="flex items-center gap-2">
-        <button id="btn-refresh-data" onclick="loadEmailTemplates()" class="m3-icon-btn" title="Aggiorna dati" data-i18n-title="btn_refresh_data">
-          <i id="refresh-icon" class="fa-solid fa-arrows-rotate text-sm"></i>
-        </button>
-        <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione" data-i18n-title="btn_version_info">
-          <i class="fa-solid fa-circle-info text-sm"></i>
-        </button>
-        
-        <!-- Primary Action: Create New Template -->
-        <button onclick="openCreateTemplateModal()" class="m3-btn-primary ml-2">
-          <i class="fa-solid fa-plus"></i> <span data-i18n="btn_new_template">Nuovo Template</span>
-        </button>
+        <!-- Quick Action Controls -->
+        <div class="flex items-center gap-2">
+            <button id="btn-refresh-data" onclick="loadEmailTemplates()" class="m3-icon-btn" title="Aggiorna dati"
+                    data-i18n-title="btn_refresh_data">
+                <i id="refresh-icon" class="fa-solid fa-arrows-rotate text-sm"></i>
+            </button>
+            <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione" data-i18n-title="btn_version_info">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
 
-        <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout" data-i18n-title="btn_logout">
-          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
-        </button>
-      </div>
+            <!-- Primary Action: Create New Template -->
+            <button onclick="openCreateTemplateModal()" class="m3-btn-primary ml-2">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="btn_new_template">Nuovo Template</span>
+            </button>
+
+            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout"
+                    data-i18n-title="btn_logout">
+                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+            </button>
+        </div>
 
     </div>
-  </header>
+</header>
 
-  <!-- Main Container -->
-  <main class="dashboard-wide-container">
+<!-- Main Container -->
+<main class="dashboard-wide-container">
 
     <!-- Welcome & Live Status Hero (Directly on page background as required by Rule 4.1) -->
     <div class="mb-8">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full theme-badge text-xs font-semibold mb-3">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="app-brand-name">Access Sphere</span> Email Hub
-          </div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight" data-i18n="email_hero_title">
-            Gestione Template Email
-          </h1>
-          <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-2xl" data-i18n="email_hero_desc">
-            Crea, personalizza e collauda i template HTML delle email transazionali e di sistema con parametri dinamici, supporto multilingua e anteprima in tempo reale.
-          </p>
-        </div>
-        
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 theme-surface-box p-4 rounded-2xl shrink-0">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full theme-icon-box flex items-center justify-center">
-              <i class="fa-solid fa-clock text-base"></i>
-            </div>
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div>
-              <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_system_clock">Orario Sistema</div>
-              <div id="live-clock" class="text-white font-mono font-bold text-sm">--:--:--</div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full theme-badge text-xs font-semibold mb-3">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="app-brand-name">Access Sphere</span> Email Hub
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight" data-i18n="email_hero_title">
+                    Gestione Template Email
+                </h1>
+                <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-2xl" data-i18n="email_hero_desc">
+                    Crea, personalizza e collauda i template HTML delle email transazionali e di sistema con parametri
+                    dinamici, supporto multilingua e anteprima in tempo reale.
+                </p>
             </div>
-          </div>
-          <div class="hidden sm:block h-8 w-px theme-divider"></div>
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300">
-              <i class="fa-solid fa-signal text-base"></i>
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 theme-surface-box p-4 rounded-2xl shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full theme-icon-box flex items-center justify-center">
+                        <i class="fa-solid fa-clock text-base"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_system_clock">
+                            Orario Sistema
+                        </div>
+                        <div id="live-clock" class="text-white font-mono font-bold text-sm">--:--:--</div>
+                    </div>
+                </div>
+                <div class="hidden sm:block h-8 w-px theme-divider"></div>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300">
+                        <i class="fa-solid fa-signal text-base"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_service_status">
+                            Stato Servizi
+                        </div>
+                        <div class="text-emerald-300 font-semibold text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-check-circle text-xs"></i> <span data-i18n="dash_status_operational">Operativo</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div>
-              <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_service_status">Stato Servizi</div>
-              <div class="text-emerald-300 font-semibold text-sm flex items-center gap-1.5">
-                <i class="fa-solid fa-check-circle text-xs"></i> <span data-i18n="dash_status_operational">Operativo</span>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
 
     <!-- Bento Grid Summary KPIs -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      
-      <!-- Card 1: Template Totali -->
-      <div class="m3-bento-card p-6 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_total">Template Totali</span>
-          <div class="w-10 h-10 rounded-xl theme-icon-box flex items-center justify-center">
-            <i class="fa-solid fa-envelope-open-text text-lg"></i>
-          </div>
-        </div>
-        <div>
-          <!-- Invariante: nessun data-i18n su elementi con valori dinamici -->
-          <div id="stat-total-templates" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
-          <div class="text-xs theme-text-accent opacity-80 mt-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-database theme-text-accent"></i>
-            <span id="stat-db-status">Censiti nel database</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Card 2: Lingue Attive -->
-      <div class="m3-bento-card p-6 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_locales">Lingue Attive</span>
-          <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center text-blue-300">
-            <i class="fa-solid fa-language text-lg"></i>
-          </div>
+        <!-- Card 1: Template Totali -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_total">Template Totali</span>
+                <div class="w-10 h-10 rounded-xl theme-icon-box flex items-center justify-center">
+                    <i class="fa-solid fa-envelope-open-text text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <!-- Invariante: nessun data-i18n su elementi con valori dinamici -->
+                <div id="stat-total-templates" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                    --
+                </div>
+                <div class="text-xs theme-text-accent opacity-80 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-database theme-text-accent"></i>
+                    <span id="stat-db-status">Censiti nel database</span>
+                </div>
+            </div>
         </div>
-        <div>
-          <div id="stat-total-locales" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
-          <div class="text-xs text-blue-300/80 mt-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-globe text-blue-400"></i>
-            <span id="stat-locales-summary">Multilingua & Fallback</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Card 3: Parametri Configurati -->
-      <div class="m3-bento-card p-6 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_params">Parametri Censiti</span>
-          <div class="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-300">
-            <i class="fa-solid fa-code text-lg"></i>
-          </div>
+        <!-- Card 2: Lingue Attive -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                      data-i18n="email_kpi_locales">Lingue Attive</span>
+                <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center text-blue-300">
+                    <i class="fa-solid fa-language text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div id="stat-total-locales" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--
+                </div>
+                <div class="text-xs text-blue-300/80 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-globe text-blue-400"></i>
+                    <span id="stat-locales-summary">Multilingua & Fallback</span>
+                </div>
+            </div>
         </div>
-        <div>
-          <div id="stat-total-params" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
-          <div class="text-xs text-amber-300/80 mt-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-tags text-amber-400"></i>
-            <span>Segnaposto dinamici {{KEY}}</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Card 4: Reset Password Engine -->
-      <div class="m3-bento-card p-6 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_reset_pwd">Reset Password</span>
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300">
-            <i class="fa-solid fa-key text-lg"></i>
-          </div>
+        <!-- Card 3: Parametri Configurati -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="email_kpi_params">Parametri Censiti</span>
+                <div class="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-300">
+                    <i class="fa-solid fa-code text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div id="stat-total-params" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--
+                </div>
+                <div class="text-xs text-amber-300/80 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-tags text-amber-400"></i>
+                    <span>Segnaposto dinamici {{KEY}}</span>
+                </div>
+            </div>
         </div>
-        <div>
-          <div id="stat-reset-pwd-status" class="text-lg font-bold text-emerald-300 tracking-tight flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-emerald-400"></i> Standalone DB
-          </div>
-          <div class="text-xs text-emerald-300/80 mt-2 flex items-center gap-1.5">
-            <i class="fa-solid fa-bolt text-emerald-400"></i>
-            <span>Flusso di ripristino integrato</span>
-          </div>
+
+        <!-- Card 4: Reset Password Engine -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                      data-i18n="email_kpi_reset_pwd">Reset Password</span>
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300">
+                    <i class="fa-solid fa-key text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div id="stat-reset-pwd-status"
+                     class="text-lg font-bold text-emerald-300 tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i> Standalone DB
+                </div>
+                <div class="text-xs text-emerald-300/80 mt-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt text-emerald-400"></i>
+                    <span>Flusso di ripristino integrato</span>
+                </div>
+            </div>
         </div>
-      </div>
 
     </div>
 
     <!-- Main Content Bento Card: Template List & Search -->
     <div class="m3-bento-card p-6 mb-8">
-      
-      <!-- Toolbar: Search & Locale Filter -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-        <div class="relative w-full sm:w-80">
-          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none z-10"></i>
-          <input
-            type="text"
-            id="email-search-input"
-            class="form-control m3-form-input m3-search-input rounded-xl w-full text-sm"
-            placeholder="Cerca template per ID, nome, oggetto..."
-            data-i18n-placeholder="email_search_placeholder"
-            oninput="handleSearch(this.value)"
-          />
+
+        <!-- Toolbar: Search & Locale Filter -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+            <div class="relative w-full sm:w-80">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none z-10"></i>
+                <input
+                        type="text"
+                        id="email-search-input"
+                        class="form-control m3-form-input m3-search-input rounded-xl w-full text-sm"
+                        placeholder="Cerca template per ID, nome, oggetto..."
+                        data-i18n-placeholder="email_search_placeholder"
+                        oninput="handleSearch(this.value)"
+                />
+            </div>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <select id="locale-filter-select"
+                        class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 shrink-0"
+                        onchange="handleLocaleFilter(this.value)">
+                    <option value="ALL" data-i18n="email_filter_locale_all">Tutte le lingue</option>
+                    <option value="it" data-i18n="email_filter_locale_it">Italiano (it)</option>
+                    <option value="en-GB" data-i18n="email_filter_locale_en">Inglese (en-GB)</option>
+                    <option value="fr" data-i18n="email_filter_locale_fr">Francese (fr)</option>
+                    <option value="es" data-i18n="email_filter_locale_es">Spagnolo (es)</option>
+                    <option value="de" data-i18n="email_filter_locale_de">Tedesco (de)</option>
+                    <option value="GENERIC" data-i18n="email_filter_locale_generic">Generico / Predefinito</option>
+                </select>
+
+                <button onclick="loadEmailTemplates()" class="m3-icon-btn shrink-0" title="Ricarica elenco"
+                        data-i18n-title="btn_refresh_data">
+                    <i class="fa-solid fa-rotate-right text-sm"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-          <select id="locale-filter-select" class="form-select m3-form-input m3-select-input rounded-xl text-sm py-2 shrink-0" onchange="handleLocaleFilter(this.value)">
-            <option value="ALL" data-i18n="email_filter_locale_all">Tutte le lingue</option>
-            <option value="it" data-i18n="email_filter_locale_it">Italiano (it)</option>
-            <option value="en-GB" data-i18n="email_filter_locale_en">Inglese (en-GB)</option>
-            <option value="fr" data-i18n="email_filter_locale_fr">Francese (fr)</option>
-            <option value="es" data-i18n="email_filter_locale_es">Spagnolo (es)</option>
-            <option value="de" data-i18n="email_filter_locale_de">Tedesco (de)</option>
-            <option value="GENERIC" data-i18n="email_filter_locale_generic">Generico / Predefinito</option>
-          </select>
-
-          <button onclick="loadEmailTemplates()" class="m3-icon-btn shrink-0" title="Ricarica elenco" data-i18n-title="btn_refresh_data">
-            <i class="fa-solid fa-rotate-right text-sm"></i>
-          </button>
+        <!-- Templates Container: Cards / Table View -->
+        <div id="email-templates-container" class="space-y-4">
+            <!-- Rendered dynamically via JavaScript -->
+            <div class="text-center py-12 text-gray-400">
+                <i class="fa-solid fa-spinner fa-spin text-2xl theme-text-accent mb-3"></i>
+                <p>Caricamento template in corso...</p>
+            </div>
         </div>
-      </div>
-
-      <!-- Templates Container: Cards / Table View -->
-      <div id="email-templates-container" class="space-y-4">
-        <!-- Rendered dynamically via JavaScript -->
-        <div class="text-center py-12 text-gray-400">
-          <i class="fa-solid fa-spinner fa-spin text-2xl theme-text-accent mb-3"></i>
-          <p>Caricamento template in corso...</p>
-        </div>
-      </div>
 
     </div>
 
-  </main>
+</main>
 
-  <!-- ================= MODALE 1: EDITOR TEMPLATE CON ANTEPRIMA LIVE (SPLIT-VIEW) ================= -->
-  <div class="modal fade" id="emailEditorModal" tabindex="-1" aria-labelledby="emailEditorModalLabel" aria-hidden="true">
+<!-- ================= MODALE 1: EDITOR TEMPLATE CON ANTEPRIMA LIVE (SPLIT-VIEW) ================= -->
+<div class="modal fade" id="emailEditorModal" tabindex="-1" aria-labelledby="emailEditorModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen">
-      <div class="modal-content theme-modal-content text-white border-0">
-        
-        <!-- Header Modale -->
-        <div class="modal-header theme-modal-header px-6 py-4 flex items-center justify-between backdrop-blur-md">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl theme-icon-box flex items-center justify-center">
-              <i class="fa-solid fa-pen-ruler"></i>
-            </div>
-            <div>
-              <h5 class="modal-title font-bold text-lg text-white" id="emailEditorModalLabel" data-i18n="modal_email_editor_title">
-                Editor Template Email
-              </h5>
-              <p class="text-xs text-gray-400 mb-0">Configura metadati, parametri e visualizza il markup renderizzato in tempo reale</p>
-            </div>
-          </div>
+        <div class="modal-content theme-modal-content text-white border-0">
 
-          <div class="flex items-center gap-3">
-            <button type="button" class="m3-btn-secondary py-1.5 px-4 text-xs" data-bs-dismiss="modal">
-              <i class="fa-solid fa-xmark mr-1.5"></i> Annulla
-            </button>
-            <button type="button" class="m3-btn-primary py-1.5 px-5 text-xs" onclick="saveTemplateForm()">
-              <i class="fa-solid fa-floppy-disk mr-1.5"></i> Salva Template
-            </button>
-          </div>
-        </div>
-
-        <!-- Body Split: Form a Sinistra, Live Preview a Destra -->
-        <div class="modal-body p-0 overflow-hidden">
-          <div class="grid grid-cols-1 lg:grid-cols-12 h-full">
-            
-            <!-- Colonna Sinistra: Configurazione & HTML (Col 6) -->
-            <div class="lg:col-span-6 p-6 overflow-y-auto h-[calc(100vh-80px)] border-r theme-divider space-y-5">
-              <input type="hidden" id="editor-template-id" value="" />
-
-              <!-- Metadati Base Grid -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_identifier">
-                    Identificatore Univoco *
-                  </label>
-                  <input
-                    type="text"
-                    id="editor-identifier"
-                    class="form-control m3-form-input rounded-xl w-full text-sm font-mono"
-                    placeholder="es. ACCESS_SPHERE_CODE_RESET_PASSWORD"
-                    required
-                  />
-                  <span class="text-[11px] text-gray-400 mt-1 block">Identificatore chiamato dal backend/microservizio</span>
+            <!-- Header Modale -->
+            <div class="modal-header theme-modal-header px-6 py-4 flex items-center justify-between backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl theme-icon-box flex items-center justify-center">
+                        <i class="fa-solid fa-pen-ruler"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-bold text-lg text-white" id="emailEditorModalLabel"
+                            data-i18n="modal_email_editor_title">
+                            Editor Template Email
+                        </h5>
+                        <p class="text-xs text-gray-400 mb-0">Configura metadati, parametri e visualizza il markup
+                            renderizzato in tempo reale</p>
+                    </div>
                 </div>
 
-                <div>
-                  <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_name">
-                    Nome Template *
-                  </label>
-                  <input
-                    type="text"
-                    id="editor-name"
-                    class="form-control m3-form-input rounded-xl w-full text-sm"
-                    placeholder="es. Reset Password Utente"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_subject">
-                    Oggetto Email *
-                  </label>
-                  <input
-                    type="text"
-                    id="editor-subject"
-                    class="form-control m3-form-input rounded-xl w-full text-sm"
-                    placeholder="es. Reimpostazione della Password"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_locale">
-                    Lingua / Locale
-                  </label>
-                  <select id="editor-locale" class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm">
-                    <option value="">Nessuno (Globale / Fallback per tutte le lingue)</option>
-                    <option value="it">Italiano (it)</option>
-                    <option value="it-IT">Italiano - Italia (it-IT)</option>
-                    <option value="en-GB">Inglese - UK (en-GB)</option>
-                    <option value="en-US">Inglese - US (en-US)</option>
-                    <option value="fr">Francese (fr)</option>
-                    <option value="es">Spagnolo (es)</option>
-                    <option value="de">Tedesco (de)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_desc">
-                  Descrizione
-                </label>
-                <input
-                  type="text"
-                  id="editor-description"
-                  class="form-control m3-form-input rounded-xl w-full text-sm"
-                  placeholder="es. Inviato quando un utente richiede il ripristino password"
-                />
-              </div>
-
-              <!-- Gestore Parametri Dinamici Personalizzati -->
-              <div class="p-4 rounded-xl theme-surface-box">
-                <div class="flex items-center justify-between mb-3">
-                  <div>
-                    <h6 class="text-sm font-bold text-white mb-0 flex items-center gap-2">
-                      <i class="fa-solid fa-sliders theme-text-accent"></i> Parametri Dinamici Personalizzati
-                    </h6>
-                    <span class="text-[11px] text-gray-400">Definisci chiavi segnaposto {{KEY}} e valori per l'anteprima</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <button type="button" onclick="autoExtractParamsFromHtml()" class="m3-btn-secondary text-[11px] py-1 px-2.5">
-                      <i class="fa-solid fa-wand-magic-sparkles mr-1 theme-text-accent"></i> Rileva da HTML
+                <div class="flex items-center gap-3">
+                    <button type="button" class="m3-btn-secondary py-1.5 px-4 text-xs" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark mr-1.5"></i> Annulla
                     </button>
-                    <button type="button" onclick="addParamRow()" class="m3-btn-primary text-[11px] py-1 px-2.5">
-                      <i class="fa-solid fa-plus mr-1"></i> Aggiungi Parametro
+                    <button type="button" class="m3-btn-primary py-1.5 px-5 text-xs" onclick="saveTemplateForm()">
+                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> Salva Template
                     </button>
-                  </div>
                 </div>
-
-                <!-- Lista Parametri (Rows) -->
-                <div id="editor-params-list" class="space-y-2">
-                  <!-- Inseriti dinamicamente via JS -->
-                </div>
-              </div>
-
-              <!-- Editor Markup HTML -->
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-0" data-i18n="email_label_html">
-                    Markup HTML del Template *
-                  </label>
-                  <span class="text-[11px] theme-text-accent opacity-80 font-mono">Digitazione con live preview istantaneo</span>
-                </div>
-                <textarea
-                  id="editor-template-html"
-                  rows="14"
-                  class="code-editor-textarea w-full p-4"
-                  placeholder="<!DOCTYPE html><html><body><h1>Ciao {{NAME}}</h1></body></html>"
-                  oninput="handleHtmlInput(this.value)"
-                  required
-                ></textarea>
-              </div>
-
             </div>
 
-            <!-- Colonna Destra: Live Preview (Col 6) -->
-            <div class="lg:col-span-6 p-6 flex flex-col h-[calc(100vh-80px)] theme-preview-stage overflow-y-auto">
-              
-              <!-- Toolbar Anteprima Live -->
-              <div class="flex items-center justify-between pb-4 mb-4 border-b theme-divider">
-                <div class="flex items-center gap-2">
+            <!-- Body Split: Form a Sinistra, Live Preview a Destra -->
+            <div class="modal-body p-0 overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 h-full">
+
+                    <!-- Colonna Sinistra: Configurazione & HTML (Col 6) -->
+                    <div class="lg:col-span-6 p-6 overflow-y-auto h-[calc(100vh-80px)] border-r theme-divider space-y-5">
+                        <input type="hidden" id="editor-template-id" value=""/>
+
+                        <!-- Metadati Base Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
+                                       data-i18n="email_label_identifier">
+                                    Identificatore Univoco *
+                                </label>
+                                <input
+                                        type="text"
+                                        id="editor-identifier"
+                                        class="form-control m3-form-input rounded-xl w-full text-sm font-mono"
+                                        placeholder="es. ACCESS_SPHERE_CODE_RESET_PASSWORD"
+                                        required
+                                />
+                                <span class="text-[11px] text-gray-400 mt-1 block">Identificatore chiamato dal backend/microservizio</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
+                                       data-i18n="email_label_name">
+                                    Nome Template *
+                                </label>
+                                <input
+                                        type="text"
+                                        id="editor-name"
+                                        class="form-control m3-form-input rounded-xl w-full text-sm"
+                                        placeholder="es. Reset Password Utente"
+                                        required
+                                />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
+                                       data-i18n="email_label_subject">
+                                    Oggetto Email *
+                                </label>
+                                <input
+                                        type="text"
+                                        id="editor-subject"
+                                        class="form-control m3-form-input rounded-xl w-full text-sm"
+                                        placeholder="es. Reimpostazione della Password"
+                                        required
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
+                                       data-i18n="email_label_locale">
+                                    Lingua / Locale
+                                </label>
+                                <select id="editor-locale"
+                                        class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm">
+                                    <option value="">Nessuno (Globale / Fallback per tutte le lingue)</option>
+                                    <option value="it">Italiano (it)</option>
+                                    <option value="it-IT">Italiano - Italia (it-IT)</option>
+                                    <option value="en-GB">Inglese - UK (en-GB)</option>
+                                    <option value="en-US">Inglese - US (en-US)</option>
+                                    <option value="fr">Francese (fr)</option>
+                                    <option value="es">Spagnolo (es)</option>
+                                    <option value="de">Tedesco (de)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
+                                   data-i18n="email_label_desc">
+                                Descrizione
+                            </label>
+                            <input
+                                    type="text"
+                                    id="editor-description"
+                                    class="form-control m3-form-input rounded-xl w-full text-sm"
+                                    placeholder="es. Inviato quando un utente richiede il ripristino password"
+                            />
+                        </div>
+
+                        <!-- Gestore Parametri Dinamici Personalizzati -->
+                        <div class="p-4 rounded-xl theme-surface-box">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h6 class="text-sm font-bold text-white mb-0 flex items-center gap-2">
+                                        <i class="fa-solid fa-sliders theme-text-accent"></i> Parametri Dinamici
+                                        Personalizzati
+                                    </h6>
+                                    <span class="text-[11px] text-gray-400">Definisci chiavi segnaposto {{KEY}} e valori per l'anteprima</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="autoExtractParamsFromHtml()"
+                                            class="m3-btn-secondary text-[11px] py-1 px-2.5">
+                                        <i class="fa-solid fa-wand-magic-sparkles mr-1 theme-text-accent"></i> Rileva da
+                                        HTML
+                                    </button>
+                                    <button type="button" onclick="addParamRow()"
+                                            class="m3-btn-primary text-[11px] py-1 px-2.5">
+                                        <i class="fa-solid fa-plus mr-1"></i> Aggiungi Parametro
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Lista Parametri (Rows) -->
+                            <div id="editor-params-list" class="space-y-2">
+                                <!-- Inseriti dinamicamente via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Editor Markup HTML -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-0"
+                                       data-i18n="email_label_html">
+                                    Markup HTML del Template *
+                                </label>
+                                <span class="text-[11px] theme-text-accent opacity-80 font-mono">Digitazione con live preview istantaneo</span>
+                            </div>
+                            <textarea
+                                    id="editor-template-html"
+                                    rows="14"
+                                    class="code-editor-textarea w-full p-4"
+                                    placeholder="<!DOCTYPE html><html><body><h1>Ciao {{NAME}}</h1></body></html>"
+                                    oninput="handleHtmlInput(this.value)"
+                                    required
+                            ></textarea>
+                        </div>
+
+                    </div>
+
+                    <!-- Colonna Destra: Live Preview (Col 6) -->
+                    <div class="lg:col-span-6 p-6 flex flex-col h-[calc(100vh-80px)] theme-preview-stage overflow-y-auto">
+
+                        <!-- Toolbar Anteprima Live -->
+                        <div class="flex items-center justify-between pb-4 mb-4 border-b theme-divider">
+                            <div class="flex items-center gap-2">
                   <span class="text-xs font-bold uppercase tracking-wider theme-text-accent flex items-center gap-1.5">
                     <i class="fa-solid fa-eye text-emerald-400"></i> Anteprima in Tempo Reale
                   </span>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <!-- Toggle Switch: Sostituisci Parametri nell'anteprima (Centrato perfettamente Foto 1) -->
+                                <label class="preview-checkbox-label">
+                                    <input type="checkbox" id="preview-inject-params" class="preview-checkbox-input"
+                                           checked onchange="updateLivePreview()"/>
+                                    <span class="text-xs text-gray-300">Sostituisci {{Parametri}}</span>
+                                </label>
+
+                                <!-- Switch Dispositivo: Desktop / Mobile (Bordi Arrotondati Foto 1) -->
+                                <div class="preview-device-switch">
+                                    <button
+                                            type="button"
+                                            id="btn-preview-desktop"
+                                            class="preview-device-btn active"
+                                            onclick="setPreviewDevice('desktop')"
+                                    >
+                                        <i class="fa-solid fa-desktop"></i> Desktop
+                                    </button>
+                                    <button
+                                            type="button"
+                                            id="btn-preview-mobile"
+                                            class="preview-device-btn"
+                                            onclick="setPreviewDevice('mobile')"
+                                    >
+                                        <i class="fa-solid fa-mobile-screen"></i> Mobile
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contenitore Iframe Isolato -->
+                        <div class="flex-1 flex items-center justify-center overflow-auto p-2 theme-preview-container rounded-2xl shadow-inner">
+                            <iframe id="live-preview-iframe" class="preview-device-desktop"
+                                    sandbox="allow-same-origin allow-scripts"></iframe>
+                        </div>
+
+                    </div>
+
                 </div>
-
-                <div class="flex items-center gap-4">
-                  <!-- Toggle Switch: Sostituisci Parametri nell'anteprima (Centrato perfettamente Foto 1) -->
-                  <label class="preview-checkbox-label">
-                    <input type="checkbox" id="preview-inject-params" class="preview-checkbox-input" checked onchange="updateLivePreview()" />
-                    <span class="text-xs text-gray-300">Sostituisci {{Parametri}}</span>
-                  </label>
-
-                  <!-- Switch Dispositivo: Desktop / Mobile (Bordi Arrotondati Foto 1) -->
-                  <div class="preview-device-switch">
-                    <button
-                      type="button"
-                      id="btn-preview-desktop"
-                      class="preview-device-btn active"
-                      onclick="setPreviewDevice('desktop')"
-                    >
-                      <i class="fa-solid fa-desktop"></i> Desktop
-                    </button>
-                    <button
-                      type="button"
-                      id="btn-preview-mobile"
-                      class="preview-device-btn"
-                      onclick="setPreviewDevice('mobile')"
-                    >
-                      <i class="fa-solid fa-mobile-screen"></i> Mobile
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Contenitore Iframe Isolato -->
-              <div class="flex-1 flex items-center justify-center overflow-auto p-2 theme-preview-container rounded-2xl shadow-inner">
-                <iframe id="live-preview-iframe" class="preview-device-desktop" sandbox="allow-same-origin allow-scripts"></iframe>
-              </div>
-
             </div>
 
-          </div>
         </div>
-
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- ================= MODALE 2: INVIA EMAIL DI TEST ================= -->
-  <div class="modal fade" id="emailTestSendModal" tabindex="-1" aria-labelledby="emailTestSendModalLabel" aria-hidden="true">
+<!-- ================= MODALE 2: INVIA EMAIL DI TEST ================= -->
+<div class="modal fade" id="emailTestSendModal" tabindex="-1" aria-labelledby="emailTestSendModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border border-white/10 shadow-2xl" style="border-radius: 24px; background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.95); backdrop-filter: blur(24px);">
-        
-        <div class="modal-header px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl theme-icon-box flex items-center justify-center text-base">
-              <i class="fa-solid fa-paper-plane"></i>
+        <div class="modal-content border border-white/10 shadow-2xl"
+             style="border-radius: 24px; background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.95); backdrop-filter: blur(24px);">
+
+            <div class="modal-header px-6 py-4 flex items-center justify-between"
+                 style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl theme-icon-box flex items-center justify-center text-base">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-bold text-lg text-white mb-0" id="emailTestSendModalLabel"
+                            data-i18n="modal_email_test_title">
+                            Invia Email di Test
+                        </h5>
+                        <p class="text-xs text-gray-400 mb-0">Collauda l'invio reale tramite il microservizio compilando
+                            i parametri</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Chiudi"></button>
             </div>
-            <div>
-              <h5 class="modal-title font-bold text-lg text-white mb-0" id="emailTestSendModalLabel" data-i18n="modal_email_test_title">
-                Invia Email di Test
-              </h5>
-              <p class="text-xs text-gray-400 mb-0">Collauda l'invio reale tramite il microservizio compilando i parametri</p>
-            </div>
-          </div>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+
+            <form id="test-email-form" onsubmit="executeSendTestEmail(event)">
+                <div class="modal-body px-6 py-4 space-y-4">
+                    <input type="hidden" id="test-template-id"/>
+                    <input type="hidden" id="test-template-identifier"/>
+                    <input type="hidden" id="test-template-locale"/>
+
+                    <div class="p-4 rounded-2xl flex items-center justify-between"
+                         style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.6); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl theme-icon-box flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-envelope-open-text"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-400 uppercase font-semibold block">Template Selezionato</span>
+                                <span id="test-modal-template-name" class="font-bold text-sm text-white">--</span>
+                            </div>
+                        </div>
+                        <div id="test-modal-locale-badge"></div>
+                    </div>
+
+                    <!-- Destinatario & Oggetto -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
+                                   data-i18n="email_test_recipient">
+                                Destinatario Email *
+                            </label>
+                            <input
+                                    type="email"
+                                    id="test-email-to"
+                                    class="form-control m3-form-input rounded-xl w-full text-sm"
+                                    placeholder="mario.rossi@example.com"
+                                    required
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5"
+                                   data-i18n="email_label_subject">
+                                Oggetto Email *
+                            </label>
+                            <input
+                                    type="text"
+                                    id="test-email-subject"
+                                    class="form-control m3-form-input rounded-xl w-full text-sm"
+                                    required
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Valori Parametri Dinamici -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-0">
+                                Valori per i Segnaposto del Template
+                            </label>
+                            <span class="text-[11px] text-gray-400">Sostituiti nel corpo dell'email</span>
+                        </div>
+                        <div id="test-email-params-container"
+                             class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl"
+                             style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.4); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12);">
+                            <!-- Generato dinamicamente via JS in base ai parametri del template -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer px-6 py-4 flex items-center justify-end gap-3"
+                     style="border-top: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
+                    <button type="button"
+                            class="px-5 py-2.5 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all cursor-pointer"
+                            data-bs-dismiss="modal">
+                        Annulla
+                    </button>
+                    <button type="submit" id="btn-submit-test-email"
+                            class="m3-btn-primary px-6 py-2.5 rounded-full text-xs font-semibold cursor-pointer">
+                        <i class="fa-solid fa-paper-plane mr-1.5"></i> <span
+                            data-i18n="email_test_btn_submit">Invia Ora</span>
+                    </button>
+                </div>
+            </form>
+
         </div>
-
-        <form id="test-email-form" onsubmit="executeSendTestEmail(event)">
-          <div class="modal-body px-6 py-5 space-y-4">
-            <input type="hidden" id="test-template-id" />
-            <input type="hidden" id="test-template-identifier" />
-            <input type="hidden" id="test-template-locale" />
-
-            <div class="p-4 rounded-2xl flex items-center justify-between" style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.6); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl theme-icon-box flex items-center justify-center text-xs">
-                  <i class="fa-solid fa-envelope-open-text"></i>
-                </div>
-                <div>
-                  <span class="text-[10px] text-gray-400 uppercase font-semibold block">Template Selezionato</span>
-                  <span id="test-modal-template-name" class="font-bold text-sm text-white">--</span>
-                </div>
-              </div>
-              <div id="test-modal-locale-badge"></div>
-            </div>
-
-            <!-- Destinatario & Oggetto -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_test_recipient">
-                  Destinatario Email *
-                </label>
-                <input
-                  type="email"
-                  id="test-email-to"
-                  class="form-control m3-form-input rounded-xl w-full text-sm"
-                  placeholder="mario.rossi@example.com"
-                  required
-                />
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" data-i18n="email_label_subject">
-                  Oggetto Email *
-                </label>
-                <input
-                  type="text"
-                  id="test-email-subject"
-                  class="form-control m3-form-input rounded-xl w-full text-sm"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- Valori Parametri Dinamici -->
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-0">
-                  Valori per i Segnaposto del Template
-                </label>
-                <span class="text-[11px] text-gray-400">Sostituiti nel corpo dell'email</span>
-              </div>
-              <div id="test-email-params-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl" style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.4); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12);">
-                <!-- Generato dinamicamente via JS in base ai parametri del template -->
-              </div>
-            </div>
-
-          </div>
-
-          <div class="modal-footer px-6 py-4 flex items-center justify-end gap-3" style="border-top: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
-            <button type="button" class="px-5 py-2.5 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all cursor-pointer" data-bs-dismiss="modal">
-              Annulla
-            </button>
-            <button type="submit" id="btn-submit-test-email" class="m3-btn-primary px-6 py-2.5 rounded-full text-xs font-semibold cursor-pointer">
-              <i class="fa-solid fa-paper-plane mr-1.5"></i> <span data-i18n="email_test_btn_submit">Invia Ora</span>
-            </button>
-          </div>
-        </form>
-
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- ================= MODALE 3: DETTAGLIO EMAIL A TUTTO SCHERMO ================= -->
-  <div class="modal fade" id="emailDetailModal" tabindex="-1" aria-labelledby="emailDetailModalLabel" aria-hidden="true">
+<!-- ================= MODALE 3: DETTAGLIO EMAIL A TUTTO SCHERMO ================= -->
+<div class="modal fade" id="emailDetailModal" tabindex="-1" aria-labelledby="emailDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen">
-      <div class="modal-content theme-modal-content text-white border-0">
-        
-        <!-- Header Dettaglio a Tutto Schermo -->
-        <div class="modal-header theme-modal-header px-6 py-4 flex items-center justify-between backdrop-blur-md">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl theme-icon-box flex items-center justify-center text-lg">
-              <i class="fa-solid fa-envelope-open-text"></i>
-            </div>
-            <div>
-              <div class="flex flex-wrap items-center gap-2">
-                <h5 class="modal-title font-bold text-lg text-white mb-0" id="detail-modal-name">Dettaglio Template</h5>
-                <span id="detail-modal-identifier-badge" class="font-mono text-xs font-bold theme-badge px-2.5 py-0.5 rounded-lg">--</span>
-                <span id="detail-modal-locale-badge"></span>
-              </div>
-              <p class="text-xs text-gray-400 mb-0 mt-0.5" id="detail-modal-updated">Ultimo aggiornamento: --</p>
-            </div>
-          </div>
+        <div class="modal-content theme-modal-content text-white border-0">
 
-          <!-- Pulsanti Azione Header -->
-          <div class="flex items-center gap-3">
-            <button type="button" id="btn-detail-test-send" class="m3-btn-secondary text-xs py-2 px-4">
-              <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> Invia Test
-            </button>
-            <button type="button" id="btn-detail-edit" class="m3-btn-primary text-xs py-2 px-4">
-              <i class="fa-solid fa-pen-to-square mr-1.5"></i> Modifica Template
-            </button>
-            <button type="button" class="btn-close btn-close-white ml-2" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-          </div>
-        </div>
-
-        <!-- Body Split a Tutto Schermo: Metadati a Sinistra, Rendering a Destra -->
-        <div class="modal-body p-0 overflow-hidden">
-          <div class="grid grid-cols-1 lg:grid-cols-12 h-full">
-            
-            <!-- Colonna Sinistra (Col 4): Scheda Metadati, Oggetto, Descrizione e Parametri -->
-            <div class="lg:col-span-4 p-6 overflow-y-auto h-[calc(100vh-80px)] space-y-5" style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.65); border-right: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
-              
-              <!-- Card: Informazioni Principali -->
-              <div class="p-5 rounded-2xl space-y-4" style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
-                <div class="flex items-center gap-2 pb-2 theme-text-accent text-sm font-bold uppercase tracking-wider" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
-                  <i class="fa-solid fa-circle-info"></i> Metadati Template
+            <!-- Header Dettaglio a Tutto Schermo -->
+            <div class="modal-header theme-modal-header px-6 py-4 flex items-center justify-between backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl theme-icon-box flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h5 class="modal-title font-bold text-lg text-white mb-0" id="detail-modal-name">Dettaglio
+                                Template</h5>
+                            <span id="detail-modal-identifier-badge"
+                                  class="font-mono text-xs font-bold theme-badge px-2.5 py-0.5 rounded-lg">--</span>
+                            <span id="detail-modal-locale-badge"></span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-0 mt-0.5" id="detail-modal-updated">Ultimo aggiornamento:
+                            --</p>
+                    </div>
                 </div>
 
-                <div>
-                  <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Oggetto Email</span>
-                  <div id="detail-modal-subject" class="text-sm font-semibold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-heading theme-text-accent text-xs"></i> <span>--</span>
-                  </div>
-                </div>
-
-                <div>
-                  <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Descrizione</span>
-                  <p id="detail-modal-desc" class="text-xs text-gray-300 mb-0 leading-relaxed">--</p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                  <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1">Identificatore</span>
-                    <span id="detail-modal-ident-sub" class="text-xs font-mono font-bold theme-text-accent block break-all">--</span>
-                  </div>
-                  <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1">Localizzazione</span>
-                    <div id="detail-modal-locale-sub" class="mt-0.5"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Card: Parametri Dinamici Configurati -->
-              <div class="p-5 rounded-2xl space-y-3" style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
-                <div class="flex items-center justify-between pb-2 theme-text-accent text-sm font-bold uppercase tracking-wider" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
-                  <span class="flex items-center gap-2"><i class="fa-solid fa-code"></i> Segnaposto Dinamici</span>
-                  <span id="detail-params-count" class="text-[11px] font-mono px-2 py-0.5 rounded-full theme-badge">0</span>
-                </div>
-                <p class="text-[11px] text-gray-400 mb-2">Questi parametri vengono iniettati al momento dell'invio e sostituiti nel template HTML.</p>
-                <div id="detail-modal-params-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
-                  <!-- Generati via JS in formato chiave => valore default -->
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Colonna Destra (Col 8): Visualizzatore Rendering Live Completo -->
-            <div class="lg:col-span-8 p-6 flex flex-col h-[calc(100vh-80px)] overflow-hidden" style="background: rgba(0, 0, 0, 0.2);">
-              
-              <!-- Toolbar Superiore Rendering -->
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
-                <div class="flex items-center gap-2">
-                  <i class="fa-solid fa-eye text-emerald-400 text-sm"></i>
-                  <span class="text-xs font-bold text-gray-200 uppercase tracking-wider">RENDERING VISIVO DEL TEMPLATE</span>
-                </div>
-
-                <div class="flex items-center gap-4">
-                  <!-- Centered Checkbox (Foto 1) -->
-                  <label class="preview-checkbox-label">
-                    <input type="checkbox" id="detail-inject-params" class="preview-checkbox-input" checked onchange="updateDetailPreview()" />
-                    <span class="text-xs text-gray-300">Sostituisci {{Parametri}}</span>
-                  </label>
-
-                  <!-- Switch Dispositivo Desktop / Mobile (Bordi Arrotondati Foto 1) -->
-                  <div class="preview-device-switch">
-                    <button
-                      type="button"
-                      id="btn-detail-desktop"
-                      class="preview-device-btn active"
-                      onclick="setDetailDevice('desktop')"
-                    >
-                      <i class="fa-solid fa-desktop"></i> Desktop
+                <!-- Pulsanti Azione Header -->
+                <div class="flex items-center gap-3">
+                    <button type="button" id="btn-detail-test-send" class="m3-btn-secondary text-xs py-2 px-4">
+                        <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> Invia Test
                     </button>
-                    <button
-                      type="button"
-                      id="btn-detail-mobile"
-                      class="preview-device-btn"
-                      onclick="setDetailDevice('mobile')"
-                    >
-                      <i class="fa-solid fa-mobile-screen"></i> Mobile
+                    <button type="button" id="btn-detail-edit" class="m3-btn-primary text-xs py-2 px-4">
+                        <i class="fa-solid fa-pen-to-square mr-1.5"></i> Modifica Template
                     </button>
-                  </div>
+                    <button type="button" class="btn-close btn-close-white ml-2" data-bs-dismiss="modal"
+                            aria-label="Chiudi"></button>
                 </div>
-              </div>
-
-              <!-- Contenitore Iframe Isolato con Scrollbar Scura Integrata -->
-              <div class="flex-1 flex items-center justify-center overflow-auto p-3 rounded-2xl shadow-inner" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
-                <iframe id="detail-preview-iframe" class="preview-device-desktop" sandbox="allow-same-origin allow-scripts"></iframe>
-              </div>
-
             </div>
 
-          </div>
-        </div>
+            <!-- Body Split a Tutto Schermo: Metadati a Sinistra, Rendering a Destra -->
+            <div class="modal-body p-0 overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 h-full">
 
-      </div>
+                    <!-- Colonna Sinistra (Col 4): Scheda Metadati, Oggetto, Descrizione e Parametri -->
+                    <div class="lg:col-span-4 p-6 overflow-y-auto h-[calc(100vh-80px)] space-y-5"
+                         style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.65); border-right: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
+
+                        <!-- Card: Informazioni Principali -->
+                        <div class="p-4 rounded-2xl space-y-4"
+                             style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
+                            <div class="flex items-center gap-2 pb-2 theme-text-accent text-sm font-bold uppercase tracking-wider"
+                                 style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
+                                <i class="fa-solid fa-circle-info"></i> Metadati Template
+                            </div>
+
+                            <div>
+                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Oggetto Email</span>
+                                <div id="detail-modal-subject"
+                                     class="text-sm font-semibold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-heading theme-text-accent text-xs"></i> <span>--</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Descrizione</span>
+                                <p id="detail-modal-desc" class="text-xs text-gray-300 mb-0 leading-relaxed">--</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1">Identificatore</span>
+                                    <span id="detail-modal-ident-sub"
+                                          class="text-xs font-mono font-bold theme-text-accent block break-all">--</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1">Localizzazione</span>
+                                    <div id="detail-modal-locale-sub" class="mt-0.5"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card: Parametri Dinamici Configurati -->
+                        <div class="p-4 rounded-2xl space-y-3"
+                             style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
+                            <div class="flex items-center justify-between pb-2 theme-text-accent text-sm font-bold uppercase tracking-wider"
+                                 style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
+                                <span class="flex items-center gap-2"><i class="fa-solid fa-code"></i> Segnaposto Dinamici</span>
+                                <span id="detail-params-count"
+                                      class="text-[11px] font-mono px-2 py-0.5 rounded-full theme-badge">0</span>
+                            </div>
+                            <p class="text-[11px] text-gray-400 mb-2">Questi parametri vengono iniettati al momento
+                                dell'invio e sostituiti nel template HTML.</p>
+                            <div id="detail-modal-params-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                                <!-- Generati via JS in formato chiave => valore default -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Colonna Destra (Col 8): Visualizzatore Rendering Live Completo -->
+                    <div class="lg:col-span-8 p-6 flex flex-col h-[calc(100vh-80px)] overflow-hidden"
+                         style="background: rgba(0, 0, 0, 0.2);">
+
+                        <!-- Toolbar Superiore Rendering -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3"
+                             style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-eye text-emerald-400 text-sm"></i>
+                                <span class="text-xs font-bold text-gray-200 uppercase tracking-wider">RENDERING VISIVO DEL TEMPLATE</span>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <!-- Centered Checkbox (Foto 1) -->
+                                <label class="preview-checkbox-label">
+                                    <input type="checkbox" id="detail-inject-params" class="preview-checkbox-input"
+                                           checked onchange="updateDetailPreview()"/>
+                                    <span class="text-xs text-gray-300">Sostituisci {{Parametri}}</span>
+                                </label>
+
+                                <!-- Switch Dispositivo Desktop / Mobile (Bordi Arrotondati Foto 1) -->
+                                <div class="preview-device-switch">
+                                    <button
+                                            type="button"
+                                            id="btn-detail-desktop"
+                                            class="preview-device-btn active"
+                                            onclick="setDetailDevice('desktop')"
+                                    >
+                                        <i class="fa-solid fa-desktop"></i> Desktop
+                                    </button>
+                                    <button
+                                            type="button"
+                                            id="btn-detail-mobile"
+                                            class="preview-device-btn"
+                                            onclick="setDetailDevice('mobile')"
+                                    >
+                                        <i class="fa-solid fa-mobile-screen"></i> Mobile
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contenitore Iframe Isolato con Scrollbar Scura Integrata -->
+                        <div class="flex-1 flex items-center justify-center overflow-auto p-3 rounded-2xl shadow-inner"
+                             style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
+                            <iframe id="detail-preview-iframe" class="preview-device-desktop"
+                                    sandbox="allow-same-origin allow-scripts"></iframe>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
     </div>
-  </div>
+</div>
 
 </body>
 </html>
