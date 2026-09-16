@@ -232,11 +232,4 @@ public class StrapiService {
             })
         .doOnError(StrapiException::handleStrapiException);
   }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Void>> logout(String refresh_token) {
-    return strapiClient
-        .logout(refresh_token)
-        .doOnSuccess(o -> LOG.info("Strapi logout successfully!"));
-  }
 }

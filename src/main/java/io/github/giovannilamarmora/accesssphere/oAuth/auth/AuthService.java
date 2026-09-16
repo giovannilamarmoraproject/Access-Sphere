@@ -249,7 +249,7 @@ public class AuthService {
           ResponseEntity.status(HttpStatus.OK).location(URI.create(redirect_uri)).body(res);
 
     return dataService
-        .logout(refreshToken, accessTokenData)
+        .logout(accessTokenData)
         .doOnSuccess(
             unused -> {
               SessionID.invalidateSessionID(response);

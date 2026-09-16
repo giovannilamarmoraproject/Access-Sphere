@@ -131,17 +131,7 @@ public class UserLogicService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  protected Mono<Void> logout(String refresh_token, AccessTokenData accessTokenData) {
-    if (isStrapiEnabled && !ObjectUtils.isEmpty(refresh_token)) {
-      LOG.debug("Strapi is enabled, logout user");
-      return strapiService
-          .logout(refresh_token)
-          .doOnSuccess(
-              unused -> {
-                accessTokenService.revokeTokenByIdentifier(accessTokenData.getIdentifier());
-              })
-          .then();
-    }
+  protected Mono<Void> logout(AccessTokenData accessTokenData) {
     accessTokenService.revokeTokenByIdentifier(accessTokenData.getIdentifier());
     return Mono.empty();
   }

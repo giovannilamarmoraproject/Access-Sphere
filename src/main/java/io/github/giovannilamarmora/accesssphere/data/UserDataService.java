@@ -248,12 +248,11 @@ public interface UserDataService {
    * <p>This method performs any necessary cleanup related to the user's session, such as revoking
    * tokens or notifying external identity providers.
    *
-   * @param refresh_token the refresh token to be invalidated
    * @param accessTokenData additional access token data related to the user session, used for
    *     validation or auditing
    * @return a {@link Mono} signaling completion when the logout process is done
    */
-  Mono<Void> logout(String refresh_token, AccessTokenData accessTokenData);
+  Mono<Void> logout(AccessTokenData accessTokenData);
 
   /**
    * Retrieves a list of users from Strapi using the provided bearer token.
