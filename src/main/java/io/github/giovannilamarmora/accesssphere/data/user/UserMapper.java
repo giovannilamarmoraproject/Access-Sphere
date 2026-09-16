@@ -21,7 +21,7 @@ import org.springframework.util.ObjectUtils;
 public class UserMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static UserEntity mapUserToUserEntity(User user) {
+  public static UserEntity toEntity(User user) {
     UserEntity userEntity = new UserEntity();
     BeanUtils.copyProperties(user, userEntity);
     if (!ObjectUtils.isEmpty(user.getRoles()))
@@ -37,7 +37,7 @@ public class UserMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static User mapUserEntityToUser(UserEntity userEntity) {
+  public static User toDTO(UserEntity userEntity) {
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
     if (!ObjectUtils.isEmpty(userEntity.getStrapiId())) user.setId(userEntity.getStrapiId());
@@ -53,12 +53,12 @@ public class UserMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static List<User> mapUserEntitiesToUsers(List<UserEntity> userEntities) {
-    return userEntities.stream().map(UserMapper::mapUserEntityToUser).toList();
+  public static List<User> toDTOList(List<UserEntity> userEntities) {
+    return userEntities.stream().map(UserMapper::toDTO).toList();
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static void updateUserEntityFields(UserEntity existingUser, User user) {
+  public static void updateEntity(UserEntity existingUser, User user) {
     // Aggiorna i campi dell'entità esistente con i valori del User
     existingUser.setIdentifier(user.getIdentifier());
     existingUser.setName(user.getName());
@@ -90,7 +90,7 @@ public class UserMapper {
   public static User getTechUser(String username, ClientCredential clientCredential) {
     User user = new User();
     user.setUsername(username);
-    user.setRoles(StrapiMapper.getAppRoles(clientCredential.getAppRoles()));
+    user.setRoles(clientCredential.getAppRoles() == null ? null : clientCredential.getAppRoles().stream().map(io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole::getRole).toList());
     return user;
   }
 

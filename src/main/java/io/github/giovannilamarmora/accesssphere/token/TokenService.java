@@ -158,7 +158,7 @@ public class TokenService {
 
     JWTData exchangeToken =
         JWTData.generateJWTData(user, clientCredential, accessTokenData.getSubjectType(), request);
-    JsonNode strapi_token = OAuthMapper.getStrapiToken(accessTokenData.getPayload());
+    
 
     // Esegui la logica per lo scambio del token
     AuthToken newToken =

@@ -18,8 +18,6 @@ import org.springframework.util.ObjectUtils;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GoogleTokenResponse extends TokenResponse {
 
-  @Key("strapi_token")
-  private String strapiToken;
 
   @Key("id_token")
   private String idToken;

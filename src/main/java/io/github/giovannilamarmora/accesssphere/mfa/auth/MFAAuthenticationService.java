@@ -117,7 +117,7 @@ public class MFAAuthenticationService {
       AuthToken mfaToken = tokenService.generateMFAToken(user, clientCredential, strapiToken);
       return Mono.just(
           new OAuthTokenResponse(
-              mfaToken, Mapper.convertObject(strapiToken, JsonNode.class), jwtData, user));
+              mfaToken, Mapper.convertObject(payload, JsonNode.class), jwtData, user));
     }
 
     return Mono.empty();
@@ -167,7 +167,7 @@ public class MFAAuthenticationService {
                     OAuthTokenResponse oAuthTokenResponse =
                         new OAuthTokenResponse(
                             token,
-                            Utils.mapper().convertValue(strapiToken, JsonNode.class),
+                            mfaTokenData.getPayload() != null ? Mapper.convertObject(mfaTokenData.getPayload(), JsonNode.class) : null,
                             jwtData,
                             user1);
 

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CryptoUtils {
 
-  @Value("${rest.client.strapi.aes-key}")
+  @Value("${app.aes-key}")
   private String aesKey;
 
   private static String staticAesKey;

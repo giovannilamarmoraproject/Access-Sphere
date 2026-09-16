@@ -26,64 +26,7 @@ public class OAuthMapper {
 
   private static final Logger LOG = LoggerFilter.getLogger(OAuthMapper.class);
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static String getStrapiAccessToken(AccessTokenData accessTokenData) {
-    JsonNode payload = accessTokenData.getPayload();
-    if (accessTokenData.getType().equals(OAuthType.GOOGLE)) {
-      JsonNode strapi_token = getStrapiToken(payload);
-      if (ObjectToolkit.isNullOrEmpty(strapi_token)) return null;
-      return strapi_token.get(TokenData.STRAPI_ACCESS_TOKEN.getToken()).textValue();
-    }
-    return payload.get(TokenData.STRAPI_ACCESS_TOKEN.getToken()).textValue();
-  }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static JsonNode getStrapiToken(JsonNode payload) {
-    JsonNode strapi_token = null;
-    String tokenValue =
-        (ObjectToolkit.isNullOrEmpty(payload)
-                || ObjectToolkit.isNullOrEmpty(payload.get(TokenData.STRAPI_TOKEN.getToken())))
-            ? null
-            : payload.get(TokenData.STRAPI_TOKEN.getToken()).asText();
-    if (!ObjectUtils.isEmpty(tokenValue)) {
-      String jsonString =
-          "{\"" + TokenData.STRAPI_ACCESS_TOKEN.getToken() + "\":\"" + tokenValue + "\"}";
-      return Mapper.readTree(jsonString);
-    }
-    return null;
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static JsonNode getStrapiTokenFromUser(User user, GoogleModel googleModel) {
-    JsonNode strapi_token;
-    String tokenValue =
-        ObjectToolkit.isNullOrEmpty(user.getAttributes())
-                || ObjectToolkit.isNullOrEmpty(
-                    user.getAttributes().get(TokenData.STRAPI_USER_TOKEN.getToken()))
-            ? null
-            : user.getAttributes().get(TokenData.STRAPI_USER_TOKEN.getToken()).toString();
-    if (!ObjectToolkit.isNullOrEmpty(tokenValue)) {
-      String jsonString =
-          "{\"" + TokenData.STRAPI_ACCESS_TOKEN.getToken() + "\":\"" + tokenValue + "\"}";
-      strapi_token = Mapper.readTree(jsonString);
-      googleModel.getTokenResponse().setStrapiToken(tokenValue);
-      return strapi_token;
-    }
-    return null;
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static Map<String, Object> extractStrapiToken(AccessTokenData accessTokenData) {
-    if (accessTokenData.getPayload().has(TokenData.STRAPI_TOKEN.getToken())) {
-      Map<String, Object> strapiToken = new HashMap<>();
-      strapiToken.put(
-          TokenData.STRAPI_ACCESS_TOKEN.getToken(),
-          accessTokenData.getPayload().get(TokenData.STRAPI_TOKEN.getToken()).asText());
-      strapiToken.put("token_type", "Bearer");
-      return strapiToken;
-    }
-    return null;
-  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static OAuthType getOAuthType(

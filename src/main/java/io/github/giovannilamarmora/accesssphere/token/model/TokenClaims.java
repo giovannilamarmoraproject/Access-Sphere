@@ -18,7 +18,6 @@ public enum TokenClaims {
   AUTH_TYPE("type"),
   ATTRIBUTES("attributes"),
   GOOGLE_TOKEN("google_token"),
-  STRAPI_TOKEN("strapi_token"),
   CLIENT_ID("client_id");
 
   private final String claim;
