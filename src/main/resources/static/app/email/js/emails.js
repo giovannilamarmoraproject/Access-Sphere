@@ -895,6 +895,8 @@ function openEmailDetailModal(id) {
     if (keys.length === 0) {
       paramsContainer.innerHTML = `<p class="text-xs text-gray-500 italic mb-0">Nessun segnaposto configurato per questo template.</p>`;
     } else {
+      keys.forEach((key) => {
+        const val = params[key];
         const row = `
           <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.05] transition-all text-xs">
             <span class="font-mono theme-text-accent font-semibold flex items-center gap-1.5">
