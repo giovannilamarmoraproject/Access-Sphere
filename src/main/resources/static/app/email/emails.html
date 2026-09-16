@@ -542,7 +542,7 @@
                 </div>
                 <div class="text-xs theme-text-accent opacity-80 mt-1 flex items-center gap-1.5">
                     <i class="fa-solid fa-database theme-text-accent"></i>
-                    <span id="stat-db-status">Censiti nel database</span>
+                    <span id="stat-db-status" data-i18n="email_kpi_db_status">Censiti nel database</span>
                 </div>
             </div>
         </div>
@@ -561,7 +561,7 @@
                 </div>
                 <div class="text-xs text-blue-300/80 mt-1 flex items-center gap-1.5">
                     <i class="fa-solid fa-globe text-blue-400"></i>
-                    <span id="stat-locales-summary">Multilingua & Fallback</span>
+                    <span id="stat-locales-summary" data-i18n="email_kpi_multilingual">Multilingua & Fallback</span>
                 </div>
             </div>
         </div>
@@ -579,7 +579,7 @@
                 </div>
                 <div class="text-xs text-amber-300/80 mt-1 flex items-center gap-1.5">
                     <i class="fa-solid fa-tags text-amber-400"></i>
-                    <span>Segnaposto dinamici {{KEY}}</span>
+                    <span data-i18n="email_kpi_placeholders">Segnaposto dinamici {{KEY}}</span>
                 </div>
             </div>
         </div>
@@ -600,7 +600,7 @@
                 </div>
                 <div class="text-xs text-emerald-300/80 mt-2 flex items-center gap-1.5">
                     <i class="fa-solid fa-bolt text-emerald-400"></i>
-                    <span>Flusso di ripristino integrato</span>
+                    <span data-i18n="email_kpi_reset_flow">Flusso di ripristino integrato</span>
                 </div>
             </div>
         </div>
@@ -649,7 +649,7 @@
             <!-- Rendered dynamically via JavaScript -->
             <div class="text-center py-12 text-gray-400">
                 <i class="fa-solid fa-spinner fa-spin text-2xl theme-text-accent mb-3"></i>
-                <p>Caricamento template in corso...</p>
+                <p data-i18n="email_loading">Caricamento template in corso...</p>
             </div>
         </div>
 
@@ -673,17 +673,17 @@
                             data-i18n="modal_email_editor_title">
                             Editor Template Email
                         </h5>
-                        <p class="text-xs text-gray-400 mb-0">Configura metadati, parametri e visualizza il markup
+                        <p class="text-xs text-gray-400 mb-0" data-i18n="email_editor_subtitle">Configura metadati, parametri e visualizza il markup
                             renderizzato in tempo reale</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button type="button" class="m3-btn-secondary py-1.5 px-4 text-xs" data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark mr-1.5"></i> Annulla
+                    <button type="button" class="m3-btn-secondary py-1.5 px-4 text-xs" style="border-radius: 9999px !important;" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark mr-1.5"></i> <span data-i18n="btn_cancel">Annulla</span>
                     </button>
                     <button type="button" class="m3-btn-primary py-1.5 px-5 text-xs" onclick="saveTemplateForm()">
-                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> Salva Template
+                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> <span data-i18n="email_btn_save_template">Salva Template</span>
                     </button>
                 </div>
             </div>
@@ -708,9 +708,10 @@
                                         id="editor-identifier"
                                         class="form-control m3-form-input rounded-xl w-full text-sm font-mono"
                                         placeholder="es. ACCESS_SPHERE_CODE_RESET_PASSWORD"
+                                        data-i18n-placeholder="email_placeholder_identifier"
                                         required
                                 />
-                                <span class="text-[11px] text-gray-400 mt-1 block">Identificatore chiamato dal backend/microservizio</span>
+                                <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="email_editor_ident_hint">Identificatore chiamato dal backend/microservizio</span>
                             </div>
 
                             <div>
@@ -723,6 +724,7 @@
                                         id="editor-name"
                                         class="form-control m3-form-input rounded-xl w-full text-sm"
                                         placeholder="es. Reset Password Utente"
+                                        data-i18n-placeholder="email_placeholder_name"
                                         required
                                 />
                             </div>
@@ -739,6 +741,7 @@
                                         id="editor-subject"
                                         class="form-control m3-form-input rounded-xl w-full text-sm"
                                         placeholder="es. Reimpostazione della Password"
+                                        data-i18n-placeholder="email_placeholder_subject"
                                         required
                                 />
                             </div>
@@ -750,7 +753,7 @@
                                 </label>
                                 <select id="editor-locale"
                                         class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm">
-                                    <option value="">Nessuno (Globale / Fallback per tutte le lingue)</option>
+                                    <option value="" data-i18n="email_editor_locale_default">Nessuno (Globale / Fallback per tutte le lingue)</option>
                                     <option value="it">Italiano (it)</option>
                                     <option value="it-IT">Italiano - Italia (it-IT)</option>
                                     <option value="en-GB">Inglese - UK (en-GB)</option>
@@ -772,6 +775,7 @@
                                     id="editor-description"
                                     class="form-control m3-form-input rounded-xl w-full text-sm"
                                     placeholder="es. Inviato quando un utente richiede il ripristino password"
+                                    data-i18n-placeholder="email_placeholder_desc"
                             />
                         </div>
 
@@ -780,20 +784,18 @@
                             <div class="flex items-center justify-between mb-3">
                                 <div>
                                     <h6 class="text-sm font-bold text-white mb-0 flex items-center gap-2">
-                                        <i class="fa-solid fa-sliders theme-text-accent"></i> Parametri Dinamici
-                                        Personalizzati
+                                        <i class="fa-solid fa-sliders theme-text-accent"></i> <span data-i18n="email_editor_params_title">Parametri Dinamici Personalizzati</span>
                                     </h6>
-                                    <span class="text-[11px] text-gray-400">Definisci chiavi segnaposto {{KEY}} e valori per l'anteprima</span>
+                                    <span class="text-[11px] text-gray-400" data-i18n="email_editor_params_desc">Definisci chiavi segnaposto {{KEY}} e valori per l'anteprima</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <button type="button" onclick="autoExtractParamsFromHtml()"
                                             class="m3-btn-secondary text-[11px] py-1 px-2.5">
-                                        <i class="fa-solid fa-wand-magic-sparkles mr-1 theme-text-accent"></i> Rileva da
-                                        HTML
+                                        <i class="fa-solid fa-wand-magic-sparkles mr-1 theme-text-accent"></i> <span data-i18n="email_btn_detect_params">Rileva da HTML</span>
                                     </button>
                                     <button type="button" onclick="addParamRow()"
                                             class="m3-btn-primary text-[11px] py-1 px-2.5">
-                                        <i class="fa-solid fa-plus mr-1"></i> Aggiungi Parametro
+                                        <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="email_btn_add_param">Aggiungi Parametro</span>
                                     </button>
                                 </div>
                             </div>
@@ -811,7 +813,7 @@
                                        data-i18n="email_label_html">
                                     Markup HTML del Template *
                                 </label>
-                                <span class="text-[11px] theme-text-accent opacity-80 font-mono">Digitazione con live preview istantaneo</span>
+                                <span class="text-[11px] theme-text-accent opacity-80 font-mono" data-i18n="email_editor_html_hint">Digitazione con live preview istantaneo</span>
                             </div>
                             <textarea
                                     id="editor-template-html"
@@ -832,7 +834,7 @@
                         <div class="flex items-center justify-between pb-4 mb-4 border-b theme-divider">
                             <div class="flex items-center gap-2">
                   <span class="text-xs font-bold uppercase tracking-wider theme-text-accent flex items-center gap-1.5">
-                    <i class="fa-solid fa-eye text-emerald-400"></i> Anteprima in Tempo Reale
+                    <i class="fa-solid fa-eye text-emerald-400"></i> <span data-i18n="email_preview_realtime_title">Anteprima in Tempo Reale</span>
                   </span>
                             </div>
 
@@ -841,7 +843,7 @@
                                 <label class="preview-checkbox-label">
                                     <input type="checkbox" id="preview-inject-params" class="preview-checkbox-input"
                                            checked onchange="updateLivePreview()"/>
-                                    <span class="text-xs text-gray-300">Sostituisci {{Parametri}}</span>
+                                    <span class="text-xs text-gray-300" data-i18n="email_preview_replace_params">Sostituisci {{Parametri}}</span>
                                 </label>
 
                                 <!-- Switch Dispositivo: Desktop / Mobile (Bordi Arrotondati Foto 1) -->
@@ -852,7 +854,7 @@
                                             class="preview-device-btn active"
                                             onclick="setPreviewDevice('desktop')"
                                     >
-                                        <i class="fa-solid fa-desktop"></i> Desktop
+                                        <i class="fa-solid fa-desktop"></i> <span data-i18n="email_preview_desktop">Desktop</span>
                                     </button>
                                     <button
                                             type="button"
@@ -860,7 +862,7 @@
                                             class="preview-device-btn"
                                             onclick="setPreviewDevice('mobile')"
                                     >
-                                        <i class="fa-solid fa-mobile-screen"></i> Mobile
+                                        <i class="fa-solid fa-mobile-screen"></i> <span data-i18n="email_preview_mobile">Mobile</span>
                                     </button>
                                 </div>
                             </div>
@@ -899,7 +901,7 @@
                             data-i18n="modal_email_test_title">
                             Invia Email di Test
                         </h5>
-                        <p class="text-xs text-gray-400 mb-0">Collauda l'invio reale tramite il microservizio compilando
+                        <p class="text-xs text-gray-400 mb-0" data-i18n="email_test_subtitle">Collauda l'invio reale tramite il microservizio compilando
                             i parametri</p>
                     </div>
                 </div>
@@ -920,7 +922,7 @@
                                 <i class="fa-solid fa-envelope-open-text"></i>
                             </div>
                             <div>
-                                <span class="text-[10px] text-gray-400 uppercase font-semibold block">Template Selezionato</span>
+                                <span class="text-[10px] text-gray-400 uppercase font-semibold block" data-i18n="email_test_selected_template">Template Selezionato</span>
                                 <span id="test-modal-template-name" class="font-bold text-sm text-white">--</span>
                             </div>
                         </div>
@@ -960,10 +962,10 @@
                     <!-- Valori Parametri Dinamici -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-0">
+                            <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-0" data-i18n="email_test_params_title">
                                 Valori per i Segnaposto del Template
                             </label>
-                            <span class="text-[11px] text-gray-400">Sostituiti nel corpo dell'email</span>
+                            <span class="text-[11px] text-gray-400" data-i18n="email_test_params_desc">Sostituiti nel corpo dell'email</span>
                         </div>
                         <div id="test-email-params-container"
                              class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl"
@@ -980,7 +982,7 @@
                             class="m3-btn-secondary px-6 py-2.5 text-xs font-semibold cursor-pointer"
                             style="border-radius: 9999px !important;"
                             data-bs-dismiss="modal">
-                        Annulla
+                        <span data-i18n="btn_cancel">Annulla</span>
                     </button>
                     <button type="submit" id="btn-submit-test-email"
                             class="m3-btn-primary px-6 py-2.5 rounded-full text-xs font-semibold cursor-pointer">
@@ -1013,18 +1015,17 @@
                                   class="font-mono text-xs font-bold theme-badge px-2.5 py-0.5 rounded-lg">--</span>
                             <span id="detail-modal-locale-badge"></span>
                         </div>
-                        <p class="text-xs text-gray-400 mb-0 mt-0.5" id="detail-modal-updated">Ultimo aggiornamento:
-                            --</p>
+                        <p class="text-xs text-gray-400 mb-0 mt-0.5"><span data-i18n="email_detail_last_updated">Ultimo aggiornamento:</span> <span id="detail-modal-updated">--</span></p>
                     </div>
                 </div>
 
                 <!-- Pulsanti Azione Header -->
                 <div class="flex items-center gap-3">
                     <button type="button" id="btn-detail-test-send" class="m3-btn-secondary text-xs py-2 px-4">
-                        <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> Invia Test
+                        <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> <span data-i18n="btn_test_send">Invia Test</span>
                     </button>
                     <button type="button" id="btn-detail-edit" class="m3-btn-primary text-xs py-2 px-4">
-                        <i class="fa-solid fa-pen-to-square mr-1.5"></i> Modifica Template
+                        <i class="fa-solid fa-pen-to-square mr-1.5"></i> <span data-i18n="btn_edit_template">Modifica Template</span>
                     </button>
                     <button type="button" class="btn-close btn-close-white ml-2" data-bs-dismiss="modal"
                             aria-label="Chiudi"></button>
@@ -1044,11 +1045,11 @@
                              style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
                             <div class="flex items-center gap-2 pb-2 theme-text-accent text-sm font-bold uppercase tracking-wider"
                                  style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
-                                <i class="fa-solid fa-circle-info"></i> Metadati Template
+                                <i class="fa-solid fa-circle-info"></i> <span data-i18n="email_detail_metadata_title">Metadati Template</span>
                             </div>
 
                             <div>
-                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Oggetto Email</span>
+                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1" data-i18n="email_label_subject">Oggetto Email</span>
                                 <div id="detail-modal-subject"
                                      class="text-sm font-semibold text-white flex items-center gap-2">
                                     <i class="fa-solid fa-heading theme-text-accent text-xs"></i> <span>--</span>
@@ -1056,18 +1057,18 @@
                             </div>
 
                             <div>
-                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Descrizione</span>
+                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1" data-i18n="email_label_desc">Descrizione</span>
                                 <p id="detail-modal-desc" class="text-xs text-gray-300 mb-0 leading-relaxed">--</p>
                             </div>
 
                             <div class="grid grid-cols-2 gap-3 pt-2">
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1">Identificatore</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_detail_identifier">Identificatore</span>
                                     <span id="detail-modal-ident-sub"
                                           class="text-xs font-mono font-bold theme-text-accent block break-all">--</span>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1">Localizzazione</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_detail_localization">Localizzazione</span>
                                     <div id="detail-modal-locale-sub" class="mt-0.5"></div>
                                 </div>
                             </div>
@@ -1078,11 +1079,11 @@
                              style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
                             <div class="flex items-center justify-between pb-2 theme-text-accent text-sm font-bold uppercase tracking-wider"
                                  style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
-                                <span class="flex items-center gap-2"><i class="fa-solid fa-code"></i> Segnaposto Dinamici</span>
+                                <span class="flex items-center gap-2"><i class="fa-solid fa-code"></i> <span data-i18n="email_detail_placeholders_title">Segnaposto Dinamici</span></span>
                                 <span id="detail-params-count"
                                       class="text-[11px] font-mono px-2 py-0.5 rounded-full theme-badge">0</span>
                             </div>
-                            <p class="text-[11px] text-gray-400 mb-2">Questi parametri vengono iniettati al momento
+                            <p class="text-[11px] text-gray-400 mb-2" data-i18n="email_detail_placeholders_desc">Questi parametri vengono iniettati al momento
                                 dell'invio e sostituiti nel template HTML.</p>
                             <div id="detail-modal-params-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
                                 <!-- Generati via JS in formato chiave => valore default -->
@@ -1100,7 +1101,7 @@
                              style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-eye text-emerald-400 text-sm"></i>
-                                <span class="text-xs font-bold text-gray-200 uppercase tracking-wider">RENDERING VISIVO DEL TEMPLATE</span>
+                                <span class="text-xs font-bold text-gray-200 uppercase tracking-wider" data-i18n="email_preview_visual_rendering">RENDERING VISIVO DEL TEMPLATE</span>
                             </div>
 
                             <div class="flex items-center gap-4">
@@ -1108,7 +1109,7 @@
                                 <label class="preview-checkbox-label">
                                     <input type="checkbox" id="detail-inject-params" class="preview-checkbox-input"
                                            checked onchange="updateDetailPreview()"/>
-                                    <span class="text-xs text-gray-300">Sostituisci {{Parametri}}</span>
+                                    <span class="text-xs text-gray-300" data-i18n="email_preview_replace_params">Sostituisci {{Parametri}}</span>
                                 </label>
 
                                 <!-- Switch Dispositivo Desktop / Mobile (Bordi Arrotondati Foto 1) -->
@@ -1119,7 +1120,7 @@
                                             class="preview-device-btn active"
                                             onclick="setDetailDevice('desktop')"
                                     >
-                                        <i class="fa-solid fa-desktop"></i> Desktop
+                                        <i class="fa-solid fa-desktop"></i> <span data-i18n="email_preview_desktop">Desktop</span>
                                     </button>
                                     <button
                                             type="button"
@@ -1127,7 +1128,7 @@
                                             class="preview-device-btn"
                                             onclick="setDetailDevice('mobile')"
                                     >
-                                        <i class="fa-solid fa-mobile-screen"></i> Mobile
+                                        <i class="fa-solid fa-mobile-screen"></i> <span data-i18n="email_preview_mobile">Mobile</span>
                                     </button>
                                 </div>
                             </div>

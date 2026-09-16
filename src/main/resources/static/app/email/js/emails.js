@@ -26,6 +26,14 @@ document.addEventListener("DOMContentLoaded", () => {
     checkAuthAndLoad();
 });
 
+// Ascolta l'evento di cambio lingua globale per aggiornare istantaneamente la vista
+window.addEventListener("languageChanged", () => {
+    if (cachedTemplates && cachedTemplates.length > 0) {
+        updateKpiMetrics(cachedTemplates);
+        renderTemplatesList(cachedTemplates);
+    }
+});
+
 function initClock() {
     const clockEl = document.getElementById("live-clock");
     if (!clockEl) return;
@@ -73,7 +81,7 @@ function loadEmailTemplates() {
                     if (typeof logout === "function") logout();
                     return;
                 }
-                sweetalert("error", "Errore Caricamento", data.error.message || "Impossibile recuperare i template email");
+                sweetalert("error", typeof t === "function" ? t("email_swal_load_error_title", "Errore Caricamento") : "Errore Caricamento", data.error.message || (typeof t === "function" ? t("email_swal_load_error_desc", "Impossibile recuperare i template email.") : "Impossibile recuperare i template email."));
             } else {
                 cachedTemplates = data.data || [];
                 updateKpiMetrics(cachedTemplates);
@@ -82,7 +90,7 @@ function loadEmailTemplates() {
         })
         .catch((err) => {
             console.error("Errore durante il fetch dei template email:", err);
-            sweetalert("error", "Errore di Rete", "Impossibile contattare il server per i template email.");
+            sweetalert("error", typeof t === "function" ? t("swal_network_error_title", "Errore di Rete") : "Errore di Rete", typeof t === "function" ? t("swal_network_error_desc", "Impossibile contattare il server per i template email.") : "Impossibile contattare il server per i template email.");
         })
         .finally(() => {
             if (refreshIcon) setTimeout(() => refreshIcon.classList.remove("fa-spin"), 400);
@@ -113,7 +121,7 @@ function updateKpiMetrics(templates) {
     });
 
     const localesEl = document.getElementById("stat-total-locales");
-    if (localesEl) localesEl.textContent = locales.size > 0 ? locales.size : "Globale";
+    if (localesEl) localesEl.textContent = locales.size > 0 ? locales.size : (typeof t === "function" ? t("email_kpi_global", "Globale") : "Globale");
 
     // 3. Parametri totali censiti
     const paramsEl = document.getElementById("stat-total-params");
@@ -123,9 +131,9 @@ function updateKpiMetrics(templates) {
     const resetStatusEl = document.getElementById("stat-reset-pwd-status");
     if (resetStatusEl) {
         if (hasResetPwd) {
-            resetStatusEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> Attivo nel DB`;
+            resetStatusEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> ${typeof t === "function" ? t("email_kpi_reset_active", "Attivo nel DB") : "Attivo nel DB"}`;
         } else {
-            resetStatusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Non Configurato`;
+            resetStatusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> ${typeof t === "function" ? t("email_kpi_reset_unconfigured", "Non Configurato") : "Non Configurato"}`;
         }
     }
 }
@@ -180,17 +188,23 @@ function renderTemplatesList(templates) {
     const filtered = getFilteredTemplates(templates);
 
     if (filtered.length === 0) {
+        const emptyTitle = typeof t === "function" ? t("email_empty_title", "Nessun Template Email Trovato") : "Nessun Template Email Trovato";
+        const emptyDesc = templates.length === 0
+            ? (typeof t === "function" ? t("email_empty_desc_db", "Non è ancora presente alcun template registrato nel database. Creane uno nuovo per iniziare.") : "Non è ancora presente alcun template registrato nel database. Creane uno nuovo per iniziare.")
+            : (typeof t === "function" ? t("email_empty_desc_filter", "Nessun template corrisponde ai filtri di ricerca applicati.") : "Nessun template corrisponde ai filtri di ricerca applicati.");
+        const btnNew = typeof t === "function" ? t("btn_new_template", "Crea Nuovo Template") : "Crea Nuovo Template";
+
         container.innerHTML = `
       <div class="text-center py-16 px-4">
         <div class="w-16 h-16 rounded-2xl theme-icon-box flex items-center justify-center text-2xl mx-auto mb-4">
           <i class="fa-solid fa-envelope-open"></i>
         </div>
-        <h3 class="text-lg font-bold text-white mb-1">Nessun Template Email Trovato</h3>
+        <h3 class="text-lg font-bold text-white mb-1">${emptyTitle}</h3>
         <p class="text-gray-400 text-sm max-w-md mx-auto mb-5">
-          ${templates.length === 0 ? "Non è ancora presente alcun template registrato nel database. Creane uno nuovo per iniziare." : "Nessun template corrisponde ai filtri di ricerca applicati."}
+          ${emptyDesc}
         </p>
         <button onclick="openCreateTemplateModal()" class="m3-btn-primary">
-          <i class="fa-solid fa-plus mr-1.5"></i> Crea Nuovo Template
+          <i class="fa-solid fa-plus mr-1.5"></i> ${btnNew}
         </button>
       </div>
     `;
@@ -199,14 +213,25 @@ function renderTemplatesList(templates) {
 
     let html = `<div class="grid grid-cols-1 gap-4">`;
 
+    const lblSubject = typeof t === "function" ? t("email_table_subject_label", "Oggetto:") : "Oggetto:";
+    const lblParams = typeof t === "function" ? t("email_table_params_label", "Parametri:") : "Parametri:";
+    const lblNoParams = typeof t === "function" ? t("email_no_params", "Nessun parametro") : "Nessun parametro";
+    const lblMore = typeof t === "function" ? t("email_params_more", "altri") : "altri";
+    const lblDefaultVal = typeof t === "function" ? t("email_param_default_val", "Valore di default:") : "Valore di default:";
+    const lblUntitled = typeof t === "function" ? t("email_untitled", "Template Senza Nome") : "Template Senza Nome";
+    const lblDetail = typeof t === "function" ? t("btn_detail", "Dettaglio") : "Dettaglio";
+    const lblTestSend = typeof t === "function" ? t("btn_test_send", "Invia Test") : "Invia Test";
+    const lblEdit = typeof t === "function" ? t("btn_edit", "Modifica") : "Modifica";
+    const lblDeleteTitle = typeof t === "function" ? t("email_action_delete_title", "Elimina Template") : "Elimina Template";
+
     filtered.forEach((item) => {
         const localeBadge = getLocaleBadgeHtml(item.locale);
         const paramsMap = item.params || {};
         const paramKeys = Object.keys(paramsMap);
 
         const paramsPillsHtml = paramKeys.length > 0
-            ? paramKeys.slice(0, 6).map(k => `<span class="param-pill" title="Valore di default: ${escapeHtml(String(paramsMap[k]))}">{{${escapeHtml(k)}}}</span>`).join(" ") + (paramKeys.length > 6 ? ` <span class="text-xs text-gray-400">+${paramKeys.length - 6} altri</span>` : "")
-            : `<span class="text-gray-500 text-xs italic">Nessun parametro</span>`;
+            ? paramKeys.slice(0, 6).map(k => `<span class="param-pill" title="${lblDefaultVal} ${escapeHtml(String(paramsMap[k]))}">{{${escapeHtml(k)}}}</span>`).join(" ") + (paramKeys.length > 6 ? ` <span class="text-xs text-gray-400">+${paramKeys.length - 6} ${lblMore}</span>` : "")
+            : `<span class="text-gray-500 text-xs italic">${lblNoParams}</span>`;
 
         const lastUpdated = item.updateDate ? new Date(item.updateDate).toLocaleString() : (item.creationDate ? new Date(item.creationDate).toLocaleString() : "N/D");
 
@@ -226,32 +251,32 @@ function renderTemplatesList(templates) {
           </div>
 
           <div>
-            <h4 class="text-base font-bold text-white mb-0.5 group-hover:opacity-90 transition-colors">${escapeHtml(item.name || "Template Senza Nome")}</h4>
+            <h4 class="text-base font-bold text-white mb-0.5 group-hover:opacity-90 transition-colors">${escapeHtml(item.name || lblUntitled)}</h4>
             <div class="text-xs text-gray-300 flex items-center gap-1.5">
               <i class="fa-solid fa-heading theme-text-accent text-[10px]"></i>
-              <strong>Oggetto:</strong> ${escapeHtml(item.subject || "--")}
+              <strong>${lblSubject}</strong> ${escapeHtml(item.subject || "--")}
             </div>
             ${item.description ? `<p class="text-xs text-gray-400 mt-1 mb-0">${escapeHtml(item.description)}</p>` : ""}
           </div>
 
           <div class="pt-1 flex flex-wrap items-center gap-1.5">
-            <span class="text-[11px] text-gray-400 uppercase font-semibold mr-1">Parametri:</span>
+            <span class="text-[11px] text-gray-400 uppercase font-semibold mr-1">${lblParams}</span>
             ${paramsPillsHtml}
           </div>
         </div>
 
         <!-- Pulsanti Azione Rapida -->
         <div class="flex flex-wrap items-center gap-2 shrink-0" onclick="event.stopPropagation()">
-          <button type="button" onclick="event.stopPropagation(); openEmailDetailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="Visualizza Dettaglio">
-            <i class="fa-solid fa-eye text-emerald-400 mr-1.5"></i> Dettaglio
+          <button type="button" onclick="event.stopPropagation(); openEmailDetailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="${lblDetail}">
+            <i class="fa-solid fa-eye text-emerald-400 mr-1.5"></i> ${lblDetail}
           </button>
-          <button type="button" onclick="event.stopPropagation(); openTestEmailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="Invia Email di Prova">
-            <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> Invia Test
+          <button type="button" onclick="event.stopPropagation(); openTestEmailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="${lblTestSend}">
+            <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> ${lblTestSend}
           </button>
-          <button type="button" onclick="event.stopPropagation(); openEditTemplateModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="Modifica Template">
-            <i class="fa-solid fa-pen-to-square text-amber-400 mr-1.5"></i> Modifica
+          <button type="button" onclick="event.stopPropagation(); openEditTemplateModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="${lblEdit}">
+            <i class="fa-solid fa-pen-to-square text-amber-400 mr-1.5"></i> ${lblEdit}
           </button>
-          <button type="button" onclick="event.stopPropagation(); confirmDeleteTemplate(${item.id}, '${escapeHtml(item.identifier)}')" class="m3-icon-btn m3-icon-btn-danger text-xs" title="Elimina Template">
+          <button type="button" onclick="event.stopPropagation(); confirmDeleteTemplate(${item.id}, '${escapeHtml(item.identifier)}')" class="m3-icon-btn m3-icon-btn-danger text-xs" title="${lblDeleteTitle}">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         </div>
@@ -266,7 +291,8 @@ function renderTemplatesList(templates) {
 
 function getLocaleBadgeHtml(locale) {
     if (!locale || locale.trim() === "") {
-        return `<span class="locale-badge locale-badge-generic"><i class="fa-solid fa-globe text-[10px]"></i> Globale / Default</span>`;
+        const lblGeneric = typeof t === "function" ? t("email_locale_generic", "Globale / Default") : "Globale / Default";
+        return `<span class="locale-badge locale-badge-generic"><i class="fa-solid fa-globe text-[10px]"></i> ${lblGeneric}</span>`;
     }
     const l = locale.toLowerCase();
     if (l.startsWith("it")) {
@@ -298,6 +324,10 @@ function addParamRow(key = "", val = "") {
     const container = document.getElementById("editor-params-list");
     if (!container) return;
 
+    const keyPlaceholder = typeof t === "function" ? t("email_param_key_placeholder", "NOME_CHIAVE") : "NOME_CHIAVE";
+    const valPlaceholder = typeof t === "function" ? t("email_param_val_placeholder", "Valore di default / esempio per l'anteprima") : "Valore di default / esempio per l'anteprima";
+    const removeTitle = typeof t === "function" ? t("email_param_remove_title", "Rimuovi parametro") : "Rimuovi parametro";
+
     const rowId = "param-row-" + Math.random().toString(36).substr(2, 9);
     const rowHtml = `
     <div id="${rowId}" class="flex items-center gap-2">
@@ -306,7 +336,7 @@ function addParamRow(key = "", val = "") {
         <input
           type="text"
           class="form-control m3-form-input rounded-xl w-full py-1.5 text-xs font-mono param-key-input uppercase"
-          placeholder="CHIAVE"
+          placeholder="${keyPlaceholder}"
           value="${escapeHtml(key)}"
           oninput="handleParamChange()"
         />
@@ -316,12 +346,12 @@ function addParamRow(key = "", val = "") {
         <input
           type="text"
           class="form-control m3-form-input rounded-xl w-full py-1.5 px-3 text-xs param-val-input"
-          placeholder="Valore di default / esempio per l'anteprima"
+          placeholder="${valPlaceholder}"
           value="${escapeHtml(val)}"
           oninput="handleParamChange()"
         />
       </div>
-      <button type="button" onclick="removeParamRow('${rowId}')" class="m3-icon-btn m3-icon-btn-danger text-xs p-1.5 shrink-0" title="Rimuovi">
+      <button type="button" onclick="removeParamRow('${rowId}')" class="m3-icon-btn m3-icon-btn-danger text-xs p-1.5 shrink-0" title="${removeTitle}">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -357,7 +387,7 @@ function autoExtractParamsFromHtml() {
     }
 
     if (foundKeys.size === 0) {
-        sweetalert("info", "Nessun parametro trovato", "Non sono stati trovati segnaposto nel formato {{KEY}} all'interno dell'HTML.");
+        sweetalert("info", typeof t === "function" ? t("email_swal_no_params_title", "Nessun Parametro") : "Nessun Parametro", typeof t === "function" ? t("email_swal_no_params_desc", "Nessun segnaposto {{CHIAVE}} trovato nel markup HTML.") : "Nessun segnaposto {{CHIAVE}} trovato nel markup HTML.");
         return;
     }
 
@@ -384,10 +414,10 @@ function autoExtractParamsFromHtml() {
     });
 
     if (addedCount > 0) {
-        sweetalert("success", "Parametri Rilevati", `Aggiunti automaticamente ${addedCount} nuovi parametri trovati nell'HTML.`);
+        sweetalert("success", typeof t === "function" ? t("email_swal_params_detected_title", "Parametri Rilevati") : "Parametri Rilevati", typeof t === "function" ? t("email_swal_params_detected_desc", `Aggiunti automaticamente ${addedCount} nuovi parametri trovati nell'HTML.`) : `Aggiunti automaticamente ${addedCount} nuovi parametri trovati nell'HTML.`);
         updateLivePreview();
     } else {
-        sweetalert("info", "Parametri già presenti", "Tutti i parametri {{KEY}} presenti nell'HTML sono già configurati.");
+        sweetalert("info", typeof t === "function" ? t("email_swal_params_detected_title", "Parametri Rilevati") : "Parametri Rilevati", typeof t === "function" ? t("email_swal_params_detected_desc", "Tutti i parametri {{KEY}} presenti nell'HTML sono già configurati.") : "Tutti i parametri {{KEY}} presenti nell'HTML sono già configurati.");
     }
 }
 
@@ -570,7 +600,7 @@ function openCreateTemplateModal() {
 </html>`;
 
     document.getElementById("editor-template-html").value = defaultHtml;
-    document.getElementById("emailEditorModalLabel").textContent = "Nuovo Template Email";
+    document.getElementById("emailEditorModalLabel").textContent = typeof t === "function" ? t("modal_email_editor_new_title", "Nuovo Template Email") : "Nuovo Template Email";
 
     const modal = new bootstrap.Modal(document.getElementById("emailEditorModal"));
     modal.show();
@@ -583,7 +613,7 @@ function openCreateTemplateModal() {
 function openEditTemplateModal(id) {
     const template = cachedTemplates.find((t) => t.id === id);
     if (!template) {
-        sweetalert("error", "Errore", "Template non trovato in memoria locale.");
+        sweetalert("error", typeof t === "function" ? t("error", "Errore") : "Errore", typeof t === "function" ? t("email_swal_load_error_desc", "Template non trovato in memoria locale.") : "Template non trovato in memoria locale.");
         return;
     }
 
@@ -617,7 +647,8 @@ function openEditTemplateModal(id) {
         detected.forEach(k => addParamRow(k, ""));
     }
 
-    document.getElementById("emailEditorModalLabel").textContent = `Modifica: ${template.name || template.identifier}`;
+    const editPrefix = typeof t === "function" ? t("email_action_edit", "Modifica") : "Modifica";
+    document.getElementById("emailEditorModalLabel").textContent = `${editPrefix}: ${template.name || template.identifier}`;
 
     const modal = new bootstrap.Modal(document.getElementById("emailEditorModal"));
     modal.show();
@@ -642,20 +673,12 @@ function saveTemplateForm() {
     const templateHtml = document.getElementById("editor-template-html").value;
     const params = collectEditorParams();
 
-    if (!identifier) {
-        sweetalert("warning", "Campo Obbligatorio", "L'identificatore univoco del template è obbligatorio.");
-        return;
-    }
-    if (!name) {
-        sweetalert("warning", "Campo Obbligatorio", "Il nome del template è obbligatorio.");
-        return;
-    }
-    if (!subject) {
-        sweetalert("warning", "Campo Obbligatorio", "L'oggetto dell'email è obbligatorio.");
-        return;
-    }
-    if (!templateHtml || !templateHtml.trim()) {
-        sweetalert("warning", "Campo Obbligatorio", "Il markup HTML del template non può essere vuoto.");
+    if (!identifier || !name || !subject || !templateHtml || !templateHtml.trim()) {
+        sweetalert(
+            "warning",
+            typeof t === "function" ? t("warning", "Attenzione") : "Attenzione",
+            typeof t === "function" ? t("email_swal_missing_fields_desc", "Compila tutti i campi obbligatori (Identificatore, Nome, Oggetto e Markup HTML).") : "Compila tutti i campi obbligatori (Identificatore, Nome, Oggetto e Markup HTML)."
+        );
         return;
     }
 
@@ -684,9 +707,17 @@ function saveTemplateForm() {
         .then(async (res) => {
             const data = await res.json();
             if (data.error != null) {
-                sweetalert("error", "Errore Salvataggio", data.error.message || "Impossibile salvare il template.");
+                sweetalert(
+                    "error",
+                    typeof t === "function" ? t("email_swal_save_error_title", "Errore Salvataggio") : "Errore Salvataggio",
+                    data.error.message || (typeof t === "function" ? t("email_swal_save_error_title", "Impossibile salvare il template.") : "Impossibile salvare il template.")
+                );
             } else {
-                sweetalert("success", "Template Salvato", `Il template [${identifier}] è stato memorizzato con successo nel database.`);
+                sweetalert(
+                    "success",
+                    typeof t === "function" ? t("email_swal_save_success_title", "Template Salvato!") : "Template Salvato!",
+                    typeof t === "function" ? t("email_swal_save_success_desc", `Il template [${identifier}] è stato memorizzato con successo nel database.`) : `Il template [${identifier}] è stato memorizzato con successo nel database.`
+                );
                 const modalEl = document.getElementById("emailEditorModal");
                 const modalInstance = bootstrap.Modal.getInstance(modalEl);
                 if (modalInstance) modalInstance.hide();
@@ -695,7 +726,11 @@ function saveTemplateForm() {
         })
         .catch((err) => {
             console.error("Errore salvataggio template:", err);
-            sweetalert("error", "Errore", "Si è verificato un errore durante la chiamata di salvataggio.");
+            sweetalert(
+                "error",
+                typeof t === "function" ? t("error", "Errore") : "Errore",
+                typeof t === "function" ? t("email_swal_save_error_title", "Si è verificato un errore durante la chiamata di salvataggio.") : "Si è verificato un errore durante la chiamata di salvataggio."
+            );
         });
 }
 
@@ -706,7 +741,7 @@ function saveTemplateForm() {
 function openTestEmailModal(id) {
     const template = cachedTemplates.find((t) => t.id === id);
     if (!template) {
-        sweetalert("error", "Errore", "Template non trovato per il test.");
+        sweetalert("error", typeof t === "function" ? t("error", "Errore") : "Errore", typeof t === "function" ? t("email_swal_load_error_desc", "Template non trovato per il test.") : "Template non trovato per il test.");
         return;
     }
 
@@ -731,8 +766,10 @@ function openTestEmailModal(id) {
     const keys = Object.keys(paramsMap);
 
     if (keys.length === 0) {
-        paramsContainer.innerHTML = `<p class="text-xs text-gray-400 mb-0 italic col-span-2">Nessun parametro dinamico richiesto da questo template.</p>`;
+        const noParamsMsg = typeof t === "function" ? t("email_test_no_params_msg", "Nessun parametro richiesto da questo template. Procedi direttamente con l'invio.") : "Nessun parametro richiesto da questo template. Procedi direttamente con l'invio.";
+        paramsContainer.innerHTML = `<p class="text-xs text-gray-400 mb-0 italic col-span-2">${escapeHtml(noParamsMsg)}</p>`;
     } else {
+        const valPlaceholderPrefix = typeof t === "function" ? t("email_param_default_val", "Valore di default:") : "Valore per";
         keys.forEach((k) => {
             const val = paramsMap[k] || "";
             const fieldId = "test-param-" + k;
@@ -747,7 +784,7 @@ function openTestEmailModal(id) {
             data-param-key="${escapeHtml(k)}"
             class="form-control m3-form-input test-param-input rounded-xl w-full text-xs py-2 px-3"
             value="${escapeHtml(String(val))}"
-            placeholder="Valore per ${escapeHtml(k)}"
+            placeholder="${escapeHtml(valPlaceholderPrefix)} ${escapeHtml(k)}"
             required
           />
         </div>
@@ -773,7 +810,11 @@ function executeSendTestEmail(e) {
     const locale = document.getElementById("test-template-locale").value;
 
     if (!to) {
-        sweetalert("warning", "Attenzione", "Inserisci l'indirizzo email del destinatario.");
+        sweetalert(
+            "warning",
+            typeof t === "function" ? t("warning", "Attenzione") : "Attenzione",
+            typeof t === "function" ? t("email_test_recipient", "Inserisci l'indirizzo email del destinatario.") : "Inserisci l'indirizzo email del destinatario."
+        );
         return;
     }
 
@@ -796,7 +837,8 @@ function executeSendTestEmail(e) {
     const btn = document.getElementById("btn-submit-test-email");
     const originalBtnHtml = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Invio in corso...`;
+    const sendingText = typeof t === "function" ? t("email_test_sending", "Invio in corso...") : "Invio in corso...";
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> ${escapeHtml(sendingText)}`;
 
     const cfg = typeof getConfig === "function" ? getConfig() : null;
     const tokenKey = cfg ? cfg.access_token : "access-token";
@@ -807,9 +849,17 @@ function executeSendTestEmail(e) {
         .then(async (res) => {
             const data = await res.json();
             if (data.error != null) {
-                sweetalert("error", "Errore Invio", data.error.message || "Impossibile inviare l'email di test.");
+                sweetalert(
+                    "error",
+                    typeof t === "function" ? t("email_swal_test_error_title", "Errore Invio") : "Errore Invio",
+                    data.error.message || (typeof t === "function" ? t("email_swal_test_error_title", "Impossibile inviare l'email di test.") : "Impossibile inviare l'email di test.")
+                );
             } else {
-                sweetalert("success", "Email Inviata con Successo", `L'email di prova per il template [${identifier}] è stata inoltrata a ${to}.`);
+                sweetalert(
+                    "success",
+                    typeof t === "function" ? t("email_swal_test_sent_title", "Email Inviata con Successo") : "Email Inviata con Successo",
+                    typeof t === "function" ? t("email_swal_test_sent_desc", `L'email di prova per il template [${identifier}] è stata inoltrata a ${to}.`) : `L'email di prova per il template [${identifier}] è stata inoltrata a ${to}.`
+                );
                 const modalEl = document.getElementById("emailTestSendModal");
                 const modalInstance = bootstrap.Modal.getInstance(modalEl);
                 if (modalInstance) modalInstance.hide();
@@ -817,7 +867,11 @@ function executeSendTestEmail(e) {
         })
         .catch((err) => {
             console.error("Errore invio email test:", err);
-            sweetalert("error", "Errore Invio", "Si è verificato un errore durante l'invio dell'email di test.");
+            sweetalert(
+                "error",
+                typeof t === "function" ? t("email_swal_test_error_title", "Errore Invio") : "Errore Invio",
+                typeof t === "function" ? t("email_swal_test_error_title", "Si è verificato un errore durante l'invio dell'email di test.") : "Si è verificato un errore durante l'invio dell'email di test."
+            );
         })
         .finally(() => {
             btn.disabled = false;
@@ -844,7 +898,11 @@ function executeSendTestEmail(e) {
 function openEmailDetailModal(id) {
     const template = cachedTemplates.find((t) => t.id === id);
     if (!template) {
-        sweetalert("warning", "Template non trovato", "Impossibile reperire i dettagli del template richiesto.");
+        sweetalert(
+            "warning",
+            typeof t === "function" ? t("warning", "Attenzione") : "Attenzione",
+            typeof t === "function" ? t("email_empty_desc_filter", "Impossibile reperire i dettagli del template richiesto.") : "Impossibile reperire i dettagli del template richiesto."
+        );
         return;
     }
 
@@ -853,7 +911,7 @@ function openEmailDetailModal(id) {
 
     // 1. Titolo, Identificatore e Locale Badge
     const nameEl = document.getElementById("detail-modal-name");
-    if (nameEl) nameEl.textContent = template.name || "Template Email";
+    if (nameEl) nameEl.textContent = template.name || (typeof t === "function" ? t("email_untitled", "Template Senza Nome") : "Template Senza Nome");
 
     const idBadgeEl = document.getElementById("detail-modal-identifier-badge");
     if (idBadgeEl) idBadgeEl.textContent = template.identifier || "SENZA_ID";
@@ -864,17 +922,18 @@ function openEmailDetailModal(id) {
     // 2. Data di creazione/aggiornamento
     const lastUpdated = template.updateDate ? new Date(template.updateDate).toLocaleString() : (template.creationDate ? new Date(template.creationDate).toLocaleString() : "N/D");
     const updatedEl = document.getElementById("detail-modal-updated");
-    if (updatedEl) updatedEl.textContent = `Ultimo aggiornamento: ${lastUpdated}`;
+    const lastUpdatedPrefix = typeof t === "function" ? t("email_detail_last_updated", "Ultimo aggiornamento:") : "Ultimo aggiornamento:";
+    if (updatedEl) updatedEl.textContent = `${lastUpdatedPrefix} ${lastUpdated}`;
 
     // 3. Oggetto e Descrizione del Template
     const subjEl = document.getElementById("detail-modal-subject");
     if (subjEl) {
-        subjEl.innerHTML = `<i class="fa-solid fa-heading theme-text-accent text-xs"></i> <span>${escapeHtml(template.subject || "Nessun oggetto configurato")}</span>`;
+        subjEl.innerHTML = `<i class="fa-solid fa-heading theme-text-accent text-xs"></i> <span>${escapeHtml(template.subject || (typeof t === "function" ? t("email_untitled", "Nessun oggetto configurato") : "Nessun oggetto configurato"))}</span>`;
     }
 
     const descEl = document.getElementById("detail-modal-desc");
     if (descEl) {
-        descEl.textContent = template.description || "Nessuna descrizione specificata per questo template.";
+        descEl.textContent = template.description || (typeof t === "function" ? t("email_untitled", "Nessuna descrizione specificata per questo template.") : "Nessuna descrizione specificata per questo template.");
     }
 
     // 4. Parametri Dinamici censiti con layout dettagliato chiave => default
@@ -893,18 +952,21 @@ function openEmailDetailModal(id) {
         if (paramsCountEl) paramsCountEl.textContent = keys.length;
 
         if (keys.length === 0) {
-            paramsContainer.innerHTML = `<p class="text-xs text-gray-500 italic mb-0">Nessun segnaposto configurato per questo template.</p>`;
+            const noParamsMsg = typeof t === "function" ? t("email_detail_no_params", "Nessun segnaposto configurato per questo template.") : "Nessun segnaposto configurato per questo template.";
+            paramsContainer.innerHTML = `<p class="text-xs text-gray-500 italic mb-0">${escapeHtml(noParamsMsg)}</p>`;
         } else {
+            const noFallbackLabel = typeof t === "function" ? t("email_detail_no_fallback", "Nessun fallback") : "Nessun fallback";
             keys.forEach((key) => {
                 const val = params[key];
+                const displayVal = (val !== undefined && val !== null && val !== "") ? val : noFallbackLabel;
                 const row = `
           <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.05] transition-all text-xs">
             <span class="font-mono theme-text-accent font-semibold flex items-center gap-1.5">
               <i class="fa-solid fa-code text-[10px] opacity-70"></i>
               <span>{{${escapeHtml(key)}}}</span>
             </span>
-            <span class="font-mono text-[11px] text-gray-300 bg-black/40 px-2.5 py-1 rounded-lg border border-white/10 max-w-[200px] truncate" title="${escapeHtml(String(val || 'Nessun fallback'))}">
-              ${escapeHtml(String(val !== undefined && val !== null && val !== "" ? val : "Nessun fallback"))}
+            <span class="font-mono text-[11px] text-gray-300 bg-black/40 px-2.5 py-1 rounded-lg border border-white/10 max-w-[200px] truncate" title="${escapeHtml(String(displayVal))}">
+              ${escapeHtml(String(displayVal))}
             </span>
           </div>
         `;
@@ -1017,13 +1079,18 @@ function openQuickPreview(id) {
 }
 
 function confirmDeleteTemplate(id, identifier) {
+    const titleText = typeof t === "function" ? t("email_swal_delete_confirm_title", "Eliminare il Template?") : "Eliminare il Template?";
+    const descText = typeof t === "function" ? t("email_swal_delete_confirm_desc", `L'eliminazione del template [${identifier}] è irreversibile. Procedere?`) : `L'eliminazione del template [${identifier}] è irreversibile. Procedere?`;
+    const confirmBtn = typeof t === "function" ? t("delete", "Sì, elimina") : "Sì, elimina";
+    const cancelBtn = typeof t === "function" ? t("cancel", "Annulla") : "Annulla";
+
     Swal.fire({
-        title: "Sei sicuro?",
-        text: `L'eliminazione del template [${identifier}] è irreversibile. Procedere?`,
+        title: titleText,
+        text: descText,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "Sì, elimina",
-        cancelButtonText: "Annulla",
+        confirmButtonText: confirmBtn,
+        cancelButtonText: cancelBtn,
         confirmButtonColor: "#d33",
         cancelButtonColor: "#6c757d",
         customClass: {
@@ -1046,15 +1113,27 @@ function deleteTemplateRequest(id, identifier) {
         .then(async (res) => {
             const data = await res.json();
             if (data.error != null) {
-                sweetalert("error", "Errore Eliminazione", data.error.message || "Impossibile eliminare il template.");
+                sweetalert(
+                    "error",
+                    typeof t === "function" ? t("email_swal_delete_error_title", "Errore Eliminazione") : "Errore Eliminazione",
+                    data.error.message || (typeof t === "function" ? t("email_swal_delete_error_title", "Impossibile eliminare il template.") : "Impossibile eliminare il template.")
+                );
             } else {
-                sweetalert("success", "Template Eliminato", `Il template [${identifier}] è stato rimosso dal database.`);
+                sweetalert(
+                    "success",
+                    typeof t === "function" ? t("email_swal_delete_success_title", "Template Eliminato") : "Template Eliminato",
+                    typeof t === "function" ? t("email_swal_delete_success_desc", `Il template [${identifier}] è stato rimosso dal database.`) : `Il template [${identifier}] è stato rimosso dal database.`
+                );
                 loadEmailTemplates();
             }
         })
         .catch((err) => {
             console.error("Errore eliminazione template:", err);
-            sweetalert("error", "Errore", "Si è verificato un errore durante l'eliminazione del template.");
+            sweetalert(
+                "error",
+                typeof t === "function" ? t("email_swal_delete_error_title", "Errore Eliminazione") : "Errore Eliminazione",
+                typeof t === "function" ? t("email_swal_delete_error_title", "Si è verificato un errore durante l'eliminazione del template.") : "Si è verificato un errore durante l'eliminazione del template."
+            );
         });
 }
 

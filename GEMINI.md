@@ -87,6 +87,14 @@ basata su **HTML5 / Tailwind CSS / Vanilla JS** con design system Google Materia
       cromatica o che non si adattino al tema dinamico attivo (es. Cosmic Purple, Emerald Matrix, Ocean Blue, ecc.).
     - Utilizzare esclusivamente le variabili CSS del tema (es. `--md-sys-color-primary`, `--md-sys-color-surface`,
       `--md-sys-color-outline`, ecc.) o le classi di utility coerenti con lo schema grafico esistente.
+7. **Internazionalizzazione Obbligatoria (i18n)**:
+    - **Nessun testo statico hardcoded**: Ogni singolo elemento testuale introdotto o modificato nella UI (titoli,
+      etichette, pulsanti, placeholder, messaggi di tooltip, toast, modali SweetAlert2) DEVE essere predisposto per
+      l'internazionalizzazione.
+    - Nel template HTML, associare sempre il relativo attributo di traduzione (es. `data-i18n="chiave_traduzione"` o
+      `data-i18n-placeholder="chiave_placeholder"`).
+    - Contestualmente a ogni modifica frontend, l'agente DEVE aggiornare i dizionari/file di lingua (es. `it`, `en`)
+      aggiungendo le nuove chiavi con i relativi testi tradotti, mantenendo la coerenza terminologica del sistema IAM.
 
 ---
 
