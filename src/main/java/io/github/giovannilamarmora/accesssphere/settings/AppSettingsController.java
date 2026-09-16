@@ -27,22 +27,6 @@ public class AppSettingsController {
 
   @Autowired private AppSettingsService appSettingsService;
 
-  @GetMapping("/public")
-  @Operation(summary = "Get Public Application Settings", description = "Retrieve public branding, themes, and login settings")
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> getPublicSettings(ServerHttpRequest request) {
-    return appSettingsService
-        .getPublicSettings()
-        .map(
-            settings ->
-                ResponseEntity.ok(
-                    new Response(
-                        HttpStatus.OK.value(),
-                        "Public Application Settings",
-                        TraceUtils.getSpanID(),
-                        settings)));
-  }
-
   @GetMapping
   @Operation(summary = "Get Application Settings", description = "Retrieve full application settings (Admin / Tech User)")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)

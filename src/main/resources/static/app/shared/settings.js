@@ -579,7 +579,7 @@ const AppSettings = (function () {
 
     async function loadPublicSettings() {
         try {
-            const res = await fetch("/v1/app/settings/public");
+            const res = await fetch("/v1/app/settings");
             if (!res.ok) return null;
             const data = await res.json().catch(() => ({}));
             if (data && data.data) {

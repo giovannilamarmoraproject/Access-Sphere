@@ -52,25 +52,25 @@ class AppSettingsServiceTest {
   }
 
   @Test
-  @DisplayName("getPublicSettings returns public DTO and caches result")
-  void testGetPublicSettingsCaching() {
+  @DisplayName("getSettings returns DTO and caches result")
+  void testGetSettingsCaching() {
     when(appSettingsDAO.findAll()).thenReturn(List.of(sampleEntity));
 
-    StepVerifier.create(appSettingsService.getPublicSettings())
+    StepVerifier.create(appSettingsService.getSettings())
         .assertNext(
             dto -> {
               assertNotNull(dto);
-              assertEquals("Access Sphere Test", dto.getAppName());
+              assertEquals("Access Sphere Test", dto.getBrandingSettings().getAppName());
               assertEquals("cosmic-purple", dto.getActiveTheme());
               assertEquals("it", dto.getDefaultLanguage());
-              assertEquals("SHOWCASE", dto.getLoginMode());
+              assertEquals("SHOWCASE", dto.getLoginSettings().getLoginMode());
             })
         .verifyComplete();
 
-    StepVerifier.create(appSettingsService.getPublicSettings())
+    StepVerifier.create(appSettingsService.getSettings())
         .assertNext(
             dto -> {
-              assertEquals("Access Sphere Test", dto.getAppName());
+              assertEquals("Access Sphere Test", dto.getBrandingSettings().getAppName());
             })
         .verifyComplete();
 
@@ -87,8 +87,8 @@ class AppSettingsServiceTest {
             dto -> {
               assertNotNull(dto);
               assertEquals(1L, dto.getId());
-              assertEquals("Access Sphere Test", dto.getAppName());
-              assertEquals("© 2026 Test", dto.getFooterCopyright());
+              assertEquals("Access Sphere Test", dto.getBrandingSettings().getAppName());
+              assertEquals("© 2026 Test", dto.getBrandingSettings().getFooterCopyright());
             })
         .verifyComplete();
 
@@ -101,33 +101,30 @@ class AppSettingsServiceTest {
     when(appSettingsDAO.findAll()).thenReturn(List.of(sampleEntity));
     when(appSettingsDAO.save(any(AppSettingsEntity.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
-
     AppSettingsDTO updateDTO = new AppSettingsDTO();
-    updateDTO.setAppName("Updated App Name");
     updateDTO.setActiveTheme("emerald-matrix");
     updateDTO.setDefaultLanguage("en");
-    updateDTO.setLoginMode("CUSTOM_BG");
-    updateDTO.setLoginBgUrl("data:image/png;base64,sample");
-    updateDTO.setLoginBgOpacity(75);
+    updateDTO.setBrandingSettings(BrandingSettingsDTO.builder().appName("Updated App Name").build());
+    updateDTO.setLoginSettings(LoginSettingsDTO.builder().loginMode("CUSTOM_BG").loginBgUrl("data:image/png;base64,sample").loginBgOpacity(75).build());
 
     StepVerifier.create(appSettingsService.updateSettings(updateDTO))
         .assertNext(
             result -> {
               assertNotNull(result);
-              assertEquals("Updated App Name", result.getAppName());
+              assertEquals("Updated App Name", result.getBrandingSettings().getAppName());
               assertEquals("emerald-matrix", result.getActiveTheme());
               assertEquals("en", result.getDefaultLanguage());
-              assertEquals("CUSTOM_BG", result.getLoginMode());
-              assertEquals(75, result.getLoginBgOpacity());
+              assertEquals("CUSTOM_BG", result.getLoginSettings().getLoginMode());
+              assertEquals(75, result.getLoginSettings().getLoginBgOpacity());
             })
         .verifyComplete();
 
     verify(appSettingsDAO, times(1)).save(any(AppSettingsEntity.class));
 
-    StepVerifier.create(appSettingsService.getPublicSettings())
+    StepVerifier.create(appSettingsService.getSettings())
         .assertNext(
             pub -> {
-              assertEquals("Updated App Name", pub.getAppName());
+              assertEquals("Updated App Name", pub.getBrandingSettings().getAppName());
               assertEquals("emerald-matrix", pub.getActiveTheme());
             })
         .verifyComplete();
@@ -224,34 +221,28 @@ class AppSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     AppSettingsDTO updateDTO = new AppSettingsDTO();
-    updateDTO.setBrandingSettingsMap(
-        java.util.Map.of(
-            "appName", "Mapped App Name",
-            "appTagline", "Mapped Tagline",
-            "supportEmail", "mapped@test.com"));
-    updateDTO.setLoginSettingsMap(
-        java.util.Map.of(
-            "loginMode", "CUSTOM_BACKGROUND",
-            "loginBgOpacity", 80,
-            "loginHeroTitle", "Custom Hero Title"));
-    updateDTO.setPolicySettingsMap(
-        java.util.Map.of(
-            "privacyPolicyUrl", "/custom-privacy",
-            "cookiePolicyUrl", "/custom-cookie"));
+    updateDTO.setBrandingSettings(
+        BrandingSettingsDTO.builder()
+            .appName("Mapped App Name")
+            .appTagline("Mapped Tagline")
+            .supportEmail("mapped@test.com")
+            .build());
+    updateDTO.setLoginSettings(
+        LoginSettingsDTO.builder()
+            .loginMode("CUSTOM_BACKGROUND")
+            .loginBgOpacity(80)
+            .loginHeroTitle("Custom Hero Title")
+            .build());
+    updateDTO.setPolicySettings(
+        PolicySettingsDTO.builder()
+            .privacyPolicyUrl("/custom-privacy")
+            .cookiePolicyUrl("/custom-cookie")
+            .build());
 
     StepVerifier.create(appSettingsService.updateSettings(updateDTO))
         .assertNext(
             result -> {
               assertNotNull(result);
-              assertEquals("Mapped App Name", result.getAppName());
-              assertEquals("Mapped Tagline", result.getAppTagline());
-              assertEquals("mapped@test.com", result.getSupportEmail());
-              assertEquals("CUSTOM_BACKGROUND", result.getLoginMode());
-              assertEquals(80, result.getLoginBgOpacity());
-              assertEquals("Custom Hero Title", result.getLoginHeroTitle());
-              assertEquals("/custom-privacy", result.getPrivacyPolicyUrl());
-              assertEquals("/custom-cookie", result.getCookiePolicyUrl());
-
               assertNotNull(result.getBrandingSettings());
               assertEquals("Mapped App Name", result.getBrandingSettings().getAppName());
               assertNotNull(result.getLoginSettings());
@@ -294,15 +285,6 @@ class AppSettingsServiceTest {
         .assertNext(
             result -> {
               assertNotNull(result);
-              assertEquals("Typed App Name", result.getAppName());
-              assertEquals("Typed Tagline", result.getAppTagline());
-              assertEquals("typed@test.com", result.getSupportEmail());
-              assertEquals("CUSTOM_BACKGROUND", result.getLoginMode());
-              assertEquals(90, result.getLoginBgOpacity());
-              assertEquals("Typed Hero Title", result.getLoginHeroTitle());
-              assertEquals("/typed-privacy", result.getPrivacyPolicyUrl());
-              assertEquals("/typed-cookie", result.getCookiePolicyUrl());
-
               assertNotNull(result.getBrandingSettings());
               assertEquals("Typed App Name", result.getBrandingSettings().getAppName());
               assertNotNull(result.getLoginSettings());

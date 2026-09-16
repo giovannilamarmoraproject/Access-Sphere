@@ -40,7 +40,7 @@ public class AppSettingsService {
   private final AtomicReference<AppSettingsDTO> publicCache = new AtomicReference<>();
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<AppSettingsDTO> getPublicSettings() {
+  public Mono<AppSettingsDTO> getSettings() {
     AppSettingsDTO cached = publicCache.get();
     if (cached != null) {
       return Mono.just(cached);
@@ -59,16 +59,6 @@ public class AppSettingsService {
           AppSettingsDTO dto = AppSettingsMapper.toDTO(entity);
           publicCache.set(dto);
           return dto;
-        });
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<AppSettingsDTO> getSettings() {
-    return Mono.fromCallable(
-        () -> {
-          List<AppSettingsEntity> list = appSettingsDAO.findAll();
-          AppSettingsEntity entity = list.isEmpty() ? new AppSettingsEntity() : list.get(0);
-          return AppSettingsMapper.toDTO(entity);
         });
   }
 
