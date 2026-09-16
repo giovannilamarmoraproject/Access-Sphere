@@ -1891,41 +1891,61 @@
         const data = (typeof AppSettings !== "undefined" && typeof AppSettings.normalizeSettings === "function")
             ? AppSettings.normalizeSettings(rawData)
             : rawData;
+        const branding = data.brandingSettings || {};
+        const login = data.loginSettings || {};
+        const policy = data.policySettings || {};
+
         if (data.defaultLanguage) {
             const r = document.getElementById("lang-radio-" + data.defaultLanguage);
             if (r) r.checked = true;
         }
-        if (data.appName !== undefined) document.getElementById("setting-app-name").value = data.appName || "";
-        if (data.appTagline !== undefined) document.getElementById("setting-app-tagline").value = data.appTagline || "";
-        if (data.footerCopyright !== undefined) document.getElementById("setting-footer-copyright").value = data.footerCopyright || "";
-        if (data.privacyPolicyUrl !== undefined) document.getElementById("setting-privacy-url").value = data.privacyPolicyUrl || "";
-        if (data.cookiePolicyUrl !== undefined) document.getElementById("setting-cookie-url").value = data.cookiePolicyUrl || "";
-        if (data.supportEmail !== undefined) document.getElementById("setting-support-email").value = data.supportEmail || "";
 
-        if (data.logoUrl) {
-            currentLogoDataUrl = data.logoUrl;
+        const appName = branding.appName !== undefined ? branding.appName : data.appName;
+        if (appName !== undefined) document.getElementById("setting-app-name").value = appName || "";
+
+        const appTagline = branding.appTagline !== undefined ? branding.appTagline : data.appTagline;
+        if (appTagline !== undefined) document.getElementById("setting-app-tagline").value = appTagline || "";
+
+        const footerCopyright = branding.footerCopyright !== undefined ? branding.footerCopyright : data.footerCopyright;
+        if (footerCopyright !== undefined) document.getElementById("setting-footer-copyright").value = footerCopyright || "";
+
+        const privacyPolicyUrl = policy.privacyPolicyUrl !== undefined ? policy.privacyPolicyUrl : data.privacyPolicyUrl;
+        if (privacyPolicyUrl !== undefined) document.getElementById("setting-privacy-url").value = privacyPolicyUrl || "";
+
+        const cookiePolicyUrl = policy.cookiePolicyUrl !== undefined ? policy.cookiePolicyUrl : data.cookiePolicyUrl;
+        if (cookiePolicyUrl !== undefined) document.getElementById("setting-cookie-url").value = cookiePolicyUrl || "";
+
+        const supportEmail = branding.supportEmail !== undefined ? branding.supportEmail : data.supportEmail;
+        if (supportEmail !== undefined) document.getElementById("setting-support-email").value = supportEmail || "";
+
+        const logoUrl = branding.logoUrl !== undefined ? branding.logoUrl : data.logoUrl;
+        if (logoUrl) {
+            currentLogoDataUrl = logoUrl;
             const logoImg = document.getElementById("logo-preview-img");
-            if (logoImg) logoImg.src = data.logoUrl;
+            if (logoImg) logoImg.src = logoUrl;
             const logoInput = document.getElementById("setting-logo-url");
-            if (logoInput) logoInput.value = data.logoUrl.startsWith("data:") ? "" : data.logoUrl;
+            if (logoInput) logoInput.value = logoUrl.startsWith("data:") ? "" : logoUrl;
         } else {
             currentLogoDataUrl = "/img/logo-minimal.svg";
             const logoInput = document.getElementById("setting-logo-url");
             if (logoInput) logoInput.value = "";
         }
-        if (data.faviconUrl) {
-            currentFaviconDataUrl = data.faviconUrl;
+
+        const faviconUrl = branding.faviconUrl !== undefined ? branding.faviconUrl : data.faviconUrl;
+        if (faviconUrl) {
+            currentFaviconDataUrl = faviconUrl;
             const favImg = document.getElementById("favicon-preview-img");
-            if (favImg) favImg.src = data.faviconUrl;
+            if (favImg) favImg.src = faviconUrl;
             const favInput = document.getElementById("setting-favicon-url");
-            if (favInput) favInput.value = data.faviconUrl.startsWith("data:") ? "" : data.faviconUrl;
+            if (favInput) favInput.value = faviconUrl.startsWith("data:") ? "" : faviconUrl;
         } else {
             currentFaviconDataUrl = "/img/logo-minimal.svg";
             const favInput = document.getElementById("setting-favicon-url");
             if (favInput) favInput.value = "";
         }
 
-        if (data.loginMode === "CUSTOM_BACKGROUND") {
+        const loginMode = login.loginMode !== undefined ? login.loginMode : data.loginMode;
+        if (loginMode === "CUSTOM_BACKGROUND") {
             const radioBg = document.getElementById("login-mode-custom-bg");
             if (radioBg) radioBg.checked = true;
             handleLoginModeChange("CUSTOM_BACKGROUND");
@@ -1935,29 +1955,36 @@
             handleLoginModeChange("SHOWCASE");
         }
 
-        if (data.loginBgUrl) {
-            currentLoginBgDataUrl = data.loginBgUrl;
+        const loginBgUrl = login.loginBgUrl !== undefined ? login.loginBgUrl : data.loginBgUrl;
+        if (loginBgUrl) {
+            currentLoginBgDataUrl = loginBgUrl;
             const previewBox = document.getElementById("bg-preview-box");
-            if (previewBox) previewBox.style.backgroundImage = `url('${data.loginBgUrl}')`;
+            if (previewBox) previewBox.style.backgroundImage = `url('${loginBgUrl}')`;
         }
-        if (data.loginBgOpacity !== undefined) {
+
+        const loginBgOpacity = login.loginBgOpacity !== undefined ? login.loginBgOpacity : data.loginBgOpacity;
+        if (loginBgOpacity !== undefined) {
             const slider = document.getElementById("setting-login-bg-opacity");
-            if (slider) slider.value = data.loginBgOpacity;
-            updateBgOpacityPreview(data.loginBgOpacity);
+            if (slider) slider.value = loginBgOpacity;
+            updateBgOpacityPreview(loginBgOpacity);
         }
 
-        if (data.loginHeroTitle !== undefined) {
+        const loginHeroTitle = login.loginHeroTitle !== undefined ? login.loginHeroTitle : data.loginHeroTitle;
+        if (loginHeroTitle !== undefined) {
             const heroTitleInput = document.getElementById("setting-login-hero-title");
-            if (heroTitleInput) heroTitleInput.value = data.loginHeroTitle || "";
-        }
-        if (data.loginHeroSubtitle !== undefined) {
-            const heroSubtitleInput = document.getElementById("setting-login-hero-subtitle");
-            if (heroSubtitleInput) heroSubtitleInput.value = data.loginHeroSubtitle || "";
+            if (heroTitleInput) heroTitleInput.value = loginHeroTitle || "";
         }
 
-        if (data.hideHomeButton !== undefined) {
+        const loginHeroSubtitle = login.loginHeroSubtitle !== undefined ? login.loginHeroSubtitle : data.loginHeroSubtitle;
+        if (loginHeroSubtitle !== undefined) {
+            const heroSubtitleInput = document.getElementById("setting-login-hero-subtitle");
+            if (heroSubtitleInput) heroSubtitleInput.value = loginHeroSubtitle || "";
+        }
+
+        const hideHomeButton = login.hideHomeButton !== undefined ? login.hideHomeButton : data.hideHomeButton;
+        if (hideHomeButton !== undefined) {
             const hideHomeBtn = document.getElementById("setting-hide-home-btn");
-            if (hideHomeBtn) hideHomeBtn.checked = Boolean(data.hideHomeButton);
+            if (hideHomeBtn) hideHomeBtn.checked = Boolean(hideHomeButton);
         }
 
         if (data.navigationLayout) {
@@ -2097,23 +2124,9 @@
         const navigationLayout = isSidebar ? "SIDEBAR" : "HEADER";
 
         const payload = {
-            appName,
-            appTagline,
-            footerCopyright,
-            privacyPolicyUrl,
-            cookiePolicyUrl,
-            supportEmail,
-            logoUrl,
-            faviconUrl,
-            loginMode,
-            loginBgUrl,
-            loginBgOpacity,
-            loginHeroTitle,
-            loginHeroSubtitle,
-            hideHomeButton,
-            navigationLayout,
             activeTheme,
             defaultLanguage,
+            navigationLayout,
             brandingSettings: {
                 appName,
                 appTagline,

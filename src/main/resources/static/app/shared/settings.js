@@ -8,8 +8,9 @@ const AppSettings = (function () {
     const DEFAULT_THEME = "cosmic-purple";
 
     /**
-     * Normalizza l'oggetto impostazioni supportando sia la struttura piatta sia le mappe categorizzate
-     * (brandingSettings, loginSettings, policySettings). Garantisce che i campi siano sempre leggibili e scrivibili.
+     * Normalizza l'oggetto impostazioni supportando le mappe categorizzate
+     * (brandingSettings, loginSettings, policySettings) e le impostazioni base di sistema.
+     * Rimuove proprietà piatte ridondanti e restituisce esclusivamente la struttura a mappe pulita.
      */
     function normalizeSettings(s) {
         if (!s || typeof s !== "object") return {};
@@ -17,76 +18,61 @@ const AppSettings = (function () {
         const login = s.loginSettings || {};
         const policy = s.policySettings || {};
 
-        const appName = s.appName !== undefined && s.appName !== null && s.appName !== "" 
-            ? s.appName 
-            : (branding.appName !== undefined && branding.appName !== null ? branding.appName : (branding.app_name || "Access Sphere"));
-        const appTagline = s.appTagline !== undefined && s.appTagline !== null 
-            ? s.appTagline 
-            : (branding.appTagline !== undefined && branding.appTagline !== null ? branding.appTagline : (branding.app_tagline || "Gestione Identità & Accessi"));
-        const logoUrl = s.logoUrl !== undefined && s.logoUrl !== null 
-            ? s.logoUrl 
-            : (branding.logoUrl !== undefined && branding.logoUrl !== null ? branding.logoUrl : (branding.logo_url || "/img/logo-minimal.svg"));
-        const faviconUrl = s.faviconUrl !== undefined && s.faviconUrl !== null 
-            ? s.faviconUrl 
-            : (branding.faviconUrl !== undefined && branding.faviconUrl !== null ? branding.faviconUrl : (branding.favicon_url || "/img/logo-minimal.svg"));
-        const footerCopyright = s.footerCopyright !== undefined && s.footerCopyright !== null 
-            ? s.footerCopyright 
-            : (branding.footerCopyright !== undefined && branding.footerCopyright !== null ? branding.footerCopyright : (branding.footer_copyright || "© 2026 Access Sphere"));
-        const supportEmail = s.supportEmail !== undefined && s.supportEmail !== null 
-            ? s.supportEmail 
-            : (branding.supportEmail !== undefined && branding.supportEmail !== null ? branding.supportEmail : (branding.support_email || "support@accesssphere.io"));
+        // Estrazione valori con priorità alle mappe di categoria e fallback a eventuali campi legacy o valori predefiniti
+        const appName = branding.appName !== undefined && branding.appName !== null && branding.appName !== "" 
+            ? branding.appName 
+            : (s.appName !== undefined && s.appName !== null && s.appName !== "" ? s.appName : (branding.app_name || "Access Sphere"));
+        const appTagline = branding.appTagline !== undefined && branding.appTagline !== null 
+            ? branding.appTagline 
+            : (s.appTagline !== undefined && s.appTagline !== null ? s.appTagline : (branding.app_tagline || "Gestione Identità & Accessi"));
+        const logoUrl = branding.logoUrl !== undefined && branding.logoUrl !== null 
+            ? branding.logoUrl 
+            : (s.logoUrl !== undefined && s.logoUrl !== null ? s.logoUrl : (branding.logo_url || "/img/logo-minimal.svg"));
+        const faviconUrl = branding.faviconUrl !== undefined && branding.faviconUrl !== null 
+            ? branding.faviconUrl 
+            : (s.faviconUrl !== undefined && s.faviconUrl !== null ? s.faviconUrl : (branding.favicon_url || "/img/logo-minimal.svg"));
+        const footerCopyright = branding.footerCopyright !== undefined && branding.footerCopyright !== null 
+            ? branding.footerCopyright 
+            : (s.footerCopyright !== undefined && s.footerCopyright !== null ? s.footerCopyright : (branding.footer_copyright || "© 2026 Access Sphere"));
+        const supportEmail = branding.supportEmail !== undefined && branding.supportEmail !== null 
+            ? branding.supportEmail 
+            : (s.supportEmail !== undefined && s.supportEmail !== null ? s.supportEmail : (branding.support_email || "support@accesssphere.io"));
 
-        const loginMode = s.loginMode !== undefined && s.loginMode !== null 
-            ? s.loginMode 
-            : (login.loginMode !== undefined && login.loginMode !== null ? login.loginMode : (login.login_mode || "SHOWCASE"));
-        const loginBgUrl = s.loginBgUrl !== undefined && s.loginBgUrl !== null 
-            ? s.loginBgUrl 
-            : (login.loginBgUrl !== undefined && login.loginBgUrl !== null ? login.loginBgUrl : (login.login_bg_url || null));
-        const loginBgOpacity = s.loginBgOpacity !== undefined && s.loginBgOpacity !== null 
-            ? s.loginBgOpacity 
-            : (login.loginBgOpacity !== undefined && login.loginBgOpacity !== null ? login.loginBgOpacity : (login.login_bg_opacity !== undefined ? login.login_bg_opacity : 50));
-        const loginHeroTitle = s.loginHeroTitle !== undefined && s.loginHeroTitle !== null 
-            ? s.loginHeroTitle 
-            : (login.loginHeroTitle !== undefined && login.loginHeroTitle !== null ? login.loginHeroTitle : (login.login_hero_title || "Autenticazione Sicura & Modulare"));
-        const loginHeroSubtitle = s.loginHeroSubtitle !== undefined && s.loginHeroSubtitle !== null 
-            ? s.loginHeroSubtitle 
-            : (login.loginHeroSubtitle !== undefined && login.loginHeroSubtitle !== null ? login.loginHeroSubtitle : (login.login_hero_subtitle || ""));
-        const hideHomeButton = s.hideHomeButton !== undefined && s.hideHomeButton !== null 
-            ? s.hideHomeButton 
-            : (login.hideHomeButton !== undefined && login.hideHomeButton !== null ? login.hideHomeButton : (login.hide_home_button !== undefined ? login.hide_home_button : false));
+        const loginMode = login.loginMode !== undefined && login.loginMode !== null 
+            ? login.loginMode 
+            : (s.loginMode !== undefined && s.loginMode !== null ? s.loginMode : (login.login_mode || "SHOWCASE"));
+        const loginBgUrl = login.loginBgUrl !== undefined && login.loginBgUrl !== null 
+            ? login.loginBgUrl 
+            : (s.loginBgUrl !== undefined && s.loginBgUrl !== null ? s.loginBgUrl : (login.login_bg_url || null));
+        const loginBgOpacity = login.loginBgOpacity !== undefined && login.loginBgOpacity !== null 
+            ? login.loginBgOpacity 
+            : (s.loginBgOpacity !== undefined && s.loginBgOpacity !== null ? s.loginBgOpacity : (login.login_bg_opacity !== undefined ? login.login_bg_opacity : 50));
+        const loginHeroTitle = login.loginHeroTitle !== undefined && login.loginHeroTitle !== null 
+            ? login.loginHeroTitle 
+            : (s.loginHeroTitle !== undefined && s.loginHeroTitle !== null ? s.loginHeroTitle : (login.login_hero_title || "Autenticazione Sicura & Modulare"));
+        const loginHeroSubtitle = login.loginHeroSubtitle !== undefined && login.loginHeroSubtitle !== null 
+            ? login.loginHeroSubtitle 
+            : (s.loginHeroSubtitle !== undefined && s.loginHeroSubtitle !== null ? s.loginHeroSubtitle : (login.login_hero_subtitle || ""));
+        const hideHomeButton = login.hideHomeButton !== undefined && login.hideHomeButton !== null 
+            ? login.hideHomeButton 
+            : (s.hideHomeButton !== undefined && s.hideHomeButton !== null ? s.hideHomeButton : (login.hide_home_button !== undefined ? login.hide_home_button : false));
 
-        const privacyPolicyUrl = s.privacyPolicyUrl !== undefined && s.privacyPolicyUrl !== null 
-            ? s.privacyPolicyUrl 
-            : (policy.privacyPolicyUrl !== undefined && policy.privacyPolicyUrl !== null ? policy.privacyPolicyUrl : (policy.privacy_policy_url || "/privacy-policy"));
-        const cookiePolicyUrl = s.cookiePolicyUrl !== undefined && s.cookiePolicyUrl !== null 
-            ? s.cookiePolicyUrl 
-            : (policy.cookiePolicyUrl !== undefined && policy.cookiePolicyUrl !== null ? policy.cookiePolicyUrl : (policy.cookie_policy_url || "/cookie-policy"));
+        const privacyPolicyUrl = policy.privacyPolicyUrl !== undefined && policy.privacyPolicyUrl !== null 
+            ? policy.privacyPolicyUrl 
+            : (s.privacyPolicyUrl !== undefined && s.privacyPolicyUrl !== null ? s.privacyPolicyUrl : (policy.privacy_policy_url || "/privacy-policy"));
+        const cookiePolicyUrl = policy.cookiePolicyUrl !== undefined && policy.cookiePolicyUrl !== null 
+            ? policy.cookiePolicyUrl 
+            : (s.cookiePolicyUrl !== undefined && s.cookiePolicyUrl !== null ? s.cookiePolicyUrl : (policy.cookie_policy_url || "/cookie-policy"));
 
         const activeTheme = s.activeTheme || localStorage.getItem(THEME_KEY) || DEFAULT_THEME;
         const defaultLanguage = s.defaultLanguage || "auto";
         const navigationLayout = s.navigationLayout || "HEADER";
 
-        return {
-            ...s,
-            appName,
-            appTagline,
-            logoUrl,
-            faviconUrl,
-            footerCopyright,
-            supportEmail,
-            loginMode,
-            loginBgUrl,
-            loginBgOpacity,
-            loginHeroTitle,
-            loginHeroSubtitle,
-            hideHomeButton,
-            privacyPolicyUrl,
-            cookiePolicyUrl,
+        const normalized = {
             activeTheme,
             defaultLanguage,
             navigationLayout,
             brandingSettings: {
-                ...branding,
                 appName,
                 appTagline,
                 logoUrl,
@@ -95,7 +81,6 @@ const AppSettings = (function () {
                 supportEmail
             },
             loginSettings: {
-                ...login,
                 loginMode,
                 loginBgUrl,
                 loginBgOpacity,
@@ -104,11 +89,16 @@ const AppSettings = (function () {
                 hideHomeButton
             },
             policySettings: {
-                ...policy,
                 privacyPolicyUrl,
                 cookiePolicyUrl
             }
         };
+
+        if (s.id !== undefined && s.id !== null) {
+            normalized.id = s.id;
+        }
+
+        return normalized;
     }
 
     // 1. Instant Synchronous Initialization (Zero flicker)
@@ -138,14 +128,16 @@ const AppSettings = (function () {
                 try {
                     const raw = JSON.parse(cachedRaw);
                     const s = normalizeSettings(raw);
-                    if (s && s.faviconUrl && document.head) {
+                    const branding = (s && s.brandingSettings) || {};
+                    const favicon = branding.faviconUrl || (s && s.faviconUrl);
+                    if (s && favicon && document.head) {
                         let iconLink = document.querySelector("link[rel*='icon']");
                         if (!iconLink) {
                             iconLink = document.createElement("link");
                             iconLink.rel = "icon";
                             document.head.appendChild(iconLink);
                         }
-                        iconLink.href = s.faviconUrl;
+                        iconLink.href = favicon;
                     }
                     if (s && s.navigationLayout === "SIDEBAR" && isPostLoginPage()) {
                         document.documentElement.classList.add("layout-sidebar");
@@ -182,74 +174,79 @@ const AppSettings = (function () {
     function applyBrandingToDOM(settings) {
         if (!settings) return;
         settings = normalizeSettings(settings);
+        const branding = settings.brandingSettings || {};
+        const appName = branding.appName;
+        const logoUrl = branding.logoUrl;
+        const faviconUrl = branding.faviconUrl;
+        const footerCopyright = branding.footerCopyright;
 
         // 1. App Name in Document Title and Brand Elements
-        if (settings.appName) {
-            localStorage.setItem("access_sphere_app_name", settings.appName);
+        if (appName) {
+            localStorage.setItem("access_sphere_app_name", appName);
             // Update any element with class app-brand-name
             document.querySelectorAll(".app-brand-name").forEach((el) => {
-                el.textContent = settings.appName;
+                el.textContent = appName;
             });
             const loginTitle = document.getElementById("login_page_title");
             if (loginTitle) {
-                loginTitle.textContent = settings.appName;
+                loginTitle.textContent = appName;
             }
             const loginTabTitle = document.getElementById("login_page_tab_title");
             if (loginTabTitle) {
-                loginTabTitle.textContent = `${settings.appName} - Login`;
+                loginTabTitle.textContent = `${appName} - Login`;
             }
             const mobileDrawerName = document.getElementById("mobile-drawer-brand-name");
             if (mobileDrawerName) {
-                mobileDrawerName.textContent = settings.appName;
+                mobileDrawerName.textContent = appName;
             }
         }
 
         // 2. Logo
-        if (settings.logoUrl) {
-            localStorage.setItem("access_sphere_logo_url", settings.logoUrl);
+        if (logoUrl) {
+            localStorage.setItem("access_sphere_logo_url", logoUrl);
             // Aggiorna tutti i logo del brand evitando di sovrascrivere l'anteprima favicon
             document.querySelectorAll(".app-brand-logo, .login-logo-glow, .mobile-logo-badge img, .app-brand-icon").forEach((img) => {
                 if (img.id !== "favicon-preview-img") {
-                    img.src = settings.logoUrl;
+                    img.src = logoUrl;
                 }
             });
             const logoPreview = document.getElementById("logo-preview-img");
             if (logoPreview) {
-                logoPreview.src = settings.logoUrl;
+                logoPreview.src = logoUrl;
             }
             const mobileDrawerLogo = document.getElementById("mobile-drawer-brand-logo");
             if (mobileDrawerLogo) {
-                mobileDrawerLogo.src = settings.logoUrl;
+                mobileDrawerLogo.src = logoUrl;
             }
         }
 
         // 3. Favicon (forza ricaricamento nel tab del browser ricreando il tag link)
-        if (settings.faviconUrl) {
+        if (faviconUrl) {
             document.querySelectorAll("link[rel*='icon'], link[rel='apple-touch-icon']").forEach((el) => el.remove());
             const iconLink = document.createElement("link");
             iconLink.rel = "icon";
-            iconLink.href = settings.faviconUrl;
+            iconLink.href = faviconUrl;
             document.head.appendChild(iconLink);
 
             const appleLink = document.createElement("link");
             appleLink.rel = "apple-touch-icon";
-            appleLink.href = settings.faviconUrl;
+            appleLink.href = faviconUrl;
             document.head.appendChild(appleLink);
 
             const favPreview = document.getElementById("favicon-preview-img");
             if (favPreview) {
-                favPreview.src = settings.faviconUrl;
+                favPreview.src = faviconUrl;
             }
         }
 
         // 4. Footer Copyright
         const currentYear = new Date().getFullYear();
         let copyrightText = null;
-        if (settings.footerCopyright && settings.footerCopyright.trim()) {
-            localStorage.setItem("access_sphere_footer_copyright", settings.footerCopyright);
-            copyrightText = settings.footerCopyright.replace("#YEAR#", currentYear).replace(/202[0-9]/g, currentYear);
-        } else if (settings.appName && settings.appName.trim()) {
-            copyrightText = `&copy; ${currentYear} ${settings.appName.trim()} - Tutti i diritti riservati`;
+        if (footerCopyright && footerCopyright.trim()) {
+            localStorage.setItem("access_sphere_footer_copyright", footerCopyright);
+            copyrightText = footerCopyright.replace("#YEAR#", currentYear).replace(/202[0-9]/g, currentYear);
+        } else if (appName && appName.trim()) {
+            copyrightText = `&copy; ${currentYear} ${appName.trim()} - Tutti i diritti riservati`;
         }
         if (copyrightText) {
             document.querySelectorAll(".app-footer-copyright, .footer_copyright_text").forEach((el) => {
@@ -477,10 +474,18 @@ const AppSettings = (function () {
 
         if (!leftPanel && !mobileBanner) return;
 
-        if (settings.loginMode === "CUSTOM_BACKGROUND" && settings.loginBgUrl) {
+        const login = (settings && settings.loginSettings) || {};
+        const loginMode = login.loginMode || settings.loginMode || "SHOWCASE";
+        const loginBgUrl = login.loginBgUrl !== undefined ? login.loginBgUrl : settings.loginBgUrl;
+        const loginBgOpacity = login.loginBgOpacity !== undefined ? login.loginBgOpacity : (settings.loginBgOpacity !== undefined ? settings.loginBgOpacity : 50);
+        const loginHeroTitle = login.loginHeroTitle !== undefined ? login.loginHeroTitle : settings.loginHeroTitle;
+        const loginHeroSubtitle = login.loginHeroSubtitle !== undefined ? login.loginHeroSubtitle : settings.loginHeroSubtitle;
+        const hideHomeButton = login.hideHomeButton !== undefined ? login.hideHomeButton : settings.hideHomeButton;
+
+        if (loginMode === "CUSTOM_BACKGROUND" && loginBgUrl) {
             // 1. Custom Background Mode - Override any CSS gradient backgrounds
             if (leftPanel) {
-                leftPanel.style.setProperty("background-image", `url("${settings.loginBgUrl}")`, "important");
+                leftPanel.style.setProperty("background-image", `url("${loginBgUrl}")`, "important");
                 leftPanel.style.setProperty("background-size", "cover", "important");
                 leftPanel.style.setProperty("background-position", "center", "important");
                 leftPanel.style.setProperty("background-repeat", "no-repeat", "important");
@@ -496,7 +501,7 @@ const AppSettings = (function () {
                     overlay.style.pointerEvents = "none";
                     leftPanel.insertBefore(overlay, leftPanel.firstChild);
                 }
-                const opacity = (settings.loginBgOpacity !== undefined ? settings.loginBgOpacity : 50) / 100;
+                const opacity = loginBgOpacity / 100;
                 overlay.style.backgroundColor = `rgba(14, 11, 22, ${opacity})`;
 
                 // 3. Hide showcase content and ambient glow orbs completely so background is clean
@@ -507,7 +512,7 @@ const AppSettings = (function () {
             }
 
             if (mobileBanner) {
-                mobileBanner.style.setProperty("background-image", `url("${settings.loginBgUrl}")`, "important");
+                mobileBanner.style.setProperty("background-image", `url("${loginBgUrl}")`, "important");
                 mobileBanner.style.setProperty("background-size", "cover", "important");
                 mobileBanner.style.setProperty("background-position", "center", "important");
             }
@@ -534,19 +539,19 @@ const AppSettings = (function () {
         }
 
         // Custom Hero Title & Subtitle if provided
-        if (settings.loginHeroTitle) {
+        if (loginHeroTitle) {
             const heroTitle = document.getElementById("login-hero-title");
-            if (heroTitle) heroTitle.innerHTML = settings.loginHeroTitle;
+            if (heroTitle) heroTitle.innerHTML = loginHeroTitle;
         }
-        if (settings.loginHeroSubtitle) {
+        if (loginHeroSubtitle) {
             const heroDesc = document.getElementById("login-hero-desc");
-            if (heroDesc) heroDesc.innerHTML = settings.loginHeroSubtitle;
+            if (heroDesc) heroDesc.innerHTML = loginHeroSubtitle;
         }
 
         // Gestione visibilità pulsante "Torna alla Home"
         const homeBtns = document.querySelectorAll(".showcase-home-btn, .showcase-mobile-home-btn");
         homeBtns.forEach((btn) => {
-            btn.style.display = settings.hideHomeButton ? "none" : "";
+            btn.style.display = hideHomeButton ? "none" : "";
         });
     }
 
