@@ -22,6 +22,26 @@ public interface UserDataService {
   Mono<User> getUserByIdentifier(String identifier);
 
   /**
+   * Retrieves a {@link User} by its unique identifier from the local database.
+   *
+   * @param identifier the unique identifier of the user (e.g., username or email)
+   * @param unused legacy parameter for backwards compatibility
+   * @return a {@link Mono} emitting the found {@link User}, or empty if not found
+   */
+  default Mono<User> getUserByIdentifier(String identifier, boolean unused) {
+    return getUserByIdentifier(identifier);
+  }
+
+  /**
+   * Retrieves all users from the local database.
+   *
+   * @return a {@link Mono} emitting a list of {@link User} objects
+   */
+  default Mono<List<User>> getUsers() {
+    return getUsersFromDatabase();
+  }
+
+  /**
    * Retrieves a {@link User} by their email from the local database.
    *
    * @param email the email address of the user

@@ -74,8 +74,6 @@ public class GoogleAuthService {
               googleModel.getJwtData().setRoles(user.getRoles());
               googleModel.getJwtData().setSub(user.getUsername());
 
-              JsonNode strapi_token = OAuthMapper.getStrapiTokenFromUser(user, googleModel);
-
               AuthToken token =
                   tokenService.generateToken(
                       googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
@@ -87,7 +85,6 @@ public class GoogleAuthService {
                       TraceUtils.getSpanID(),
                       new OAuthTokenResponse(
                           token,
-                          strapi_token,
                           includeUserInfo ? googleModel.getJwtData() : null,
                           includeUserData ? user : null));
 
@@ -106,7 +103,7 @@ public class GoogleAuthService {
             throwable -> {
               if (throwable
                   .getMessage()
-                  .equalsIgnoreCase(ExceptionMap.ERR_STRAPI_404.getMessage())) {
+                  .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_404.getMessage())) {
                 String registration_token =
                     RequestManager.getCookieOrHeaderData(Cookie.COOKIE_TOKEN, request);
                 if (ObjectUtils.isEmpty(registration_token)) {

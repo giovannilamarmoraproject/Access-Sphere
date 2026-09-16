@@ -84,13 +84,8 @@ public class TechUserService extends TechUserConfig {
     User user = UserMapper.getTechUser(username, clientCredential);
     JWTData jwtData =
         JWTData.generateJWTData(user, clientCredential, SubjectType.TECHNICAL, request);
-    Map<String, Object> strapiToken = new HashMap<>();
-    strapiToken.put(TokenData.STRAPI_ACCESS_TOKEN.getToken(), tech_token);
-    strapiToken.put("token_type", "Bearer");
-    AuthToken token = tokenService.generateToken(jwtData, clientCredential, strapiToken);
-    return Mono.just(
-        new OAuthTokenResponse(
-            token, Utils.mapper().convertValue(strapiToken, JsonNode.class), jwtData, user));
+    AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
+    return Mono.just(new OAuthTokenResponse(token, jwtData, user));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

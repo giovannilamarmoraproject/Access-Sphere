@@ -157,9 +157,6 @@ public class AppSettingsService {
               } else {
                 user.setId(null);
               }
-              if (user.getStrapiId() == null) {
-                user.setStrapiId(0L);
-              }
               userDAO.save(user);
             }
           }

@@ -24,9 +24,6 @@ public class TechUserConfig {
   @Value(value = "${app.tech-user.client-id:ACCESS-SPHERE-TECH}")
   public String tech_client_id;
 
-  @Getter
-  @Value(value = "${app.tech-user.strapi:}")
-  public String tech_token;
 
   @Autowired public TokenService tokenService;
   @Autowired public AccessTokenData accessTokenData;

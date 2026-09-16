@@ -26,12 +26,7 @@ public enum ExceptionMap implements ExceptionCode {
       HttpStatus.UNAUTHORIZED,
       "You cannot make this request cause the auth-token is invalid"),
   ERR_TOKEN_500("TOKEN_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, "Generic Server Error"),
-  /**
-   * @Strapi Exception Map for Strapi
-   */
-  ERR_STRAPI_400("BAD_INPUT_ERROR", HttpStatus.NOT_FOUND, "Invalid input"),
-  ERR_STRAPI_404("DATA_NOT_FOUND", HttpStatus.NOT_FOUND, "Data not found"),
-  ERR_STRAPI_500("INTERNAL_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, "Generic Server Error"),
+
   /**
    * @User Exception Map for User
    */

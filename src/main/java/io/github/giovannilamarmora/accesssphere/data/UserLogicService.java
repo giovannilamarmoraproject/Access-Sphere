@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
@@ -59,14 +60,14 @@ public class UserLogicService {
   protected Mono<User> getUserByIdentifier(String identifier) {
     UserEntity userEntity = userDataService.findUserEntityByIdentifier(identifier);
     UserDataValidator.validateUser(userEntity);
-    return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+    return Mono.just(UserMapper.toDTO(userEntity));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   protected Mono<User> getUserByEmail(String email) {
     UserEntity userEntity = userDataService.findUserEntityByEmail(email);
     UserDataValidator.validateUser(userEntity);
-    return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+    return Mono.just(UserMapper.toDTO(userEntity));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -79,7 +80,7 @@ public class UserLogicService {
   protected Mono<List<User>> getUsers() {
     LOG.info("\uD83E\uDD37\u200D♂\uFE0F Getting all users in database");
     List<UserEntity> userEntities = userDataService.findAll();
-    return Mono.just(UserMapper.mapUserEntitiesToUsers(userEntities));
+    return Mono.just(UserMapper.toDTOList(userEntities));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -87,7 +88,7 @@ public class UserLogicService {
     UserEntity userEntity = userDataService.findUserEntityByTokenReset(tokenReset);
     UserDataValidator.validateUser(userEntity);
     UserDataValidator.validateResetToken(userEntity.getUpdateDate());
-    return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+    return Mono.just(UserMapper.toDTO(userEntity));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -123,7 +124,7 @@ public class UserLogicService {
     }
     user.setRoles(userRoles.stream().map(AppRole::getRole).toList());
     
-    UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
+    UserEntity userEntity = UserMapper.toEntity(user);
     if (!ObjectToolkit.isNullOrEmpty(user.getPassword()))
       userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
     String identifier = UUID.randomUUID().toString();
@@ -152,7 +153,7 @@ public class UserLogicService {
     if (!techUserService.isTechUser()) {
       UserEntity userEntity = userDataService.findUserEntityByEmail(jwtData.getEmail());
       UserDataValidator.validateUser(userEntity);
-      return Mono.just(UserMapper.mapUserEntityToUser(userEntity));
+      return Mono.just(UserMapper.toDTO(userEntity));
     }
     return techUserService.userInfo(jwtData);
   }
@@ -165,7 +166,7 @@ public class UserLogicService {
       ServerHttpRequest request) {
     UserEntity userEntity = userDataService.findUserEntityByEmail(accessTokenData.getEmail());
     UserDataValidator.validateUser(userEntity);
-    User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
+    User userEntityToUser = UserMapper.toDTO(userEntity);
     userEntityToUser.setPassword(null);
     JWTData jwtData =
         JWTData.generateJWTData(
@@ -177,7 +178,7 @@ public class UserLogicService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   protected Mono<User> updateUser(
       User userToUpdate, boolean isUpdatePassword) {
-    UserEntity userEntity = UserMapper.mapUserToUserEntity(userToUpdate);
+    UserEntity userEntity = UserMapper.toEntity(userToUpdate);
 
     if (isUpdatePassword) {
       if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
@@ -212,7 +213,7 @@ public class UserLogicService {
   }
 
   protected void saveUserIntoDatabase(User user) {
-    UserEntity userEntity = UserMapper.mapUserToUserEntity(user);
+    UserEntity userEntity = UserMapper.toEntity(user);
     saveUserEntityIntoDatabase(userEntity);
   }
 
@@ -220,13 +221,13 @@ public class UserLogicService {
     UserEntity userSaved = userDataService.findUserEntityByIdentifier(user.getIdentifier());
     if (!ObjectUtils.isEmpty(userSaved)) {
       // Aggiornare i campi dell'entità esistente con i valori del ClientCredential
-      UserMapper.updateUserEntityFields(userSaved, user);
+      UserMapper.updateEntity(userSaved, user);
       saveUserEntityIntoDatabase(userSaved);
     } else {
       // Se il client non esiste, possiamo decidere di aggiungerlo o lanciare un'eccezione
       throw new IllegalArgumentException("User not found: " + userSaved.getIdentifier());
     }
-    UserMapper.mapUserEntityToUser(userSaved);
+    UserMapper.toDTO(userSaved);
   }
 
   @Transactional
@@ -258,7 +259,7 @@ public class UserLogicService {
       LOG.error("An error happen during bCryptPasswordEncoder.matches, the password do not match");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
-    User userEntityToUser = UserMapper.mapUserEntityToUser(userEntity);
+    User userEntityToUser = UserMapper.toDTO(userEntity);
     userEntityToUser.setPassword(null);
     JWTData jwtData =
         JWTData.generateJWTData(userEntityToUser, clientCredential, SubjectType.CUSTOMER, request);
@@ -272,7 +273,7 @@ public class UserLogicService {
     UserEntity userSaved = userDataService.saveAndFlush(userEntity);
     userSaved.setPassword(null);
     UserDataValidator.validateUser(userSaved);
-    return UserMapper.mapUserEntityToUser(userSaved);
+    return UserMapper.toDTO(userSaved);
   }
 
   private void setDataBeforeUpdate(

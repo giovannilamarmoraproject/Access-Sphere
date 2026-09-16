@@ -107,43 +107,6 @@ public class AuthService {
                   redirect_uri,
                   cookieDomain,
                   serverHttpResponse);
-              // String message =
-              //    "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() +
-              // "!";
-              //
-              // Response response =
-              //    new Response(
-              //        HttpStatus.OK.value(),
-              //        message,
-              //        TraceUtils.getSpanID(),
-              //        new OAuthTokenResponse(
-              //            tokenResponse.getToken(),
-              //            clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() :
-              // null,
-              //            includeUserInfo ? tokenResponse.getUserInfo() : null,
-              //            includeUserData ? tokenResponse.getUser() : null));
-              //
-              // LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
-              // if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
-              //
-              // CookieManager.setCookieInResponse(
-              //    Cookie.COOKIE_ACCESS_TOKEN,
-              //    tokenResponse.getToken().getAccess_token(),
-              //    cookieDomain,
-              //    serverHttpResponse);
-              // CookieManager.setCookieInResponse(
-              //    Cookie.COOKIE_STRAPI_TOKEN,
-              //    tokenResponse
-              //        .getStrapiToken()
-              //        .get(TokenData.STRAPI_ACCESS_TOKEN.getToken())
-              //        .asText(),
-              //    cookieDomain,
-              //    serverHttpResponse);
-              //
-              // URI finalRedirectURI =
-              //    OAuthMapper.getFinalRedirectURI(
-              //        clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
-              // return ResponseEntity.ok().location(finalRedirectURI).body(response);
             });
   }
 
@@ -165,7 +128,6 @@ public class AuthService {
             TraceUtils.getSpanID(),
             new OAuthTokenResponse(
                 tokenResponse.getToken(),
-                clientCredential.getStrapiToken() ? tokenResponse.getStrapiToken() : null,
                 includeUserInfo ? tokenResponse.getUserInfo() : null,
                 includeUserData ? tokenResponse.getUser() : null));
 
@@ -175,11 +137,6 @@ public class AuthService {
     CookieManager.setCookieInResponse(
         Cookie.COOKIE_ACCESS_TOKEN,
         tokenResponse.getToken().getAccess_token(),
-        cookieDomain,
-        httpResponse);
-    CookieManager.setCookieInResponse(
-        Cookie.COOKIE_STRAPI_TOKEN,
-        tokenResponse.getStrapiToken().get(TokenData.STRAPI_ACCESS_TOKEN.getToken()).asText(),
         cookieDomain,
         httpResponse);
 
@@ -220,7 +177,6 @@ public class AuthService {
                       TraceUtils.getSpanID(),
                       new OAuthTokenResponse(
                           tokenResponse.getToken(),
-                          tokenResponse.getStrapiToken(),
                           includeUserInfo ? tokenResponse.getUserInfo() : null,
                           includeUserData ? tokenResponse.getUser() : null));
               return ResponseEntity.ok(response);
@@ -237,7 +193,7 @@ public class AuthService {
             : null;
 
     if (ObjectUtils.isEmpty(refreshToken)) {
-      LOG.info("Strapi refresh_token not found!");
+      LOG.info("Refresh token not found in payload");
     }
 
     String message = "Logout Successfully for " + accessTokenData.getSubject() + "!";
@@ -274,8 +230,6 @@ public class AuthService {
     JWTData decryptToken =
         tokenService.parseToken(tokenExchange.getSubject_token(), clientCredentialToExchange);
 
-    JsonNode strapi_token = OAuthMapper.getStrapiToken(accessTokenData.getPayload());
-
     if (techUserService.isTechUser()) {
       return Mono.just(
           exchangeTokenBuildResponse(
@@ -283,7 +237,6 @@ public class AuthService {
               new User(),
               accessTokenData,
               clientCredential,
-              strapi_token,
               includeUserInfo,
               includeUserData,
               request));
@@ -297,29 +250,9 @@ public class AuthService {
                   user,
                   accessTokenData,
                   clientCredential,
-                  strapi_token,
                   includeUserInfo,
                   includeUserData,
                   request);
-              // AuthToken token =
-              //    tokenService.exchangeToken(user, accessTokenData, clientCredential, request);
-              // String message =
-              //    "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
-              // Response response =
-              //    new Response(
-              //        HttpStatus.OK.value(),
-              //        message,
-              //        TraceUtils.getSpanID(),
-              //        new OAuthTokenResponse(
-              //            token,
-              //            ObjectToolkit.isNullOrEmpty(strapi_token)
-              //                ? accessTokenData.getPayload()
-              //                : strapi_token,
-              //            includeUserInfo
-              //                ? tokenService.parseToken(token.getAccess_token(), clientCredential)
-              //                : null,
-              //            includeUserData ? user : null));
-              // return ResponseEntity.ok(response);
             });
   }
 
@@ -329,7 +262,6 @@ public class AuthService {
       User user,
       AccessTokenData accessTokenData,
       ClientCredential clientCredential,
-      JsonNode strapi_token,
       boolean includeUserInfo,
       boolean includeUserData,
       ServerHttpRequest request) {
@@ -343,9 +275,7 @@ public class AuthService {
             TraceUtils.getSpanID(),
             new OAuthTokenResponse(
                 token,
-                ObjectToolkit.isNullOrEmpty(strapi_token)
-                    ? accessTokenData.getPayload()
-                    : strapi_token,
+                accessTokenData.getPayload(),
                 includeUserInfo
                     ? tokenService.parseToken(token.getAccess_token(), clientCredential)
                     : null,

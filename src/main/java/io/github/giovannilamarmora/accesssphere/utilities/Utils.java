@@ -92,7 +92,6 @@ public class Utils {
     CookieManager.deleteCookie(Cookie.COOKIE_TOKEN, response);
     CookieManager.deleteCookie(Cookie.COOKIE_REDIRECT_URI, response);
     CookieManager.deleteCookie(Cookie.COOKIE_ACCESS_TOKEN, response);
-    CookieManager.deleteCookie(Cookie.COOKIE_STRAPI_TOKEN, response);
     CookieManager.deleteCookie(ContextConfig.TRACE_ID.getValue(), response);
     CookieManager.deleteCookie(ContextConfig.SPAN_ID.getValue(), response);
     CookieManager.deleteCookie(ContextConfig.PARENT_ID.getValue(), response);

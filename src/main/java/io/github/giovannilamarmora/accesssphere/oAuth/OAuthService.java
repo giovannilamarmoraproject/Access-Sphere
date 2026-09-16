@@ -198,20 +198,12 @@ public class OAuthService {
       token.setToken_type("Bearer");
       token.setExpires_at(accessTokenData.getAccessExpireDate());
 
-      Map<String, Object> strapiToken = OAuthMapper.extractStrapiToken(accessTokenData);
-
       Response response =
           new Response(
               HttpStatus.OK.value(),
               "Token is valid",
               TraceUtils.getSpanID(),
-              strapiToken == null
-                  ? new OAuthTokenResponse(token, accessTokenData.getPayload())
-                  : new OAuthTokenResponse(
-                      token,
-                      Mapper.readTree(strapiToken),
-                      Mapper.removeField(
-                          accessTokenData.getPayload(), TokenData.STRAPI_TOKEN.getToken())));
+              new OAuthTokenResponse(token, accessTokenData.getPayload()));
 
       LOG.info("✅ Authorization successful for {}", bearer);
       return ResponseEntity.ok(response);

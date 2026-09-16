@@ -1,5 +1,5 @@
 env: Local
-sensitiveData: password|token|Authorization|Bearer|Basic|access[_-]?token|refresh[_-]?token|strapi[_-]?token|jwt|jwtSecret|jweSecret|registrationToken|secretKey|tokenReset
+sensitiveData: password|token|Authorization|Bearer|Basic|access[_-]?token|refresh[_-]?token|jwt|jwtSecret|jweSecret|registrationToken|secretKey|tokenReset
 
 server:
   port: 8081
@@ -71,24 +71,6 @@ filter:
 
 rest:
   client:
-    strapi:
-      active: true
-      baseUrl: https://strapi.giovannilamarmora.com
-      bearer: ${STRAPI_AUTH_TOKEN}
-      aes-key: ${AES_KEY}
-      path:
-        clientId: /api/Oauthclientids
-        registerUser: /api/auth/local/register
-        getUserByEmail: /api/users
-        login: /api/auth/local
-        getRefreshToken: /api/auth/token/request
-        userInfo: /api/users/me
-        refreshToken: /api/auth/token
-        logout: /api/auth/revoke
-        updateUser: /api/users/:userId
-        getTemplate: /api/email-templates
-        locales: /api/i18n/locales
-        deleteUser: /api/users/:userId
     email-sender:
       baseUrl: https://email-sender.giovannilamarmora.com
       path:
@@ -96,12 +78,12 @@ rest:
 
 app:
   version: @project.version@
+  aes-key: ${AES_KEY:}
   tech-user:
     username: ${TECH_USERNAME:tech_admin}
     password: ${TECH_PASSWORD:tech_password}
     client-id: ${TECH_CLIENT_ID:ACCESS-SPHERE-TECH}
     email: ${TECH_EMAIL:admin@accesssphere.local}
-    strapi: ${STRAPI_AUTH_TOKEN:}
   exception:
     stacktrace: true # Active StackTrace in Response
   cors:

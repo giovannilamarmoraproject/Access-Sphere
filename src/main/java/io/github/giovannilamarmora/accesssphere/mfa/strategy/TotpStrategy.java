@@ -41,7 +41,7 @@ public class TotpStrategy implements MFAStrategy {
 
     user.setMfaSettings(mfaSetting);
     return dataService
-        .updateUser(false, user)
+        .updateUser(user, false)
         .map(
             userUpdated -> {
               MFASetupResponse mfaSetupResponse = new MFASetupResponse(secret, otpAuth, null);

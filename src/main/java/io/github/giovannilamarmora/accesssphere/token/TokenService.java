@@ -165,9 +165,7 @@ public class TokenService {
         generateToken(
             exchangeToken,
             clientCredential,
-            ObjectToolkit.isNullOrEmpty(strapi_token)
-                ? accessTokenData.getPayload()
-                : strapi_token);
+            accessTokenData.getPayload());
 
     // Log il risultato dell'exchange
     LOG.info(

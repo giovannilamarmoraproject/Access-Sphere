@@ -1,10 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.data.roles;
 
-import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
-import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiService;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.data.UserDataService;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.data.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -15,7 +14,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
-import java.util.*;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +29,21 @@ public class RolesService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   @Autowired private ClientService clientService;
-  @Autowired private StrapiService strapiService;
+  @Autowired private UserDataService userDataService;
   @Autowired private TechUserService techUserService;
 
+  /**
+   * Modifica i ruoli assegnati a un determinato utente, verificando che i ruoli esistano nei client registrati.
+   * L'operazione e' consentita esclusivamente a un utente tecnico autorizzato.
+   *
+   * @param identifier Identificatore univoco dell'utente.
+   * @param roles Oggetto contenente la lista dei ruoli da assegnare.
+   * @return Mono contenente la risposta HTTP con l'utente aggiornato.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> changeRoles(String identifier, UserRoles roles) {
     LOG.info(
-        "\uD83E\uDD37\u200D♂\uFE0F Changing user roles process started, identifier: {}",
+        "Changing user roles process started, identifier: {}",
         identifier);
     if (!techUserService.isTechUser()) {
       LOG.error("Only a tech user can change the user roles {}", identifier);
@@ -48,37 +55,38 @@ public class RolesService {
     return getClients
         .flatMap(
             clientCredentials -> {
-              List<AppRole> appRoles =
+              List<String> validRoles =
                   clientCredentials.stream()
                       .flatMap(clientCredential -> clientCredential.getAppRoles().stream())
-                      .filter(appRole -> roles.getRoles().contains(appRole.getRole()))
+                      .map(AppRole::getRole)
+                      .filter(roleName -> roles.getRoles().contains(roleName))
+                      .distinct()
                       .toList();
-              return strapiService
+              return userDataService
                   .getUserByIdentifier(identifier)
                   .flatMap(
-                      strapiUser -> {
-                        strapiUser.setApp_roles(appRoles);
-                        return strapiService
-                            .updateUser(strapiUser)
-                            .flatMap(
-                                strapiUser1 -> {
-                                  User userRes = StrapiMapper.mapFromStrapiUserToUser(strapiUser1);
+                      user -> {
+                        user.setRoles(validRoles);
+                        return userDataService
+                            .updateUser(user)
+                            .map(
+                                updatedUser -> {
                                   Response response =
                                       new Response(
                                           HttpStatus.OK.value(),
                                           "User roles for "
-                                              + userRes.getUsername()
+                                              + updatedUser.getUsername()
                                               + " successfully changed!",
                                           TraceUtils.getSpanID(),
-                                          userRes);
-                                  return Mono.just(ResponseEntity.ok(response));
+                                          updatedUser);
+                                  return ResponseEntity.ok(response);
                                 });
                       });
             })
         .doOnSuccess(
             responseResponseEntity ->
                 LOG.info(
-                    "\uD83E\uDD37\u200D♂\uFE0F Changing user roles process ended, identifier: {}",
+                    "Changing user roles process ended, identifier: {}",
                     identifier));
   }
 }

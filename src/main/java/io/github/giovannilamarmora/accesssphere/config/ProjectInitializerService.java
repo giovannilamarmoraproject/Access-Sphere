@@ -114,7 +114,6 @@ public class ProjectInitializerService implements ApplicationRunner {
       LOG.info("👤 Seeding Technical User: {} ({})", techUsername, techEmail);
       UserEntity user = new UserEntity();
       user.setIdentifier(UUID.randomUUID().toString());
-      user.setStrapiId(0L);
       user.setUsername(techUsername);
       user.setEmail(techEmail);
       user.setName("Technical");

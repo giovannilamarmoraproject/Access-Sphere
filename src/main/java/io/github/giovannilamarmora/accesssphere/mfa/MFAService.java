@@ -81,7 +81,7 @@ public class MFAService {
               user.setMfaSettings(MFAMapper.generateFinalMFA(user, mfaMethod));
 
               return dataService
-                  .updateUser(false, user)
+                  .updateUser(user, false)
                   .map(
                       user1 -> {
                         Response response =

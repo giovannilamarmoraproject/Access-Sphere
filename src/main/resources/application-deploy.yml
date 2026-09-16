@@ -29,10 +29,6 @@ logging:
 
 rest:
   client:
-    strapi:
-      active: ${STRAPI_ACTIVE}
-      #baseUrl: http://app.strapi.cms:1337
-      baseUrl: ${STRAPI_BASE_URL}
     email-sender:
       baseUrl: http://email.sender:8080
 

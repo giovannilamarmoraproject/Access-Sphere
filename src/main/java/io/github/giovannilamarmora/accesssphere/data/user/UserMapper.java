@@ -2,7 +2,6 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
-import io.github.giovannilamarmora.accesssphere.api.strapi.StrapiMapper;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
@@ -20,6 +19,13 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class UserMapper {
 
+  /**
+   * Converte il DTO {@link User} nella corrispondente entità di persistenza {@link UserEntity}.
+   * Serializza le liste di ruoli in stringa separata da spazi e converte attributi e impostazioni MFA in JSON.
+   *
+   * @param user Oggetto di trasferimento dati (DTO) dell'utente.
+   * @return L'entità {@link UserEntity} mappata e pronta per il salvataggio su database.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static UserEntity toEntity(User user) {
     UserEntity userEntity = new UserEntity();
@@ -36,11 +42,17 @@ public class UserMapper {
     return userEntity;
   }
 
+  /**
+   * Converte un'entità di persistenza {@link UserEntity} nel DTO {@link User}.
+   * Deserializza la stringa dei ruoli in una lista e riconverte le stringhe JSON di attributi e MFA nei rispettivi oggetti.
+   *
+   * @param userEntity Entità del database da convertire.
+   * @return Il DTO {@link User} popolato per i layer di servizio e controller.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static User toDTO(UserEntity userEntity) {
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
-    if (!ObjectUtils.isEmpty(userEntity.getStrapiId())) user.setId(userEntity.getStrapiId());
     if (!ObjectUtils.isEmpty(userEntity.getRoles()))
       user.setRoles(Arrays.stream(userEntity.getRoles().split(" ")).toList());
 
@@ -52,14 +64,27 @@ public class UserMapper {
     return user;
   }
 
+  /**
+   * Converte una lista di entità {@link UserEntity} in una lista di DTO {@link User}.
+   *
+   * @param userEntities Lista di entità recuperate dal database.
+   * @return Lista di DTO mappati.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<User> toDTOList(List<UserEntity> userEntities) {
     return userEntities.stream().map(UserMapper::toDTO).toList();
   }
 
+  /**
+   * Aggiorna lo stato di un'entità esistente {@link UserEntity} con i nuovi valori presenti nel DTO {@link User}.
+   * Mantiene invariati i dati strutturali o di audit e serializza opportunamente attributi e impostazioni MFA.
+   *
+   * @param existingUser Entità persistita esistente da aggiornare.
+   * @param user DTO contenente i valori aggiornati forniti dall'utente o dal sistema.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static void updateEntity(UserEntity existingUser, User user) {
-    // Aggiorna i campi dell'entità esistente con i valori del User
+    // Aggiorna i campi dell'entita' esistente con i valori del User
     existingUser.setIdentifier(user.getIdentifier());
     existingUser.setName(user.getName());
     existingUser.setSurname(user.getSurname());
@@ -86,6 +111,13 @@ public class UserMapper {
             : Mapper.writeObjectToString(user.getMfaSettings()));
   }
 
+  /**
+   * Crea un'istanza di {@link User} per un utente tecnico autenticato, associandovi i ruoli definiti nel client.
+   *
+   * @param username Username dell'utente tecnico.
+   * @param clientCredential Credenziali del client OAuth che definiscono gli AppRole concessi.
+   * @return DTO {@link User} configurato per l'utente tecnico.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static User getTechUser(String username, ClientCredential clientCredential) {
     User user = new User();
@@ -94,6 +126,13 @@ public class UserMapper {
     return user;
   }
 
+  /**
+   * Ricostruisce un DTO {@link User} a partire dai claim presenti nei dati del JWT decifrato.
+   * Utilizzato nei flussi di introspezione token e autenticazione stateless.
+   *
+   * @param jwtData Dati estratti dal token JWT.
+   * @return DTO {@link User} popolato con i claim del token.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static User getTechUser(JWTData jwtData) {
     User user = new User();
@@ -103,7 +142,6 @@ public class UserMapper {
     user.setSurname(jwtData.getFamily_name());
     user.setEmail(jwtData.getEmail());
     user.setRoles(jwtData.getRoles());
-    // user.setProfilePhoto(jwtData.getPicture());
     user.setAttributes(jwtData.getAttributes());
     return user;
   }

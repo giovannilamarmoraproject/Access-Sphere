@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.mfa.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.github.giovannilamarmora.accesssphere.api.strapi.dto.StrapiToken;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.UserDataService;
@@ -74,9 +73,19 @@ public class MFAAuthenticationService {
     return isEnabled;
   }
 
+  /**
+   * Verifica se l'autenticazione MFA e' abilitata per l'utente e genera il token temporaneo per la verifica.
+   *
+   * @param payload Payload opzionale o claim aggiuntivi.
+   * @param jwtData Dati del token JWT.
+   * @param user Utente in fase di login.
+   * @param clientCredential Credenziali del Client chiamante.
+   * @param request Richiesta HTTP in ingresso.
+   * @return Mono con la risposta OAuthTokenResponse per step MFA, oppure Mono.empty() se MFA non richiesto.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<OAuthTokenResponse> checkMFAAndMakeLogin(
-      Map<String, Object> strapiToken,
+      Map<String, Object> payload,
       JWTData jwtData,
       User user,
       ClientCredential clientCredential,
@@ -97,27 +106,29 @@ public class MFAAuthenticationService {
                   || mfaTokenData.getStatus() == TokenStatus.REVOKED;
 
           if (!isExpired && !isRevokedOrExpired) {
-            LOG.info("✅ Valid MFA device token found, skipping MFA login step");
+            LOG.info("Valid MFA device token found, skipping MFA login step");
             return Mono.empty();
           } else {
             LOG.warn(
-                "⛔ MFA token is expired or revoked (exp: {}, status: {})",
+                "MFA token is expired or revoked (exp: {}, status: {})",
                 mfaTokenData.getExpireDate(),
                 mfaTokenData.getStatus());
           }
         } else {
-          LOG.warn("⚠️ MFA token not found for device token");
+          LOG.warn("MFA token not found for device token");
         }
       } else {
-        LOG.warn("⚠️ No device token found in request");
+        LOG.warn("No device token found in request");
       }
 
-      LOG.info("🔐 Generating new MFA token");
-      strapiToken.put("expires_at", jwtData.getExp());
-      AuthToken mfaToken = tokenService.generateMFAToken(user, clientCredential, strapiToken);
+      LOG.info("Generating new MFA token");
+      if (payload != null) {
+        payload.put("expires_at", jwtData.getExp());
+      }
+      AuthToken mfaToken = tokenService.generateMFAToken(user, clientCredential, payload);
       return Mono.just(
           new OAuthTokenResponse(
-              mfaToken, Mapper.convertObject(payload, JsonNode.class), jwtData, user));
+              mfaToken, payload != null ? Mapper.convertObject(payload, JsonNode.class) : null, jwtData, user));
     }
 
     return Mono.empty();
@@ -146,10 +157,8 @@ public class MFAAuthenticationService {
         clientCredential -> {
           JWTData jwtData =
               JWTData.generateJWTData(user, clientCredential, SubjectType.CUSTOMER, request);
-          StrapiToken strapiToken =
-              Mapper.convertObject(mfaTokenData.getPayload(), StrapiToken.class);
           return dataService
-              .getUserInfo(jwtData, strapiToken.getAccess_token())
+              .getUserInfo(jwtData, null)
               .map(
                   user1 -> {
                     String deviceToken = null;
@@ -163,7 +172,7 @@ public class MFAAuthenticationService {
                         mfaTokenData, deviceToken, mfaRequest.mfaMethod().name());
                     jwtData.setRoles(user1.getRoles());
                     AuthToken token =
-                        tokenService.generateToken(jwtData, clientCredential, strapiToken);
+                        tokenService.generateToken(jwtData, clientCredential, mfaTokenData.getPayload());
                     OAuthTokenResponse oAuthTokenResponse =
                         new OAuthTokenResponse(
                             token,
@@ -179,47 +188,6 @@ public class MFAAuthenticationService {
                         mfaRequest.redirectUri(),
                         cookieDomain,
                         response);
-                    // String message =
-                    //    "Login Successfully! Welcome back "
-                    //        + oAuthTokenResponse.getUser().getUsername()
-                    //        + "!";
-                    //
-                    // Response res =
-                    //    new Response(
-                    //        HttpStatus.OK.value(),
-                    //        message,
-                    //        TraceUtils.getSpanID(),
-                    //        new OAuthTokenResponse(
-                    //            oAuthTokenResponse.getToken(),
-                    //            clientCredential.getStrapiToken()
-                    //                ? oAuthTokenResponse.getStrapiToken()
-                    //                : null,
-                    //            includeUserInfo ? oAuthTokenResponse.getUserInfo() : null,
-                    //            includeUserData ? oAuthTokenResponse.getUser() : null));
-                    //
-                    // if (ObjectUtils.isEmpty(mfaRequest.redirect_uri()))
-                    //  return ResponseEntity.ok(res);
-                    //
-                    // CookieManager.setCookieInResponse(
-                    //    Cookie.COOKIE_ACCESS_TOKEN,
-                    //    oAuthTokenResponse.getToken().getAccess_token(),
-                    //    cookieDomain,
-                    //    response);
-                    // CookieManager.setCookieInResponse(
-                    //    Cookie.COOKIE_STRAPI_TOKEN,
-                    //    oAuthTokenResponse
-                    //        .getStrapiToken()
-                    //        .get(TokenData.STRAPI_ACCESS_TOKEN.getToken())
-                    //        .asText(),
-                    //    cookieDomain,
-                    //    response);
-                    //
-                    // URI finalRedirectURI =
-                    //    OAuthMapper.getFinalRedirectURI(
-                    //        clientCredential,
-                    //        RedirectUris.POST_LOGIN_URL,
-                    //        mfaRequest.redirect_uri());
-                    // return ResponseEntity.ok().location(finalRedirectURI).body(res);
                   });
         });
   }
@@ -253,7 +221,7 @@ public class MFAAuthenticationService {
               user.setMfaSettings(mfaSetting);
 
               return userDataService
-                  .updateUser(false, user)
+                  .updateUser(user, false)
                   .map(user1 -> ResponseEntity.ok(response));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA ENABLE] - Process ended for user '{}'", identifier));
@@ -284,7 +252,7 @@ public class MFAAuthenticationService {
               user.setMfaSettings(mfaSetting);
 
               return userDataService
-                  .updateUser(false, user)
+                  .updateUser(user, false)
                   .map(user1 -> ResponseEntity.ok(response));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA DISABLE] - Process ended for user '{}'", identifier));
@@ -325,7 +293,7 @@ public class MFAAuthenticationService {
               user.setMfaSettings(mfaSetting);
 
               return userDataService
-                  .updateUser(false, user)
+                  .updateUser(user, false)
                   .map(
                       updatedUser -> {
                         String msg =
