@@ -52,7 +52,7 @@ public class AppSettingsService {
           AppSettingsEntity entity;
           if (list.isEmpty()) {
             AppSettingsEntity defaultEntity = new AppSettingsEntity();
-            entity = appSettingsDAO.saveAndFlush(defaultEntity);
+            entity = appSettingsDAO.save(defaultEntity);
           } else {
             entity = list.get(0);
           }
@@ -85,7 +85,7 @@ public class AppSettingsService {
             entity = list.get(0);
             AppSettingsMapper.updateEntity(entity, dto);
           }
-          AppSettingsEntity saved = appSettingsDAO.saveAndFlush(entity);
+          AppSettingsEntity saved = appSettingsDAO.save(entity);
           PublicAppSettingsDTO pubDto = AppSettingsMapper.toPublicDTO(saved);
           publicCache.set(pubDto);
           LOG.info("Application settings updated successfully");
@@ -135,7 +135,7 @@ public class AppSettingsService {
             } else {
               importedSettings.setId(null);
             }
-            appSettingsDAO.saveAndFlush(importedSettings);
+            appSettingsDAO.save(importedSettings);
             publicCache.set(AppSettingsMapper.toPublicDTO(importedSettings));
           }
 
