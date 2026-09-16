@@ -235,6 +235,9 @@ public class AppSettingsEntity extends GenericEntity {
 
   public void syncLoginSettingsMap() {
     Map<String, Object> map = new LinkedHashMap<>();
+    if (this.loginSettings != null) {
+      map.putAll(this.loginSettings);
+    }
     map.put("loginMode", this.loginMode != null ? this.loginMode : "SHOWCASE");
     map.put("loginBgUrl", this.loginBgUrl);
     map.put("loginBgOpacity", this.loginBgOpacity != null ? this.loginBgOpacity : 50);
@@ -246,6 +249,9 @@ public class AppSettingsEntity extends GenericEntity {
 
   public void syncBrandingSettingsMap() {
     Map<String, Object> map = new LinkedHashMap<>();
+    if (this.brandingSettings != null) {
+      map.putAll(this.brandingSettings);
+    }
     map.put("appName", this.appName != null ? this.appName : "Access Sphere");
     map.put("appTagline", this.appTagline != null ? this.appTagline : "Gestione Identità & Accessi");
     map.put("logoUrl", this.logoUrl != null ? this.logoUrl : "/img/logo-minimal.svg");
@@ -257,6 +263,9 @@ public class AppSettingsEntity extends GenericEntity {
 
   public void syncPolicySettingsMap() {
     Map<String, Object> map = new LinkedHashMap<>();
+    if (this.policySettings != null) {
+      map.putAll(this.policySettings);
+    }
     map.put("privacyPolicyUrl", this.privacyPolicyUrl != null ? this.privacyPolicyUrl : "/privacy-policy");
     map.put("cookiePolicyUrl", this.cookiePolicyUrl != null ? this.cookiePolicyUrl : "/cookie-policy");
     this.policySettings = map;

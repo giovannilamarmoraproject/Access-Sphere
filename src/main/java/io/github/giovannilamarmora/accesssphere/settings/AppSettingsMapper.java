@@ -33,6 +33,9 @@ public class AppSettingsMapper {
 
     AppSettingsDTO dto = new AppSettingsDTO();
     BeanUtils.copyProperties(entity, dto);
+    dto.setHideHomeButton(entity.getHideHomeButton() != null && entity.getHideHomeButton());
+    dto.setNavigationLayout(
+        entity.getNavigationLayout() != null ? entity.getNavigationLayout() : "HEADER");
     dto.setLoginSettings(entity.getLoginSettingsMap());
     dto.setBrandingSettings(entity.getBrandingSettingsMap());
     dto.setPolicySettings(entity.getPolicySettingsMap());
@@ -54,112 +57,117 @@ public class AppSettingsMapper {
     if (source.getNavigationLayout() != null)
       target.setNavigationLayout(source.getNavigationLayout());
 
-    // Branding: check flat fields first, fallback to brandingSettings map
-    if (source.getAppName() != null) {
-      target.setAppName(source.getAppName());
-    } else if (source.getBrandingSettings() != null
-        && source.getBrandingSettings().get("appName") != null) {
-      target.setAppName(source.getBrandingSettings().get("appName").toString());
+    // 1. Branding Settings: priorità alla mappa categorizzata brandingSettings
+    if (source.getBrandingSettings() != null) {
+      Map<String, Object> branding = source.getBrandingSettings();
+      if (branding.containsKey("appName") && branding.get("appName") != null) {
+        target.setAppName(branding.get("appName").toString());
+      }
+      if (branding.containsKey("appTagline")) {
+        Object val = branding.get("appTagline");
+        target.setAppTagline(val != null ? val.toString() : null);
+      }
+      if (branding.containsKey("logoUrl")) {
+        Object val = branding.get("logoUrl");
+        target.setLogoUrl(
+            val != null && !val.toString().isBlank() ? val.toString() : "/img/logo-minimal.svg");
+      }
+      if (branding.containsKey("faviconUrl")) {
+        Object val = branding.get("faviconUrl");
+        target.setFaviconUrl(
+            val != null && !val.toString().isBlank() ? val.toString() : "/img/logo-minimal.svg");
+      }
+      if (branding.containsKey("footerCopyright")) {
+        Object val = branding.get("footerCopyright");
+        target.setFooterCopyright(val != null ? val.toString() : null);
+      }
+      if (branding.containsKey("supportEmail")) {
+        Object val = branding.get("supportEmail");
+        target.setSupportEmail(val != null ? val.toString() : null);
+      }
+      target.getBrandingSettings().putAll(branding);
     }
-
-    if (source.getAppTagline() != null) {
-      target.setAppTagline(source.getAppTagline());
-    } else if (source.getBrandingSettings() != null
-        && source.getBrandingSettings().get("appTagline") != null) {
-      target.setAppTagline(source.getBrandingSettings().get("appTagline").toString());
-    }
-
+    // Fallback retrocompatibilità per campi flat di branding
+    if (source.getAppName() != null) target.setAppName(source.getAppName());
+    if (source.getAppTagline() != null) target.setAppTagline(source.getAppTagline());
     if (source.getLogoUrl() != null) {
       target.setLogoUrl(
           source.getLogoUrl().isBlank() ? "/img/logo-minimal.svg" : source.getLogoUrl());
-    } else if (source.getBrandingSettings() != null
-        && source.getBrandingSettings().get("logoUrl") != null) {
-      target.setLogoUrl(source.getBrandingSettings().get("logoUrl").toString());
     }
-
     if (source.getFaviconUrl() != null) {
       target.setFaviconUrl(
           source.getFaviconUrl().isBlank() ? "/img/logo-minimal.svg" : source.getFaviconUrl());
-    } else if (source.getBrandingSettings() != null
-        && source.getBrandingSettings().get("faviconUrl") != null) {
-      target.setFaviconUrl(source.getBrandingSettings().get("faviconUrl").toString());
     }
+    if (source.getFooterCopyright() != null) target.setFooterCopyright(source.getFooterCopyright());
+    if (source.getSupportEmail() != null) target.setSupportEmail(source.getSupportEmail());
 
-    if (source.getFooterCopyright() != null) {
-      target.setFooterCopyright(source.getFooterCopyright());
-    } else if (source.getBrandingSettings() != null
-        && source.getBrandingSettings().get("footerCopyright") != null) {
-      target.setFooterCopyright(source.getBrandingSettings().get("footerCopyright").toString());
+    // 2. Login Settings: priorità alla mappa categorizzata loginSettings
+    if (source.getLoginSettings() != null) {
+      Map<String, Object> login = source.getLoginSettings();
+      if (login.containsKey("loginMode") && login.get("loginMode") != null) {
+        target.setLoginMode(login.get("loginMode").toString());
+      }
+      if (login.containsKey("loginBgUrl")) {
+        Object val = login.get("loginBgUrl");
+        target.setLoginBgUrl(val != null ? val.toString() : null);
+      }
+      if (login.containsKey("loginBgOpacity")) {
+        Object val = login.get("loginBgOpacity");
+        if (val instanceof Number num) {
+          target.setLoginBgOpacity(num.intValue());
+        } else if (val != null) {
+          try {
+            target.setLoginBgOpacity(Integer.parseInt(val.toString()));
+          } catch (NumberFormatException ignored) {
+          }
+        }
+      }
+      if (login.containsKey("loginHeroTitle")) {
+        Object val = login.get("loginHeroTitle");
+        target.setLoginHeroTitle(val != null ? val.toString() : null);
+      }
+      if (login.containsKey("loginHeroSubtitle")) {
+        Object val = login.get("loginHeroSubtitle");
+        target.setLoginHeroSubtitle(val != null ? val.toString() : null);
+      }
+      if (login.containsKey("hideHomeButton")) {
+        Object val = login.get("hideHomeButton");
+        if (val instanceof Boolean b) {
+          target.setHideHomeButton(b);
+        } else if (val != null) {
+          target.setHideHomeButton(Boolean.parseBoolean(val.toString()));
+        }
+      }
+      target.getLoginSettings().putAll(login);
     }
-
-    if (source.getSupportEmail() != null) {
-      target.setSupportEmail(source.getSupportEmail());
-    } else if (source.getBrandingSettings() != null
-        && source.getBrandingSettings().get("supportEmail") != null) {
-      target.setSupportEmail(source.getBrandingSettings().get("supportEmail").toString());
-    }
-
-    // Login Settings: check flat fields first, fallback to loginSettings map
-    if (source.getLoginMode() != null) {
-      target.setLoginMode(source.getLoginMode());
-    } else if (source.getLoginSettings() != null
-        && source.getLoginSettings().get("loginMode") != null) {
-      target.setLoginMode(source.getLoginSettings().get("loginMode").toString());
-    }
-
-    if (source.getLoginBgUrl() != null) {
-      target.setLoginBgUrl(source.getLoginBgUrl());
-    } else if (source.getLoginSettings() != null
-        && source.getLoginSettings().get("loginBgUrl") != null) {
-      target.setLoginBgUrl(source.getLoginSettings().get("loginBgUrl").toString());
-    }
-
-    if (source.getLoginBgOpacity() != null) {
-      target.setLoginBgOpacity(source.getLoginBgOpacity());
-    } else if (source.getLoginSettings() != null
-        && source.getLoginSettings().get("loginBgOpacity") != null) {
-      Object val = source.getLoginSettings().get("loginBgOpacity");
-      if (val instanceof Number num) target.setLoginBgOpacity(num.intValue());
-    }
-
-    if (source.getLoginHeroTitle() != null) {
-      target.setLoginHeroTitle(source.getLoginHeroTitle());
-    } else if (source.getLoginSettings() != null
-        && source.getLoginSettings().get("loginHeroTitle") != null) {
-      target.setLoginHeroTitle(source.getLoginSettings().get("loginHeroTitle").toString());
-    }
-
-    if (source.getLoginHeroSubtitle() != null) {
+    // Fallback retrocompatibilità per campi flat di login
+    if (source.getLoginMode() != null) target.setLoginMode(source.getLoginMode());
+    if (source.getLoginBgUrl() != null) target.setLoginBgUrl(source.getLoginBgUrl());
+    if (source.getLoginBgOpacity() != null) target.setLoginBgOpacity(source.getLoginBgOpacity());
+    if (source.getLoginHeroTitle() != null) target.setLoginHeroTitle(source.getLoginHeroTitle());
+    if (source.getLoginHeroSubtitle() != null)
       target.setLoginHeroSubtitle(source.getLoginHeroSubtitle());
-    } else if (source.getLoginSettings() != null
-        && source.getLoginSettings().get("loginHeroSubtitle") != null) {
-      target.setLoginHeroSubtitle(source.getLoginSettings().get("loginHeroSubtitle").toString());
-    }
+    if (source.getHideHomeButton() != null) target.setHideHomeButton(source.getHideHomeButton());
 
-    if (source.getHideHomeButton() != null) {
-      target.setHideHomeButton(source.getHideHomeButton());
-    } else if (source.getLoginSettings() != null
-        && source.getLoginSettings().get("hideHomeButton") != null) {
-      Object val = source.getLoginSettings().get("hideHomeButton");
-      if (val instanceof Boolean b) target.setHideHomeButton(b);
+    // 3. Policy Settings: priorità alla mappa categorizzata policySettings
+    if (source.getPolicySettings() != null) {
+      Map<String, Object> policy = source.getPolicySettings();
+      if (policy.containsKey("privacyPolicyUrl")) {
+        Object val = policy.get("privacyPolicyUrl");
+        target.setPrivacyPolicyUrl(val != null ? val.toString() : null);
+      }
+      if (policy.containsKey("cookiePolicyUrl")) {
+        Object val = policy.get("cookiePolicyUrl");
+        target.setCookiePolicyUrl(val != null ? val.toString() : null);
+      }
+      target.getPolicySettings().putAll(policy);
     }
-
-    // Policy Settings: check flat fields first, fallback to policySettings map
-    if (source.getPrivacyPolicyUrl() != null) {
+    // Fallback retrocompatibilità per campi flat di policy
+    if (source.getPrivacyPolicyUrl() != null)
       target.setPrivacyPolicyUrl(source.getPrivacyPolicyUrl());
-    } else if (source.getPolicySettings() != null
-        && source.getPolicySettings().get("privacyPolicyUrl") != null) {
-      target.setPrivacyPolicyUrl(source.getPolicySettings().get("privacyPolicyUrl").toString());
-    }
+    if (source.getCookiePolicyUrl() != null) target.setCookiePolicyUrl(source.getCookiePolicyUrl());
 
-    if (source.getCookiePolicyUrl() != null) {
-      target.setCookiePolicyUrl(source.getCookiePolicyUrl());
-    } else if (source.getPolicySettings() != null
-        && source.getPolicySettings().get("cookiePolicyUrl") != null) {
-      target.setCookiePolicyUrl(source.getPolicySettings().get("cookiePolicyUrl").toString());
-    }
-
-    // Explicitly synchronize category maps before persisting so Hibernate marks the entity as dirty
+    // Sincronizza le mappe di categoria per il salvataggio su DB
     target.syncCategoryMapsBeforeSave();
   }
 }
