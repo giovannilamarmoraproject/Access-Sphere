@@ -20,6 +20,7 @@ import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
+import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -102,7 +103,7 @@ public class OAuthService {
 
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
-    String finalRedirectUri = Utils.decodeURLValue(redirect_uri);
+    String finalRedirectUri = URLUtils.decodeURLValue(redirect_uri);
 
     return clientCredentialMono.map(
         clientCredential -> {
@@ -182,7 +183,7 @@ public class OAuthService {
     LOG.info("🗝️ [OAUTH TOKEN] Processing OAuth 2.0 token request - clientId: {}, grantType: {}", clientId, grant_type);
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
-    redirect_uri = Utils.decodeURLValue(redirect_uri);
+    redirect_uri = URLUtils.decodeURLValue(redirect_uri);
     switch (GrantType.fromType(grant_type)) {
       case AUTHORIZATION_CODE, PASSWORD -> {
         LOG.debug("📋 [OAUTH TOKEN] Delegating to getToken for grantType: {}, clientId: {}", grant_type, clientId);

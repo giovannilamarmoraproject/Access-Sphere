@@ -17,6 +17,7 @@ import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategor
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
+import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.security.SecureRandom;
@@ -44,7 +45,12 @@ public class ProjectInitializerService implements ApplicationRunner {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
-  @Value("${app.domain:access-sphere.giovannilamarmora.com}")
+  public static final String DEFAULT_RESET_PASSWORD_TEMPLATE_UUID =
+      TechUserConfig.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID;
+  public static final String LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER =
+      TechUserConfig.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER;
+
+  @Value("${app.domain}")
   private String appDomain;
 
   @Autowired private TechUserConfig techUserConfig;
@@ -68,81 +74,24 @@ public class ProjectInitializerService implements ApplicationRunner {
 
   /**
    * Risolve l'URL base dell'applicazione per la composizione dei redirect URI di default del client
-   * tecnico a partire da 'app.domain'. Se l'URL include già uno schema esplicito ('http://' o
-   * 'https://') lo preserva inalterato. Se lo schema è omesso, determina dinamicamente il
-   * protocollo appropriato:
-   *
-   * <ul>
-   *   <li>'http://' per host locali o di sviluppo (localhost, 127.0.0.1, 0.0.0.0, [::1], domini
-   *       .localhost, .local, .internal, IP privati) o porta 80
-   *   <li>'https://' per domini remoti o porta 443
-   * </ul>
-   *
-   * Rimuove inoltre eventuali slash finali per garantire un formato uniforme.
+   * tecnico a partire da 'app.domain'.
+   * Interconnesso con {@link URLUtils#resolveBaseUrl(String)} per la gestione centralizzata dei protocolli.
    *
    * @return URL base normalizzato comprensivo di schema (http o https) e privo di trailing slash.
    */
   public String resolveBaseUrl() {
-    if (!StringUtils.hasText(appDomain)) {
-      return "https://access-sphere.giovannilamarmora.com";
-    }
-    String domain = appDomain.trim().replaceAll("/+$", "");
-    if (!domain.startsWith("http://") && !domain.startsWith("https://")) {
-      String scheme = isLocalOrInsecureHost(domain) ? "http://" : "https://";
-      domain = scheme + domain;
-    }
-    return domain;
+    return URLUtils.resolveBaseUrl(appDomain);
   }
 
   /**
-   * Determina se l'host specificato rappresenta un ambiente locale o che richiede protocollo HTTP
-   * in chiaro. Interconnesso con {@link #resolveBaseUrl()} per differenziare la risoluzione tra
-   * localhost/dev e ambienti remoti.
+   * Determina se l'host specificato rappresenta un ambiente locale o che richiede protocollo HTTP in chiaro.
+   * Interconnesso con {@link URLUtils#isLocalOrInsecureHost(String)}.
    *
    * @param domain Dominio o stringa host:port da verificare
-   * @return true se l'host è locale o utilizza la porta standard HTTP 80, false per domini remoti
-   *     sicuri
+   * @return true se l'host e locale o utilizza la porta standard HTTP 80, false per domini remoti sicuri
    */
   public static boolean isLocalOrInsecureHost(String domain) {
-    if (!StringUtils.hasText(domain)) {
-      return false;
-    }
-    String host = domain.trim();
-    if (host.contains("/")) {
-      host = host.substring(0, host.indexOf('/'));
-    }
-    String port = null;
-    if (host.startsWith("[")) {
-      int closeBracket = host.indexOf(']');
-      if (closeBracket != -1) {
-        if (host.length() > closeBracket + 1 && host.charAt(closeBracket + 1) == ':') {
-          port = host.substring(closeBracket + 2);
-        }
-        host = host.substring(1, closeBracket);
-      }
-    } else if (host.contains(":")) {
-      port = host.substring(host.indexOf(':') + 1);
-      host = host.substring(0, host.indexOf(':'));
-    }
-
-    if ("80".equals(port)) {
-      return true;
-    }
-    if ("443".equals(port)) {
-      return false;
-    }
-
-    String lowerHost = host.toLowerCase();
-    return lowerHost.equals("localhost")
-        || lowerHost.equals("127.0.0.1")
-        || lowerHost.equals("0.0.0.0")
-        || lowerHost.equals("::1")
-        || lowerHost.endsWith(".localhost")
-        || lowerHost.endsWith(".local")
-        || lowerHost.endsWith(".internal")
-        || lowerHost.startsWith("192.168.")
-        || lowerHost.startsWith("10.")
-        || lowerHost.matches("^172\\.(1[6-9]|2[0-9]|3[0-1])\\..*");
+    return URLUtils.isLocalOrInsecureHost(domain);
   }
 
   /**

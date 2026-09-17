@@ -10,9 +10,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.web.CookieManager;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -66,16 +63,6 @@ public class Utils {
       finalParam.put(key, result.toString());
     }
     return finalParam;
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
-  public static String encodeURLValue(String value) {
-    return ObjectUtils.isEmpty(value) ? value : URLEncoder.encode(value, StandardCharsets.UTF_8);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
-  public static String decodeURLValue(String value) {
-    return ObjectUtils.isEmpty(value) ? value : URLDecoder.decode(value, StandardCharsets.UTF_8);
   }
 
   public static <E extends Enum<E>> boolean isEnumValue(String value, Class<E> enumClass) {

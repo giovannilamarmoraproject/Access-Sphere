@@ -43,6 +43,8 @@ class ProjectInitializerServiceTest {
     techUserConfig.setTechClientId("ACCESS-SPHERE-TECH");
     techUserConfig.setTechEmail("tech_admin@accesssphere.local");
     ReflectionTestUtils.setField(projectInitializerService, "techUserConfig", techUserConfig);
+    ReflectionTestUtils.setField(
+        projectInitializerService, "appDomain", "access-sphere.giovannilamarmora.com");
   }
 
   @Test
@@ -166,8 +168,13 @@ class ProjectInitializerServiceTest {
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", "https://localhost:8443");
     assertEquals("https://localhost:8443", projectInitializerService.resolveBaseUrl());
 
-    // Caso 10: dominio vuoto o null -> fallback default
+    // Caso 10: dominio vuoto o null -> lancia IllegalArgumentException perche il dominio e obbligatorio
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", "");
-    assertEquals("https://access-sphere.giovannilamarmora.com", projectInitializerService.resolveBaseUrl());
+    assertThrows(
+        IllegalArgumentException.class, () -> projectInitializerService.resolveBaseUrl());
+
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", null);
+    assertThrows(
+        IllegalArgumentException.class, () -> projectInitializerService.resolveBaseUrl());
   }
 }

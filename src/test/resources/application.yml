@@ -57,6 +57,8 @@ rest:
 
 app:
   version: 1.0.0
+  domain: localhost:8081
+  aes-key: ${AES_KEY:}
   tech-user:
     username: username
     password: password

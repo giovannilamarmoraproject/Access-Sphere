@@ -6,6 +6,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
+import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
@@ -57,7 +58,7 @@ public class JWTData {
             : clientCredential.getClientId() + "." + remoteAddress,
         clientCredential.getJwtExpiration(),
         System.currentTimeMillis(),
-        ObjectToolkit.isNullOrEmpty(remoteAddress) ? null : "https://" + remoteAddress,
+        URLUtils.resolveIssuer(remoteAddress, request),
         user.getUsername(),
         subject_type,
         ObjectUtils.isEmpty(user.getSurname()) || ObjectUtils.isEmpty(user.getName())
