@@ -1,5 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
+import static io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID;
+import static io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER;
+
 import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
@@ -41,12 +44,7 @@ public class ProjectInitializerService implements ApplicationRunner {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
-  public static final String DEFAULT_RESET_PASSWORD_TEMPLATE_UUID =
-      "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95";
-  public static final String LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER =
-      "ACCESS_SPHERE_CODE_RESET_PASSWORD";
-
-  @Value("${app.domain}")
+  @Value("${app.domain:access-sphere.giovannilamarmora.com}")
   private String appDomain;
 
   @Autowired private TechUserConfig techUserConfig;
@@ -70,18 +68,81 @@ public class ProjectInitializerService implements ApplicationRunner {
 
   /**
    * Risolve l'URL base dell'applicazione per la composizione dei redirect URI di default del client
-   * tecnico a partire da 'app.domain'. Verifica se è stato esplicitato il protocollo ('http://' o
-   * 'https://'); in caso contrario, antepone automaticamente 'https://'. Rimuove inoltre eventuali
-   * slash finali per garantire un formato uniforme.
+   * tecnico a partire da 'app.domain'. Se l'URL include già uno schema esplicito ('http://' o
+   * 'https://') lo preserva inalterato. Se lo schema è omesso, determina dinamicamente il
+   * protocollo appropriato:
    *
-   * @return URL base normalizzato comprensivo di schema e privo di trailing slash.
+   * <ul>
+   *   <li>'http://' per host locali o di sviluppo (localhost, 127.0.0.1, 0.0.0.0, [::1], domini
+   *       .localhost, .local, .internal, IP privati) o porta 80
+   *   <li>'https://' per domini remoti o porta 443
+   * </ul>
+   *
+   * Rimuove inoltre eventuali slash finali per garantire un formato uniforme.
+   *
+   * @return URL base normalizzato comprensivo di schema (http o https) e privo di trailing slash.
    */
   public String resolveBaseUrl() {
+    if (!StringUtils.hasText(appDomain)) {
+      return "https://access-sphere.giovannilamarmora.com";
+    }
     String domain = appDomain.trim().replaceAll("/+$", "");
     if (!domain.startsWith("http://") && !domain.startsWith("https://")) {
-      domain = "https://" + domain;
+      String scheme = isLocalOrInsecureHost(domain) ? "http://" : "https://";
+      domain = scheme + domain;
     }
     return domain;
+  }
+
+  /**
+   * Determina se l'host specificato rappresenta un ambiente locale o che richiede protocollo HTTP
+   * in chiaro. Interconnesso con {@link #resolveBaseUrl()} per differenziare la risoluzione tra
+   * localhost/dev e ambienti remoti.
+   *
+   * @param domain Dominio o stringa host:port da verificare
+   * @return true se l'host è locale o utilizza la porta standard HTTP 80, false per domini remoti
+   *     sicuri
+   */
+  public static boolean isLocalOrInsecureHost(String domain) {
+    if (!StringUtils.hasText(domain)) {
+      return false;
+    }
+    String host = domain.trim();
+    if (host.contains("/")) {
+      host = host.substring(0, host.indexOf('/'));
+    }
+    String port = null;
+    if (host.startsWith("[")) {
+      int closeBracket = host.indexOf(']');
+      if (closeBracket != -1) {
+        if (host.length() > closeBracket + 1 && host.charAt(closeBracket + 1) == ':') {
+          port = host.substring(closeBracket + 2);
+        }
+        host = host.substring(1, closeBracket);
+      }
+    } else if (host.contains(":")) {
+      port = host.substring(host.indexOf(':') + 1);
+      host = host.substring(0, host.indexOf(':'));
+    }
+
+    if ("80".equals(port)) {
+      return true;
+    }
+    if ("443".equals(port)) {
+      return false;
+    }
+
+    String lowerHost = host.toLowerCase();
+    return lowerHost.equals("localhost")
+        || lowerHost.equals("127.0.0.1")
+        || lowerHost.equals("0.0.0.0")
+        || lowerHost.equals("::1")
+        || lowerHost.endsWith(".localhost")
+        || lowerHost.endsWith(".local")
+        || lowerHost.endsWith(".internal")
+        || lowerHost.startsWith("192.168.")
+        || lowerHost.startsWith("10.")
+        || lowerHost.matches("^172\\.(1[6-9]|2[0-9]|3[0-1])\\..*");
   }
 
   /**
@@ -107,7 +168,7 @@ public class ProjectInitializerService implements ApplicationRunner {
     // Generazione automatica dei redirect URI di default basati sull'URL di dominio
     String baseUrl = resolveBaseUrl();
     String fallbackUri = baseUrl + "/app/login";
-    String redirectUri = baseUrl + " " + baseUrl + "/app/users";
+    String redirectUri = baseUrl + " " + baseUrl + "/app";
 
     // Mappa salvata su DB in formato JSON: {"fallback_uri": "...", "redirect_uri": "..."}
     Map<String, String> redirectMap = new LinkedHashMap<>();
@@ -156,7 +217,7 @@ public class ProjectInitializerService implements ApplicationRunner {
     client.setClientId(techClientId);
     client.setExternalClientId(techClientId);
     client.setAccessType(AccessType.OFFLINE);
-    client.setAuthType(OAuthType.ALL_TYPE);
+    client.setAuthType(OAuthType.BEARER);
     client.setTokenType(TokenType.BEARER_JWT);
     client.setScopes("openid profile email read write admin");
     client.setJwtSecret(jwtSecret);
@@ -164,7 +225,7 @@ public class ProjectInitializerService implements ApplicationRunner {
     client.setAppRoles("[{\"role\":\"ROLE_ADMIN\"},{\"role\":\"ROLE_TECH\"}]");
     client.setMfaEnabled(false);
     client.setAuthorize_redirect_status(HttpStatus.FOUND);
-    client.setJwtExpiration(360000L);
+    client.setJwtExpiration(3600000L);
     client.setAccessToken(true);
     client.setIdToken(true);
     return client;
@@ -278,9 +339,9 @@ public class ProjectInitializerService implements ApplicationRunner {
   /**
    * Inizializzazione del template email predefinito per il reset della password con identificatore
    * UUID. Si interconnette con {@link IEmailTemplateDAO} per verificare se il template con UUID
-   * {@value #DEFAULT_RESET_PASSWORD_TEMPLATE_UUID} è già censito nella tabella 'EMAIL_TEMPLATES'.
-   * Se assente, verifica la presenza del template con identificatore legacy {@value
-   * #LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER} ed esegue la migrazione automatica
+   * {DEFAULT_RESET_PASSWORD_TEMPLATE_UUID} è già censito nella tabella 'EMAIL_TEMPLATES'. Se
+   * assente, verifica la presenza del template con identificatore legacy
+   * {LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER} ed esegue la migrazione automatica
    * all'identificatore UUID e al layout email responsive/bulletproof, collegandolo al client
    * tecnico {@code techClientId} e impostando i parametri segnaposto standard (SITE_URL, NAME,
    * RESET_CODE, SITE_SHORT).

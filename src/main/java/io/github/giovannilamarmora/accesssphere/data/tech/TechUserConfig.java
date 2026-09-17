@@ -13,8 +13,9 @@ import org.springframework.stereotype.Service;
 
 /**
  * Configurazione centralizzata per l'utente tecnico IAM e per il client tecnico di sistema.
- * Raccoglie e incapsula tutte le proprieta applicative (prefisso 'app.tech-user') e i bean di sicurezza,
- * eliminando la necessita di iniettare singole annotazioni @Value nei vari servizi del sistema.
+ * Raccoglie e incapsula tutte le proprieta applicative (prefisso 'app.tech-user') e i bean di
+ * sicurezza, eliminando la necessita di iniettare singole annotazioni @Value nei vari servizi del
+ * sistema.
  */
 @Getter
 @Setter
@@ -41,6 +42,11 @@ public class TechUserConfig {
 
   @Autowired public TokenService tokenService;
   @Autowired public AccessTokenData accessTokenData;
+
+  public static final String DEFAULT_RESET_PASSWORD_TEMPLATE_UUID =
+      "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95";
+  public static final String LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER =
+      "ACCESS_SPHERE_CODE_RESET_PASSWORD";
 
   public static final String TECH_ROLE_LOG = "The subject {} has Technical Roles";
 

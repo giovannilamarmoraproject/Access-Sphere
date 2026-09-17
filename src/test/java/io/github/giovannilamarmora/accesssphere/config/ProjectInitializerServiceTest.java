@@ -130,19 +130,43 @@ class ProjectInitializerServiceTest {
   @Test
   @DisplayName("resolveBaseUrl handles custom domain without scheme, with http, and with trailing slashes")
   void testResolveBaseUrlFormats() {
-    // Caso 1: dominio senza schema e con slash finali -> aggiunge https:// e rimuove trailing slash
+    // Caso 1: dominio remoto senza schema e con slash finali -> assegna https:// e rimuove trailing slash
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", "my-domain.com///");
     assertEquals("https://my-domain.com", projectInitializerService.resolveBaseUrl());
 
-    // Caso 2: dominio con http esplicito (es. ambiente di sviluppo locale) -> mantiene http://
+    // Caso 2: localhost senza schema con porta -> assegna automaticamente http://
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "localhost:8081");
+    assertEquals("http://localhost:8081", projectInitializerService.resolveBaseUrl());
+
+    // Caso 3: localhost senza schema e senza porta -> assegna automaticamente http://
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "localhost");
+    assertEquals("http://localhost", projectInitializerService.resolveBaseUrl());
+
+    // Caso 4: 127.0.0.1 senza schema -> assegna automaticamente http://
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "127.0.0.1:8080");
+    assertEquals("http://127.0.0.1:8080", projectInitializerService.resolveBaseUrl());
+
+    // Caso 5: dominio locale .local o IP privato senza schema -> assegna http://
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "auth-service.local:3000");
+    assertEquals("http://auth-service.local:3000", projectInitializerService.resolveBaseUrl());
+
+    // Caso 6: porta 80 senza schema su dominio esterno -> assegna http://
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "example.com:80");
+    assertEquals("http://example.com:80", projectInitializerService.resolveBaseUrl());
+
+    // Caso 7: dominio con http esplicito -> mantiene http://
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", "http://localhost:8080");
     assertEquals("http://localhost:8080", projectInitializerService.resolveBaseUrl());
 
-    // Caso 3: dominio con https esplicito -> mantiene https://
+    // Caso 8: dominio con https esplicito -> mantiene https://
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", "https://auth.example.org/");
     assertEquals("https://auth.example.org", projectInitializerService.resolveBaseUrl());
 
-    // Caso 4: dominio vuoto o null -> fallback default
+    // Caso 9: https esplicito su localhost -> mantiene https://
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "https://localhost:8443");
+    assertEquals("https://localhost:8443", projectInitializerService.resolveBaseUrl());
+
+    // Caso 10: dominio vuoto o null -> fallback default
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", "");
     assertEquals("https://access-sphere.giovannilamarmora.com", projectInitializerService.resolveBaseUrl());
   }
