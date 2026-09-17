@@ -1,0 +1,267 @@
+package io.github.giovannilamarmora.accesssphere.data.user.account;
+
+import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderService;
+import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
+import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
+import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
+import io.github.giovannilamarmora.accesssphere.client.ClientService;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.user.UserService;
+import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.email.EmailTemplateService;
+import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
+import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.interceptors.Logged;
+import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
+import io.github.giovannilamarmora.utils.utilities.Utilities;
+import java.util.Base64;
+import java.util.Date;
+import java.util.Map;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import reactor.core.publisher.Mono;
+
+/**
+ * Servizio applicativo reattivo dedicato alle operazioni self-service dell'utente e al ciclo di
+ * vita dell'account (profilo e gestione password).
+ *
+ * <p>Interconnessioni logiche:
+ *
+ * <ul>
+ *   <li>Risolve la configurazione del client e le tipologie di autenticazione tramite {@link
+ *       ClientService}.
+ *   <li>Decodifica i token Bearer con {@link TokenService#parseToken} e valida le identita' Google
+ *       federate tramite {@link GrpcService#userInfo}.
+ *   <li>Interroga e aggiorna l'anagrafica utente delegando al layer di persistenza {@link
+ *       UserService}.
+ *   <li>Verifica i diritti di auto-modifica del profilo o la presenza di ruoli privilegiati tramite
+ *       {@link TechUserService} e {@link UserValidator#validateUpdate}.
+ *   <li>Orchestra il flusso di reset password in due fasi, integrandosi con {@link
+ *       EmailTemplateService} per il template localizzato e con {@link EmailSenderService} per la
+ *       notifica.
+ * </ul>
+ */
+@Service
+@Logged
+@RequiredArgsConstructor
+public class UserAccountService {
+
+  private static final Logger LOG = LoggerFilter.getLogger(UserAccountService.class);
+
+  @Autowired private ClientService clientService;
+  @Autowired private TokenService tokenService;
+  @Autowired private TechUserService techUserService;
+  @Autowired private EmailTemplateService emailTemplateService;
+  @Autowired private EmailSenderService emailSenderService;
+  @Autowired private UserService userService;
+  @Autowired private AccessTokenData accessTokenData;
+
+  /**
+   * Recupera il profilo dell'utente attualmente autenticato nella sessione corrente.
+   *
+   * @param bearer Token di accesso Bearer inviato dal client.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente il DTO {@link User} del profilo.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<User> profile(String bearer, ServerHttpRequest request) {
+    LOG.info("👤 [USER ACCOUNT] Starting user profile retrieval process");
+
+    return clientService
+        .getClientCredentialByClientID(accessTokenData.getClientId())
+        .flatMap(
+            clientCredential -> {
+              UserValidator.validateAuthType(clientCredential, accessTokenData);
+              JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
+              switch (decryptToken.getType()) {
+                case BEARER -> {
+                  return userService.getUserByEmail(decryptToken.getEmail());
+                }
+                case GOOGLE -> {
+                  GoogleModel userInfo =
+                      GrpcService.userInfo(
+                          accessTokenData.getPayload().get("id_token").textValue(),
+                          clientCredential);
+                  UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
+                  return userService.getUserByEmail(decryptToken.getEmail());
+                }
+                default -> {
+                  return UserValidator.defaultErrorOnType();
+                }
+              }
+            })
+        .doOnSuccess(
+            user ->
+                LOG.info(
+                    "✅ [USER ACCOUNT] Profile retrieval completed successfully for user: {}",
+                    user.getUsername()));
+  }
+
+  /**
+   * Aggiorna i dati di profilo dell'utente nel database locale, verificando l'identita' o i
+   * privilegi tecnici.
+   *
+   * @param userToUpdate DTO contenente i dati anagrafici da aggiornare.
+   * @param bearer Token Bearer della sessione.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente il DTO {@link User} aggiornato.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<User> updateUser(User userToUpdate, String bearer, ServerHttpRequest request) {
+    userToUpdate.setPassword(null);
+    LOG.info(
+        "👤 [USER ACCOUNT] Starting profile update for username: {}, identifier: {}",
+        userToUpdate.getUsername(),
+        userToUpdate.getIdentifier());
+
+    return techUserService
+        .hasTechUserRoles(accessTokenData, clientService)
+        .flatMap(
+            hasTechRoles -> {
+              if (!hasTechRoles) {
+                UserValidator.validateUpdate(accessTokenData, userToUpdate);
+              }
+              return userService.updateUser(userToUpdate);
+            })
+        .doOnSuccess(
+            updatedUser ->
+                LOG.info(
+                    "✅ [USER ACCOUNT] Profile update successfully completed for username: {}, identifier: {}",
+                    updatedUser.getUsername(),
+                    updatedUser.getIdentifier()));
+  }
+
+  /**
+   * Avvia la procedura di richiesta reset password (Step 1). Genera un token univoco di reset,
+   * aggiorna il record utente e, se {@code sendEmail} e' abilitato, invia l'email localizzata.
+   *
+   * @param changePassword DTO con email del destinatario, clientId e templateId opzionale.
+   * @param locale Lingua di localizzazione per il template di posta.
+   * @param sendEmail Flag per abilitare l'invio asincrono del messaggio email.
+   * @return Mono contenente {@link EmailResponse} con i dati di consegna o il token generato.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<EmailResponse> changePasswordRequest(
+      ChangePassword changePassword, String locale, boolean sendEmail) {
+    LOG.info(
+        "🔑 [PASSWORD RESET] Starting password reset request for email: {}, locale: {}, sendEmail: {}",
+        changePassword.getEmail(),
+        locale,
+        sendEmail);
+    if (!Utilities.isCharacterAndRegexValid(changePassword.getEmail(), RegEx.EMAIL.getValue())) {
+      LOG.error("❌ Invalid email format: {}", changePassword.getEmail());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid field email, try again!");
+    }
+
+    Mono<User> userMono =
+        userService
+            .getUserByEmail(changePassword.getEmail())
+            .map(
+                user -> {
+                  String token = UUID.randomUUID().toString();
+                  user.setTokenReset(token);
+                  return user;
+                });
+
+    String categoryOrId =
+        StringUtils.hasText(changePassword.getTemplateId())
+            ? changePassword.getTemplateId()
+            : "RESET_PASSWORD";
+    String requestedClientId = changePassword.getClientId();
+
+    Mono<EmailTemplateDTO> emailTemplateMono =
+        emailTemplateService.getTemplateByCategoryLocaleAndClient(
+            categoryOrId, locale, requestedClientId);
+
+    return Mono.zip(userMono, emailTemplateMono)
+        .flatMap(
+            objects -> {
+              Mono<User> updatedUserMono = userService.updateUser(objects.getT1());
+              EmailContent emailContent =
+                  EmailContent.builder()
+                      .subject(objects.getT2().getSubject())
+                      .to(changePassword.getEmail())
+                      .sentDate(new Date())
+                      .build();
+
+              Map<String, String> emailParams = TemplateParam.getTemplateParam(objects.getT1());
+              if (!ObjectToolkit.isNullOrEmpty(changePassword.getParams()))
+                emailParams.putAll(changePassword.getParams());
+
+              if (sendEmail) {
+                return emailSenderService
+                    .sendEmail(objects.getT2(), emailParams, emailContent)
+                    .flatMap(emailRes -> updatedUserMono.thenReturn(emailRes));
+              } else {
+                return updatedUserMono.map(
+                    user -> {
+                      EmailResponse responseEmail = new EmailResponse();
+                      responseEmail.setToken(user.getTokenReset());
+                      return responseEmail;
+                    });
+              }
+            })
+        .doOnSuccess(
+            res ->
+                LOG.info(
+                    "✅ [PASSWORD RESET] Password reset request successfully processed for email: {}",
+                    changePassword.getEmail()));
+  }
+
+  /**
+   * Esegue l'aggiornamento della password a fronte di un token di recupero valido (Step 2).
+   *
+   * @param changePassword DTO con token di recupero e nuova password in Base64.
+   * @return Mono vuoto indicante il completamento del salvataggio.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<Void> changePassword(ChangePassword changePassword) {
+    LOG.info("🔑 [PASSWORD UPDATE] Starting password change execution via reset token");
+    try {
+      changePassword.setPassword(
+          new String(Base64.getDecoder().decode(changePassword.getPassword())));
+    } catch (IllegalArgumentException e) {
+      LOG.error("❌ Failed to decode Base64 password: {}", e.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid Base64 password encoding");
+    }
+
+    if (!Utilities.isCharacterAndRegexValid(
+        changePassword.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
+      LOG.error("❌ Invalid password complexity regex check failed");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid regex for field password");
+    }
+
+    String finalPassword = changePassword.getPassword();
+    return userService
+        .getUserByTokenReset(changePassword.getToken())
+        .flatMap(
+            user -> {
+              user.setPassword(finalPassword);
+              user.setTokenReset(null);
+              return userService.updateUser(user, true);
+            })
+        .doOnSuccess(
+            user ->
+                LOG.info(
+                    "✅ [PASSWORD UPDATE] Password successfully changed for user: {}",
+                    user.getUsername()))
+        .then();
+  }
+}

@@ -91,15 +91,20 @@ flowchart TD
         
         subgraph Endpoints["REST Controllers (Reactive WebFlux)"]
             OAuthCtrl["OAuthController\n(/authorize, /login, /token, /check-token)"]
-            UserCtrl["UserController\n(/users, /userInfo, /profile)"]
+            OIDCCtrl["OIDCController\n(/userInfo, /userinfo)"]
+            UserAdminCtrl["UserAdminController\n(/users, /users/register, lock, delete)"]
+            UserAccountCtrl["UserAccountController\n(/users/profile, /users/update, password reset)"]
             ClientCtrl["ClientController\n(/clients)"]
             RolesCtrl["RolesController\n(/roles)"]
             MFACtrl["MFAController\n(/setup, /confirm, /verify, /manage)"]
         end
 
         subgraph Core["Core Services"]
-            AuthEngine["OAuth 2.0 Engine & Token Service"]
-            IAMService["User & RBAC Manager"]
+            AuthEngine["OAuth 2.0 Auth Engine & Token Service\n(AuthService, TokenService)"]
+            OIDCEngine["OpenID Connect 1.0 Identity Layer\n(OIDCService)"]
+            IAMAdmin["IAM Admin & Provisioning\n(UserAdminService, TechUserService)"]
+            IAMAccount["User Self-Service & Account Lifecycle\n(UserAccountService)"]
+            UserPersistence["Core User Persistence & DAO\n(UserService, IUserDAO)"]
             MFAService["TOTP (QR & Secret) & Email OTP Engine"]
         end
 

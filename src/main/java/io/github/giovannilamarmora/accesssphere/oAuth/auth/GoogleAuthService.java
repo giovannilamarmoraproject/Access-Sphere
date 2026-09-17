@@ -37,6 +37,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
+import io.github.giovannilamarmora.accesssphere.data.user.admin.UserAdminService;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
@@ -50,6 +51,7 @@ public class GoogleAuthService {
 
   @Autowired private TokenService tokenService;
   @Autowired @Lazy private UserService userService;
+  @Autowired @Lazy private UserAdminService userAdminService;
   @Autowired private AuthService authService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -121,7 +123,7 @@ public class GoogleAuthService {
                 }
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
                 userGoogle.setPassword(registration_token);
-                return userService
+                return userAdminService
                     .registerUser(null, userGoogle, clientCredential, true)
                     .map(
                         user1 -> {

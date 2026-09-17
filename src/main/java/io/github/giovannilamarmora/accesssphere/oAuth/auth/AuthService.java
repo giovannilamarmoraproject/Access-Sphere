@@ -11,7 +11,9 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
@@ -21,6 +23,7 @@ import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
+import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.CookieManager;
@@ -38,7 +41,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
+/**
+ * Servizio di autenticazione e gestione token per il protocollo OAuth 2.0.
+ *
+ * <p>Interconnessioni logiche:
+ *
+ * <ul>
+ *   <li>Decodifica le credenziali HTTP Basic e le valida delegando la verifica BCrypt a {@link
+ *       UserService#authenticateUser}.
+ *   <li>Genera i claim JWT standard e compila i token di accesso/refresh tramite {@link
+ *       TokenService#generateToken}.
+ *   <li>Gestisce il rinnovo dei token di sessione (refresh grant) e la revoca asincrona tramite
+ *       {@link AccessTokenService#revokeTokenByIdentifier}.
+ *   <li>Imposta i cookie di sessione sicuri nella risposta HTTP e determina i redirect URI
+ *       configurati sul client OAuth2.
+ * </ul>
+ */
 @Service
+@Logged
 public class AuthService {
 
   private static final Logger LOG = LoggerFilter.getLogger(AuthService.class);
@@ -47,9 +67,20 @@ public class AuthService {
   private String cookieDomain;
 
   @Autowired private TokenService tokenService;
+  @Autowired private AccessTokenService accessTokenService;
   @Autowired @Lazy private UserService userService;
   @Autowired private TechUserService techUserService;
 
+  /**
+   * Esegue l'autenticazione tramite credenziali classiche (username o email e password).
+   *
+   * @param basic Stringa Base64 contenente le credenziali nell'header HTTP Authorization Basic.
+   * @param redirect_uri URI di redirect opzionale configurato sul client.
+   * @param clientCredential Credenziali e configurazione del client OAuth2 chiamante.
+   * @param request Richiesta HTTP reattiva corrente.
+   * @param serverHttpResponse Risposta HTTP reattiva corrente per il posizionamento dei cookie.
+   * @return Mono contenente ResponseEntity con stato 200 OK e il payload dei token generati.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> makeClassicLogin(
       String basic,
@@ -82,8 +113,7 @@ public class AuthService {
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
-    return userService
-        .performLogin(username, email, password, clientCredential, request)
+    return performLogin(username, email, password, clientCredential, request)
         .map(
             tokenResponse -> {
               OAuthValidator.validateUserRoles(
@@ -109,6 +139,51 @@ public class AuthService {
             });
   }
 
+  /**
+   * Esegue la validazione delle credenziali utente e la generazione della risposta token completa.
+   *
+   * @param username Username dell'utente.
+   * @param email Indirizzo email dell'utente.
+   * @param password Password in chiaro da verificare.
+   * @param clientCredential Credenziali del client OAuth.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente l'oggetto {@link OAuthTokenResponse}.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<OAuthTokenResponse> performLogin(
+      String username,
+      String email,
+      String password,
+      ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    LOG.debug("🔑 Validating user credentials for username={} and email={}", username, email);
+    return userService
+        .authenticateUser(username, email, password)
+        .map(
+            authenticatedUser -> {
+              JWTData jwtData =
+                  JWTData.generateJWTData(
+                      authenticatedUser, clientCredential, SubjectType.CUSTOMER, request);
+              AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
+              LOG.debug(
+                  "✅ Login process ended successfully for user {}",
+                  authenticatedUser.getUsername());
+              return new OAuthTokenResponse(authenticatedUser, jwtData, token);
+            });
+  }
+
+  /**
+   * Costruisce la risposta di login popolando cookie ed eventuale reindirizzamento.
+   *
+   * @param tokenResponse Risposta con token e anagrafica utente.
+   * @param clientCredential Credenziali del client OAuth2.
+   * @param includeUserInfo Flag per includere i claim OIDC.
+   * @param includeUserData Flag per includere il DTO anagrafico utente.
+   * @param redirect_uri URI di reindirizzamento opzionale.
+   * @param cookieDomain Dominio per il salvataggio dei cookie di sessione.
+   * @param httpResponse Risposta HTTP server.
+   * @return ResponseEntity con stato 200 OK e Response popolata.
+   */
   public static ResponseEntity<Response> setLoginResponse(
       OAuthTokenResponse tokenResponse,
       ClientCredential clientCredential,
@@ -145,6 +220,14 @@ public class AuthService {
     return ResponseEntity.ok().location(finalRedirectURI).body(response);
   }
 
+  /**
+   * Rinnova il token JWT di sessione a partire dai dati dell'access token corrente.
+   *
+   * @param accessTokenData Dati decodificati della sessione utente.
+   * @param clientCredential Credenziali del client OAuth.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente ResponseEntity con esito del rinnovo.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> refreshToken(
       AccessTokenData accessTokenData,
@@ -158,10 +241,7 @@ public class AuthService {
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
-    String token = accessTokenData.getPayload().get("refresh_token").textValue();
-
-    return userService
-        .refreshJWTToken(accessTokenData, clientCredential, token, request)
+    return refreshJWTToken(accessTokenData, clientCredential, request)
         .map(
             tokenResponse -> {
               String message =
@@ -182,6 +262,41 @@ public class AuthService {
             });
   }
 
+  /**
+   * Esegue il rinnovo del token JWT estraendo i dati utente e rigenerando la firma del token.
+   *
+   * @param accessTokenData Dati del token di accesso da rinnovare.
+   * @param clientCredential Credenziali del client OAuth.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente {@link OAuthTokenResponse} con il nuovo token generato.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<OAuthTokenResponse> refreshJWTToken(
+      AccessTokenData accessTokenData,
+      ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    LOG.info("🔄 Refreshing JWT token for user email: {}", accessTokenData.getEmail());
+    return userService
+        .getUserByEmail(accessTokenData.getEmail())
+        .map(
+            user -> {
+              user.setPassword(null);
+              JWTData jwtData =
+                  JWTData.generateJWTData(
+                      user, clientCredential, accessTokenData.getSubjectType(), request);
+              AuthToken authToken = tokenService.generateToken(jwtData, clientCredential, null);
+              return new OAuthTokenResponse(user, jwtData, authToken);
+            });
+  }
+
+  /**
+   * Esegue il logout dell'utente revocando i token associati nel registro token.
+   *
+   * @param redirect_uri URI di ritorno post-logout.
+   * @param accessTokenData Dati del token di accesso dell'utente.
+   * @param response Risposta HTTP server.
+   * @return Mono contenente ResponseEntity di conferma logout.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> logout(
       String redirect_uri, AccessTokenData accessTokenData, ServerHttpResponse response) {
@@ -203,15 +318,23 @@ public class AuthService {
       responseResponseEntity =
           ResponseEntity.status(HttpStatus.OK).location(URI.create(redirect_uri)).body(res);
 
-    return userService
-        .logout(accessTokenData)
-        .doOnSuccess(
-            unused -> {
-              SessionID.invalidateSessionID(response);
-            })
-        .then(Mono.just(responseResponseEntity));
+    LOG.info("🚪 Logging out user: {}", accessTokenData.getIdentifier());
+    accessTokenService.revokeTokenByIdentifier(accessTokenData.getIdentifier());
+    SessionID.invalidateSessionID(response);
+
+    return Mono.just(responseResponseEntity);
   }
 
+  /**
+   * Esegue lo scambio di token (Token Exchange RFC 8693) tra client OAuth2.
+   *
+   * @param tokenExchange Richiesta di token exchange.
+   * @param accessTokenData Dati del token di accesso del chiamante.
+   * @param clientCredential Credenziali del client ricevente.
+   * @param clientCredentialToExchange Credenziali del client emittente del token soggetto.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente la risposta {@link ResponseEntity} con il token scambiato.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> exchangeToken(
       TokenExchange tokenExchange,
@@ -243,16 +366,15 @@ public class AuthService {
     return userService
         .getUserByEmail(decryptToken.getEmail())
         .map(
-            user -> {
-              return exchangeTokenBuildResponse(
-                  tokenExchange,
-                  user,
-                  accessTokenData,
-                  clientCredential,
-                  includeUserInfo,
-                  includeUserData,
-                  request);
-            });
+            user ->
+                exchangeTokenBuildResponse(
+                    tokenExchange,
+                    user,
+                    accessTokenData,
+                    clientCredential,
+                    includeUserInfo,
+                    includeUserData,
+                    request));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

@@ -8,6 +8,7 @@ public final class OpenAPI {
     public static final String USERS = "Users";
     public static final String ROLES = "Roles";
     public static final String CLIENT = "Client";
+    public static final String OIDC = "OIDC";
   }
 
   public final class Description {
