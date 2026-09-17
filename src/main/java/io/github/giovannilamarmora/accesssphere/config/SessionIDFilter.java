@@ -183,7 +183,8 @@ public class SessionIDFilter implements WebFilter {
   }
 
   private boolean isTokenEndpointWithPasswordGrant(ServerHttpRequest req, String path) {
-    if (PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path)) {
+    if (PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path)
+        || PatternMatchUtils.simpleMatch("*/v1/oauth2/token", path)) {
       String param = req.getQueryParams().getFirst("grant_type");
       return !ObjectUtils.isEmpty(param) && param.equalsIgnoreCase(GrantType.PASSWORD.type());
     }
@@ -197,11 +198,15 @@ public class SessionIDFilter implements WebFilter {
 
     // Se è l'endpoint token e ha il parametro code (authorization code grant)
     boolean isTokenPathWithCode =
-        PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path) && codeParam != null;
+        (PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path)
+            || PatternMatchUtils.simpleMatch("*/v1/oauth2/token", path))
+        && codeParam != null;
 
     // Se è l'endpoint token e ha il parametro refresh_token (refresh token grant)
     boolean isTokenPathWithRefresh =
-        PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path) && refreshTokenParam != null;
+        (PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path)
+            || PatternMatchUtils.simpleMatch("*/v1/oauth2/token", path))
+        && refreshTokenParam != null;
 
     return isTokenPathWithCode
         || isTokenPathWithRefresh
@@ -219,13 +224,21 @@ public class SessionIDFilter implements WebFilter {
     String auth = request.getHeaders().getFirst("Authorization");
 
     boolean isNull = ObjectUtils.isEmpty(auth) || auth.equalsIgnoreCase("null");
-    return (request.getPath().value().equalsIgnoreCase("/v1/oAuth/2.0/authorize")
+    String path = request.getPath().value();
+    boolean isAuthorizePath =
+        path.equalsIgnoreCase("/v1/oAuth/2.0/authorize")
+            || path.equalsIgnoreCase("/v1/oauth2/authorize");
+    return (isAuthorizePath
         && request.getHeaders().containsKey("Authorization")
         && isNull);
   }
 
   private boolean isAuthorizeCheckWithBearer(ServerHttpRequest request) {
-    return (request.getPath().value().equalsIgnoreCase("/v1/oAuth/2.0/authorize")
+    String path = request.getPath().value();
+    boolean isAuthorizePath =
+        path.equalsIgnoreCase("/v1/oAuth/2.0/authorize")
+            || path.equalsIgnoreCase("/v1/oauth2/authorize");
+    return (isAuthorizePath
         && request.getHeaders().containsKey("Authorization"));
   }
 
@@ -237,7 +250,8 @@ public class SessionIDFilter implements WebFilter {
 
   private boolean isLogout(ServerHttpRequest request) {
     String path = request.getPath().value();
-    return PatternMatchUtils.simpleMatch(logoutURI, path);
+    return PatternMatchUtils.simpleMatch(logoutURI, path)
+        || PatternMatchUtils.simpleMatch("*/v1/oauth2/logout", path);
   }
 
   private void setSessionIDInResponse(

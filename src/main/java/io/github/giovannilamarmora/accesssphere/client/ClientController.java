@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@Tag(name = OpenAPI.Tag.CLIENT, description = "API to manage clients")
+@Tag(name = OpenAPI.Tag.CLIENT, description = OpenAPI.Description.CLIENT)
 public class ClientController {
 
   @Autowired private ClientService clientService;
@@ -59,13 +59,13 @@ public class ClientController {
     return clientService.getClients();
   }
 
-  @PostMapping("/client")
+  @PostMapping("/clients")
   @Operation(
       description = "API to create a new Client (Only Tech User)",
       summary = "Create Client",
       tags = OpenAPI.Tag.CLIENT)
   @ApiResponse(
-      responseCode = "200",
+      responseCode = "201",
       description = "Client successfully created",
       content = @Content(schema = @Schema(implementation = Response.class)))
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
@@ -76,14 +76,63 @@ public class ClientController {
     clientService.addClientToDatabase(clientCredential);
     Response response =
         new Response(
-            HttpStatus.OK.value(),
+            HttpStatus.CREATED.value(),
             "Client created",
+            io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
+            clientCredential);
+    return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(response));
+  }
+
+  @Deprecated(since = "2.0.0")
+  @PostMapping("/client")
+  @Operation(
+      description =
+          "Deprecated: use POST /v1/clients instead. API to create a new Client (Only Tech User)",
+      summary = "Create Client (Deprecated)",
+      tags = OpenAPI.Tag.CLIENT,
+      deprecated = true)
+  @ApiResponse(
+      responseCode = "200",
+      description = "Client successfully created (Legacy)",
+      content = @Content(schema = @Schema(implementation = Response.class)))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> createClientLegacy(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
+      @RequestBody @Valid ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    return createClient(bearer, clientCredential, request)
+        .map(entity -> ResponseEntity.ok(entity.getBody()));
+  }
+
+  @PutMapping("/clients/{clientId}")
+  @Operation(
+      description = "API to update an existing Client by Client ID (Only Tech User)",
+      summary = "Update Client by ID",
+      tags = OpenAPI.Tag.CLIENT)
+  @ApiResponse(
+      responseCode = "200",
+      description = "Client successfully updated",
+      content = @Content(schema = @Schema(implementation = Response.class)))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> updateClientById(
+      @PathVariable String clientId,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
+      @RequestBody @Valid ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    if (clientCredential.getClientId() == null) {
+      clientCredential.setClientId(clientId);
+    }
+    clientService.updateClientInDatabase(clientCredential);
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            "Client updated",
             io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
             clientCredential);
     return Mono.just(ResponseEntity.ok(response));
   }
 
-  @PutMapping("/client")
+  @PutMapping("/clients")
   @Operation(
       description = "API to update an existing Client (Only Tech User)",
       summary = "Update Client",
@@ -107,7 +156,27 @@ public class ClientController {
     return Mono.just(ResponseEntity.ok(response));
   }
 
-  @DeleteMapping("/client/{clientId}")
+  @Deprecated(since = "2.0.0")
+  @PutMapping("/client")
+  @Operation(
+      description =
+          "Deprecated: use PUT /v1/clients or PUT /v1/clients/{clientId} instead. API to update an existing Client (Only Tech User)",
+      summary = "Update Client (Deprecated)",
+      tags = OpenAPI.Tag.CLIENT,
+      deprecated = true)
+  @ApiResponse(
+      responseCode = "200",
+      description = "Client successfully updated",
+      content = @Content(schema = @Schema(implementation = Response.class)))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> updateClientLegacy(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
+      @RequestBody @Valid ClientCredential clientCredential,
+      ServerHttpRequest request) {
+    return updateClient(bearer, clientCredential, request);
+  }
+
+  @DeleteMapping("/clients/{clientId}")
   @Operation(
       description = "API to delete an existing Client (Only Tech User)",
       summary = "Delete Client",
@@ -131,5 +200,25 @@ public class ClientController {
             io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
             null);
     return Mono.just(ResponseEntity.ok(response));
+  }
+
+  @Deprecated(since = "2.0.0")
+  @DeleteMapping("/client/{clientId}")
+  @Operation(
+      description =
+          "Deprecated: use DELETE /v1/clients/{clientId} instead. API to delete an existing Client (Only Tech User)",
+      summary = "Delete Client (Deprecated)",
+      tags = OpenAPI.Tag.CLIENT,
+      deprecated = true)
+  @ApiResponse(
+      responseCode = "200",
+      description = "Client successfully deleted",
+      content = @Content(schema = @Schema(implementation = Response.class)))
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> deleteClientLegacy(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
+      @PathVariable String clientId,
+      ServerHttpRequest request) {
+    return deleteClient(bearer, clientId, request);
   }
 }

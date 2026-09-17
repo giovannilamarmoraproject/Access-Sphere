@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpHeaders;
@@ -27,12 +28,13 @@ public interface RolesController {
   @Operation(
       description = "Change user roles, only Tech User",
       summary = "Change user roles",
-      tags = OpenAPI.Tag.ROLES)
+      tags = OpenAPI.Tag.ROLES,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
       value = {
         @ApiResponse(
-            responseCode = "201",
-            description = "User unlocked successfully",
+            responseCode = "200",
+            description = "User roles updated successfully",
             content =
                 @Content(
                     mediaType = "application/json",

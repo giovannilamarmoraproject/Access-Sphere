@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @Validated
 @RestController
-@RequestMapping("/v1/oAuth/2.0")
+@RequestMapping({"/v1/oauth2", "/v1/oAuth/2.0"})
 @Tag(name = OpenAPI.Tag.OAUTH, description = OpenAPI.Description.OAUTH)
 public class OAuthControllerImpl implements OAuthController {
 

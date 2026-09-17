@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -21,7 +23,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableCaching
 @OpenAPIDefinition(
-    info = @Info(title = "Access Sphere Swagger", version = "2.0.0"),
+    info =
+        @Info(
+            title = "Access Sphere Swagger",
+            version = "2.0.0",
+            description = "Enterprise-ready IAM & OAuth 2.0 / OIDC Authorization Server"),
     security = {@SecurityRequirement(name = HttpHeaders.AUTHORIZATION)},
     servers = {
       @Server(
@@ -29,6 +35,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
           description = "Production Server URL"),
       @Server(url = "http://localhost:8081", description = "Local Dev Server (8081)"),
       @Server(url = "http://localhost:8080", description = "Docker / Container Server (8080)")
+    },
+    tags = {
+      @Tag(name = OpenAPI.Tag.OAUTH, description = OpenAPI.Description.OAUTH),
+      @Tag(name = OpenAPI.Tag.OIDC, description = OpenAPI.Description.OIDC),
+      @Tag(name = OpenAPI.Tag.ACCOUNT, description = OpenAPI.Description.ACCOUNT),
+      @Tag(name = OpenAPI.Tag.ADMIN, description = OpenAPI.Description.ADMIN),
+      @Tag(name = OpenAPI.Tag.USERS, description = OpenAPI.Description.USERS),
+      @Tag(name = OpenAPI.Tag.ROLES, description = OpenAPI.Description.ROLES),
+      @Tag(name = OpenAPI.Tag.CLIENT, description = OpenAPI.Description.CLIENT),
+      @Tag(name = OpenAPI.Tag.MFA, description = OpenAPI.Description.MFA),
+      @Tag(name = OpenAPI.Tag.EMAIL_TEMPLATE, description = OpenAPI.Description.EMAIL_TEMPLATE),
+      @Tag(name = OpenAPI.Tag.SETTINGS, description = OpenAPI.Description.SETTINGS)
     })
 @SecurityScheme(
     type = SecuritySchemeType.APIKEY,

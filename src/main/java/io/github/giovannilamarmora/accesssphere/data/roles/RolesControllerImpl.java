@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@Tag(name = OpenAPI.Tag.ROLES, description = "API to manage user roles")
+@Tag(name = OpenAPI.Tag.ROLES, description = OpenAPI.Description.ROLES)
 public class RolesControllerImpl implements RolesController {
 
   @Autowired private RolesService rolesService;

@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.email;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailSendTestRequest;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory;
+import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -25,8 +26,8 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/v1/email-templates")
 @Tag(
-    name = "Email Templates",
-    description = "API per la gestione dei template email dinamici e test di invio")
+    name = OpenAPI.Tag.EMAIL_TEMPLATE,
+    description = OpenAPI.Description.EMAIL_TEMPLATE)
 public class EmailTemplateController {
 
   @Autowired private EmailTemplateService emailTemplateService;

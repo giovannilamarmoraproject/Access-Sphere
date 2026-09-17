@@ -11,11 +11,21 @@ public final class OpenAPI {
     public static final String ROLES = "Roles";
     public static final String CLIENT = "Client";
     public static final String OIDC = "OIDC";
+    public static final String EMAIL_TEMPLATE = "Email Templates";
+    public static final String SETTINGS = "Settings";
   }
 
   public final class Description {
-    public static final String OAUTH = "API to handle authorization";
-    public static final String MFA = "API to handle Multi factor Authentication";
+    public static final String OAUTH = "API to handle authorization and OAuth 2.0 flows";
+    public static final String MFA = "API to handle Multi factor Authentication (TOTP and MFA lifecycle)";
+    public static final String ACCOUNT = "API to handle user self-service profile and password management";
+    public static final String ADMIN = "API to handle administrative and IAM provisioning operations";
+    public static final String USERS = "API to manage users and IAM identities";
+    public static final String ROLES = "API to manage user roles and RBAC permissions";
+    public static final String CLIENT = "API to manage OAuth 2.0 client credentials";
+    public static final String OIDC = "API to handle OpenID Connect Core 1.0 specifications";
+    public static final String EMAIL_TEMPLATE = "API to manage dynamic email templates and test deliveries";
+    public static final String SETTINGS = "API to manage application settings, branding, themes, backup and restore";
   }
 
   public final class Params {

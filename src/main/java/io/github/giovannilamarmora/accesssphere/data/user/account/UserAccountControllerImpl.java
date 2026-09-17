@@ -34,7 +34,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@Tag(name = OpenAPI.Tag.ACCOUNT, description = "API to manage users")
+@Tag(name = OpenAPI.Tag.ACCOUNT, description = OpenAPI.Description.ACCOUNT)
 public class UserAccountControllerImpl implements UserAccountController {
 
   private static final Logger LOG = LoggerFilter.getLogger(UserAccountControllerImpl.class);
@@ -170,5 +170,36 @@ public class UserAccountControllerImpl implements UserAccountController {
             ResponseEntity.ok(
                 new Response(
                     HttpStatus.OK.value(), "Password Updated!", TraceUtils.getSpanID(), null)));
+  }
+
+  /**
+   * Endpoint legacy per richiedere il reset della password tramite invio di email o generazione di token.
+   *
+   * @param changePassword DTO contenente email, templateId e parametri.
+   * @param locale Lingua di localizzazione del template email.
+   * @param sendEmail Flag per abilitare l'invio dell'email.
+   * @return Mono contenente ResponseEntity con stato 200 OK e l'esito della notifica.
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> changePasswordRequestLegacy(
+      ChangePassword changePassword, String locale, boolean sendEmail) {
+    LOG.warn(
+        "⚠️ [ACCOUNT CONTROLLER] Invoking DEPRECATED endpoint POST /v1/users/change/password/request - migrate to POST /v1/users/password/reset-request");
+    return changePasswordRequest(changePassword, locale, sendEmail);
+  }
+
+  /**
+   * Endpoint legacy per l'applicazione della nuova password a fronte del token di recupero.
+   *
+   * @param changePassword DTO contenente token di recupero e nuova password in Base64.
+   * @return Mono contenente ResponseEntity con stato 200 OK di avvenuto aggiornamento.
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> changePasswordLegacy(ChangePassword changePassword) {
+    LOG.warn(
+        "⚠️ [ACCOUNT CONTROLLER] Invoking DEPRECATED endpoint POST /v1/users/change/password - migrate to POST /v1/users/password/reset");
+    return changePassword(changePassword);
   }
 }

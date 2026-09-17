@@ -67,12 +67,13 @@ public interface UserAccountController {
           String bearer,
       ServerHttpRequest request);
 
-  @Deprecated
+  @Deprecated(since = "2.0.0")
   @PutMapping("/users/update")
   @Operation(
-      description = "Update an existing user profile",
-      summary = "User Update",
-      tags = OpenAPI.Tag.ACCOUNT)
+      description = "Deprecated: use PUT /v1/users/{identifier} instead. Update an existing user profile",
+      summary = "User Update (Deprecated)",
+      tags = OpenAPI.Tag.ACCOUNT,
+      deprecated = true)
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -139,10 +140,10 @@ public interface UserAccountController {
           String bearer,
       ServerHttpRequest request);
 
-  @PostMapping("/users/change/password/request")
+  @PostMapping("/users/password/reset-request")
   @Operation(
       description = "Send Email to change the user password (Step 1)",
-      summary = "Change Password Step 1",
+      summary = "Password Reset Request (Step 1)",
       tags = OpenAPI.Tag.ACCOUNT)
   @ApiResponses(
       value = {
@@ -168,10 +169,41 @@ public interface UserAccountController {
       @RequestParam(value = "emailSend", required = false, defaultValue = "true")
           boolean sendEmail);
 
-  @PostMapping("/users/change/password")
+  @Deprecated(since = "2.0.0")
+  @PostMapping("/users/change/password/request")
+  @Operation(
+      description = "Deprecated: use POST /v1/users/password/reset-request instead. Send Email to change the user password (Step 1)",
+      summary = "Change Password Step 1 (Deprecated)",
+      tags = OpenAPI.Tag.ACCOUNT,
+      deprecated = true)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Email successfully sent or token generated",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> changePasswordRequestLegacy(
+      @RequestBody @Valid ChangePassword changePassword,
+      @RequestParam(value = "locale", required = false, defaultValue = "en-GB") String locale,
+      @RequestParam(value = "emailSend", required = false, defaultValue = "true")
+          boolean sendEmail);
+
+  @PostMapping("/users/password/reset")
   @Operation(
       description = "Change the user password using reset token (Step 2)",
-      summary = "Change Password Step 2",
+      summary = "Password Reset Confirmation (Step 2)",
       tags = OpenAPI.Tag.ACCOUNT)
   @ApiResponses(
       value = {
@@ -192,4 +224,31 @@ public interface UserAccountController {
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> changePassword(@RequestBody @Valid ChangePassword changePassword);
+
+  @Deprecated(since = "2.0.0")
+  @PostMapping("/users/change/password")
+  @Operation(
+      description = "Deprecated: use POST /v1/users/password/reset instead. Change the user password using reset token (Step 2)",
+      summary = "Change Password Step 2 (Deprecated)",
+      tags = OpenAPI.Tag.ACCOUNT,
+      deprecated = true)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Password updated successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> changePasswordLegacy(@RequestBody @Valid ChangePassword changePassword);
 }

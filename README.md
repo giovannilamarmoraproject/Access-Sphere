@@ -90,13 +90,15 @@ flowchart TD
         Gateway["Filter Chain & Session Tracing\n(Session-ID, Span-ID, Rate Limiting, CORS)"]
         
         subgraph Endpoints["REST Controllers (Reactive WebFlux)"]
-            OAuthCtrl["OAuthController\n(/authorize, /login, /token, /check-token)"]
-            OIDCCtrl["OIDCController\n(/userInfo, /userinfo)"]
-            UserAdminCtrl["UserAdminController\n(/users, /users/register, lock, delete)"]
-            UserAccountCtrl["UserAccountController\n(/users/profile, /users/update, password reset)"]
-            ClientCtrl["ClientController\n(/clients)"]
-            RolesCtrl["RolesController\n(/roles)"]
-            MFACtrl["MFAController\n(/setup, /confirm, /verify, /manage)"]
+            OAuthCtrl["OAuthController\n(/v1/oauth2, /v1/oAuth/2.0)"]
+            OIDCCtrl["OIDCController\n(/v1/userInfo, /v1/userinfo, /v1/oauth2/userinfo)"]
+            UserAdminCtrl["UserAdminController\n(/v1/users, lock, delete)"]
+            UserAccountCtrl["UserAccountController\n(/v1/users/profile, /v1/users/{id}, password reset)"]
+            ClientCtrl["ClientController\n(/v1/clients)"]
+            RolesCtrl["RolesController\n(/v1/users/{id}/roles)"]
+            MFACtrl["MFAController\n(/v1/mfa: setup, confirm, verify, manage)"]
+            EmailTemplateCtrl["EmailTemplateController\n(/v1/email-templates)"]
+            AppSettingsCtrl["AppSettingsController\n(/v1/app/settings)"]
         end
 
         subgraph Core["Core Services"]

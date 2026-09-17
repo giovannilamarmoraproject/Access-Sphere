@@ -23,7 +23,12 @@ public class RedirectFilter implements WebFilter {
 
   private final SessionID sessionID;
   List<String> shouldFilterURL =
-      List.of("/v1/oAuth/2.0/authorize", "/v1/oAuth/2.0/token", "/login");
+      List.of(
+          "/v1/oAuth/2.0/authorize",
+          "/v1/oAuth/2.0/token",
+          "/v1/oauth2/authorize",
+          "/v1/oauth2/token",
+          "/login");
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {

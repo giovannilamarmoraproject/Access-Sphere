@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1/app/settings")
-@Tag(name = "Application Settings", description = "API to manage application settings, branding, themes, backup and restore")
+@Tag(name = OpenAPI.Tag.SETTINGS, description = OpenAPI.Description.SETTINGS)
 public class AppSettingsController {
 
   @Autowired private AppSettingsService appSettingsService;

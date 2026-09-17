@@ -2,8 +2,14 @@ package io.github.giovannilamarmora.accesssphere.mfa;
 
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
+import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +47,35 @@ public interface MFAController {
    * @see Response
    */
   @PostMapping("/setup")
+  @Operation(
+      summary = "MFA Setup",
+      description = "Initialize Multi-Factor Authentication setup for a user by generating TOTP secret and QR code",
+      tags = OpenAPI.Tag.MFA,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "MFA setup initialized successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = MFASetupResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
   Mono<ResponseEntity<Response>> setupMfa(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
@@ -71,6 +106,35 @@ public interface MFAController {
    * @see Response
    */
   @PostMapping("/confirm")
+  @Operation(
+      summary = "MFA Confirmation",
+      description = "Verify and confirm an MFA setup code to activate Multi-Factor Authentication",
+      tags = OpenAPI.Tag.MFA,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "MFA confirmed successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
   Mono<ResponseEntity<Response>> confirmMfa(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
@@ -98,6 +162,35 @@ public interface MFAController {
    * @see Response
    */
   @PostMapping("/verify")
+  @Operation(
+      summary = "MFA Verification",
+      description = "Verify MFA code during authentication or step-up challenge",
+      tags = OpenAPI.Tag.MFA,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "MFA verified successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
   Mono<ResponseEntity<Response>> verifyMfaCode(
       @RequestBody @Valid MfaVerificationRequest mfaVerifyRequest,
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
@@ -131,6 +224,35 @@ public interface MFAController {
    * @see Response
    */
   @PostMapping("/manage")
+  @Operation(
+      summary = "MFA Management",
+      description = "Manage MFA methods for user (enable, disable, or delete)",
+      tags = OpenAPI.Tag.MFA,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "MFA settings managed successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
   Mono<ResponseEntity<Response>> manageMfa(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid

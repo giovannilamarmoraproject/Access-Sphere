@@ -34,7 +34,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@Tag(name = OpenAPI.Tag.ADMIN, description = "API to manage users")
+@Tag(name = OpenAPI.Tag.ADMIN, description = OpenAPI.Description.ADMIN)
 public class UserAdminControllerImpl implements UserAdminController {
 
   private static final Logger LOG = LoggerFilter.getLogger(UserAdminControllerImpl.class);
@@ -97,6 +97,20 @@ public class UserAdminControllerImpl implements UserAdminController {
                       registeredUser);
               return ResponseEntity.status(HttpStatus.CREATED).body(response);
             });
+  }
+
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> registerUserLegacy(
+      String bearer,
+      User user,
+      String clientId,
+      String registration_token,
+      Boolean assignNewClient) {
+    LOG.info(
+        "🌐 [ADMIN CONTROLLER] Invoking RegisterUser (Deprecated /users/register) for username: {}",
+        user.getUsername());
+    return registerUser(bearer, user, clientId, registration_token, assignNewClient);
   }
 
   /**

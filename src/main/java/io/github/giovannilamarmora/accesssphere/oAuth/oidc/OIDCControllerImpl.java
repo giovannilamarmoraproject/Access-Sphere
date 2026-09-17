@@ -34,7 +34,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@Tag(name = OpenAPI.Tag.OIDC, description = "API to manage users")
+@Tag(name = OpenAPI.Tag.OIDC, description = OpenAPI.Description.OIDC)
 public class OIDCControllerImpl implements OIDCController {
 
   private static final Logger LOG = LoggerFilter.getLogger(OIDCControllerImpl.class);
