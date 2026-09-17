@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.email;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderClient;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailSendTestRequest;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
@@ -37,7 +38,7 @@ public class EmailTemplateService {
 
   @Autowired private IEmailTemplateDAO emailTemplateDAO;
   @Autowired private EmailSenderClient emailSenderClient;
-  @Autowired private io.github.giovannilamarmora.accesssphere.data.tech.TechUserService techUserService;
+  @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<EmailTemplateDTO>> getAllTemplates() {
@@ -58,8 +59,7 @@ public class EmailTemplateService {
                   .orElseThrow(
                       () ->
                           new ResponseStatusException(
-                              HttpStatus.NOT_FOUND,
-                              "Email template with ID " + id + " not found"));
+                              HttpStatus.NOT_FOUND, "Email template with ID " + id + " not found"));
           return EmailTemplateMapper.toDTO(entity);
         });
   }
@@ -77,7 +77,10 @@ public class EmailTemplateService {
   public Mono<EmailTemplateDTO> getTemplateByIdentifierAndLocale(String identifier, String locale) {
     return Mono.fromCallable(
         () -> {
-          LOG.info("Searching for email template for identifier=[{}] and locale=[{}]", identifier, locale);
+          LOG.info(
+              "Searching for email template for identifier=[{}] and locale=[{}]",
+              identifier,
+              locale);
           List<EmailTemplateEntity> templates = emailTemplateDAO.findByIdentifier(identifier);
 
           if (templates.isEmpty()) {
@@ -339,9 +342,7 @@ public class EmailTemplateService {
               emailTemplateDAO.findConflictingTemplates(clientId, category, locale, dto.getId());
           if (!conflicts.isEmpty()) {
             String clientDesc =
-                clientId != null
-                    ? ("Client [" + clientId + "]")
-                    : "Global (Access Sphere Default)";
+                clientId != null ? ("Client [" + clientId + "]") : "Global (Access Sphere Default)";
             String localeDesc = locale != null ? ("Locale [" + locale + "]") : "Global / Fallback";
             String errorMsg =
                 String.format(
@@ -430,8 +431,7 @@ public class EmailTemplateService {
                 if (ObjectToolkit.isNullOrEmpty(subject)) subject = entity.getSubject();
               } else {
                 throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "A templateId, identifier or customHtml is required");
+                    HttpStatus.BAD_REQUEST, "A templateId, identifier or customHtml is required");
               }
 
               // Sostituzione segnaposto {{CHIAVE}}
