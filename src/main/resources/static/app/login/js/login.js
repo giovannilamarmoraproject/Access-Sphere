@@ -139,7 +139,7 @@ function doGoogleLogin() {
     );
   }
 
-  const url = new URL(window.location.origin + "/v1/oAuth/2.0/authorize");
+  const url = new URL(window.location.origin + "/v1/oauth2/authorize");
   url.searchParams.set("access_type", "online");
   url.searchParams.set(
     "scope",

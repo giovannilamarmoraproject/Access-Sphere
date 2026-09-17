@@ -570,7 +570,7 @@ function toggleBlockUser(identifier, username, block) {
 
   confirmPromise.then((res) => {
     if (res.isConfirmed) {
-      const url = config.users_url + "/" + encodeURIComponent(identifier) + "?block=" + (block ? "true" : "false");
+      const url = config.users_url + "/" + encodeURIComponent(identifier) + "/status?block=" + (block ? "true" : "false");
       const token = getCookieOrStorage(config.access_token);
       const patchFn = typeof PATCH !== 'undefined' ? PATCH : (typeof api !== 'undefined' && api.PATCH ? api.PATCH : null);
 

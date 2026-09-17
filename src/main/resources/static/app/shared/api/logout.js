@@ -19,7 +19,7 @@ function logout() {
 
   const logoutUrl = typeof config !== "undefined" && config.logout_url
     ? config.logout_url
-    : (window.location.origin + "/v1/oAuth/2.0/logout");
+    : (window.location.origin + "/v1/oauth2/logout");
 
   const loginUrl = typeof config !== "undefined" && config.login_url
     ? config.login_url

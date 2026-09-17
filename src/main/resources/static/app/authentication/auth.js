@@ -9,9 +9,9 @@
     accessSphereUrl: getBaseUrl(),
     redirect_uri:
       window.accessSphereConfig.redirect_uri || window.location.origin,
-    authorize: "/v1/oAuth/2.0/authorize",
-    token: "/v1/oAuth/2.0/token",
-    logout: "/v1/oAuth/2.0/logout",
+    authorize: "/v1/oauth2/authorize",
+    token: "/v1/oauth2/token",
+    logout: "/v1/oauth2/logout",
   };
 
   window.api = window.api || {}; // Se api non esiste, lo crea come oggetto vuoto

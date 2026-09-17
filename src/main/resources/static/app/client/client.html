@@ -790,7 +790,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 const token = getCookieOrStorage(config.access_token);
-                const url = window.location.origin + `/v1/client/${encodeURIComponent(clientId)}`;
+                const url = window.location.origin + `/v1/clients/${encodeURIComponent(clientId)}`;
 
                 fetch(url, {
                     method: "DELETE",

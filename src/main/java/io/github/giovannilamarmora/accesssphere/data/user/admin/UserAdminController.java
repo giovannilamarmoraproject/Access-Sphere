@@ -214,7 +214,7 @@ public interface UserAdminController {
           String bearer,
       ServerWebExchange exchange);
 
-  @PatchMapping(value = {"/users/{identifier}", "/users/{identifier}/status"})
+  @PatchMapping("/users/{identifier}/status")
   @Operation(
       description = "Unlock or lock a user account",
       summary = "Unlock User",
