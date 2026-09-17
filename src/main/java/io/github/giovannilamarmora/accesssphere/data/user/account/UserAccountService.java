@@ -124,12 +124,13 @@ public class UserAccountService {
    * @return Mono contenente il DTO {@link User} aggiornato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(User userToUpdate, String bearer, ServerHttpRequest request) {
+  public Mono<User> updateUser(
+      String identifier, User userToUpdate, String bearer, ServerHttpRequest request) {
     userToUpdate.setPassword(null);
     LOG.info(
         "👤 [USER ACCOUNT] Starting profile update for username: {}, identifier: {}",
         userToUpdate.getUsername(),
-        userToUpdate.getIdentifier());
+        identifier);
 
     return techUserService
         .hasTechUserRoles(accessTokenData, clientService)
@@ -138,14 +139,14 @@ public class UserAccountService {
               if (!hasTechRoles) {
                 UserValidator.validateUpdate(accessTokenData, userToUpdate);
               }
-              return userService.updateUser(userToUpdate);
+              return userService.updateUser(identifier, userToUpdate);
             })
         .doOnSuccess(
             updatedUser ->
                 LOG.info(
                     "✅ [USER ACCOUNT] Profile update successfully completed for username: {}, identifier: {}",
                     updatedUser.getUsername(),
-                    updatedUser.getIdentifier()));
+                    identifier));
   }
 
   /**
@@ -193,7 +194,8 @@ public class UserAccountService {
     return Mono.zip(userMono, emailTemplateMono)
         .flatMap(
             objects -> {
-              Mono<User> updatedUserMono = userService.updateUser(objects.getT1());
+              Mono<User> updatedUserMono =
+                  userService.updateUser(objects.getT1().getIdentifier(), objects.getT1());
               EmailContent emailContent =
                   EmailContent.builder()
                       .subject(objects.getT2().getSubject())
@@ -208,7 +210,7 @@ public class UserAccountService {
               if (sendEmail) {
                 return emailSenderService
                     .sendEmail(objects.getT2(), emailParams, emailContent)
-                    .flatMap(emailRes -> updatedUserMono.thenReturn(emailRes));
+                    .flatMap(updatedUserMono::thenReturn);
               } else {
                 return updatedUserMono.map(
                     user -> {
@@ -255,7 +257,7 @@ public class UserAccountService {
             user -> {
               user.setPassword(finalPassword);
               user.setTokenReset(null);
-              return userService.updateUser(user, true);
+              return userService.updateUser(user.getIdentifier(), user, true);
             })
         .doOnSuccess(
             user ->

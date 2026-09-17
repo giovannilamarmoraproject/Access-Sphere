@@ -32,8 +32,7 @@ public class TotpStrategy implements MFAStrategy {
 
   public Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest setupRequest) {
     LOG.info(
-        "🔑 [TOTP] Generate TOTP MFA for user: {} process started.",
-        setupRequest.identifier());
+        "🔑 [TOTP] Generate TOTP MFA for user: {} process started.", setupRequest.identifier());
     String secret = MFAUtils.generateSecret();
     String otpAuth = MFAUtils.getOtpAuthUrl(user.getEmail(), secret, "Access-Sphere");
 
@@ -41,7 +40,7 @@ public class TotpStrategy implements MFAStrategy {
 
     user.setMfaSettings(mfaSetting);
     return userService
-        .updateUser(user, false)
+        .updateUser(setupRequest.identifier(), user)
         .map(
             userUpdated -> {
               MFASetupResponse mfaSetupResponse = new MFASetupResponse(secret, otpAuth, null);
@@ -50,10 +49,7 @@ public class TotpStrategy implements MFAStrategy {
                     "data:image/png;base64,"
                         + Base64.getEncoder()
                             .encodeToString(
-                                QRCodeUtils.generateQRCodeWithDefaultLogo(
-                                    otpAuth,
-                                    300,
-                                    300));
+                                QRCodeUtils.generateQRCodeWithDefaultLogo(otpAuth, 300, 300));
                 mfaSetupResponse = mfaSetupResponse.addQRCode(base64);
               }
               Response response =

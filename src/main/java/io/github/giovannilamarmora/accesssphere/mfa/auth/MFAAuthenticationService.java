@@ -162,7 +162,7 @@ public class MFAAuthenticationService {
           JWTData jwtData =
               JWTData.generateJWTData(user, clientCredential, SubjectType.CUSTOMER, request);
           return userService
-              .getUserInfo(jwtData)
+              .getUserByEmail(jwtData.getEmail())
               .map(
                   user1 -> {
                     String deviceToken = null;
@@ -226,7 +226,9 @@ public class MFAAuthenticationService {
               mfaSetting.setEnabled(true);
               user.setMfaSettings(mfaSetting);
 
-              return userService.updateUser(user, false).map(user1 -> ResponseEntity.ok(response));
+              return userService
+                  .updateUser(identifier, user, false)
+                  .map(user1 -> ResponseEntity.ok(response));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA ENABLE] - Process ended for user '{}'", identifier));
   }
@@ -254,7 +256,9 @@ public class MFAAuthenticationService {
               mfaSetting.setEnabled(false);
               user.setMfaSettings(mfaSetting);
 
-              return userService.updateUser(user, false).map(user1 -> ResponseEntity.ok(response));
+              return userService
+                  .updateUser(identifier, user, false)
+                  .map(user1 -> ResponseEntity.ok(response));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA DISABLE] - Process ended for user '{}'", identifier));
   }
@@ -294,7 +298,7 @@ public class MFAAuthenticationService {
               user.setMfaSettings(mfaSetting);
 
               return userService
-                  .updateUser(user, false)
+                  .updateUser(identifier, user)
                   .map(
                       updatedUser -> {
                         String msg =

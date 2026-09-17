@@ -57,8 +57,7 @@ class UserAccountServiceTest {
     cp.setEmail("invalid-email");
 
     assertThrows(
-        OAuthException.class,
-        () -> userAccountService.changePasswordRequest(cp, "it", false));
+        OAuthException.class, () -> userAccountService.changePasswordRequest(cp, "it", false));
   }
 
   @Test
@@ -78,7 +77,8 @@ class UserAccountServiceTest {
     when(emailTemplateService.getTemplateByCategoryLocaleAndClient(any(), any(), any()))
         .thenReturn(Mono.just(template));
 
-    when(userService.updateUser(any(User.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+    when(userService.updateUser(any(), any(User.class)))
+        .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
     StepVerifier.create(userAccountService.changePasswordRequest(cp, "it", false))
         .assertNext(

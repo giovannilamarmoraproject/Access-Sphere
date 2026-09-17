@@ -85,7 +85,7 @@ public class UserAdminService {
         .flatMap(
             clientCredential -> {
               TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
-              return userService.getUsersFromDatabase();
+              return userService.getUsers();
             })
         .doOnSuccess(
             users -> LOG.info("✅ [USER ADMIN] Successfully retrieved {} users", users.size()));
@@ -146,7 +146,8 @@ public class UserAdminService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> registerUser(
       String bearer, User user, ClientCredential clientCredential, Boolean assignNewClient) {
-    LOG.info("👤 [USER ADMIN] Registering user: {}, email: {}", user.getUsername(), user.getEmail());
+    LOG.info(
+        "👤 [USER ADMIN] Registering user: {}, email: {}", user.getUsername(), user.getEmail());
     List<AppRole> userRoles =
         clientCredential.getAppRoles().stream()
             .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
@@ -215,7 +216,7 @@ public class UserAdminService {
                   .flatMap(
                       user -> {
                         user.setBlocked(block);
-                        return userService.updateUser(user, false);
+                        return userService.updateUser(identifier, user);
                       });
             })
         .doOnSuccess(

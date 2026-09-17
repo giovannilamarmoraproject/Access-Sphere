@@ -22,7 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 /**
- * Contratto OpenAPI per le operazioni self-service e di gestione account utente (profilo e password).
+ * Contratto OpenAPI per le operazioni self-service e di gestione account utente (profilo e
+ * password).
  */
 public interface UserAccountController {
 
@@ -30,7 +31,7 @@ public interface UserAccountController {
   @Operation(
       description = "Obtaining the profile of the current User",
       summary = "User Profile",
-      tags = OpenAPI.Tag.USERS,
+      tags = OpenAPI.Tag.ACCOUNT,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
       value = {
@@ -66,11 +67,12 @@ public interface UserAccountController {
           String bearer,
       ServerHttpRequest request);
 
+  @Deprecated
   @PutMapping("/users/update")
   @Operation(
       description = "Update an existing user profile",
       summary = "User Update",
-      tags = OpenAPI.Tag.USERS)
+      tags = OpenAPI.Tag.ACCOUNT)
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -99,11 +101,49 @@ public interface UserAccountController {
           String bearer,
       ServerHttpRequest request);
 
+  @PutMapping("/users/{identifier}")
+  @Operation(
+      description = "Update an existing user profile",
+      summary = "User Update",
+      tags = OpenAPI.Tag.ACCOUNT)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "User updated successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = User.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> updateUser(
+      @PathVariable(value = "identifier")
+          @Schema(
+              description = OpenAPI.Params.Description.IDENTIFIER,
+              example = OpenAPI.Params.Example.IDENTIFIER)
+          String identifier,
+      @RequestBody @Valid @NotNull(message = "User cannot be null") User user,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      ServerHttpRequest request);
+
   @PostMapping("/users/change/password/request")
   @Operation(
       description = "Send Email to change the user password (Step 1)",
       summary = "Change Password Step 1",
-      tags = OpenAPI.Tag.USERS)
+      tags = OpenAPI.Tag.ACCOUNT)
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -132,7 +172,7 @@ public interface UserAccountController {
   @Operation(
       description = "Change the user password using reset token (Step 2)",
       summary = "Change Password Step 2",
-      tags = OpenAPI.Tag.USERS)
+      tags = OpenAPI.Tag.ACCOUNT)
   @ApiResponses(
       value = {
         @ApiResponse(

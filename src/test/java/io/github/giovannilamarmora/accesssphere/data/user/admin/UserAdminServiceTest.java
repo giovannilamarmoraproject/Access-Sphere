@@ -21,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -72,7 +71,7 @@ class UserAdminServiceTest {
 
     User user = new User();
     user.setUsername("user1");
-    when(userService.getUsersFromDatabase()).thenReturn(Mono.just(List.of(user)));
+    when(userService.getUsers()).thenReturn(Mono.just(List.of(user)));
 
     StepVerifier.create(userAdminService.getUsers())
         .assertNext(
@@ -113,7 +112,7 @@ class UserAdminServiceTest {
     user.setBlocked(false);
 
     when(userService.getUserByIdentifier("uuid-1")).thenReturn(Mono.just(user));
-    when(userService.updateUser(any(User.class), eq(false)))
+    when(userService.updateUser(any(), any(User.class), eq(false)))
         .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
     StepVerifier.create(userAdminService.unlockUser("uuid-1", true))

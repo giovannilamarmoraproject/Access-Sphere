@@ -1,11 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import java.util.List;
@@ -124,8 +122,7 @@ class UserServiceTest {
     when(userDAO.findUserEntityByUsernameOrEmail("ghost", null)).thenReturn(null);
 
     assertThrows(
-        OAuthException.class,
-        () -> userService.authenticateUser("ghost", null, "anyPassword"));
+        OAuthException.class, () -> userService.authenticateUser("ghost", null, "anyPassword"));
   }
 
   @Test
@@ -141,7 +138,7 @@ class UserServiceTest {
 
     when(userDAO.findAll()).thenReturn(List.of(u1, u2));
 
-    StepVerifier.create(userService.getUsersFromDatabase())
+    StepVerifier.create(userService.getUsers())
         .assertNext(
             users -> {
               assertEquals(2, users.size());

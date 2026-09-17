@@ -6,7 +6,6 @@ import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.data.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -33,8 +32,8 @@ public class RolesService {
   @Autowired private TechUserService techUserService;
 
   /**
-   * Modifica i ruoli assegnati a un determinato utente, verificando che i ruoli esistano nei client registrati.
-   * L'operazione e' consentita esclusivamente a un utente tecnico autorizzato.
+   * Modifica i ruoli assegnati a un determinato utente, verificando che i ruoli esistano nei client
+   * registrati. L'operazione e' consentita esclusivamente a un utente tecnico autorizzato.
    *
    * @param identifier Identificatore univoco dell'utente.
    * @param roles Oggetto contenente la lista dei ruoli da assegnare.
@@ -42,9 +41,7 @@ public class RolesService {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> changeRoles(String identifier, UserRoles roles) {
-    LOG.info(
-        "👥 [ROLES] Changing user roles process started, identifier: {}",
-        identifier);
+    LOG.info("👥 [ROLES] Changing user roles process started, identifier: {}", identifier);
     if (!techUserService.isTechUser()) {
       LOG.error("❌ Only a tech user can change the user roles {}", identifier);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
@@ -68,7 +65,7 @@ public class RolesService {
                       user -> {
                         user.setRoles(validRoles);
                         return userService
-                            .updateUser(user)
+                            .updateUser(identifier, user)
                             .map(
                                 updatedUser -> {
                                   Response response =
@@ -86,7 +83,6 @@ public class RolesService {
         .doOnSuccess(
             responseResponseEntity ->
                 LOG.info(
-                    "✅ [ROLES] Changing user roles process ended, identifier: {}",
-                    identifier));
+                    "✅ [ROLES] Changing user roles process ended, identifier: {}", identifier));
   }
 }

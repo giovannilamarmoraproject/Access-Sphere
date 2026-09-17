@@ -44,8 +44,7 @@ public class MFAService {
         "\uD83E\uDD37\u200D♂\uFE0F Setup MFA for user: {} process started.",
         setupRequest.identifier());
     if (!techUserService.isTechUser())
-      UserValidator.validateIdentifier(
-          setupRequest.identifier(), accessTokenData.getIdentifier());
+      UserValidator.validateIdentifier(setupRequest.identifier(), accessTokenData.getIdentifier());
     Mono<User> userMono = userService.getUserByIdentifier(setupRequest.identifier(), true);
     return userMono
         .flatMap(
@@ -81,13 +80,13 @@ public class MFAService {
               user.setMfaSettings(MFAMapper.generateFinalMFA(user, mfaMethod));
 
               return userService
-                  .updateUser(user, false)
+                  .updateUser(user.getIdentifier(), user)
                   .map(
                       user1 -> {
                         Response response =
                             new Response(
                                 HttpStatus.OK.value(),
-                                "MFA Confirmed",
+                                "MFA Confirmed for user: " + user1.getIdentifier(),
                                 TraceUtils.getSpanID(),
                                 null);
                         return ResponseEntity.ok(response);

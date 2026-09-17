@@ -34,7 +34,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@Tag(name = OpenAPI.Tag.USERS, description = "API to manage users")
+@Tag(name = OpenAPI.Tag.ACCOUNT, description = "API to manage users")
 public class UserAccountControllerImpl implements UserAccountController {
 
   private static final Logger LOG = LoggerFilter.getLogger(UserAccountControllerImpl.class);
@@ -82,7 +82,37 @@ public class UserAccountControllerImpl implements UserAccountController {
         "🌐 [ACCOUNT CONTROLLER] Invoking UpdateUser endpoint for username: {}",
         user.getUsername());
     return userAccountService
-        .updateUser(user, bearer, request)
+        .updateUser(user.getIdentifier(), user, bearer, request)
+        .map(
+            updatedUser -> {
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(),
+                      "User " + updatedUser.getUsername() + " successfully updated!",
+                      TraceUtils.getSpanID(),
+                      updatedUser);
+              return ResponseEntity.ok(response);
+            });
+  }
+
+  /**
+   * Endpoint per l'aggiornamento dei dati anagrafici del profilo utente.
+   *
+   * @param user DTO contenente i dati anagrafici aggiornati.
+   * @param bearer Token Bearer della sessione.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente ResponseEntity con stato 200 OK e i dati aggiornati.
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> updateUser(
+      String identifier, User user, String bearer, ServerHttpRequest request) {
+    LOG.info(
+        "🌐 [ACCOUNT CONTROLLER] Invoking UpdateUser endpoint for username: {} and identifier: {}",
+        user.getUsername(),
+        identifier);
+    return userAccountService
+        .updateUser(identifier, user, bearer, request)
         .map(
             updatedUser -> {
               Response response =

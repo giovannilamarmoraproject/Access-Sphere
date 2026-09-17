@@ -5,6 +5,8 @@ public final class OpenAPI {
     public static final String OAUTH = "oAuth";
     public static final String MFA = "Multi factor Authentication";
     public static final String TOKEN = "Token";
+    public static final String ACCOUNT = "Account";
+    public static final String ADMIN = "Admin";
     public static final String USERS = "Users";
     public static final String ROLES = "Roles";
     public static final String CLIENT = "Client";

@@ -5,7 +5,6 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -104,17 +103,6 @@ public class UserService {
   }
 
   /**
-   * Recupera i dati utente a partire dai claim JWT decifrati.
-   *
-   * @param jwtData Claim estratti dal token JWT.
-   * @return Mono contenente il DTO {@link User}.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> getUserInfo(JWTData jwtData) {
-    return getUserByEmail(jwtData.getEmail());
-  }
-
-  /**
    * Recupera un utente associato a un token di reset password e ne convalida la scadenza temporale.
    *
    * @param tokenReset Token UUID di recupero password.
@@ -136,7 +124,7 @@ public class UserService {
    * @return Mono contenente la lista di {@link User}.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getUsersFromDatabase() {
+  public Mono<List<User>> getUsers() {
     LOG.info("👥 Getting all users from database");
     List<UserEntity> userEntities = userDAO.findAll();
     return Mono.just(UserMapper.toDTOList(userEntities));
@@ -182,8 +170,8 @@ public class UserService {
    * @return Mono contenente il DTO {@link User} aggiornato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(User userToUpdate) {
-    return updateUser(userToUpdate, false);
+  public Mono<User> updateUser(String identifier, User userToUpdate) {
+    return updateUser(identifier, userToUpdate, false);
   }
 
   /**
@@ -195,10 +183,10 @@ public class UserService {
    * @return Mono contenente il DTO {@link User} aggiornato e persistito.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(User userToUpdate, boolean isUpdatePassword) {
+  public Mono<User> updateUser(String identifier, User userToUpdate, boolean isUpdatePassword) {
     LOG.info(
         "👤 Updating user in database, identifier: {}, updatePassword: {}",
-        userToUpdate.getIdentifier(),
+        identifier,
         isUpdatePassword);
     UserEntity userEntity = UserMapper.toEntity(userToUpdate);
 
@@ -213,7 +201,7 @@ public class UserService {
       }
     }
 
-    UserEntity userFind = userDAO.findUserEntityByIdentifier(userToUpdate.getIdentifier());
+    UserEntity userFind = userDAO.findUserEntityByIdentifier(identifier);
     setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
     return Mono.just(saveUserEntityIntoDatabase(userEntity));
   }
@@ -264,20 +252,6 @@ public class UserService {
     } else {
       LOG.error("❌ User not found for update: {}", user.getIdentifier());
       throw new IllegalArgumentException("User not found: " + user.getIdentifier());
-    }
-  }
-
-  /**
-   * Elimina un utente dal database locale a partire dal suo DTO.
-   *
-   * @param user DTO dell'utente da eliminare.
-   */
-  @Transactional
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void deleteUserFromDatabase(User user) {
-    UserEntity existingUser = userDAO.findUserEntityByIdentifier(user.getIdentifier());
-    if (!ObjectUtils.isEmpty(existingUser)) {
-      userDAO.delete(existingUser);
     }
   }
 

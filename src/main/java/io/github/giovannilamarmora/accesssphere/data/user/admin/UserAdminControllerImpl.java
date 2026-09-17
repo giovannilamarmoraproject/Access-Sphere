@@ -34,7 +34,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@Tag(name = OpenAPI.Tag.USERS, description = "API to manage users")
+@Tag(name = OpenAPI.Tag.ADMIN, description = "API to manage users")
 public class UserAdminControllerImpl implements UserAdminController {
 
   private static final Logger LOG = LoggerFilter.getLogger(UserAdminControllerImpl.class);
@@ -71,8 +71,8 @@ public class UserAdminControllerImpl implements UserAdminController {
    * @param clientId Identificatore univoco del client OAuth associato.
    * @param registration_token Token segreto di registrazione verificato rispetto al client.
    * @param assignNewClient Flag opzionale per l'assegnazione di nuove credenziali.
-   * @return Mono contenente ResponseEntity con stato 201 CREATED e l'involucro Response con l'utente
-   *     registrato.
+   * @return Mono contenente ResponseEntity con stato 201 CREATED e l'involucro Response con
+   *     l'utente registrato.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)

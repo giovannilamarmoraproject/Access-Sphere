@@ -21,16 +21,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-/**
- * Contratto OpenAPI per la gestione amministrativa degli utenti IAM (Tech User / Admin).
- */
+/** Contratto OpenAPI per la gestione amministrativa degli utenti IAM (Tech User / Admin). */
 public interface UserAdminController {
 
   @GetMapping("/users")
   @Operation(
       description = "Get the full list of users, works only with Tech User or Tech Roles",
       summary = "User List",
-      tags = OpenAPI.Tag.USERS,
+      tags = OpenAPI.Tag.ADMIN,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
       value = {
@@ -70,7 +68,7 @@ public interface UserAdminController {
   @Operation(
       description = "Register a new user into IAM system",
       summary = "User Registration",
-      tags = OpenAPI.Tag.USERS)
+      tags = OpenAPI.Tag.ADMIN)
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -122,7 +120,7 @@ public interface UserAdminController {
   @Operation(
       description = "Delete an existing user",
       summary = "User Delete",
-      tags = OpenAPI.Tag.USERS)
+      tags = OpenAPI.Tag.ADMIN)
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -166,7 +164,7 @@ public interface UserAdminController {
   @Operation(
       description = "Unlock or lock a user account",
       summary = "Unlock User",
-      tags = OpenAPI.Tag.USERS)
+      tags = OpenAPI.Tag.ADMIN)
   @ApiResponses(
       value = {
         @ApiResponse(
