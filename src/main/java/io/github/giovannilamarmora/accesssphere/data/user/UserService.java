@@ -72,9 +72,9 @@ public class UserService {
   @Autowired @Lazy private WebhookService webhookService;
 
   /**
-   * Recupera un utente a partire dal suo identificatore univoco dal database locale.
-   * Valida l'esistenza dell'entita' tramite {@link UserValidator#validateUser(UserEntity)}
-   * e mappa l'entita' persistita nel DTO {@link User}.
+   * Recupera un utente a partire dal suo identificatore univoco dal database locale. Valida
+   * l'esistenza dell'entita' tramite {@link UserValidator#validateUser(UserEntity)} e mappa
+   * l'entita' persistita nel DTO {@link User}.
    *
    * @param identifier Identificatore univoco UUID dell'utente.
    * @return Mono contenente il DTO {@link User}.
@@ -99,8 +99,8 @@ public class UserService {
   }
 
   /**
-   * Recupera un utente dal database locale a partire dal suo indirizzo email.
-   * Effettua la validazione di esistenza e la conversione in DTO {@link User}.
+   * Recupera un utente dal database locale a partire dal suo indirizzo email. Effettua la
+   * validazione di esistenza e la conversione in DTO {@link User}.
    *
    * @param email Indirizzo email dell'utente.
    * @return Mono contenente il DTO {@link User}.
@@ -129,8 +129,8 @@ public class UserService {
   }
 
   /**
-   * Recupera la lista completa di tutti gli utenti registrati nel database locale.
-   * Converte l'elenco delle entita' persistite nel corrispondente elenco di DTO {@link User}.
+   * Recupera la lista completa di tutti gli utenti registrati nel database locale. Converte
+   * l'elenco delle entita' persistite nel corrispondente elenco di DTO {@link User}.
    *
    * @return Mono contenente la lista di {@link User}.
    */
@@ -143,9 +143,9 @@ public class UserService {
 
   /**
    * Registra un nuovo utente nel database locale, validando o assegnando i ruoli applicativi
-   * definiti sul client OAuth. Se la richiesta proviene da un utente tecnico autenticato,
-   * consente l'assegnazione mirata dei ruoli specificati nel payload.
-   * Effettua l'hashing bcrypt della password prima del salvataggio.
+   * definiti sul client OAuth. Se la richiesta proviene da un utente tecnico autenticato, consente
+   * l'assegnazione mirata dei ruoli specificati nel payload. Effettua l'hashing bcrypt della
+   * password prima del salvataggio.
    *
    * @param bearer Token di autorizzazione opzionale dell'utente chiamante.
    * @param user DTO contenente i dati di registrazione dell'utente.
@@ -197,9 +197,9 @@ public class UserService {
   }
 
   /**
-   * Esegue l'autenticazione dell'utente tramite credenziali locali (username/email e password)
-   * o delega a {@link TechUserService} nel caso si tratti di un utente tecnico.
-   * Genera la risposta con token OAuth2 completo e dati JWT associati.
+   * Esegue l'autenticazione dell'utente tramite credenziali locali (username/email e password) o
+   * delega a {@link TechUserService} nel caso si tratti di un utente tecnico. Genera la risposta
+   * con token OAuth2 completo e dati JWT associati.
    *
    * @param username Username dell'utente (opzionale se specificata email).
    * @param email Indirizzo email dell'utente (opzionale se specificato username).
@@ -209,26 +209,14 @@ public class UserService {
    * @return Mono contenente l'oggetto {@link OAuthTokenResponse} generato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<OAuthTokenResponse> login(
+  public Mono<OAuthTokenResponse> performLogin(
       String username,
       String email,
       String password,
       ClientCredential clientCredential,
       ServerHttpRequest request) {
-    if (!techUserService.checkIfTechUser(
-        ObjectToolkit.getOrDefault(username, email), password, clientCredential.getClientId())) {
-      return Mono.just(
-          performLoginViaDatabase(username, email, password, clientCredential, request));
-    } else return techUserService.loginTechUser(username, clientCredential, request);
-  }
-
-  private OAuthTokenResponse performLoginViaDatabase(
-      String username,
-      String email,
-      String password,
-      ClientCredential clientCredential,
-      ServerHttpRequest request) {
-    LOG.debug("🔑 Login process via Database started for username={} and email={}", username, email);
+    LOG.debug(
+        "🔑 Login process via Database started for username={} and email={}", username, email);
     UserEntity userEntity = userDAO.findUserEntityByUsernameOrEmail(username, email);
 
     if (ObjectUtils.isEmpty(userEntity)) {
@@ -247,7 +235,7 @@ public class UserService {
         JWTData.generateJWTData(userEntityToUser, clientCredential, SubjectType.CUSTOMER, request);
     AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
     LOG.debug("✅ Login process via Database ended for username={} and email={}", username, email);
-    return new OAuthTokenResponse(userEntityToUser, jwtData, token);
+    return Mono.just(new OAuthTokenResponse(userEntityToUser, jwtData, token));
   }
 
   /**
@@ -269,8 +257,8 @@ public class UserService {
   }
 
   /**
-   * Esegue il rinnovo del token JWT a partire dai dati della sessione di accesso esistente
-   * e dalle credenziali del client.
+   * Esegue il rinnovo del token JWT a partire dai dati della sessione di accesso esistente e dalle
+   * credenziali del client.
    *
    * @param accessTokenData Dati decifrati del token di accesso corrente.
    * @param clientCredential Credenziali del client OAuth.
@@ -308,8 +296,8 @@ public class UserService {
   }
 
   /**
-   * Aggiorna i dati di un utente nel database locale, gestendo opzionalmente la cifratura
-   * e l'aggiornamento della password con validazione tramite regex.
+   * Aggiorna i dati di un utente nel database locale, gestendo opzionalmente la cifratura e
+   * l'aggiornamento della password con validazione tramite regex.
    *
    * @param userToUpdate DTO contenente i nuovi valori dei campi.
    * @param isUpdatePassword Flag che indica se procedere all'aggiornamento della password.
@@ -370,8 +358,8 @@ public class UserService {
   }
 
   /**
-   * Cancella fisicamente un utente dal database locale tramite il suo identificatore univoco
-   * ed esegue l'eventuale webhook associato all'azione di cancellazione.
+   * Cancella fisicamente un utente dal database locale tramite il suo identificatore univoco ed
+   * esegue l'eventuale webhook associato all'azione di cancellazione.
    *
    * @param identifier Identificatore univoco UUID dell'utente.
    * @param bearer Token bearer della richiesta.
@@ -502,8 +490,7 @@ public class UserService {
         .doOnSuccess(
             responseResponseEntity ->
                 LOG.info(
-                    "✅ [USER INFO] UserInfo process ended, include Data: {}",
-                    includeUserData));
+                    "✅ [USER INFO] UserInfo process ended, include Data: {}", includeUserData));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -558,8 +545,7 @@ public class UserService {
               }
             })
         .doOnSuccess(
-            responseResponseEntity ->
-                LOG.info("✅ [USER PROFILE] Getting profile process ended"));
+            responseResponseEntity -> LOG.info("✅ [USER PROFILE] Getting profile process ended"));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -636,8 +622,7 @@ public class UserService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> unlockUser(String identifier, Boolean block) {
-    LOG.info(
-        "🔓 [USER UNLOCK] Unlocking user process started, identifier: {}", identifier);
+    LOG.info("🔓 [USER UNLOCK] Unlocking user process started, identifier: {}", identifier);
     if (!techUserService.isTechUser()) {
       LOG.error("❌ Only a tech user can unlock user {}", identifier);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
@@ -817,8 +802,7 @@ public class UserService {
                       });
             })
         .doOnSuccess(
-            responseResponseEntity ->
-                LOG.info("✅ [USER LIST] Get list of users process ended"));
+            responseResponseEntity -> LOG.info("✅ [USER LIST] Get list of users process ended"));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -841,8 +825,7 @@ public class UserService {
               .doOnSuccess(
                   responseResponseEntity ->
                       LOG.info(
-                          "✅ [USER DELETE] Delete user process ended, identifier: {}",
-                          identifier));
+                          "✅ [USER DELETE] Delete user process ended, identifier: {}", identifier));
         });
   }
 }

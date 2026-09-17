@@ -1,6 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
@@ -13,7 +12,6 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
@@ -85,7 +83,7 @@ public class AuthService {
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
     return userService
-        .login(username, email, password, clientCredential, request)
+        .performLogin(username, email, password, clientCredential, request)
         .map(
             tokenResponse -> {
               OAuthValidator.validateUserRoles(
