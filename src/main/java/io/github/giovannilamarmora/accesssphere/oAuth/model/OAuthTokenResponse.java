@@ -27,6 +27,10 @@ public class OAuthTokenResponse extends GenericDTO {
     this.token = token;
   }
 
+  public OAuthTokenResponse(JWTData userInfo) {
+    this.userInfo = userInfo;
+  }
+
   public OAuthTokenResponse(AuthToken token, JWTData userInfo) {
     this.token = token;
     this.userInfo = userInfo;

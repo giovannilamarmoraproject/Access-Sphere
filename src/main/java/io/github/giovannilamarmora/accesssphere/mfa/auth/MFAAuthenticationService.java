@@ -20,7 +20,6 @@ import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.ExposedHeaders;
-import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -74,14 +73,16 @@ public class MFAAuthenticationService {
   }
 
   /**
-   * Verifica se l'autenticazione MFA e' abilitata per l'utente e genera il token temporaneo per la verifica.
+   * Verifica se l'autenticazione MFA e' abilitata per l'utente e genera il token temporaneo per la
+   * verifica.
    *
    * @param payload Payload opzionale o claim aggiuntivi.
    * @param jwtData Dati del token JWT.
    * @param user Utente in fase di login.
    * @param clientCredential Credenziali del Client chiamante.
    * @param request Richiesta HTTP in ingresso.
-   * @return Mono con la risposta OAuthTokenResponse per step MFA, oppure Mono.empty() se MFA non richiesto.
+   * @return Mono con la risposta OAuthTokenResponse per step MFA, oppure Mono.empty() se MFA non
+   *     richiesto.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<OAuthTokenResponse> checkMFAAndMakeLogin(
@@ -128,7 +129,10 @@ public class MFAAuthenticationService {
       AuthToken mfaToken = tokenService.generateMFAToken(user, clientCredential, payload);
       return Mono.just(
           new OAuthTokenResponse(
-              mfaToken, payload != null ? Mapper.convertObject(payload, JsonNode.class) : null, jwtData, user));
+              mfaToken,
+              payload != null ? Mapper.convertObject(payload, JsonNode.class) : null,
+              jwtData,
+              user));
     }
 
     return Mono.empty();
@@ -158,7 +162,7 @@ public class MFAAuthenticationService {
           JWTData jwtData =
               JWTData.generateJWTData(user, clientCredential, SubjectType.CUSTOMER, request);
           return userService
-              .getUserInfo(jwtData, null)
+              .getUserInfo(jwtData)
               .map(
                   user1 -> {
                     String deviceToken = null;
@@ -172,11 +176,14 @@ public class MFAAuthenticationService {
                         mfaTokenData, deviceToken, mfaRequest.mfaMethod().name());
                     jwtData.setRoles(user1.getRoles());
                     AuthToken token =
-                        tokenService.generateToken(jwtData, clientCredential, mfaTokenData.getPayload());
+                        tokenService.generateToken(
+                            jwtData, clientCredential, mfaTokenData.getPayload());
                     OAuthTokenResponse oAuthTokenResponse =
                         new OAuthTokenResponse(
                             token,
-                            mfaTokenData.getPayload() != null ? Mapper.convertObject(mfaTokenData.getPayload(), JsonNode.class) : null,
+                            mfaTokenData.getPayload() != null
+                                ? Mapper.convertObject(mfaTokenData.getPayload(), JsonNode.class)
+                                : null,
                             jwtData,
                             user1);
 
@@ -193,8 +200,7 @@ public class MFAAuthenticationService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> enableMethods(
-      String identifier, UserService userService) {
+  public Mono<ResponseEntity<Response>> enableMethods(String identifier, UserService userService) {
     LOG.info("🔐 [MFA ENABLE] - Process started for user '{}'", identifier);
     Mono<User> userMono = userService.getUserByIdentifier(identifier, true);
 
@@ -220,16 +226,13 @@ public class MFAAuthenticationService {
               mfaSetting.setEnabled(true);
               user.setMfaSettings(mfaSetting);
 
-              return userService
-                  .updateUser(user, false)
-                  .map(user1 -> ResponseEntity.ok(response));
+              return userService.updateUser(user, false).map(user1 -> ResponseEntity.ok(response));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA ENABLE] - Process ended for user '{}'", identifier));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> disableMethods(
-      String identifier, UserService userService) {
+  public Mono<ResponseEntity<Response>> disableMethods(String identifier, UserService userService) {
     LOG.info("🔐 [MFA DISABLE] - Process started for user '{}'", identifier);
     Mono<User> userMono = userService.getUserByIdentifier(identifier, true);
 
@@ -251,9 +254,7 @@ public class MFAAuthenticationService {
               mfaSetting.setEnabled(false);
               user.setMfaSettings(mfaSetting);
 
-              return userService
-                  .updateUser(user, false)
-                  .map(user1 -> ResponseEntity.ok(response));
+              return userService.updateUser(user, false).map(user1 -> ResponseEntity.ok(response));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA DISABLE] - Process ended for user '{}'", identifier));
   }
