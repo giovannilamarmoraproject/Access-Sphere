@@ -27,9 +27,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
       @Server(
           url = "https://access-sphere.giovannilamarmora.com",
           description = "Production Server URL"),
-      @Server(
-          url = "https://access.sphere.service.stg.giovannilamarmora.com",
-          description = "Staging Server URL"),
       @Server(url = "http://localhost:8080", description = "Local Server URL")
     })
 @SecurityScheme(

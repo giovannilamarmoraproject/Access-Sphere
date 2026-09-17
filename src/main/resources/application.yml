@@ -5,6 +5,8 @@ server:
   port: 8081
 cookie-domain: localhost
 spring:
+  main:
+    allow-circular-references: true
   thymeleaf:
     prefix: classpath:/static/
   application:

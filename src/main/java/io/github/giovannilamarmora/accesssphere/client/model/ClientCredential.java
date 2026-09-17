@@ -75,7 +75,6 @@ public class ClientCredential extends GenericDTO {
   @JsonAlias({"accessToken", "access_token"})
   private Boolean accessToken;
 
-
   @JsonAlias({"authorize_redirect_status", "authorizeRedirectStatus"})
   private HttpStatus authorize_redirect_status;
 

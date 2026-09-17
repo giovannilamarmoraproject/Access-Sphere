@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
@@ -30,7 +31,7 @@ public class WebhookService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   @Autowired private ClientService clientService;
   @Autowired private WebhookClient webhookClient;
-  @Autowired private OAuthService oAuthService;
+  @Autowired @Lazy private OAuthService oAuthService;
 
   public Mono<Void> checkAndExecuteWebhook(
       WebhookAction action, String bearer, String identifier, ServerWebExchange exchange) {

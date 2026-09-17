@@ -41,6 +41,7 @@ import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -68,7 +69,7 @@ public class UserService {
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private AccessTokenData accessTokenData;
   @Autowired private TechUserService techUserService;
-  @Autowired private WebhookService webhookService;
+  @Autowired @Lazy private WebhookService webhookService;
 
   /**
    * Recupera un utente a partire dal suo identificatore univoco dal database locale.
