@@ -154,3 +154,34 @@ Per garantire precisione operativa e zero sprechi di token, ogni attività deve 
 - **Integrità & Scope**:
     - Non reintrodurre mai chiamate Stripe rimosse o dipendenze legacy fittizie.
     - Agire strettamente entro il perimetro richiesto dall'utente.
+
+---
+
+## 7. Visione Architetturale: Ruoli, Permessi & Amministrazione Delegata (Multi-Tenant Scoping)
+
+Appunti e linee guida di progettazione concordati per l'evoluzione del controllo accessi e l'integrazione con servizi esterni:
+
+### A. Separazione dei Mondi: Console Access-Sphere vs. Servizi Frontend Esterni
+1. **Console Access-Sphere (IAM Backoffice)**:
+    - Riservata agli amministratori della piattaforma o ai manager delegati.
+    - Consente la gestione sistemistica: Client OAuth2, Utenti, Ruoli, Impostazioni globali e snapshot di backup.
+2. **Servizi FE Esterni (Applicazioni Consumer)**:
+    - Applicazioni client esterne (es. CRM, E-Commerce, Portali) che autenticano gli utenti tramite OAuth 2.0 / OIDC.
+    - **Perimetro limitato**: non gestiscono client o altri utenti.
+    - **Self-Service**: operano solo su se stessi tramite endpoint dedicati (`/userinfo`, `/me`, modifica anagrafica e cambio password con verifica `token.sub == targetIdentifier`).
+    - **Business Logic**: consumano `role`, `type` e `permissions` unicamente per regolare la visibilità delle proprie pagine e funzionalità applicative.
+
+### B. Contratto Dati Token & Retrocompatibilità FE
+- I FE legacy basati esclusivamente su `Nome` (`roles: ["ROLE_..."]`) e `Type` (`type: "ADMIN" | "USER" | "DEFAULT"`) mantengono il 100% della retrocompatibilità.
+- Per abilitare controlli granulari (es. `can('users:delete')`), il JWT e l'endpoint `/v1/oauth2/userinfo` verranno estesi con la claim `permissions: [...]` generata dall'aggregazione delle abilitazioni configurate nei ruoli del client.
+
+### C. Amministrazione Delegata (Multi-Tenant Scoping)
+Per consentire a utenti con ruoli elevati (es. `Manager 1`) di accedere alla console di Access-Sphere operando esclusivamente sulle proprie risorse di competenza:
+1. **Associazione Utente ↔ Client**: mappatura esplicita tra utente e `client_id` (tramite tabella relazionale o attributi di appartenenza).
+2. **Data Scoping a Livello Backend**:
+    - `GET /v1/clients`: Super Admin visualizza tutti i client; Manager visualizza solo i client abilitati (`managed_clients`).
+    - `GET /v1/users`: Super Admin visualizza tutti gli utenti; Manager visualizza solo gli utenti registrati o associati ai propri `managed_clients`.
+    - **Enforcement di Scrittura**: tentativi di modifica/eliminazione su record esterni al perimetro autorizzato vengono respinti con HTTP `403 Forbidden`.
+3. **Comportamento Console FE**:
+    - La console web consuma le API filtrate mostrando solo le righe e le opzioni consentite.
+    - Disabilitazione/occultamento automatico delle sezioni globali (es. Backup & Restore, Branding di sistema) riservate ai soli Super Admin.
