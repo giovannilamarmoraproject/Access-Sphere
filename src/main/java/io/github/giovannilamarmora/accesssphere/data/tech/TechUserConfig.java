@@ -25,22 +25,33 @@ public class TechUserConfig {
   public final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
   @Value(value = "${app.tech-user.username:tech_admin}")
-  public String tech_username;
+  public String techUsername;
 
   @Value(value = "${app.tech-user.password:tech_password}")
-  public String tech_password;
+  public String techPassword;
 
   @Value(value = "${app.tech-user.client-id:ACCESS-SPHERE-TECH}")
-  public String tech_client_id;
+  public String techClientId;
 
   @Value(value = "${app.tech-user.email:admin@accesssphere.local}")
-  public String tech_email;
+  public String techEmail;
 
   @Value(value = "${app.tech-user.jwt-secret:${app.jwt-secret:}}")
-  public String tech_jwt_secret;
+  public String techJwtSecret;
 
   @Autowired public TokenService tokenService;
   @Autowired public AccessTokenData accessTokenData;
 
   public static final String TECH_ROLE_LOG = "The subject {} has Technical Roles";
+
+  /**
+   * Alias retrocompatibile per il client ID tecnico.
+   *
+   * @return identificativo del client tecnico
+   * @deprecated utilizzare {@link #getTechClientId()}
+   */
+  @Deprecated
+  public String getTech_client_id() {
+    return techClientId;
+  }
 }

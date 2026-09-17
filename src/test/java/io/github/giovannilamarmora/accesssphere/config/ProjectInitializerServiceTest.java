@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.email.IEmailTemplateDAO;
@@ -36,10 +37,12 @@ class ProjectInitializerServiceTest {
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(projectInitializerService, "techUsername", "tech_admin");
-    ReflectionTestUtils.setField(projectInitializerService, "techPassword", "tech_password");
-    ReflectionTestUtils.setField(projectInitializerService, "techClientId", "ACCESS-SPHERE-TECH");
-    ReflectionTestUtils.setField(projectInitializerService, "techEmail", "tech_admin@accesssphere.local");
+    TechUserConfig techUserConfig = new TechUserConfig();
+    techUserConfig.setTechUsername("tech_admin");
+    techUserConfig.setTechPassword("tech_password");
+    techUserConfig.setTechClientId("ACCESS-SPHERE-TECH");
+    techUserConfig.setTechEmail("tech_admin@accesssphere.local");
+    ReflectionTestUtils.setField(projectInitializerService, "techUserConfig", techUserConfig);
   }
 
   @Test
@@ -99,8 +102,11 @@ class ProjectInitializerServiceTest {
   @Test
   @DisplayName("run does not seed when client, user, settings, and email templates already exist")
   void testRunSkipsWhenAlreadyPresent() {
+    ClientCredentialEntity existingClient = new ClientCredentialEntity();
+    existingClient.setJwtSecret("existing_jwt_secret_value");
+    existingClient.setRedirect_uri("{\"fallback_uri\":\"http://localhost/app/login\",\"redirect_uri\":\"http://localhost/app\"}");
     when(clientDAO.findByClientId("ACCESS-SPHERE-TECH"))
-        .thenReturn(new ClientCredentialEntity());
+        .thenReturn(existingClient);
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))
         .thenReturn(new UserEntity());
     when(appSettingsDAO.findAll()).thenReturn(List.of(new AppSettingsEntity()));

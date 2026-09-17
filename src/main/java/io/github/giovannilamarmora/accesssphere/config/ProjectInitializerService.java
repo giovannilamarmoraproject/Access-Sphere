@@ -97,8 +97,8 @@ public class ProjectInitializerService implements ApplicationRunner {
    */
   private void initTechnicalClient() {
     String techClientId =
-        StringUtils.hasText(techUserConfig.getTech_client_id())
-            ? techUserConfig.getTech_client_id()
+        StringUtils.hasText(techUserConfig.getTechClientId())
+            ? techUserConfig.getTechClientId()
             : "ACCESS-SPHERE-TECH";
 
     // Risoluzione del JWT Secret: da TechUserConfig o generazione a mano
@@ -172,9 +172,9 @@ public class ProjectInitializerService implements ApplicationRunner {
    * @return secret JWT a 256-bit esadecimale.
    */
   private String resolveOrGenerateJwtSecret(String techClientId) {
-    if (StringUtils.hasText(techUserConfig.getTech_jwt_secret())) {
+    if (StringUtils.hasText(techUserConfig.getTechJwtSecret())) {
       LOG.debug("Using configured JWT Secret from TechUserConfig for Technical OAuth Client [{}]", techClientId);
-      return techUserConfig.getTech_jwt_secret().trim();
+      return techUserConfig.getTechJwtSecret().trim();
     }
     LOG.info(
         "🔑 Generating new secure 256-bit random JWT Secret for Technical OAuth Client [{}]",
@@ -204,16 +204,16 @@ public class ProjectInitializerService implements ApplicationRunner {
    */
   private void initTechnicalUser() {
     String techUsername =
-        StringUtils.hasText(techUserConfig.getTech_username())
-            ? techUserConfig.getTech_username()
+        StringUtils.hasText(techUserConfig.getTechUsername())
+            ? techUserConfig.getTechUsername()
             : "tech_admin";
     String techEmail =
-        StringUtils.hasText(techUserConfig.getTech_email())
-            ? techUserConfig.getTech_email()
+        StringUtils.hasText(techUserConfig.getTechEmail())
+            ? techUserConfig.getTechEmail()
             : techUsername + "@accesssphere.local";
     String techPassword =
-        StringUtils.hasText(techUserConfig.getTech_password())
-            ? techUserConfig.getTech_password()
+        StringUtils.hasText(techUserConfig.getTechPassword())
+            ? techUserConfig.getTechPassword()
             : "tech_password";
 
     UserEntity existing = userDAO.findUserEntityByUsernameOrEmail(techUsername, techEmail);
@@ -277,8 +277,8 @@ public class ProjectInitializerService implements ApplicationRunner {
    */
   private void initEmailTemplates() {
     String techClientId =
-        StringUtils.hasText(techUserConfig.getTech_client_id())
-            ? techUserConfig.getTech_client_id()
+        StringUtils.hasText(techUserConfig.getTechClientId())
+            ? techUserConfig.getTechClientId()
             : "ACCESS-SPHERE-TECH";
 
     List<EmailTemplateEntity> existing =

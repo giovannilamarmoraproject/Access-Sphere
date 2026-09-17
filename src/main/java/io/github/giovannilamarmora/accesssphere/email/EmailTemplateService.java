@@ -179,7 +179,7 @@ public class EmailTemplateService {
           }
 
           // 2. Ricerca tra i template del Client Tecnico predefinito
-          String techClientId = techUserService.getTech_client_id();
+          String techClientId = techUserService.getTechClientId();
           if (!techClientId.equalsIgnoreCase(clientId)) {
             List<EmailTemplateEntity> techClientTemplates =
                 emailTemplateDAO.findByClientIdAndCategory(techClientId, effectiveCategory);

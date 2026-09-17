@@ -644,7 +644,7 @@ public class UserService {
     }
 
     Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
+        clientService.getClientCredentialByClientID(techUserService.getTechClientId());
 
     return clientCredentialMono.flatMap(
         clientCredential -> {
@@ -801,7 +801,7 @@ public class UserService {
     }
 
     Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
+        clientService.getClientCredentialByClientID(techUserService.getTechClientId());
 
     return clientCredentialMono
         .flatMap(
@@ -831,7 +831,7 @@ public class UserService {
     }
 
     Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(techUserService.getTech_client_id());
+        clientService.getClientCredentialByClientID(techUserService.getTechClientId());
 
     return clientCredentialMono.flatMap(
         clientCredential -> {

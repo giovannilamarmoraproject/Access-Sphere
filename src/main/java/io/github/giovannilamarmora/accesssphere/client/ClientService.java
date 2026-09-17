@@ -85,7 +85,7 @@ public class ClientService {
         .map(
             client -> {
               TechUserValidator.validateTechClient(
-                  client, accessTokenData, techUserService.getTech_client_id());
+                  client, accessTokenData, techUserService.getTechClientId());
               return client;
             });
   }
