@@ -228,7 +228,7 @@ function changeRoles() {
   const token = getCookieOrStorage(config.access_token);
 
   fetch(url, {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + token

@@ -21,7 +21,9 @@ import reactor.core.publisher.Mono;
 
 public interface RolesController {
 
-  @PutMapping("/users/{identifier}/roles")
+  @RequestMapping(
+      value = "/users/{identifier}/roles",
+      method = {RequestMethod.PUT, RequestMethod.PATCH})
   @Operation(
       description = "Change user roles, only Tech User",
       summary = "Change user roles",
