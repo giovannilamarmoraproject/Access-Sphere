@@ -12,7 +12,6 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
-import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
@@ -61,7 +60,6 @@ public class OAuthService {
   @Autowired private GoogleAuthService googleAuthService;
   @Autowired private AccessTokenService accessTokenService;
   @Autowired private AccessTokenData accessTokenData;
-  @Autowired private TokenService tokenService;
 
   /**
    * Gestisce l'endpoint di autorizzazione OAuth 2.0 (/oauth2/authorize). Determina se la richiesta
