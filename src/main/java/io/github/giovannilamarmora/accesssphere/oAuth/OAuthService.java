@@ -65,6 +65,23 @@ public class OAuthService {
   @Autowired private AccessTokenData accessTokenData;
   @Autowired private TokenService tokenService;
 
+  /**
+   * Gestisce l'endpoint di autorizzazione OAuth 2.0 (/oauth2/authorize).
+   * Determina se la richiesta richiede l'emissione immediata di un Bearer token
+   * (nel caso di token già presente o response_type=token) oppure se reindirizzare
+   * l'utente verso il flusso di autenticazione standard o identity provider federato (Google).
+   *
+   * @param responseType Tipo di risposta richiesta (es. "code" o "token").
+   * @param accessType Tipo di accesso richiesto (es. "offline" o "online").
+   * @param clientId Identificatore univoco del client OAuth2 registrato.
+   * @param redirect_uri URI di reindirizzamento post-autorizzazione.
+   * @param scope Scope richiesti per l'autorizzazione.
+   * @param registration_token Token di registrazione opzionale.
+   * @param bearer Token di autorizzazione bearer opzionale fornito nell'header.
+   * @param state Valore di stato anti-CSRF.
+   * @param exchange Contesto dello scambio HTTP server reattivo.
+   * @return Mono contenente la risposta HTTP con reindirizzamento o payload token.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> authorize(
       String responseType,
@@ -78,7 +95,7 @@ public class OAuthService {
       ServerWebExchange exchange) {
 
     LOG.info(
-        "🔐 Starting oAuth/2.0/authorize - clientId: {}, accessType: {}, responseType: {}",
+        "🔐 [OAUTH AUTHORIZE] Starting authorization flow - clientId: {}, accessType: {}, responseType: {}",
         clientId,
         accessType,
         responseType);
@@ -90,10 +107,12 @@ public class OAuthService {
     return clientCredentialMono.map(
         clientCredential -> {
           if (StringUtils.hasText(bearer) || responseType.equalsIgnoreCase("token")) {
+            LOG.info("🛡️ [OAUTH AUTHORIZE] Bearer token provided or responseType=token, validating bearer token for clientId: {}", clientId);
             OAuthValidator.validateResponseType("token", responseType);
             return handleBearerToken(bearer, clientCredential, exchange);
           }
 
+          LOG.info("🌐 [OAUTH AUTHORIZE] Initiating standard OAuth authorization redirect for clientId: {}, redirectUri: {}", clientId, finalRedirectUri);
           return handleOAuthAuthorization(
               clientCredential,
               responseType,
@@ -105,9 +124,21 @@ public class OAuthService {
         });
   }
 
+  /**
+   * Gestisce l'emissione del token OAuth 2.0 tramite Authorization Code.
+   * Inoltra la richiesta al flusso unificato {@link #getToken}.
+   *
+   * @param clientId Identificatore univoco del client.
+   * @param scope Scope autorizzativi richiesti.
+   * @param code Authorization code emesso durante il flusso authorize.
+   * @param prompt Parametro di prompt opzionale.
+   * @param exchange Contesto dello scambio HTTP reattivo.
+   * @return Mono con la risposta contenente i token OAuth generati.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> token(
       String clientId, String scope, String code, String prompt, ServerWebExchange exchange) {
+    LOG.info("🗝️ [OAUTH TOKEN] Processing authorization_code token request for clientId: {}, scope: {}", clientId, scope);
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
     return getToken(
@@ -122,6 +153,21 @@ public class OAuthService {
         response);
   }
 
+  /**
+   * Endpoint universale di emissione token OAuth 2.0 con supporto per molteplici grant types:
+   * authorization_code, password e refresh_token.
+   *
+   * @param clientId Identificatore del client.
+   * @param refresh_token Token di refresh per grant_type refresh_token.
+   * @param grant_type Tipo di grant richiesto (es. authorization_code, password, refresh_token).
+   * @param scope Scope richiesti.
+   * @param code Codice di autorizzazione.
+   * @param prompt Parametro di prompt.
+   * @param redirect_uri URI di reindirizzamento.
+   * @param basic Stringa di credenziali HTTP Basic (per grant type password / bearer).
+   * @param exchange Contesto dello scambio HTTP.
+   * @return Mono con la risposta del token emesso o errore.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> tokenOAuth(
       String clientId,
@@ -133,31 +179,43 @@ public class OAuthService {
       String redirect_uri,
       String basic,
       ServerWebExchange exchange) {
+    LOG.info("🗝️ [OAUTH TOKEN] Processing OAuth 2.0 token request - clientId: {}, grantType: {}", clientId, grant_type);
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
     redirect_uri = Utils.decodeURLValue(redirect_uri);
     switch (GrantType.fromType(grant_type)) {
       case AUTHORIZATION_CODE, PASSWORD -> {
+        LOG.debug("📋 [OAUTH TOKEN] Delegating to getToken for grantType: {}, clientId: {}", grant_type, clientId);
         return getToken(
             clientId, grant_type, scope, code, prompt, redirect_uri, basic, request, response);
       }
       case REFRESH_TOKEN -> {
+        LOG.debug("🔄 [OAUTH TOKEN] Delegating to refreshToken for clientId: {}", clientId);
         return refreshToken(clientId, refresh_token, grant_type, scope, request);
       }
       default -> {
-        LOG.error("Invalid grant_type for {}", grant_type);
+        LOG.error("❌ [OAUTH TOKEN] Invalid or unsupported grant_type '{}' for clientId: {}", grant_type, clientId);
         throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid o not supported grant_type!");
       }
     }
   }
 
+  /**
+   * Esegue il flusso RFC 8693 OAuth 2.0 Token Exchange per scambiare un token esistente
+   * con un nuovo token destinato a un diverso client target.
+   *
+   * @param bearer Token di autorizzazione chiamante.
+   * @param tokenExchange Dati della richiesta di Token Exchange.
+   * @param exchange Contesto HTTP server.
+   * @return Mono con la risposta contenente il nuovo token scambiato.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> tokenExchange(
       String bearer, TokenExchange tokenExchange, ServerWebExchange exchange) {
 
-    LOG.info("🔄 Token Exchange process started for client: {}", tokenExchange.getClient_id());
+    LOG.info("🔄 [TOKEN EXCHANGE] Token Exchange process started for target client: {}", tokenExchange.getClient_id());
 
-    // Recupera le credenziali del client
+    // Recupera le credenziali del client target e del client sorgente
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(tokenExchange.getClient_id());
 
@@ -168,6 +226,7 @@ public class OAuthService {
         .zipWith(clientCredentialToExchangeMono)
         .flatMap(
             objects -> {
+              LOG.debug("🔍 [TOKEN EXCHANGE] Validating token exchange parameters for client: {}", tokenExchange.getClient_id());
               OAuthValidator.validateTokenExchange(bearer, tokenExchange, objects.getT1());
               return authService.exchangeToken(
                   tokenExchange,
@@ -179,13 +238,21 @@ public class OAuthService {
         .doOnSuccess(
             responseResponseEntity ->
                 LOG.info(
-                    "🔄 Token Exchange process completed for client: {}",
+                    "✅ [TOKEN EXCHANGE] Token Exchange process completed successfully for client: {}",
                     tokenExchange.getClient_id()));
   }
 
+  /**
+   * Convalida il token Bearer fornito direttamente nell'endpoint authorize e ne verifica ruoli e appartenenza client.
+   *
+   * @param bearer Token bearer ricevuto.
+   * @param clientCredential Credenziali del client configurato.
+   * @param exchange Contesto HTTP.
+   * @return ResponseEntity con l'esito della validazione.
+   */
   private ResponseEntity<?> handleBearerToken(
       String bearer, ClientCredential clientCredential, ServerWebExchange exchange) {
-    LOG.info("✅ Bearer token found *******, starting authorization check");
+    LOG.info("🛡️ [OAUTH BEARER] Bearer token detected, executing authorization validation");
 
     try {
       AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
@@ -205,7 +272,7 @@ public class OAuthService {
               TraceUtils.getSpanID(),
               new OAuthTokenResponse(token, accessTokenData.getPayload()));
 
-      LOG.info("✅ Authorization successful for {}", bearer);
+      LOG.info("✅ [OAUTH BEARER] Authorization successful for clientId: {}", clientCredential.getClientId());
       return ResponseEntity.ok(response);
 
     } catch (TokenException | OAuthException e) {
@@ -213,11 +280,21 @@ public class OAuthService {
     }
   }
 
+  /**
+   * Gestisce gli errori di validazione del token cancellando i cookie di sessione
+   * ed eseguendo il redirect alla fallback URI (se configurata) o restituendo 401 Unauthorized.
+   *
+   * @param clientCredential Credenziali del client.
+   * @param e Eccezione intercettata.
+   * @param exchange Contesto HTTP.
+   * @return ResponseEntity con fallback redirect o status non autorizzato.
+   */
   private ResponseEntity<?> handleInvalidToken(
       ClientCredential clientCredential, Exception e, ServerWebExchange exchange) {
-    LOG.warn("❌ Token validation failed: {}", e.getMessage());
+    LOG.warn("❌ [OAUTH ERROR] Token validation failed for clientId {}: {}", clientCredential.getClientId(), e.getMessage());
 
     /** Deleting all cookie if validation failed */
+    LOG.debug("🧹 [OAUTH CLEANUP] Purging all cookies due to invalid token");
     Utils.deleteAllCookie(exchange.getResponse());
 
     if (e instanceof OAuthException exception
@@ -239,6 +316,7 @@ public class OAuthService {
               TraceUtils.getSpanID(),
               fallbackLocation);
 
+      LOG.info("↪️ [OAUTH FALLBACK] Redirecting to fallback URI: {}", fallbackLocation);
       return ResponseEntity.status(HttpStatus.FOUND).location(fallbackLocation).body(response);
     }
 
@@ -251,6 +329,19 @@ public class OAuthService {
                 null));
   }
 
+  /**
+   * Costruisce il reindirizzamento verso l'identity provider configurato (Google OAuth o form di login).
+   * Imposta i cookie di contesto per redirect URI e registration token.
+   *
+   * @param clientCredential Credenziali del client.
+   * @param responseType Tipo di risposta richiesta.
+   * @param accessType Tipo di accesso (online/offline).
+   * @param finalRedirectUri URI di reindirizzamento finale decodificata.
+   * @param scope Scope richiesti.
+   * @param registrationToken Token di registrazione opzionale.
+   * @param exchange Contesto HTTP.
+   * @return Risposta di reindirizzamento HTTP verso la location autorizzativa.
+   */
   private ResponseEntity<?> handleOAuthAuthorization(
       ClientCredential clientCredential,
       String responseType,
@@ -276,16 +367,21 @@ public class OAuthService {
           Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, response);
 
     LOG.info(
-        "✅ OAuth authorization completed - clientId: {}, accessType: {}, responseType: {}",
+        "✅ [OAUTH AUTHORIZE] Authorization redirect prepared - clientId: {}, accessType: {}, responseType: {}, targetLocation: {}",
         clientCredential.getClientId(),
         accessType,
-        responseType);
+        responseType,
+        location);
 
     return ResponseEntity.status(clientCredential.getAuthorize_redirect_status())
         .location(location)
         .build();
   }
 
+  /**
+   * Esegue l'emissione del token per grant type Bearer o Google OAuth.
+   * Coordina l'autenticazione tramite {@link AuthService#makeClassicLogin} o {@link GoogleAuthService#performGoogleLogin}.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private Mono<ResponseEntity<?>> getToken(
       String clientId,
@@ -298,7 +394,7 @@ public class OAuthService {
       ServerHttpRequest request,
       ServerHttpResponse response) {
     LOG.info(
-        "\uD83D\uDDDD\uFE0F Starting oAuth/2.0/token endpoint with client_id={}, grant_type={}",
+        "🗝️ [OAUTH TOKEN] Starting oAuth/2.0/token processing - clientId: {}, grantType: {}",
         clientId,
         grant_type);
     OAuthValidator.validateOAuthToken(clientId, grant_type);
@@ -310,19 +406,19 @@ public class OAuthService {
             clientCredential -> {
               OAuthType authType =
                   OAuthMapper.getOAuthType(clientCredential, accessTokenData, grant_type, code);
-              // OAuthValidator.validateClientId(clientCredential, clientId);
+              LOG.debug("🔍 [OAUTH TOKEN] Resolved OAuth authentication type: {} for clientId: {}", authType, clientId);
               switch (authType) {
                 case BEARER -> {
+                  LOG.info("👤 [OAUTH TOKEN] Performing classic Bearer login for clientId: {}", clientId);
                   OAuthValidator.validateBasicAuth(
                       basic, grant_type, redirect_uri, clientCredential);
                   return authService.makeClassicLogin(
                       basic, redirect_uri, clientCredential, request, response);
                 }
                 case GOOGLE -> {
-                  LOG.info("Google oAuth 2.0 Login started");
+                  LOG.info("🌐 [OAUTH TOKEN] Starting Google OAuth 2.0 authentication for clientId: {}", clientId);
                   String redirectUri = redirect_uri;
                   if (ObjectUtils.isEmpty(redirectUri))
-                    // redirectUri = CookieManager.getCookie(Cookie.COOKIE_REDIRECT_URI, request);
                     redirectUri =
                         RequestManager.getCookieOrHeaderData(Cookie.COOKIE_REDIRECT_URI, request);
                   OAuthValidator.validateOAuthGoogle(
@@ -333,7 +429,7 @@ public class OAuthService {
                       .performGoogleLogin(
                           googleModel, clientCredential, redirect_uri, request, response)
                       .doOnSuccess(
-                          responseResponseEntity -> LOG.info("Google oAuth 2.0 Login ended"));
+                          responseResponseEntity -> LOG.info("✅ [OAUTH TOKEN] Google OAuth 2.0 Login successfully completed for clientId: {}", clientId));
                 }
                 default -> {
                   return defaultErrorType();
@@ -345,12 +441,16 @@ public class OAuthService {
               CookieManager.deleteCookie(Cookie.COOKIE_TOKEN, response);
               CookieManager.deleteCookie(Cookie.COOKIE_REDIRECT_URI, response);
               LOG.info(
-                  "\uD83D\uDDDD\uFE0F Ending oAuth/2.0/token endpoint with client_id={}, grant_type={}",
+                  "✅ [OAUTH TOKEN] Ending oAuth/2.0/token flow successfully - clientId: {}, grantType: {}",
                   clientId,
                   grant_type);
             });
   }
 
+  /**
+   * Esegue il rinnovo del token per il client indicato a partire dal refresh token fornito.
+   * Supporta sia token Bearer sia account federati Google.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private Mono<ResponseEntity<?>> refreshToken(
       String clientId,
@@ -359,7 +459,7 @@ public class OAuthService {
       String scope,
       ServerHttpRequest request) {
     LOG.info(
-        "\uD83D\uDD03 Starting refresh_token endpoint with client_id={}, grant_type={}",
+        "🔄 [OAUTH REFRESH] Starting refresh_token endpoint - clientId: {}, grantType: {}",
         clientId,
         grant_type);
     OAuthValidator.validateRefreshToken(refresh_token, grant_type);
@@ -373,12 +473,15 @@ public class OAuthService {
                   accessTokenService.getByRefreshToken(refresh_token);
               OAuthType authType =
                   OAuthMapper.getOAuthType(clientCredential, refreshTokenData, null, null);
+              LOG.debug("🔍 [OAUTH REFRESH] Resolved refresh authType: {} for clientId: {}", authType, clientId);
               OAuthValidator.validateRefreshTokenData(refreshTokenData, clientCredential, authType);
               switch (authType) {
                 case BEARER -> {
+                  LOG.info("👤 [OAUTH REFRESH] Refreshing Bearer token for clientId: {}", clientId);
                   return authService.refreshToken(refreshTokenData, clientCredential, request);
                 }
                 case GOOGLE -> {
+                  LOG.info("🌐 [OAUTH REFRESH] Refreshing Google OAuth token for clientId: {}", clientId);
                   return googleAuthService.refreshGoogleToken(
                       refreshTokenData, clientCredential, request);
                 }
@@ -390,19 +493,20 @@ public class OAuthService {
         .doOnSuccess(
             responseEntity ->
                 LOG.info(
-                    "\uD83D\uDD03 Ending refresh_token endpoint with client_id={}, grant_type={}",
+                    "✅ [OAUTH REFRESH] Ending refresh_token endpoint successfully - clientId: {}, grantType: {}",
                     clientId,
                     grant_type));
   }
 
+  /**
+   * Esegue il logout dell'utente revocando la sessione e invalidando i cookie di autenticazione.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> logout(
       String clientId, String redirect_uri, String bearer, ServerHttpResponse response) {
-    LOG.info("\uD83D\uDDDD\uFE0F Starting oAuth/2.0/logout endpoint with client_id={}", clientId);
+    LOG.info("🚪 [OAUTH LOGOUT] Starting oAuth/2.0/logout endpoint for clientId: {}", clientId);
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
-
-    // OAuthValidator.validateClientLogout(accessTokenData, clientId);
 
     if (isLogoutAlreadyDone()) {
       return createLogoutSuccessResponse(clientId, redirect_uri, response);
@@ -420,7 +524,7 @@ public class OAuthService {
             responseEntity -> {
               Utils.deleteAllCookie(response);
               LOG.info(
-                  "\uD83D\uDDDD\uFE0F Ending oAuth/2.0/logout endpoint with client_id={}",
+                  "✅ [OAUTH LOGOUT] Ending oAuth/2.0/logout endpoint successfully for clientId: {}",
                   clientId);
             });
   }
@@ -431,7 +535,7 @@ public class OAuthService {
 
   private Mono<ResponseEntity<?>> createLogoutSuccessResponse(
       String clientId, String redirect_uri, ServerHttpResponse response) {
-    LOG.warn("Some data are empty, logout already done");
+    LOG.warn("⚠️ [OAUTH LOGOUT] Session data is empty or logout already completed for clientId: {}", clientId);
     SessionID.invalidateSessionID(response);
     String message = "Logout Successfully!";
     Response res = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), null);
@@ -440,7 +544,7 @@ public class OAuthService {
       responseResponseEntity =
           ResponseEntity.status(HttpStatus.OK).location(URI.create(redirect_uri)).body(res);
     }
-    LOG.info("\uD83D\uDDDD\uFE0F Ending /oAuth/logout endpoint with client_id={}", clientId);
+    LOG.info("✅ [OAUTH LOGOUT] Returning logout success response for clientId: {}", clientId);
     return Mono.just(responseResponseEntity);
   }
 
@@ -449,7 +553,9 @@ public class OAuthService {
       ClientCredential clientCredential,
       String redirect_uri,
       ServerHttpResponse response) {
-    return switch (OAuthMapper.getOAuthType(clientCredential, accessTokenData, null, null)) {
+    OAuthType authType = OAuthMapper.getOAuthType(clientCredential, accessTokenData, null, null);
+    LOG.debug("🔍 [OAUTH LOGOUT] Processing logout for authType: {}, subject: {}", authType, accessTokenData.getSubject());
+    return switch (authType) {
       case BEARER -> authService.logout(redirect_uri, accessTokenData, response);
       case GOOGLE -> googleAuthService.processGoogleLogout(redirect_uri, accessTokenData, response);
       default -> defaultErrorType();
@@ -457,7 +563,7 @@ public class OAuthService {
   }
 
   private Mono<ResponseEntity<?>> defaultErrorType() {
-    LOG.error("Type not configured, miss match on client");
+    LOG.error("❌ [OAUTH ERROR] Authentication type not configured or mismatched on client");
     return Mono.error(
         new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
   }

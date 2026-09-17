@@ -80,12 +80,15 @@ rest:
 
 app:
   version: @project.version@
+  domain: ${APP_DOMAIN:access-sphere.giovannilamarmora.com}
+  base-url: ${APP_BASE_URL:https://access-sphere.giovannilamarmora.com}
   aes-key: ${AES_KEY:}
   tech-user:
     username: ${TECH_USERNAME:tech_admin}
     password: ${TECH_PASSWORD:tech_password}
     client-id: ${TECH_CLIENT_ID:ACCESS-SPHERE-TECH}
     email: ${TECH_EMAIL:admin@accesssphere.local}
+    jwt-secret: ${TECH_JWT_SECRET:}
   exception:
     stacktrace: true # Active StackTrace in Response
   cors:

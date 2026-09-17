@@ -11,7 +11,7 @@ import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
 import org.slf4j.Logger;
 
-public class TechUserValidator extends TechUserConfig {
+public class TechUserValidator {
 
   private static final Logger LOG = LoggerFilter.getLogger(TechUserValidator.class);
 

@@ -4,6 +4,7 @@ import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.email.IEmailTemplateDAO;
@@ -12,7 +13,10 @@ import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategor
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.Mapper;
+import java.security.SecureRandom;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,18 +45,10 @@ public class ProjectInitializerService implements ApplicationRunner {
   public static final String LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER =
       "ACCESS_SPHERE_CODE_RESET_PASSWORD";
 
-  @Value("${app.tech-user.username:tech_admin}")
-  private String techUsername;
+  @Value("${app.base-url:${app.domain:https://access-sphere.giovannilamarmora.com}}")
+  private String appBaseUrl;
 
-  @Value("${app.tech-user.password:tech_password}")
-  private String techPassword;
-
-  @Value("${app.tech-user.client-id:ACCESS-SPHERE-TECH}")
-  private String techClientId;
-
-  @Value("${app.tech-user.email:admin@accesssphere.local}")
-  private String techEmail;
-
+  @Autowired private TechUserConfig techUserConfig;
   @Autowired private IClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
   @Autowired private IAppSettingsDAO appSettingsDAO;
@@ -71,10 +67,53 @@ public class ProjectInitializerService implements ApplicationRunner {
     LOG.info("🎉 Access Sphere System Initialization check completed successfully.");
   }
 
-  private void initTechnicalClient() {
-    if (!StringUtils.hasText(techClientId)) {
-      techClientId = "ACCESS-SPHERE-TECH";
+  /**
+   * Risolve l'URL base dell'applicazione per la composizione dei redirect URI di default del client tecnico.
+   * Legge il valore configurato in 'app.base-url' o 'app.domain', con fallback predefinito su
+   * 'https://access-sphere.giovannilamarmora.com'.
+   *
+   * @return URL base normalizzato senza slash finale e comprensivo di schema http/https.
+   */
+  private String resolveBaseUrl() {
+    if (!StringUtils.hasText(appBaseUrl)) {
+      return "https://access-sphere.giovannilamarmora.com";
     }
+    String url = appBaseUrl.trim().replaceAll("/+$", "");
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
+    }
+    return url;
+  }
+
+  /**
+   * Inizializzazione del client OAuth 2.0 tecnico all'avvio dell'applicazione.
+   * Utilizza {@link TechUserConfig} per i parametri del client tecnico ed {@link IClientDAO} per la persistenza.
+   * Se il client non esiste nel database, lo crea configurando:
+   * <ul>
+   *   <li>JWT Secret: letto da {@link TechUserConfig} o generato a mano a 256-bit</li>
+   *   <li>Redirect URI: mappa serializzata in formato JSON con fallback_uri e redirect_uri generati di default</li>
+   * </ul>
+   * Se il client esiste gia, verifica e aggiorna eventuali secret mancanti o vecchi formati di redirect URI.
+   */
+  private void initTechnicalClient() {
+    String techClientId =
+        StringUtils.hasText(techUserConfig.getTech_client_id())
+            ? techUserConfig.getTech_client_id()
+            : "ACCESS-SPHERE-TECH";
+
+    // Risoluzione del JWT Secret: da TechUserConfig o generazione a mano
+    String jwtSecret = resolveOrGenerateJwtSecret(techClientId);
+
+    // Generazione automatica dei redirect URI di default basati sull'URL di dominio
+    String baseUrl = resolveBaseUrl();
+    String fallbackUri = baseUrl + "/app/login";
+    String redirectUri = baseUrl + " " + baseUrl + "/app/users";
+
+    // Mappa salvata su DB in formato JSON: {"fallback_uri": "...", "redirect_uri": "..."}
+    Map<String, String> redirectMap = new LinkedHashMap<>();
+    redirectMap.put(RedirectUris.FALLBACK_URI.url(), fallbackUri);
+    redirectMap.put(RedirectUris.REDIRECT_URI.url(), redirectUri);
+    String redirectUriJson = Mapper.writeObjectToString(redirectMap);
 
     ClientCredentialEntity existing = clientDAO.findByClientId(techClientId);
     if (existing == null) {
@@ -86,8 +125,8 @@ public class ProjectInitializerService implements ApplicationRunner {
       client.setAuthType(OAuthType.ALL_TYPE);
       client.setTokenType(TokenType.BEARER_JWT);
       client.setScopes("openid profile email read write admin");
-      client.setRedirect_uri(
-          "http://localhost:8081/app,http://localhost:8080/app,/app,http://localhost:3000/app");
+      client.setJwtSecret(jwtSecret);
+      client.setRedirect_uri(redirectUriJson);
       client.setAppRoles("[{\"role\":\"ROLE_ADMIN\"},{\"role\":\"ROLE_TECH\"}]");
       client.setMfaEnabled(false);
       client.setAuthorize_redirect_status(HttpStatus.FOUND);
@@ -95,19 +134,87 @@ public class ProjectInitializerService implements ApplicationRunner {
       client.setAccessToken(true);
       client.setIdToken(true);
       clientDAO.save(client);
-      LOG.info("✅ Technical OAuth Client [{}] successfully seeded in DB", techClientId);
+      LOG.info(
+          "✅ Technical OAuth Client [{}] successfully seeded in DB with JWT Secret and redirect_uri JSON map",
+          techClientId);
     } else {
-      LOG.debug("Technical OAuth Client [{}] already present in DB", techClientId);
+      boolean needsUpdate = false;
+      if (!StringUtils.hasText(existing.getJwtSecret())) {
+        existing.setJwtSecret(jwtSecret);
+        LOG.info(
+            "🔑 Configured missing JWT Secret for existing Technical OAuth Client [{}]",
+            techClientId);
+        needsUpdate = true;
+      }
+      if (!StringUtils.hasText(existing.getRedirect_uri())
+          || !existing.getRedirect_uri().trim().startsWith("{")) {
+        existing.setRedirect_uri(redirectUriJson);
+        LOG.info(
+            "🔄 Migrated redirect_uri to JSON map for existing Technical OAuth Client [{}]",
+            techClientId);
+        needsUpdate = true;
+      }
+      if (needsUpdate) {
+        clientDAO.save(existing);
+        LOG.info("✅ Existing Technical OAuth Client [{}] successfully updated in DB", techClientId);
+      } else {
+        LOG.debug(
+            "Technical OAuth Client [{}] already present in DB with valid settings", techClientId);
+      }
     }
   }
 
+  /**
+   * Risolve il secret JWT leggendolo da {@link TechUserConfig} oppure generandolo a mano
+   * in modo crittograficamente sicuro a 256-bit (stringa esadecimale da 64 caratteri).
+   *
+   * @param techClientId Identificativo del client tecnico
+   * @return secret JWT a 256-bit esadecimale.
+   */
+  private String resolveOrGenerateJwtSecret(String techClientId) {
+    if (StringUtils.hasText(techUserConfig.getTech_jwt_secret())) {
+      LOG.debug("Using configured JWT Secret from TechUserConfig for Technical OAuth Client [{}]", techClientId);
+      return techUserConfig.getTech_jwt_secret().trim();
+    }
+    LOG.info(
+        "🔑 Generating new secure 256-bit random JWT Secret for Technical OAuth Client [{}]",
+        techClientId);
+    return generateSecureJwtSecret();
+  }
+
+  /**
+   * Genera un secret crittografico casuale a 256-bit (64 caratteri esadecimali) per la firma dei token JWT.
+   * Utilizza {@link SecureRandom} per garantire l'entropia crittografica necessaria per chiavi HMAC-SHA256.
+   *
+   * @return Stringa esadecimale di 64 caratteri.
+   */
+  public static String generateSecureJwtSecret() {
+    byte[] randomBytes = new byte[32];
+    new SecureRandom().nextBytes(randomBytes);
+    StringBuilder sb = new StringBuilder(64);
+    for (byte b : randomBytes) {
+      sb.append(String.format("%02x", b));
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Inizializzazione dell'utente tecnico all'avvio dell'applicazione.
+   * Interconnesso con {@link TechUserConfig} per ottenere le credenziali predefinite e con {@link IUserDAO} per la persistenza.
+   */
   private void initTechnicalUser() {
-    if (!StringUtils.hasText(techUsername)) {
-      techUsername = "tech_admin";
-    }
-    if (!StringUtils.hasText(techEmail)) {
-      techEmail = techUsername + "@accesssphere.local";
-    }
+    String techUsername =
+        StringUtils.hasText(techUserConfig.getTech_username())
+            ? techUserConfig.getTech_username()
+            : "tech_admin";
+    String techEmail =
+        StringUtils.hasText(techUserConfig.getTech_email())
+            ? techUserConfig.getTech_email()
+            : techUsername + "@accesssphere.local";
+    String techPassword =
+        StringUtils.hasText(techUserConfig.getTech_password())
+            ? techUserConfig.getTech_password()
+            : "tech_password";
 
     UserEntity existing = userDAO.findUserEntityByUsernameOrEmail(techUsername, techEmail);
     if (existing == null) {
@@ -169,6 +276,11 @@ public class ProjectInitializerService implements ApplicationRunner {
    * RESET_CODE, SITE_SHORT).
    */
   private void initEmailTemplates() {
+    String techClientId =
+        StringUtils.hasText(techUserConfig.getTech_client_id())
+            ? techUserConfig.getTech_client_id()
+            : "ACCESS-SPHERE-TECH";
+
     List<EmailTemplateEntity> existing =
         emailTemplateDAO.findByIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
     List<EmailTemplateEntity> legacyExisting =

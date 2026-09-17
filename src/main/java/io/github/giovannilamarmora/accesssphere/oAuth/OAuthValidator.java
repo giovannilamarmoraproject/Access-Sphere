@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
@@ -277,7 +278,22 @@ public class OAuthValidator {
           "No redirect_uri provided!");
     }
 
-    List<String> redirect_uris = List.of(expected_redirectUri.get("redirect_uri").split(" "));
+    String configuredUris = expected_redirectUri.get(RedirectUris.REDIRECT_URI.url());
+    if (ObjectToolkit.isNullOrEmpty(configuredUris)) {
+      configuredUris = expected_redirectUri.get("redirectUri");
+    }
+    if (ObjectToolkit.isNullOrEmpty(configuredUris)) {
+      LOG.error(
+          "No redirect_uri key found in client configuration map for client {}: {}",
+          client_id,
+          expected_redirectUri);
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_REDIRECT_URI,
+          "No redirect_uri configured on client!");
+    }
+
+    List<String> redirect_uris = List.of(configuredUris.trim().split("[ ,]+"));
     boolean isValid = redirect_uris.contains(actual_redirectUri);
     if (!isValid) {
       for (String u : redirect_uris) {

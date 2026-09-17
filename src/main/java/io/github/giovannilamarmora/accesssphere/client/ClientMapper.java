@@ -12,6 +12,8 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -36,9 +38,7 @@ public class ClientMapper {
                   : List.of(clientCredentialEntity.getScopes().split(" ")),
               ObjectUtils.isEmpty(clientCredentialEntity.getRedirect_uri())
                   ? null
-                  : Mapper.readObject(
-                      clientCredentialEntity.getRedirect_uri(),
-                      new TypeReference<Map<String, String>>() {}),
+                  : parseRedirectUri(clientCredentialEntity.getRedirect_uri()),
               clientCredentialEntity.getAccessType(),
               clientCredentialEntity.getAuthType(),
               clientCredentialEntity.getTokenType(),
@@ -145,5 +145,30 @@ public class ClientMapper {
     return clientCredentialEntities.stream()
         .map(ClientMapper::toDTO)
         .toList();
+  }
+
+  /**
+   * Esegue il parsing resiliente del campo redirect_uri memorizzato a database.
+   * Supporta sia il formato JSON (mappa con fallback_uri e redirect_uri),
+   * sia eventuali stringhe legacy plain-text per garantire piena retrocompatibilita.
+   *
+   * @param raw Stringa grezza proveniente dalla colonna REDIRECT_URI a DB
+   * @return Mappa contenente i redirect URI configurati, oppure null se la stringa e vuota.
+   */
+  public static Map<String, String> parseRedirectUri(String raw) {
+    if (ObjectUtils.isEmpty(raw)) {
+      return null;
+    }
+    String trimmed = raw.trim();
+    if (trimmed.startsWith("{")) {
+      try {
+        return Mapper.readObject(trimmed, new TypeReference<Map<String, String>>() {});
+      } catch (Exception ignored) {
+        // Fallback di sicurezza in caso di JSON non conforme
+      }
+    }
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put(RedirectUris.REDIRECT_URI.url(), trimmed.replace(",", " "));
+    return map;
   }
 }

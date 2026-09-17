@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.client.model;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
@@ -39,6 +40,7 @@ public class ClientCredential extends GenericDTO {
 
   private List<String> scopes;
 
+  @JsonDeserialize(using = RedirectUriDeserializer.class)
   @JsonAlias({"redirect_uri", "redirectUri", "redirectUris"})
   private Map<String, String> redirect_uri;
 
