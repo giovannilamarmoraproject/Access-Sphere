@@ -1,24 +1,16 @@
 package io.github.giovannilamarmora.accesssphere.data.tech;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
-import io.github.giovannilamarmora.accesssphere.token.data.model.TokenData;
-import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
-import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
-import java.util.HashMap;
-import java.util.Map;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -75,17 +67,6 @@ public class TechUserService extends TechUserConfig {
             .anyMatch(accessTokenData.getRoles()::contains);
     if (hasTechRole) logTechRole(accessTokenData.getSubject());
     return hasTechRole;
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<OAuthTokenResponse> loginTechUser(
-      String username, ClientCredential clientCredential, ServerHttpRequest request) {
-    LOG.info("Performing Tech User login for client {}", clientCredential.getClientId());
-    User user = UserMapper.getTechUser(username, clientCredential);
-    JWTData jwtData =
-        JWTData.generateJWTData(user, clientCredential, SubjectType.TECHNICAL, request);
-    AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
-    return Mono.just(new OAuthTokenResponse(token, jwtData, user));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

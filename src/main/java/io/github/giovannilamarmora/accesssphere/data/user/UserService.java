@@ -248,12 +248,12 @@ public class UserService {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> getUserInfo(JWTData jwtData, String token) {
-    if (!techUserService.isTechUser()) {
-      UserEntity userEntity = userDAO.findUserEntityByEmail(jwtData.getEmail());
-      UserValidator.validateUser(userEntity);
-      return Mono.just(UserMapper.toDTO(userEntity));
-    }
-    return techUserService.userInfo(jwtData);
+    // if (!techUserService.isTechUser()) {
+    UserEntity userEntity = userDAO.findUserEntityByEmail(jwtData.getEmail());
+    UserValidator.validateUser(userEntity);
+    return Mono.just(UserMapper.toDTO(userEntity));
+    // }
+    // return techUserService.userInfo(jwtData);
   }
 
   /**
