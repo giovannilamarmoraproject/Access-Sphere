@@ -34,7 +34,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@Tag(name = OpenAPI.Tag.ADMIN, description = OpenAPI.Description.ADMIN)
+@Tag(name = OpenAPI.Tag.USERS, description = OpenAPI.Description.USERS)
 public class UserAdminControllerImpl implements UserAdminController {
 
   private static final Logger LOG = LoggerFilter.getLogger(UserAdminControllerImpl.class);

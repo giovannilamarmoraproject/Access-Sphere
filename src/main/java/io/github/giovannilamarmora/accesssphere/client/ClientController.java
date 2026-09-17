@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1")
-@Tag(name = OpenAPI.Tag.CLIENT, description = OpenAPI.Description.CLIENT)
+@Tag(name = OpenAPI.Tag.CLIENTS, description = OpenAPI.Description.CLIENTS)
 public class ClientController {
 
   @Autowired private ClientService clientService;
@@ -33,7 +33,7 @@ public class ClientController {
   @Operation(
       description = "API to get the Clients (Only Tech User)",
       summary = "Get Clients",
-      tags = OpenAPI.Tag.CLIENT)
+      tags = OpenAPI.Tag.CLIENTS)
   @ApiResponse(
       responseCode = "200",
       description = "Successful operation",
@@ -63,7 +63,7 @@ public class ClientController {
   @Operation(
       description = "API to create a new Client (Only Tech User)",
       summary = "Create Client",
-      tags = OpenAPI.Tag.CLIENT)
+      tags = OpenAPI.Tag.CLIENTS)
   @ApiResponse(
       responseCode = "201",
       description = "Client successfully created",
@@ -89,7 +89,7 @@ public class ClientController {
       description =
           "Deprecated: use POST /v1/clients instead. API to create a new Client (Only Tech User)",
       summary = "Create Client (Deprecated)",
-      tags = OpenAPI.Tag.CLIENT,
+      tags = OpenAPI.Tag.CLIENTS,
       deprecated = true)
   @ApiResponse(
       responseCode = "200",
@@ -108,7 +108,7 @@ public class ClientController {
   @Operation(
       description = "API to update an existing Client by Client ID (Only Tech User)",
       summary = "Update Client by ID",
-      tags = OpenAPI.Tag.CLIENT)
+      tags = OpenAPI.Tag.CLIENTS)
   @ApiResponse(
       responseCode = "200",
       description = "Client successfully updated",
@@ -136,7 +136,7 @@ public class ClientController {
   @Operation(
       description = "API to update an existing Client (Only Tech User)",
       summary = "Update Client",
-      tags = OpenAPI.Tag.CLIENT)
+      tags = OpenAPI.Tag.CLIENTS)
   @ApiResponse(
       responseCode = "200",
       description = "Client successfully updated",
@@ -162,7 +162,7 @@ public class ClientController {
       description =
           "Deprecated: use PUT /v1/clients or PUT /v1/clients/{clientId} instead. API to update an existing Client (Only Tech User)",
       summary = "Update Client (Deprecated)",
-      tags = OpenAPI.Tag.CLIENT,
+      tags = OpenAPI.Tag.CLIENTS,
       deprecated = true)
   @ApiResponse(
       responseCode = "200",
@@ -180,7 +180,7 @@ public class ClientController {
   @Operation(
       description = "API to delete an existing Client (Only Tech User)",
       summary = "Delete Client",
-      tags = OpenAPI.Tag.CLIENT)
+      tags = OpenAPI.Tag.CLIENTS)
   @ApiResponse(
       responseCode = "200",
       description = "Client successfully deleted",
@@ -208,7 +208,7 @@ public class ClientController {
       description =
           "Deprecated: use DELETE /v1/clients/{clientId} instead. API to delete an existing Client (Only Tech User)",
       summary = "Delete Client (Deprecated)",
-      tags = OpenAPI.Tag.CLIENT,
+      tags = OpenAPI.Tag.CLIENTS,
       deprecated = true)
   @ApiResponse(
       responseCode = "200",

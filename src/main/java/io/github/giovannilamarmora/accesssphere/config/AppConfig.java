@@ -39,11 +39,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     tags = {
       @Tag(name = OpenAPI.Tag.OAUTH, description = OpenAPI.Description.OAUTH),
       @Tag(name = OpenAPI.Tag.OIDC, description = OpenAPI.Description.OIDC),
-      @Tag(name = OpenAPI.Tag.ACCOUNT, description = OpenAPI.Description.ACCOUNT),
-      @Tag(name = OpenAPI.Tag.ADMIN, description = OpenAPI.Description.ADMIN),
       @Tag(name = OpenAPI.Tag.USERS, description = OpenAPI.Description.USERS),
+      @Tag(name = OpenAPI.Tag.ACCOUNT, description = OpenAPI.Description.ACCOUNT),
       @Tag(name = OpenAPI.Tag.ROLES, description = OpenAPI.Description.ROLES),
-      @Tag(name = OpenAPI.Tag.CLIENT, description = OpenAPI.Description.CLIENT),
+      @Tag(name = OpenAPI.Tag.CLIENTS, description = OpenAPI.Description.CLIENTS),
       @Tag(name = OpenAPI.Tag.MFA, description = OpenAPI.Description.MFA),
       @Tag(name = OpenAPI.Tag.EMAIL_TEMPLATE, description = OpenAPI.Description.EMAIL_TEMPLATE),
       @Tag(name = OpenAPI.Tag.SETTINGS, description = OpenAPI.Description.SETTINGS)

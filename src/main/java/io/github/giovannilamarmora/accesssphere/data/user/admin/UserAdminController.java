@@ -28,7 +28,7 @@ public interface UserAdminController {
   @Operation(
       description = "Get the full list of users, works only with Tech User or Tech Roles",
       summary = "User List",
-      tags = {OpenAPI.Tag.ADMIN, OpenAPI.Tag.USERS},
+      tags = OpenAPI.Tag.USERS,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
       value = {
@@ -68,7 +68,7 @@ public interface UserAdminController {
   @Operation(
       description = "Register a new user into IAM system",
       summary = "User Registration",
-      tags = {OpenAPI.Tag.ADMIN, OpenAPI.Tag.USERS})
+      tags = OpenAPI.Tag.USERS)
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -121,7 +121,7 @@ public interface UserAdminController {
   @Operation(
       description = "Deprecated: use POST /v1/users instead. Register a new user into IAM system",
       summary = "User Registration (Deprecated)",
-      tags = {OpenAPI.Tag.ADMIN, OpenAPI.Tag.USERS},
+      tags = OpenAPI.Tag.USERS,
       deprecated = true)
   @ApiResponses(
       value = {
@@ -174,7 +174,7 @@ public interface UserAdminController {
   @Operation(
       description = "Delete an existing user",
       summary = "User Delete",
-      tags = {OpenAPI.Tag.ADMIN, OpenAPI.Tag.USERS})
+      tags = OpenAPI.Tag.USERS)
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -218,7 +218,7 @@ public interface UserAdminController {
   @Operation(
       description = "Unlock or lock a user account",
       summary = "Unlock User",
-      tags = {OpenAPI.Tag.ADMIN, OpenAPI.Tag.USERS})
+      tags = OpenAPI.Tag.USERS)
   @ApiResponses(
       value = {
         @ApiResponse(
