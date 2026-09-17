@@ -126,4 +126,24 @@ class ProjectInitializerServiceTest {
     verify(appSettingsDAO, never()).save(any());
     verify(emailTemplateDAO, never()).save(any());
   }
+
+  @Test
+  @DisplayName("resolveBaseUrl handles custom domain without scheme, with http, and with trailing slashes")
+  void testResolveBaseUrlFormats() {
+    // Caso 1: dominio senza schema e con slash finali -> aggiunge https:// e rimuove trailing slash
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "my-domain.com///");
+    assertEquals("https://my-domain.com", projectInitializerService.resolveBaseUrl());
+
+    // Caso 2: dominio con http esplicito (es. ambiente di sviluppo locale) -> mantiene http://
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "http://localhost:8080");
+    assertEquals("http://localhost:8080", projectInitializerService.resolveBaseUrl());
+
+    // Caso 3: dominio con https esplicito -> mantiene https://
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "https://auth.example.org/");
+    assertEquals("https://auth.example.org", projectInitializerService.resolveBaseUrl());
+
+    // Caso 4: dominio vuoto o null -> fallback default
+    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "");
+    assertEquals("https://access-sphere.giovannilamarmora.com", projectInitializerService.resolveBaseUrl());
+  }
 }

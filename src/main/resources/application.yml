@@ -80,8 +80,7 @@ rest:
 
 app:
   version: @project.version@
-  domain: ${APP_DOMAIN:access-sphere.giovannilamarmora.com}
-  base-url: ${APP_BASE_URL:https://access-sphere.giovannilamarmora.com}
+  domain: ${APP_DOMAIN:localhost:8081}
   aes-key: ${AES_KEY:}
   tech-user:
     username: ${TECH_USERNAME:tech_admin}

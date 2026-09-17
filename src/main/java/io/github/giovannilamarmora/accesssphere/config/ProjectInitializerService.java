@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.config;
 import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
@@ -13,7 +14,6 @@ import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategor
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
-import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.security.SecureRandom;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,8 +46,8 @@ public class ProjectInitializerService implements ApplicationRunner {
   public static final String LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER =
       "ACCESS_SPHERE_CODE_RESET_PASSWORD";
 
-  @Value("${app.base-url:${app.domain:https://access-sphere.giovannilamarmora.com}}")
-  private String appBaseUrl;
+  @Value("${app.domain}")
+  private String appDomain;
 
   @Autowired private TechUserConfig techUserConfig;
   @Autowired private IClientDAO clientDAO;
@@ -68,38 +69,37 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Risolve l'URL base dell'applicazione per la composizione dei redirect URI di default del client tecnico.
-   * Legge il valore configurato in 'app.base-url' o 'app.domain', con fallback predefinito su
-   * 'https://access-sphere.giovannilamarmora.com'.
+   * Risolve l'URL base dell'applicazione per la composizione dei redirect URI di default del client
+   * tecnico a partire da 'app.domain'. Verifica se è stato esplicitato il protocollo ('http://' o
+   * 'https://'); in caso contrario, antepone automaticamente 'https://'. Rimuove inoltre eventuali
+   * slash finali per garantire un formato uniforme.
    *
-   * @return URL base normalizzato senza slash finale e comprensivo di schema http/https.
+   * @return URL base normalizzato comprensivo di schema e privo di trailing slash.
    */
-  private String resolveBaseUrl() {
-    if (!StringUtils.hasText(appBaseUrl)) {
-      return "https://access-sphere.giovannilamarmora.com";
+  public String resolveBaseUrl() {
+    String domain = appDomain.trim().replaceAll("/+$", "");
+    if (!domain.startsWith("http://") && !domain.startsWith("https://")) {
+      domain = "https://" + domain;
     }
-    String url = appBaseUrl.trim().replaceAll("/+$", "");
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      url = "https://" + url;
-    }
-    return url;
+    return domain;
   }
 
   /**
-   * Inizializzazione del client OAuth 2.0 tecnico all'avvio dell'applicazione.
-   * Utilizza {@link TechUserConfig} per i parametri del client tecnico ed {@link IClientDAO} per la persistenza.
-   * Se il client non esiste nel database, lo crea configurando:
+   * Inizializzazione del client OAuth 2.0 tecnico all'avvio dell'applicazione. Utilizza {@link
+   * TechUserConfig} per i parametri del client tecnico ed {@link IClientDAO} per la persistenza. Se
+   * il client non esiste nel database, lo crea configurando:
+   *
    * <ul>
-   *   <li>JWT Secret: letto da {@link TechUserConfig} o generato a mano a 256-bit</li>
-   *   <li>Redirect URI: mappa serializzata in formato JSON con fallback_uri e redirect_uri generati di default</li>
+   *   <li>JWT Secret: letto da {@link TechUserConfig} o generato a mano a 256-bit
+   *   <li>Redirect URI: mappa serializzata in formato JSON con fallback_uri e redirect_uri generati
+   *       di default
    * </ul>
-   * Se il client esiste gia, verifica e aggiorna eventuali secret mancanti o vecchi formati di redirect URI.
+   *
+   * Se il client esiste gia, verifica e aggiorna eventuali secret mancanti o vecchi formati di
+   * redirect URI.
    */
   private void initTechnicalClient() {
-    String techClientId =
-        StringUtils.hasText(techUserConfig.getTechClientId())
-            ? techUserConfig.getTechClientId()
-            : "ACCESS-SPHERE-TECH";
+    String techClientId = techUserConfig.getTechClientId();
 
     // Risoluzione del JWT Secret: da TechUserConfig o generazione a mano
     String jwtSecret = resolveOrGenerateJwtSecret(techClientId);
@@ -118,21 +118,7 @@ public class ProjectInitializerService implements ApplicationRunner {
     ClientCredentialEntity existing = clientDAO.findByClientId(techClientId);
     if (existing == null) {
       LOG.info("🔧 Seeding Technical OAuth Client: {}", techClientId);
-      ClientCredentialEntity client = new ClientCredentialEntity();
-      client.setClientId(techClientId);
-      client.setExternalClientId(techClientId);
-      client.setAccessType(AccessType.OFFLINE);
-      client.setAuthType(OAuthType.ALL_TYPE);
-      client.setTokenType(TokenType.BEARER_JWT);
-      client.setScopes("openid profile email read write admin");
-      client.setJwtSecret(jwtSecret);
-      client.setRedirect_uri(redirectUriJson);
-      client.setAppRoles("[{\"role\":\"ROLE_ADMIN\"},{\"role\":\"ROLE_TECH\"}]");
-      client.setMfaEnabled(false);
-      client.setAuthorize_redirect_status(HttpStatus.FOUND);
-      client.setJwtExpiration(86400L);
-      client.setAccessToken(true);
-      client.setIdToken(true);
+      ClientCredentialEntity client = createClient(techClientId, jwtSecret, redirectUriJson);
       clientDAO.save(client);
       LOG.info(
           "✅ Technical OAuth Client [{}] successfully seeded in DB with JWT Secret and redirect_uri JSON map",
@@ -164,16 +150,38 @@ public class ProjectInitializerService implements ApplicationRunner {
     }
   }
 
+  private static @NonNull ClientCredentialEntity createClient(
+      String techClientId, String jwtSecret, String redirectUriJson) {
+    ClientCredentialEntity client = new ClientCredentialEntity();
+    client.setClientId(techClientId);
+    client.setExternalClientId(techClientId);
+    client.setAccessType(AccessType.OFFLINE);
+    client.setAuthType(OAuthType.ALL_TYPE);
+    client.setTokenType(TokenType.BEARER_JWT);
+    client.setScopes("openid profile email read write admin");
+    client.setJwtSecret(jwtSecret);
+    client.setRedirect_uri(redirectUriJson);
+    client.setAppRoles("[{\"role\":\"ROLE_ADMIN\"},{\"role\":\"ROLE_TECH\"}]");
+    client.setMfaEnabled(false);
+    client.setAuthorize_redirect_status(HttpStatus.FOUND);
+    client.setJwtExpiration(360000L);
+    client.setAccessToken(true);
+    client.setIdToken(true);
+    return client;
+  }
+
   /**
-   * Risolve il secret JWT leggendolo da {@link TechUserConfig} oppure generandolo a mano
-   * in modo crittograficamente sicuro a 256-bit (stringa esadecimale da 64 caratteri).
+   * Risolve il secret JWT leggendolo da {@link TechUserConfig} oppure generandolo a mano in modo
+   * crittograficamente sicuro a 256-bit (stringa esadecimale da 64 caratteri).
    *
    * @param techClientId Identificativo del client tecnico
    * @return secret JWT a 256-bit esadecimale.
    */
   private String resolveOrGenerateJwtSecret(String techClientId) {
     if (StringUtils.hasText(techUserConfig.getTechJwtSecret())) {
-      LOG.debug("Using configured JWT Secret from TechUserConfig for Technical OAuth Client [{}]", techClientId);
+      LOG.debug(
+          "Using configured JWT Secret from TechUserConfig for Technical OAuth Client [{}]",
+          techClientId);
       return techUserConfig.getTechJwtSecret().trim();
     }
     LOG.info(
@@ -183,8 +191,9 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Genera un secret crittografico casuale a 256-bit (64 caratteri esadecimali) per la firma dei token JWT.
-   * Utilizza {@link SecureRandom} per garantire l'entropia crittografica necessaria per chiavi HMAC-SHA256.
+   * Genera un secret crittografico casuale a 256-bit (64 caratteri esadecimali) per la firma dei
+   * token JWT. Utilizza {@link SecureRandom} per garantire l'entropia crittografica necessaria per
+   * chiavi HMAC-SHA256.
    *
    * @return Stringa esadecimale di 64 caratteri.
    */
@@ -199,8 +208,9 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Inizializzazione dell'utente tecnico all'avvio dell'applicazione.
-   * Interconnesso con {@link TechUserConfig} per ottenere le credenziali predefinite e con {@link IUserDAO} per la persistenza.
+   * Inizializzazione dell'utente tecnico all'avvio dell'applicazione. Interconnesso con {@link
+   * TechUserConfig} per ottenere le credenziali predefinite e con {@link IUserDAO} per la
+   * persistenza.
    */
   private void initTechnicalUser() {
     String techUsername =

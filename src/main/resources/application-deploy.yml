@@ -37,7 +37,6 @@ rest:
 app:
   version: @project.version@
   domain: ${APP_DOMAIN:access-sphere.giovannilamarmora.com}
-  base-url: ${APP_BASE_URL:https://access-sphere.giovannilamarmora.com}
   cors:
     enabled: ${CORS_ENABLED}
     shouldNotFilter: ${CORS_NOT_FILTER}
