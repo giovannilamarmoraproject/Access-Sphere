@@ -3,6 +3,8 @@ package io.github.giovannilamarmora.accesssphere.data.roles;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.UserRole;
 import io.github.giovannilamarmora.accesssphere.data.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
@@ -13,7 +15,11 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +39,9 @@ public class RolesService {
 
   /**
    * Modifica i ruoli assegnati a un determinato utente, verificando che i ruoli esistano nei client
-   * registrati. L'operazione e' consentita esclusivamente a un utente tecnico autorizzato.
+   * registrati (sia come nome ruolo che come tipologia) oppure tra i ruoli canonici di sistema
+   * ({@link UserRole} e {@link AppRoleType}). L'operazione e' consentita esclusivamente a un utente
+   * tecnico autorizzato.
    *
    * @param identifier Identificatore univoco dell'utente.
    * @param roles Oggetto contenente la lista dei ruoli da assegnare.
@@ -52,16 +60,59 @@ public class RolesService {
     return getClients
         .flatMap(
             clientCredentials -> {
+              // 1. Raccoglie tutti i ruoli ammessi dai client registrati (nome ruolo e tipologia applicativa)
+              Set<String> allowedRoles = new HashSet<>();
+              if (clientCredentials != null) {
+                clientCredentials.forEach(
+                    c -> {
+                      if (c.getAppRoles() != null) {
+                        c.getAppRoles().forEach(
+                            r -> {
+                              if (r != null) {
+                                if (r.getRole() != null) allowedRoles.add(r.getRole().toUpperCase());
+                                if (r.getType() != null) allowedRoles.add(r.getType().toUpperCase());
+                              }
+                            });
+                      }
+                    });
+              }
+
+              // 2. Raccoglie i ruoli canonici/di sistema definiti a livello di piattaforma (UserRole e AppRoleType)
+              Arrays.stream(UserRole.values())
+                  .forEach(ur -> allowedRoles.add(ur.name().toUpperCase()));
+              Arrays.stream(AppRoleType.values())
+                  .forEach(art -> allowedRoles.add(art.getValue().toUpperCase()));
+
+              // 3. Valida e filtra i ruoli richiesti: rimuove duplicati, scarta non riconosciuti con warning
               List<String> validRoles =
-                  clientCredentials.stream()
-                      .filter(c -> c.getAppRoles() != null)
-                      .flatMap(clientCredential -> clientCredential.getAppRoles().stream())
-                      .filter(java.util.Objects::nonNull)
-                      .map(AppRole::getRole)
-                      .filter(java.util.Objects::nonNull)
-                      .filter(roleName -> roles.getRoles() != null && roles.getRoles().stream().anyMatch(roleName::equalsIgnoreCase))
-                      .distinct()
-                      .toList();
+                  (roles != null && roles.getRoles() != null)
+                      ? roles.getRoles().stream()
+                          .filter(Objects::nonNull)
+                          .map(String::trim)
+                          .filter(r -> !r.isBlank())
+                          .filter(
+                              r -> {
+                                boolean valid =
+                                    allowedRoles.stream().anyMatch(ar -> ar.equalsIgnoreCase(r));
+                                if (!valid) {
+                                  LOG.warn(
+                                      "⚠️ [ROLES] Discarding unrecognized role [{}] for user {}",
+                                      r,
+                                      identifier);
+                                }
+                                return valid;
+                              })
+                          .map(String::toUpperCase)
+                          .distinct()
+                          .toList()
+                      : List.of();
+
+              LOG.info(
+                  "👥 [ROLES] Validated roles for user {}: requested={}, accepted={}",
+                  identifier,
+                  roles != null ? roles.getRoles() : null,
+                  validRoles);
+
               return userService
                   .getUserByIdentifier(identifier)
                   .flatMap(

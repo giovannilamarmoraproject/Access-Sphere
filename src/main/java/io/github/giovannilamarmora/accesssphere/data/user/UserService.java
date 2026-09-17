@@ -202,7 +202,10 @@ public class UserService {
     if (!ObjectToolkit.isNullOrEmpty(userFind.getId())) userEntity.setId(userFind.getId());
     userEntity.setIdentifier(userFind.getIdentifier());
     if (!isUpdatePassword) userEntity.setPassword(userFind.getPassword());
-    userEntity.setRoles(userFind.getRoles());
+    // Preserva i ruoli esistenti solo se userEntity non specifica nuovi ruoli (fallback null-safe)
+    if (ObjectToolkit.isNullOrEmpty(userEntity.getRoles())) {
+      userEntity.setRoles(userFind.getRoles());
+    }
     if (ObjectToolkit.isNullOrEmpty(userEntity.getMfaSettings())) {
       userEntity.setMfaSettings(userFind.getMfaSettings());
     }

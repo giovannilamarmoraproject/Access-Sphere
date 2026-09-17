@@ -142,6 +142,8 @@ public class UserAccountService {
             hasTechRoles -> {
               if (!hasTechRoles) {
                 UserValidator.validateUpdate(accessTokenData, userToUpdate);
+                // Impedisce a utenti non tecnici di alterare i propri ruoli tramite l'endpoint di aggiornamento profilo
+                userToUpdate.setRoles(null);
               }
               return userService.updateUser(finalIdentifier, userToUpdate);
             })

@@ -184,6 +184,34 @@ class UserServiceTest {
   }
 
   @Test
+  @DisplayName("updateUser with explicit roles should successfully update roles")
+  void updateUser_withExplicitRoles_shouldUpdateRoles() {
+    UserEntity existing = new UserEntity();
+    existing.setId(99L);
+    existing.setIdentifier("uuid-99");
+    existing.setUsername("original");
+    existing.setEmail("orig@example.com");
+    existing.setRoles("ROLE_USER");
+
+    when(userDAO.findUserEntityByIdentifier("uuid-99")).thenReturn(existing);
+    when(userDAO.saveAndFlush(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    User updateDto = new User();
+    updateDto.setUsername("original");
+    updateDto.setEmail("orig@example.com");
+    updateDto.setRoles(List.of("ACCESS_SPHERE_ADMIN", "SUPER_ADMIN"));
+
+    StepVerifier.create(userService.updateUser("uuid-99", updateDto))
+        .assertNext(
+            updated -> {
+              assertEquals("uuid-99", updated.getIdentifier());
+              assertNotNull(updated.getRoles());
+              assertEquals(List.of("ACCESS_SPHERE_ADMIN", "SUPER_ADMIN"), updated.getRoles());
+            })
+        .verifyComplete();
+  }
+
+  @Test
   @DisplayName("updateUser should throw OAuthException when user to update does not exist")
   void updateUser_notFound_throws() {
     when(userDAO.findUserEntityByIdentifier("non-existent")).thenReturn(null);
