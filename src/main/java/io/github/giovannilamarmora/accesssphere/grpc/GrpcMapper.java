@@ -19,10 +19,16 @@ public class GrpcMapper {
   public static JWTData fromGoogleDataToJWTData(
       GoogleIdToken.Payload payload, ClientCredential clientCredential) {
     AppRole defaultRole =
-        clientCredential.getAppRoles().stream()
-            .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
-            .toList()
-            .getFirst();
+        (clientCredential.getAppRoles() == null)
+            ? null
+            : clientCredential.getAppRoles().stream()
+                .filter(appRole -> appRole != null && appRole.isDefault())
+                .findFirst()
+                .orElseGet(
+                    () ->
+                        clientCredential.getAppRoles().isEmpty()
+                            ? null
+                            : clientCredential.getAppRoles().getFirst());
     return new JWTData(
         null,
         payload.getAudience().toString(),

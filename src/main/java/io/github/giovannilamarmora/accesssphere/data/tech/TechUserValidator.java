@@ -26,7 +26,8 @@ public class TechUserValidator {
     OAuthValidator.validateClientRoles(clientCredential);
 
     if (clientCredential.getAppRoles().stream()
-        .noneMatch(appRole -> userRoles.contains(appRole.getRole()))) {
+        .filter(java.util.Objects::nonNull)
+        .noneMatch(appRole -> userRoles.stream().anyMatch(appRole::matches))) {
       LOG.error(
           "The User must have a valid role as {} to proceed {}",
           clientCredential.getAppRoles(),

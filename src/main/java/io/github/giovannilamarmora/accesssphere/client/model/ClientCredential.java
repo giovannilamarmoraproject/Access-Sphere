@@ -68,6 +68,7 @@ public class ClientCredential extends GenericDTO {
   @JsonAlias({"registrationToken", "registration_token"})
   private String registrationToken;
 
+  @JsonDeserialize(using = AppRolesDeserializer.class)
   @JsonAlias({"appRoles", "app_roles"})
   private List<AppRole> appRoles;
 

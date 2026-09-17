@@ -148,9 +148,11 @@ public class UserAdminService {
       String bearer, User user, ClientCredential clientCredential, Boolean assignNewClient) {
     LOG.info(
         "👤 [USER ADMIN] Registering user: {}, email: {}", user.getUsername(), user.getEmail());
+    List<AppRole> clientRoles =
+        clientCredential.getAppRoles() != null ? clientCredential.getAppRoles() : List.of();
     List<AppRole> userRoles =
-        clientCredential.getAppRoles().stream()
-            .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
+        clientRoles.stream()
+            .filter(appRole -> appRole != null && appRole.isDefault())
             .toList();
 
     if (!ObjectToolkit.isNullOrEmpty(bearer)) {
@@ -160,20 +162,29 @@ public class UserAdminService {
       if (techUserService.hasTechUserRoles(tokenData, clientCredential)
           && !ObjectToolkit.isNullOrEmpty(user.getRoles())) {
         userRoles =
-            clientCredential.getAppRoles().stream()
+            clientRoles.stream()
                 .filter(
                     appRole ->
-                        user.getRoles().stream()
-                            .anyMatch(role -> role.equalsIgnoreCase(appRole.getRole())))
+                        appRole != null
+                            && user.getRoles().stream()
+                                .anyMatch(appRole::matches))
                 .toList();
       }
     }
 
     if (ObjectUtils.isEmpty(userRoles)) {
-      LOG.error(
-          "❌ Default roles not present on client configuration for client_id {}",
-          clientCredential.getClientId());
-      throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
+      if (!clientRoles.isEmpty()) {
+        userRoles = List.of(clientRoles.getFirst());
+        LOG.warn(
+            "⚠️ No DEFAULT role explicitly found on client {}; falling back to first available role [{}]",
+            clientCredential.getClientId(),
+            userRoles.getFirst().getRole());
+      } else {
+        LOG.error(
+            "❌ Default roles not present on client configuration for client_id {}",
+            clientCredential.getClientId());
+        throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
+      }
     }
     user.setRoles(userRoles.stream().map(AppRole::getRole).toList());
 

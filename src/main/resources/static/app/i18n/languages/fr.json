@@ -961,5 +961,8 @@
   "email_btn_generate_uuid": "Générer un UUID aléatoire",
   "email_client_default": "ACCESS-SPHERE-TECH (Par défaut)",
   "email_client_none_global": "Aucun client (Global pour tous les clients)",
-  "email_client_default_short": "Par défaut"
+  "email_client_default_short": "Par défaut",
+  "swal_role_default_locked_title": "Rôle Protégé",
+  "swal_role_default_locked_desc": "Le rôle de type DEFAULT est obligatoire pour chaque client OAuth2 et ne peut pas être supprimé.",
+  "swal_role_default_required_desc": "Il est obligatoire de configurer au moins un rôle d'application avec le type DEFAULT."
 }

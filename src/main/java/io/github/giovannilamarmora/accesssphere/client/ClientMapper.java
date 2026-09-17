@@ -13,6 +13,9 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRoleType;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,10 +53,7 @@ public class ClientMapper {
               /*ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRoles())
               ? null
               : Arrays.stream(clientCredentialEntity.getDefaultRoles().split(" ")).toList()*/
-              ObjectUtils.isEmpty(clientCredentialEntity.getAppRoles())
-                  ? null
-                  : mapper.readValue(
-                      clientCredentialEntity.getAppRoles(), new TypeReference<>() {}),
+              parseAppRoles(clientCredentialEntity.getAppRoles()),
               clientCredentialEntity.getIdToken(),
               clientCredentialEntity.getAccessToken(),
               clientCredentialEntity.getAuthorize_redirect_status(),
@@ -93,7 +93,7 @@ public class ClientMapper {
         clientCredential.getRegistrationToken(),
         ObjectUtils.isEmpty(clientCredential.getAppRoles())
             ? null
-            : Mapper.writeObjectToString(clientCredential.getAppRoles()),
+            : Mapper.writeObjectToString(normalizeAppRoles(clientCredential.getAppRoles())),
         clientCredential.getIdToken(),
         clientCredential.getAccessToken(),
         clientCredential.getAuthorize_redirect_status(),
@@ -128,7 +128,7 @@ public class ClientMapper {
     existingClient.setAppRoles(
         ObjectUtils.isEmpty(clientCredential.getAppRoles())
             ? null
-            : Mapper.writeObjectToString(clientCredential.getAppRoles()));
+            : Mapper.writeObjectToString(normalizeAppRoles(clientCredential.getAppRoles())));
     existingClient.setIdToken(clientCredential.getIdToken());
     existingClient.setAccessToken(clientCredential.getAccessToken());
     existingClient.setAuthorize_redirect_status(clientCredential.getAuthorize_redirect_status());
@@ -170,5 +170,64 @@ public class ClientMapper {
     Map<String, String> map = new LinkedHashMap<>();
     map.put(RedirectUris.REDIRECT_URI.url(), trimmed.replace(",", " "));
     return map;
+  }
+
+  /**
+   * Esegue il parsing resiliente del campo APP_ROLES memorizzato a database o proveniente da payload esterno.
+   * Supporta:
+   * <ul>
+   *   <li>Array JSON di oggetti AppRole completi (es. [{"role":"...", "type":"DEFAULT"}])</li>
+   *   <li>Array JSON di stringhe (es. ["ROLE_ADMIN", "ROLE_TECH"])</li>
+   *   <li>Stringhe semplici delimitate da spazi o virgole</li>
+   * </ul>
+   *
+   * @param raw Stringa grezza della colonna APP_ROLES.
+   * @return Lista di {@link AppRole} normalizzati, oppure null se raw e' vuoto.
+   */
+  public static List<AppRole> parseAppRoles(String raw) {
+    if (ObjectUtils.isEmpty(raw)) {
+      return null;
+    }
+    String trimmed = raw.trim();
+    if (trimmed.startsWith("[")) {
+      try {
+        List<AppRole> roles = mapper.readValue(trimmed, new TypeReference<List<AppRole>>() {});
+        return normalizeAppRoles(roles);
+      } catch (Exception ignored) {
+        // Fallback in caso di parse JSON non conforme
+      }
+    }
+    String[] tokens = trimmed.split("[,\\s]+");
+    List<AppRole> fallbackList = new ArrayList<>();
+    for (String token : tokens) {
+      if (!token.isBlank()) {
+        fallbackList.add(new AppRole(token.trim().toUpperCase(), AppRoleType.DEFAULT.getValue(), null));
+      }
+    }
+    return fallbackList.isEmpty() ? null : fallbackList;
+  }
+
+  /**
+   * Normalizza una lista di ruoli assicurando che il nome ruolo sia maiuscolo,
+   * che non contenga elementi nulli e che la tipologia sia valorizzata (con fallback su DEFAULT).
+   *
+   * @param roles Lista ruoli da normalizzare.
+   * @return Lista di ruoli normalizzati, oppure null se la lista in ingresso e' vuota.
+   */
+  public static List<AppRole> normalizeAppRoles(List<AppRole> roles) {
+    if (ObjectUtils.isEmpty(roles)) {
+      return null;
+    }
+    List<AppRole> normalized = new ArrayList<>();
+    for (AppRole r : roles) {
+      if (r != null && !ObjectUtils.isEmpty(r.getRole())) {
+        String roleName = r.getRole().trim().toUpperCase();
+        String type = (!ObjectUtils.isEmpty(r.getType()) && !r.getType().isBlank())
+            ? r.getType().trim().toUpperCase()
+            : AppRoleType.DEFAULT.getValue();
+        normalized.add(new AppRole(r.getId(), roleName, type, r.getDescription()));
+      }
+    }
+    return normalized.isEmpty() ? null : normalized;
   }
 }

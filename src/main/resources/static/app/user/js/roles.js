@@ -57,10 +57,16 @@ function displayClientData(clients) {
       '<option selected disabled value="">Scegli un Ruolo...</option>'
     );
 
-    if (selectedClient?.appRoles) {
-      selectedClient.appRoles.forEach((role) => {
-        if (role.role) {
-          $("<option>").val(role.role).text(role.role).appendTo(roleSelect);
+    let clientRoles = selectedClient?.appRoles || selectedClient?.app_roles;
+    if (typeof clientRoles === "string") {
+      try { clientRoles = JSON.parse(clientRoles); } catch(e) { clientRoles = []; }
+    }
+    if (Array.isArray(clientRoles) && clientRoles.length > 0) {
+      clientRoles.forEach((role) => {
+        const roleName = typeof role === "string" ? role : (role?.role || role?.name || role?.value);
+        const roleType = (typeof role === "object" && role?.type) ? ` (${role.type})` : "";
+        if (roleName) {
+          $("<option>").val(roleName).text(roleName + roleType).appendTo(roleSelect);
         }
       });
       roleSelect.prop("disabled", false);

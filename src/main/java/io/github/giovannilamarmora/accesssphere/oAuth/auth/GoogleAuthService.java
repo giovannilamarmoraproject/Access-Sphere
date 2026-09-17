@@ -128,10 +128,16 @@ public class GoogleAuthService {
                     .map(
                         user1 -> {
                           AppRole defaultRole =
-                              clientCredential.getAppRoles().stream()
-                                  .filter(appRole -> appRole.getType().equalsIgnoreCase("default"))
-                                  .toList()
-                                  .getFirst();
+                              (clientCredential.getAppRoles() == null)
+                                  ? null
+                                  : clientCredential.getAppRoles().stream()
+                                      .filter(appRole -> appRole != null && appRole.isDefault())
+                                      .findFirst()
+                                      .orElseGet(
+                                          () ->
+                                              clientCredential.getAppRoles().isEmpty()
+                                                  ? null
+                                                  : clientCredential.getAppRoles().getFirst());
                           googleModel.setJwtData(
                               GrpcMapper.setIdentifier(
                                   googleModel.getJwtData(), user1.getIdentifier()));

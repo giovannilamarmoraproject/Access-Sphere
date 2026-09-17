@@ -476,14 +476,14 @@
     // Inizializzazione Ruoli e Webhook predefiniti
     let appRolesList = [
       {
-        role: "LINKATUTTO_ADMIN",
-        type: "SUPER_ADMIN",
-        description: "Role to access into linkatutto page, https://linkatutto.giovannilamarmora.com"
+        role: "ACCESS_SPHERE_ADMIN",
+        type: "DEFAULT",
+        description: "Default token Type to access to https://access.sphere.service.giovannilamarmora.com"
       },
       {
-        role: "LINKATUTTO_USER",
-        type: "DEFAULT",
-        description: "Role to access into linkatutto page, https://linkatutto.giovannilamarmora.com"
+        role: "ACCESS_SPHERE_USER",
+        type: "USER",
+        description: "Standard end user role"
       }
     ];
 
@@ -546,7 +546,10 @@
         return;
       }
 
+      const defaultRolesCount = appRolesList.filter(r => r.type === 'DEFAULT').length;
+
       appRolesList.forEach((r, idx) => {
+        const isLockedDefault = r.type === 'DEFAULT' && defaultRolesCount <= 1;
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>
@@ -554,10 +557,11 @@
                    oninput="appRolesList[${idx}].role = this.value.toUpperCase(); this.value = this.value.toUpperCase();" placeholder="es. ADMIN" />
           </td>
           <td>
-            <select class="form-select font-mono text-xs" onchange="appRolesList[${idx}].type = this.value;">
+            <select class="form-select font-mono text-xs" onchange="appRolesList[${idx}].type = this.value; renderAppRolesTable();">
               <option value="DEFAULT" ${r.type === 'DEFAULT' ? 'selected' : ''}>DEFAULT</option>
-              <option value="SUPER_ADMIN" ${r.type === 'SUPER_ADMIN' ? 'selected' : ''}>SUPER_ADMIN</option>
+              <option value="TECHNICAL" ${r.type === 'TECHNICAL' ? 'selected' : ''}>TECHNICAL</option>
               <option value="ADMIN" ${r.type === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+              <option value="SUPER_ADMIN" ${r.type === 'SUPER_ADMIN' ? 'selected' : ''}>SUPER_ADMIN</option>
               <option value="USER" ${r.type === 'USER' ? 'selected' : ''}>USER</option>
             </select>
           </td>
@@ -566,8 +570,10 @@
                    oninput="appRolesList[${idx}].description = this.value;" placeholder="Descrizione del ruolo" />
           </td>
           <td class="text-center">
-            <button type="button" class="m3-icon-btn m3-icon-btn-danger" onclick="removeAppRoleRow(${idx})" title="Rimuovi Ruolo">
-              <i class="fa-solid fa-trash text-xs"></i>
+            <button type="button" class="m3-icon-btn ${isLockedDefault ? 'opacity-40 cursor-not-allowed' : 'm3-icon-btn-danger'}" 
+                    onclick="removeAppRoleRow(${idx})" 
+                    title="${isLockedDefault ? (typeof t === 'function' ? t('swal_role_default_locked_title', 'Ruolo DEFAULT Protetto') : 'Ruolo DEFAULT Protetto') : 'Rimuovi Ruolo'}">
+              <i class="fa-solid ${isLockedDefault ? 'fa-lock' : 'fa-trash'} text-xs"></i>
             </button>
           </td>
         `;
@@ -576,11 +582,19 @@
     }
 
     function addAppRoleRow() {
-      appRolesList.push({ role: "", type: "DEFAULT", description: "" });
+      appRolesList.push({ role: "", type: "USER", description: "" });
       renderAppRolesTable();
     }
 
     function removeAppRoleRow(idx) {
+      const target = appRolesList[idx];
+      const defaultCount = appRolesList.filter(r => r.type === 'DEFAULT').length;
+      if (target && target.type === 'DEFAULT' && defaultCount <= 1) {
+        sweetalert("warning",
+          (typeof t === 'function' ? t("swal_role_default_locked_title", "Ruolo Protetto") : "Ruolo Protetto"),
+          (typeof t === 'function' ? t("swal_role_default_locked_desc", "Il ruolo con tipologia DEFAULT è obbligatorio per ogni Client OAuth2 e non può essere rimosso.") : "Il ruolo con tipologia DEFAULT è obbligatorio per ogni Client OAuth2 e non può essere rimosso."));
+        return;
+      }
       appRolesList.splice(idx, 1);
       renderAppRolesTable();
     }
@@ -601,7 +615,7 @@
           try {
             const parsed = JSON.parse(res.value);
             if (Array.isArray(parsed)) {
-              appRolesList = parsed;
+              appRolesList = parsed.map(r => typeof r === "string" ? { role: r.toUpperCase(), type: "DEFAULT", description: "" } : { role: (r.role || r.name || "").toUpperCase(), type: (r.type || "DEFAULT").toUpperCase(), description: r.description || "" });
               renderAppRolesTable();
             } else {
               sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Formato Errato") : "Formato Errato"), (typeof t === 'function' ? t("swal_invalid_json_format", "Il JSON deve essere un array di oggetti.") : "Il JSON deve essere un array di oggetti."));
@@ -737,6 +751,12 @@
       const emptyRole = appRolesList.find(r => !r.role || !r.role.trim());
       if (emptyRole) {
         errors.push("<b>Ruoli Applicativi</b>: è presente una riga di ruolo con il campo Ruolo vuoto");
+      }
+
+      // Controllo presenza obbligatoria di almeno un ruolo DEFAULT
+      const hasDefaultRole = appRolesList.some(r => r.role && r.role.trim() && r.type === 'DEFAULT');
+      if (!hasDefaultRole) {
+        errors.push("<b>Ruoli Applicativi</b>: " + (typeof t === 'function' ? t('swal_role_default_required_desc', 'È obbligatorio configurare almeno un ruolo con tipologia DEFAULT.') : 'È obbligatorio configurare almeno un ruolo con tipologia DEFAULT.'));
       }
 
       // Controllo se ci sono webhook con campi incompleti

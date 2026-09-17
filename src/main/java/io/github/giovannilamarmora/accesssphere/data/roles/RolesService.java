@@ -54,9 +54,12 @@ public class RolesService {
             clientCredentials -> {
               List<String> validRoles =
                   clientCredentials.stream()
+                      .filter(c -> c.getAppRoles() != null)
                       .flatMap(clientCredential -> clientCredential.getAppRoles().stream())
+                      .filter(java.util.Objects::nonNull)
                       .map(AppRole::getRole)
-                      .filter(roleName -> roles.getRoles().contains(roleName))
+                      .filter(java.util.Objects::nonNull)
+                      .filter(roleName -> roles.getRoles() != null && roles.getRoles().stream().anyMatch(roleName::equalsIgnoreCase))
                       .distinct()
                       .toList();
               return userService

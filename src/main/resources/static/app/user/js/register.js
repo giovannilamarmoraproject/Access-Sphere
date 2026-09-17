@@ -245,7 +245,12 @@ function displayClientData(clients) {
       (client) => client.clientId === clientId
     );
 
-    if (selectedClient && selectedClient.appRoles) {
+    let clientRoles = selectedClient?.appRoles || selectedClient?.app_roles;
+    if (typeof clientRoles === "string") {
+      try { clientRoles = JSON.parse(clientRoles); } catch(e) { clientRoles = []; }
+    }
+
+    if (Array.isArray(clientRoles) && clientRoles.length > 0) {
       const roleSelect = $("#role_select");
       roleSelect.empty();
       roleSelect.append(
@@ -254,9 +259,11 @@ function displayClientData(clients) {
           "</option>"
       );
 
-      selectedClient.appRoles.forEach((role) => {
-        if (role.role) {
-          const option = $("<option>").val(role.role).text(role.role);
+      clientRoles.forEach((role) => {
+        const roleName = typeof role === "string" ? role : (role?.role || role?.name || role?.value);
+        const roleType = (typeof role === "object" && role?.type) ? ` (${role.type})` : "";
+        if (roleName) {
+          const option = $("<option>").val(roleName).text(roleName + roleType);
           roleSelect.append(option);
         }
       });

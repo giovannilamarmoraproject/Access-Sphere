@@ -39,9 +39,19 @@ public class OAuthValidator {
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateClientRoles(ClientCredential clientCredential) {
     if (ObjectToolkit.isNullOrEmpty(clientCredential.getAppRoles())) {
-      LOG.error("The Client must have a valid role configuration to proceed");
+      LOG.error("❌ The Client must have a valid role configuration to proceed");
       throw new OAuthException(
-          ExceptionMap.ERR_OAUTH_400, ExceptionType.INVALID_ROLES, "Invalid Roles Configuration!");
+          ExceptionMap.ERR_OAUTH_400, ExceptionType.INVALID_ROLES, "Invalid Roles Configuration! At least one role is required.");
+    }
+    boolean hasDefaultRole =
+        clientCredential.getAppRoles().stream()
+            .anyMatch(r -> r != null && r.isDefault());
+    if (!hasDefaultRole) {
+      LOG.error("❌ Client configuration must contain at least one role with type 'DEFAULT'");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_ROLES,
+          "Client configuration must contain at least one role with type 'DEFAULT'!");
     }
   }
 
@@ -55,7 +65,8 @@ public class OAuthValidator {
     validateClientRoles(clientCredential);
 
     if (clientCredential.getAppRoles().stream()
-        .noneMatch(appRole -> userRoles.contains(appRole.getRole()))) {
+        .filter(java.util.Objects::nonNull)
+        .noneMatch(appRole -> userRoles.stream().anyMatch(appRole::matches))) {
       LOG.error(
           "The User must have a valid role as {} to proceed {}",
           clientCredential.getAppRoles(),

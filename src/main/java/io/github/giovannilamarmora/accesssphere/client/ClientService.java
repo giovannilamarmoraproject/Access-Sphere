@@ -6,6 +6,7 @@ import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -95,6 +96,7 @@ public class ClientService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void addClientToDatabase(ClientCredential clientCredential) {
     LOG.info("Inserting new client into Database: {}", clientCredential.getClientId());
+    OAuthValidator.validateClientRoles(clientCredential);
     ClientCredentialEntity clientEntity = ClientMapper.toEntity(clientCredential);
     iClientDAO.save(clientEntity);
     LOG.debug("Client {} successfully inserted", clientCredential.getClientId());
@@ -109,6 +111,9 @@ public class ClientService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void updateClientInDatabase(ClientCredential clientCredential) {
     LOG.info("Updating client in Database: {}", clientCredential.getClientId());
+    if (clientCredential.getAppRoles() != null) {
+      OAuthValidator.validateClientRoles(clientCredential);
+    }
     ClientCredentialEntity existingClientEntity =
         iClientDAO.findByClientId(clientCredential.getClientId());
     if (!ObjectUtils.isEmpty(existingClientEntity)) {

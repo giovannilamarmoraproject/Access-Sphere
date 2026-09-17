@@ -171,7 +171,9 @@ public class ProjectInitializerService implements ApplicationRunner {
     client.setScopes("openid profile email read write admin");
     client.setJwtSecret(jwtSecret);
     client.setRedirect_uri(redirectUriJson);
-    client.setAppRoles("[{\"role\":\"ROLE_ADMIN\"},{\"role\":\"ROLE_TECH\"}]");
+    client.setAppRoles(
+        "[{\"role\":\"ROLE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default administrator role for Access Sphere\"},"
+            + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\"}]");
     client.setMfaEnabled(false);
     client.setAuthorize_redirect_status(HttpStatus.FOUND);
     client.setJwtExpiration(3600000L);
