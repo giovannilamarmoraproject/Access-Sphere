@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.mfa.strategy;
 
 import com.warrenstrange.googleauth.GoogleAuthenticator;
-import io.github.giovannilamarmora.accesssphere.data.UserDataService;
+import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
@@ -28,11 +28,11 @@ import reactor.core.publisher.Mono;
 public class TotpStrategy implements MFAStrategy {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  @Autowired private UserDataService dataService;
+  @Autowired private UserService userService;
 
   public Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest setupRequest) {
     LOG.info(
-        "\uD83E\uDD37\u200D♂\uFE0F Generate TOTP MFA for user: {} process started.",
+        "🔑 [TOTP] Generate TOTP MFA for user: {} process started.",
         setupRequest.identifier());
     String secret = MFAUtils.generateSecret();
     String otpAuth = MFAUtils.getOtpAuthUrl(user.getEmail(), secret, "Access-Sphere");
@@ -40,7 +40,7 @@ public class TotpStrategy implements MFAStrategy {
     MFASetting mfaSetting = MFAMapper.generateTempMFA(user, setupRequest, secret);
 
     user.setMfaSettings(mfaSetting);
-    return dataService
+    return userService
         .updateUser(user, false)
         .map(
             userUpdated -> {

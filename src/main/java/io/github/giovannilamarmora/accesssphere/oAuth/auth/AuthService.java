@@ -3,8 +3,8 @@ package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
-import io.github.giovannilamarmora.accesssphere.data.UserDataService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -48,7 +48,7 @@ public class AuthService {
   private String cookieDomain;
 
   @Autowired private TokenService tokenService;
-  @Autowired private UserDataService dataService;
+  @Autowired private UserService userService;
   @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -58,7 +58,7 @@ public class AuthService {
       ClientCredential clientCredential,
       ServerHttpRequest request,
       ServerHttpResponse serverHttpResponse) {
-    LOG.debug("Decoding user using Base64 Decoder");
+    LOG.debug("🔑 Decoding user using Base64 Decoder");
     String username;
     String password;
     try {
@@ -67,10 +67,10 @@ public class AuthService {
       username = decoded[0];
       password = decoded[1];
     } catch (Exception e) {
-      LOG.error("Error during decoding username and password, message is {}", e.getMessage());
+      LOG.error("❌ Error during decoding username and password, message is {}", e.getMessage());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, "Invalid basic provided!");
     }
-    LOG.debug("Login process started for user {}", username);
+    LOG.debug("👤 Login process started for user {}", username);
 
     // Controllo se ha usato l'email invece dello username
     String email = username.contains("@") ? username : null;
@@ -83,7 +83,7 @@ public class AuthService {
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
-    return dataService
+    return userService
         .login(username, email, password, clientCredential, request)
         .map(
             tokenResponse -> {
@@ -131,7 +131,7 @@ public class AuthService {
                 includeUserInfo ? tokenResponse.getUserInfo() : null,
                 includeUserData ? tokenResponse.getUser() : null));
 
-    LOG.info("Login process ended for user {}", tokenResponse.getUser().getUsername());
+    LOG.info("✅ Login process ended for user {}", tokenResponse.getUser().getUsername());
     if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);
 
     CookieManager.setCookieInResponse(
@@ -161,7 +161,7 @@ public class AuthService {
 
     String token = accessTokenData.getPayload().get("refresh_token").textValue();
 
-    return dataService
+    return userService
         .refreshJWTToken(accessTokenData, clientCredential, token, request)
         .map(
             tokenResponse -> {
@@ -193,7 +193,7 @@ public class AuthService {
             : null;
 
     if (ObjectUtils.isEmpty(refreshToken)) {
-      LOG.info("Refresh token not found in payload");
+      LOG.info("⚠️ Refresh token not found in payload");
     }
 
     String message = "Logout Successfully for " + accessTokenData.getSubject() + "!";
@@ -204,7 +204,7 @@ public class AuthService {
       responseResponseEntity =
           ResponseEntity.status(HttpStatus.OK).location(URI.create(redirect_uri)).body(res);
 
-    return dataService
+    return userService
         .logout(accessTokenData)
         .doOnSuccess(
             unused -> {
@@ -241,7 +241,7 @@ public class AuthService {
               includeUserData,
               request));
     }
-    return dataService
+    return userService
         .getUserByEmail(decryptToken.getEmail())
         .map(
             user -> {

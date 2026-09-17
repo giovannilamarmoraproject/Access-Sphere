@@ -1,8 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.mfa;
 
-import io.github.giovannilamarmora.accesssphere.data.UserDataService;
-import io.github.giovannilamarmora.accesssphere.data.UserDataValidator;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.user.UserService;
+import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
@@ -31,7 +31,7 @@ import reactor.core.publisher.Mono;
 public class MFAService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  @Autowired private UserDataService dataService;
+  @Autowired private UserService userService;
   @Autowired private MFAStrategyFactory strategyFactory;
   @Autowired private AccessTokenData accessTokenData;
   @Autowired private MFATokenDataService mfaTokenDataService;
@@ -44,9 +44,9 @@ public class MFAService {
         "\uD83E\uDD37\u200D♂\uFE0F Setup MFA for user: {} process started.",
         setupRequest.identifier());
     if (!techUserService.isTechUser())
-      UserDataValidator.validateIdentifier(
+      UserValidator.validateIdentifier(
           setupRequest.identifier(), accessTokenData.getIdentifier());
-    Mono<User> userMono = dataService.getUserByIdentifier(setupRequest.identifier(), true);
+    Mono<User> userMono = userService.getUserByIdentifier(setupRequest.identifier(), true);
     return userMono
         .flatMap(
             user -> {
@@ -64,9 +64,9 @@ public class MFAService {
         "🔑 MFA OTP Confirmation for user: {} process started.", confirmationRequest.identifier());
 
     if (!techUserService.isTechUser())
-      UserDataValidator.validateIdentifier(
+      UserValidator.validateIdentifier(
           confirmationRequest.identifier(), accessTokenData.getIdentifier());
-    Mono<User> userMono = dataService.getUserByIdentifier(confirmationRequest.identifier(), true);
+    Mono<User> userMono = userService.getUserByIdentifier(confirmationRequest.identifier(), true);
     return userMono
         .flatMap(
             user -> {
@@ -80,7 +80,7 @@ public class MFAService {
 
               user.setMfaSettings(MFAMapper.generateFinalMFA(user, mfaMethod));
 
-              return dataService
+              return userService
                   .updateUser(user, false)
                   .map(
                       user1 -> {
@@ -108,7 +108,7 @@ public class MFAService {
 
     MFAValidator.validateMFAMethods(mfaRequest.mfaMethod(), mfaTokenData.getMfaMethods());
 
-    Mono<User> userMono = dataService.getUserByIdentifier(mfaTokenData.getIdentifier(), true);
+    Mono<User> userMono = userService.getUserByIdentifier(mfaTokenData.getIdentifier(), true);
 
     MFAStrategy strategy = strategyFactory.getStrategy(mfaRequest.mfaMethod());
 
@@ -119,7 +119,7 @@ public class MFAService {
                   user.getMfaSettings().getMfaMethods(), mfaRequest.otp(), user.getIdentifier());
 
               return mfaAuthenticationService.verifyMfaAndGenerateToken(
-                  mfaRequest, mfaTokenData, user, exchange, dataService);
+                  mfaRequest, mfaTokenData, user, exchange, userService);
             })
         .doOnSuccess(
             _ ->
@@ -131,14 +131,14 @@ public class MFAService {
   public Mono<ResponseEntity<Response>> manageMFA(MFAManageRequest request) {
     switch (request.action()) {
       case ENABLE -> {
-        return mfaAuthenticationService.enableMethods(request.identifier(), dataService);
+        return mfaAuthenticationService.enableMethods(request.identifier(), userService);
       }
       case DISABLE -> {
-        return mfaAuthenticationService.disableMethods(request.identifier(), dataService);
+        return mfaAuthenticationService.disableMethods(request.identifier(), userService);
       }
       case DELETE -> {
         return mfaAuthenticationService.deleteMethods(
-            request.identifier(), request.label(), dataService);
+            request.identifier(), request.label(), userService);
       }
       default -> {
         return Mono.empty();

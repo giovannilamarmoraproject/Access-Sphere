@@ -3,7 +3,7 @@ package io.github.giovannilamarmora.accesssphere.mfa.auth;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.UserDataService;
+import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
@@ -140,7 +140,7 @@ public class MFAAuthenticationService {
       MFATokenData mfaTokenData,
       User user,
       ServerWebExchange exchange,
-      UserDataService dataService) {
+      UserService userService) {
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
@@ -157,7 +157,7 @@ public class MFAAuthenticationService {
         clientCredential -> {
           JWTData jwtData =
               JWTData.generateJWTData(user, clientCredential, SubjectType.CUSTOMER, request);
-          return dataService
+          return userService
               .getUserInfo(jwtData, null)
               .map(
                   user1 -> {
@@ -194,9 +194,9 @@ public class MFAAuthenticationService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> enableMethods(
-      String identifier, UserDataService userDataService) {
+      String identifier, UserService userService) {
     LOG.info("🔐 [MFA ENABLE] - Process started for user '{}'", identifier);
-    Mono<User> userMono = userDataService.getUserByIdentifier(identifier, true);
+    Mono<User> userMono = userService.getUserByIdentifier(identifier, true);
 
     return userMono
         .flatMap(
@@ -220,7 +220,7 @@ public class MFAAuthenticationService {
               mfaSetting.setEnabled(true);
               user.setMfaSettings(mfaSetting);
 
-              return userDataService
+              return userService
                   .updateUser(user, false)
                   .map(user1 -> ResponseEntity.ok(response));
             })
@@ -229,9 +229,9 @@ public class MFAAuthenticationService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> disableMethods(
-      String identifier, UserDataService userDataService) {
+      String identifier, UserService userService) {
     LOG.info("🔐 [MFA DISABLE] - Process started for user '{}'", identifier);
-    Mono<User> userMono = userDataService.getUserByIdentifier(identifier, true);
+    Mono<User> userMono = userService.getUserByIdentifier(identifier, true);
 
     return userMono
         .flatMap(
@@ -251,7 +251,7 @@ public class MFAAuthenticationService {
               mfaSetting.setEnabled(false);
               user.setMfaSettings(mfaSetting);
 
-              return userDataService
+              return userService
                   .updateUser(user, false)
                   .map(user1 -> ResponseEntity.ok(response));
             })
@@ -260,10 +260,10 @@ public class MFAAuthenticationService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> deleteMethods(
-      String identifier, TOTPLabel label, UserDataService userDataService) {
+      String identifier, TOTPLabel label, UserService userService) {
     LOG.info("🔐 [MFA DELETE] - Process started for user '{}', label '{}'", identifier, label);
 
-    Mono<User> userMono = userDataService.getUserByIdentifier(identifier, true);
+    Mono<User> userMono = userService.getUserByIdentifier(identifier, true);
 
     return userMono
         .flatMap(
@@ -292,7 +292,7 @@ public class MFAAuthenticationService {
               mfaSetting.setMfaMethods(methods);
               user.setMfaSettings(mfaSetting);
 
-              return userDataService
+              return userService
                   .updateUser(user, false)
                   .map(
                       updatedUser -> {

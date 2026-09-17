@@ -1,16 +1,19 @@
 package io.github.giovannilamarmora.accesssphere.data.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ChangePassword {
+public class ChangePassword extends GenericDTO {
   private String templateId;
   private String email;
   private String password;

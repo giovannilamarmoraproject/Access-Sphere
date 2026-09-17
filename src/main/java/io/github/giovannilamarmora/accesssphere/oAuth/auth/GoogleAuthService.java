@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
-import io.github.giovannilamarmora.accesssphere.data.UserDataService;
+import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcMapper;
@@ -48,7 +48,7 @@ public class GoogleAuthService {
   private String cookieDomain;
 
   @Autowired private TokenService tokenService;
-  @Autowired private UserDataService dataService;
+  @Autowired private UserService userService;
   @Autowired private AuthService authService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -64,7 +64,7 @@ public class GoogleAuthService {
     boolean includeUserData =
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
-    return dataService
+    return userService
         .getUserByEmail(googleModel.getJwtData().getEmail())
         .map(
             user -> {
@@ -120,7 +120,7 @@ public class GoogleAuthService {
                 }
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
                 userGoogle.setPassword(registration_token);
-                return dataService
+                return userService
                     .registerUser(null, userGoogle, clientCredential, true)
                     .map(
                         user1 -> {
@@ -185,7 +185,7 @@ public class GoogleAuthService {
 
     GoogleModel googleModel = GrpcService.refreshToken(token, clientCredential);
 
-    return dataService
+    return userService
         .getUserByEmail(googleModel.getJwtData().getEmail())
         .map(
             user -> {
