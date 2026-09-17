@@ -8,7 +8,6 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -27,12 +26,14 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * Controller reattivo REST di retrocompatibilita' per il percorso storico OAuth 2.0 (/v1/oAuth/2.0).
+ * Controller reattivo REST di retrocompatibilita' per il percorso storico OAuth 2.0
+ * (/v1/oAuth/2.0).
  *
- * <p>Tutti gli endpoint di questo controller sono contrassegnati come deprecati in favore del percorso
- * standard RFC 6749 (/v1/oauth2).
+ * <p>Tutti gli endpoint di questo controller sono contrassegnati come deprecati in favore del
+ * percorso standard RFC 6749 (/v1/oauth2).
  *
  * <p>Interconnessioni logiche:
+ *
  * <ul>
  *   <li>Inoltra le richieste operative direttamente a {@link OAuthService}.
  *   <li>Mantiene la piena compatibilita' con i client legacy e le chiamate frontend esistenti.
@@ -124,19 +125,6 @@ public class OAuthLegacyController {
         bearer,
         state,
         exchange);
-  }
-
-  @Deprecated(since = "2.0.0")
-  @Hidden
-  @GetMapping(value = "/login/{client_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<?>> login(
-      @PathVariable(value = "client_id") String clientId,
-      @RequestParam(value = "scope", required = false) String scope,
-      @RequestParam(value = "code", required = false) String code,
-      @RequestParam(value = "prompt", required = false) String prompt,
-      ServerWebExchange exchange) {
-    return oAuthService.token(clientId, scope, code, prompt, exchange);
   }
 
   @Deprecated(since = "2.0.0")

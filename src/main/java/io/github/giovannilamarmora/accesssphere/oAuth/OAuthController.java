@@ -5,7 +5,6 @@ import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -83,15 +82,6 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.STATE,
               example = OpenAPI.Params.Example.STATE)
           String state,
-      ServerWebExchange exchange);
-
-  @Hidden
-  @GetMapping(value = "/login/{client_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  Mono<ResponseEntity<?>> login(
-      @PathVariable(value = "client_id") String clientId,
-      @RequestParam(value = "scope", required = false) String scope,
-      @RequestParam(value = "code", required = false) String code,
-      @RequestParam(value = "prompt", required = false) String prompt,
       ServerWebExchange exchange);
 
   @PostMapping(value = "/token", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -9,7 +9,6 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -47,15 +46,6 @@ public class OAuthControllerImpl implements OAuthController {
         bearer,
         state,
         exchange);
-  }
-
-  @Override
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<?>> login(
-      String clientId, String scope, String code, String prompt, ServerWebExchange exchange) {
-    ServerHttpRequest request = exchange.getRequest();
-    ServerHttpResponse response = exchange.getResponse();
-    return oAuthService.token(clientId, scope, code, prompt, exchange);
   }
 
   @Override
