@@ -29,7 +29,7 @@ import reactor.core.publisher.Mono;
  */
 public interface OIDCController {
 
-  @GetMapping(value = {"/userInfo", "/userinfo", "/oauth2/userinfo"})
+  @GetMapping(value = {"/userinfo", "/oauth2/userinfo"})
   @Operation(
       description =
           "Obtaining the Info of the current User according to OIDC Core 1.0 specifications",
@@ -62,6 +62,47 @@ public interface OIDCController {
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> userInfo(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      ServerHttpRequest request);
+
+  @GetMapping(value = "/userInfo")
+  @Operation(
+      description =
+          "Obtaining the Info of the current User according to OIDC Core 1.0 specifications",
+      summary = "User Info",
+      tags = OpenAPI.Tag.OIDC,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "User info retrieved successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = JWTData.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> userInfoDeprecated(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(

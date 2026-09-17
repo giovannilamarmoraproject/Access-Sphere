@@ -72,4 +72,38 @@ public class OIDCControllerImpl implements OIDCController {
               return ResponseEntity.ok(response);
             });
   }
+
+  /**
+   * Endpoint per il recupero delle informazioni OIDC / UserInfo dell'utente autenticato.
+   *
+   * @param bearer Token di accesso Bearer fornito nell'header di autorizzazione.
+   * @param request Richiesta HTTP server reattiva.
+   * @return Mono contenente ResponseEntity con stato 200 OK e l'involucro Response con i dati
+   *     UserInfo.
+   */
+  @Deprecated
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> userInfoDeprecated(
+      String bearer, ServerHttpRequest request) {
+    LOG.info("🌐 [OIDC CONTROLLER] Invoking UserInfo endpoint");
+    return oidcService
+        .userInfo(bearer, request)
+        .map(
+            userInfoData -> {
+              String name =
+                  Optional.ofNullable(userInfoData.getUser())
+                      .map(User::getUsername)
+                      .orElseGet(() -> userInfoData.getUserInfo().getSub());
+
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(),
+                      "UserInfo Data for " + name,
+                      TraceUtils.getSpanID(),
+                      userInfoData);
+
+              return ResponseEntity.ok(response);
+            });
+  }
 }
