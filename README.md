@@ -163,7 +163,7 @@ cp .env.example .env
 | **`CORS_ALLOWED_ORIGINS`** | No | `*` | Origini consentite per le chiamate CORS (es. `*` o domini separati da virgola). |
 | **`CORS_ALLOWED_HEADERS`** | No | `Origin, Content-Type, Accept, Authorization, Location, Trace-ID, Span-ID, Parent-ID, Registration-Token, Session-ID, Redirect-Uri` | Header HTTP consentiti nelle richieste cross-origin. |
 | **`CORS_ALLOW_CREDENTIALS`** | No | `true` | Consente l'invio di cookie e credenziali autorizzative nelle chiamate CORS (`true`/`false`). |
-| **`CORS_NOT_FILTER`** | No | `**/swagger-ui/**,/api-docs,**/api-docs/**` | Pattern di percorsi esclusi dal filtro CORS. |
+| **`CORS_NOT_FILTER`** | No | `*swagger*,*api-docs*,*webjars*` | Pattern di percorsi esclusi dal filtro CORS. |
 | **`DOCKER_REPOSITORY`** | No | `giovannilamarmora/access-sphere` | Nome dell'immagine / repository Docker per build e deploy. |
 | **`APP_VERSION`** | No | `latest` | Tag di versione dell'immagine Docker. |
 
@@ -172,7 +172,7 @@ cp .env.example .env
 ## 🚀 **API Reference**
 
 La documentazione OpenAPI 3.0 interattiva è accessibile a runtime all'indirizzo:
-👉 **`http://localhost:8081/swagger-ui.html`** (oppure formato JSON: **`/api-docs`**)
+👉 **`http://localhost:8081/swagger-ui`** oppure **`http://localhost:8081/swagger-ui.html`** (oppure formato JSON: **`/api-docs`**)
 
 ### 1. 🔐 **OAuth 2.0 Controller** (`/v1/oAuth/2.0`)
 

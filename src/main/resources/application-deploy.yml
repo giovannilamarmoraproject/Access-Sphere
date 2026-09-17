@@ -39,7 +39,7 @@ app:
   domain: ${APP_DOMAIN:access-sphere.giovannilamarmora.com}
   cors:
     enabled: ${CORS_ENABLED}
-    shouldNotFilter: ${CORS_NOT_FILTER}
+    shouldNotFilter: ${CORS_NOT_FILTER:*swagger*,*api-docs*,*webjars*}
     allowedOrigins: ${CORS_ALLOWED_ORIGINS}
     allowedHeaders: ${CORS_ALLOWED_HEADERS}
     allowCredentials: ${CORS_ALLOW_CREDENTIALS}

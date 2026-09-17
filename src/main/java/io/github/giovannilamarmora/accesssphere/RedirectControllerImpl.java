@@ -92,4 +92,16 @@ public class RedirectControllerImpl {
   public String emails(Model model) {
     return "app/email/emails";
   }
+
+  /**
+   * Reindirizzamento verso la console Swagger UI OpenAPI (/swagger-ui.html).
+   * Consente l'accesso intuitivo sia da '/swagger-ui' sia con trailing slash '/swagger-ui/',
+   * reindirizzando al path documentale configurato da Springdoc.
+   *
+   * @return Redirect view verso '/swagger-ui.html'
+   */
+  @GetMapping({"/swagger-ui", "/swagger-ui/"})
+  public String swaggerUiRedirect() {
+    return "redirect:/swagger-ui.html";
+  }
 }
