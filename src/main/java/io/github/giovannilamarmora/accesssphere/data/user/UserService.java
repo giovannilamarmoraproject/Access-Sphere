@@ -64,17 +64,6 @@ public class UserService {
   }
 
   /**
-   * Overload di retrocompatibilita' per il recupero utente tramite identificatore univoco.
-   *
-   * @param identifier Identificatore univoco UUID dell'utente.
-   * @param unused Parametro legacy non utilizzato.
-   * @return Mono contenente il DTO {@link User}.
-   */
-  public Mono<User> getUserByIdentifier(String identifier, boolean unused) {
-    return getUserByIdentifier(identifier);
-  }
-
-  /**
    * Recupera un utente dal database locale a partire dal suo indirizzo email. Effettua la
    * validazione di esistenza e la conversione in DTO {@link User}.
    *
@@ -234,32 +223,6 @@ public class UserService {
     userSaved.setPassword(null);
     UserValidator.validateUser(userSaved);
     return UserMapper.toDTO(userSaved);
-  }
-
-  /**
-   * Salva un nuovo utente nel database locale convertendolo da DTO a entita'.
-   *
-   * @param user DTO utente da salvare.
-   */
-  public void saveUserIntoDatabase(User user) {
-    UserEntity userEntity = UserMapper.toEntity(user);
-    saveUserEntityIntoDatabase(userEntity);
-  }
-
-  /**
-   * Aggiorna un utente esistente nel database locale a partire dal suo DTO.
-   *
-   * @param user DTO con i dati aggiornati.
-   */
-  public void updateUserIntoDatabase(User user) {
-    UserEntity userSaved = userDAO.findUserEntityByIdentifier(user.getIdentifier());
-    if (!ObjectUtils.isEmpty(userSaved)) {
-      UserMapper.updateEntity(userSaved, user);
-      saveUserEntityIntoDatabase(userSaved);
-    } else {
-      LOG.error("❌ User not found for update: {}", user.getIdentifier());
-      throw new IllegalArgumentException("User not found: " + user.getIdentifier());
-    }
   }
 
   /**

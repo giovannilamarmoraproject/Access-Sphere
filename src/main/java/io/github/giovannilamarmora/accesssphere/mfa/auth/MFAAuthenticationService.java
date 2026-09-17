@@ -202,7 +202,7 @@ public class MFAAuthenticationService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> enableMethods(String identifier, UserService userService) {
     LOG.info("🔐 [MFA ENABLE] - Process started for user '{}'", identifier);
-    Mono<User> userMono = userService.getUserByIdentifier(identifier, true);
+    Mono<User> userMono = userService.getUserByIdentifier(identifier);
 
     return userMono
         .flatMap(
@@ -236,7 +236,7 @@ public class MFAAuthenticationService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> disableMethods(String identifier, UserService userService) {
     LOG.info("🔐 [MFA DISABLE] - Process started for user '{}'", identifier);
-    Mono<User> userMono = userService.getUserByIdentifier(identifier, true);
+    Mono<User> userMono = userService.getUserByIdentifier(identifier);
 
     return userMono
         .flatMap(
@@ -268,7 +268,7 @@ public class MFAAuthenticationService {
       String identifier, TOTPLabel label, UserService userService) {
     LOG.info("🔐 [MFA DELETE] - Process started for user '{}', label '{}'", identifier, label);
 
-    Mono<User> userMono = userService.getUserByIdentifier(identifier, true);
+    Mono<User> userMono = userService.getUserByIdentifier(identifier);
 
     return userMono
         .flatMap(

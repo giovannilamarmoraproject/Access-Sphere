@@ -45,7 +45,7 @@ public class MFAService {
         setupRequest.identifier());
     if (!techUserService.isTechUser())
       UserValidator.validateIdentifier(setupRequest.identifier(), accessTokenData.getIdentifier());
-    Mono<User> userMono = userService.getUserByIdentifier(setupRequest.identifier(), true);
+    Mono<User> userMono = userService.getUserByIdentifier(setupRequest.identifier());
     return userMono
         .flatMap(
             user -> {
@@ -65,7 +65,7 @@ public class MFAService {
     if (!techUserService.isTechUser())
       UserValidator.validateIdentifier(
           confirmationRequest.identifier(), accessTokenData.getIdentifier());
-    Mono<User> userMono = userService.getUserByIdentifier(confirmationRequest.identifier(), true);
+    Mono<User> userMono = userService.getUserByIdentifier(confirmationRequest.identifier());
     return userMono
         .flatMap(
             user -> {
@@ -107,7 +107,7 @@ public class MFAService {
 
     MFAValidator.validateMFAMethods(mfaRequest.mfaMethod(), mfaTokenData.getMfaMethods());
 
-    Mono<User> userMono = userService.getUserByIdentifier(mfaTokenData.getIdentifier(), true);
+    Mono<User> userMono = userService.getUserByIdentifier(mfaTokenData.getIdentifier());
 
     MFAStrategy strategy = strategyFactory.getStrategy(mfaRequest.mfaMethod());
 
