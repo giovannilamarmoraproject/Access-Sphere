@@ -84,11 +84,15 @@ public class UserValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateUpdate(AccessTokenData accessTokenData, User userToUpdate) {
-    if (!accessTokenData.getIdentifier().equalsIgnoreCase(userToUpdate.getIdentifier())) {
+    if (userToUpdate == null
+        || userToUpdate.getIdentifier() == null
+        || accessTokenData == null
+        || accessTokenData.getIdentifier() == null
+        || !accessTokenData.getIdentifier().equalsIgnoreCase(userToUpdate.getIdentifier())) {
       LOG.error(
           "Identifier miss match, you should use {} instead of {}",
-          accessTokenData.getIdentifier(),
-          userToUpdate.getIdentifier());
+          accessTokenData != null ? accessTokenData.getIdentifier() : "null",
+          userToUpdate != null ? userToUpdate.getIdentifier() : "null");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid identifier!");
     }
   }

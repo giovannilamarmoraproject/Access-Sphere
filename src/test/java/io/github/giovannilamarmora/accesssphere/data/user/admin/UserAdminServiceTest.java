@@ -112,8 +112,8 @@ class UserAdminServiceTest {
     user.setBlocked(false);
 
     when(userService.getUserByIdentifier("uuid-1")).thenReturn(Mono.just(user));
-    when(userService.updateUser(any(), any(User.class), eq(false)))
-        .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+    when(userService.updateUser(any(), any(User.class)))
+        .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
 
     StepVerifier.create(userAdminService.unlockUser("uuid-1", true))
         .assertNext(

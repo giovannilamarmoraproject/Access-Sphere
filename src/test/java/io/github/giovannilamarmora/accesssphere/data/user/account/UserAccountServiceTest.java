@@ -67,6 +67,7 @@ class UserAccountServiceTest {
     cp.setEmail("test@example.com");
 
     User user = new User();
+    user.setIdentifier("uuid-test");
     user.setUsername("testuser");
     user.setEmail("test@example.com");
 
@@ -78,7 +79,7 @@ class UserAccountServiceTest {
         .thenReturn(Mono.just(template));
 
     when(userService.updateUser(any(), any(User.class)))
-        .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
 
     StepVerifier.create(userAccountService.changePasswordRequest(cp, "it", false))
         .assertNext(

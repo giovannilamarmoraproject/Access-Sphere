@@ -202,6 +202,7 @@ public class UserService {
     }
 
     UserEntity userFind = userDAO.findUserEntityByIdentifier(identifier);
+    UserValidator.validateUser(userFind);
     setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
     return Mono.just(saveUserEntityIntoDatabase(userEntity));
   }
@@ -213,6 +214,12 @@ public class UserService {
     userEntity.setIdentifier(userFind.getIdentifier());
     if (!isUpdatePassword) userEntity.setPassword(userFind.getPassword());
     userEntity.setRoles(userFind.getRoles());
+    if (ObjectToolkit.isNullOrEmpty(userEntity.getMfaSettings())) {
+      userEntity.setMfaSettings(userFind.getMfaSettings());
+    }
+    if (ObjectToolkit.isNullOrEmpty(userEntity.getTokenReset())) {
+      userEntity.setTokenReset(userFind.getTokenReset());
+    }
   }
 
   /**

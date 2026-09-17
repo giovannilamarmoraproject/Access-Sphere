@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
@@ -25,8 +26,13 @@ public class User extends GenericDTO {
 
   private String identifier;
 
-  @UpperCamelCase private String name;
-  @UpperCamelCase private String surname;
+  @JsonAlias({"firstName", "first_name"})
+  @UpperCamelCase
+  private String name;
+
+  @JsonAlias({"lastName", "last_name"})
+  @UpperCamelCase
+  private String surname;
 
   @NotNull(message = "Email is required")
   @NotBlank(message = "Email is required")
@@ -42,10 +48,13 @@ public class User extends GenericDTO {
 
   private List<String> roles;
 
+  @JsonAlias({"profile", "profile_photo"})
   private String profilePhoto;
 
+  @JsonAlias({"phone", "phone_number"})
   private String phoneNumber;
 
+  @JsonAlias({"birthdate", "birth_date"})
   private LocalDate birthDate;
 
   @UpperCase private String gender;

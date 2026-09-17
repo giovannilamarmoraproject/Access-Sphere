@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import java.util.List;
@@ -146,5 +147,50 @@ class UserServiceTest {
               assertEquals("u2", users.get(1).getUsername());
             })
         .verifyComplete();
+  }
+
+  @Test
+  @DisplayName("updateUser should update user and preserve existing mfaSettings, tokenReset and roles")
+  void updateUser_success() {
+    UserEntity existing = new UserEntity();
+    existing.setId(99L);
+    existing.setIdentifier("uuid-99");
+    existing.setUsername("original");
+    existing.setEmail("orig@example.com");
+    existing.setPassword("encodedPass");
+    existing.setRoles("ROLE_USER");
+    existing.setMfaSettings("{\"enabled\":true}");
+    existing.setTokenReset("reset-token-xyz");
+
+    when(userDAO.findUserEntityByIdentifier("uuid-99")).thenReturn(existing);
+    when(userDAO.saveAndFlush(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    User updateDto = new User();
+    updateDto.setName("NewName");
+    updateDto.setSurname("NewSurname");
+    updateDto.setUsername("updatedUsername");
+    updateDto.setEmail("orig@example.com");
+
+    StepVerifier.create(userService.updateUser("uuid-99", updateDto))
+        .assertNext(
+            updated -> {
+              assertEquals("uuid-99", updated.getIdentifier());
+              assertEquals("NewName", updated.getName());
+              assertEquals("NewSurname", updated.getSurname());
+              assertNotNull(updated.getMfaSettings());
+              assertTrue(updated.getMfaSettings().getEnabled());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  @DisplayName("updateUser should throw OAuthException when user to update does not exist")
+  void updateUser_notFound_throws() {
+    when(userDAO.findUserEntityByIdentifier("non-existent")).thenReturn(null);
+
+    User updateDto = new User();
+    updateDto.setUsername("ghost");
+
+    assertThrows(OAuthException.class, () -> userService.updateUser("non-existent", updateDto));
   }
 }

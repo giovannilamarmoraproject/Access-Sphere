@@ -126,11 +126,15 @@ public class UserAccountService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> updateUser(
       String identifier, User userToUpdate, String bearer, ServerHttpRequest request) {
+    String finalIdentifier = identifier != null ? identifier : userToUpdate.getIdentifier();
+    if (userToUpdate.getIdentifier() == null && finalIdentifier != null) {
+      userToUpdate.setIdentifier(finalIdentifier);
+    }
     userToUpdate.setPassword(null);
     LOG.info(
         "👤 [USER ACCOUNT] Starting profile update for username: {}, identifier: {}",
         userToUpdate.getUsername(),
-        identifier);
+        finalIdentifier);
 
     return techUserService
         .hasTechUserRoles(accessTokenData, clientService)
@@ -139,14 +143,14 @@ public class UserAccountService {
               if (!hasTechRoles) {
                 UserValidator.validateUpdate(accessTokenData, userToUpdate);
               }
-              return userService.updateUser(identifier, userToUpdate);
+              return userService.updateUser(finalIdentifier, userToUpdate);
             })
         .doOnSuccess(
             updatedUser ->
                 LOG.info(
                     "✅ [USER ACCOUNT] Profile update successfully completed for username: {}, identifier: {}",
                     updatedUser.getUsername(),
-                    identifier));
+                    finalIdentifier));
   }
 
   /**
