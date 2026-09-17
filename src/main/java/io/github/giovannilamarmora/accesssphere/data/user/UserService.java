@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -422,17 +421,29 @@ public class UserService {
     }
   }
 
+  /**
+   * Recupera le informazioni OIDC / UserInfo dell'utente autenticato basandosi sui claim del token Bearer.
+   * Interconnessioni logiche:
+   * - Interroga {@link ClientService} per risolvere la configurazione e i permessi del client chiamante.
+   * - Valida la conformita' del tipo di autenticazione tramite {@link UserValidator#validateAuthType}.
+   * - Decifra e convalida la firma del token tramite {@link TokenService#parseToken}.
+   * - A seconda del provider (BEARER interno o federato GOOGLE tramite {@link GrpcService}), recupera l'utente
+   *   dal database locale ({@link #getUserInfo} o {@link #getUserByEmail}) e compone il payload di risposta.
+   * - Se il parametro query 'include_user_data' e' abilitato, integra nel payload sia i claim JWT sia il profilo utente.
+   *
+   * @param bearer Token di accesso Bearer inviato dal client nell'header Authorization.
+   * @param request Richiesta HTTP server per l'estrazione dei query param (es. include_user_data).
+   * @return Mono contenente la {@link Response} applicativa con i dettagli UserInfo o JWT.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> userInfo(String bearer, ServerHttpRequest request) {
+  public Mono<Response> userInfo(String bearer, ServerHttpRequest request) {
     boolean includeUserData =
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
-    LOG.info("👤 [USER INFO] UserInfo process started, include Data: {}", includeUserData);
+    LOG.info("👤 [USER INFO] Starting UserInfo retrieval (includeUserData: {})", includeUserData);
 
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(accessTokenData.getClientId());
-
-    return clientCredentialMono
+    return clientService
+        .getClientCredentialByClientID(accessTokenData.getClientId())
         .flatMap(
             clientCredential -> {
               UserValidator.validateAuthType(clientCredential, accessTokenData);
@@ -443,17 +454,14 @@ public class UserService {
                           decryptToken,
                           accessTokenData.getPayload().get("access_token").textValue())
                       .map(
-                          user -> {
-                            Response response =
-                                new Response(
-                                    HttpStatus.OK.value(),
-                                    "UserInfo Data for " + user.getUsername(),
-                                    TraceUtils.getSpanID(),
-                                    includeUserData
-                                        ? new OAuthTokenResponse(decryptToken, user)
-                                        : decryptToken);
-                            return ResponseEntity.ok(response);
-                          });
+                          user ->
+                              new Response(
+                                  HttpStatus.OK.value(),
+                                  "UserInfo Data for " + user.getUsername(),
+                                  TraceUtils.getSpanID(),
+                                  includeUserData
+                                      ? new OAuthTokenResponse(decryptToken, user)
+                                      : decryptToken));
                 }
                 case GOOGLE -> {
                   GoogleModel userInfo =
@@ -464,23 +472,19 @@ public class UserService {
                   if (includeUserData) {
                     return getUserByEmail(decryptToken.getEmail())
                         .map(
-                            user -> {
-                              Response response =
-                                  new Response(
-                                      HttpStatus.OK.value(),
-                                      "UserInfo Data for " + user.getUsername(),
-                                      TraceUtils.getSpanID(),
-                                      new OAuthTokenResponse(decryptToken, user));
-                              return ResponseEntity.ok(response);
-                            });
+                            user ->
+                                new Response(
+                                    HttpStatus.OK.value(),
+                                    "UserInfo Data for " + user.getUsername(),
+                                    TraceUtils.getSpanID(),
+                                    new OAuthTokenResponse(decryptToken, user)));
                   }
-                  Response response =
+                  return Mono.just(
                       new Response(
                           HttpStatus.OK.value(),
                           "UserInfo Data for " + decryptToken.getSub(),
                           TraceUtils.getSpanID(),
-                          decryptToken);
-                  return Mono.just(ResponseEntity.ok(response));
+                          decryptToken));
                 }
                 default -> {
                   return UserValidator.defaultErrorOnType();
@@ -488,19 +492,31 @@ public class UserService {
               }
             })
         .doOnSuccess(
-            responseResponseEntity ->
+            res ->
                 LOG.info(
-                    "✅ [USER INFO] UserInfo process ended, include Data: {}", includeUserData));
+                    "✅ [USER INFO] UserInfo process completed successfully (includeUserData: {})",
+                    includeUserData));
   }
 
+  /**
+   * Recupera i dati anagrafici e di profilo dell'utente autenticato per la sessione corrente.
+   * Interconnessioni logiche:
+   * - Interroga {@link ClientService} per risolvere le credenziali del client.
+   * - Valida la tipologia di autorizzazione tramite {@link UserValidator#validateAuthType}.
+   * - Decodifica i token JWT tramite {@link TokenService#parseToken}.
+   * - Risolve il profilo utente locale dal database (via {@link #getUserInfo} per token Bearer o
+   *   via {@link #getUserByEmail} previa validazione token federato per account Google).
+   *
+   * @param bearer Token di accesso Bearer fornito dal client.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente la {@link Response} applicativa con i dati del profilo utente.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> profile(String bearer, ServerHttpRequest request) {
-    LOG.info("👤 [USER PROFILE] Getting profile process started");
+  public Mono<Response> profile(String bearer, ServerHttpRequest request) {
+    LOG.info("👤 [USER PROFILE] Starting user profile retrieval process");
 
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(accessTokenData.getClientId());
-
-    return clientCredentialMono
+    return clientService
+        .getClientCredentialByClientID(accessTokenData.getClientId())
         .flatMap(
             clientCredential -> {
               UserValidator.validateAuthType(clientCredential, accessTokenData);
@@ -511,15 +527,12 @@ public class UserService {
                           decryptToken,
                           accessTokenData.getPayload().get("access_token").textValue())
                       .map(
-                          user -> {
-                            Response response =
-                                new Response(
-                                    HttpStatus.OK.value(),
-                                    "Profile Data for " + user.getUsername(),
-                                    TraceUtils.getSpanID(),
-                                    user);
-                            return ResponseEntity.ok(response);
-                          });
+                          user ->
+                              new Response(
+                                  HttpStatus.OK.value(),
+                                  "Profile Data for " + user.getUsername(),
+                                  TraceUtils.getSpanID(),
+                                  user));
                 }
                 case GOOGLE -> {
                   GoogleModel userInfo =
@@ -529,147 +542,197 @@ public class UserService {
                   UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
                   return getUserByEmail(decryptToken.getEmail())
                       .map(
-                          user -> {
-                            Response response =
-                                new Response(
-                                    HttpStatus.OK.value(),
-                                    "Profile Data for " + user.getUsername(),
-                                    TraceUtils.getSpanID(),
-                                    user);
-                            return ResponseEntity.ok(response);
-                          });
+                          user ->
+                              new Response(
+                                  HttpStatus.OK.value(),
+                                  "Profile Data for " + user.getUsername(),
+                                  TraceUtils.getSpanID(),
+                                  user));
                 }
                 default -> {
                   return UserValidator.defaultErrorOnType();
                 }
               }
             })
-        .doOnSuccess(
-            responseResponseEntity -> LOG.info("✅ [USER PROFILE] Getting profile process ended"));
+        .doOnSuccess(res -> LOG.info("✅ [USER PROFILE] User profile retrieval completed successfully"));
   }
 
+  /**
+   * Registra un nuovo utente nel sistema IAM validando credenziali, regex, token di registrazione e ruoli applicativi.
+   * Interconnessioni logiche:
+   * - Interroga {@link ClientService#getClientCredentialByClientID(String)} per recuperare la configurazione del client.
+   * - Valida la richiesta di registrazione tramite {@link UserValidator#validateRegistration}.
+   * - Invoca il metodo interno {@link #registerUser(String, User, ClientCredential, Boolean)} per gestire l'hashing BCrypt,
+   *   l'assegnazione dei ruoli di default e l'eventuale concessione di ruoli tecnici privilegiati da {@link TechUserService}.
+   * - Incapsula il DTO dell'utente registrato nella {@link Response}.
+   *
+   * @param bearer Token Bearer opzionale per operazioni eseguite da operatori tecnici.
+   * @param user DTO contenente anagrafica e credenziali del nuovo utente.
+   * @param clientId Identificatore del client OAuth associato.
+   * @param registration_token Token segreto di registrazione verificato rispetto alla configurazione del client.
+   * @param assignNewClient Flag facoltativo per associare nuove credenziali.
+   * @return Mono contenente la {@link Response} applicativa con l'utente registrato.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> register(
+  public Mono<Response> register(
       String bearer,
       User user,
       String clientId,
       String registration_token,
       Boolean assignNewClient) {
     LOG.info(
-        "👤 [USER REGISTER] Registration process started, username: {}, email: {}",
+        "👤 [USER REGISTER] Starting user registration for username: {}, email: {}, clientId: {}",
         user.getUsername(),
-        user.getEmail());
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(clientId);
+        user.getEmail(),
+        clientId);
 
-    return clientCredentialMono
+    return clientService
+        .getClientCredentialByClientID(clientId)
         .flatMap(
             clientCredential -> {
               UserValidator.validateRegistration(registration_token, clientCredential, user);
               return registerUser(bearer, user, clientCredential, assignNewClient)
                   .map(
-                      user1 -> {
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(),
-                                "User " + user.getUsername() + " successfully registered!",
-                                TraceUtils.getSpanID(),
-                                user1);
-                        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-                      });
+                      user1 ->
+                          new Response(
+                              HttpStatus.CREATED.value(),
+                              "User " + user.getUsername() + " successfully registered!",
+                              TraceUtils.getSpanID(),
+                              user1));
             })
         .doOnSuccess(
-            responseResponseEntity ->
+            res ->
                 LOG.info(
-                    "✅ [USER REGISTER] Registration process successfully ended, username: {}, email: {}",
+                    "✅ [USER REGISTER] Registration successfully completed for username: {}, email: {}",
                     user.getUsername(),
                     user.getEmail()));
   }
 
+  /**
+   * Aggiorna i dati anagrafici di un utente nel database locale, con verifica dei privilegi e dell'identita'.
+   * Interconnessioni logiche:
+   * - Verifica tramite {@link TechUserService#hasTechUserRoles} se l'utente in sessione possiede ruoli tecnici amministrativi.
+   * - Se non e' un utente tecnico, verifica che l'identificatore del token corrisponda all'utente da aggiornare con {@link UserValidator#validateUpdate}.
+   * - Esegue la persistenza delle modifiche sul database tramite {@link #updateUser(User)} preservando password e ruoli.
+   * - Incapsula il DTO utente aggiornato nella {@link Response}.
+   *
+   * @param userToUpdate DTO con i dati anagrafici da aggiornare.
+   * @param bearer Token di autorizzazione Bearer.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente la {@link Response} applicativa con i dati dell'utente aggiornato.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> updateUser(
+  public Mono<Response> updateUser(
       User userToUpdate, String bearer, ServerHttpRequest request) {
     userToUpdate.setPassword(null);
     LOG.info(
-        "👤 [USER UPDATE] Updating user process started, username: {}, email: {}",
+        "👤 [USER UPDATE] Starting user update for username: {}, identifier: {}",
         userToUpdate.getUsername(),
-        userToUpdate.getEmail());
+        userToUpdate.getIdentifier());
 
     return techUserService
         .hasTechUserRoles(accessTokenData, clientService)
         .flatMap(
-            aBoolean -> {
-              if (!aBoolean) UserValidator.validateUpdate(accessTokenData, userToUpdate);
+            hasTechRoles -> {
+              if (!hasTechRoles) {
+                UserValidator.validateUpdate(accessTokenData, userToUpdate);
+              }
               return updateUser(userToUpdate)
-                  .flatMap(
-                      user -> {
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(),
-                                "User " + user.getUsername() + " successfully updated!",
-                                TraceUtils.getSpanID(),
-                                user);
-                        return Mono.just(ResponseEntity.ok(response));
-                      })
-                  .doOnSuccess(
-                      responseResponseEntity ->
-                          LOG.info(
-                              "✅ [USER UPDATE] Updating user process ended, username: {}, email: {}",
-                              userToUpdate.getUsername(),
-                              userToUpdate.getEmail()));
-            });
+                  .map(
+                      user ->
+                          new Response(
+                              HttpStatus.OK.value(),
+                              "User " + user.getUsername() + " successfully updated!",
+                              TraceUtils.getSpanID(),
+                              user));
+            })
+        .doOnSuccess(
+            res ->
+                LOG.info(
+                    "✅ [USER UPDATE] User update successfully completed for username: {}, identifier: {}",
+                    userToUpdate.getUsername(),
+                    userToUpdate.getIdentifier()));
   }
 
+  /**
+   * Blocca o sblocca lo stato di accesso di un utente (operazione protetta riservata a utente tecnico).
+   * Interconnessioni logiche:
+   * - Verifica che il chiamante sia un utente tecnico autorizzato tramite {@link TechUserService#isTechUser}.
+   * - Valida i ruoli tecnici sulle credenziali del client amministrativo tramite {@link TechUserValidator#validateTechRoles}.
+   * - Recupera l'utente dal database tramite {@link #getUserByIdentifier(String)}.
+   * - Modifica il flag 'blocked' e persiste l'aggiornamento tramite {@link #updateUser(User, boolean)}.
+   *
+   * @param identifier UUID univoco dell'utente da bloccare o sbloccare.
+   * @param block True per bloccare l'accesso all'utente, false per sbloccarlo.
+   * @return Mono contenente la {@link Response} applicativa con il DTO dell'utente aggiornato.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> unlockUser(String identifier, Boolean block) {
-    LOG.info("🔓 [USER UNLOCK] Unlocking user process started, identifier: {}", identifier);
+  public Mono<Response> unlockUser(String identifier, Boolean block) {
+    LOG.info(
+        "🛡️ [USER STATUS] Starting user {} process for identifier: {}",
+        block ? "lock" : "unlock",
+        identifier);
     if (!techUserService.isTechUser()) {
-      LOG.error("❌ Only a tech user can unlock user {}", identifier);
+      LOG.error("❌ Forbidden: Only a tech user can change lock status of user {}", identifier);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(techUserService.getTechClientId());
-
-    return clientCredentialMono.flatMap(
-        clientCredential -> {
-          TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
-          return getUserByIdentifier(identifier)
-              .flatMap(
-                  user -> {
-                    user.setBlocked(block);
-                    return updateUser(user, false)
-                        .flatMap(
-                            user1 -> {
-                              Response response =
-                                  new Response(
-                                      HttpStatus.OK.value(),
-                                      "User "
-                                          + user1.getUsername()
-                                          + " successfully "
-                                          + (block ? "locked!" : "unlocked!"),
-                                      TraceUtils.getSpanID(),
-                                      user1);
-                              return Mono.just(ResponseEntity.ok(response));
-                            });
-                  })
-              .doOnSuccess(
-                  responseResponseEntity ->
-                      LOG.info(
-                          "✅ [USER UNLOCK] Unlocking user process ended, identifier: {}",
-                          identifier));
-        });
+    return clientService
+        .getClientCredentialByClientID(techUserService.getTechClientId())
+        .flatMap(
+            clientCredential -> {
+              TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
+              return getUserByIdentifier(identifier)
+                  .flatMap(
+                      user -> {
+                        user.setBlocked(block);
+                        return updateUser(user, false)
+                            .map(
+                                updatedUser ->
+                                    new Response(
+                                        HttpStatus.OK.value(),
+                                        "User "
+                                            + updatedUser.getUsername()
+                                            + " successfully "
+                                            + (block ? "locked!" : "unlocked!"),
+                                        TraceUtils.getSpanID(),
+                                        updatedUser));
+                      });
+            })
+        .doOnSuccess(
+            res ->
+                LOG.info(
+                    "✅ [USER STATUS] User {} process completed successfully for identifier: {}",
+                    block ? "lock" : "unlock",
+                    identifier));
   }
 
+  /**
+   * Avvia la procedura di richiesta reset password generando un token univoco di reset.
+   * Se sendEmail e' abilitato, invia l'email tramite il servizio di notifica dedicato;
+   * in caso contrario restituisce il token direttamente nel payload (utile per ambienti dev/test).
+   * Interconnessioni logiche:
+   * - Convalida l'indirizzo email con regex {@link RegEx#EMAIL}.
+   * - Recupera l'utente dal database con {@link #getUserByEmail(String)}.
+   * - Genera un nuovo UUID token di reset e lo persiste con {@link #updateUser(User)}.
+   * - Recupera il template email con {@link EmailTemplateService#getTemplateByCategoryLocaleAndClient}.
+   * - Se sendEmail e' true, delega a {@link EmailSenderService#sendEmail} per il recapito asincrono.
+   *
+   * @param changePassword DTO con email del destinatario, clientId e templateId opzionale.
+   * @param locale Lingua di localizzazione per il template di posta.
+   * @param sendEmail Flag che controlla l'invio fisico del messaggio email.
+   * @return Mono contenente la {@link Response} applicativa con i dettagli di spedizione o il token generato.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> changePasswordRequest(
+  public Mono<Response> changePasswordRequest(
       ChangePassword changePassword, String locale, boolean sendEmail) {
     LOG.info(
-        "🔑 [PASSWORD RESET] Change password request started, locale: {}, sendEmail: {}",
+        "🔑 [PASSWORD RESET] Starting password reset request for email: {}, locale: {}, sendEmail: {}",
+        changePassword.getEmail(),
         locale,
         sendEmail);
     if (!Utilities.isCharacterAndRegexValid(changePassword.getEmail(), RegEx.EMAIL.getValue())) {
-      LOG.error("❌ Invalid regex for field email {}", changePassword.getEmail());
+      LOG.error("❌ Invalid email format: {}", changePassword.getEmail());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid field email, try again!");
     }
 
@@ -707,52 +770,61 @@ public class UserService {
               if (!ObjectToolkit.isNullOrEmpty(changePassword.getParams()))
                 emailParams.putAll(changePassword.getParams());
 
-              if (sendEmail)
+              if (sendEmail) {
                 return emailSenderService
                     .sendEmail(objects.getT2(), emailParams, emailContent)
                     .zipWith(updatedUserMono)
-                    .flatMap(
-                        objects1 -> {
-                          String message = "Email Sent! Check your email address!";
-                          Response response =
-                              new Response(
-                                  HttpStatus.OK.value(),
-                                  message,
-                                  TraceUtils.getSpanID(),
-                                  objects1.getT1());
-                          return Mono.just(ResponseEntity.ok(response));
-                        });
-              else
-                return updatedUserMono.flatMap(
+                    .map(
+                        objects1 ->
+                            new Response(
+                                HttpStatus.OK.value(),
+                                "Email Sent! Check your email address!",
+                                TraceUtils.getSpanID(),
+                                objects1.getT1()));
+              } else {
+                return updatedUserMono.map(
                     user -> {
                       EmailResponse responseEmail = new EmailResponse();
                       responseEmail.setToken(user.getTokenReset());
-                      String message = "Email Sent! Check your email address!";
-                      Response response =
-                          new Response(
-                              HttpStatus.OK.value(),
-                              message,
-                              TraceUtils.getSpanID(),
-                              responseEmail);
-                      return Mono.just(ResponseEntity.ok(response));
+                      return new Response(
+                          HttpStatus.OK.value(),
+                          "Email Sent! Check your email address!",
+                          TraceUtils.getSpanID(),
+                          responseEmail);
                     });
+              }
             })
         .doOnSuccess(
-            responseResponseEntity ->
+            res ->
                 LOG.info(
-                    "✅ [PASSWORD RESET] Change password request ended, locale: {}, sendEmail: {}",
-                    locale,
-                    sendEmail));
+                    "✅ [PASSWORD RESET] Password reset request successfully processed for email: {}",
+                    changePassword.getEmail()));
   }
 
+  /**
+   * Esegue l'aggiornamento della password a fronte di un token di recupero valido.
+   * Interconnessioni logiche:
+   * - Decodifica la password dal formato Base64 e valida la complessita' tramite regex {@link RegEx#PASSWORD_FULL}.
+   * - Recupera l'utente associato al token con {@link #getUserByTokenReset(String)}, convalidandone la validita' entro le 24 ore.
+   * - Resetta il token di recupero, cifra la nuova password con BCrypt e aggiorna il record con {@link #updateUser(User, boolean)}.
+   *
+   * @param changePassword DTO contenente il token di recupero e la nuova password codificata in Base64.
+   * @return Mono contenente la {@link Response} applicativa di conferma.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> changePassword(ChangePassword changePassword) {
-    LOG.info("🔑 [PASSWORD UPDATE] Change password user process started");
-    changePassword.setPassword(
-        new String(Base64.getDecoder().decode(changePassword.getPassword())));
+  public Mono<Response> changePassword(ChangePassword changePassword) {
+    LOG.info("🔑 [PASSWORD UPDATE] Starting password change execution via reset token");
+    try {
+      changePassword.setPassword(
+          new String(Base64.getDecoder().decode(changePassword.getPassword())));
+    } catch (IllegalArgumentException e) {
+      LOG.error("❌ Failed to decode Base64 password: {}", e.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid Base64 password encoding");
+    }
+
     if (!Utilities.isCharacterAndRegexValid(
         changePassword.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
-      LOG.error("❌ Invalid regex for field password");
+      LOG.error("❌ Invalid password complexity regex check failed");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid regex for field password");
     }
 
@@ -763,69 +835,83 @@ public class UserService {
               user.setPassword(finalPassword);
               user.setTokenReset(null);
               return updateUser(user, true)
-                  .flatMap(
-                      user1 -> {
-                        String message = "Password Updated!";
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(), message, TraceUtils.getSpanID(), null);
-                        return Mono.just(ResponseEntity.ok(response));
-                      });
+                  .map(
+                      user1 ->
+                          new Response(
+                              HttpStatus.OK.value(),
+                              "Password Updated!",
+                              TraceUtils.getSpanID(),
+                              null));
             })
-        .doOnSuccess(
-            responseResponseEntity ->
-                LOG.info("✅ [PASSWORD UPDATE] Change password user process ended"));
+        .doOnSuccess(res -> LOG.info("✅ [PASSWORD UPDATE] Password successfully changed"));
   }
 
+  /**
+   * Recupera la lista di tutti gli utenti registrati (operazione protetta riservata a utente tecnico).
+   * Interconnessioni logiche:
+   * - Verifica che il chiamante sia un utente tecnico autorizzato tramite {@link TechUserService#isTechUser}.
+   * - Valida i ruoli tecnici sulle credenziali del client amministrativo tramite {@link TechUserValidator#validateTechRoles}.
+   * - Recupera tutti gli utenti dal database con {@link #getUsersFromDatabase()}.
+   * - Incapsula la lista di DTO utente nel payload della {@link Response}.
+   *
+   * @return Mono contenente la {@link Response} applicativa con la lista degli utenti.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> getUsers() {
-    LOG.info("👥 [USER LIST] Get list of users process started");
+  public Mono<Response> getUsers() {
+    LOG.info("👥 [USER LIST] Starting retrieval of all users");
     if (!techUserService.isTechUser()) {
-      LOG.error("❌ Only a tech user can get users");
+      LOG.error("❌ Forbidden: Only a tech user can retrieve the list of users");
       throw new OAuthException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
     }
 
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(techUserService.getTechClientId());
-
-    return clientCredentialMono
+    return clientService
+        .getClientCredentialByClientID(techUserService.getTechClientId())
         .flatMap(
             clientCredential -> {
               TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
               return getUsersFromDatabase()
-                  .flatMap(
-                      users -> {
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(), "Users list", TraceUtils.getSpanID(), users);
-                        return Mono.just(ResponseEntity.ok(response));
-                      });
+                  .map(
+                      users ->
+                          new Response(
+                              HttpStatus.OK.value(), "Users list", TraceUtils.getSpanID(), users));
             })
-        .doOnSuccess(
-            responseResponseEntity -> LOG.info("✅ [USER LIST] Get list of users process ended"));
+        .doOnSuccess(res -> LOG.info("✅ [USER LIST] Successfully retrieved all users"));
   }
 
+  /**
+   * Cancella definitivamente un utente dal sistema IAM (operazione protetta riservata a utente tecnico)
+   * ed esegue il webhook associato.
+   * Interconnessioni logiche:
+   * - Verifica che il chiamante sia un utente tecnico tramite {@link TechUserService#isTechUser}.
+   * - Valida i ruoli tecnici sulle credenziali del client amministrativo tramite {@link TechUserValidator#validateTechRoles}.
+   * - Invoca il metodo interno {@link #deleteUserInternal(String, String, ServerWebExchange)} per la rimozione fisica
+   *   dal database tramite {@link IUserDAO} e l'esecuzione asincrona del webhook di notifica DELETE_USER.
+   *
+   * @param identifier UUID univoco dell'utente da cancellare.
+   * @param bearer Token di autorizzazione dell'utente tecnico.
+   * @param exchange Scambio HTTP reattivo corrente.
+   * @return Mono contenente la {@link Response} applicativa di avvenuta eliminazione.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> deleteUser(
+  public Mono<Response> deleteUser(
       String identifier, String bearer, ServerWebExchange exchange) {
-    LOG.info("🗑️ [USER DELETE] Deleting user process started, identifier: {}", identifier);
+    LOG.info("🗑️ [USER DELETE] Starting user deletion process for identifier: {}", identifier);
     if (!techUserService.isTechUser()) {
-      LOG.error("❌ Only a tech user can delete the user {}", identifier);
+      LOG.error("❌ Forbidden: Only a tech user can delete user {}", identifier);
       throw new OAuthException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
     }
 
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(techUserService.getTechClientId());
-
-    return clientCredentialMono.flatMap(
-        clientCredential -> {
-          TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
-          return deleteUserInternal(identifier, bearer, exchange)
-              .flatMap(response -> Mono.just(ResponseEntity.ok(response)))
-              .doOnSuccess(
-                  responseResponseEntity ->
-                      LOG.info(
-                          "✅ [USER DELETE] Delete user process ended, identifier: {}", identifier));
-        });
+    return clientService
+        .getClientCredentialByClientID(techUserService.getTechClientId())
+        .flatMap(
+            clientCredential -> {
+              TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
+              return deleteUserInternal(identifier, bearer, exchange);
+            })
+        .doOnSuccess(
+            res ->
+                LOG.info(
+                    "✅ [USER DELETE] User deletion successfully completed for identifier: {}",
+                    identifier));
   }
 }

@@ -15,7 +15,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import org.slf4j.Logger;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
@@ -30,7 +29,7 @@ public class UserValidator {
       ClientCredential clientCredential, AccessTokenData accessTokenData) {
     if (!clientCredential.getAuthType().equals(OAuthType.ALL_TYPE))
       if (!clientCredential.getAuthType().equals(accessTokenData.getType())) {
-        LOG.error("Invalid Authentication Type on client");
+        LOG.error("❌ Invalid Authentication Type on client");
         throw new OAuthException(
             ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
       }
@@ -40,16 +39,22 @@ public class UserValidator {
   public static void validateGoogleUserInfo(GoogleModel userInfo, JWTData decryptToken) {
     if (!userInfo.getUserInfo().getEmail().equalsIgnoreCase(decryptToken.getEmail())) {
       LOG.error(
-          "The JWT User {}, is different than the one on google {}",
+          "❌ The JWT User {}, is different than the one on google {}",
           decryptToken.getEmail(),
           userInfo.getUserInfo().get("email"));
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
   }
 
+  /**
+   * Restituisce un errore reattivo standard in caso di mancata corrispondenza del tipo di autenticazione client.
+   *
+   * @param <T> Tipo generico di ritorno per integrarsi con qualsiasi catena reattiva Mono.
+   * @return Mono con errore {@link OAuthException} ERR_OAUTH_400.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static Mono<ResponseEntity<Response>> defaultErrorOnType() {
-    LOG.error("Type miss match on client");
+  public static <T> Mono<T> defaultErrorOnType() {
+    LOG.error("❌ Authentication type mismatch on client configuration");
     return Mono.error(
         new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
   }
