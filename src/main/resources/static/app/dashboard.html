@@ -153,7 +153,7 @@
                         class="nav-tab-m3 cursor-pointer border-0 bg-transparent">
                     <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
                 </button>
-                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank"
+                <a href="/webjars/swagger-ui/index.html" target="_blank"
                    class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-book"></i> <span data-i18n="nav_docs">API Docs</span>
                 </a>
@@ -1866,7 +1866,8 @@
                 if (cached) {
                     try {
                         data = JSON.parse(cached);
-                    } catch (err) {}
+                    } catch (err) {
+                    }
                 }
             }
             if (data) {

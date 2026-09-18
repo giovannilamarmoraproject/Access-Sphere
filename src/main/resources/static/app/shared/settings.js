@@ -19,49 +19,49 @@ const AppSettings = (function () {
         const policy = s.policySettings || {};
 
         // Estrazione valori con priorità alle mappe di categoria e fallback a eventuali campi legacy o valori predefiniti
-        const appName = branding.appName !== undefined && branding.appName !== null && branding.appName !== "" 
-            ? branding.appName 
+        const appName = branding.appName !== undefined && branding.appName !== null && branding.appName !== ""
+            ? branding.appName
             : (s.appName !== undefined && s.appName !== null && s.appName !== "" ? s.appName : (branding.app_name || "Access Sphere"));
-        const appTagline = branding.appTagline !== undefined && branding.appTagline !== null 
-            ? branding.appTagline 
+        const appTagline = branding.appTagline !== undefined && branding.appTagline !== null
+            ? branding.appTagline
             : (s.appTagline !== undefined && s.appTagline !== null ? s.appTagline : (branding.app_tagline || "Gestione Identità & Accessi"));
-        const logoUrl = branding.logoUrl !== undefined && branding.logoUrl !== null 
-            ? branding.logoUrl 
+        const logoUrl = branding.logoUrl !== undefined && branding.logoUrl !== null
+            ? branding.logoUrl
             : (s.logoUrl !== undefined && s.logoUrl !== null ? s.logoUrl : (branding.logo_url || "/img/logo-minimal.svg"));
-        const faviconUrl = branding.faviconUrl !== undefined && branding.faviconUrl !== null 
-            ? branding.faviconUrl 
+        const faviconUrl = branding.faviconUrl !== undefined && branding.faviconUrl !== null
+            ? branding.faviconUrl
             : (s.faviconUrl !== undefined && s.faviconUrl !== null ? s.faviconUrl : (branding.favicon_url || "/img/logo-minimal.svg"));
-        const footerCopyright = branding.footerCopyright !== undefined && branding.footerCopyright !== null 
-            ? branding.footerCopyright 
+        const footerCopyright = branding.footerCopyright !== undefined && branding.footerCopyright !== null
+            ? branding.footerCopyright
             : (s.footerCopyright !== undefined && s.footerCopyright !== null ? s.footerCopyright : (branding.footer_copyright || "© 2026 Access Sphere"));
-        const supportEmail = branding.supportEmail !== undefined && branding.supportEmail !== null 
-            ? branding.supportEmail 
+        const supportEmail = branding.supportEmail !== undefined && branding.supportEmail !== null
+            ? branding.supportEmail
             : (s.supportEmail !== undefined && s.supportEmail !== null ? s.supportEmail : (branding.support_email || "support@accesssphere.io"));
 
-        const loginMode = login.loginMode !== undefined && login.loginMode !== null 
-            ? login.loginMode 
+        const loginMode = login.loginMode !== undefined && login.loginMode !== null
+            ? login.loginMode
             : (s.loginMode !== undefined && s.loginMode !== null ? s.loginMode : (login.login_mode || "SHOWCASE"));
-        const loginBgUrl = login.loginBgUrl !== undefined && login.loginBgUrl !== null 
-            ? login.loginBgUrl 
+        const loginBgUrl = login.loginBgUrl !== undefined && login.loginBgUrl !== null
+            ? login.loginBgUrl
             : (s.loginBgUrl !== undefined && s.loginBgUrl !== null ? s.loginBgUrl : (login.login_bg_url || null));
-        const loginBgOpacity = login.loginBgOpacity !== undefined && login.loginBgOpacity !== null 
-            ? login.loginBgOpacity 
+        const loginBgOpacity = login.loginBgOpacity !== undefined && login.loginBgOpacity !== null
+            ? login.loginBgOpacity
             : (s.loginBgOpacity !== undefined && s.loginBgOpacity !== null ? s.loginBgOpacity : (login.login_bg_opacity !== undefined ? login.login_bg_opacity : 50));
-        const loginHeroTitle = login.loginHeroTitle !== undefined && login.loginHeroTitle !== null 
-            ? login.loginHeroTitle 
+        const loginHeroTitle = login.loginHeroTitle !== undefined && login.loginHeroTitle !== null
+            ? login.loginHeroTitle
             : (s.loginHeroTitle !== undefined && s.loginHeroTitle !== null ? s.loginHeroTitle : (login.login_hero_title || "Autenticazione Sicura & Modulare"));
-        const loginHeroSubtitle = login.loginHeroSubtitle !== undefined && login.loginHeroSubtitle !== null 
-            ? login.loginHeroSubtitle 
+        const loginHeroSubtitle = login.loginHeroSubtitle !== undefined && login.loginHeroSubtitle !== null
+            ? login.loginHeroSubtitle
             : (s.loginHeroSubtitle !== undefined && s.loginHeroSubtitle !== null ? s.loginHeroSubtitle : (login.login_hero_subtitle || ""));
-        const hideHomeButton = login.hideHomeButton !== undefined && login.hideHomeButton !== null 
-            ? login.hideHomeButton 
+        const hideHomeButton = login.hideHomeButton !== undefined && login.hideHomeButton !== null
+            ? login.hideHomeButton
             : (s.hideHomeButton !== undefined && s.hideHomeButton !== null ? s.hideHomeButton : (login.hide_home_button !== undefined ? login.hide_home_button : false));
 
-        const privacyPolicyUrl = policy.privacyPolicyUrl !== undefined && policy.privacyPolicyUrl !== null 
-            ? policy.privacyPolicyUrl 
+        const privacyPolicyUrl = policy.privacyPolicyUrl !== undefined && policy.privacyPolicyUrl !== null
+            ? policy.privacyPolicyUrl
             : (s.privacyPolicyUrl !== undefined && s.privacyPolicyUrl !== null ? s.privacyPolicyUrl : (policy.privacy_policy_url || "/privacy-policy"));
-        const cookiePolicyUrl = policy.cookiePolicyUrl !== undefined && policy.cookiePolicyUrl !== null 
-            ? policy.cookiePolicyUrl 
+        const cookiePolicyUrl = policy.cookiePolicyUrl !== undefined && policy.cookiePolicyUrl !== null
+            ? policy.cookiePolicyUrl
             : (s.cookiePolicyUrl !== undefined && s.cookiePolicyUrl !== null ? s.cookiePolicyUrl : (policy.cookie_policy_url || "/cookie-policy"));
 
         const activeTheme = s.activeTheme || localStorage.getItem(THEME_KEY) || DEFAULT_THEME;
@@ -381,7 +381,7 @@ const AppSettings = (function () {
             <div class="sidebar-category-divider"></div>
             <ul class="sidebar-nav-list">
               <li>
-                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="sidebar-nav-item" title="API Docs">
+                <a href="/webjars/swagger-ui/index.html" target="_blank" class="sidebar-nav-item" title="API Docs">
                   <i class="fa-solid fa-book"></i>
                   <span class="sidebar-label" data-i18n="nav_docs">API Docs</span>
                 </a>

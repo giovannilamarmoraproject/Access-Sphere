@@ -208,7 +208,7 @@
                 <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
                 </a>
-                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank"
+                <a href="/webjars/swagger-ui/index.html" target="_blank"
                    class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
                 </a>
@@ -696,14 +696,14 @@
                   </thead>
                   <tbody>
                     ${roles.length > 0 ? roles.map(r => {
-                      const roleObj = typeof r === 'string' ? { role: r, type: 'DEFAULT', description: '' } : r;
-                      return `
+            const roleObj = typeof r === 'string' ? {role: r, type: 'DEFAULT', description: ''} : r;
+            return `
                       <tr>
                         <td class="font-mono font-bold text-white">${roleObj.role || ''}</td>
                         <td><span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">${roleObj.type || 'DEFAULT'}</span></td>
                         <td class="role-desc-text">${roleObj.description || 'Nessuna descrizione fornita'}</td>
                       </tr>`;
-                    }).join('') : `<tr><td colspan="3" class="repeater-empty-state">${typeof t === 'function' ? t('client_detail_empty_roles', 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.') : 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.'}</td></tr>`}
+        }).join('') : `<tr><td colspan="3" class="repeater-empty-state">${typeof t === 'function' ? t('client_detail_empty_roles', 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.') : 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.'}</td></tr>`}
                   </tbody>
                 </table>
               </div>

@@ -1,487 +1,588 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Access Sphere - Nuovo Utente</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
-  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Access Sphere - Nuovo Utente</title>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap"
+          rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg"/>
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png"/>
 
-  <!-- SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
-  <script src="/app/shared/sweetalert.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Core Scripts -->
-  <script src="/app/shared/config.js"></script>
-  <script src="/app/shared/utils.js"></script>
-  <script src="/app/shared/api/authorize.js"></script>
-  <script src="/app/shared/api/logout.js"></script>
-  <script src="/app/i18n/translations.js"></script>
-  <script src="/app/shared/api/rest.js"></script>
-  <script src="/app/user/js/validationForm.js"></script>
-  <script src="/app/user/js/register.js"></script>
-  <script src="/app/user/js/attributes-manager.js?v=2.1.2"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/app/shared/sweetalert.css"/>
+    <script src="/app/shared/sweetalert.js"></script>
 
-  <!-- Unified M3 Dashboard Theme -->
-  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.2" />
-  <link rel="stylesheet" href="/css/m3-themes.css" />
-  <script src="/app/shared/settings.js"></script>
+    <!-- Core Scripts -->
+    <script src="/app/shared/config.js"></script>
+    <script src="/app/shared/utils.js"></script>
+    <script src="/app/shared/api/authorize.js"></script>
+    <script src="/app/shared/api/logout.js"></script>
+    <script src="/app/i18n/translations.js"></script>
+    <script src="/app/shared/api/rest.js"></script>
+    <script src="/app/user/js/validationForm.js"></script>
+    <script src="/app/user/js/register.js"></script>
+    <script src="/app/user/js/attributes-manager.js?v=2.1.2"></script>
 
-  <style>
-    .form-section-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding-bottom: 0.6rem;
-      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
-      margin-bottom: 1.25rem;
-    }
-    .m3-subcard {
-      background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
-      border-radius: 20px;
-      padding: 1.5rem;
-      transition: all 0.2s ease;
-    }
-    .m3-subcard:hover {
-      border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
-    }
-    .form-control, .form-select {
-      background: var(--theme-input-bg, #1C172E) !important;
-      border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
-      color: #FFFFFF !important;
-      border-radius: 12px !important;
-      padding: 10px 14px !important;
-    }
-    .form-control:focus, .form-select:focus {
-      border-color: var(--theme-accent, #D0BCFF) !important;
-      box-shadow: 0 0 0 3px var(--theme-glow, rgba(208, 188, 255, 0.25)) !important;
-      background: var(--theme-input-focus, #231B38) !important;
-    }
-  </style>
+    <!-- Unified M3 Dashboard Theme -->
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.2"/>
+    <link rel="stylesheet" href="/css/m3-themes.css"/>
+    <script src="/app/shared/settings.js"></script>
+
+    <style>
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
+            margin-bottom: 1.25rem;
+        }
+
+        .m3-subcard {
+            background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .m3-subcard:hover {
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
+        }
+
+        .form-control, .form-select {
+            background: var(--theme-input-bg, #1C172E) !important;
+            border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
+            color: #FFFFFF !important;
+            border-radius: 12px !important;
+            padding: 10px 14px !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--theme-accent, #D0BCFF) !important;
+            box-shadow: 0 0 0 3px var(--theme-glow, rgba(208, 188, 255, 0.25)) !important;
+            background: var(--theme-input-focus, #231B38) !important;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- Wide Unified Header -->
-  <header class="glass-header">
+<!-- Wide Unified Header -->
+<header class="glass-header">
     <div class="header-container">
-      <div class="flex items-center gap-6">
-        <a href="/app" class="flex items-center gap-3 text-decoration-none group">
-          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
-          <div class="flex flex-col">
+        <div class="flex items-center gap-6">
+            <a href="/app" class="flex items-center gap-3 text-decoration-none group">
+                <img src="/img/logo-minimal.svg" alt="Access Sphere Logo"
+                     class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110"/>
+                <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
-            <span class="form-helper text-purple-300 text-xs font-medium" data-i18n="user_register_page_title">Registrazione Nuovo Utente</span>
-          </div>
-        </a>
+                    <span class="form-helper text-purple-300 text-xs font-medium" data-i18n="user_register_page_title">Registrazione Nuovo Utente</span>
+                </div>
+            </a>
 
-        <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
-          <a href="/app" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
-          </a>
-          <a href="/app/users" class="nav-tab-m3 active text-decoration-none">
-            <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
-          </a>
-          <a href="/app/clients" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
-          </a>
-          <a href="/app/emails" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
-          </a>
-          <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
-          </a>
-          <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
-          </a>
-        </nav>
-      </div>
+            <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+                <a href="/app" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
+                </a>
+                <a href="/app/users" class="nav-tab-m3 active text-decoration-none">
+                    <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
+                </a>
+                <a href="/app/clients" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
+                </a>
+                <a href="/app/emails" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
+                </a>
+                <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
+                </a>
+                <a href="/webjars/swagger-ui/index.html" target="_blank" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
+                </a>
+            </nav>
+        </div>
 
-      <div class="flex items-center gap-2">
-        <a href="/app/users" class="m3-icon-btn" title="Torna agli Utenti" data-i18n-title="user_detail_back">
-          <i class="fa-solid fa-arrow-left text-sm"></i>
-        </a>
-        <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
-          <i class="fa-solid fa-circle-info text-sm"></i>
-        </button>
-        <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
-          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
-        </button>
-      </div>
+        <div class="flex items-center gap-2">
+            <a href="/app/users" class="m3-icon-btn" title="Torna agli Utenti" data-i18n-title="user_detail_back">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+            </a>
+            <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
+            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+            </button>
+        </div>
     </div>
-  </header>
+</header>
 
-  <!-- Register Form Container -->
-  <main class="dashboard-wide-container">
+<!-- Register Form Container -->
+<main class="dashboard-wide-container">
     <div class="m3-card p-8 sm:p-12">
-      
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-purple-500/15">
-        <div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <i class="fa-solid fa-user-plus text-purple-400"></i> <span data-i18n="user_register_page_title">Registra Nuovo Utente</span>
-          </h2>
-          <p class="form-helper text-purple-300 text-xs mt-1" data-i18n="user_register_page_subtitle">
-            Configura il profilo personale, credenziali di sicurezza, client associati e attributi personalizzati per la nuova identità.
-          </p>
-        </div>
-        <a href="/app/users" class="m3-btn-outline w-full sm:w-auto justify-center">
-          <i class="fa-solid fa-arrow-left text-xs"></i> <span data-i18n="btn_cancel_and_back">Annulla e Torna Indietro</span>
-        </a>
-      </div>
 
-      <form id="registration_form" class="form space-y-8" novalidate>
-        
-        <!-- SEZIONE 1: IDENTITÀ, ANAGRAFICA & RECAPITI -->
-        <div class="m3-subcard">
-          <div class="form-section-title">
-            <i class="fa-solid fa-id-card text-purple-400"></i> <span data-i18n="user_sec_identity_title">1. Identità & Informazioni Anagrafiche</span>
-          </div>
-          <div class="row g-4">
-            <div class="col-md-4">
-              <label for="name" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_name">Nome *</label>
-              <input type="text" class="form-control" id="name" placeholder="Mario" required />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_name_desc">Nome anagrafico dell'utente.</span>
-            </div>
-
-            <div class="col-md-4">
-              <label for="surname" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_surname">Cognome *</label>
-              <input type="text" class="form-control" id="surname" placeholder="Rossi" required />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_surname_desc">Cognome o patronimico dell'utente.</span>
-            </div>
-
-            <div class="col-md-4">
-              <label for="validationDefaultUsername" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_username">Username *</label>
-              <div class="input-group">
-                <span class="input-group-text font-mono text-purple-300">@</span>
-                <input type="text" class="form-control font-mono" id="validationDefaultUsername" placeholder="mrossi" required />
-              </div>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_username_desc">Username univoco per identificazione ed accesso.</span>
-            </div>
-
-            <div class="col-md-6">
-              <label for="email" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_email">Email *</label>
-              <input type="email" class="form-control" id="email" placeholder="mario.rossi@example.com" required />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_email_desc">Indirizzo email principale per notifiche e recupero.</span>
-            </div>
-
-            <div class="col-md-2">
-              <label for="phone_prefix" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_prefix">Prefisso</label>
-              <input type="text" class="form-control font-mono" id="phone_prefix" value="+39" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_prefix_desc">Prefisso int.</span>
-            </div>
-
-            <div class="col-md-4">
-              <label for="phone" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_phone">Telefono</label>
-              <input type="tel" class="form-control" id="phone" placeholder="3331234567" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_phone_desc">Numero di cellulare con cui ricevere OTP o SMS.</span>
-            </div>
-
-            <div class="col-md-3">
-              <label for="birthdate" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_birthdate">Data di Nascita</label>
-              <input type="date" class="form-control" id="birthdate" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_birthdate_desc">Data di nascita anagrafica (AAAA-MM-GG).</span>
-            </div>
-
-            <div class="col-md-3">
-              <label for="gender" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_gender">Genere</label>
-              <select class="form-select" id="gender">
-                <option value="" selected disabled data-i18n="register_form_gender_choose">Seleziona...</option>
-                <option value="M" data-i18n="register_form_gender_male">Maschio (M)</option>
-                <option value="F" data-i18n="register_form_gender_female">Femmina (F)</option>
-                <option value="OTHER" data-i18n="register_form_gender_other">Altro</option>
-              </select>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_gender_desc">Genere anagrafico del profilo.</span>
-            </div>
-
-            <div class="col-md-3">
-              <label for="nationality" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_nationality">Nazionalità</label>
-              <input type="text" class="form-control" id="nationality" placeholder="Italiana" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_nationality_desc">Paese di cittadinanza o residenza.</span>
-            </div>
-
-            <div class="col-md-3">
-              <label for="ssn" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_ssn">Codice Fiscale / SSN</label>
-              <input type="text" class="form-control font-mono uppercase" id="ssn" placeholder="RSSMRA80A01H501U" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_ssn_desc">Codice identificativo fiscale univoco.</span>
-            </div>
-
-            <div class="col-md-6">
-              <label for="occupation" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_occupation">Occupazione</label>
-              <input type="text" class="form-control" id="occupation" placeholder="Ingegnere del Software" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_occupation_desc">Ruolo professionale o mansione lavorativa attuale.</span>
-            </div>
-
-            <div class="col-md-6">
-              <label for="education" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_education">Istruzione</label>
-              <input type="text" class="form-control" id="education" placeholder="Laurea Magistrale" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_education_desc">Titolo di studio o qualifica conseguita.</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- SEZIONE 2: CREDENZIALI DI ACCESSO & SICUREZZA -->
-        <div class="m3-subcard">
-          <div class="form-section-title">
-            <i class="fa-solid fa-shield-halved text-purple-400"></i> <span data-i18n="user_sec_security_title">2. Credenziali di Accesso & Sicurezza</span>
-          </div>
-          <div class="row g-4">
-            <!-- Password -->
-            <div class="col-md-6">
-              <label for="password" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_password">Password *</label>
-              <div class="position-relative relative">
-                <input type="password" class="form-control pe-10" id="password" required autocomplete="new-password" placeholder="Inserisci password sicura" />
-                <button type="button" class="btn-toggle-password absolute right-3 top-1/2 -translate-y-1/2 transition-colors p-1" onclick="togglePasswordVisibility('password', this)" tabindex="-1" title="Mostra/Nascondi password">
-                  <i class="fa-solid fa-eye text-xs"></i>
-                </button>
-              </div>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_password_desc">Minimo 8 caratteri con maiuscola, minuscola, numero e speciale.</span>
-
-              <!-- Robustezza Password -->
-              <div id="password_strength_container" class="mt-2" style="display: none;">
-                <div class="flex items-center justify-between text-[11px] mb-1">
-                  <span class="text-gray-400" data-i18n="user_pwd_strength_label">Robustezza:</span>
-                  <span id="password_strength_text" class="font-semibold text-gray-300">Debole</span>
-                </div>
-                <div class="w-full bg-[#161124] rounded-full h-1.5 overflow-hidden border border-purple-500/20">
-                  <div id="password_strength_bar" class="h-full rounded-full transition-all duration-300 bg-red-500" style="width: 0%;"></div>
-                </div>
-              </div>
-
-              <!-- Checklist Requisiti Live -->
-              <div id="password_rules_container" class="mt-2.5 p-3 rounded-xl border border-purple-500/20 bg-[#161124]/80 backdrop-blur-md text-xs space-y-1.5" style="display: none;">
-                <div class="font-semibold text-purple-300 text-[11px] mb-1.5 flex items-center justify-between border-b border-purple-500/15 pb-1">
-                  <span data-i18n="user_pwd_rules_title">Requisiti di sicurezza:</span>
-                  <span id="rules_counter" class="text-[10px] text-gray-400 font-mono">0/5</span>
-                </div>
-                <div id="rule_length" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
-                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
-                  <span data-i18n="user_pwd_rule_length">Tra 8 e 20 caratteri</span>
-                </div>
-                <div id="rule_uppercase" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
-                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
-                  <span data-i18n="user_pwd_rule_uppercase">Almeno una lettera maiuscola (A-Z)</span>
-                </div>
-                <div id="rule_lowercase" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
-                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
-                  <span data-i18n="user_pwd_rule_lowercase">Almeno una lettera minuscola (a-z)</span>
-                </div>
-                <div id="rule_number" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
-                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
-                  <span data-i18n="user_pwd_rule_number">Almeno un numero (0-9)</span>
-                </div>
-                <div id="rule_special" class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
-                  <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
-                  <span data-i18n="user_pwd_rule_special">Almeno un carattere speciale (@ $ ! % * ? &amp; . ,)</span>
-                </div>
-                <div id="rule_disallowed" class="text-red-400 text-[11px] pt-1 border-t border-red-500/20 flex items-center gap-1.5" style="display: none;">
-                  <i class="fa-solid fa-triangle-exclamation text-xs"></i>
-                  <span data-i18n="user_pwd_rule_disallowed">Contiene caratteri non ammessi (usa solo lettere, cifre e @$!%*?&amp;.,)</span>
-                </div>
-              </div>
-
-              <div id="validationPassword" class="text-red-400 text-xs mt-1" style="display: none;" data-i18n="user_pwd_validation_hint">Minimo 8 caratteri con maiuscola, minuscola, numero e speciale.</div>
-            </div>
-
-            <!-- Conferma Password -->
-            <div class="col-md-6">
-              <label for="confirm_password" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_confirm_password">Conferma Password *</label>
-              <div class="position-relative relative">
-                <input type="password" class="form-control pe-10" id="confirm_password" required autocomplete="new-password" placeholder="Ripeti la password" />
-                <button type="button" class="btn-toggle-password absolute right-3 top-1/2 -translate-y-1/2 transition-colors p-1" onclick="togglePasswordVisibility('confirm_password', this)" tabindex="-1" title="Mostra/Nascondi password">
-                  <i class="fa-solid fa-eye text-xs"></i>
-                </button>
-              </div>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_confirm_password_desc">Digita nuovamente la password per conferma di sicurezza.</span>
-
-              <!-- Feedback Corrispondenza Live -->
-              <div id="confirm_password_feedback" class="mt-2.5 p-2.5 rounded-xl border border-purple-500/20 bg-[#161124]/80 backdrop-blur-md text-xs flex items-center gap-2" style="display: none;">
-                <i id="confirm_icon" class="fa-solid fa-circle text-[8px] text-gray-500"></i>
-                <span id="confirm_text" class="text-gray-300 text-[11px]"></span>
-              </div>
-
-              <div id="validationConfirmPassword" class="text-red-400 text-xs mt-1" style="display: none;" data-i18n="user_pwd_mismatch">Le password non corrispondono.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SEZIONE 3: ASSOCIAZIONE CLIENT & RUOLI APPLICATIVI -->
-        <div class="m3-subcard">
-          <div class="form-section-title">
-            <i class="fa-solid fa-users-gear text-purple-400"></i> <span data-i18n="user_sec_clients_roles_title">3. Associazione Client & Ruoli Applicativi</span>
-          </div>
-          <div class="row g-4">
-            <div class="col-md-6">
-              <label for="client_id_select" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_client_id_assoc">Client ID Associato *</label>
-              <select class="form-select font-mono" id="client_id_select" required>
-                <option value="" selected disabled data-i18n="user_field_client_loading">Caricamento Client in corso...</option>
-              </select>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_client_id_assoc_desc">Seleziona l'applicazione client a cui appartiene l'utente.</span>
-            </div>
-
-            <div class="col-md-6">
-              <label for="role_select" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_roles">Ruoli Client</label>
-              <div class="flex gap-2">
-                <select class="form-select font-mono" id="role_select" disabled>
-                  <option value="" selected disabled data-i18n="user_field_select_client_first">Seleziona prima un Client...</option>
-                </select>
-                <button type="button" id="add_role_btn" onclick="addRole()" class="m3-btn-primary flex-shrink-0" style="padding: 8px 16px;">
-                  <i class="fa-solid fa-plus"></i> <span data-i18n="user_btn_add_role">Aggiungi</span>
-                </button>
-              </div>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_roles_desc">Aggiungi uno o più ruoli disponibili per il client selezionato.</span>
-            </div>
-
-            <!-- Lista Ruoli Selezionati -->
-            <div class="col-12">
-              <div id="roles_list_container" class="flex flex-wrap gap-2 min-h-[32px]"></div>
-              <div id="role_container" style="display: none;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SEZIONE 4: FOTO PROFILO & AVATAR -->
-        <div class="m3-subcard">
-          <div class="form-section-title">
-            <i class="fa-solid fa-camera text-purple-400"></i> <span data-i18n="user_sec_avatar_title">4. Foto Profilo & Avatar</span>
-          </div>
-          <div class="row g-4 items-center">
-            <div class="col-md-3 flex justify-center">
-              <div class="relative">
-                <img
-                  id="profile"
-                  alt="Anteprima Foto"
-                  class="rounded-full w-24 h-24 object-cover border-2 border-purple-500/40 shadow-xl bg-purple-950/40"
-                  style="display: none;"
-                />
-                <div id="profile_placeholder" class="rounded-full w-24 h-24 border-2 border-dashed border-purple-500/30 flex flex-col items-center justify-center text-purple-300/50 bg-purple-950/20">
-                  <i class="fa-solid fa-user text-2xl"></i>
-                  <span class="text-[9px] mt-1" data-i18n="user_avatar_no_photo">Nessuna foto</span>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-9">
-              <label for="file" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider" data-i18n="user_field_upload_photo">Carica Foto Profilo</label>
-              <input type="file" class="form-control" id="file" accept="image/jpeg,image/png,image/webp" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_upload_photo_desc">Formati supportati: JPEG, PNG, WebP. Dimensione consigliata: 400x400px.</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- SEZIONE 5: ATTRIBUTI PERSONALIZZATI (CUSTOM ATTRIBUTES - SUPPORTO OGGETTI INESTATI) -->
-        <div class="m3-subcard">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 m3-attr-header-divider gap-3">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-purple-500/15">
             <div>
-              <div class="form-section-title m-0 border-0 p-0 text-sm font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-sliders" style="color: var(--theme-accent);"></i> <span data-i18n="user_sec_attributes_title">5. Attributi Personalizzati (Custom Attributes)</span>
-              </div>
-              <span class="text-[11px] text-gray-400 mt-0.5 block" data-i18n="user_sec_attributes_desc">
+                <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-user-plus text-purple-400"></i> <span data-i18n="user_register_page_title">Registra Nuovo Utente</span>
+                </h2>
+                <p class="form-helper text-purple-300 text-xs mt-1" data-i18n="user_register_page_subtitle">
+                    Configura il profilo personale, credenziali di sicurezza, client associati e attributi
+                    personalizzati per la nuova identità.
+                </p>
+            </div>
+            <a href="/app/users" class="m3-btn-outline w-full sm:w-auto justify-center">
+                <i class="fa-solid fa-arrow-left text-xs"></i> <span data-i18n="btn_cancel_and_back">Annulla e Torna Indietro</span>
+            </a>
+        </div>
+
+        <form id="registration_form" class="form space-y-8" novalidate>
+
+            <!-- SEZIONE 1: IDENTITÀ, ANAGRAFICA & RECAPITI -->
+            <div class="m3-subcard">
+                <div class="form-section-title">
+                    <i class="fa-solid fa-id-card text-purple-400"></i> <span data-i18n="user_sec_identity_title">1. Identità & Informazioni Anagrafiche</span>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label for="name"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_name">Nome *</label>
+                        <input type="text" class="form-control" id="name" placeholder="Mario" required/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_name_desc">Nome anagrafico dell'utente.</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="surname"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_surname">Cognome *</label>
+                        <input type="text" class="form-control" id="surname" placeholder="Rossi" required/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_surname_desc">Cognome o patronimico dell'utente.</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="validationDefaultUsername"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_username">Username *</label>
+                        <div class="input-group">
+                            <span class="input-group-text font-mono text-purple-300">@</span>
+                            <input type="text" class="form-control font-mono" id="validationDefaultUsername"
+                                   placeholder="mrossi" required/>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_username_desc">Username univoco per identificazione ed accesso.</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="email"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_email">Email *</label>
+                        <input type="email" class="form-control" id="email" placeholder="mario.rossi@example.com"
+                               required/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_email_desc">Indirizzo email principale per notifiche e recupero.</span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="phone_prefix"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_prefix">Prefisso</label>
+                        <input type="text" class="form-control font-mono" id="phone_prefix" value="+39"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_prefix_desc">Prefisso int.</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="phone"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_phone">Telefono</label>
+                        <input type="tel" class="form-control" id="phone" placeholder="3331234567"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_phone_desc">Numero di cellulare con cui ricevere OTP o SMS.</span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="birthdate"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_birthdate">Data di Nascita</label>
+                        <input type="date" class="form-control" id="birthdate"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_birthdate_desc">Data di nascita anagrafica (AAAA-MM-GG).</span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="gender"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_gender">Genere</label>
+                        <select class="form-select" id="gender">
+                            <option value="" selected disabled data-i18n="register_form_gender_choose">Seleziona...
+                            </option>
+                            <option value="M" data-i18n="register_form_gender_male">Maschio (M)</option>
+                            <option value="F" data-i18n="register_form_gender_female">Femmina (F)</option>
+                            <option value="OTHER" data-i18n="register_form_gender_other">Altro</option>
+                        </select>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_gender_desc">Genere anagrafico del profilo.</span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="nationality"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_nationality">Nazionalità</label>
+                        <input type="text" class="form-control" id="nationality" placeholder="Italiana"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_nationality_desc">Paese di cittadinanza o residenza.</span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="ssn" class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_ssn">Codice Fiscale / SSN</label>
+                        <input type="text" class="form-control font-mono uppercase" id="ssn"
+                               placeholder="RSSMRA80A01H501U"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_ssn_desc">Codice identificativo fiscale univoco.</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="occupation"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_occupation">Occupazione</label>
+                        <input type="text" class="form-control" id="occupation" placeholder="Ingegnere del Software"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_occupation_desc">Ruolo professionale o mansione lavorativa attuale.</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="education"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_education">Istruzione</label>
+                        <input type="text" class="form-control" id="education" placeholder="Laurea Magistrale"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_education_desc">Titolo di studio o qualifica conseguita.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEZIONE 2: CREDENZIALI DI ACCESSO & SICUREZZA -->
+            <div class="m3-subcard">
+                <div class="form-section-title">
+                    <i class="fa-solid fa-shield-halved text-purple-400"></i> <span data-i18n="user_sec_security_title">2. Credenziali di Accesso & Sicurezza</span>
+                </div>
+                <div class="row g-4">
+                    <!-- Password -->
+                    <div class="col-md-6">
+                        <label for="password"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_password">Password *</label>
+                        <div class="position-relative relative">
+                            <input type="password" class="form-control pe-10" id="password" required
+                                   autocomplete="new-password" placeholder="Inserisci password sicura"/>
+                            <button type="button"
+                                    class="btn-toggle-password absolute right-3 top-1/2 -translate-y-1/2 transition-colors p-1"
+                                    onclick="togglePasswordVisibility('password', this)" tabindex="-1"
+                                    title="Mostra/Nascondi password">
+                                <i class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_password_desc">Minimo 8 caratteri con maiuscola, minuscola, numero e speciale.</span>
+
+                        <!-- Robustezza Password -->
+                        <div id="password_strength_container" class="mt-2" style="display: none;">
+                            <div class="flex items-center justify-between text-[11px] mb-1">
+                                <span class="text-gray-400" data-i18n="user_pwd_strength_label">Robustezza:</span>
+                                <span id="password_strength_text" class="font-semibold text-gray-300">Debole</span>
+                            </div>
+                            <div class="w-full bg-[#161124] rounded-full h-1.5 overflow-hidden border border-purple-500/20">
+                                <div id="password_strength_bar"
+                                     class="h-full rounded-full transition-all duration-300 bg-red-500"
+                                     style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Checklist Requisiti Live -->
+                        <div id="password_rules_container"
+                             class="mt-2.5 p-3 rounded-xl border border-purple-500/20 bg-[#161124]/80 backdrop-blur-md text-xs space-y-1.5"
+                             style="display: none;">
+                            <div class="font-semibold text-purple-300 text-[11px] mb-1.5 flex items-center justify-between border-b border-purple-500/15 pb-1">
+                                <span data-i18n="user_pwd_rules_title">Requisiti di sicurezza:</span>
+                                <span id="rules_counter" class="text-[10px] text-gray-400 font-mono">0/5</span>
+                            </div>
+                            <div id="rule_length"
+                                 class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                                <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                                <span data-i18n="user_pwd_rule_length">Tra 8 e 20 caratteri</span>
+                            </div>
+                            <div id="rule_uppercase"
+                                 class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                                <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                                <span data-i18n="user_pwd_rule_uppercase">Almeno una lettera maiuscola (A-Z)</span>
+                            </div>
+                            <div id="rule_lowercase"
+                                 class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                                <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                                <span data-i18n="user_pwd_rule_lowercase">Almeno una lettera minuscola (a-z)</span>
+                            </div>
+                            <div id="rule_number"
+                                 class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                                <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                                <span data-i18n="user_pwd_rule_number">Almeno un numero (0-9)</span>
+                            </div>
+                            <div id="rule_special"
+                                 class="flex items-center gap-2 text-gray-400 text-[11px] transition-colors">
+                                <i class="fa-solid fa-circle text-[7px] text-gray-500 transition-all"></i>
+                                <span data-i18n="user_pwd_rule_special">Almeno un carattere speciale (@ $ ! % * ? &amp; . ,)</span>
+                            </div>
+                            <div id="rule_disallowed"
+                                 class="text-red-400 text-[11px] pt-1 border-t border-red-500/20 flex items-center gap-1.5"
+                                 style="display: none;">
+                                <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+                                <span data-i18n="user_pwd_rule_disallowed">Contiene caratteri non ammessi (usa solo lettere, cifre e @$!%*?&amp;.,)</span>
+                            </div>
+                        </div>
+
+                        <div id="validationPassword" class="text-red-400 text-xs mt-1" style="display: none;"
+                             data-i18n="user_pwd_validation_hint">Minimo 8 caratteri con maiuscola, minuscola, numero e
+                            speciale.
+                        </div>
+                    </div>
+
+                    <!-- Conferma Password -->
+                    <div class="col-md-6">
+                        <label for="confirm_password"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_confirm_password">Conferma Password *</label>
+                        <div class="position-relative relative">
+                            <input type="password" class="form-control pe-10" id="confirm_password" required
+                                   autocomplete="new-password" placeholder="Ripeti la password"/>
+                            <button type="button"
+                                    class="btn-toggle-password absolute right-3 top-1/2 -translate-y-1/2 transition-colors p-1"
+                                    onclick="togglePasswordVisibility('confirm_password', this)" tabindex="-1"
+                                    title="Mostra/Nascondi password">
+                                <i class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_confirm_password_desc">Digita nuovamente la password per conferma di sicurezza.</span>
+
+                        <!-- Feedback Corrispondenza Live -->
+                        <div id="confirm_password_feedback"
+                             class="mt-2.5 p-2.5 rounded-xl border border-purple-500/20 bg-[#161124]/80 backdrop-blur-md text-xs flex items-center gap-2"
+                             style="display: none;">
+                            <i id="confirm_icon" class="fa-solid fa-circle text-[8px] text-gray-500"></i>
+                            <span id="confirm_text" class="text-gray-300 text-[11px]"></span>
+                        </div>
+
+                        <div id="validationConfirmPassword" class="text-red-400 text-xs mt-1" style="display: none;"
+                             data-i18n="user_pwd_mismatch">Le password non corrispondono.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEZIONE 3: ASSOCIAZIONE CLIENT & RUOLI APPLICATIVI -->
+            <div class="m3-subcard">
+                <div class="form-section-title">
+                    <i class="fa-solid fa-users-gear text-purple-400"></i> <span
+                        data-i18n="user_sec_clients_roles_title">3. Associazione Client & Ruoli Applicativi</span>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label for="client_id_select"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_client_id_assoc">Client ID Associato *</label>
+                        <select class="form-select font-mono" id="client_id_select" required>
+                            <option value="" selected disabled data-i18n="user_field_client_loading">Caricamento Client
+                                in corso...
+                            </option>
+                        </select>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_client_id_assoc_desc">Seleziona l'applicazione client a cui appartiene l'utente.</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="role_select"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_roles">Ruoli Client</label>
+                        <div class="flex gap-2">
+                            <select class="form-select font-mono" id="role_select" disabled>
+                                <option value="" selected disabled data-i18n="user_field_select_client_first">Seleziona
+                                    prima un Client...
+                                </option>
+                            </select>
+                            <button type="button" id="add_role_btn" onclick="addRole()"
+                                    class="m3-btn-primary flex-shrink-0" style="padding: 8px 16px;">
+                                <i class="fa-solid fa-plus"></i> <span data-i18n="user_btn_add_role">Aggiungi</span>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_roles_desc">Aggiungi uno o più ruoli disponibili per il client selezionato.</span>
+                    </div>
+
+                    <!-- Lista Ruoli Selezionati -->
+                    <div class="col-12">
+                        <div id="roles_list_container" class="flex flex-wrap gap-2 min-h-[32px]"></div>
+                        <div id="role_container" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEZIONE 4: FOTO PROFILO & AVATAR -->
+            <div class="m3-subcard">
+                <div class="form-section-title">
+                    <i class="fa-solid fa-camera text-purple-400"></i> <span data-i18n="user_sec_avatar_title">4. Foto Profilo & Avatar</span>
+                </div>
+                <div class="row g-4 items-center">
+                    <div class="col-md-3 flex justify-center">
+                        <div class="relative">
+                            <img
+                                    id="profile"
+                                    alt="Anteprima Foto"
+                                    class="rounded-full w-24 h-24 object-cover border-2 border-purple-500/40 shadow-xl bg-purple-950/40"
+                                    style="display: none;"
+                            />
+                            <div id="profile_placeholder"
+                                 class="rounded-full w-24 h-24 border-2 border-dashed border-purple-500/30 flex flex-col items-center justify-center text-purple-300/50 bg-purple-950/20">
+                                <i class="fa-solid fa-user text-2xl"></i>
+                                <span class="text-[9px] mt-1" data-i18n="user_avatar_no_photo">Nessuna foto</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <label for="file"
+                               class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                               data-i18n="user_field_upload_photo">Carica Foto Profilo</label>
+                        <input type="file" class="form-control" id="file" accept="image/jpeg,image/png,image/webp"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_upload_photo_desc">Formati supportati: JPEG, PNG, WebP. Dimensione consigliata: 400x400px.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEZIONE 5: ATTRIBUTI PERSONALIZZATI (CUSTOM ATTRIBUTES - SUPPORTO OGGETTI INESTATI) -->
+            <div class="m3-subcard">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 m3-attr-header-divider gap-3">
+                    <div>
+                        <div class="form-section-title m-0 border-0 p-0 text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-sliders" style="color: var(--theme-accent);"></i> <span
+                                data-i18n="user_sec_attributes_title">5. Attributi Personalizzati (Custom Attributes)</span>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-0.5 block" data-i18n="user_sec_attributes_desc">
                 Supporto completo per token, proprietà primitive e oggetti inestati (es. <code>app_settings</code>).
               </span>
-            </div>
+                    </div>
 
-            <!-- Toolbar Viste & Azioni -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
-              <!-- Switch Modalità -->
-              <div class="m3-segmented-switch">
-                <button type="button" id="tab-attr-visual" class="m3-btn-primary text-xs" onclick="switchAttributesMode('visual')">
-                  <i class="fa-solid fa-layer-group mr-1.5"></i> <span data-i18n="user_attr_btn_visual">Visuale Strutturata</span>
-                </button>
-                <button type="button" id="tab-attr-code" class="m3-btn-outline text-xs" onclick="switchAttributesMode('code')">
-                  <i class="fa-solid fa-code mr-1.5"></i> <span data-i18n="user_attr_btn_code">Editor JSON</span>
-                </button>
-              </div>
+                    <!-- Toolbar Viste & Azioni -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
+                        <!-- Switch Modalità -->
+                        <div class="m3-segmented-switch">
+                            <button type="button" id="tab-attr-visual" class="m3-btn-primary text-xs"
+                                    onclick="switchAttributesMode('visual')">
+                                <i class="fa-solid fa-layer-group mr-1.5"></i> <span data-i18n="user_attr_btn_visual">Visuale Strutturata</span>
+                            </button>
+                            <button type="button" id="tab-attr-code" class="m3-btn-outline text-xs"
+                                    onclick="switchAttributesMode('code')">
+                                <i class="fa-solid fa-code mr-1.5"></i> <span
+                                    data-i18n="user_attr_btn_code">Editor JSON</span>
+                            </button>
+                        </div>
 
-              <!-- Action buttons grid on mobile, flex on desktop -->
-              <div id="attributes-action-buttons" class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
-                <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5" onclick="addAttributeRow()">
-                  <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="user_attr_btn_prop">Proprietà</span>
-                </button>
-                <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5" onclick="addNestedObjectRow()" title="Aggiungi un oggetto inestato con sotto-proprietà">
-                  <i class="fa-solid fa-folder-plus mr-1"></i> <span data-i18n="user_attr_btn_nested">Oggetto Inestato</span>
-                </button>
-                <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5 col-span-2 sm:col-span-1" onclick="loadExampleJson()" title="Carica configurazione JSON di esempio">
-                  <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> <span data-i18n="user_attr_btn_example">Carica Esempio</span>
-                </button>
-              </div>
-            </div>
-          </div>
+                        <!-- Action buttons grid on mobile, flex on desktop -->
+                        <div id="attributes-action-buttons"
+                             class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5"
+                                    onclick="addAttributeRow()">
+                                <i class="fa-solid fa-plus mr-1"></i> <span
+                                    data-i18n="user_attr_btn_prop">Proprietà</span>
+                            </button>
+                            <button type="button" class="m3-btn-outline text-xs justify-center py-2 px-2.5"
+                                    onclick="addNestedObjectRow()"
+                                    title="Aggiungi un oggetto inestato con sotto-proprietà">
+                                <i class="fa-solid fa-folder-plus mr-1"></i> <span data-i18n="user_attr_btn_nested">Oggetto Inestato</span>
+                            </button>
+                            <button type="button"
+                                    class="m3-btn-outline text-xs justify-center py-2 px-2.5 col-span-2 sm:col-span-1"
+                                    onclick="loadExampleJson()" title="Carica configurazione JSON di esempio">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> <span
+                                    data-i18n="user_attr_btn_example">Carica Esempio</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-          <!-- VISTA 1: STRUTTURATA (OGGETTI INESTATI & RIGHE SEMPLICI) -->
-          <div id="attributes-visual-view">
-            <div id="attributes-items-container" class="space-y-3">
-              <!-- Generato dinamicamente da attributes-manager.js -->
-            </div>
-          </div>
+                <!-- VISTA 1: STRUTTURATA (OGGETTI INESTATI & RIGHE SEMPLICI) -->
+                <div id="attributes-visual-view">
+                    <div id="attributes-items-container" class="space-y-3">
+                        <!-- Generato dinamicamente da attributes-manager.js -->
+                    </div>
+                </div>
 
-          <!-- VISTA 2: EDITOR DIRETTO JSON -->
-          <div id="attributes-code-view" style="display: none;">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2">
+                <!-- VISTA 2: EDITOR DIRETTO JSON -->
+                <div id="attributes-code-view" style="display: none;">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2">
               <span class="text-[11px] font-semibold uppercase tracking-wider" style="color: var(--theme-accent);">
-                <i class="fa-solid fa-terminal mr-1"></i> <span data-i18n="user_attr_json_source">Codice Sorgente JSON</span>
+                <i class="fa-solid fa-terminal mr-1"></i> <span
+                      data-i18n="user_attr_json_source">Codice Sorgente JSON</span>
               </span>
-              <div class="flex items-center gap-2 w-full sm:w-auto">
-                <button type="button" class="m3-btn-outline text-xs flex-1 sm:flex-initial justify-center py-2 px-3" onclick="formatJsonCodeEditor()">
-                  <i class="fa-solid fa-align-left mr-1"></i> <span data-i18n="user_attr_format_json">Formatta JSON</span>
-                </button>
-                <button type="button" class="m3-btn-outline text-xs flex-1 sm:flex-initial justify-center py-2 px-3" onclick="copyJsonCodeEditor()">
-                  <i class="fa-solid fa-copy mr-1"></i> <span data-i18n="btn_copy">Copia</span>
-                </button>
-              </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <button type="button"
+                                    class="m3-btn-outline text-xs flex-1 sm:flex-initial justify-center py-2 px-3"
+                                    onclick="formatJsonCodeEditor()">
+                                <i class="fa-solid fa-align-left mr-1"></i> <span data-i18n="user_attr_format_json">Formatta JSON</span>
+                            </button>
+                            <button type="button"
+                                    class="m3-btn-outline text-xs flex-1 sm:flex-initial justify-center py-2 px-3"
+                                    onclick="copyJsonCodeEditor()">
+                                <i class="fa-solid fa-copy mr-1"></i> <span data-i18n="btn_copy">Copia</span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="attributes-json-editor" class="json-code-editor font-mono" rows="9"
+                              oninput="validateJsonCodeEditor()"
+                              placeholder='{ "api-token": "...", "app_settings": { "theme": "DARK", "notifications": true } }'></textarea>
+                    <div id="json-editor-feedback" class="mt-2 text-xs"></div>
+                </div>
+
+                <div id="validationAttributes" class="text-red-400 text-xs mt-2"></div>
+
+                <!-- Textarea nascosta sincronizzata bidirezionalmente per validazione e submit form -->
+                <textarea id="attributes" name="attributes" class="hidden" style="display: none;"></textarea>
             </div>
-            <textarea id="attributes-json-editor" class="json-code-editor font-mono" rows="9" oninput="validateJsonCodeEditor()" placeholder='{ "api-token": "...", "app_settings": { "theme": "DARK", "notifications": true } }'></textarea>
-            <div id="json-editor-feedback" class="mt-2 text-xs"></div>
-          </div>
 
-          <div id="validationAttributes" class="text-red-400 text-xs mt-2"></div>
+            <!-- SEZIONE 6: TERMINI DI SERVIZIO & CONSENSI -->
+            <div class="m3-subcard">
+                <div class="flex items-start gap-3">
+                    <input class="w-4 h-4 mt-1 rounded cursor-pointer" style="accent-color: var(--theme-primary);"
+                           type="checkbox" value="true" id="invalidCheck2" required/>
+                    <label class="text-xs text-gray-300 cursor-pointer leading-relaxed" for="invalidCheck2"
+                           data-i18n="user_terms_checkbox">
+                        Accetto i <span class="font-semibold text-white">termini e le condizioni d'uso</span> del
+                        servizio, e confermo di aver letto e compreso la Privacy Policy e la Cookie Policy.
+                    </label>
+                </div>
+            </div>
 
-          <!-- Textarea nascosta sincronizzata bidirezionalmente per validazione e submit form -->
-          <textarea id="attributes" name="attributes" class="hidden" style="display: none;"></textarea>
-        </div>
+            <!-- BOTTONI AZIONE -->
+            <div class="pt-4 border-t flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3"
+                 style="border-top-color: rgba(var(--theme-accent-rgb), 0.16);">
+                <a href="/app/users" class="m3-btn-outline justify-center">
+                    <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
+                </a>
+                <button id="register_form_submit" class="m3-btn-primary justify-center" type="submit">
+                    <i class="fa-solid fa-user-plus mr-1"></i> <span
+                        data-i18n="user_btn_register">Registra Utente</span>
+                </button>
+            </div>
 
-        <!-- SEZIONE 6: TERMINI DI SERVIZIO & CONSENSI -->
-        <div class="m3-subcard">
-          <div class="flex items-start gap-3">
-            <input class="w-4 h-4 mt-1 rounded cursor-pointer" style="accent-color: var(--theme-primary);" type="checkbox" value="true" id="invalidCheck2" required />
-            <label class="text-xs text-gray-300 cursor-pointer leading-relaxed" for="invalidCheck2" data-i18n="user_terms_checkbox">
-              Accetto i <span class="font-semibold text-white">termini e le condizioni d'uso</span> del servizio, e confermo di aver letto e compreso la Privacy Policy e la Cookie Policy.
-            </label>
-          </div>
-        </div>
-
-        <!-- BOTTONI AZIONE -->
-        <div class="pt-4 border-t flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3" style="border-top-color: rgba(var(--theme-accent-rgb), 0.16);">
-          <a href="/app/users" class="m3-btn-outline justify-center">
-            <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
-          </a>
-          <button id="register_form_submit" class="m3-btn-primary justify-center" type="submit">
-            <i class="fa-solid fa-user-plus mr-1"></i> <span data-i18n="user_btn_register">Registra Utente</span>
-          </button>
-        </div>
-
-      </form>
+        </form>
     </div>
-  </main>
+</main>
 
 </body>
 </html>

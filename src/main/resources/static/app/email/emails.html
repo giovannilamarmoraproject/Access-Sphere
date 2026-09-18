@@ -528,7 +528,7 @@
                 <a href="/app/settings" id="nav-btn-settings" class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
                 </a>
-                <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank"
+                <a href="/webjars/swagger-ui/index.html" target="_blank"
                    class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
                 </a>
@@ -718,7 +718,9 @@
                     <option value="ALL" data-i18n="email_filter_cat_all">Tutte le categorie</option>
                     <option value="RESET_PASSWORD" data-i18n="email_cat_reset_password">Reimpostazione Password</option>
                     <option value="WELCOME_USER" data-i18n="email_cat_welcome_user">Benvenuto Utente</option>
-                    <option value="EMAIL_VERIFICATION" data-i18n="email_cat_email_verification">Verifica Indirizzo Email</option>
+                    <option value="EMAIL_VERIFICATION" data-i18n="email_cat_email_verification">Verifica Indirizzo
+                        Email
+                    </option>
                     <option value="MFA_OTP" data-i18n="email_cat_mfa_otp">Codice OTP MFA</option>
                     <option value="ACCOUNT_LOCKED" data-i18n="email_cat_account_locked">Avviso Account Bloccato</option>
                 </select>
@@ -728,7 +730,9 @@
                         class="form-select m3-form-input m3-select-input email-filter-select rounded-xl text-sm py-2"
                         onchange="handleClientFilter(this.value)">
                     <option value="ALL" data-i18n="email_filter_client_all">Tutte le applicazioni</option>
-                    <option value="ACCESS-SPHERE-TECH" data-i18n="email_client_default">ACCESS-SPHERE-TECH (Predefinito)</option>
+                    <option value="ACCESS-SPHERE-TECH" data-i18n="email_client_default">ACCESS-SPHERE-TECH
+                        (Predefinito)
+                    </option>
                     <option value="GLOBAL" data-i18n="email_client_global">Globale (Senza Client)</option>
                     <!-- Client OAuth2 caricati dinamicamente via JS -->
                 </select>
@@ -778,23 +782,29 @@
                         <i class="fa-solid fa-pen-ruler"></i>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate" id="emailEditorModalLabel"
+                        <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate"
+                            id="emailEditorModalLabel"
                             data-i18n="modal_email_editor_title">
                             Editor Template Email
                         </h5>
-                        <p class="text-xs text-gray-400 mb-0 truncate hidden sm:block" data-i18n="email_editor_subtitle">Configura metadati, parametri e visualizza il markup
+                        <p class="text-xs text-gray-400 mb-0 truncate hidden sm:block"
+                           data-i18n="email_editor_subtitle">Configura metadati, parametri e visualizza il markup
                             renderizzato in tempo reale</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2 shrink-0">
-                    <button type="button" class="m3-btn-secondary py-1.5 px-3 sm:px-4 text-xs" style="border-radius: 9999px !important;" data-bs-dismiss="modal">
+                    <button type="button" class="m3-btn-secondary py-1.5 px-3 sm:px-4 text-xs"
+                            style="border-radius: 9999px !important;" data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark mr-1"></i> <span class="hidden sm:inline" data-i18n="btn_cancel">Annulla</span>
                     </button>
-                    <button type="button" class="m3-btn-primary py-1.5 px-3 sm:px-5 text-xs" onclick="saveTemplateForm()">
-                        <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="email_btn_save_template">Salva</span>
+                    <button type="button" class="m3-btn-primary py-1.5 px-3 sm:px-5 text-xs"
+                            onclick="saveTemplateForm()">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> <span
+                            data-i18n="email_btn_save_template">Salva</span>
                     </button>
-                    <button type="button" class="m3-icon-btn shrink-0 ml-1" data-bs-dismiss="modal" aria-label="Chiudi" title="Chiudi">
+                    <button type="button" class="m3-icon-btn shrink-0 ml-1" data-bs-dismiss="modal" aria-label="Chiudi"
+                            title="Chiudi">
                         <i class="fa-solid fa-xmark text-sm"></i>
                     </button>
                 </div>
@@ -818,15 +828,24 @@
                                 <select id="editor-category"
                                         class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm"
                                         onchange="handleCategoryChange(this.value)">
-                                    <option value="RESET_PASSWORD" data-i18n="email_cat_reset_password">Reimpostazione Password</option>
-                                    <option value="WELCOME_USER" data-i18n="email_cat_welcome_user">Benvenuto Utente</option>
-                                    <option value="EMAIL_VERIFICATION" data-i18n="email_cat_email_verification">Verifica Indirizzo Email</option>
+                                    <option value="RESET_PASSWORD" data-i18n="email_cat_reset_password">Reimpostazione
+                                        Password
+                                    </option>
+                                    <option value="WELCOME_USER" data-i18n="email_cat_welcome_user">Benvenuto Utente
+                                    </option>
+                                    <option value="EMAIL_VERIFICATION" data-i18n="email_cat_email_verification">Verifica
+                                        Indirizzo Email
+                                    </option>
                                     <option value="MFA_OTP" data-i18n="email_cat_mfa_otp">Codice OTP MFA</option>
-                                    <option value="ACCOUNT_LOCKED" data-i18n="email_cat_account_locked">Avviso Account Bloccato</option>
+                                    <option value="ACCOUNT_LOCKED" data-i18n="email_cat_account_locked">Avviso Account
+                                        Bloccato
+                                    </option>
                                 </select>
                                 <div class="flex items-center gap-1.5 mt-1.5">
-                                    <span id="editor-cat-status-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                                        <i class="fa-solid fa-circle-check text-[9px] mr-1"></i><span data-i18n="email_status_active_in_code">Attivo nel codice</span>
+                                    <span id="editor-cat-status-badge"
+                                          class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                        <i class="fa-solid fa-circle-check text-[9px] mr-1"></i><span
+                                            data-i18n="email_status_active_in_code">Attivo nel codice</span>
                                     </span>
                                 </div>
                             </div>
@@ -839,7 +858,9 @@
                                 <select id="editor-client"
                                         class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm"
                                         onchange="checkDuplicateConflictDebounced()">
-                                    <option value="" data-i18n="email_client_global">Access Sphere (Globale / Predefinito)</option>
+                                    <option value="" data-i18n="email_client_global">Access Sphere (Globale /
+                                        Predefinito)
+                                    </option>
                                     <!-- Client registrati iniettati dinamicamente via JS -->
                                 </select>
                                 <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="email_client_hint">Sovrascrive il template globale solo per l'app selezionata</span>
@@ -871,7 +892,9 @@
                                 <select id="editor-locale"
                                         class="form-select m3-form-input m3-select-input rounded-xl w-full text-sm"
                                         onchange="checkDuplicateConflictDebounced()">
-                                    <option value="" data-i18n="email_editor_locale_default">Nessuno (Globale / Fallback per tutte le lingue)</option>
+                                    <option value="" data-i18n="email_editor_locale_default">Nessuno (Globale / Fallback
+                                        per tutte le lingue)
+                                    </option>
                                     <option value="it" data-i18n="email_locale_it">Italiano (it)</option>
                                     <option value="en" data-i18n="email_locale_en">Inglese (en)</option>
                                     <option value="fr" data-i18n="email_locale_fr">Francese (fr)</option>
@@ -942,7 +965,8 @@
                         </div>
 
                         <!-- Banner di Avviso Duplicazione (Invisibile per default, mostrato se conflitto rilevato) -->
-                        <div id="editor-duplicate-warning" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
+                        <div id="editor-duplicate-warning"
+                             class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
                             <i class="fa-solid fa-triangle-exclamation text-sm shrink-0"></i>
                             <span data-i18n="email_swal_duplicate_error_desc">Esiste già un template registrato per questa combinazione di Categoria, Applicazione e Lingua.</span>
                         </div>
@@ -952,14 +976,16 @@
                             <div class="flex items-center justify-between mb-3">
                                 <div>
                                     <h6 class="text-sm font-bold text-white mb-0 flex items-center gap-2">
-                                        <i class="fa-solid fa-sliders theme-text-accent"></i> <span data-i18n="email_editor_params_title">Parametri Dinamici Personalizzati</span>
+                                        <i class="fa-solid fa-sliders theme-text-accent"></i> <span
+                                            data-i18n="email_editor_params_title">Parametri Dinamici Personalizzati</span>
                                     </h6>
                                     <span class="text-[11px] text-gray-400" data-i18n="email_editor_params_desc">Definisci chiavi segnaposto {{KEY}} e valori per l'anteprima</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <button type="button" onclick="autoExtractParamsFromHtml()"
                                             class="m3-btn-secondary text-[11px] py-1 px-2.5">
-                                        <i class="fa-solid fa-wand-magic-sparkles mr-1 theme-text-accent"></i> <span data-i18n="email_btn_detect_params">Rileva da HTML</span>
+                                        <i class="fa-solid fa-wand-magic-sparkles mr-1 theme-text-accent"></i> <span
+                                            data-i18n="email_btn_detect_params">Rileva da HTML</span>
                                     </button>
                                     <button type="button" onclick="addParamRow()"
                                             class="m3-btn-primary text-[11px] py-1 px-2.5">
@@ -981,7 +1007,8 @@
                                        data-i18n="email_label_html">
                                     Markup HTML del Template *
                                 </label>
-                                <span class="text-[11px] theme-text-accent opacity-80 font-mono" data-i18n="email_editor_html_hint">Digitazione con live preview istantaneo</span>
+                                <span class="text-[11px] theme-text-accent opacity-80 font-mono"
+                                      data-i18n="email_editor_html_hint">Digitazione con live preview istantaneo</span>
                             </div>
                             <textarea
                                     id="editor-template-html"
@@ -1030,7 +1057,8 @@
                                             class="preview-device-btn"
                                             onclick="setPreviewDevice('mobile')"
                                     >
-                                        <i class="fa-solid fa-mobile-screen"></i> <span data-i18n="email_preview_mobile">Mobile</span>
+                                        <i class="fa-solid fa-mobile-screen"></i> <span
+                                            data-i18n="email_preview_mobile">Mobile</span>
                                     </button>
                                 </div>
                             </div>
@@ -1065,11 +1093,13 @@
                         <i class="fa-solid fa-paper-plane"></i>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate" id="emailTestSendModalLabel"
+                        <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate"
+                            id="emailTestSendModalLabel"
                             data-i18n="modal_email_test_title">
                             Invia Email di Test
                         </h5>
-                        <p class="text-xs text-gray-400 mb-0 truncate hidden sm:block" data-i18n="email_test_subtitle">Collauda l'invio reale tramite il microservizio compilando
+                        <p class="text-xs text-gray-400 mb-0 truncate hidden sm:block" data-i18n="email_test_subtitle">
+                            Collauda l'invio reale tramite il microservizio compilando
                             i parametri</p>
                     </div>
                 </div>
@@ -1092,8 +1122,11 @@
                                 <i class="fa-solid fa-envelope-open-text"></i>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <span class="text-[10px] text-gray-400 uppercase font-semibold block" data-i18n="email_test_selected_template">Template Selezionato</span>
-                                <span id="test-modal-template-name" class="font-bold text-xs sm:text-sm text-white block truncate" title="--">--</span>
+                                <span class="text-[10px] text-gray-400 uppercase font-semibold block"
+                                      data-i18n="email_test_selected_template">Template Selezionato</span>
+                                <span id="test-modal-template-name"
+                                      class="font-bold text-xs sm:text-sm text-white block truncate"
+                                      title="--">--</span>
                             </div>
                         </div>
                         <div id="test-modal-locale-badge" class="shrink-0"></div>
@@ -1132,7 +1165,8 @@
                     <!-- Valori Parametri Dinamici -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-0" data-i18n="email_test_params_title">
+                            <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-0"
+                                   data-i18n="email_test_params_title">
                                 Valori per i Segnaposto del Template
                             </label>
                             <span class="text-[11px] text-gray-400" data-i18n="email_test_params_desc">Sostituiti nel corpo dell'email</span>
@@ -1179,23 +1213,30 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                            <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate max-w-[180px] sm:max-w-md" id="detail-modal-name">Dettaglio
+                            <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate max-w-[180px] sm:max-w-md"
+                                id="detail-modal-name">Dettaglio
                                 Template</h5>
                             <span id="detail-modal-identifier-badge"
                                   class="font-mono text-xs font-bold theme-badge px-2.5 py-0.5 rounded-lg truncate max-w-[150px] sm:max-w-xs">--</span>
                             <span id="detail-modal-locale-badge" class="shrink-0"></span>
                         </div>
-                        <p class="text-xs text-gray-400 mb-0 mt-0.5 truncate"><span data-i18n="email_detail_last_updated">Ultimo aggiornamento:</span> <span id="detail-modal-updated">--</span></p>
+                        <p class="text-xs text-gray-400 mb-0 mt-0.5 truncate"><span
+                                data-i18n="email_detail_last_updated">Ultimo aggiornamento:</span> <span
+                                id="detail-modal-updated">--</span></p>
                     </div>
                 </div>
 
                 <!-- Pulsanti Azione Header e Tasto Chiudi X sempre visibile -->
                 <div class="flex items-center gap-2 shrink-0">
-                    <button type="button" id="btn-detail-test-send" class="m3-btn-secondary text-xs py-1.5 px-3 sm:px-4" title="Invia Test">
-                        <i class="fa-solid fa-paper-plane text-blue-400"></i> <span class="hidden sm:inline ml-1" data-i18n="btn_test_send">Invia Test</span>
+                    <button type="button" id="btn-detail-test-send" class="m3-btn-secondary text-xs py-1.5 px-3 sm:px-4"
+                            title="Invia Test">
+                        <i class="fa-solid fa-paper-plane text-blue-400"></i> <span class="hidden sm:inline ml-1"
+                                                                                    data-i18n="btn_test_send">Invia Test</span>
                     </button>
-                    <button type="button" id="btn-detail-edit" class="m3-btn-primary text-xs py-1.5 px-3 sm:px-4" title="Modifica Template">
-                        <i class="fa-solid fa-pen-to-square"></i> <span class="hidden sm:inline ml-1" data-i18n="btn_edit_template">Modifica Template</span>
+                    <button type="button" id="btn-detail-edit" class="m3-btn-primary text-xs py-1.5 px-3 sm:px-4"
+                            title="Modifica Template">
+                        <i class="fa-solid fa-pen-to-square"></i> <span class="hidden sm:inline ml-1"
+                                                                        data-i18n="btn_edit_template">Modifica Template</span>
                     </button>
                     <button type="button" class="m3-icon-btn shrink-0 ml-1" data-bs-dismiss="modal"
                             aria-label="Chiudi" title="Chiudi">
@@ -1221,7 +1262,8 @@
                             </div>
 
                             <div>
-                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1" data-i18n="email_label_subject">Oggetto Email</span>
+                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1"
+                                      data-i18n="email_label_subject">Oggetto Email</span>
                                 <div id="detail-modal-subject"
                                      class="text-sm font-semibold text-white flex items-center gap-2">
                                     <i class="fa-solid fa-heading theme-text-accent text-xs"></i> <span>--</span>
@@ -1229,26 +1271,33 @@
                             </div>
 
                             <div>
-                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1" data-i18n="email_label_desc">Descrizione</span>
+                                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1"
+                                      data-i18n="email_label_desc">Descrizione</span>
                                 <p id="detail-modal-desc" class="text-xs text-gray-300 mb-0 leading-relaxed">--</p>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-2">
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_cat_label">Categoria</span>
-                                    <span id="detail-modal-category-sub" class="text-xs font-bold text-white block">--</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1"
+                                          data-i18n="email_cat_label">Categoria</span>
+                                    <span id="detail-modal-category-sub"
+                                          class="text-xs font-bold text-white block">--</span>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_client_label">Applicazione / Client</span>
-                                    <span id="detail-modal-client-sub" class="text-xs font-mono font-bold text-white block break-words">--</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1"
+                                          data-i18n="email_client_label">Applicazione / Client</span>
+                                    <span id="detail-modal-client-sub"
+                                          class="text-xs font-mono font-bold text-white block break-words">--</span>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_detail_identifier">Identificatore</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1"
+                                          data-i18n="email_detail_identifier">Identificatore</span>
                                     <span id="detail-modal-ident-sub"
                                           class="text-xs font-mono font-bold theme-text-accent block break-all">--</span>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1" data-i18n="email_detail_localization">Localizzazione</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-semibold block mb-1"
+                                          data-i18n="email_detail_localization">Localizzazione</span>
                                     <div id="detail-modal-locale-sub" class="mt-0.5"></div>
                                 </div>
                             </div>
@@ -1259,11 +1308,13 @@
                              style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
                             <div class="flex items-center justify-between pb-2 theme-text-accent text-sm font-bold uppercase tracking-wider"
                                  style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
-                                <span class="flex items-center gap-2"><i class="fa-solid fa-code"></i> <span data-i18n="email_detail_placeholders_title">Segnaposto Dinamici</span></span>
+                                <span class="flex items-center gap-2"><i class="fa-solid fa-code"></i> <span
+                                        data-i18n="email_detail_placeholders_title">Segnaposto Dinamici</span></span>
                                 <span id="detail-params-count"
                                       class="text-[11px] font-mono px-2 py-0.5 rounded-full theme-badge">0</span>
                             </div>
-                            <p class="text-[11px] text-gray-400 mb-2" data-i18n="email_detail_placeholders_desc">Questi parametri vengono iniettati al momento
+                            <p class="text-[11px] text-gray-400 mb-2" data-i18n="email_detail_placeholders_desc">Questi
+                                parametri vengono iniettati al momento
                                 dell'invio e sostituiti nel template HTML.</p>
                             <div id="detail-modal-params-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
                                 <!-- Generati via JS in formato chiave => valore default -->
@@ -1281,7 +1332,8 @@
                              style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-eye text-emerald-400 text-sm"></i>
-                                <span class="text-xs font-bold text-gray-200 uppercase tracking-wider" data-i18n="email_preview_visual_rendering">RENDERING VISIVO DEL TEMPLATE</span>
+                                <span class="text-xs font-bold text-gray-200 uppercase tracking-wider"
+                                      data-i18n="email_preview_visual_rendering">RENDERING VISIVO DEL TEMPLATE</span>
                             </div>
 
                             <div class="flex items-center gap-4">
@@ -1308,7 +1360,8 @@
                                             class="preview-device-btn"
                                             onclick="setDetailDevice('mobile')"
                                     >
-                                        <i class="fa-solid fa-mobile-screen"></i> <span data-i18n="email_preview_mobile">Mobile</span>
+                                        <i class="fa-solid fa-mobile-screen"></i> <span
+                                            data-i18n="email_preview_mobile">Mobile</span>
                                     </button>
                                 </div>
                             </div>

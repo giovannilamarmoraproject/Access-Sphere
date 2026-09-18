@@ -1,555 +1,610 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Access Sphere - Modifica Client OAuth2</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap" rel="stylesheet">
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg" />
-  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Access Sphere - Modifica Client OAuth2</title>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap"
+          rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg"/>
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png"/>
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="/app/shared/sweetalert.css" />
-  <script src="/app/shared/sweetalert.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script src="/app/shared/config.js"></script>
-  <script src="/app/shared/utils.js"></script>
-  <script src="/app/shared/api/authorize.js"></script>
-  <script src="/app/shared/api/logout.js"></script>
-  <script src="/app/i18n/translations.js"></script>
-  <script src="/app/shared/api/rest.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/app/shared/sweetalert.css"/>
+    <script src="/app/shared/sweetalert.js"></script>
 
-  <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.4" />
-  <link rel="stylesheet" href="/css/m3-themes.css" />
-  <script src="/app/shared/settings.js"></script>
+    <script src="/app/shared/config.js"></script>
+    <script src="/app/shared/utils.js"></script>
+    <script src="/app/shared/api/authorize.js"></script>
+    <script src="/app/shared/api/logout.js"></script>
+    <script src="/app/i18n/translations.js"></script>
+    <script src="/app/shared/api/rest.js"></script>
 
-  <style>
-    .form-section-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding-bottom: 0.6rem;
-      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
-      margin-bottom: 1.25rem;
-    }
-    .m3-subcard {
-      background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
-      border-radius: 20px;
-      padding: 1.5rem;
-      transition: all 0.2s ease;
-    }
-    .m3-subcard:hover {
-      border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
-    }
-    .m3-switch-card {
-      background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
-      border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
-      border-radius: 16px;
-      padding: 1rem 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-    .form-control, .form-select {
-      background: var(--theme-input-bg, #1C172E) !important;
-      border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
-      color: #FFFFFF !important;
-      border-radius: 12px !important;
-      padding: 10px 14px !important;
-    }
-    .form-control:focus, .form-select:focus {
-      border-color: var(--theme-accent, #D0BCFF) !important;
-      box-shadow: 0 0 0 3px var(--theme-glow, rgba(208, 188, 255, 0.25)) !important;
-      background: var(--theme-input-focus, #231B38) !important;
-    }
-    .form-control:disabled, .form-control[readonly] {
-      background: var(--theme-surface-container, #151124) !important;
-      border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16) !important;
-      color: #A39DB5 !important;
-      cursor: not-allowed;
-    }
-    .table.repeater-table {
-      --bs-table-bg: transparent !important;
-      --bs-table-color: #FFFFFF !important;
-      color: #FFFFFF !important;
-      background-color: transparent !important;
-    }
-    .table.repeater-table > :not(caption) > * > * {
-      background-color: transparent !important;
-      color: #FFFFFF !important;
-    }
-    /* Intestazioni repeater-table: nessun border-bottom per evitare il doppio divisore */
-    .table.repeater-table th {
-      color: var(--theme-accent, #D0BCFF) !important;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      padding: 10px 14px;
-      border-bottom: none !important;
-      background: transparent !important;
-    }
-    .table.repeater-table td {
-      padding: 10px 12px;
-      vertical-align: middle;
-      border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1) !important;
-      color: #E2E8F0 !important;
-      background: transparent !important;
-    }
-    .repeater-empty-state {
-      color: var(--theme-accent, #D0BCFF) !important;
-      opacity: 0.75;
-      font-style: italic;
-      text-align: center;
-      padding: 1.5rem 0 !important;
-    }
-  </style>
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.4"/>
+    <link rel="stylesheet" href="/css/m3-themes.css"/>
+    <script src="/app/shared/settings.js"></script>
+
+    <style>
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
+            margin-bottom: 1.25rem;
+        }
+
+        .m3-subcard {
+            background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .m3-subcard:hover {
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
+        }
+
+        .m3-switch-card {
+            background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .form-control, .form-select {
+            background: var(--theme-input-bg, #1C172E) !important;
+            border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28) !important;
+            color: #FFFFFF !important;
+            border-radius: 12px !important;
+            padding: 10px 14px !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--theme-accent, #D0BCFF) !important;
+            box-shadow: 0 0 0 3px var(--theme-glow, rgba(208, 188, 255, 0.25)) !important;
+            background: var(--theme-input-focus, #231B38) !important;
+        }
+
+        .form-control:disabled, .form-control[readonly] {
+            background: var(--theme-surface-container, #151124) !important;
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16) !important;
+            color: #A39DB5 !important;
+            cursor: not-allowed;
+        }
+
+        .table.repeater-table {
+            --bs-table-bg: transparent !important;
+            --bs-table-color: #FFFFFF !important;
+            color: #FFFFFF !important;
+            background-color: transparent !important;
+        }
+
+        .table.repeater-table > :not(caption) > * > * {
+            background-color: transparent !important;
+            color: #FFFFFF !important;
+        }
+
+        /* Intestazioni repeater-table: nessun border-bottom per evitare il doppio divisore */
+        .table.repeater-table th {
+            color: var(--theme-accent, #D0BCFF) !important;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            padding: 10px 14px;
+            border-bottom: none !important;
+            background: transparent !important;
+        }
+
+        .table.repeater-table td {
+            padding: 10px 12px;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1) !important;
+            color: #E2E8F0 !important;
+            background: transparent !important;
+        }
+
+        .repeater-empty-state {
+            color: var(--theme-accent, #D0BCFF) !important;
+            opacity: 0.75;
+            font-style: italic;
+            text-align: center;
+            padding: 1.5rem 0 !important;
+        }
+    </style>
 </head>
 <body>
 
-  <header class="glass-header">
+<header class="glass-header">
     <div class="header-container">
-      <div class="flex items-center gap-6">
-        <a href="/app" class="flex items-center gap-3 text-decoration-none group">
-          <img src="/img/logo-minimal.svg" alt="Access Sphere Logo" class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
-          <div class="flex flex-col">
+        <div class="flex items-center gap-6">
+            <a href="/app" class="flex items-center gap-3 text-decoration-none group">
+                <img src="/img/logo-minimal.svg" alt="Access Sphere Logo"
+                     class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110"/>
+                <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               <span class="app-brand-name">Access Sphere</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
             </span>
-            <span class="form-helper text-purple-300 text-xs font-medium" data-i18n="client_edit_page_title">Modifica Client OAuth 2.0</span>
-          </div>
-        </a>
+                    <span class="form-helper text-purple-300 text-xs font-medium" data-i18n="client_edit_page_title">Modifica Client OAuth 2.0</span>
+                </div>
+            </a>
 
-        <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
-          <a href="/app" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
-          </a>
-          <a href="/app/users" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
-          </a>
-          <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
-            <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
-          </a>
-          <a href="/app/emails" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
-          </a>
-          <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
-          </a>
-          <a href="https://github.com/giovannilamarmora/Access-Sphere" target="_blank" class="nav-tab-m3 text-decoration-none">
-            <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
-          </a>
-        </nav>
-      </div>
+            <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+                <a href="/app" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
+                </a>
+                <a href="/app/users" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
+                </a>
+                <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
+                    <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
+                </a>
+                <a href="/app/emails" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
+                </a>
+                <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
+                </a>
+                <a href="/webjars/swagger-ui/index.html" target="_blank" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
+                </a>
+            </nav>
+        </div>
 
-      <div class="flex items-center gap-2">
-        <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client" data-i18n-title="client_detail_back">
-          <i class="fa-solid fa-arrow-left text-sm"></i>
-        </a>
-        <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
-          <i class="fa-solid fa-circle-info text-sm"></i>
-        </button>
-        <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
-          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
-        </button>
-      </div>
+        <div class="flex items-center gap-2">
+            <a href="/app/clients" class="m3-icon-btn" title="Torna ai Client" data-i18n-title="client_detail_back">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+            </a>
+            <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
+            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout">
+                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+            </button>
+        </div>
     </div>
-  </header>
+</header>
 
-  <main class="dashboard-wide-container">
+<main class="dashboard-wide-container">
     <div class="m3-card p-8 sm:p-12">
-      
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-purple-500/15">
-        <div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <i class="fa-solid fa-pen-to-square text-purple-400"></i> <span data-i18n="client_edit_page_title">Modifica Client OAuth2</span>
-          </h2>
-          <p class="form-helper text-purple-300 text-xs mt-1" data-i18n="client_edit_page_subtitle">
-            Aggiorna tutti i parametri crittografici, endpoint di reindirizzamento, ruoli applicativi e webhooks per il client selezionato.
-          </p>
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-purple-500/15">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-pen-to-square text-purple-400"></i> <span data-i18n="client_edit_page_title">Modifica Client OAuth2</span>
+                </h2>
+                <p class="form-helper text-purple-300 text-xs mt-1" data-i18n="client_edit_page_subtitle">
+                    Aggiorna tutti i parametri crittografici, endpoint di reindirizzamento, ruoli applicativi e webhooks
+                    per il client selezionato.
+                </p>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <a id="back-to-details-btn" href="/app/clients" class="m3-btn-outline w-full sm:w-auto justify-center">
+                    <i class="fa-solid fa-arrow-left text-xs"></i> <span data-i18n="client_edit_back_to_details">Dettagli Client</span>
+                </a>
+            </div>
         </div>
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-          <a id="back-to-details-btn" href="/app/clients" class="m3-btn-outline w-full sm:w-auto justify-center">
-            <i class="fa-solid fa-arrow-left text-xs"></i> <span data-i18n="client_edit_back_to_details">Dettagli Client</span>
-          </a>
+
+        <div id="loading-spinner" class="py-16 text-center text-purple-300 flex flex-col items-center justify-center">
+            <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+            <p class="text-sm" data-i18n="client_detail_loading">Caricamento impostazioni client...</p>
         </div>
-      </div>
 
-      <div id="loading-spinner" class="py-16 text-center text-purple-300 flex flex-col items-center justify-center">
-        <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
-        <p class="text-sm" data-i18n="client_detail_loading">Caricamento impostazioni client...</p>
-      </div>
+        <form id="editClientForm" onsubmit="event.preventDefault(); submitEditClient();" class="space-y-8"
+              style="display: none;" novalidate>
 
-      <form id="editClientForm" onsubmit="event.preventDefault(); submitEditClient();" class="space-y-8" style="display: none;" novalidate>
-        
-        <!-- SEZIONE 1: IDENTITÀ CLIENT & CREDENZIALI -->
-        <div class="m3-subcard">
-          <div class="form-section-title">
-            <i class="fa-solid fa-id-card text-purple-400"></i> <span data-i18n="client_sec_identity_title">1. Identità & Credenziali di Accesso</span>
-          </div>
-          <div class="row g-4">
-            <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_client_id">Client ID (Non Modificabile)</label>
-              <input type="text" id="clientId" class="form-control font-mono uppercase" readonly disabled />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_client_id_desc">Identificativo univoco dell'applicazione nel sistema.</span>
+            <!-- SEZIONE 1: IDENTITÀ CLIENT & CREDENZIALI -->
+            <div class="m3-subcard">
+                <div class="form-section-title">
+                    <i class="fa-solid fa-id-card text-purple-400"></i> <span data-i18n="client_sec_identity_title">1. Identità & Credenziali di Accesso</span>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_client_id">Client ID (Non Modificabile)</label>
+                        <input type="text" id="clientId" class="form-control font-mono uppercase" readonly disabled/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_client_id_desc">Identificativo univoco dell'applicazione nel sistema.</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_auth_type">Type (Gestione Token / Auth) *</label>
+                        <select id="authType" class="form-select font-mono" required>
+                            <option value="ALL_TYPE">ALL_TYPE (Supporto Multi-Protocollo)</option>
+                            <option value="BEARER">BEARER (Standard Bearer)</option>
+                            <option value="GOOGLE">GOOGLE (Integrazione Google OAuth)</option>
+                        </select>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_auth_type_desc">Tipo generale di gestione token adottato dal client.</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_ext_id">External
+                            Client ID</label>
+                        <input type="text" id="externalClientId" class="form-control font-mono text-xs"
+                               placeholder="es. 284023202969-...apps.googleusercontent.com"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_ext_id_desc">Identificativo per integrazioni esterne (Google, Okta, ecc.).</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_secret">Client
+                            Secret</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="clientSecret" class="form-control font-mono text-xs"
+                                   placeholder="es. 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"/>
+                            <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateClientSecret()"
+                                    title="Genera Nuovo Secret" data-i18n-title="client_btn_generate_secret">
+                                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_secret_desc">Chiave segreta usata per autenticazione client confidenziale.</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_reg_token">Registration Token</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="registrationToken" class="form-control font-mono text-xs"
+                                   placeholder="es. ca466054-8575-4fbf-bb76-183f24bfbcde"/>
+                            <button type="button" class="m3-icon-btn flex-shrink-0"
+                                    onclick="generateRegistrationToken()" title="Genera Nuovo UUID"
+                                    data-i18n-title="client_btn_generate_reg_token">
+                                <i class="fa-solid fa-dice text-xs"></i>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_reg_token_desc">Token univoco di registrazione assegnato al client.</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_auth_type">Type (Gestione Token / Auth) *</label>
-              <select id="authType" class="form-select font-mono" required>
-                <option value="ALL_TYPE">ALL_TYPE (Supporto Multi-Protocollo)</option>
-                <option value="BEARER">BEARER (Standard Bearer)</option>
-                <option value="GOOGLE">GOOGLE (Integrazione Google OAuth)</option>
-              </select>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_auth_type_desc">Tipo generale di gestione token adottato dal client.</span>
+            <!-- SEZIONE 2: ACCESSO & REDIRECT URI -->
+            <div class="m3-subcard">
+                <div class="form-section-title">
+                    <i class="fa-solid fa-network-wired text-purple-400"></i> <span
+                        data-i18n="client_sec_redirect_title">2. Reindirizzamenti, Scopes & Flussi OAuth</span>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_access_type">Access Type</label>
+                        <select id="accessType" class="form-select font-mono">
+                            <option value="ONLINE">ONLINE (Autenticazione web standard)</option>
+                            <option value="OFFLINE">OFFLINE (Supporto Refresh Token continuo)</option>
+                        </select>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_access_type_desc">Definisce il tipo di accesso (online o offline).</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_redirect_status">Authorize Redirect Status</label>
+                        <select id="authorize_redirect_status" class="form-select font-mono">
+                            <option value="FOUND">FOUND (HTTP 302 - Standard)</option>
+                            <option value="SEE_OTHER">SEE_OTHER (HTTP 303)</option>
+                            <option value="TEMPORARY_REDIRECT">TEMPORARY_REDIRECT (HTTP 307)</option>
+                            <option value="PERMANENT_REDIRECT">PERMANENT_REDIRECT (HTTP 308)</option>
+                            <option value="OK">OK (HTTP 200)</option>
+                        </select>
+                        <span class="text-[11px] text-gray-400 mt-1 block"
+                              data-i18n="client_field_redirect_status_desc">Status code HTTP utilizzato per il redirect durante l'autorizzazione.</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_token_type">Token Type *</label>
+                        <select id="tokenType" class="form-select font-mono" required>
+                            <option value="BEARER_JWT">BEARER_JWT (Token JWT standard)</option>
+                            <option value="BEARER_JWE">BEARER_JWE (Token JWE crittografato)</option>
+                        </select>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_token_type_desc">Tipologia di token emesso al client.</span>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_scopes">Scopes
+                            Autorizzati</label>
+                        <input type="text" id="scopes" class="form-control font-mono text-xs"
+                               placeholder="openid email profile https://www.googleapis.com/auth/userinfo.profile"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_scopes_desc">Lista degli scope autorizzati per il client (separati da spazio o virgola).</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_redirect_uris">Redirect URIs Autorizzate (redirect_uri)</label>
+                        <textarea id="redirect_uri" rows="2" class="form-control font-mono text-xs"
+                                  placeholder="https://linkatutto.giovannilamarmora.com http://127.0.0.1:5501/index.html"></textarea>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_redirect_uris_desc">URI consentite per la risposta di authorization code e token (separate da spazio).</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_fallback_uri">Fallback URI (fallback_uri)</label>
+                        <textarea id="fallback_uri" rows="2" class="form-control font-mono text-xs"
+                                  placeholder="https://access-sphere.giovannilamarmora.com/app/login?client_id=MY-CLIENT"></textarea>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_fallback_uri_desc">URI di fallback utilizzata in caso di fallimento o annullamento del redirect primario.</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_ext_id">External Client ID</label>
-              <input type="text" id="externalClientId" class="form-control font-mono text-xs" placeholder="es. 284023202969-...apps.googleusercontent.com" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_ext_id_desc">Identificativo per integrazioni esterne (Google, Okta, ecc.).</span>
+            <!-- SEZIONE 3: CRITTOGRAFIA & SCADENZE TOKEN -->
+            <div class="m3-subcard">
+                <div class="form-section-title">
+                    <i class="fa-solid fa-shield-halved text-purple-400"></i> <span data-i18n="client_sec_crypto_title">3. Parametri Chiavi & Scadenze Token</span>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-8">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_jwt_secret">JWT Secret</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="jwtSecret" class="form-control font-mono text-xs"
+                                   placeholder="Secret key a 256-bit per firmare i token JWT"/>
+                            <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJwtSecret()"
+                                    title="Genera Chiave JWT a 256-bit" data-i18n-title="client_btn_generate_jwt">
+                                <i class="fa-solid fa-key text-xs"></i>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwt_secret_desc">Chiave segreta usata per la firma crittografica dei token JWT.</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwt_exp">JWT
+                            Expiration (millisecondi)</label>
+                        <input type="number" id="jwtExpiration" class="form-control font-mono" value="3600000"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwt_exp_desc">Durata di validità del token JWT (es. 3600000 ms = 1 ora).</span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label text-xs font-semibold text-gray-300"
+                               data-i18n="client_field_jwe_secret">JWE Secret</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="jweSecret" class="form-control font-mono text-xs"
+                                   placeholder="Secret key per cifratura token JWE"/>
+                            <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJweSecret()"
+                                    title="Genera Chiave JWE" data-i18n-title="client_btn_generate_jwe">
+                                <i class="fa-solid fa-lock text-xs"></i>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwe_secret_desc">Chiave segreta usata per la crittografia dei token JWE.</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwe_exp">JWE
+                            Expiration (millisecondi)</label>
+                        <input type="number" id="jweExpiration" class="form-control font-mono" value="360000"/>
+                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwe_exp_desc">Durata di validità del token JWE (es. 360000 ms = 6 minuti).</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_secret">Client Secret</label>
-              <div class="flex gap-2">
-                <input type="text" id="clientSecret" class="form-control font-mono text-xs" placeholder="es. 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" />
-                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateClientSecret()" title="Genera Nuovo Secret" data-i18n-title="client_btn_generate_secret">
-                  <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+            <!-- SEZIONE 4: FLAG DI EMISSIONE TOKEN & SICUREZZA -->
+            <div class="m3-subcard">
+                <div class="form-section-title">
+                    <i class="fa-solid fa-sliders text-purple-400"></i> <span data-i18n="client_sec_flags_title">4. Flag di Emissione & Requisiti di Sicurezza</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                    <div class="m3-switch-card">
+                        <div>
+                            <span class="text-xs font-bold text-white block" data-i18n="client_flag_mfa">MFA Obbligatoria</span>
+                            <span class="text-[10px] text-gray-400 block mt-0.5">mfa_enabled</span>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input cursor-pointer" type="checkbox" id="mfaEnabled"
+                                   style="width: 2.8em; height: 1.4em;"/>
+                        </div>
+                    </div>
+
+                    <div class="m3-switch-card">
+                        <div>
+                            <span class="text-xs font-bold text-white block" data-i18n="client_flag_id_token">Emetti ID Token</span>
+                            <span class="text-[10px] text-gray-400 block mt-0.5">id_token (OpenID Connect)</span>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input cursor-pointer" type="checkbox" id="idToken"
+                                   style="width: 2.8em; height: 1.4em;"/>
+                        </div>
+                    </div>
+
+                    <div class="m3-switch-card">
+                        <div>
+                            <span class="text-xs font-bold text-white block" data-i18n="client_flag_access_token">Emetti Access Token</span>
+                            <span class="text-[10px] text-gray-400 block mt-0.5">access_token (OAuth2)</span>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input cursor-pointer" type="checkbox" id="accessToken"
+                                   style="width: 2.8em; height: 1.4em;"/>
+                        </div>
+                    </div>
+
+                    <div class="m3-switch-card">
+                        <div>
+                            <span class="text-xs font-bold text-white block" data-i18n="client_flag_strapi_token">Emetti Strapi Token</span>
+                            <span class="text-[10px] text-gray-400 block mt-0.5">strapi_token</span>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input cursor-pointer" type="checkbox" id="strapiToken"
+                                   style="width: 2.8em; height: 1.4em;"/>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SEZIONE 5: APP ROLES -->
+            <div class="m3-subcard">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-purple-500/15">
+                    <div class="form-section-title m-0 border-0 p-0">
+                        <i class="fa-solid fa-user-shield text-purple-400"></i> <span
+                            data-i18n="client_sec_roles_title">5. Ruoli Applicativi (app_roles)</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                        <button type="button" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2.5 px-4"
+                                onclick="toggleRolesJsonModal()">
+                            <i class="fa-solid fa-code mr-1"></i> <span
+                                data-i18n="client_btn_edit_json">Modifica JSON</span>
+                        </button>
+                        <button type="button" class="m3-btn-primary text-xs w-full sm:w-auto justify-center py-2.5 px-4"
+                                onclick="addAppRoleRow()">
+                            <i class="fa-solid fa-plus mr-1"></i> <span
+                                data-i18n="client_btn_add_role">Aggiungi Ruolo</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="table repeater-table w-full text-xs">
+                        <thead>
+                        <tr>
+                            <th style="width: 28%;" data-i18n="client_table_col_role">Ruolo (Role) *</th>
+                            <th style="width: 22%;" data-i18n="client_table_col_type">Tipo (Type)</th>
+                            <th style="width: 42%;" data-i18n="client_table_col_desc">Descrizione</th>
+                            <th style="width: 8%; text-align: center;" data-i18n="client_table_col_action">Azione</th>
+                        </tr>
+                        </thead>
+                        <tbody id="app-roles-tbody">
+                        <!-- Righe generate dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SEZIONE 6: WEBHOOKS -->
+            <div class="m3-subcard">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-purple-500/15">
+                    <div class="form-section-title m-0 border-0 p-0">
+                        <i class="fa-solid fa-satellite-dish text-purple-400"></i> <span
+                            data-i18n="client_sec_webhooks_title">6. Webhooks</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                        <button type="button" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2.5 px-4"
+                                onclick="toggleWebhooksJsonModal()">
+                            <i class="fa-solid fa-code mr-1"></i> <span
+                                data-i18n="client_btn_edit_json">Modifica JSON</span>
+                        </button>
+                        <button type="button" class="m3-btn-primary text-xs w-full sm:w-auto justify-center py-2.5 px-4"
+                                onclick="addWebhookRow()">
+                            <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="client_btn_add_webhook">Aggiungi Webhook</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="table repeater-table w-full text-xs">
+                        <thead>
+                        <tr>
+                            <th style="width: 30%;" data-i18n="client_table_col_webhook_name">Nome Webhook *</th>
+                            <th style="width: 44%;" data-i18n="client_table_col_webhook_url">URL Endpoint *</th>
+                            <th style="width: 18%;" data-i18n="client_table_col_webhook_action">Azione (Action)</th>
+                            <th style="width: 8%; text-align: center;" data-i18n="client_table_col_action">Azione</th>
+                        </tr>
+                        </thead>
+                        <tbody id="webhooks-tbody">
+                        <!-- Righe generate dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- AZIONI FORM -->
+            <div class="pt-6 border-t border-purple-500/15 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
+                <a id="cancel-link" href="/app/clients" class="m3-btn-outline justify-center">
+                    <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
+                </a>
+                <button type="submit" class="m3-btn-primary justify-center">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="btn_save_client_changes">Salva Modifiche Client</span>
                 </button>
-              </div>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_secret_desc">Chiave segreta usata per autenticazione client confidenziale.</span>
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_reg_token">Registration Token</label>
-              <div class="flex gap-2">
-                <input type="text" id="registrationToken" class="form-control font-mono text-xs" placeholder="es. ca466054-8575-4fbf-bb76-183f24bfbcde" />
-                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateRegistrationToken()" title="Genera Nuovo UUID" data-i18n-title="client_btn_generate_reg_token">
-                  <i class="fa-solid fa-dice text-xs"></i>
-                </button>
-              </div>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_reg_token_desc">Token univoco di registrazione assegnato al client.</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- SEZIONE 2: ACCESSO & REDIRECT URI -->
-        <div class="m3-subcard">
-          <div class="form-section-title">
-            <i class="fa-solid fa-network-wired text-purple-400"></i> <span data-i18n="client_sec_redirect_title">2. Reindirizzamenti, Scopes & Flussi OAuth</span>
-          </div>
-          <div class="row g-4">
-            <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_access_type">Access Type</label>
-              <select id="accessType" class="form-select font-mono">
-                <option value="ONLINE">ONLINE (Autenticazione web standard)</option>
-                <option value="OFFLINE">OFFLINE (Supporto Refresh Token continuo)</option>
-              </select>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_access_type_desc">Definisce il tipo di accesso (online o offline).</span>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_redirect_status">Authorize Redirect Status</label>
-              <select id="authorize_redirect_status" class="form-select font-mono">
-                <option value="FOUND">FOUND (HTTP 302 - Standard)</option>
-                <option value="SEE_OTHER">SEE_OTHER (HTTP 303)</option>
-                <option value="TEMPORARY_REDIRECT">TEMPORARY_REDIRECT (HTTP 307)</option>
-                <option value="PERMANENT_REDIRECT">PERMANENT_REDIRECT (HTTP 308)</option>
-                <option value="OK">OK (HTTP 200)</option>
-              </select>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_redirect_status_desc">Status code HTTP utilizzato per il redirect durante l'autorizzazione.</span>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_token_type">Token Type *</label>
-              <select id="tokenType" class="form-select font-mono" required>
-                <option value="BEARER_JWT">BEARER_JWT (Token JWT standard)</option>
-                <option value="BEARER_JWE">BEARER_JWE (Token JWE crittografato)</option>
-              </select>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_token_type_desc">Tipologia di token emesso al client.</span>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_scopes">Scopes Autorizzati</label>
-              <input type="text" id="scopes" class="form-control font-mono text-xs" 
-                     placeholder="openid email profile https://www.googleapis.com/auth/userinfo.profile" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_scopes_desc">Lista degli scope autorizzati per il client (separati da spazio o virgola).</span>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_redirect_uris">Redirect URIs Autorizzate (redirect_uri)</label>
-              <textarea id="redirect_uri" rows="2" class="form-control font-mono text-xs" 
-                        placeholder="https://linkatutto.giovannilamarmora.com http://127.0.0.1:5501/index.html"></textarea>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_redirect_uris_desc">URI consentite per la risposta di authorization code e token (separate da spazio).</span>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_fallback_uri">Fallback URI (fallback_uri)</label>
-              <textarea id="fallback_uri" rows="2" class="form-control font-mono text-xs" 
-                        placeholder="https://access-sphere.giovannilamarmora.com/app/login?client_id=MY-CLIENT"></textarea>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_fallback_uri_desc">URI di fallback utilizzata in caso di fallimento o annullamento del redirect primario.</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- SEZIONE 3: CRITTOGRAFIA & SCADENZE TOKEN -->
-        <div class="m3-subcard">
-          <div class="form-section-title">
-            <i class="fa-solid fa-shield-halved text-purple-400"></i> <span data-i18n="client_sec_crypto_title">3. Parametri Chiavi & Scadenze Token</span>
-          </div>
-          <div class="row g-4">
-            <div class="col-md-8">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwt_secret">JWT Secret</label>
-              <div class="flex gap-2">
-                <input type="text" id="jwtSecret" class="form-control font-mono text-xs" placeholder="Secret key a 256-bit per firmare i token JWT" />
-                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJwtSecret()" title="Genera Chiave JWT a 256-bit" data-i18n-title="client_btn_generate_jwt">
-                  <i class="fa-solid fa-key text-xs"></i>
-                </button>
-              </div>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwt_secret_desc">Chiave segreta usata per la firma crittografica dei token JWT.</span>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwt_exp">JWT Expiration (millisecondi)</label>
-              <input type="number" id="jwtExpiration" class="form-control font-mono" value="3600000" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwt_exp_desc">Durata di validità del token JWT (es. 3600000 ms = 1 ora).</span>
-            </div>
-
-            <div class="col-md-8">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwe_secret">JWE Secret</label>
-              <div class="flex gap-2">
-                <input type="text" id="jweSecret" class="form-control font-mono text-xs" placeholder="Secret key per cifratura token JWE" />
-                <button type="button" class="m3-icon-btn flex-shrink-0" onclick="generateJweSecret()" title="Genera Chiave JWE" data-i18n-title="client_btn_generate_jwe">
-                  <i class="fa-solid fa-lock text-xs"></i>
-                </button>
-              </div>
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwe_secret_desc">Chiave segreta usata per la crittografia dei token JWE.</span>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_jwe_exp">JWE Expiration (millisecondi)</label>
-              <input type="number" id="jweExpiration" class="form-control font-mono" value="360000" />
-              <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_jwe_exp_desc">Durata di validità del token JWE (es. 360000 ms = 6 minuti).</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- SEZIONE 4: FLAG DI EMISSIONE TOKEN & SICUREZZA -->
-        <div class="m3-subcard">
-          <div class="form-section-title">
-            <i class="fa-solid fa-sliders text-purple-400"></i> <span data-i18n="client_sec_flags_title">4. Flag di Emissione & Requisiti di Sicurezza</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            <div class="m3-switch-card">
-              <div>
-                <span class="text-xs font-bold text-white block" data-i18n="client_flag_mfa">MFA Obbligatoria</span>
-                <span class="text-[10px] text-gray-400 block mt-0.5">mfa_enabled</span>
-              </div>
-              <div class="form-check form-switch m-0">
-                <input class="form-check-input cursor-pointer" type="checkbox" id="mfaEnabled" style="width: 2.8em; height: 1.4em;" />
-              </div>
-            </div>
-
-            <div class="m3-switch-card">
-              <div>
-                <span class="text-xs font-bold text-white block" data-i18n="client_flag_id_token">Emetti ID Token</span>
-                <span class="text-[10px] text-gray-400 block mt-0.5">id_token (OpenID Connect)</span>
-              </div>
-              <div class="form-check form-switch m-0">
-                <input class="form-check-input cursor-pointer" type="checkbox" id="idToken" style="width: 2.8em; height: 1.4em;" />
-              </div>
-            </div>
-
-            <div class="m3-switch-card">
-              <div>
-                <span class="text-xs font-bold text-white block" data-i18n="client_flag_access_token">Emetti Access Token</span>
-                <span class="text-[10px] text-gray-400 block mt-0.5">access_token (OAuth2)</span>
-              </div>
-              <div class="form-check form-switch m-0">
-                <input class="form-check-input cursor-pointer" type="checkbox" id="accessToken" style="width: 2.8em; height: 1.4em;" />
-              </div>
-            </div>
-
-            <div class="m3-switch-card">
-              <div>
-                <span class="text-xs font-bold text-white block" data-i18n="client_flag_strapi_token">Emetti Strapi Token</span>
-                <span class="text-[10px] text-gray-400 block mt-0.5">strapi_token</span>
-              </div>
-              <div class="form-check form-switch m-0">
-                <input class="form-check-input cursor-pointer" type="checkbox" id="strapiToken" style="width: 2.8em; height: 1.4em;" />
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- SEZIONE 5: APP ROLES -->
-        <div class="m3-subcard">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-purple-500/15">
-            <div class="form-section-title m-0 border-0 p-0">
-              <i class="fa-solid fa-user-shield text-purple-400"></i> <span data-i18n="client_sec_roles_title">5. Ruoli Applicativi (app_roles)</span>
-            </div>
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-              <button type="button" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2.5 px-4" onclick="toggleRolesJsonModal()">
-                <i class="fa-solid fa-code mr-1"></i> <span data-i18n="client_btn_edit_json">Modifica JSON</span>
-              </button>
-              <button type="button" class="m3-btn-primary text-xs w-full sm:w-auto justify-center py-2.5 px-4" onclick="addAppRoleRow()">
-                <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="client_btn_add_role">Aggiungi Ruolo</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="table repeater-table w-full text-xs">
-              <thead>
-                <tr>
-                  <th style="width: 28%;" data-i18n="client_table_col_role">Ruolo (Role) *</th>
-                  <th style="width: 22%;" data-i18n="client_table_col_type">Tipo (Type)</th>
-                  <th style="width: 42%;" data-i18n="client_table_col_desc">Descrizione</th>
-                  <th style="width: 8%; text-align: center;" data-i18n="client_table_col_action">Azione</th>
-                </tr>
-              </thead>
-              <tbody id="app-roles-tbody">
-                <!-- Righe generate dinamicamente -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- SEZIONE 6: WEBHOOKS -->
-        <div class="m3-subcard">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-purple-500/15">
-            <div class="form-section-title m-0 border-0 p-0">
-              <i class="fa-solid fa-satellite-dish text-purple-400"></i> <span data-i18n="client_sec_webhooks_title">6. Webhooks</span>
-            </div>
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-              <button type="button" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2.5 px-4" onclick="toggleWebhooksJsonModal()">
-                <i class="fa-solid fa-code mr-1"></i> <span data-i18n="client_btn_edit_json">Modifica JSON</span>
-              </button>
-              <button type="button" class="m3-btn-primary text-xs w-full sm:w-auto justify-center py-2.5 px-4" onclick="addWebhookRow()">
-                <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="client_btn_add_webhook">Aggiungi Webhook</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="table repeater-table w-full text-xs">
-              <thead>
-                <tr>
-                  <th style="width: 30%;" data-i18n="client_table_col_webhook_name">Nome Webhook *</th>
-                  <th style="width: 44%;" data-i18n="client_table_col_webhook_url">URL Endpoint *</th>
-                  <th style="width: 18%;" data-i18n="client_table_col_webhook_action">Azione (Action)</th>
-                  <th style="width: 8%; text-align: center;" data-i18n="client_table_col_action">Azione</th>
-                </tr>
-              </thead>
-              <tbody id="webhooks-tbody">
-                <!-- Righe generate dinamicamente -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- AZIONI FORM -->
-        <div class="pt-6 border-t border-purple-500/15 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
-          <a id="cancel-link" href="/app/clients" class="m3-btn-outline justify-center">
-            <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
-          </a>
-          <button type="submit" class="m3-btn-primary justify-center">
-            <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="btn_save_client_changes">Salva Modifiche Client</span>
-          </button>
-        </div>
-
-      </form>
+        </form>
     </div>
-  </main>
+</main>
 
-  <script>
+<script>
     let currentClientId = null;
     let appRolesList = [];
     let webhooksList = [];
 
     document.addEventListener("DOMContentLoaded", () => {
-      loadClientForEdit();
+        loadClientForEdit();
     });
 
     window.addEventListener("languageChanged", () => {
-      renderAppRolesTable();
-      renderWebhooksTable();
+        renderAppRolesTable();
+        renderWebhooksTable();
     });
 
     // --- GENERATORI CHIAVI ---
     function generateRandomHex(len) {
-      const hex = "0123456789ABCDEF";
-      let res = "";
-      for (let i = 0; i < len; i++) {
-        res += hex.charAt(Math.floor(Math.random() * hex.length));
-      }
-      return res;
+        const hex = "0123456789ABCDEF";
+        let res = "";
+        for (let i = 0; i < len; i++) {
+            res += hex.charAt(Math.floor(Math.random() * hex.length));
+        }
+        return res;
     }
 
     function generateClientSecret() {
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-      let secret = "GOCSPX-";
-      for (let i = 0; i < 28; i++) {
-        secret += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      document.getElementById("clientSecret").value = secret;
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+        let secret = "GOCSPX-";
+        for (let i = 0; i < 28; i++) {
+            secret += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById("clientSecret").value = secret;
     }
 
     function generateRegistrationToken() {
-      const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-        const r = (Math.random() * 16) | 0,
-          v = c === "x" ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-      });
-      document.getElementById("registrationToken").value = uuid;
+        const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+            const r = (Math.random() * 16) | 0,
+                v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+        document.getElementById("registrationToken").value = uuid;
     }
 
     function generateJwtSecret() {
-      document.getElementById("jwtSecret").value = generateRandomHex(64);
+        document.getElementById("jwtSecret").value = generateRandomHex(64);
     }
 
     function generateJweSecret() {
-      document.getElementById("jweSecret").value = generateRandomHex(64);
+        document.getElementById("jweSecret").value = generateRandomHex(64);
     }
 
     // --- GESTIONE APP ROLES ---
     function renderAppRolesTable() {
-      const tbody = document.getElementById("app-roles-tbody");
-      tbody.innerHTML = "";
+        const tbody = document.getElementById("app-roles-tbody");
+        tbody.innerHTML = "";
 
-      if (!appRolesList || appRolesList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state" data-i18n="client_detail_empty_roles">${typeof t === 'function' ? t('client_detail_empty_roles', 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.') : 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.'}</td></tr>`;
-        return;
-      }
+        if (!appRolesList || appRolesList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state" data-i18n="client_detail_empty_roles">${typeof t === 'function' ? t('client_detail_empty_roles', 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.') : 'Nessun ruolo configurato. Clicca su "Aggiungi Ruolo" per aggiungerne uno.'}</td></tr>`;
+            return;
+        }
 
-      const defaultRolesCount = appRolesList.filter(r => r.type === 'DEFAULT').length;
+        const defaultRolesCount = appRolesList.filter(r => r.type === 'DEFAULT').length;
 
-      appRolesList.forEach((r, idx) => {
-        const isLockedDefault = r.type === 'DEFAULT' && defaultRolesCount <= 1;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
+        appRolesList.forEach((r, idx) => {
+            const isLockedDefault = r.type === 'DEFAULT' && defaultRolesCount <= 1;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
           <td>
             <input type="text" class="form-control font-mono text-xs" value="${r.role || ''}" 
                    oninput="appRolesList[${idx}].role = this.value.toUpperCase(); this.value = this.value.toUpperCase();" placeholder="es. ADMIN" />
@@ -575,69 +630,77 @@
             </button>
           </td>
         `;
-        tbody.appendChild(tr);
-      });
+            tbody.appendChild(tr);
+        });
     }
 
     function addAppRoleRow() {
-      appRolesList.push({ role: "", type: "USER", description: "" });
-      renderAppRolesTable();
+        appRolesList.push({role: "", type: "USER", description: ""});
+        renderAppRolesTable();
     }
 
     function removeAppRoleRow(idx) {
-      const target = appRolesList[idx];
-      const defaultCount = appRolesList.filter(r => r.type === 'DEFAULT').length;
-      if (target && target.type === 'DEFAULT' && defaultCount <= 1) {
-        sweetalert("warning",
-          (typeof t === 'function' ? t("swal_role_default_locked_title", "Ruolo Protetto") : "Ruolo Protetto"),
-          (typeof t === 'function' ? t("swal_role_default_locked_desc", "Il ruolo con tipologia DEFAULT è obbligatorio per ogni Client OAuth2 e non può essere rimosso.") : "Il ruolo con tipologia DEFAULT è obbligatorio per ogni Client OAuth2 e non può essere rimosso."));
-        return;
-      }
-      appRolesList.splice(idx, 1);
-      renderAppRolesTable();
+        const target = appRolesList[idx];
+        const defaultCount = appRolesList.filter(r => r.type === 'DEFAULT').length;
+        if (target && target.type === 'DEFAULT' && defaultCount <= 1) {
+            sweetalert("warning",
+                (typeof t === 'function' ? t("swal_role_default_locked_title", "Ruolo Protetto") : "Ruolo Protetto"),
+                (typeof t === 'function' ? t("swal_role_default_locked_desc", "Il ruolo con tipologia DEFAULT è obbligatorio per ogni Client OAuth2 e non può essere rimosso.") : "Il ruolo con tipologia DEFAULT è obbligatorio per ogni Client OAuth2 e non può essere rimosso."));
+            return;
+        }
+        appRolesList.splice(idx, 1);
+        renderAppRolesTable();
     }
 
     function toggleRolesJsonModal() {
-      Swal.fire({
-        title: (typeof t === 'function' ? t("swal_edit_roles_json_title", "Modifica Ruoli in Formato JSON") : "Modifica Ruoli in Formato JSON"),
-        input: "textarea",
-        inputValue: JSON.stringify(appRolesList, null, 2),
-        inputAttributes: {
-          style: "height: 240px; font-family: monospace; font-size: 11px; background: var(--theme-input-bg, #181427); color: var(--theme-accent, #D0BCFF);"
-        },
-        showCancelButton: true,
-        confirmButtonText: (typeof t === 'function' ? t("swal_save_json_btn", "Salva JSON") : "Salva JSON"),
-        cancelButtonText: (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla")
-      }).then((res) => {
-        if (res.isConfirmed && res.value) {
-          try {
-            const parsed = JSON.parse(res.value);
-            if (Array.isArray(parsed)) {
-              appRolesList = parsed.map(r => typeof r === "string" ? { role: r.toUpperCase(), type: "DEFAULT", description: "" } : { role: (r.role || r.name || "").toUpperCase(), type: (r.type || "DEFAULT").toUpperCase(), description: r.description || "" });
-              renderAppRolesTable();
-            } else {
-              sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Formato Errato") : "Formato Errato"), (typeof t === 'function' ? t("swal_invalid_json_format", "Il JSON deve essere un array di oggetti ruolo.") : "Il JSON deve essere un array di oggetti ruolo."));
+        Swal.fire({
+            title: (typeof t === 'function' ? t("swal_edit_roles_json_title", "Modifica Ruoli in Formato JSON") : "Modifica Ruoli in Formato JSON"),
+            input: "textarea",
+            inputValue: JSON.stringify(appRolesList, null, 2),
+            inputAttributes: {
+                style: "height: 240px; font-family: monospace; font-size: 11px; background: var(--theme-input-bg, #181427); color: var(--theme-accent, #D0BCFF);"
+            },
+            showCancelButton: true,
+            confirmButtonText: (typeof t === 'function' ? t("swal_save_json_btn", "Salva JSON") : "Salva JSON"),
+            cancelButtonText: (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla")
+        }).then((res) => {
+            if (res.isConfirmed && res.value) {
+                try {
+                    const parsed = JSON.parse(res.value);
+                    if (Array.isArray(parsed)) {
+                        appRolesList = parsed.map(r => typeof r === "string" ? {
+                            role: r.toUpperCase(),
+                            type: "DEFAULT",
+                            description: ""
+                        } : {
+                            role: (r.role || r.name || "").toUpperCase(),
+                            type: (r.type || "DEFAULT").toUpperCase(),
+                            description: r.description || ""
+                        });
+                        renderAppRolesTable();
+                    } else {
+                        sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Formato Errato") : "Formato Errato"), (typeof t === 'function' ? t("swal_invalid_json_format", "Il JSON deve essere un array di oggetti ruolo.") : "Il JSON deve essere un array di oggetti ruolo."));
+                    }
+                } catch (e) {
+                    sweetalert("error", (typeof t === 'function' ? t("swal_invalid_json_syntax", "JSON Non Valido") : "JSON Non Valido"), e.message);
+                }
             }
-          } catch(e) {
-            sweetalert("error", (typeof t === 'function' ? t("swal_invalid_json_syntax", "JSON Non Valido") : "JSON Non Valido"), e.message);
-          }
-        }
-      });
+        });
     }
 
     // --- GESTIONE WEBHOOKS ---
     function renderWebhooksTable() {
-      const tbody = document.getElementById("webhooks-tbody");
-      tbody.innerHTML = "";
+        const tbody = document.getElementById("webhooks-tbody");
+        tbody.innerHTML = "";
 
-      if (!webhooksList || webhooksList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state" data-i18n="client_detail_empty_webhooks">${typeof t === 'function' ? t('client_detail_empty_webhooks', 'Nessun webhook registrato. Clicca su "Aggiungi Webhook" per aggiungerne uno.') : 'Nessun webhook registrato. Clicca su "Aggiungi Webhook" per aggiungerne uno.'}</td></tr>`;
-        return;
-      }
+        if (!webhooksList || webhooksList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="repeater-empty-state" data-i18n="client_detail_empty_webhooks">${typeof t === 'function' ? t('client_detail_empty_webhooks', 'Nessun webhook registrato. Clicca su "Aggiungi Webhook" per aggiungerne uno.') : 'Nessun webhook registrato. Clicca su "Aggiungi Webhook" per aggiungerne uno.'}</td></tr>`;
+            return;
+        }
 
-      webhooksList.forEach((w, idx) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
+        webhooksList.forEach((w, idx) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
           <td>
             <input type="text" class="form-control text-xs" value="${w.name || ''}" 
                    oninput="webhooksList[${idx}].name = this.value;" placeholder="Nome webhook" />
@@ -657,351 +720,367 @@
             </button>
           </td>
         `;
-        tbody.appendChild(tr);
-      });
+            tbody.appendChild(tr);
+        });
     }
 
     function addWebhookRow() {
-      webhooksList.push({ name: "", url: "", action: "DELETE_USER" });
-      renderWebhooksTable();
+        webhooksList.push({name: "", url: "", action: "DELETE_USER"});
+        renderWebhooksTable();
     }
 
     function removeWebhookRow(idx) {
-      webhooksList.splice(idx, 1);
-      renderWebhooksTable();
+        webhooksList.splice(idx, 1);
+        renderWebhooksTable();
     }
 
     function toggleWebhooksJsonModal() {
-      Swal.fire({
-        title: (typeof t === 'function' ? t("swal_edit_webhooks_json_title", "Modifica Webhooks in Formato JSON") : "Modifica Webhooks in Formato JSON"),
-        input: "textarea",
-        inputValue: JSON.stringify(webhooksList, null, 2),
-        inputAttributes: {
-          style: "height: 220px; font-family: monospace; font-size: 11px; background: var(--theme-input-bg, #181427); color: var(--theme-accent, #D0BCFF); border: 1.5px solid rgba(var(--theme-accent-rgb, 168, 85, 247), 0.35); border-radius: 14px; resize: vertical;",
-          spellcheck: "false",
-          autocomplete: "off",
-          autocorrect: "off",
-          autocapitalize: "off",
-          "data-gramm": "false",
-          "data-gramm_editor": "false",
-          "data-enable-grammarly": "false",
-          "data-ms-editor": "false"
-        },
-        showCancelButton: true,
-        confirmButtonText: (typeof t === 'function' ? t("swal_save_json_btn", "Salva JSON") : "Salva JSON"),
-        cancelButtonText: (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla")
-      }).then((res) => {
-        if (res.isConfirmed && res.value) {
-          try {
-            const parsed = JSON.parse(res.value);
-            if (Array.isArray(parsed)) {
-              webhooksList = parsed;
-              renderWebhooksTable();
-            } else {
-              sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Formato Errato") : "Formato Errato"), (typeof t === 'function' ? t("swal_invalid_json_format", "Il JSON deve essere un array di webhook.") : "Il JSON deve essere un array di webhook."));
+        Swal.fire({
+            title: (typeof t === 'function' ? t("swal_edit_webhooks_json_title", "Modifica Webhooks in Formato JSON") : "Modifica Webhooks in Formato JSON"),
+            input: "textarea",
+            inputValue: JSON.stringify(webhooksList, null, 2),
+            inputAttributes: {
+                style: "height: 220px; font-family: monospace; font-size: 11px; background: var(--theme-input-bg, #181427); color: var(--theme-accent, #D0BCFF); border: 1.5px solid rgba(var(--theme-accent-rgb, 168, 85, 247), 0.35); border-radius: 14px; resize: vertical;",
+                spellcheck: "false",
+                autocomplete: "off",
+                autocorrect: "off",
+                autocapitalize: "off",
+                "data-gramm": "false",
+                "data-gramm_editor": "false",
+                "data-enable-grammarly": "false",
+                "data-ms-editor": "false"
+            },
+            showCancelButton: true,
+            confirmButtonText: (typeof t === 'function' ? t("swal_save_json_btn", "Salva JSON") : "Salva JSON"),
+            cancelButtonText: (typeof t === 'function' ? t("btn_cancel", "Annulla") : "Annulla")
+        }).then((res) => {
+            if (res.isConfirmed && res.value) {
+                try {
+                    const parsed = JSON.parse(res.value);
+                    if (Array.isArray(parsed)) {
+                        webhooksList = parsed;
+                        renderWebhooksTable();
+                    } else {
+                        sweetalert("error", (typeof t === 'function' ? t("swal_error_title", "Formato Errato") : "Formato Errato"), (typeof t === 'function' ? t("swal_invalid_json_format", "Il JSON deve essere un array di webhook.") : "Il JSON deve essere un array di webhook."));
+                    }
+                } catch (e) {
+                    sweetalert("error", (typeof t === 'function' ? t("swal_invalid_json_syntax", "JSON Non Valido") : "JSON Non Valido"), e.message);
+                }
             }
-          } catch(e) {
-            sweetalert("error", (typeof t === 'function' ? t("swal_invalid_json_syntax", "JSON Non Valido") : "JSON Non Valido"), e.message);
-          }
-        }
-      });
+        });
     }
 
     // --- CARICAMENTO CLIENT ---
     function loadClientForEdit() {
-      const path = window.location.href;
-      let clientId = null;
-      if (path.includes("edit/")) {
-        clientId = decodeURIComponent(path.split("edit/")[1].split("/")[0].split("?")[0].split("#")[0]);
-      } else {
-        clientId = new URLSearchParams(window.location.search).get("clientId") || new URLSearchParams(window.location.search).get("id");
-      }
+        const path = window.location.href;
+        let clientId = null;
+        if (path.includes("edit/")) {
+            clientId = decodeURIComponent(path.split("edit/")[1].split("/")[0].split("?")[0].split("#")[0]);
+        } else {
+            clientId = new URLSearchParams(window.location.search).get("clientId") || new URLSearchParams(window.location.search).get("id");
+        }
 
-      if (!clientId) {
-        document.getElementById("loading-spinner").innerHTML = `
+        if (!clientId) {
+            document.getElementById("loading-spinner").innerHTML = `
           <div class="text-red-400 font-semibold mb-3">Client ID non specificato nel percorso o query param.</div>
           <a href="/app/clients" class="m3-btn-outline text-xs">Torna alla lista client</a>
         `;
-        return;
-      }
+            return;
+        }
 
-      currentClientId = clientId;
-      document.getElementById("back-to-details-btn").href = `/app/clients/details/${encodeURIComponent(clientId)}`;
-      document.getElementById("cancel-link").href = `/app/clients/details/${encodeURIComponent(clientId)}`;
+        currentClientId = clientId;
+        document.getElementById("back-to-details-btn").href = `/app/clients/details/${encodeURIComponent(clientId)}`;
+        document.getElementById("cancel-link").href = `/app/clients/details/${encodeURIComponent(clientId)}`;
 
-      const token = getCookieOrStorage(config.access_token);
-      const url = window.location.origin + "/v1/clients";
+        const token = getCookieOrStorage(config.access_token);
+        const url = window.location.origin + "/v1/clients";
 
-      fetch(url, {
-        headers: { "Authorization": "Bearer " + token }
-      })
-      .then(async (res) => {
-        const data = await res.json();
-        const clients = data.data || [];
-        const client = clients.find(c => c.clientId === clientId);
+        fetch(url, {
+            headers: {"Authorization": "Bearer " + token}
+        })
+            .then(async (res) => {
+                const data = await res.json();
+                const clients = data.data || [];
+                const client = clients.find(c => c.clientId === clientId);
 
-        if (!client) {
-          document.getElementById("loading-spinner").innerHTML = `
+                if (!client) {
+                    document.getElementById("loading-spinner").innerHTML = `
             <div class="text-red-400 font-semibold mb-3">Nessun client trovato con identificativo: ${clientId}</div>
             <a href="/app/clients" class="m3-btn-outline text-xs">Torna alla lista client</a>
           `;
-          return;
-        }
+                    return;
+                }
 
-        populateForm(client);
-      })
-      .catch((err) => {
-        console.error(err);
-        document.getElementById("loading-spinner").innerHTML = `
+                populateForm(client);
+            })
+            .catch((err) => {
+                console.error(err);
+                document.getElementById("loading-spinner").innerHTML = `
           <div class="text-red-400 font-semibold mb-3">Errore durante il recupero dei dati del client.</div>
           <a href="/app/clients" class="m3-btn-outline text-xs">Ricarica</a>
         `;
-      });
+            });
     }
 
     function populateForm(client) {
-      document.getElementById("clientId").value = client.clientId || "";
-      document.getElementById("authType").value = client.authType || client.type || "ALL_TYPE";
-      document.getElementById("externalClientId").value = client.externalClientId || "";
-      document.getElementById("clientSecret").value = client.clientSecret || "";
-      document.getElementById("registrationToken").value = client.registrationToken || client.registration_token || "";
+        document.getElementById("clientId").value = client.clientId || "";
+        document.getElementById("authType").value = client.authType || client.type || "ALL_TYPE";
+        document.getElementById("externalClientId").value = client.externalClientId || "";
+        document.getElementById("clientSecret").value = client.clientSecret || "";
+        document.getElementById("registrationToken").value = client.registrationToken || client.registration_token || "";
 
-      document.getElementById("accessType").value = client.accessType || "ONLINE";
-      document.getElementById("authorize_redirect_status").value = client.authorize_redirect_status || "FOUND";
-      document.getElementById("tokenType").value = client.tokenType || "BEARER_JWT";
+        document.getElementById("accessType").value = client.accessType || "ONLINE";
+        document.getElementById("authorize_redirect_status").value = client.authorize_redirect_status || "FOUND";
+        document.getElementById("tokenType").value = client.tokenType || "BEARER_JWT";
 
-      // Scopes
-      if (Array.isArray(client.scopes)) {
-        document.getElementById("scopes").value = client.scopes.join(" ");
-      } else if (typeof client.scopes === "string") {
-        document.getElementById("scopes").value = client.scopes;
-      } else if (client.scopes && typeof client.scopes === "object") {
-        document.getElementById("scopes").value = Object.values(client.scopes).join(" ");
-      }
-
-      // Redirect URIs (redirect_uri e fallback_uri)
-      if (client.redirect_uri && typeof client.redirect_uri === "object" && !Array.isArray(client.redirect_uri)) {
-        document.getElementById("redirect_uri").value = client.redirect_uri.redirect_uri || "";
-        document.getElementById("fallback_uri").value = client.redirect_uri.fallback_uri || "";
-      } else if (typeof client.redirect_uri === "string") {
-        try {
-          const parsed = JSON.parse(client.redirect_uri);
-          if (typeof parsed === "object" && !Array.isArray(parsed)) {
-            document.getElementById("redirect_uri").value = parsed.redirect_uri || "";
-            document.getElementById("fallback_uri").value = parsed.fallback_uri || "";
-          } else {
-            document.getElementById("redirect_uri").value = client.redirect_uri;
-          }
-        } catch(e) {
-          document.getElementById("redirect_uri").value = client.redirect_uri;
+        // Scopes
+        if (Array.isArray(client.scopes)) {
+            document.getElementById("scopes").value = client.scopes.join(" ");
+        } else if (typeof client.scopes === "string") {
+            document.getElementById("scopes").value = client.scopes;
+        } else if (client.scopes && typeof client.scopes === "object") {
+            document.getElementById("scopes").value = Object.values(client.scopes).join(" ");
         }
-      }
 
-      // Cryptography & Expirations
-      document.getElementById("jwtSecret").value = client.jwtSecret || client.jwt_secret || "";
-      document.getElementById("jwtExpiration").value = client.jwtExpiration || client.jwt_expiration || 3600000;
-      document.getElementById("jweSecret").value = client.jweSecret || client.jwe_secret || "";
-      document.getElementById("jweExpiration").value = client.jweExpiration || client.jwe_expiration || 360000;
-
-      // Security / Emission switches
-      document.getElementById("mfaEnabled").checked = (client.mfaEnabled !== undefined) ? !!client.mfaEnabled : !!client.mfa_enabled;
-      document.getElementById("idToken").checked = (client.idToken !== undefined) ? !!client.idToken : !!client.id_token;
-      document.getElementById("accessToken").checked = (client.accessToken !== undefined) ? !!client.accessToken : !!client.access_token;
-      document.getElementById("strapiToken").checked = (client.strapiToken !== undefined) ? !!client.strapiToken : !!client.strapi_token;
-
-      // App Roles
-      if (client.appRoles || client.app_roles) {
-        const rawRoles = client.appRoles || client.app_roles;
-        if (typeof rawRoles === "string") {
-          try { appRolesList = JSON.parse(rawRoles); } catch(e) { appRolesList = []; }
-        } else if (Array.isArray(rawRoles)) {
-          appRolesList = rawRoles;
+        // Redirect URIs (redirect_uri e fallback_uri)
+        if (client.redirect_uri && typeof client.redirect_uri === "object" && !Array.isArray(client.redirect_uri)) {
+            document.getElementById("redirect_uri").value = client.redirect_uri.redirect_uri || "";
+            document.getElementById("fallback_uri").value = client.redirect_uri.fallback_uri || "";
+        } else if (typeof client.redirect_uri === "string") {
+            try {
+                const parsed = JSON.parse(client.redirect_uri);
+                if (typeof parsed === "object" && !Array.isArray(parsed)) {
+                    document.getElementById("redirect_uri").value = parsed.redirect_uri || "";
+                    document.getElementById("fallback_uri").value = parsed.fallback_uri || "";
+                } else {
+                    document.getElementById("redirect_uri").value = client.redirect_uri;
+                }
+            } catch (e) {
+                document.getElementById("redirect_uri").value = client.redirect_uri;
+            }
         }
-        if (Array.isArray(appRolesList)) {
-          appRolesList = appRolesList.map(r => typeof r === "string" ? { role: r.toUpperCase(), type: "DEFAULT", description: "" } : { role: (r.role || r.name || "").toUpperCase(), type: (r.type || "DEFAULT").toUpperCase(), description: r.description || "" });
-        }
-      } else {
-        appRolesList = [];
-      }
-      renderAppRolesTable();
 
-      // Webhooks
-      if (client.webhooks) {
-        if (typeof client.webhooks === "string") {
-          try { webhooksList = JSON.parse(client.webhooks); } catch(e) { webhooksList = []; }
-        } else if (Array.isArray(client.webhooks)) {
-          webhooksList = client.webhooks;
-        }
-      } else {
-        webhooksList = [];
-      }
-      renderWebhooksTable();
+        // Cryptography & Expirations
+        document.getElementById("jwtSecret").value = client.jwtSecret || client.jwt_secret || "";
+        document.getElementById("jwtExpiration").value = client.jwtExpiration || client.jwt_expiration || 3600000;
+        document.getElementById("jweSecret").value = client.jweSecret || client.jwe_secret || "";
+        document.getElementById("jweExpiration").value = client.jweExpiration || client.jwe_expiration || 360000;
 
-      // Mostra form e nascondi spinner
-      document.getElementById("loading-spinner").style.display = "none";
-      document.getElementById("editClientForm").style.display = "block";
+        // Security / Emission switches
+        document.getElementById("mfaEnabled").checked = (client.mfaEnabled !== undefined) ? !!client.mfaEnabled : !!client.mfa_enabled;
+        document.getElementById("idToken").checked = (client.idToken !== undefined) ? !!client.idToken : !!client.id_token;
+        document.getElementById("accessToken").checked = (client.accessToken !== undefined) ? !!client.accessToken : !!client.access_token;
+        document.getElementById("strapiToken").checked = (client.strapiToken !== undefined) ? !!client.strapiToken : !!client.strapi_token;
+
+        // App Roles
+        if (client.appRoles || client.app_roles) {
+            const rawRoles = client.appRoles || client.app_roles;
+            if (typeof rawRoles === "string") {
+                try {
+                    appRolesList = JSON.parse(rawRoles);
+                } catch (e) {
+                    appRolesList = [];
+                }
+            } else if (Array.isArray(rawRoles)) {
+                appRolesList = rawRoles;
+            }
+            if (Array.isArray(appRolesList)) {
+                appRolesList = appRolesList.map(r => typeof r === "string" ? {
+                    role: r.toUpperCase(),
+                    type: "DEFAULT",
+                    description: ""
+                } : {
+                    role: (r.role || r.name || "").toUpperCase(),
+                    type: (r.type || "DEFAULT").toUpperCase(),
+                    description: r.description || ""
+                });
+            }
+        } else {
+            appRolesList = [];
+        }
+        renderAppRolesTable();
+
+        // Webhooks
+        if (client.webhooks) {
+            if (typeof client.webhooks === "string") {
+                try {
+                    webhooksList = JSON.parse(client.webhooks);
+                } catch (e) {
+                    webhooksList = [];
+                }
+            } else if (Array.isArray(client.webhooks)) {
+                webhooksList = client.webhooks;
+            }
+        } else {
+            webhooksList = [];
+        }
+        renderWebhooksTable();
+
+        // Mostra form e nascondi spinner
+        document.getElementById("loading-spinner").style.display = "none";
+        document.getElementById("editClientForm").style.display = "block";
     }
 
     // --- VALIDAZIONE CAMPI OBBLIGATORI ---
     function validateClientForm() {
-      const errors = [];
-      const invalidEls = [];
+        const errors = [];
+        const invalidEls = [];
 
-      const clientIdEl = document.getElementById("clientId");
-      const authTypeEl = document.getElementById("authType");
-      const tokenTypeEl = document.getElementById("tokenType");
-      const jwtExpEl = document.getElementById("jwtExpiration");
-      const jweExpEl = document.getElementById("jweExpiration");
+        const clientIdEl = document.getElementById("clientId");
+        const authTypeEl = document.getElementById("authType");
+        const tokenTypeEl = document.getElementById("tokenType");
+        const jwtExpEl = document.getElementById("jwtExpiration");
+        const jweExpEl = document.getElementById("jweExpiration");
 
-      document.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
+        document.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
 
-      if (!clientIdEl.value || !clientIdEl.value.trim()) {
-        errors.push("<b>Client ID</b> è obbligatorio");
-        invalidEls.push(clientIdEl);
-      }
-
-      if (!authTypeEl.value || !authTypeEl.value.trim()) {
-        errors.push("<b>Type (Auth Type)</b> è obbligatorio");
-        invalidEls.push(authTypeEl);
-      }
-
-      if (!tokenTypeEl.value || !tokenTypeEl.value.trim()) {
-        errors.push("<b>Token Type</b> è obbligatorio");
-        invalidEls.push(tokenTypeEl);
-      }
-
-      if (!jwtExpEl.value || isNaN(parseInt(jwtExpEl.value)) || parseInt(jwtExpEl.value) <= 0) {
-        errors.push("<b>JWT Expiration</b> deve essere un numero valido positivo (es. 3600000 ms)");
-        invalidEls.push(jwtExpEl);
-      }
-
-      if (!jweExpEl.value || isNaN(parseInt(jweExpEl.value)) || parseInt(jweExpEl.value) <= 0) {
-        errors.push("<b>JWE Expiration</b> deve essere un numero valido positivo (es. 360000 ms)");
-        invalidEls.push(jweExpEl);
-      }
-
-      // Controllo ruoli con nome vuoto
-      const emptyRole = appRolesList.find(r => !r.role || !r.role.trim());
-      if (emptyRole) {
-        errors.push("<b>Ruoli Applicativi</b>: è presente una riga di ruolo con il campo Ruolo vuoto");
-      }
-
-      // Controllo presenza obbligatoria di almeno un ruolo DEFAULT
-      const hasDefaultRole = appRolesList.some(r => r.role && r.role.trim() && r.type === 'DEFAULT');
-      if (!hasDefaultRole) {
-        errors.push("<b>Ruoli Applicativi</b>: " + (typeof t === 'function' ? t('swal_role_default_required_desc', 'È obbligatorio configurare almeno un ruolo con tipologia DEFAULT.') : 'È obbligatorio configurare almeno un ruolo con tipologia DEFAULT.'));
-      }
-
-      // Controllo webhook incompleti
-      const emptyWebhook = webhooksList.find(w => !w.name || !w.name.trim() || !w.url || !w.url.trim());
-      if (emptyWebhook) {
-        errors.push("<b>Webhooks</b>: ogni webhook inserito deve avere sia Nome che URL Endpoint compilati");
-      }
-
-      if (errors.length > 0) {
-        invalidEls.forEach(el => {
-          el.classList.add("is-invalid");
-          const removeHandler = () => {
-            el.classList.remove("is-invalid");
-            el.removeEventListener("input", removeHandler);
-            el.removeEventListener("change", removeHandler);
-          };
-          el.addEventListener("input", removeHandler);
-          el.addEventListener("change", removeHandler);
-        });
-
-        if (invalidEls.length > 0) {
-          invalidEls[0].focus();
-          if (typeof invalidEls[0].scrollIntoView === "function") {
-            invalidEls[0].scrollIntoView({ behavior: "smooth", block: "center" });
-          }
+        if (!clientIdEl.value || !clientIdEl.value.trim()) {
+            errors.push("<b>Client ID</b> è obbligatorio");
+            invalidEls.push(clientIdEl);
         }
 
-        Swal.fire({
-          icon: "warning",
-          title: (typeof t === 'function' ? t("swal_missing_fields_title", "Campi Obbligatori Mancanti") : "Campi Obbligatori Mancanti"),
-          html: `<div style="text-align: left; font-size: 13px; color: var(--theme-accent, #D0BCFF);">
+        if (!authTypeEl.value || !authTypeEl.value.trim()) {
+            errors.push("<b>Type (Auth Type)</b> è obbligatorio");
+            invalidEls.push(authTypeEl);
+        }
+
+        if (!tokenTypeEl.value || !tokenTypeEl.value.trim()) {
+            errors.push("<b>Token Type</b> è obbligatorio");
+            invalidEls.push(tokenTypeEl);
+        }
+
+        if (!jwtExpEl.value || isNaN(parseInt(jwtExpEl.value)) || parseInt(jwtExpEl.value) <= 0) {
+            errors.push("<b>JWT Expiration</b> deve essere un numero valido positivo (es. 3600000 ms)");
+            invalidEls.push(jwtExpEl);
+        }
+
+        if (!jweExpEl.value || isNaN(parseInt(jweExpEl.value)) || parseInt(jweExpEl.value) <= 0) {
+            errors.push("<b>JWE Expiration</b> deve essere un numero valido positivo (es. 360000 ms)");
+            invalidEls.push(jweExpEl);
+        }
+
+        // Controllo ruoli con nome vuoto
+        const emptyRole = appRolesList.find(r => !r.role || !r.role.trim());
+        if (emptyRole) {
+            errors.push("<b>Ruoli Applicativi</b>: è presente una riga di ruolo con il campo Ruolo vuoto");
+        }
+
+        // Controllo presenza obbligatoria di almeno un ruolo DEFAULT
+        const hasDefaultRole = appRolesList.some(r => r.role && r.role.trim() && r.type === 'DEFAULT');
+        if (!hasDefaultRole) {
+            errors.push("<b>Ruoli Applicativi</b>: " + (typeof t === 'function' ? t('swal_role_default_required_desc', 'È obbligatorio configurare almeno un ruolo con tipologia DEFAULT.') : 'È obbligatorio configurare almeno un ruolo con tipologia DEFAULT.'));
+        }
+
+        // Controllo webhook incompleti
+        const emptyWebhook = webhooksList.find(w => !w.name || !w.name.trim() || !w.url || !w.url.trim());
+        if (emptyWebhook) {
+            errors.push("<b>Webhooks</b>: ogni webhook inserito deve avere sia Nome che URL Endpoint compilati");
+        }
+
+        if (errors.length > 0) {
+            invalidEls.forEach(el => {
+                el.classList.add("is-invalid");
+                const removeHandler = () => {
+                    el.classList.remove("is-invalid");
+                    el.removeEventListener("input", removeHandler);
+                    el.removeEventListener("change", removeHandler);
+                };
+                el.addEventListener("input", removeHandler);
+                el.addEventListener("change", removeHandler);
+            });
+
+            if (invalidEls.length > 0) {
+                invalidEls[0].focus();
+                if (typeof invalidEls[0].scrollIntoView === "function") {
+                    invalidEls[0].scrollIntoView({behavior: "smooth", block: "center"});
+                }
+            }
+
+            Swal.fire({
+                icon: "warning",
+                title: (typeof t === 'function' ? t("swal_missing_fields_title", "Campi Obbligatori Mancanti") : "Campi Obbligatori Mancanti"),
+                html: `<div style="text-align: left; font-size: 13px; color: var(--theme-accent, #D0BCFF);">
             ${typeof t === 'function' ? t("swal_missing_client_edit_desc", "Per aggiornare il client, compila o correggi i seguenti campi:") : "Per aggiornare il client, compila o correggi i seguenti campi:"}
             <ul style="margin-top: 10px; margin-left: 15px; list-style-type: disc; color: #F87171; line-height: 1.6;">
               ${errors.map(e => `<li>${e}</li>`).join("")}
             </ul>
           </div>`,
-          confirmButtonText: (typeof t === 'function' ? t("swal_understood_btn", "Ho capito") : "Ho capito")
-        });
-        return false;
-      }
-      return true;
+                confirmButtonText: (typeof t === 'function' ? t("swal_understood_btn", "Ho capito") : "Ho capito")
+            });
+            return false;
+        }
+        return true;
     }
 
     // --- SUBMISSION ---
     function submitEditClient() {
-      if (!validateClientForm()) return;
+        if (!validateClientForm()) return;
 
-      const clientId = document.getElementById("clientId").value.trim();
-      const secret = document.getElementById("clientSecret").value.trim();
+        const clientId = document.getElementById("clientId").value.trim();
+        const secret = document.getElementById("clientSecret").value.trim();
 
-      const redirectUrisInput = document.getElementById("redirect_uri").value.trim();
-      const fallbackUriInput = document.getElementById("fallback_uri").value.trim();
-      const scopesInput = document.getElementById("scopes").value.trim();
+        const redirectUrisInput = document.getElementById("redirect_uri").value.trim();
+        const fallbackUriInput = document.getElementById("fallback_uri").value.trim();
+        const scopesInput = document.getElementById("scopes").value.trim();
 
-      const redirectMap = {};
-      if (redirectUrisInput) redirectMap["redirect_uri"] = redirectUrisInput;
-      if (fallbackUriInput) redirectMap["fallback_uri"] = fallbackUriInput;
+        const redirectMap = {};
+        if (redirectUrisInput) redirectMap["redirect_uri"] = redirectUrisInput;
+        if (fallbackUriInput) redirectMap["fallback_uri"] = fallbackUriInput;
 
-      const scopesList = scopesInput ? scopesInput.split(/[\s,]+/).map(s => s.trim()).filter(Boolean) : null;
-      const cleanRoles = appRolesList.filter(r => r.role && r.role.trim() !== "");
-      const cleanWebhooks = webhooksList.filter(w => w.name && w.url);
+        const scopesList = scopesInput ? scopesInput.split(/[\s,]+/).map(s => s.trim()).filter(Boolean) : null;
+        const cleanRoles = appRolesList.filter(r => r.role && r.role.trim() !== "");
+        const cleanWebhooks = webhooksList.filter(w => w.name && w.url);
 
-      const payload = {
-        clientId: clientId,
-        authType: document.getElementById("authType").value,
-        externalClientId: document.getElementById("externalClientId").value.trim() || null,
-        clientSecret: secret,
-        accessType: document.getElementById("accessType").value,
-        scopes: scopesList,
-        authorize_redirect_status: document.getElementById("authorize_redirect_status").value,
-        redirect_uri: Object.keys(redirectMap).length > 0 ? redirectMap : null,
-        tokenType: document.getElementById("tokenType").value,
-        jwtSecret: document.getElementById("jwtSecret").value.trim() || null,
-        jwtExpiration: parseInt(document.getElementById("jwtExpiration").value) || 3600000,
-        jweSecret: document.getElementById("jweSecret").value.trim() || null,
-        jweExpiration: parseInt(document.getElementById("jweExpiration").value) || 360000,
-        registrationToken: document.getElementById("registrationToken").value.trim() || null,
-        mfaEnabled: document.getElementById("mfaEnabled").checked,
-        idToken: document.getElementById("idToken").checked,
-        accessToken: document.getElementById("accessToken").checked,
-        appRoles: cleanRoles.length > 0 ? cleanRoles : null,
-        webhooks: cleanWebhooks.length > 0 ? cleanWebhooks : null
-      };
+        const payload = {
+            clientId: clientId,
+            authType: document.getElementById("authType").value,
+            externalClientId: document.getElementById("externalClientId").value.trim() || null,
+            clientSecret: secret,
+            accessType: document.getElementById("accessType").value,
+            scopes: scopesList,
+            authorize_redirect_status: document.getElementById("authorize_redirect_status").value,
+            redirect_uri: Object.keys(redirectMap).length > 0 ? redirectMap : null,
+            tokenType: document.getElementById("tokenType").value,
+            jwtSecret: document.getElementById("jwtSecret").value.trim() || null,
+            jwtExpiration: parseInt(document.getElementById("jwtExpiration").value) || 3600000,
+            jweSecret: document.getElementById("jweSecret").value.trim() || null,
+            jweExpiration: parseInt(document.getElementById("jweExpiration").value) || 360000,
+            registrationToken: document.getElementById("registrationToken").value.trim() || null,
+            mfaEnabled: document.getElementById("mfaEnabled").checked,
+            idToken: document.getElementById("idToken").checked,
+            accessToken: document.getElementById("accessToken").checked,
+            appRoles: cleanRoles.length > 0 ? cleanRoles : null,
+            webhooks: cleanWebhooks.length > 0 ? cleanWebhooks : null
+        };
 
-      const token = getCookieOrStorage(config.access_token);
-      const url = window.location.origin + "/v1/clients";
+        const token = getCookieOrStorage(config.access_token);
+        const url = window.location.origin + "/v1/clients";
 
-      fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify(payload)
-      })
-      .then(async (res) => {
-        if (res.ok) {
-          sweetalert("success", "Client Aggiornato", `Tutte le configurazioni del client ${clientId} sono state aggiornate con successo.`);
-          setTimeout(() => {
-            window.location.href = `/app/clients/details/${encodeURIComponent(clientId)}`;
-          }, 1500);
-        } else {
-          const err = await res.json().catch(() => ({}));
-          sweetalert("error", "Errore Aggiornamento", err.message || err.error?.message || "Impossibile aggiornare il client.");
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        sweetalert("error", "Errore di Rete", "Connessione al server fallita.");
-      });
+        fetch(url, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(async (res) => {
+                if (res.ok) {
+                    sweetalert("success", "Client Aggiornato", `Tutte le configurazioni del client ${clientId} sono state aggiornate con successo.`);
+                    setTimeout(() => {
+                        window.location.href = `/app/clients/details/${encodeURIComponent(clientId)}`;
+                    }, 1500);
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    sweetalert("error", "Errore Aggiornamento", err.message || err.error?.message || "Impossibile aggiornare il client.");
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                sweetalert("error", "Errore di Rete", "Connessione al server fallita.");
+            });
     }
-  </script>
+</script>
 
 </body>
 </html>
