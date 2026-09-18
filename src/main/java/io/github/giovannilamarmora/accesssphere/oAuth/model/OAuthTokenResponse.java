@@ -22,6 +22,7 @@ public class OAuthTokenResponse extends GenericDTO {
   private JsonNode googleToken;
   private JWTData userInfo;
   private User user;
+  private String state;
 
   public OAuthTokenResponse(AuthToken token) {
     this.token = token;

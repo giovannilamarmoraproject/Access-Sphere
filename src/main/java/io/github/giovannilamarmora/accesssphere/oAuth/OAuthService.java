@@ -90,13 +90,16 @@ public class OAuthService {
       String registration_token,
       String bearer,
       String state,
+      String prompt,
       ServerWebExchange exchange) {
 
     LOG.info(
-        "🔐 [OAUTH AUTHORIZE] Starting authorization flow - clientId: {}, accessType: {}, responseType: {}",
+        "🔐 [OAUTH AUTHORIZE] Starting authorization flow - clientId: {}, accessType: {}, responseType: {}, state: {}, prompt: {}",
         clientId,
         accessType,
-        responseType);
+        responseType,
+        state,
+        prompt);
 
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
@@ -109,7 +112,7 @@ public class OAuthService {
                 "🛡️ [OAUTH BEARER] Bearer token provided or responseType=token, validating bearer token for clientId: {}",
                 clientId);
             OAuthValidator.validateResponseType("token", responseType);
-            return handleBearerToken(bearer, clientCredential, exchange);
+            return handleBearerToken(bearer, clientCredential, exchange, state);
           }
 
           LOG.info(
@@ -124,6 +127,8 @@ public class OAuthService {
                   finalRedirectUri,
                   scope,
                   registration_token,
+                  state,
+                  prompt,
                   exchange));
         });
   }
@@ -240,7 +245,7 @@ public class OAuthService {
    * @return ResponseEntity con l'esito della validazione.
    */
   private Mono<ResponseEntity<?>> handleBearerToken(
-      String bearer, ClientCredential clientCredential, ServerWebExchange exchange) {
+      String bearer, ClientCredential clientCredential, ServerWebExchange exchange, String state) {
     LOG.info("🛡️ [OAUTH BEARER] Bearer token detected, executing authorization validation");
 
     try {
@@ -258,7 +263,8 @@ public class OAuthService {
           (!ObjectUtils.isEmpty(exchange.getRequest().getQueryParams().get("include_user_data"))
                   && Boolean.parseBoolean(
                       exchange.getRequest().getQueryParams().get("include_user_data").getFirst()))
-              || (!ObjectUtils.isEmpty(exchange.getRequest().getQueryParams().get("includeUserData"))
+              || (!ObjectUtils.isEmpty(
+                      exchange.getRequest().getQueryParams().get("includeUserData"))
                   && Boolean.parseBoolean(
                       exchange.getRequest().getQueryParams().get("includeUserData").getFirst()));
 
@@ -271,6 +277,9 @@ public class OAuthService {
                       user.setPassword(null);
                       OAuthTokenResponse tokenResponse =
                           new OAuthTokenResponse(token, accessTokenData.getPayload(), null, user);
+                      if (!ObjectUtils.isEmpty(state)) {
+                        tokenResponse.setState(state);
+                      }
                       Response response =
                           new Response(
                               HttpStatus.OK.value(),
@@ -292,12 +301,14 @@ public class OAuthService {
         return userResponse.map(r -> (ResponseEntity<?>) r);
       }
 
+      OAuthTokenResponse tokenResponse =
+          new OAuthTokenResponse(token, accessTokenData.getPayload());
+      if (!ObjectUtils.isEmpty(state)) {
+        tokenResponse.setState(state);
+      }
       Response response =
           new Response(
-              HttpStatus.OK.value(),
-              "Token is valid",
-              TraceUtils.getSpanID(),
-              new OAuthTokenResponse(token, accessTokenData.getPayload()));
+              HttpStatus.OK.value(), "Token is valid", TraceUtils.getSpanID(), tokenResponse);
 
       LOG.info(
           "✅ [OAUTH BEARER] Authorization successful for clientId: {}",
@@ -381,6 +392,8 @@ public class OAuthService {
       String finalRedirectUri,
       String scope,
       String registrationToken,
+      String state,
+      String prompt,
       ServerWebExchange exchange) {
 
     ServerHttpRequest request = exchange.getRequest();
@@ -388,8 +401,10 @@ public class OAuthService {
 
     OAuthValidator.validateClient(
         clientCredential, responseType, accessType, finalRedirectUri, scope);
+    OAuthValidator.validatePrompt(prompt);
     URI location =
-        GrpcService.getGoogleOAuthLocation(scope, finalRedirectUri, accessType, clientCredential);
+        GrpcService.getGoogleOAuthLocation(
+            scope, finalRedirectUri, accessType, state, prompt, clientCredential);
 
     if (!ObjectToolkit.isNullOrEmpty(finalRedirectUri))
       CookieManager.setCookieInResponse(
@@ -397,12 +412,16 @@ public class OAuthService {
     if (!ObjectToolkit.isNullOrEmpty(registrationToken))
       CookieManager.setCookieInResponse(
           Cookie.COOKIE_TOKEN, registrationToken, cookieDomain, response);
+    if (!ObjectToolkit.isNullOrEmpty(state))
+      CookieManager.setCookieInResponse(Cookie.COOKIE_STATE, state, cookieDomain, response);
 
     LOG.info(
-        "✅ [OAUTH AUTHORIZE] Authorization redirect prepared - clientId: {}, accessType: {}, responseType: {}, targetLocation: {}",
+        "✅ [OAUTH AUTHORIZE] Authorization redirect prepared - clientId: {}, accessType: {}, responseType: {}, state: {}, prompt: {}, targetLocation: {}",
         clientCredential.getClientId(),
         accessType,
         responseType,
+        state,
+        prompt,
         location);
 
     return ResponseEntity.status(clientCredential.getAuthorize_redirect_status())
@@ -426,10 +445,12 @@ public class OAuthService {
       ServerHttpRequest request,
       ServerHttpResponse response) {
     LOG.info(
-        "🗝️ [OAUTH TOKEN] Starting oAuth/2.0/token processing - clientId: {}, grantType: {}",
+        "🗝️ [OAUTH TOKEN] Starting oAuth/2.0/token processing - clientId: {}, grantType: {}, prompt: {}",
         clientId,
-        grant_type);
+        grant_type,
+        prompt);
     OAuthValidator.validateOAuthToken(clientId, grant_type);
+    OAuthValidator.validatePrompt(prompt);
     Mono<ClientCredential> clientCredentialMono =
         clientService.getClientCredentialByClientID(clientId);
 

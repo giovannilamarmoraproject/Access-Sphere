@@ -74,6 +74,13 @@ public class GoogleAuthService {
             || (!ObjectUtils.isEmpty(request.getQueryParams().get("includeUserData"))
                 && Boolean.parseBoolean(
                     request.getQueryParams().get("includeUserData").getFirst()));
+
+    String state = request.getQueryParams().getFirst("state");
+    if (ObjectUtils.isEmpty(state)) {
+      state = RequestManager.getCookieOrHeaderData(Cookie.COOKIE_STATE, request);
+    }
+    final String finalState = state;
+
     return userService
         .getUserByEmail(googleModel.getJwtData().getEmail())
         .map(
@@ -88,15 +95,21 @@ public class GoogleAuthService {
                   tokenService.generateToken(
                       googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
 
+              OAuthTokenResponse tokenData =
+                  new OAuthTokenResponse(
+                      token,
+                      includeUserInfo ? googleModel.getJwtData() : null,
+                      includeUserData ? user : null);
+              if (!ObjectUtils.isEmpty(finalState)) {
+                tokenData.setState(finalState);
+              }
+
               Response response =
                   new Response(
                       HttpStatus.OK.value(),
                       "Login successfully, welcome " + user.getUsername() + " !",
                       TraceUtils.getSpanID(),
-                      new OAuthTokenResponse(
-                          token,
-                          includeUserInfo ? googleModel.getJwtData() : null,
-                          includeUserData ? user : null));
+                      tokenData);
 
               CookieManager.setCookieInResponse(
                   Cookie.COOKIE_ACCESS_TOKEN,
@@ -107,6 +120,15 @@ public class GoogleAuthService {
               URI finalRedirectURI =
                   OAuthMapper.getFinalRedirectURI(
                       clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+              if (!ObjectUtils.isEmpty(finalState) && !finalRedirectURI.toString().contains("state=")) {
+                String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";
+                finalRedirectURI =
+                    URI.create(
+                        finalRedirectURI.toString()
+                            + separator
+                            + "state="
+                            + java.net.URLEncoder.encode(finalState, java.nio.charset.StandardCharsets.UTF_8));
+              }
               return ResponseEntity.ok().location(finalRedirectURI).body(response);
             })
         .onErrorResume(
@@ -159,18 +181,32 @@ public class GoogleAuthService {
                                   googleModel.getJwtData(),
                                   clientCredential,
                                   googleModel.getTokenResponse());
+                          OAuthTokenResponse tokenData =
+                              new OAuthTokenResponse(
+                                  token,
+                                  includeUserInfo ? googleModel.getJwtData() : null,
+                                  includeUserData ? user1 : null);
+                          if (!ObjectUtils.isEmpty(finalState)) {
+                            tokenData.setState(finalState);
+                          }
                           Response response =
                               new Response(
                                   HttpStatus.OK.value(),
                                   "Login successfully, welcome " + user1.getUsername() + "!",
                                   TraceUtils.getSpanID(),
-                                  new OAuthTokenResponse(
-                                      token,
-                                      includeUserInfo ? googleModel.getJwtData() : null,
-                                      includeUserData ? user1 : null));
+                                  tokenData);
                           URI finalRedirectURI =
                               OAuthMapper.getFinalRedirectURI(
                                   clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+                          if (!ObjectUtils.isEmpty(finalState) && !finalRedirectURI.toString().contains("state=")) {
+                            String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";
+                            finalRedirectURI =
+                                URI.create(
+                                    finalRedirectURI.toString()
+                                        + separator
+                                        + "state="
+                                        + java.net.URLEncoder.encode(finalState, java.nio.charset.StandardCharsets.UTF_8));
+                          }
                           return ResponseEntity.ok().location(finalRedirectURI).body(response);
                         });
               }

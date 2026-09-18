@@ -18,6 +18,12 @@
             (window.accessSphereConfig &&
                 (window.accessSphereConfig.include_user_info)) ??
             false,
+        state:
+            (window.accessSphereConfig && window.accessSphereConfig.state) ||
+            null,
+        prompt:
+            (window.accessSphereConfig && window.accessSphereConfig.prompt) ||
+            null,
         authorize: "/v1/oauth2/authorize",
         token: "/v1/oauth2/token",
         logout: "/v1/oauth2/logout",
@@ -97,6 +103,12 @@
             }
             if (window.accessSphereConfig.include_user_info !== undefined) {
                 authConfig.include_user_info = window.accessSphereConfig.include_user_info;
+            }
+            if (window.accessSphereConfig.state !== undefined) {
+                authConfig.state = window.accessSphereConfig.state;
+            }
+            if (window.accessSphereConfig.prompt !== undefined) {
+                authConfig.prompt = window.accessSphereConfig.prompt;
             }
         }
     }
@@ -235,6 +247,19 @@
             urlParams.append("include_user_info", "true");
         }
 
+        const state =
+            (window.accessSphereConfig && window.accessSphereConfig.state) ||
+            authConfig.state;
+        if (state) {
+            urlParams.append("state", state);
+        }
+        const prompt =
+            (window.accessSphereConfig && window.accessSphereConfig.prompt) ||
+            authConfig.prompt;
+        if (prompt) {
+            urlParams.append("prompt", prompt);
+        }
+
         const url =
             authConfig.accessSphereUrl +
             authConfig.authorize +
@@ -291,6 +316,15 @@
     function exchangeCodeForToken(code) {
         const urlParams = new URLSearchParams(window.location.search);
         const scope = urlParams.get("scope");
+        const state =
+            urlParams.get("state") ||
+            (window.accessSphereConfig && window.accessSphereConfig.state) ||
+            authConfig.state;
+        const prompt =
+            urlParams.get("prompt") ||
+            (window.accessSphereConfig && window.accessSphereConfig.prompt) ||
+            authConfig.prompt;
+        authConfig.lastReceivedState = state;
 
         const params = new URLSearchParams({
             client_id: authConfig.client_id,
@@ -300,6 +334,12 @@
             scope: scope,
         });
 
+        if (state) {
+            params.append("state", state);
+        }
+        if (prompt) {
+            params.append("prompt", prompt);
+        }
         if (authConfig.include_user_data) {
             params.append("include_user_data", "true");
         }
@@ -401,6 +441,13 @@
                 );
             }
 
+            const receivedState =
+                (response.data && response.data.state) ||
+                authConfig.lastReceivedState ||
+                new URLSearchParams(window.location.search).get("state") ||
+                authConfig.state ||
+                null;
+
             // Propaga l'intero oggetto di risposta al Frontend tramite CustomEvent
             const event = new CustomEvent(eventType.value, {
                 detail: {
@@ -408,6 +455,7 @@
                     timestamp: Date.now(),
                     action: eventType.name,
                     data: response,
+                    state: receivedState,
                     error: null,
                 },
                 bubbles: true,
@@ -419,6 +467,11 @@
     function checkAndHandleError(response, eventType) {
         if (response && response.error) {
             localStorage.clear();
+            const receivedState =
+                authConfig.lastReceivedState ||
+                new URLSearchParams(window.location.search).get("state") ||
+                authConfig.state ||
+                null;
             const event = new CustomEvent(eventType.value, {
                 bubbles: true, // Importante per far propagare l'evento
                 detail: {
@@ -426,6 +479,7 @@
                     timestamp: Date.now(),
                     action: eventType.name,
                     data: null,
+                    state: receivedState,
                     error: response, // Qui passi l'errore
                 },
             });

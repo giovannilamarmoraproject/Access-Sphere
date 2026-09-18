@@ -38,7 +38,12 @@ public class GrpcService {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
   public static URI getGoogleOAuthLocation(
-      String scope, String redirectUri, String accessType, ClientCredential clientCredential) {
+      String scope,
+      String redirectUri,
+      String accessType,
+      String state,
+      String prompt,
+      ClientCredential clientCredential) {
     try {
       String redirect =
           GoogleGrpcService.startGoogleAuthorization(
@@ -46,12 +51,20 @@ public class GrpcService {
               redirectUri,
               accessType,
               clientCredential.getExternalClientId(),
-              clientCredential.getClientSecret());
+              clientCredential.getClientSecret(),
+              state,
+              prompt);
       return new URI(redirect);
     } catch (IOException | GeneralSecurityException | URISyntaxException e) {
       LOG.error("An error happened during oAuth Google Authorization, message is {}", e.getMessage());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
+  public static URI getGoogleOAuthLocation(
+      String scope, String redirectUri, String accessType, ClientCredential clientCredential) {
+    return getGoogleOAuthLocation(scope, redirectUri, accessType, null, null, clientCredential);
   }
 
   /**

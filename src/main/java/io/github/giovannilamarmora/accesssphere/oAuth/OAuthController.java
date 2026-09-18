@@ -82,6 +82,11 @@ public interface OAuthController {
               description = OpenAPI.Params.Description.STATE,
               example = OpenAPI.Params.Example.STATE)
           String state,
+      @RequestParam(value = "prompt", required = false)
+          @Schema(
+              description = OpenAPI.Params.Description.PROMPT,
+              example = OpenAPI.Params.Example.PROMPT)
+          String prompt,
       ServerWebExchange exchange);
 
   @PostMapping(value = "/token", produces = MediaType.APPLICATION_JSON_VALUE)

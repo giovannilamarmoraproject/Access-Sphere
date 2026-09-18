@@ -36,7 +36,9 @@ public class GoogleGrpcService {
       String redirect_uri,
       String access_type,
       String clientId,
-      String clientSecret)
+      String clientSecret,
+      String state,
+      String prompt)
       throws IOException, GeneralSecurityException {
     HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
     AuthorizationCodeFlow flow =
@@ -46,7 +48,25 @@ public class GoogleGrpcService {
             .build();
     AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl();
     authorizationUrl.setRedirectUri(redirect_uri);
+    if (!ObjectUtils.isEmpty(state)) {
+      authorizationUrl.setState(state);
+    }
+    if (!ObjectUtils.isEmpty(prompt)) {
+      authorizationUrl.set("prompt", prompt);
+    }
     return authorizationUrl.build();
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)
+  public static String startGoogleAuthorization(
+      List<String> scopes,
+      String redirect_uri,
+      String access_type,
+      String clientId,
+      String clientSecret)
+      throws IOException, GeneralSecurityException {
+    return startGoogleAuthorization(
+        scopes, redirect_uri, access_type, clientId, clientSecret, null, null);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.GRPC)

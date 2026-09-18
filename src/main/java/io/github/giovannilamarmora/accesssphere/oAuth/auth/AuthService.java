@@ -27,6 +27,7 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.CookieManager;
+import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.net.URI;
 import java.util.Base64;
 import org.slf4j.Logger;
@@ -110,8 +111,16 @@ public class AuthService {
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
     boolean includeUserData =
-        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
-            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
+        (!ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
+            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst()))
+        || (!ObjectUtils.isEmpty(request.getQueryParams().get("includeUserData"))
+            && Boolean.parseBoolean(request.getQueryParams().get("includeUserData").getFirst()));
+
+    String state = request.getQueryParams().getFirst("state");
+    if (ObjectUtils.isEmpty(state)) {
+      state = RequestManager.getCookieOrHeaderData(Cookie.COOKIE_STATE, request);
+    }
+    final String finalState = state;
 
     return performLogin(username, email, password, clientCredential, request)
         .map(
@@ -120,13 +129,18 @@ public class AuthService {
                   clientCredential, tokenResponse.getUser().getRoles());
 
               if (!ObjectToolkit.isNullOrEmpty(tokenResponse.getToken().getTemp_token())) {
+                OAuthTokenResponse mfaTokenResponse =
+                    new OAuthTokenResponse(tokenResponse.getToken());
+                if (!ObjectUtils.isEmpty(finalState)) {
+                  mfaTokenResponse.setState(finalState);
+                }
                 return ResponseEntity.status(HttpStatus.OK)
                     .body(
                         new Response(
                             HttpStatus.OK.value(),
                             "MFA Verification Required",
                             TraceUtils.getSpanID(),
-                            new OAuthTokenResponse(tokenResponse.getToken())));
+                            mfaTokenResponse));
               }
               return setLoginResponse(
                   tokenResponse,
@@ -134,6 +148,7 @@ public class AuthService {
                   includeUserInfo,
                   includeUserData,
                   redirect_uri,
+                  finalState,
                   cookieDomain,
                   serverHttpResponse);
             });
@@ -195,6 +210,26 @@ public class AuthService {
       String redirect_uri,
       String cookieDomain,
       ServerHttpResponse httpResponse) {
+    return setLoginResponse(
+        tokenResponse,
+        clientCredential,
+        includeUserInfo,
+        includeUserData,
+        redirect_uri,
+        null,
+        cookieDomain,
+        httpResponse);
+  }
+
+  public static ResponseEntity<Response> setLoginResponse(
+      OAuthTokenResponse tokenResponse,
+      ClientCredential clientCredential,
+      boolean includeUserInfo,
+      boolean includeUserData,
+      String redirect_uri,
+      String state,
+      String cookieDomain,
+      ServerHttpResponse httpResponse) {
     String message =
         "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
 
@@ -203,6 +238,9 @@ public class AuthService {
             tokenResponse.getToken(),
             includeUserInfo ? tokenResponse.getUserInfo() : null,
             includeUserData ? tokenResponse.getUser() : null);
+    if (!ObjectUtils.isEmpty(state)) {
+      tokenData.setState(state);
+    }
     if (!ObjectToolkit.isNullOrEmpty(tokenResponse.getUser())
         && !ObjectToolkit.isNullOrEmpty(tokenResponse.getUser().getAttributes())) {
       try {
@@ -231,6 +269,15 @@ public class AuthService {
     URI finalRedirectURI =
         OAuthMapper.getFinalRedirectURI(
             clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+    if (!ObjectUtils.isEmpty(state) && !finalRedirectURI.toString().contains("state=")) {
+      String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";
+      finalRedirectURI =
+          URI.create(
+              finalRedirectURI.toString()
+                  + separator
+                  + "state="
+                  + java.net.URLEncoder.encode(state, java.nio.charset.StandardCharsets.UTF_8));
+    }
     return ResponseEntity.ok().location(finalRedirectURI).body(response);
   }
 

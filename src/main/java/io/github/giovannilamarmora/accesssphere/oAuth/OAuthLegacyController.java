@@ -114,6 +114,11 @@ public class OAuthLegacyController {
               description = OpenAPI.Params.Description.STATE,
               example = OpenAPI.Params.Example.STATE)
           String state,
+      @RequestParam(value = "prompt", required = false)
+          @Schema(
+              description = OpenAPI.Params.Description.PROMPT,
+              example = OpenAPI.Params.Example.PROMPT)
+          String prompt,
       ServerWebExchange exchange) {
     return oAuthService.authorize(
         responseType,
@@ -124,6 +129,7 @@ public class OAuthLegacyController {
         registration_token,
         bearer,
         state,
+        prompt,
         exchange);
   }
 

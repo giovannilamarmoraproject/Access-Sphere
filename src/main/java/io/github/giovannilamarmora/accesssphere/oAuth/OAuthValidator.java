@@ -267,6 +267,22 @@ public class OAuthValidator {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validatePrompt(String prompt) {
+    if (ObjectToolkit.isNullOrEmpty(prompt)) {
+      return;
+    }
+    List<String> allowedPrompts = List.of("none", "login", "consent", "select_account");
+    for (String p : prompt.trim().split("\\s+")) {
+      if (!allowedPrompts.contains(p)) {
+        LOG.error("Invalid prompt '{}' provided", p);
+        throw new OAuthException(
+            ExceptionMap.ERR_OAUTH_400,
+            "Invalid prompt provided! Allowed values are: none, login, consent, select_account");
+      }
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRedirectUri(
       Map<String, String> expected_redirectUri, String actual_redirectUri, String client_id) {
     if (ObjectToolkit.isNullOrEmpty(expected_redirectUri)
