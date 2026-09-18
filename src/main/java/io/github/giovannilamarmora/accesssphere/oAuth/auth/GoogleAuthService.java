@@ -1,10 +1,10 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
+import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
+import io.github.giovannilamarmora.accesssphere.data.user.admin.UserAdminService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcMapper;
@@ -37,7 +37,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
-import io.github.giovannilamarmora.accesssphere.data.user.admin.UserAdminService;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
@@ -62,11 +61,19 @@ public class GoogleAuthService {
       ServerHttpRequest request,
       ServerHttpResponse serverHttpResponse) {
     boolean includeUserInfo =
-        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
-            && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
+        (!ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
+                && Boolean.parseBoolean(
+                    request.getQueryParams().get("include_user_info").getFirst()))
+            || (!ObjectUtils.isEmpty(request.getQueryParams().get("includeUserInfo"))
+                && Boolean.parseBoolean(
+                    request.getQueryParams().get("includeUserInfo").getFirst()));
     boolean includeUserData =
-        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
-            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
+        (!ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
+                && Boolean.parseBoolean(
+                    request.getQueryParams().get("include_user_data").getFirst()))
+            || (!ObjectUtils.isEmpty(request.getQueryParams().get("includeUserData"))
+                && Boolean.parseBoolean(
+                    request.getQueryParams().get("includeUserData").getFirst()));
     return userService
         .getUserByEmail(googleModel.getJwtData().getEmail())
         .map(
@@ -159,18 +166,12 @@ public class GoogleAuthService {
                                   TraceUtils.getSpanID(),
                                   new OAuthTokenResponse(
                                       token,
-                                      null,
                                       includeUserInfo ? googleModel.getJwtData() : null,
                                       includeUserData ? user1 : null));
-                          // includeUserInfo
-                          //    ? new OAuthTokenResponse(
-                          //        token,
-                          //        googleModel.getJwtData(),
-                          //        includeUserData ? user1 : null)
-                          //    : includeUserData
-                          //        ? new OAuthTokenResponse(token, user1)
-                          //        : token);
-                          return ResponseEntity.ok(response);
+                          URI finalRedirectURI =
+                              OAuthMapper.getFinalRedirectURI(
+                                  clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+                          return ResponseEntity.ok().location(finalRedirectURI).body(response);
                         });
               }
               return Mono.error(throwable);
@@ -187,8 +188,12 @@ public class GoogleAuthService {
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
     boolean includeUserData =
-        !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
-            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
+        (!ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
+                && Boolean.parseBoolean(
+                    request.getQueryParams().get("include_user_data").getFirst()))
+            || (!ObjectUtils.isEmpty(request.getQueryParams().get("includeUserData"))
+                && Boolean.parseBoolean(
+                    request.getQueryParams().get("includeUserData").getFirst()));
 
     String token = accessTokenData.getPayload().get("refresh_token").textValue();
 

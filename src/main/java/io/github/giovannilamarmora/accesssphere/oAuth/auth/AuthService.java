@@ -164,6 +164,9 @@ public class AuthService {
               JWTData jwtData =
                   JWTData.generateJWTData(
                       authenticatedUser, clientCredential, SubjectType.CUSTOMER, request);
+              // AuthToken token =
+              //    tokenService.generateToken(
+              //        jwtData, clientCredential, authenticatedUser.getAttributes());
               AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
               LOG.debug(
                   "✅ Login process ended successfully for user {}",
@@ -195,15 +198,26 @@ public class AuthService {
     String message =
         "Login Successfully! Welcome back " + tokenResponse.getUser().getUsername() + "!";
 
+    OAuthTokenResponse tokenData =
+        new OAuthTokenResponse(
+            tokenResponse.getToken(),
+            includeUserInfo ? tokenResponse.getUserInfo() : null,
+            includeUserData ? tokenResponse.getUser() : null);
+    if (!ObjectToolkit.isNullOrEmpty(tokenResponse.getUser())
+        && !ObjectToolkit.isNullOrEmpty(tokenResponse.getUser().getAttributes())) {
+      try {
+        tokenData.setPayload(
+            io.github.giovannilamarmora.utils.utilities.Mapper.readObject(
+                io.github.giovannilamarmora.utils.utilities.Mapper.writeObjectToString(
+                    tokenResponse.getUser().getAttributes()),
+                com.fasterxml.jackson.databind.JsonNode.class));
+      } catch (Exception e) {
+        LOG.warn("⚠️ Failed to serialize user attributes to payload: {}", e.getMessage());
+      }
+    }
+
     Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            message,
-            TraceUtils.getSpanID(),
-            new OAuthTokenResponse(
-                tokenResponse.getToken(),
-                includeUserInfo ? tokenResponse.getUserInfo() : null,
-                includeUserData ? tokenResponse.getUser() : null));
+        new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), tokenData);
 
     LOG.info("✅ Login process ended for user {}", tokenResponse.getUser().getUsername());
     if (ObjectUtils.isEmpty(redirect_uri)) return ResponseEntity.ok(response);

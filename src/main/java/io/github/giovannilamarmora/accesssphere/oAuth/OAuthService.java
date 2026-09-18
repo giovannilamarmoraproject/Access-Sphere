@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
+import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
@@ -60,6 +61,7 @@ public class OAuthService {
   @Autowired private GoogleAuthService googleAuthService;
   @Autowired private AccessTokenService accessTokenService;
   @Autowired private AccessTokenData accessTokenData;
+  @Autowired private UserService userService;
 
   /**
    * Gestisce l'endpoint di autorizzazione OAuth 2.0 (/oauth2/authorize). Determina se la richiesta
@@ -100,11 +102,11 @@ public class OAuthService {
         clientService.getClientCredentialByClientID(clientId);
     String finalRedirectUri = URLUtils.decodeURLValue(redirect_uri);
 
-    return clientCredentialMono.map(
+    return clientCredentialMono.flatMap(
         clientCredential -> {
           if (StringUtils.hasText(bearer) || responseType.equalsIgnoreCase("token")) {
             LOG.info(
-                "🛡️ [OAUTH AUTHORIZE] Bearer token provided or responseType=token, validating bearer token for clientId: {}",
+                "🛡️ [OAUTH BEARER] Bearer token provided or responseType=token, validating bearer token for clientId: {}",
                 clientId);
             OAuthValidator.validateResponseType("token", responseType);
             return handleBearerToken(bearer, clientCredential, exchange);
@@ -114,14 +116,15 @@ public class OAuthService {
               "🌐 [OAUTH AUTHORIZE] Initiating standard OAuth authorization redirect for clientId: {}, redirectUri: {}",
               clientId,
               finalRedirectUri);
-          return handleOAuthAuthorization(
-              clientCredential,
-              responseType,
-              accessType,
-              finalRedirectUri,
-              scope,
-              registration_token,
-              exchange);
+          return Mono.just(
+              handleOAuthAuthorization(
+                  clientCredential,
+                  responseType,
+                  accessType,
+                  finalRedirectUri,
+                  scope,
+                  registration_token,
+                  exchange));
         });
   }
 
@@ -236,7 +239,7 @@ public class OAuthService {
    * @param exchange Contesto HTTP.
    * @return ResponseEntity con l'esito della validazione.
    */
-  private ResponseEntity<?> handleBearerToken(
+  private Mono<ResponseEntity<?>> handleBearerToken(
       String bearer, ClientCredential clientCredential, ServerWebExchange exchange) {
     LOG.info("🛡️ [OAUTH BEARER] Bearer token detected, executing authorization validation");
 
@@ -251,6 +254,44 @@ public class OAuthService {
       token.setToken_type("Bearer");
       token.setExpires_at(accessTokenData.getAccessExpireDate());
 
+      boolean includeUserData =
+          (!ObjectUtils.isEmpty(exchange.getRequest().getQueryParams().get("include_user_data"))
+                  && Boolean.parseBoolean(
+                      exchange.getRequest().getQueryParams().get("include_user_data").getFirst()))
+              || (!ObjectUtils.isEmpty(exchange.getRequest().getQueryParams().get("includeUserData"))
+                  && Boolean.parseBoolean(
+                      exchange.getRequest().getQueryParams().get("includeUserData").getFirst()));
+
+      if (includeUserData) {
+        Mono<ResponseEntity<Response>> userResponse =
+            userService
+                .getUserByIdentifier(accessTokenData.getIdentifier())
+                .map(
+                    user -> {
+                      user.setPassword(null);
+                      OAuthTokenResponse tokenResponse =
+                          new OAuthTokenResponse(token, accessTokenData.getPayload(), null, user);
+                      Response response =
+                          new Response(
+                              HttpStatus.OK.value(),
+                              "Token is valid",
+                              TraceUtils.getSpanID(),
+                              tokenResponse);
+                      LOG.info(
+                          "✅ [OAUTH BEARER] Authorization successful with user data for clientId: {}",
+                          clientCredential.getClientId());
+                      return ResponseEntity.ok(response);
+                    })
+                .defaultIfEmpty(
+                    ResponseEntity.ok(
+                        new Response(
+                            HttpStatus.OK.value(),
+                            "Token is valid",
+                            TraceUtils.getSpanID(),
+                            new OAuthTokenResponse(token, accessTokenData.getPayload()))));
+        return userResponse.map(r -> (ResponseEntity<?>) r);
+      }
+
       Response response =
           new Response(
               HttpStatus.OK.value(),
@@ -261,10 +302,10 @@ public class OAuthService {
       LOG.info(
           "✅ [OAUTH BEARER] Authorization successful for clientId: {}",
           clientCredential.getClientId());
-      return ResponseEntity.ok(response);
+      return Mono.just(ResponseEntity.ok(response));
 
     } catch (TokenException | OAuthException e) {
-      return handleInvalidToken(clientCredential, e, exchange);
+      return Mono.just(handleInvalidToken(clientCredential, e, exchange));
     }
   }
 
@@ -406,10 +447,14 @@ public class OAuthService {
                   LOG.info(
                       "👤 [OAUTH TOKEN] Performing classic Bearer login for clientId: {}",
                       clientId);
+                  String redirectUri = redirect_uri;
+                  if (ObjectUtils.isEmpty(redirectUri))
+                    redirectUri =
+                        RequestManager.getCookieOrHeaderData(Cookie.COOKIE_REDIRECT_URI, request);
                   OAuthValidator.validateBasicAuth(
-                      basic, grant_type, redirect_uri, clientCredential);
+                      basic, grant_type, redirectUri, clientCredential);
                   return authService.makeClassicLogin(
-                      basic, redirect_uri, clientCredential, request, response);
+                      basic, redirectUri, clientCredential, request, response);
                 }
                 case GOOGLE -> {
                   LOG.info(
@@ -425,7 +470,7 @@ public class OAuthService {
                       GrpcService.authenticateOAuth(code, scope, redirectUri, clientCredential);
                   return googleAuthService
                       .performGoogleLogin(
-                          googleModel, clientCredential, redirect_uri, request, response)
+                          googleModel, clientCredential, redirectUri, request, response)
                       .doOnSuccess(
                           responseResponseEntity ->
                               LOG.info(

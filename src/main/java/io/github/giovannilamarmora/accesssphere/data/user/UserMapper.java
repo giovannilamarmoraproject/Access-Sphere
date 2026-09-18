@@ -53,6 +53,7 @@ public class UserMapper {
   public static User toDTO(UserEntity userEntity) {
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
+    user.setPassword(null);
     if (!ObjectUtils.isEmpty(userEntity.getRoles()))
       user.setRoles(Arrays.stream(userEntity.getRoles().split(" ")).toList());
 

@@ -124,11 +124,12 @@ async function verifyOTP() {
 function doGoogleLogin() {
   enableLoader();
   const currentUrl = new URL(window.location.href);
-  //const clientId = currentUrl.searchParams.get("client_id") || config.client_id;
-  //const redirectUri =
-  //  currentUrl.searchParams.get("redirect_uri") || config.redirect_uri;
-  const clientId = currentUrl.searchParams.get("client_id");
-  const redirectUri = currentUrl.searchParams.get("redirect_uri");
+  const clientId =
+    currentUrl.searchParams.get("client_id") ||
+    (typeof config !== "undefined" ? config.client_id : null);
+  const redirectUri =
+    currentUrl.searchParams.get("redirect_uri") ||
+    (typeof config !== "undefined" ? config.redirect_uri : null);
 
   if (!clientId) {
     disableLoader();
