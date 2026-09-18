@@ -26,12 +26,17 @@ public class TechUserService extends TechUserConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public boolean isTechUser() {
-    if (ObjectToolkit.isNullOrEmpty(accessTokenData)
-        || ObjectToolkit.isNullOrEmpty(accessTokenData.getSubjectType())
-        || ObjectToolkit.isNullOrEmpty(accessTokenData.getClientId())
-        || ObjectToolkit.fieldsNullOrEmpty(accessTokenData)) return false;
-    return accessTokenData.getSubjectType().equals(SubjectType.TECHNICAL)
-        || accessTokenData.getClientId().equalsIgnoreCase(techClientId);
+    return isTechUser(accessTokenData);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public boolean isTechUser(AccessTokenData tokenData) {
+    if (ObjectToolkit.isNullOrEmpty(tokenData)
+        || ObjectToolkit.isNullOrEmpty(tokenData.getSubjectType())
+        || ObjectToolkit.isNullOrEmpty(tokenData.getClientId())
+        || ObjectToolkit.fieldsNullOrEmpty(tokenData)) return false;
+    return tokenData.getSubjectType().equals(SubjectType.TECHNICAL)
+        || tokenData.getClientId().equalsIgnoreCase(techClientId);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

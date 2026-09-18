@@ -26,11 +26,13 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -70,11 +72,21 @@ public class UserAdminService {
    * Recupera la lista di tutti gli utenti registrati (operazione protetta riservata ad operatori
    * tecnici).
    *
+   * @param bearer Token di autorizzazione opzionale dell'operatore tecnico per recupero contesto.
    * @return Mono contenente la lista di tutti i DTO {@link User}.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getUsers() {
+  public Mono<List<User>> getUsers(String bearer) {
     LOG.info("👥 [USER ADMIN] Starting retrieval of all users");
+    if (StringUtils.hasText(bearer) && !techUserService.isTechUser()) {
+      try {
+        AccessTokenData tokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+        BeanUtils.copyProperties(tokenData, accessTokenData);
+      } catch (Exception e) {
+        LOG.warn("Could not retrieve AccessTokenData from bearer: {}", e.getMessage());
+      }
+    }
+
     if (!techUserService.isTechUser()) {
       LOG.error("❌ Forbidden: Only a tech user can retrieve the list of users");
       throw new OAuthException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
@@ -89,6 +101,16 @@ public class UserAdminService {
             })
         .doOnSuccess(
             users -> LOG.info("✅ [USER ADMIN] Successfully retrieved {} users", users.size()));
+  }
+
+  /**
+   * Recupera la lista di tutti gli utenti registrati delegando a {@link #getUsers(String)}.
+   *
+   * @return Mono contenente la lista di tutti i DTO {@link User}.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<User>> getUsers() {
+    return getUsers(null);
   }
 
   /**

@@ -90,6 +90,30 @@ public class OAuthService {
       String registration_token,
       String bearer,
       String state,
+      ServerWebExchange exchange) {
+    return authorize(
+        responseType,
+        accessType,
+        clientId,
+        redirect_uri,
+        scope,
+        registration_token,
+        bearer,
+        state,
+        null,
+        exchange);
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<?>> authorize(
+      String responseType,
+      String accessType,
+      String clientId,
+      String redirect_uri,
+      String scope,
+      String registration_token,
+      String bearer,
+      String state,
       String prompt,
       ServerWebExchange exchange) {
 

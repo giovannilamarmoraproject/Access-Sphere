@@ -87,7 +87,7 @@ public class SessionIDFilter implements WebFilter {
           exchange);
     }
 
-    if (isBearerNotRequiredEndpoint(request) || isAuthorizeCheckWithBearer(request)) {
+    if (isAuthorizeCheckWithBearer(request)) {
       setSessionIDInResponse(session_id, response, request);
       addSessionInContext(session_id);
       return chain.filter(exchange);
@@ -95,6 +95,11 @@ public class SessionIDFilter implements WebFilter {
 
     String bearer = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     if (ObjectUtils.isEmpty(bearer)) {
+      if (isBearerNotRequiredEndpoint(request)) {
+        setSessionIDInResponse(session_id, response, request);
+        addSessionInContext(session_id);
+        return chain.filter(exchange);
+      }
       LOG.error(
           "Error on SessionIDFilter for request {}, message is {}",
           request.getPath().value(),

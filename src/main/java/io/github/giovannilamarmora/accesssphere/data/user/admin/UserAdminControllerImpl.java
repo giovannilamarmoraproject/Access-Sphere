@@ -54,7 +54,7 @@ public class UserAdminControllerImpl implements UserAdminController {
   public Mono<ResponseEntity<Response>> userList(String bearer, ServerHttpRequest request) {
     LOG.info("🌐 [ADMIN CONTROLLER] Invoking UserList endpoint");
     return userAdminService
-        .getUsers()
+        .getUsers(bearer)
         .map(
             users -> {
               Response response =
