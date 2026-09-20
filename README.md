@@ -181,6 +181,10 @@ cp .env.example .env
 La documentazione OpenAPI 3.0 interattiva è accessibile a runtime all'indirizzo:
 👉 **`http://localhost:8081/swagger-ui`** oppure **`http://localhost:8081/swagger-ui.html`** (oppure formato JSON: **`/api-docs`**)
 
+La documentazione tecnica VitePress viene compilata automaticamente durante la build Maven
+(richiede Node.js/npm) ed è disponibile all'indirizzo:
+👉 **`http://localhost:8081/docs/`**
+
 ### 1. 🔐 **OAuth 2.0 Controller** (`/v1/oAuth/2.0`)
 
 | Metodo | Endpoint | Descrizione | Autenticazione |

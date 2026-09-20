@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="m3Grad" x1="10%" y1="10%" x2="90%" y2="90%">
+      <stop offset="0%" stop-color="#D0BCFF"/>
+      <stop offset="50%" stop-color="#6750A4"/>
+      <stop offset="100%" stop-color="#4F378B"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#381E72"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="42" stroke="url(#m3Grad)" stroke-width="3" stroke-dasharray="190 70" stroke-linecap="round"/>
+  <ellipse cx="50" cy="50" rx="38" ry="18" stroke="url(#accentGrad)" stroke-width="2.5" transform="rotate(-30 50 50)" stroke-dasharray="160 40" stroke-linecap="round"/>
+  <ellipse cx="50" cy="50" rx="38" ry="18" stroke="url(#m3Grad)" stroke-width="2" transform="rotate(45 50 50)" stroke-dasharray="120 60" opacity=".6" stroke-linecap="round"/>
+  <circle cx="50" cy="50" r="14" fill="url(#m3Grad)"/>
+  <circle cx="50" cy="47" r="3.5" fill="#FFFFFF"/>
+  <path d="M47.8 49h4.4l1 6.5h-6.4z" fill="#FFFFFF"/>
+</svg>

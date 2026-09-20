@@ -1,0 +1,6 @@
+documentation/node_modules
+documentation/docs/.vitepress/cache
+documentation/docs/.vitepress/dist
+target
+.git
+.idea

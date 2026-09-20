@@ -1,0 +1,516 @@
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap");
+
+/**
+ * Customize default theme styling by overriding CSS variables:
+ * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
+ */
+
+/**
+ * Colors
+ *
+ * Each colors have exact same color scale system with 3 levels of solid
+ * colors with different brightness, and 1 soft color.
+ *
+ * - `XXX-1`: The most solid color used mainly for colored text. It must
+ *   satisfy the contrast ratio against when used on top of `XXX-soft`.
+ *
+ * - `XXX-2`: The color used mainly for hover state of the button.
+ *
+ * - `XXX-3`: The color for solid background, such as bg color of the button.
+ *   It must satisfy the contrast ratio with pure white (#ffffff) text on
+ *   top of it.
+ *
+ * - `XXX-soft`: The color used for subtle background such as custom container
+ *   or badges. It must satisfy the contrast ratio when putting `XXX-1` colors
+ *   on top of it.
+ *
+ *   The soft color must be semi transparent alpha channel. This is crucial
+ *   because it allows adding multiple "soft" colors on top of each other
+ *   to create an accent, such as when having inline code block inside
+ *   custom containers.
+ *
+ * - `default`: The color used purely for subtle indication without any
+ *   special meanings attached to it such as bg color for menu hover state.
+ *
+ * - `brand`: Used for primary brand colors, such as link text, button with
+ *   brand theme, etc.
+ *
+ * - `tip`: Used to indicate useful information. The default theme uses the
+ *   brand color for this by default.
+ *
+ * - `warning`: Used to indicate warning to the users. Used in custom
+ *   container, badges, etc.
+ *
+ * - `danger`: Used to show error, or dangerous message to the users. Used
+ *   in custom container, badges, etc.
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-c-default-1: var(--vp-c-gray-1);
+  --vp-c-default-2: var(--vp-c-gray-2);
+  --vp-c-default-3: var(--vp-c-gray-3);
+  --vp-c-default-soft: var(--vp-c-gray-soft);
+
+  --vp-c-brand-1: var(--vp-c-indigo-1);
+  --vp-c-brand-2: var(--vp-c-indigo-2);
+  --vp-c-brand-3: var(--vp-c-indigo-3);
+  --vp-c-brand-soft: var(--vp-c-indigo-soft);
+
+  --vp-c-tip-1: var(--vp-c-brand-1);
+  --vp-c-tip-2: var(--vp-c-brand-2);
+  --vp-c-tip-3: var(--vp-c-brand-3);
+  --vp-c-tip-soft: var(--vp-c-brand-soft);
+
+  --vp-c-warning-1: var(--vp-c-yellow-1);
+  --vp-c-warning-2: var(--vp-c-yellow-2);
+  --vp-c-warning-3: var(--vp-c-yellow-3);
+  --vp-c-warning-soft: var(--vp-c-yellow-soft);
+
+  --vp-c-danger-1: var(--vp-c-red-1);
+  --vp-c-danger-2: var(--vp-c-red-2);
+  --vp-c-danger-3: var(--vp-c-red-3);
+  --vp-c-danger-soft: var(--vp-c-red-soft);
+}
+
+/**
+ * Component: Button
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-text: var(--vp-c-white);
+  --vp-button-brand-bg: var(--vp-c-brand-3);
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-text: var(--vp-c-white);
+  --vp-button-brand-hover-bg: var(--vp-c-brand-2);
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-text: var(--vp-c-white);
+  --vp-button-brand-active-bg: var(--vp-c-brand-1);
+}
+
+/**
+ * Component: Home
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    #bd34fe 30%,
+    #41d1ff
+  );
+
+  --vp-home-hero-image-background-image: linear-gradient(
+    -45deg,
+    #bd34fe 50%,
+    #47caff 50%
+  );
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+@media (min-width: 40rem) {
+  :root {
+    --vp-home-hero-image-filter: blur(56px);
+  }
+}
+
+@media (min-width: 60rem) {
+  :root {
+    --vp-home-hero-image-filter: blur(68px);
+  }
+}
+
+/**
+ * Component: Custom Block
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-custom-block-tip-border: transparent;
+  --vp-custom-block-tip-text: var(--vp-c-text-1);
+  --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
+  --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
+}
+
+/* Access Sphere M3 visual tokens and component overrides. */
+:root {
+  --m3-surface: #fffbfe;
+  --m3-surface-container: #f7f2fa;
+  --m3-surface-card: rgba(255, 251, 254, 0.88);
+  --m3-surface-border: rgba(73, 69, 79, 0.18);
+  --m3-primary: #6750a4;
+  --m3-primary-accent: #6750a4;
+  --m3-primary-container: #eaddff;
+  --m3-on-primary: #ffffff;
+  --m3-on-surface: #1d1b20;
+  --m3-on-surface-variant: #49454f;
+  --m3-outline: rgba(73, 69, 79, 0.28);
+  --m3-primary-gradient: linear-gradient(135deg, #7f67be 0%, #6750a4 100%);
+
+  --vp-c-bg: var(--m3-surface);
+  --vp-c-bg-alt: var(--m3-surface-container);
+  --vp-c-bg-elv: var(--m3-surface-card);
+  --vp-c-bg-soft: rgba(103, 80, 164, 0.08);
+  --vp-c-divider: var(--m3-surface-border);
+  --vp-c-gutter: var(--m3-surface-border);
+  --vp-c-text-1: var(--m3-on-surface);
+  --vp-c-text-2: var(--m3-on-surface-variant);
+  --vp-c-text-3: rgba(73, 69, 79, 0.7);
+  --vp-c-brand-1: var(--m3-primary);
+  --vp-c-brand-2: #7f67be;
+  --vp-c-brand-3: var(--m3-primary-container);
+  --vp-c-brand-soft: rgba(103, 80, 164, 0.12);
+  --vp-code-bg: #f1ebf5;
+  --vp-code-block-bg: #f7f2fa;
+  --vp-code-line-highlight-color: rgba(103, 80, 164, 0.12);
+  --vp-nav-bg-color: rgba(255, 251, 254, 0.92);
+  --vp-sidebar-bg-color: rgba(255, 251, 254, 0.82);
+  --vp-button-brand-bg: var(--m3-primary-gradient);
+  --vp-button-brand-hover-bg: linear-gradient(135deg, #b56bf9 0%, #7961bc 100%);
+  --vp-button-brand-text: #ffffff;
+  --vp-button-alt-bg: rgba(103, 80, 164, 0.08);
+  --vp-button-alt-text: var(--m3-on-surface);
+  --vp-button-alt-hover-bg: rgba(208, 188, 255, 0.14);
+  --vp-button-alt-hover-text: #ffffff;
+  --vp-home-hero-name-background: var(--m3-primary-gradient);
+  --vp-home-hero-image-background-image: var(--m3-primary-gradient);
+  --vp-home-hero-image-filter: blur(72px);
+}
+
+.dark {
+  --m3-surface: #0e0b16;
+  --m3-surface-container: #161124;
+  --m3-surface-card: rgba(24, 19, 38, 0.85);
+  --m3-surface-border: rgba(208, 188, 255, 0.16);
+  --m3-primary: #a855f7;
+  --m3-primary-accent: #d0bcff;
+  --m3-primary-container: #4f378b;
+  --m3-on-primary: #381e72;
+  --m3-on-surface: #e6e1e5;
+  --m3-on-surface-variant: #cac4d0;
+  --m3-outline: rgba(208, 188, 255, 0.2);
+  --m3-primary-gradient: linear-gradient(135deg, #a855f7 0%, #6750a4 100%);
+  --vp-c-bg-soft: rgba(208, 188, 255, 0.06);
+  --vp-c-text-3: rgba(202, 196, 208, 0.7);
+  --vp-c-brand-1: var(--m3-primary-accent);
+  --vp-c-brand-2: #b56bf9;
+  --vp-c-brand-soft: rgba(168, 85, 247, 0.16);
+  --vp-code-bg: rgba(14, 11, 22, 0.75);
+  --vp-code-block-bg: rgba(14, 11, 22, 0.92);
+  --vp-code-line-highlight-color: rgba(168, 85, 247, 0.12);
+  --vp-nav-bg-color: rgba(14, 11, 22, 0.92);
+  --vp-sidebar-bg-color: rgba(14, 11, 22, 0.82);
+  --vp-button-alt-bg: rgba(255, 255, 255, 0.05);
+}
+
+html,
+body {
+  background: var(--m3-surface);
+  color: var(--m3-on-surface);
+  font-family: "Google Sans Flex", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--m3-primary) 14%, transparent), transparent 32rem),
+    radial-gradient(circle at 90% 20%, color-mix(in srgb, var(--m3-primary-container) 18%, transparent), transparent 30rem);
+  background-attachment: fixed;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(14, 11, 22, 0.95);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(208, 188, 255, 0.28);
+  border: 2px solid rgba(14, 11, 22, 0.95);
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(208, 188, 255, 0.5);
+  background-clip: padding-box;
+}
+
+* {
+  scrollbar-color: rgba(208, 188, 255, 0.28) rgba(14, 11, 22, 0.95);
+  scrollbar-width: thin;
+}
+
+.VPNav {
+  background: var(--vp-nav-bg-color);
+  border-bottom: 1px solid var(--m3-surface-border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.VPNavBarTitle .title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.VPNavBarTitle .logo {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+}
+
+.VPNavBarMenuLink,
+.VPNavBarMenuGroup .button {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.VPNavBarMenuLink:hover,
+.VPNavBarMenuGroup .button:hover {
+  color: var(--m3-primary);
+  background: var(--vp-c-bg-soft);
+}
+
+.VPNavBarMenuLink.active {
+  color: var(--m3-primary);
+  background: transparent;
+  box-shadow: inset 0 -2px 0 var(--m3-primary);
+  border-radius: 8px 8px 0 0;
+}
+
+.VPNavBarAppearance .VPSwitch,
+.VPNavBarAppearance .VPSwitchAppearance {
+  width: 40px !important;
+  height: 22px !important;
+  min-width: 40px !important;
+  min-height: 22px !important;
+  padding: 0 !important;
+  border: 1px solid var(--m3-outline) !important;
+  border-radius: 999px !important;
+  background: var(--vp-c-bg-soft) !important;
+}
+
+.VPNavBarAppearance .VPSwitchAppearance::before {
+  display: none;
+}
+
+.VPNavBarAppearance .VPSwitchAppearance .check,
+.VPNavBarAppearance .VPSwitchAppearance .icon {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--m3-primary);
+  transform: translateX(0);
+  transition: transform 0.2s ease;
+}
+
+.VPNavBarAppearance .VPSwitchAppearance .check {
+  display: block;
+}
+
+.VPNavBarAppearance .VPSwitchAppearance .icon {
+  display: none;
+}
+
+.dark .VPNavBarAppearance .VPSwitchAppearance .check {
+  transform: translateX(18px);
+}
+
+.VPButton {
+  border-radius: 999px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.VPButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
+}
+
+.VPButton:focus-visible,
+.VPNavBarMenuLink:focus-visible,
+.VPSidebarItem .item:focus-visible {
+  outline: 2px solid var(--m3-primary);
+  outline-offset: 3px;
+}
+
+.VPSidebar {
+  background: var(--vp-sidebar-bg-color);
+  border-right: 1px solid var(--m3-surface-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.VPSidebarItem .item {
+  border-radius: 12px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.VPSidebarItem .item:hover {
+  color: #ffffff;
+  background: rgba(208, 188, 255, 0.08);
+}
+
+.VPSidebarItem.is-active > .item .link {
+  color: var(--m3-primary-accent);
+  font-weight: 700;
+}
+
+.VPContent .container {
+  position: relative;
+}
+
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.vp-doc h4 {
+  color: var(--m3-on-surface);
+  letter-spacing: -0.025em;
+}
+
+.vp-doc h2 {
+  border-top: 1px solid var(--m3-surface-border);
+}
+
+.vp-doc a {
+  color: var(--m3-primary-accent);
+  text-decoration: none;
+}
+
+.vp-doc a:hover {
+  color: #ffffff;
+}
+
+.vp-doc :not(pre) > code {
+  border: 1px solid var(--m3-outline);
+  border-radius: 8px;
+  color: var(--m3-primary-accent);
+  background: rgba(208, 188, 255, 0.08);
+}
+
+.vp-doc div[class*="language-"] {
+  border: 1px solid var(--m3-surface-border);
+  border-radius: 16px;
+  background: var(--vp-code-block-bg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.vp-doc div[class*="language-"] .lang {
+  color: var(--m3-on-surface-variant);
+}
+
+.custom-block {
+  border: 1px solid var(--m3-surface-border);
+  border-radius: 16px;
+  background: var(--m3-surface-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.custom-block.tip {
+  border-color: rgba(208, 188, 255, 0.28);
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.VPHomeHero .image {
+  display: none;
+}
+
+.VPHomeHero .container {
+  display: block;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.VPHomeHero .main {
+  max-width: none;
+  padding: 3.75rem 4rem 3.5rem;
+  border: 1px solid var(--m3-surface-border);
+  border-radius: 32px;
+  background: var(--m3-surface-card);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.24);
+  text-align: left;
+}
+
+.VPHomeHero .name,
+.VPHomeHero .text,
+.VPHomeHero .tagline,
+.VPHomeHero .actions {
+  max-width: 760px;
+}
+
+.VPHomeHero .actions {
+  justify-content: flex-start;
+}
+
+.VPHomeHero .name {
+  font-size: clamp(2.8rem, 6vw, 4.75rem);
+  line-height: 1.05;
+}
+
+.VPHomeHero .text {
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  line-height: 1.1;
+}
+
+.VPHomeHero .tagline {
+  color: var(--m3-on-surface-variant);
+  font-size: 1.15rem;
+}
+
+.VPHomeFeatures {
+  padding-top: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .VPHomeHero .main {
+    padding: 2.25rem 1.5rem 2rem;
+    border-radius: 24px;
+  }
+
+  .VPHomeHero .name {
+    font-size: 2.75rem;
+  }
+
+  .VPHomeHero .text {
+    font-size: 2rem;
+  }
+
+  .VPHomeHero .tagline {
+    font-size: 1rem;
+  }
+}
+
+.VPFeature {
+  border: 1px solid var(--m3-surface-border);
+  border-radius: 20px;
+  background: var(--m3-surface-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.VPFeature:hover {
+  border-color: rgba(208, 188, 255, 0.4);
+  transform: translateY(-3px);
+}
+
+.DocSearch-Button {
+  border: 1px solid var(--m3-surface-border);
+  border-radius: 999px;
+  background: rgba(208, 188, 255, 0.06);
+}
+
+::selection {
+  color: var(--m3-on-primary);
+  background: var(--m3-primary-accent);
+}

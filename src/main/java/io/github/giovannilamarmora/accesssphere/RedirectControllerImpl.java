@@ -1,6 +1,11 @@
 package io.github.giovannilamarmora.accesssphere;
 
 import io.github.giovannilamarmora.utils.interceptors.Logged;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +22,47 @@ public class RedirectControllerImpl {
   @GetMapping("/privacy-policy")
   public String privacy_policy(Model model) {
     return "privacy-policy";
+  }
+
+  @GetMapping({"/docs", "/docs/"})
+  public String documentation() {
+    return "redirect:/docs/it/overview";
+  }
+
+  @GetMapping({
+    "/docs/it/overview",
+    "/docs/it/architecture",
+    "/docs/it/required",
+    "/docs/it/install",
+    "/docs/it/configuration",
+    "/docs/it/deployment",
+    "/docs/it/oauth",
+    "/docs/it/iam",
+    "/docs/it/mfa-settings",
+    "/docs/it/integration",
+    "/docs/it/api",
+    "/docs/en/overview",
+    "/docs/en/architecture",
+    "/docs/en/required",
+    "/docs/en/install",
+    "/docs/en/configuration",
+    "/docs/en/deployment",
+    "/docs/en/oauth",
+    "/docs/en/iam",
+    "/docs/en/mfa-settings",
+    "/docs/en/integration",
+    "/docs/en/api"
+  })
+  @ResponseBody
+  public ResponseEntity<Resource> documentationPage(ServerHttpRequest request) {
+    String path = request.getPath().value();
+    String documentationPath = path.substring("/docs/".length()) + ".html";
+    return documentationPage(documentationPath);
+  }
+
+  private ResponseEntity<Resource> documentationPage(String page) {
+    Resource resource = new ClassPathResource("static/docs/" + page);
+    return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(resource);
   }
 
   @GetMapping("/app/login")
