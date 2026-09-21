@@ -6,17 +6,18 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import io.github.giovannilamarmora.accesssphere.client.ClientMapper;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import java.io.IOException;
 import java.util.List;
 
 /**
- * Deserializzatore Jackson personalizzato per il campo 'appRoles' / 'app_roles' in {@link ClientCredential}.
- * Supporta in ingresso molteplici formati:
+ * Deserializzatore Jackson personalizzato per il campo 'appRoles' / 'app_roles' in {@link
+ * ClientCredential}. Supporta in ingresso molteplici formati:
+ *
  * <ul>
- *   <li>Array nativo JSON di oggetti {@link AppRole} o di stringhe</li>
- *   <li>Stringa JSON serializzata (es. "[{\"role\": \"...\"}]")</li>
- *   <li>Stringa delimitata da virgole o spazi (es. "ROLE_ADMIN, ROLE_TECH")</li>
+ *   <li>Array nativo JSON di oggetti {@link AppRole} o di stringhe
+ *   <li>Stringa JSON serializzata (es. "[{\"role\": \"...\"}]")
+ *   <li>Stringa delimitata da virgole o spazi (es. "ROLE_ADMIN, ROLE_TECH")
  * </ul>
  */
 public class AppRolesDeserializer extends JsonDeserializer<List<AppRole>> {

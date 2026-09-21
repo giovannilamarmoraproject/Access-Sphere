@@ -1,7 +1,7 @@
-package io.github.giovannilamarmora.accesssphere.data.roles;
+package io.github.giovannilamarmora.accesssphere.roles;
 
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;

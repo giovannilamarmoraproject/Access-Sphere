@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.roles.dto;
+package io.github.giovannilamarmora.accesssphere.roles.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -11,9 +11,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO che modella un ruolo applicativo (AppRole) associato a un client OAuth2.
- * Configurato con {@link AppRoleDeserializer} per supportare in ingresso sia oggetti strutturati
- * che stringhe semplici (es. "ROLE_ADMIN"), con fallback automatico al tipo standard DEFAULT.
+ * DTO che modella un ruolo applicativo (AppRole) associato a un client OAuth2. Configurato con
+ * {@link AppRoleDeserializer} per supportare in ingresso sia oggetti strutturati che stringhe
+ * semplici (es. "ROLE_ADMIN"), con fallback automatico al tipo standard DEFAULT.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -34,8 +34,8 @@ public class AppRole extends GenericDTO {
   private String description;
 
   /**
-   * Costruttore di convenienza a partire dal solo nome del ruolo.
-   * Assegna automaticamente il tipo canonico {@link AppRoleType#DEFAULT}.
+   * Costruttore di convenienza a partire dal solo nome del ruolo. Assegna automaticamente il tipo
+   * canonico {@link AppRoleType#DEFAULT}.
    *
    * @param role Nome identificativo del ruolo (es. "ROLE_ADMIN").
    */
@@ -52,7 +52,10 @@ public class AppRole extends GenericDTO {
    */
   public AppRole(String role, String type) {
     this.role = role != null ? role.trim().toUpperCase() : null;
-    this.type = (type != null && !type.isBlank()) ? type.trim().toUpperCase() : AppRoleType.DEFAULT.getValue();
+    this.type =
+        (type != null && !type.isBlank())
+            ? type.trim().toUpperCase()
+            : AppRoleType.DEFAULT.getValue();
   }
 
   /**
@@ -64,7 +67,10 @@ public class AppRole extends GenericDTO {
    */
   public AppRole(String role, String type, String description) {
     this.role = role != null ? role.trim().toUpperCase() : null;
-    this.type = (type != null && !type.isBlank()) ? type.trim().toUpperCase() : AppRoleType.DEFAULT.getValue();
+    this.type =
+        (type != null && !type.isBlank())
+            ? type.trim().toUpperCase()
+            : AppRoleType.DEFAULT.getValue();
     this.description = description;
   }
 

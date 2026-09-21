@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -21,7 +22,8 @@ public class UserMapper {
 
   /**
    * Converte il DTO {@link User} nella corrispondente entità di persistenza {@link UserEntity}.
-   * Serializza le liste di ruoli in stringa separata da spazi e converte attributi e impostazioni MFA in JSON.
+   * Serializza le liste di ruoli in stringa separata da spazi e converte attributi e impostazioni
+   * MFA in JSON.
    *
    * @param user Oggetto di trasferimento dati (DTO) dell'utente.
    * @return L'entità {@link UserEntity} mappata e pronta per il salvataggio su database.
@@ -43,8 +45,9 @@ public class UserMapper {
   }
 
   /**
-   * Converte un'entità di persistenza {@link UserEntity} nel DTO {@link User}.
-   * Deserializza la stringa dei ruoli in una lista e riconverte le stringhe JSON di attributi e MFA nei rispettivi oggetti.
+   * Converte un'entità di persistenza {@link UserEntity} nel DTO {@link User}. Deserializza la
+   * stringa dei ruoli in una lista e riconverte le stringhe JSON di attributi e MFA nei rispettivi
+   * oggetti.
    *
    * @param userEntity Entità del database da convertire.
    * @return Il DTO {@link User} popolato per i layer di servizio e controller.
@@ -77,8 +80,9 @@ public class UserMapper {
   }
 
   /**
-   * Aggiorna lo stato di un'entità esistente {@link UserEntity} con i nuovi valori presenti nel DTO {@link User}.
-   * Mantiene invariati i dati strutturali o di audit e serializza opportunamente attributi e impostazioni MFA.
+   * Aggiorna lo stato di un'entità esistente {@link UserEntity} con i nuovi valori presenti nel DTO
+   * {@link User}. Mantiene invariati i dati strutturali o di audit e serializza opportunamente
+   * attributi e impostazioni MFA.
    *
    * @param existingUser Entità persistita esistente da aggiornare.
    * @param user DTO contenente i valori aggiornati forniti dall'utente o dal sistema.
@@ -113,7 +117,8 @@ public class UserMapper {
   }
 
   /**
-   * Crea un'istanza di {@link User} per un utente tecnico autenticato, associandovi i ruoli definiti nel client.
+   * Crea un'istanza di {@link User} per un utente tecnico autenticato, associandovi i ruoli
+   * definiti nel client.
    *
    * @param username Username dell'utente tecnico.
    * @param clientCredential Credenziali del client OAuth che definiscono gli AppRole concessi.
@@ -123,7 +128,10 @@ public class UserMapper {
   public static User getTechUser(String username, ClientCredential clientCredential) {
     User user = new User();
     user.setUsername(username);
-    user.setRoles(clientCredential.getAppRoles() == null ? null : clientCredential.getAppRoles().stream().map(io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole::getRole).toList());
+    user.setRoles(
+        clientCredential.getAppRoles() == null
+            ? null
+            : clientCredential.getAppRoles().stream().map(AppRole::getRole).toList());
     return user;
   }
 

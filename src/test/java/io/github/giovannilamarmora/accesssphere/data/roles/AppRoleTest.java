@@ -3,14 +3,13 @@ package io.github.giovannilamarmora.accesssphere.data.roles;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.giovannilamarmora.accesssphere.client.ClientMapper;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +34,8 @@ class AppRoleTest {
   @Test
   @DisplayName("Should deserialize AppRole from full JSON object")
   void shouldDeserializeAppRoleFromObject() throws JsonProcessingException {
-    String json = "{\"role\":\"ACCESS_SPHERE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default token Type\"}";
+    String json =
+        "{\"role\":\"ACCESS_SPHERE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default token Type\"}";
     AppRole role = mapper.readValue(json, AppRole.class);
 
     assertNotNull(role);
@@ -49,7 +49,8 @@ class AppRoleTest {
   @Test
   @DisplayName("Should deserialize AppRole with alias name and technical type")
   void shouldDeserializeAppRoleWithAlias() throws JsonProcessingException {
-    String json = "{\"name\":\"ROLE_TECH\",\"type\":\"technical\",\"description\":\"Technical role\"}";
+    String json =
+        "{\"name\":\"ROLE_TECH\",\"type\":\"technical\",\"description\":\"Technical role\"}";
     AppRole role = mapper.readValue(json, AppRole.class);
 
     assertNotNull(role);
@@ -61,7 +62,8 @@ class AppRoleTest {
   @Test
   @DisplayName("Should deserialize List of AppRoles with mixed formats in ClientCredential")
   void shouldDeserializeMixedAppRolesList() throws JsonProcessingException {
-    String json = "{\"clientId\":\"TEST-CLIENT\",\"appRoles\":[\"ROLE_ADMIN\",{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\"}]}";
+    String json =
+        "{\"clientId\":\"TEST-CLIENT\",\"appRoles\":[\"ROLE_ADMIN\",{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\"}]}";
     ClientCredential client = mapper.readValue(json, ClientCredential.class);
 
     assertNotNull(client);
@@ -80,7 +82,9 @@ class AppRoleTest {
     assertNull(ClientMapper.parseAppRoles(""));
 
     // JSON array
-    List<AppRole> parsedJson = ClientMapper.parseAppRoles("[{\"role\":\"ROLE_ADMIN\"},{\"role\":\"ROLE_USER\",\"type\":\"USER\"}]");
+    List<AppRole> parsedJson =
+        ClientMapper.parseAppRoles(
+            "[{\"role\":\"ROLE_ADMIN\"},{\"role\":\"ROLE_USER\",\"type\":\"USER\"}]");
     assertNotNull(parsedJson);
     assertEquals(2, parsedJson.size());
     assertEquals("ROLE_ADMIN", parsedJson.get(0).getRole());
@@ -99,11 +103,14 @@ class AppRoleTest {
   @DisplayName("OAuthValidator.validateClientRoles should enforce mandatory DEFAULT role")
   void shouldValidateMandatoryDefaultRole() {
     ClientCredential clientWithoutRoles = new ClientCredential();
-    assertThrows(OAuthException.class, () -> OAuthValidator.validateClientRoles(clientWithoutRoles));
+    assertThrows(
+        OAuthException.class, () -> OAuthValidator.validateClientRoles(clientWithoutRoles));
 
     ClientCredential clientWithoutDefault = new ClientCredential();
     clientWithoutDefault.setAppRoles(List.of(new AppRole("ROLE_USER", "USER", "User role")));
-    OAuthException ex = assertThrows(OAuthException.class, () -> OAuthValidator.validateClientRoles(clientWithoutDefault));
+    OAuthException ex =
+        assertThrows(
+            OAuthException.class, () -> OAuthValidator.validateClientRoles(clientWithoutDefault));
     assertTrue(ex.getMessage().contains("DEFAULT"));
 
     ClientCredential clientWithDefault = new ClientCredential();

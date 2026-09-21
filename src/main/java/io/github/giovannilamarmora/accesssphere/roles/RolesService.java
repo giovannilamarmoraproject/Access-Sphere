@@ -1,15 +1,14 @@
-package io.github.giovannilamarmora.accesssphere.data.roles;
+package io.github.giovannilamarmora.accesssphere.roles;
 
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRoleType;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.UserRole;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -60,30 +59,36 @@ public class RolesService {
     return getClients
         .flatMap(
             clientCredentials -> {
-              // 1. Raccoglie tutti i ruoli ammessi dai client registrati (nome ruolo e tipologia applicativa)
+              // 1. Raccoglie tutti i ruoli ammessi dai client registrati (nome ruolo e tipologia
+              // applicativa)
               Set<String> allowedRoles = new HashSet<>();
               if (clientCredentials != null) {
                 clientCredentials.forEach(
                     c -> {
                       if (c.getAppRoles() != null) {
-                        c.getAppRoles().forEach(
-                            r -> {
-                              if (r != null) {
-                                if (r.getRole() != null) allowedRoles.add(r.getRole().toUpperCase());
-                                if (r.getType() != null) allowedRoles.add(r.getType().toUpperCase());
-                              }
-                            });
+                        c.getAppRoles()
+                            .forEach(
+                                r -> {
+                                  if (r != null) {
+                                    if (r.getRole() != null)
+                                      allowedRoles.add(r.getRole().toUpperCase());
+                                    if (r.getType() != null)
+                                      allowedRoles.add(r.getType().toUpperCase());
+                                  }
+                                });
                       }
                     });
               }
 
-              // 2. Raccoglie i ruoli canonici/di sistema definiti a livello di piattaforma (UserRole e AppRoleType)
+              // 2. Raccoglie i ruoli canonici/di sistema definiti a livello di piattaforma
+              // (UserRole e AppRoleType)
               Arrays.stream(UserRole.values())
                   .forEach(ur -> allowedRoles.add(ur.name().toUpperCase()));
               Arrays.stream(AppRoleType.values())
                   .forEach(art -> allowedRoles.add(art.getValue().toUpperCase()));
 
-              // 3. Valida e filtra i ruoli richiesti: rimuove duplicati, scarta non riconosciuti con warning
+              // 3. Valida e filtra i ruoli richiesti: rimuove duplicati, scarta non riconosciuti
+              // con warning
               List<String> validRoles =
                   (roles != null && roles.getRoles() != null)
                       ? roles.getRoles().stream()

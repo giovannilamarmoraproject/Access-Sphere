@@ -10,6 +10,7 @@ import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import java.util.List;
@@ -60,8 +61,7 @@ class UserAdminServiceTest {
 
     ClientCredential credential = new ClientCredential();
     credential.setClientId("CLIENT-TECH");
-    io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole appRole =
-        new io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole();
+    AppRole appRole = new AppRole();
     appRole.setRole("ROLE_ADMIN");
     credential.setAppRoles(List.of(appRole));
     when(clientService.getClientCredentialByClientID("CLIENT-TECH"))
@@ -98,8 +98,7 @@ class UserAdminServiceTest {
 
     ClientCredential credential = new ClientCredential();
     credential.setClientId("CLIENT-TECH");
-    io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole appRole =
-        new io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole();
+    AppRole appRole = new AppRole();
     appRole.setRole("ROLE_ADMIN");
     credential.setAppRoles(List.of(appRole));
     when(clientService.getClientCredentialByClientID("CLIENT-TECH"))

@@ -6,12 +6,12 @@ import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -143,9 +143,11 @@ class OAuthServiceTest {
               assertInstanceOf(OAuthTokenResponse.class, response.getData());
               OAuthTokenResponse tokenData = (OAuthTokenResponse) response.getData();
               assertNotNull(tokenData.getToken());
-              assertNotNull(tokenData.getUser(), "User must be present when include_user_data=true");
+              assertNotNull(
+                  tokenData.getUser(), "User must be present when include_user_data=true");
               assertEquals("testuser", tokenData.getUser().getUsername());
-              assertEquals("strapi-jwt-secret-xyz", tokenData.getUser().getAttributes().get("strapi-token"));
+              assertEquals(
+                  "strapi-jwt-secret-xyz", tokenData.getUser().getAttributes().get("strapi-token"));
             })
         .verifyComplete();
 

@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.roles.dto;
+package io.github.giovannilamarmora.accesssphere.roles.dto;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -8,12 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 
 /**
- * Deserializzatore personalizzato Jackson per il DTO {@link AppRole}.
- * Gestisce in modo polimorfico e resiliente diversi formati in ingresso:
+ * Deserializzatore personalizzato Jackson per il DTO {@link AppRole}. Gestisce in modo polimorfico
+ * e resiliente diversi formati in ingresso:
+ *
  * <ul>
- *   <li>Oggetto JSON completo (es. {"role": "ACCESS_SPHERE_ADMIN", "type": "DEFAULT", "description": "..."})</li>
- *   <li>Valore testuale semplice (es. "ROLE_ADMIN"), mappato come ruolo con tipo "DEFAULT"</li>
- *   <li>Oggetti con alias per il nome ruolo (es. {"name": "ADMIN"} o {"roleName": "ADMIN"})</li>
+ *   <li>Oggetto JSON completo (es. {"role": "ACCESS_SPHERE_ADMIN", "type": "DEFAULT",
+ *       "description": "..."})
+ *   <li>Valore testuale semplice (es. "ROLE_ADMIN"), mappato come ruolo con tipo "DEFAULT"
+ *   <li>Oggetti con alias per il nome ruolo (es. {"name": "ADMIN"} o {"roleName": "ADMIN"})
  * </ul>
  */
 public class AppRoleDeserializer extends JsonDeserializer<AppRole> {

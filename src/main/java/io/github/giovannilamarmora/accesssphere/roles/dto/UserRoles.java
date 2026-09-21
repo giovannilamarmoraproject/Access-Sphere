@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.roles.dto;
+package io.github.giovannilamarmora.accesssphere.roles.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;

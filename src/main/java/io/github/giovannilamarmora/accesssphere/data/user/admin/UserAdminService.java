@@ -2,7 +2,6 @@ package io.github.giovannilamarmora.accesssphere.data.user.admin;
 
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.UserException;
@@ -13,6 +12,8 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.RoleManager;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
@@ -138,6 +139,17 @@ public class UserAdminService {
         user.getEmail(),
         clientId);
 
+    UserEntity existUser =
+        userService.getUserByUsernameOrEmail(user.getUsername(), user.getEmail());
+    if (!ObjectToolkit.isNullOrEmpty(existUser)) {
+      LOG.error(
+          "👤 The user already exists for username: {} and email: {}",
+          user.getUsername(),
+          user.getEmail());
+      throw new UserException(
+          ExceptionMap.ERR_USER_400, "User %s already exist".formatted(user.getUsername()));
+    }
+
     return clientService
         .getClientCredentialByClientID(clientId)
         .flatMap(
@@ -173,23 +185,19 @@ public class UserAdminService {
     List<AppRole> clientRoles =
         clientCredential.getAppRoles() != null ? clientCredential.getAppRoles() : List.of();
     List<AppRole> userRoles =
-        clientRoles.stream()
-            .filter(appRole -> appRole != null && appRole.isDefault())
-            .toList();
+        clientRoles.stream().filter(appRole -> appRole != null && appRole.isDefault()).toList();
 
     if (!ObjectToolkit.isNullOrEmpty(bearer)) {
       LOG.info("🛡️ Bearer token present, checking technical roles");
       AccessTokenData tokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
 
-      if (techUserService.hasTechUserRoles(tokenData, clientCredential)
+      if (RoleManager.hasPermissionRoles(tokenData, clientCredential)
           && !ObjectToolkit.isNullOrEmpty(user.getRoles())) {
         userRoles =
             clientRoles.stream()
                 .filter(
                     appRole ->
-                        appRole != null
-                            && user.getRoles().stream()
-                                .anyMatch(appRole::matches))
+                        appRole != null && user.getRoles().stream().anyMatch(appRole::matches))
                 .toList();
       }
     }

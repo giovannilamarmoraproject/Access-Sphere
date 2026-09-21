@@ -2,7 +2,6 @@ package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.admin.UserAdminService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -15,6 +14,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
@@ -120,14 +120,16 @@ public class GoogleAuthService {
               URI finalRedirectURI =
                   OAuthMapper.getFinalRedirectURI(
                       clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
-              if (!ObjectUtils.isEmpty(finalState) && !finalRedirectURI.toString().contains("state=")) {
+              if (!ObjectUtils.isEmpty(finalState)
+                  && !finalRedirectURI.toString().contains("state=")) {
                 String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";
                 finalRedirectURI =
                     URI.create(
                         finalRedirectURI.toString()
                             + separator
                             + "state="
-                            + java.net.URLEncoder.encode(finalState, java.nio.charset.StandardCharsets.UTF_8));
+                            + java.net.URLEncoder.encode(
+                                finalState, java.nio.charset.StandardCharsets.UTF_8));
               }
               return ResponseEntity.ok().location(finalRedirectURI).body(response);
             })
@@ -198,14 +200,17 @@ public class GoogleAuthService {
                           URI finalRedirectURI =
                               OAuthMapper.getFinalRedirectURI(
                                   clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
-                          if (!ObjectUtils.isEmpty(finalState) && !finalRedirectURI.toString().contains("state=")) {
-                            String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";
+                          if (!ObjectUtils.isEmpty(finalState)
+                              && !finalRedirectURI.toString().contains("state=")) {
+                            String separator =
+                                finalRedirectURI.toString().contains("?") ? "&" : "?";
                             finalRedirectURI =
                                 URI.create(
                                     finalRedirectURI.toString()
                                         + separator
                                         + "state="
-                                        + java.net.URLEncoder.encode(finalState, java.nio.charset.StandardCharsets.UTF_8));
+                                        + java.net.URLEncoder.encode(
+                                            finalState, java.nio.charset.StandardCharsets.UTF_8));
                           }
                           return ResponseEntity.ok().location(finalRedirectURI).body(response);
                         });

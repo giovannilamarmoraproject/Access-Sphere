@@ -6,15 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
-import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRoleType;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,8 +28,7 @@ public class ClientMapper {
   private static final ObjectMapper mapper = MapperUtils.mapper().build();
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static ClientCredential toDTO(
-      ClientCredentialEntity clientCredentialEntity) {
+  public static ClientCredential toDTO(ClientCredentialEntity clientCredentialEntity) {
     try {
       ClientCredential clientCredential =
           new ClientCredential(
@@ -70,8 +69,7 @@ public class ClientMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static ClientCredentialEntity toEntity(
-      ClientCredential clientCredential) {
+  public static ClientCredentialEntity toEntity(ClientCredential clientCredential) {
     return new ClientCredentialEntity(
         clientCredential.getId(),
         clientCredential.getClientId(),
@@ -142,15 +140,13 @@ public class ClientMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<ClientCredential> toDTOList(
       List<ClientCredentialEntity> clientCredentialEntities) {
-    return clientCredentialEntities.stream()
-        .map(ClientMapper::toDTO)
-        .toList();
+    return clientCredentialEntities.stream().map(ClientMapper::toDTO).toList();
   }
 
   /**
-   * Esegue il parsing resiliente del campo redirect_uri memorizzato a database.
-   * Supporta sia il formato JSON (mappa con fallback_uri e redirect_uri),
-   * sia eventuali stringhe legacy plain-text per garantire piena retrocompatibilita.
+   * Esegue il parsing resiliente del campo redirect_uri memorizzato a database. Supporta sia il
+   * formato JSON (mappa con fallback_uri e redirect_uri), sia eventuali stringhe legacy plain-text
+   * per garantire piena retrocompatibilita.
    *
    * @param raw Stringa grezza proveniente dalla colonna REDIRECT_URI a DB
    * @return Mappa contenente i redirect URI configurati, oppure null se la stringa e vuota.
@@ -173,12 +169,13 @@ public class ClientMapper {
   }
 
   /**
-   * Esegue il parsing resiliente del campo APP_ROLES memorizzato a database o proveniente da payload esterno.
-   * Supporta:
+   * Esegue il parsing resiliente del campo APP_ROLES memorizzato a database o proveniente da
+   * payload esterno. Supporta:
+   *
    * <ul>
-   *   <li>Array JSON di oggetti AppRole completi (es. [{"role":"...", "type":"DEFAULT"}])</li>
-   *   <li>Array JSON di stringhe (es. ["ROLE_ADMIN", "ROLE_TECH"])</li>
-   *   <li>Stringhe semplici delimitate da spazi o virgole</li>
+   *   <li>Array JSON di oggetti AppRole completi (es. [{"role":"...", "type":"DEFAULT"}])
+   *   <li>Array JSON di stringhe (es. ["ROLE_ADMIN", "ROLE_TECH"])
+   *   <li>Stringhe semplici delimitate da spazi o virgole
    * </ul>
    *
    * @param raw Stringa grezza della colonna APP_ROLES.
@@ -201,15 +198,16 @@ public class ClientMapper {
     List<AppRole> fallbackList = new ArrayList<>();
     for (String token : tokens) {
       if (!token.isBlank()) {
-        fallbackList.add(new AppRole(token.trim().toUpperCase(), AppRoleType.DEFAULT.getValue(), null));
+        fallbackList.add(
+            new AppRole(token.trim().toUpperCase(), AppRoleType.DEFAULT.getValue(), null));
       }
     }
     return fallbackList.isEmpty() ? null : fallbackList;
   }
 
   /**
-   * Normalizza una lista di ruoli assicurando che il nome ruolo sia maiuscolo,
-   * che non contenga elementi nulli e che la tipologia sia valorizzata (con fallback su DEFAULT).
+   * Normalizza una lista di ruoli assicurando che il nome ruolo sia maiuscolo, che non contenga
+   * elementi nulli e che la tipologia sia valorizzata (con fallback su DEFAULT).
    *
    * @param roles Lista ruoli da normalizzare.
    * @return Lista di ruoli normalizzati, oppure null se la lista in ingresso e' vuota.
@@ -222,9 +220,10 @@ public class ClientMapper {
     for (AppRole r : roles) {
       if (r != null && !ObjectUtils.isEmpty(r.getRole())) {
         String roleName = r.getRole().trim().toUpperCase();
-        String type = (!ObjectUtils.isEmpty(r.getType()) && !r.getType().isBlank())
-            ? r.getType().trim().toUpperCase()
-            : AppRoleType.DEFAULT.getValue();
+        String type =
+            (!ObjectUtils.isEmpty(r.getType()) && !r.getType().isBlank())
+                ? r.getType().trim().toUpperCase()
+                : AppRoleType.DEFAULT.getValue();
         normalized.add(new AppRole(r.getId(), roleName, type, r.getDescription()));
       }
     }

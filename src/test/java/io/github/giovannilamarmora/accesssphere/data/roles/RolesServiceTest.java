@@ -1,18 +1,18 @@
 package io.github.giovannilamarmora.accesssphere.data.roles;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.data.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.RolesService;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +55,8 @@ class RolesServiceTest {
   }
 
   @Test
-  @DisplayName("changeRoles should accept client roles, deduplicate them, and accept system roles like SUPER_ADMIN")
+  @DisplayName(
+      "changeRoles should accept client roles, deduplicate them, and accept system roles like SUPER_ADMIN")
   void changeRoles_success_deduplicatesAndIncludesSystemRoles() {
     when(techUserService.isTechUser()).thenReturn(true);
 

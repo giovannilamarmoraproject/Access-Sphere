@@ -1,5 +1,8 @@
-package io.github.giovannilamarmora.accesssphere.data.roles.dto;
+package io.github.giovannilamarmora.accesssphere.roles.dto;
 
+import lombok.Getter;
+
+@Getter
 public enum UserRole {
   SUPER_ADMIN("Super Admin"),
   ADMIN("Administrator"),
@@ -12,9 +15,5 @@ public enum UserRole {
 
   UserRole(String displayName) {
     this.displayName = displayName;
-  }
-
-  public String getDisplayName() {
-    return displayName;
   }
 }
