@@ -19,6 +19,8 @@ public interface IUserClientRoleDAO extends JpaRepository<UserClientRoleEntity, 
 
   List<UserClientRoleEntity> findByClientId(String clientId);
 
+  List<UserClientRoleEntity> findByClientIdAndRole(String clientId, String role);
+
   boolean existsByUserIdentifierAndClientIdAndRole(
       String userIdentifier, String clientId, String role);
 
@@ -31,4 +33,7 @@ public interface IUserClientRoleDAO extends JpaRepository<UserClientRoleEntity, 
 
   @Transactional
   void deleteByUserIdentifierAndClientId(String userIdentifier, String clientId);
+
+  @Transactional
+  void deleteByClientIdAndRole(String clientId, String role);
 }

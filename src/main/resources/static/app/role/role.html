@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Access Sphere - Catalogo Ruoli & Permessi</title>
+
+    <!-- Immediate Zero-Flicker Theme Application -->
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem("access_sphere_theme");
+                if (!theme) {
+                    var s = localStorage.getItem("access_sphere_settings");
+                    if (s) {
+                        var parsed = JSON.parse(s);
+                        theme = parsed.activeTheme;
+                    }
+                }
+                document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
+            } catch (e) {
+            }
+        })();
+    </script>
+
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&family=JetBrains+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/img/logo-minimal.svg"/>
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png"/>
+
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Shared Loader & SweetAlert2 -->
+    <link rel="stylesheet" href="/app/shared/loader/loader.css"/>
+    <script src="/app/shared/loader/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/app/shared/sweetalert.css"/>
+    <script src="/app/shared/sweetalert.js"></script>
+
+    <!-- Access Sphere Core Scripts -->
+    <script src="/app/shared/config.js"></script>
+    <script src="/app/shared/utils.js"></script>
+    <script src="/app/shared/api/authorize.js"></script>
+    <script src="/app/shared/api/logout.js"></script>
+    <script src="/app/i18n/translations.js"></script>
+    <script src="/app/shared/api/rest.js"></script>
+
+    <!-- Unified M3 Dashboard Theme & Themes Palette -->
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.0.0"/>
+    <link rel="stylesheet" href="/css/m3-themes.css"/>
+    <script src="/app/shared/settings.js"></script>
+
+    <!-- Early Synchronous Token Capture -->
+    <script>
+        (function () {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const token = params.get("access-token");
+                const sessionId = params.get("session-id");
+                const clientId = params.get("client-id") || "ACCESS-SPHERE-TECH";
+                if (token) {
+                    localStorage.setItem("access-token", token);
+                    localStorage.setItem(clientId + "_access-token", token);
+                    localStorage.setItem("ACCESS-SPHERE-TECH_access-token", token);
+                }
+                if (sessionId) {
+                    localStorage.setItem("Session-ID", sessionId);
+                }
+            } catch (e) {
+            }
+        })();
+    </script>
+
+    <!-- Custom Role Management Script -->
+    <script src="/app/role/js/role.js?v=1.0.0"></script>
+
+    <style>
+        /* M3 Custom Scrollbar & Micro-Adjustments */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45);
+        }
+
+        .role-badge-default {
+            background: rgba(59, 130, 246, 0.16);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            color: #93c5fd;
+        }
+        .role-badge-admin {
+            background: rgba(239, 68, 68, 0.16);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #fca5a5;
+        }
+        .role-badge-technical {
+            background: rgba(168, 85, 247, 0.16);
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            color: #d8b4fe;
+        }
+        .role-badge-user {
+            background: rgba(16, 185, 129, 0.16);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
+        }
+
+        .permission-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08);
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.22);
+            color: var(--theme-accent, #D0BCFF);
+            transition: all 0.2s ease;
+        }
+        .permission-chip-wildcard {
+            background: rgba(245, 158, 11, 0.18);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fcd34d;
+            font-weight: 700;
+        }
+
+        .custom-chip-remove {
+            cursor: pointer;
+            padding: 0 2px;
+            margin-left: 2px;
+            color: rgba(255, 255, 255, 0.6);
+            border-radius: 4px;
+        }
+        .custom-chip-remove:hover {
+            color: #ffb4ab;
+            background: rgba(255, 180, 171, 0.2);
+        }
+
+        /* Type radio pill selectors */
+        .type-radio-label {
+            cursor: pointer;
+            border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2);
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5);
+            border-radius: 14px;
+            padding: 12px 14px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .type-radio-label:hover {
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45);
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.7);
+        }
+        .type-radio-input:checked + .type-radio-label {
+            border-color: var(--theme-primary, #A855F7);
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.16);
+            box-shadow: 0 0 14px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.25);
+        }
+
+        .iam-checkbox-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.4);
+            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .iam-checkbox-card:hover {
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08);
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
+        }
+    </style>
+</head>
+<body>
+<div id="loader" class="loader"></div>
+
+<!-- Wide Unified Header (Fluid Container) -->
+<header class="glass-header">
+    <div class="header-container">
+
+        <!-- Brand & Title -->
+        <div class="flex items-center gap-6">
+            <a href="/app" class="flex items-center gap-3 text-decoration-none group">
+                <img src="/img/logo-minimal.svg" alt="Access Sphere Logo"
+                     class="app-brand-logo w-10 h-10 transition-transform duration-300 group-hover:scale-110"/>
+                <div class="flex flex-col">
+                    <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                        <span class="app-brand-name">Access Sphere</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30">Console</span>
+                    </span>
+                    <span id="header-subtitle" class="text-[11px] text-gray-400 font-medium" data-i18n="header_subtitle">Gestione Identità & Accessi</span>
+                </div>
+            </a>
+
+            <!-- Fast Navigation Tabs -->
+            <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+                <a href="/app" id="nav-btn-dashboard" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
+                </a>
+                <a href="/app/users" id="nav-btn-users" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
+                </a>
+                <a href="/app/clients" id="nav-btn-clients" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
+                </a>
+                <a href="/app/role" id="nav-btn-roles" class="nav-tab-m3 active text-decoration-none">
+                    <i class="fa-solid fa-shield-halved"></i> <span data-i18n="nav_roles">Ruoli</span>
+                </a>
+                <a href="/app/emails" id="nav-btn-emails" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
+                </a>
+                <a href="/app/settings" id="nav-btn-settings" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
+                </a>
+                <a href="/webjars/swagger-ui/index.html" target="_blank" class="nav-tab-m3 text-decoration-none">
+                    <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Quick Action Controls -->
+        <div class="flex items-center gap-2">
+            <button id="btn-refresh-data" onclick="refreshRolesCatalog()" class="m3-icon-btn" title="Aggiorna dati"
+                    data-i18n-title="btn_refresh_data">
+                <i id="refresh-icon" class="fa-solid fa-arrows-rotate text-sm"></i>
+            </button>
+            <button onclick="getVersion()" class="m3-icon-btn" title="Info Versione" data-i18n-title="btn_version_info">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
+
+            <!-- Contextual Primary Action Button -->
+            <button onclick="openRoleModal('create')" class="m3-btn-primary ml-2">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="btn_create_role">Nuovo Ruolo</span>
+            </button>
+
+            <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout"
+                    data-i18n-title="btn_logout">
+                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+            </button>
+        </div>
+
+    </div>
+</header>
+
+<!-- Main Container -->
+<main class="dashboard-wide-container">
+
+    <!-- Welcome & Live Status Hero (Directly on page background as required by Rule 4.1) -->
+    <div class="mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-semibold mb-3">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="app-brand-name">Access Sphere</span> <span>•</span> <span data-i18n="roles_catalog_tag">Catalogo Sicurezza</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight" data-i18n="roles_catalog_title">
+                    Catalogo Ruoli & Permessi Granulari
+                </h1>
+                <p class="text-gray-400 text-sm sm:text-base mt-2 max-w-3xl" data-i18n="roles_catalog_desc">
+                    Definisci, assegna e governa i ruoli applicativi e i relativi privilegi per ciascun Client OAuth 2.0 registrato sulla piattaforma. Gestisci l'accesso con controllo granulare dei permessi e revoca a cascata.
+                </p>
+            </div>
+
+            <!-- System Clock & Status Pill -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-purple-950/40 p-4 rounded-2xl border border-purple-500/20 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300">
+                        <i class="fa-solid fa-clock text-base"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_system_clock">
+                            Orario Sistema
+                        </div>
+                        <div id="live-clock" class="text-white font-mono font-bold text-sm">--:--:--</div>
+                    </div>
+                </div>
+                <div class="hidden sm:block h-8 w-px bg-purple-500/20"></div>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300">
+                        <i class="fa-solid fa-signal text-base"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_service_status">
+                            Stato Servizi
+                        </div>
+                        <div class="text-emerald-300 font-semibold text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-check-circle text-xs"></i> <span data-i18n="dash_status_operational">Operativo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bento Grid dei KPI (Rule 4.2 compliant: NO data-i18n on dynamically populated spans) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+
+        <!-- KPI 1: Ruoli Configurati -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="roles_kpi_total_roles">Ruoli Configurati</span>
+                <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div id="kpi-total-roles" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
+                <div class="text-xs text-purple-300/80 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-check text-purple-400"></i>
+                    <span data-i18n="roles_kpi_total_roles_sub">Ruoli totali attivi nel catalogo</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 2: Client Connessi -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="roles_kpi_clients_count">Client Collegati</span>
+                <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center text-blue-300">
+                    <i class="fa-solid fa-key text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div id="kpi-total-clients" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
+                <div class="text-xs text-blue-300/80 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cubes text-blue-400"></i>
+                    <span data-i18n="roles_kpi_clients_sub">Applicazioni con ruoli personalizzati</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 3: Assegnazioni Utente -->
+        <div class="m3-bento-card p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="roles_kpi_assignments">Assegnazioni Utente</span>
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300">
+                    <i class="fa-solid fa-user-shield text-lg"></i>
+                </div>
+            </div>
+            <div>
+                <div id="kpi-total-assignments" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">--</div>
+                <div class="text-xs text-emerald-300/80 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-users-gear text-emerald-400"></i>
+                    <span data-i18n="roles_kpi_assignments_sub">Utenti totali con ruoli assegnati</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="m3-bento-card p-4 sm:p-5 mb-8">
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+
+            <!-- Search Bar -->
+            <div class="relative flex-1 min-w-[260px]">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="search" id="role-search-input"
+                       class="w-full pl-11 pr-4 py-2.5 rounded-full bg-white/5 border border-white/10 text-white placeholder-gray-400 text-sm focus:outline-none focus:border-purple-400/60 focus:ring-2 focus:ring-purple-400/20 transition-all"
+                       placeholder="Cerca ruolo per nome, descrizione, permesso o client..."
+                       data-i18n-placeholder="roles_filter_search_placeholder"
+                       oninput="handleRoleFilterChange()"/>
+            </div>
+
+            <!-- Filters & Actions -->
+            <div class="flex flex-wrap items-center gap-3">
+
+                <!-- Client Selector Filter -->
+                <div class="relative min-w-[190px]">
+                    <select id="filter-client-select" onchange="handleRoleFilterChange()"
+                            class="w-full appearance-none pl-4 pr-10 py-2.5 rounded-full bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all cursor-pointer">
+                        <option value="" class="bg-gray-900 text-white" data-i18n="roles_filter_all_clients">Tutti i Client OAuth2</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                </div>
+
+                <!-- Type Selector Filter -->
+                <div class="relative min-w-[150px]">
+                    <select id="filter-type-select" onchange="handleRoleFilterChange()"
+                            class="w-full appearance-none pl-4 pr-10 py-2.5 rounded-full bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all cursor-pointer">
+                        <option value="" class="bg-gray-900 text-white" data-i18n="roles_filter_all_types">Tutti i Tipi</option>
+                        <option value="DEFAULT" class="bg-gray-900 text-white">DEFAULT</option>
+                        <option value="ADMIN" class="bg-gray-900 text-white">ADMIN</option>
+                        <option value="TECHNICAL" class="bg-gray-900 text-white">TECHNICAL</option>
+                        <option value="USER" class="bg-gray-900 text-white">USER</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Roles Bento Grid -->
+    <div id="roles-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
+        <!-- Loaded dynamically via role.js -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="roles-empty-state" class="m3-bento-card p-12 text-center flex flex-col items-center justify-center mb-12" style="display: none;">
+        <div class="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-300 text-2xl mb-4 border border-purple-500/20">
+            <i class="fa-solid fa-shield-xmark"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2" data-i18n="roles_empty_title">Nessun Ruolo Trovato</h3>
+        <p class="text-gray-400 text-sm max-w-md mb-6" data-i18n="roles_empty_desc">
+            Nessun ruolo corrisponde ai criteri di ricerca o ai filtri selezionati. Prova a modificare i filtri o crea un nuovo ruolo applicativo.
+        </p>
+        <button onclick="openRoleModal('create')" class="m3-btn-primary">
+            <i class="fa-solid fa-plus"></i> <span data-i18n="btn_create_role">Nuovo Ruolo</span>
+        </button>
+    </div>
+
+</main>
+
+<!-- ================= MODALE M3: CREAZIONE & MODIFICA RUOLO ================= -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border border-white/10 shadow-2xl"
+             style="background: var(--md-surface, #0E0B16); border-radius: 26px; overflow: hidden;">
+
+            <!-- Header Modale -->
+            <div class="modal-header px-6 py-4 flex items-center justify-between gap-3"
+                 style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85); border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300">
+                        <i id="roleModalIcon" class="fa-solid fa-shield-plus text-base"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0" id="roleModalLabel">
+                            Nuovo Ruolo Applicativo
+                        </h5>
+                        <p class="text-xs text-gray-400 mb-0" id="roleModalSubtitle">
+                            Definisci privilegi, ambito client e autorizzazioni granulari
+                        </p>
+                    </div>
+                </div>
+                <button type="button" class="m3-icon-btn shrink-0" data-bs-dismiss="modal" aria-label="Chiudi">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Body Modale -->
+            <div class="modal-body px-6 py-5 space-y-5 max-h-[75vh] overflow-y-auto">
+
+                <!-- Client Selector -->
+                <div>
+                    <label for="modalRoleClient" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                        <span data-i18n="roles_modal_client_label">Client OAuth2 Associato *</span>
+                    </label>
+                    <div class="relative">
+                        <select id="modalRoleClient"
+                                class="w-full appearance-none px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all cursor-pointer">
+                            <!-- Populated dynamically via JS -->
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                    </div>
+                    <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="roles_modal_client_hint">
+                        Il ruolo apparterrà all'ambito di sicurezza di questa specifica applicazione.
+                    </span>
+                </div>
+
+                <!-- Role Name -->
+                <div>
+                    <label for="modalRoleName" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                        <span data-i18n="roles_modal_name_label">Nome Univoco Ruolo *</span>
+                    </label>
+                    <input type="text" id="modalRoleName"
+                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-gray-500 font-mono text-sm focus:outline-none focus:border-purple-400/60 uppercase transition-all"
+                           placeholder="es. APP_MANAGER, REPORTING_USER, SUPPORT_TIER2"
+                           data-i18n-placeholder="roles_modal_name_placeholder"
+                           maxlength="50"
+                           oninput="this.value = this.value.toUpperCase().replace(/\s+/g, '_');"/>
+                    <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="roles_modal_name_hint">
+                        Identificativo in maiuscolo senza spazi (sono ammessi trattini bassi '_').
+                    </span>
+                </div>
+
+                <!-- Role Type Selector (Radio Cards) -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                        <span data-i18n="roles_modal_type_label">Tipologia Ruolo *</span>
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                        <!-- USER -->
+                        <div>
+                            <input type="radio" name="modalRoleTypeRadio" id="typeRadioUSER" value="USER" class="sr-only type-radio-input" checked/>
+                            <label for="typeRadioUSER" class="type-radio-label flex flex-col h-full">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-xs role-badge-user px-2 py-0.5 rounded-md font-mono">USER</span>
+                                    <i class="fa-solid fa-circle-check text-purple-400 text-sm hidden"></i>
+                                </div>
+                                <span class="text-[11px] text-gray-400" data-i18n="roles_modal_type_user_desc">Ruolo operativo ordinario per utenti autorizzati dell'applicazione.</span>
+                            </label>
+                        </div>
+
+                        <!-- DEFAULT -->
+                        <div>
+                            <input type="radio" name="modalRoleTypeRadio" id="typeRadioDEFAULT" value="DEFAULT" class="sr-only type-radio-input"/>
+                            <label for="typeRadioDEFAULT" class="type-radio-label flex flex-col h-full">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-xs role-badge-default px-2 py-0.5 rounded-md font-mono">DEFAULT</span>
+                                </div>
+                                <span class="text-[11px] text-gray-400" data-i18n="roles_modal_type_default_desc">Assegnato automaticamente ai nuovi utenti dell'applicazione.</span>
+                            </label>
+                        </div>
+
+                        <!-- ADMIN -->
+                        <div>
+                            <input type="radio" name="modalRoleTypeRadio" id="typeRadioADMIN" value="ADMIN" class="sr-only type-radio-input"/>
+                            <label for="typeRadioADMIN" class="type-radio-label flex flex-col h-full">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-xs role-badge-admin px-2 py-0.5 rounded-md font-mono">ADMIN</span>
+                                </div>
+                                <span class="text-[11px] text-gray-400" data-i18n="roles_modal_type_admin_desc">Privilegi amministrativi e di gestione per l'applicazione.</span>
+                            </label>
+                        </div>
+
+                        <!-- TECHNICAL -->
+                        <div>
+                            <input type="radio" name="modalRoleTypeRadio" id="typeRadioTECHNICAL" value="TECHNICAL" class="sr-only type-radio-input"/>
+                            <label for="typeRadioTECHNICAL" class="type-radio-label flex flex-col h-full">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-xs role-badge-technical px-2 py-0.5 rounded-md font-mono">TECHNICAL</span>
+                                </div>
+                                <span class="text-[11px] text-gray-400" data-i18n="roles_modal_type_tech_desc">Riservato a sistemi esterni, bot e integrazioni machine-to-machine.</span>
+                            </label>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="modalRoleDescription" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                        <span data-i18n="roles_modal_desc_label">Descrizione Operativa</span>
+                    </label>
+                    <textarea id="modalRoleDescription" rows="2"
+                              class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-400/60 transition-all resize-none"
+                              placeholder="Descrivi le mansioni e le responsabilità associate a questo ruolo..."
+                              data-i18n-placeholder="roles_modal_desc_placeholder"></textarea>
+                </div>
+
+                <!-- Permissions Section -->
+                <div class="pt-2 border-t border-white/10 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h6 class="text-sm font-bold text-white mb-0" data-i18n="roles_modal_permissions_title">Permessi & Privilegi Granulari</h6>
+                            <p class="text-xs text-gray-400 mb-0">Configura le abilitazioni concesse a questo ruolo</p>
+                        </div>
+                    </div>
+
+                    <!-- Wildcard Toggle Banner -->
+                    <label class="flex items-center justify-between p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 cursor-pointer hover:bg-amber-500/15 transition-all">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-asterisk text-amber-400 text-lg"></i>
+                            <div>
+                                <span class="font-mono font-bold text-amber-300 text-sm" data-i18n="roles_modal_wildcard_label">* (Accesso Globale / Wildcard - include tutti i permessi)</span>
+                                <p class="text-xs text-amber-200/70 mb-0" data-i18n="roles_modal_wildcard_hint">Se selezionato, abilita l'utente ad eseguire qualsiasi operazione sul client</p>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="modalPermissionWildcard" onchange="handleWildcardToggle(this.checked)"
+                               class="w-5 h-5 rounded border-amber-500/40 text-amber-500 focus:ring-amber-500/30 cursor-pointer"/>
+                    </label>
+
+                    <!-- Standard IAM Permissions -->
+                    <div id="standardPermissionsBox">
+                        <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" data-i18n="roles_modal_iam_permissions_title">
+                            Permessi Standard IAM
+                        </span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <label class="iam-checkbox-card">
+                                <input type="checkbox" value="user:read" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                <div>
+                                    <span class="font-mono text-purple-300 font-semibold">user:read</span>
+                                    <span class="text-gray-400 text-[11px] block">Lettura profili utenti</span>
+                                </div>
+                            </label>
+                            <label class="iam-checkbox-card">
+                                <input type="checkbox" value="user:write" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                <div>
+                                    <span class="font-mono text-purple-300 font-semibold">user:write</span>
+                                    <span class="text-gray-400 text-[11px] block">Creazione e modifica utenti</span>
+                                </div>
+                            </label>
+                            <label class="iam-checkbox-card">
+                                <input type="checkbox" value="user:delete" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                <div>
+                                    <span class="font-mono text-purple-300 font-semibold">user:delete</span>
+                                    <span class="text-gray-400 text-[11px] block">Eliminazione e blocco utenti</span>
+                                </div>
+                            </label>
+                            <label class="iam-checkbox-card">
+                                <input type="checkbox" value="client:read" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                <div>
+                                    <span class="font-mono text-purple-300 font-semibold">client:read</span>
+                                    <span class="text-gray-400 text-[11px] block">Consultazione parametri client</span>
+                                </div>
+                            </label>
+                            <label class="iam-checkbox-card">
+                                <input type="checkbox" value="client:write" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                <div>
+                                    <span class="font-mono text-purple-300 font-semibold">client:write</span>
+                                    <span class="text-gray-400 text-[11px] block">Modifica credenziali e redirect</span>
+                                </div>
+                            </label>
+                            <label class="iam-checkbox-card">
+                                <input type="checkbox" value="roles:manage" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                <div>
+                                    <span class="font-mono text-purple-300 font-semibold">roles:manage</span>
+                                    <span class="text-gray-400 text-[11px] block">Gestione ruoli e permessi</span>
+                                </div>
+                            </label>
+                            <label class="iam-checkbox-card">
+                                <input type="checkbox" value="settings:read" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                <div>
+                                    <span class="font-mono text-purple-300 font-semibold">settings:read</span>
+                                    <span class="text-gray-400 text-[11px] block">Visualizzazione impostazioni</span>
+                                </div>
+                            </label>
+                            <label class="iam-checkbox-card">
+                                <input type="checkbox" value="settings:write" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                <div>
+                                    <span class="font-mono text-purple-300 font-semibold">settings:write</span>
+                                    <span class="text-gray-400 text-[11px] block">Modifica branding e sistema</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Custom Application Permissions -->
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" data-i18n="roles_modal_custom_permissions_title">
+                            Permessi Applicativi Personalizzati
+                        </span>
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="text" id="customPermissionInput"
+                                   class="flex-1 px-4 py-2 rounded-xl bg-white/5 border border-white/15 text-white placeholder-gray-500 font-mono text-xs focus:outline-none focus:border-purple-400/60 transition-all lowercase"
+                                   placeholder="es. orders:create, reports:export, billing:view"
+                                   data-i18n-placeholder="roles_modal_custom_perm_placeholder"
+                                   onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomPermission(); }"/>
+                            <button type="button" onclick="addCustomPermission()" class="m3-btn-secondary py-2 px-3 text-xs">
+                                <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_permission">Aggiungi</span>
+                            </button>
+                        </div>
+                        <!-- Chips container -->
+                        <div id="customPermissionsList" class="flex flex-wrap gap-1.5 min-h-[32px] p-2 rounded-xl bg-white/5 border border-white/10">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Footer Modale -->
+            <div class="modal-footer px-6 py-4 flex items-center justify-end gap-2"
+                 style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85); border-top: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
+                <button type="button" class="m3-btn-secondary" data-bs-dismiss="modal" data-i18n="btn_cancel">
+                    Annulla
+                </button>
+                <button type="button" id="btnSaveRole" onclick="saveRole()" class="m3-btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save_role">Salva Ruolo</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Live Clock updater
+    function updateClock() {
+        const el = document.getElementById("live-clock");
+        if (el) {
+            const now = new Date();
+            el.textContent = now.toTimeString().split(" ")[0];
+        }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+
+</body>
+</html>

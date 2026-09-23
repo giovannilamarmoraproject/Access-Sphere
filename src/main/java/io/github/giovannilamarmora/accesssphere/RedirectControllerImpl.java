@@ -54,6 +54,15 @@ public class RedirectControllerImpl {
     return "app/user/roles";
   }
 
+  /**
+   * Routing per la pagina del catalogo centralizzato dei ruoli e permessi per client.
+   * Restituisce la vista Thymeleaf statica "app/role/role.html".
+   */
+  @GetMapping({"/app/role", "/app/roles", "/app/role/roles"})
+  public String roleCatalog(Model model) {
+    return "app/role/role";
+  }
+
   @GetMapping("/app/users/edit/{identifier}")
   public String editUser(Model model) {
     return "app/user/edit";

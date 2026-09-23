@@ -322,6 +322,7 @@ const AppSettings = (function () {
             const isOverview = currentPath === "/app" || currentPath === "/app/" || currentPath === "/app/dashboard";
             const isUsers = currentPath.includes("/user") && !currentPath.includes("/clients");
             const isClients = currentPath.includes("/client");
+            const isRoles = currentPath === "/app/role" || currentPath === "/app/roles" || currentPath.startsWith("/app/role");
             const isEmails = currentPath.includes("/email");
             const isSettings = currentPath.includes("/settings");
 
@@ -362,6 +363,12 @@ const AppSettings = (function () {
                 <a href="/app/clients" id="sidebar-btn-clients" class="sidebar-nav-item ${isClients ? 'active' : ''}" title="Client OAuth2" onclick="if(typeof switchDashboardView === 'function' && document.getElementById('view-clients')){switchDashboardView('clients'); return false;}">
                   <i class="fa-solid fa-key"></i>
                   <span class="sidebar-label" data-i18n="nav_clients">Client OAuth2</span>
+                </a>
+              </li>
+              <li>
+                <a href="/app/role" id="sidebar-btn-roles" class="sidebar-nav-item ${isRoles ? 'active' : ''}" title="Ruoli">
+                  <i class="fa-solid fa-shield-halved"></i>
+                  <span class="sidebar-label" data-i18n="nav_roles">Ruoli</span>
                 </a>
               </li>
               <li>
@@ -422,7 +429,7 @@ const AppSettings = (function () {
         const p = window.location.pathname;
         if (p.includes("/register")) return "Registrazione";
         if (p.includes("/edit")) return "Modifica Profilo";
-        if (p.includes("/roles")) return "Ruoli & Permessi";
+        if (p.includes("/role")) return "Ruoli & Permessi";
         if (p.includes("/mfa")) return "Sicurezza MFA";
         if (p.includes("/details") || p.endsWith("/user") || p.endsWith("/client")) return "Dettaglio";
         if (p.includes("/emails") || p.includes("/email")) return "Template Email";

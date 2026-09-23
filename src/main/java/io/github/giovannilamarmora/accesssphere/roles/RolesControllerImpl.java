@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
+import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -34,5 +35,32 @@ public class RolesControllerImpl implements RolesController {
   public Mono<ResponseEntity<Response>> revokeClientRole(
       String bearer, String identifier, String clientId, String role) {
     return rolesService.revokeClientRole(identifier, clientId, role);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> getRolesCatalog(String bearer, String clientId) {
+    return rolesService.getRolesCatalog(clientId);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> getUsersWithRole(
+      String bearer, String role, String clientId) {
+    return rolesService.getUsersWithRole(clientId, role);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> createRole(String bearer, RoleDefinitionDTO dto) {
+    return rolesService.createRole(dto);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> updateRole(
+      String bearer, String role, String clientId, RoleDefinitionDTO dto) {
+    return rolesService.updateRole(clientId, role, dto);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> deleteRole(String bearer, String role, String clientId) {
+    return rolesService.deleteRole(clientId, role);
   }
 }

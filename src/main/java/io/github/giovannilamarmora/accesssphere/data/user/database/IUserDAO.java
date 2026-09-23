@@ -16,6 +16,8 @@ public interface IUserDAO extends JpaRepository<UserEntity, Long> {
 
   UserEntity findUserEntityByIdentifier(String identifier);
 
+  java.util.List<UserEntity> findAllByIdentifierIn(java.util.List<String> identifiers);
+
   @Transactional
   void deleteUserEntityByIdentifier(String identifier);
 }
