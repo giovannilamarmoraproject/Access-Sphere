@@ -839,6 +839,8 @@
   "sidebar_expand": "Seitenleiste erweitern",
   "sidebar_cat_main": "Hauptmenü",
   "sidebar_cat_iam": "Identität & Zugriffe",
+  "sidebar_cat_apps": "Anwendungen & Clients",
+  "sidebar_cat_comms": "Kommunikation",
   "sidebar_cat_system": "System & Ressourcen",
   "sidebar_cat_tools": "Tools & Aktionen",
   "nav_clients_short": "Clients",

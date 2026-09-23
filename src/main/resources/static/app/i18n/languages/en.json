@@ -839,6 +839,8 @@
   "sidebar_expand": "Expand sidebar",
   "sidebar_cat_main": "Main",
   "sidebar_cat_iam": "Identity & Access",
+  "sidebar_cat_apps": "Apps & Clients",
+  "sidebar_cat_comms": "Communications",
   "sidebar_cat_system": "System & Resources",
   "sidebar_cat_tools": "Tools & Actions",
   "nav_clients_short": "Clients",

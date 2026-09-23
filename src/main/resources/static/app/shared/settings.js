@@ -360,17 +360,37 @@ const AppSettings = (function () {
                 </a>
               </li>
               <li>
+                <a href="/app/role" id="sidebar-btn-roles" class="sidebar-nav-item ${isRoles ? 'active' : ''}" title="Ruoli">
+                  <i class="fa-solid fa-shield-halved"></i>
+                  <span class="sidebar-label" data-i18n="nav_roles">Ruoli & Permessi</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Categoria: Applicazioni & Client -->
+          <div class="sidebar-category">
+            <div class="sidebar-category-header">
+              <span class="sidebar-category-label" data-i18n="sidebar_cat_apps">Applicazioni & Client</span>
+            </div>
+            <div class="sidebar-category-divider"></div>
+            <ul class="sidebar-nav-list">
+              <li>
                 <a href="/app/clients" id="sidebar-btn-clients" class="sidebar-nav-item ${isClients ? 'active' : ''}" title="Client OAuth2" onclick="if(typeof switchDashboardView === 'function' && document.getElementById('view-clients')){switchDashboardView('clients'); return false;}">
                   <i class="fa-solid fa-key"></i>
                   <span class="sidebar-label" data-i18n="nav_clients">Client OAuth2</span>
                 </a>
               </li>
-              <li>
-                <a href="/app/role" id="sidebar-btn-roles" class="sidebar-nav-item ${isRoles ? 'active' : ''}" title="Ruoli">
-                  <i class="fa-solid fa-shield-halved"></i>
-                  <span class="sidebar-label" data-i18n="nav_roles">Ruoli</span>
-                </a>
-              </li>
+            </ul>
+          </div>
+
+          <!-- Categoria: Comunicazioni -->
+          <div class="sidebar-category">
+            <div class="sidebar-category-header">
+              <span class="sidebar-category-label" data-i18n="sidebar_cat_comms">Comunicazioni</span>
+            </div>
+            <div class="sidebar-category-divider"></div>
+            <ul class="sidebar-nav-list">
               <li>
                 <a href="/app/emails" id="sidebar-btn-emails" class="sidebar-nav-item ${isEmails ? 'active' : ''}" title="Template Email">
                   <i class="fa-solid fa-envelope"></i>

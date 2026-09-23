@@ -839,6 +839,8 @@
   "sidebar_expand": "Expandir barra lateral",
   "sidebar_cat_main": "Principal",
   "sidebar_cat_iam": "Identidades y Accesos",
+  "sidebar_cat_apps": "Aplicaciones y Clientes",
+  "sidebar_cat_comms": "Comunicaciones",
   "sidebar_cat_system": "Sistema y Recursos",
   "sidebar_cat_tools": "Herramientas y Acciones",
   "nav_clients_short": "Clientes",

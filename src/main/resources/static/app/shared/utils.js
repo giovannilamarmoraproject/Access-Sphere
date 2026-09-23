@@ -322,6 +322,7 @@ function detectCurrentNavView() {
     if (currentPath.includes("/emails") || currentPath.includes("/email")) return "emails";
     if (currentPath.includes("/settings")) return "settings";
     if (currentPath.includes("/client")) return "clients";
+    if (currentPath.includes("/role")) return "roles";
     if (currentPath.includes("/user")) return "users";
     return "dashboard";
 }
@@ -336,6 +337,7 @@ function syncMobileNavState(viewName) {
     const isOverview = viewName === "dashboard" || viewName === "overview";
     const isUsers = viewName === "users";
     const isClients = viewName === "clients";
+    const isRoles = viewName === "roles";
     const isEmails = viewName === "emails";
     const isSettings = viewName === "settings";
 
@@ -354,11 +356,13 @@ function syncMobileNavState(viewName) {
     // 2. Mobile Navigation Drawer
     const mDash = document.getElementById("mobile-nav-dashboard");
     const mUsers = document.getElementById("mobile-nav-users");
+    const mRoles = document.getElementById("mobile-nav-roles");
     const mClients = document.getElementById("mobile-nav-clients");
     const mEmails = document.getElementById("mobile-nav-emails");
     const mSettings = document.getElementById("mobile-nav-settings");
     if (mDash) mDash.classList.toggle("active", isOverview);
     if (mUsers) mUsers.classList.toggle("active", isUsers);
+    if (mRoles) mRoles.classList.toggle("active", isRoles);
     if (mClients) mClients.classList.toggle("active", isClients);
     if (mEmails) mEmails.classList.toggle("active", isEmails);
     if (mSettings) mSettings.classList.toggle("active", isSettings);
@@ -366,11 +370,13 @@ function syncMobileNavState(viewName) {
     // 3. Desktop Sidebar M3
     const sDash = document.getElementById("sidebar-btn-dashboard");
     const sUsers = document.getElementById("sidebar-btn-users");
+    const sRoles = document.getElementById("sidebar-btn-roles");
     const sClients = document.getElementById("sidebar-btn-clients");
     const sEmails = document.getElementById("sidebar-btn-emails");
     const sSettings = document.getElementById("sidebar-btn-settings");
     if (sDash) sDash.classList.toggle("active", isOverview);
     if (sUsers) sUsers.classList.toggle("active", isUsers);
+    if (sRoles) sRoles.classList.toggle("active", isRoles);
     if (sClients) sClients.classList.toggle("active", isClients);
     if (sEmails) sEmails.classList.toggle("active", isEmails);
     if (sSettings) sSettings.classList.toggle("active", isSettings);
@@ -426,6 +432,7 @@ function initMobileNavigation() {
     const currentView = detectCurrentNavView();
     const isOverview = currentView === "dashboard";
     const isUsers = currentView === "users";
+    const isRoles = currentView === "roles";
     const isClients = currentView === "clients";
     const isEmails = currentView === "emails";
     const isSettings = currentView === "settings";
@@ -485,10 +492,28 @@ function initMobileNavigation() {
             <i class="fa-solid fa-users"></i>
             <span data-i18n="nav_users">Utenti</span>
           </a>
+          <a href="/app/role" id="mobile-nav-roles" onclick="return navigateToSection('/app/role', 'roles');" class="m3-mobile-nav-link ${isRoles ? 'active' : ''}">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span data-i18n="nav_roles">Ruoli & Permessi</span>
+          </a>
+        </div>
+
+        <!-- Categoria: Applicazioni & Client -->
+        <div class="mb-4">
+          <div class="sidebar-category-header px-2 py-1">
+            <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_apps">Applicazioni & Client</span>
+          </div>
           <a href="/app/clients" id="mobile-nav-clients" onclick="return navigateToSection('/app/clients', 'clients');" class="m3-mobile-nav-link ${isClients ? 'active' : ''}">
             <i class="fa-solid fa-key"></i>
             <span data-i18n="nav_clients">Client OAuth 2.0</span>
           </a>
+        </div>
+
+        <!-- Categoria: Comunicazioni -->
+        <div class="mb-4">
+          <div class="sidebar-category-header px-2 py-1">
+            <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_comms">Comunicazioni</span>
+          </div>
           <a href="/app/emails" id="mobile-nav-emails" onclick="return navigateToSection('/app/emails', 'emails');" class="m3-mobile-nav-link ${isEmails ? 'active' : ''}">
             <i class="fa-solid fa-envelope"></i>
             <span data-i18n="nav_emails">Template Email</span>
@@ -533,6 +558,11 @@ function initMobileNavigation() {
             <i class="fa-solid fa-plus"></i>
             <span data-i18n="btn_new_client">Nuovo Client</span>
           </a>
+          <a href="/app/role" onclick="closeMobileNavDrawer(); scrollToTop('instant');" class="m3-mobile-nav-link">
+            <i class="fa-solid fa-shield-plus"></i>
+            <span data-i18n="roles_btn_new">Nuovo Ruolo</span>
+          </a>
+        </div>
         </div>
 
       </div>
