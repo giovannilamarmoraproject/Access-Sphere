@@ -1036,5 +1036,10 @@
   "roles_swal_delete_success_desc": "Il ruolo è stato eliminato con successo e revocato da tutti gli utenti associati.",
   "roles_swal_save_success_title": "Ruolo Salvato",
   "roles_swal_save_success_desc": "La definizione del ruolo applicativo è stata salvata con successo.",
-  "roles_swal_validation_error": "Compila tutti i campi obbligatori (Client, Nome Ruolo e Tipologia)."
+  "roles_swal_validation_error": "Compila tutti i campi obbligatori (Client, Nome Ruolo e Tipologia).",
+  "roles_modal_subtitle": "Definisci privilegi, ambito client e autorizzazioni granulari per l'applicazione",
+  "roles_modal_preview_title": "Anteprima Live Scheda Ruolo",
+  "client_sec_roles_subtitle": "Definisci i ruoli per il client e le autorizzazioni granulari concesse a ciascuno.",
+  "client_role_modal_title": "Configura Ruolo Applicativo",
+  "client_role_modal_subtitle": "Definisci identificativo, tipologia e autorizzazioni per questo client"
 }

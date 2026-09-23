@@ -454,6 +454,8 @@ function openRoleModal(mode, roleData) {
         }
     }
 
+    updateLivePreview();
+
     const modalEl = document.getElementById("roleModal");
     if (modalEl) {
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -496,6 +498,72 @@ function resetModalForm() {
     if (customInput) customInput.value = "";
 
     renderCustomPermissionsList();
+    updateLivePreview();
+}
+
+/**
+ * Restituisce la classe CSS corretta per il badge del tipo ruolo.
+ * @param {string} type - Tipo ruolo (USER, DEFAULT, ADMIN, TECHNICAL)
+ */
+function getRoleTypeBadgeClass(type) {
+    const t = (type || "USER").toUpperCase();
+    if (t === "DEFAULT") return "role-badge-default";
+    if (t === "ADMIN") return "role-badge-admin";
+    if (t === "TECHNICAL") return "role-badge-technical";
+    return "role-badge-user";
+}
+
+/**
+ * Aggiorna l'anteprima live della scheda ruolo all'interno del modale fullscreen
+ * riflettendo in tempo reale nome, client, tipo, descrizione e permessi selezionati.
+ */
+function updateLivePreview() {
+    const nameInput = document.getElementById("modalRoleName");
+    const clientSelect = document.getElementById("modalRoleClient");
+    const descTextarea = document.getElementById("modalRoleDescription");
+    const checkedRadio = document.querySelector('input[name="modalRoleTypeRadio"]:checked');
+    const isWildcard = document.getElementById("modalPermissionWildcard") ? document.getElementById("modalPermissionWildcard").checked : false;
+
+    const pName = document.getElementById("previewRoleName");
+    const pClient = document.getElementById("previewRoleClient");
+    const pType = document.getElementById("previewRoleType");
+    const pDesc = document.getElementById("previewRoleDesc");
+    const pPerms = document.getElementById("previewRolePerms");
+
+    if (pName) {
+        const val = nameInput && nameInput.value.trim() ? nameInput.value.trim() : "NOME_RUOLO";
+        pName.textContent = val;
+    }
+
+    if (pClient) {
+        const cVal = clientSelect && clientSelect.value ? clientSelect.value : "N/D";
+        pClient.textContent = `Client: ${cVal}`;
+    }
+
+    const typeVal = checkedRadio ? checkedRadio.value : "USER";
+    if (pType) {
+        pType.textContent = typeVal;
+        pType.className = `px-2 py-0.5 rounded-md font-mono text-[10px] font-bold ${getRoleTypeBadgeClass(typeVal)}`;
+    }
+
+    if (pDesc) {
+        const dVal = descTextarea && descTextarea.value.trim() ? descTextarea.value.trim() : "Nessuna descrizione inserita";
+        pDesc.textContent = dVal;
+    }
+
+    if (pPerms) {
+        if (isWildcard) {
+            pPerms.innerHTML = `<span class="permission-chip permission-chip-wildcard"><i class="fa-solid fa-asterisk text-[9px] mr-1"></i> * (Tutti i Permessi)</span>`;
+        } else {
+            const standardChecked = Array.from(document.querySelectorAll(".iam-perm-checkbox:checked")).map((cb) => cb.value);
+            const allPerms = [...standardChecked, ...customPermissions];
+            if (allPerms.length === 0) {
+                pPerms.innerHTML = `<span class="text-[11px] text-gray-500 italic">Nessun permesso assegnato</span>`;
+            } else {
+                pPerms.innerHTML = allPerms.map((p) => `<span class="permission-chip font-mono text-[10px]">${escapeHtml(p)}</span>`).join("");
+            }
+        }
+    }
 }
 
 /**
@@ -527,6 +595,7 @@ function addCustomPermission() {
     if (!customPermissions.includes(val)) {
         customPermissions.push(val);
         renderCustomPermissionsList();
+        updateLivePreview();
     }
 
     input.value = "";
@@ -541,6 +610,7 @@ function removeCustomPermission(index) {
     if (index >= 0 && index < customPermissions.length) {
         customPermissions.splice(index, 1);
         renderCustomPermissionsList();
+        updateLivePreview();
     }
 }
 

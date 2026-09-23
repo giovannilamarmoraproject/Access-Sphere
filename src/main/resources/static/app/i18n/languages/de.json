@@ -1036,5 +1036,10 @@
   "roles_swal_delete_success_desc": "Die Rolle wurde erfolgreich gelöscht und von allen Benutzern widerrufen.",
   "roles_swal_save_success_title": "Rolle Gespeichert",
   "roles_swal_save_success_desc": "Die Definition der Anwendungsrolle wurde erfolgreich gespeichert.",
-  "roles_swal_validation_error": "Bitte füllen Sie alle Pflichtfelder aus (Client, Rollenname und Typ)."
+  "roles_swal_validation_error": "Bitte füllen Sie alle Pflichtfelder aus (Client, Rollenname und Typ).",
+  "roles_modal_subtitle": "Berechtigungen, Client-Bereich und granulare Zugriffsrechte für die Anwendung festlegen",
+  "roles_modal_preview_title": "Live-Vorschau der Rollenkarte",
+  "client_sec_roles_subtitle": "Rollen für den Client und die jeweils gewährten granularen Berechtigungen festlegen.",
+  "client_role_modal_title": "Anwendungsrolle konfigurieren",
+  "client_role_modal_subtitle": "Kennung, Typ und Berechtigungen für diesen Client festlegen"
 }

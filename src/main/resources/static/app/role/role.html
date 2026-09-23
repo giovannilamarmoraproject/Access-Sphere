@@ -445,256 +445,295 @@
 
 </main>
 
-<!-- ================= MODALE M3: CREAZIONE & MODIFICA RUOLO ================= -->
+<!-- ================= MODALE M3: CREAZIONE & MODIFICA RUOLO (FULLSCREEN) ================= -->
 <div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border border-white/10 shadow-2xl"
-             style="background: var(--md-surface, #0E0B16); border-radius: 26px; overflow: hidden;">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content theme-modal-content text-white border-0"
+             style="background: var(--theme-surface, #0E0B16);">
 
-            <!-- Header Modale -->
-            <div class="modal-header px-6 py-4 flex items-center justify-between gap-3"
-                 style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85); border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300">
+            <!-- Header Modale Fullscreen -->
+            <div class="modal-header theme-modal-header px-4 sm:px-8 py-4 flex items-center justify-between backdrop-blur-md gap-4 border-b border-purple-500/20">
+                <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300 border border-purple-500/30 shrink-0">
                         <i id="roleModalIcon" class="fa-solid fa-shield-plus text-base"></i>
                     </div>
-                    <div>
-                        <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0" id="roleModalLabel">
+                    <div class="min-w-0 flex-1">
+                        <h5 class="modal-title font-bold text-lg text-white mb-0 truncate" id="roleModalLabel"
+                            data-i18n="roles_modal_create_title">
                             Nuovo Ruolo Applicativo
                         </h5>
-                        <p class="text-xs text-gray-400 mb-0" id="roleModalSubtitle">
-                            Definisci privilegi, ambito client e autorizzazioni granulari
+                        <p class="text-xs text-gray-400 mb-0 truncate hidden sm:block" id="roleModalSubtitle"
+                           data-i18n="roles_modal_subtitle">
+                            Definisci privilegi, ambito client e autorizzazioni granulari per l'applicazione
                         </p>
                     </div>
                 </div>
-                <button type="button" class="m3-icon-btn shrink-0" data-bs-dismiss="modal" aria-label="Chiudi">
-                    <i class="fa-solid fa-xmark text-sm"></i>
-                </button>
+
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <button type="button" class="m3-btn-secondary py-2 px-4 text-xs"
+                            data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark mr-1"></i> <span data-i18n="btn_cancel">Annulla</span>
+                    </button>
+                    <button type="button" id="btnSaveRole" onclick="saveRole()" class="m3-btn-primary py-2 px-5 text-xs">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="btn_save_role">Salva Ruolo</span>
+                    </button>
+                    <button type="button" class="m3-icon-btn shrink-0 ml-1" data-bs-dismiss="modal" aria-label="Chiudi"
+                            title="Chiudi">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
             </div>
 
-            <!-- Body Modale -->
-            <div class="modal-body px-6 py-5 space-y-5 max-h-[75vh] overflow-y-auto">
+            <!-- Body Modale Fullscreen: Split-View su due colonne -->
+            <div class="modal-body p-0 overflow-y-auto lg:overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 h-auto lg:h-[calc(100vh-73px)]">
 
-                <!-- Client Selector -->
-                <div>
-                    <label for="modalRoleClient" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
-                        <span data-i18n="roles_modal_client_label">Client OAuth2 Associato *</span>
-                    </label>
-                    <div class="relative">
-                        <select id="modalRoleClient"
-                                class="w-full appearance-none px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all cursor-pointer">
-                            <!-- Populated dynamically via JS -->
-                        </select>
-                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
-                    </div>
-                    <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="roles_modal_client_hint">
-                        Il ruolo apparterrà all'ambito di sicurezza di questa specifica applicazione.
-                    </span>
-                </div>
+                    <!-- Colonna Sinistra (Col 5): Configurazione Principale -->
+                    <div class="lg:col-span-5 p-6 sm:p-8 overflow-y-auto lg:h-[calc(100vh-73px)] border-b lg:border-b-0 lg:border-r border-purple-500/15 space-y-6">
 
-                <!-- Role Name -->
-                <div>
-                    <label for="modalRoleName" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
-                        <span data-i18n="roles_modal_name_label">Nome Univoco Ruolo *</span>
-                    </label>
-                    <input type="text" id="modalRoleName"
-                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-gray-500 font-mono text-sm focus:outline-none focus:border-purple-400/60 uppercase transition-all"
-                           placeholder="es. APP_MANAGER, REPORTING_USER, SUPPORT_TIER2"
-                           data-i18n-placeholder="roles_modal_name_placeholder"
-                           maxlength="50"
-                           oninput="this.value = this.value.toUpperCase().replace(/\s+/g, '_');"/>
-                    <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="roles_modal_name_hint">
-                        Identificativo in maiuscolo senza spazi (sono ammessi trattini bassi '_').
-                    </span>
-                </div>
-
-                <!-- Role Type Selector (Radio Cards) -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
-                        <span data-i18n="roles_modal_type_label">Tipologia Ruolo *</span>
-                    </label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
-                        <!-- USER -->
+                        <!-- Client Selector -->
                         <div>
-                            <input type="radio" name="modalRoleTypeRadio" id="typeRadioUSER" value="USER" class="sr-only type-radio-input" checked/>
-                            <label for="typeRadioUSER" class="type-radio-label flex flex-col h-full">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="font-bold text-xs role-badge-user px-2 py-0.5 rounded-md font-mono">USER</span>
-                                    <i class="fa-solid fa-circle-check text-purple-400 text-sm hidden"></i>
-                                </div>
-                                <span class="text-[11px] text-gray-400" data-i18n="roles_modal_type_user_desc">Ruolo operativo ordinario per utenti autorizzati dell'applicazione.</span>
+                            <label for="modalRoleClient" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                <span data-i18n="roles_modal_client_label">Client OAuth2 Associato *</span>
                             </label>
+                            <div class="relative">
+                                <select id="modalRoleClient" onchange="updateLivePreview()"
+                                        class="w-full appearance-none px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all cursor-pointer">
+                                    <!-- Populated dynamically via JS -->
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                            </div>
+                            <span class="text-[11px] text-gray-400 mt-1.5 block" data-i18n="roles_modal_client_hint">
+                                Il ruolo apparterrà all'ambito di sicurezza di questa specifica applicazione.
+                            </span>
                         </div>
 
-                        <!-- DEFAULT -->
+                        <!-- Role Name -->
                         <div>
-                            <input type="radio" name="modalRoleTypeRadio" id="typeRadioDEFAULT" value="DEFAULT" class="sr-only type-radio-input"/>
-                            <label for="typeRadioDEFAULT" class="type-radio-label flex flex-col h-full">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="font-bold text-xs role-badge-default px-2 py-0.5 rounded-md font-mono">DEFAULT</span>
-                                </div>
-                                <span class="text-[11px] text-gray-400" data-i18n="roles_modal_type_default_desc">Assegnato automaticamente ai nuovi utenti dell'applicazione.</span>
+                            <label for="modalRoleName" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                <span data-i18n="roles_modal_name_label">Nome Univoco Ruolo *</span>
                             </label>
+                            <input type="text" id="modalRoleName"
+                                   class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-gray-500 font-mono text-sm focus:outline-none focus:border-purple-400/60 uppercase transition-all"
+                                   placeholder="es. APP_MANAGER, REPORTING_USER, SUPPORT_TIER2"
+                                   data-i18n-placeholder="roles_modal_name_placeholder"
+                                   maxlength="50"
+                                   oninput="this.value = this.value.toUpperCase().replace(/\s+/g, '_'); updateLivePreview();"/>
+                            <span class="text-[11px] text-gray-400 mt-1.5 block" data-i18n="roles_modal_name_hint">
+                                Identificativo in maiuscolo senza spazi (sono ammessi trattini bassi '_').
+                            </span>
                         </div>
 
-                        <!-- ADMIN -->
+                        <!-- Role Type Selector (Radio Cards) -->
                         <div>
-                            <input type="radio" name="modalRoleTypeRadio" id="typeRadioADMIN" value="ADMIN" class="sr-only type-radio-input"/>
-                            <label for="typeRadioADMIN" class="type-radio-label flex flex-col h-full">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="font-bold text-xs role-badge-admin px-2 py-0.5 rounded-md font-mono">ADMIN</span>
-                                </div>
-                                <span class="text-[11px] text-gray-400" data-i18n="roles_modal_type_admin_desc">Privilegi amministrativi e di gestione per l'applicazione.</span>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                <span data-i18n="roles_modal_type_label">Tipologia Ruolo *</span>
                             </label>
-                        </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                        <!-- TECHNICAL -->
-                        <div>
-                            <input type="radio" name="modalRoleTypeRadio" id="typeRadioTECHNICAL" value="TECHNICAL" class="sr-only type-radio-input"/>
-                            <label for="typeRadioTECHNICAL" class="type-radio-label flex flex-col h-full">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="font-bold text-xs role-badge-technical px-2 py-0.5 rounded-md font-mono">TECHNICAL</span>
+                                <!-- USER -->
+                                <div>
+                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioUSER" value="USER" class="sr-only type-radio-input" checked onchange="updateLivePreview()"/>
+                                    <label for="typeRadioUSER" class="type-radio-label flex flex-col h-full">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="font-bold text-xs role-badge-user px-2 py-0.5 rounded-md font-mono">USER</span>
+                                            <i class="fa-solid fa-circle-check text-purple-400 text-xs"></i>
+                                        </div>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_user_desc">Ruolo operativo ordinario per utenti autorizzati dell'applicazione.</span>
+                                    </label>
                                 </div>
-                                <span class="text-[11px] text-gray-400" data-i18n="roles_modal_type_tech_desc">Riservato a sistemi esterni, bot e integrazioni machine-to-machine.</span>
-                            </label>
-                        </div>
 
-                    </div>
-                </div>
+                                <!-- DEFAULT -->
+                                <div>
+                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioDEFAULT" value="DEFAULT" class="sr-only type-radio-input" onchange="updateLivePreview()"/>
+                                    <label for="typeRadioDEFAULT" class="type-radio-label flex flex-col h-full">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="font-bold text-xs role-badge-default px-2 py-0.5 rounded-md font-mono">DEFAULT</span>
+                                            <i class="fa-solid fa-circle-check text-purple-400 text-xs"></i>
+                                        </div>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_default_desc">Assegnato automaticamente ai nuovi utenti dell'applicazione.</span>
+                                    </label>
+                                </div>
 
-                <!-- Description -->
-                <div>
-                    <label for="modalRoleDescription" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
-                        <span data-i18n="roles_modal_desc_label">Descrizione Operativa</span>
-                    </label>
-                    <textarea id="modalRoleDescription" rows="2"
-                              class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-400/60 transition-all resize-none"
-                              placeholder="Descrivi le mansioni e le responsabilità associate a questo ruolo..."
-                              data-i18n-placeholder="roles_modal_desc_placeholder"></textarea>
-                </div>
+                                <!-- ADMIN -->
+                                <div>
+                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioADMIN" value="ADMIN" class="sr-only type-radio-input" onchange="updateLivePreview()"/>
+                                    <label for="typeRadioADMIN" class="type-radio-label flex flex-col h-full">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="font-bold text-xs role-badge-admin px-2 py-0.5 rounded-md font-mono">ADMIN</span>
+                                            <i class="fa-solid fa-circle-check text-purple-400 text-xs"></i>
+                                        </div>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_admin_desc">Privilegi amministrativi e di gestione per l'applicazione.</span>
+                                    </label>
+                                </div>
 
-                <!-- Permissions Section -->
-                <div class="pt-2 border-t border-white/10 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h6 class="text-sm font-bold text-white mb-0" data-i18n="roles_modal_permissions_title">Permessi & Privilegi Granulari</h6>
-                            <p class="text-xs text-gray-400 mb-0">Configura le abilitazioni concesse a questo ruolo</p>
-                        </div>
-                    </div>
+                                <!-- TECHNICAL -->
+                                <div>
+                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioTECHNICAL" value="TECHNICAL" class="sr-only type-radio-input" onchange="updateLivePreview()"/>
+                                    <label for="typeRadioTECHNICAL" class="type-radio-label flex flex-col h-full">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="font-bold text-xs role-badge-technical px-2 py-0.5 rounded-md font-mono">TECHNICAL</span>
+                                            <i class="fa-solid fa-circle-check text-purple-400 text-xs"></i>
+                                        </div>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_tech_desc">Riservato a sistemi esterni, bot e integrazioni machine-to-machine.</span>
+                                    </label>
+                                </div>
 
-                    <!-- Wildcard Toggle Banner -->
-                    <label class="flex items-center justify-between p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 cursor-pointer hover:bg-amber-500/15 transition-all">
-                        <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-asterisk text-amber-400 text-lg"></i>
-                            <div>
-                                <span class="font-mono font-bold text-amber-300 text-sm" data-i18n="roles_modal_wildcard_label">* (Accesso Globale / Wildcard - include tutti i permessi)</span>
-                                <p class="text-xs text-amber-200/70 mb-0" data-i18n="roles_modal_wildcard_hint">Se selezionato, abilita l'utente ad eseguire qualsiasi operazione sul client</p>
                             </div>
                         </div>
-                        <input type="checkbox" id="modalPermissionWildcard" onchange="handleWildcardToggle(this.checked)"
-                               class="w-5 h-5 rounded border-amber-500/40 text-amber-500 focus:ring-amber-500/30 cursor-pointer"/>
-                    </label>
 
-                    <!-- Standard IAM Permissions -->
-                    <div id="standardPermissionsBox">
-                        <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" data-i18n="roles_modal_iam_permissions_title">
-                            Permessi Standard IAM
-                        </span>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                            <label class="iam-checkbox-card">
-                                <input type="checkbox" value="user:read" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                <div>
-                                    <span class="font-mono text-purple-300 font-semibold">user:read</span>
-                                    <span class="text-gray-400 text-[11px] block">Lettura profili utenti</span>
-                                </div>
+                        <!-- Description -->
+                        <div>
+                            <label for="modalRoleDescription" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                <span data-i18n="roles_modal_desc_label">Descrizione Operativa</span>
                             </label>
-                            <label class="iam-checkbox-card">
-                                <input type="checkbox" value="user:write" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                <div>
-                                    <span class="font-mono text-purple-300 font-semibold">user:write</span>
-                                    <span class="text-gray-400 text-[11px] block">Creazione e modifica utenti</span>
-                                </div>
-                            </label>
-                            <label class="iam-checkbox-card">
-                                <input type="checkbox" value="user:delete" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                <div>
-                                    <span class="font-mono text-purple-300 font-semibold">user:delete</span>
-                                    <span class="text-gray-400 text-[11px] block">Eliminazione e blocco utenti</span>
-                                </div>
-                            </label>
-                            <label class="iam-checkbox-card">
-                                <input type="checkbox" value="client:read" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                <div>
-                                    <span class="font-mono text-purple-300 font-semibold">client:read</span>
-                                    <span class="text-gray-400 text-[11px] block">Consultazione parametri client</span>
-                                </div>
-                            </label>
-                            <label class="iam-checkbox-card">
-                                <input type="checkbox" value="client:write" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                <div>
-                                    <span class="font-mono text-purple-300 font-semibold">client:write</span>
-                                    <span class="text-gray-400 text-[11px] block">Modifica credenziali e redirect</span>
-                                </div>
-                            </label>
-                            <label class="iam-checkbox-card">
-                                <input type="checkbox" value="roles:manage" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                <div>
-                                    <span class="font-mono text-purple-300 font-semibold">roles:manage</span>
-                                    <span class="text-gray-400 text-[11px] block">Gestione ruoli e permessi</span>
-                                </div>
-                            </label>
-                            <label class="iam-checkbox-card">
-                                <input type="checkbox" value="settings:read" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                <div>
-                                    <span class="font-mono text-purple-300 font-semibold">settings:read</span>
-                                    <span class="text-gray-400 text-[11px] block">Visualizzazione impostazioni</span>
-                                </div>
-                            </label>
-                            <label class="iam-checkbox-card">
-                                <input type="checkbox" value="settings:write" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                <div>
-                                    <span class="font-mono text-purple-300 font-semibold">settings:write</span>
-                                    <span class="text-gray-400 text-[11px] block">Modifica branding e sistema</span>
-                                </div>
-                            </label>
+                            <textarea id="modalRoleDescription" rows="3"
+                                      class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-400/60 transition-all resize-none"
+                                      placeholder="Descrivi le mansioni e le responsabilità associate a questo ruolo..."
+                                      data-i18n-placeholder="roles_modal_desc_placeholder"
+                                      oninput="updateLivePreview()"></textarea>
                         </div>
+
                     </div>
 
-                    <!-- Custom Application Permissions -->
-                    <div>
-                        <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" data-i18n="roles_modal_custom_permissions_title">
-                            Permessi Applicativi Personalizzati
-                        </span>
-                        <div class="flex items-center gap-2 mb-2">
-                            <input type="text" id="customPermissionInput"
-                                   class="flex-1 px-4 py-2 rounded-xl bg-white/5 border border-white/15 text-white placeholder-gray-500 font-mono text-xs focus:outline-none focus:border-purple-400/60 transition-all lowercase"
-                                   placeholder="es. orders:create, reports:export, billing:view"
-                                   data-i18n-placeholder="roles_modal_custom_perm_placeholder"
-                                   onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomPermission(); }"/>
-                            <button type="button" onclick="addCustomPermission()" class="m3-btn-secondary py-2 px-3 text-xs">
-                                <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_permission">Aggiungi</span>
-                            </button>
+                    <!-- Colonna Destra (Col 7): Permessi Granulari & Live Preview -->
+                    <div class="lg:col-span-7 p-6 sm:p-8 overflow-y-auto lg:h-[calc(100vh-73px)] space-y-6">
+
+                        <!-- Sezione Permessi Header -->
+                        <div>
+                            <h6 class="text-sm font-bold text-white mb-1" data-i18n="roles_modal_permissions_title">Permessi & Privilegi Granulari</h6>
+                            <p class="text-xs text-gray-400 mb-0">Configura le abilitazioni e i privilegi concessi agli utenti con questo ruolo</p>
                         </div>
-                        <!-- Chips container -->
-                        <div id="customPermissionsList" class="flex flex-wrap gap-1.5 min-h-[32px] p-2 rounded-xl bg-white/5 border border-white/10">
-                            <!-- Injected dynamically -->
+
+                        <!-- Wildcard Toggle Banner -->
+                        <label class="flex items-center justify-between p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 cursor-pointer hover:bg-amber-500/15 transition-all">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-300 shrink-0">
+                                    <i class="fa-solid fa-asterisk text-lg"></i>
+                                </div>
+                                <div>
+                                    <span class="font-mono font-bold text-amber-300 text-sm" data-i18n="roles_modal_wildcard_label">* (Accesso Globale / Wildcard - include tutti i permessi)</span>
+                                    <p class="text-xs text-amber-200/70 mb-0" data-i18n="roles_modal_wildcard_hint">Se selezionato, abilita l'utente ad eseguire qualsiasi operazione sul client</p>
+                                </div>
+                            </div>
+                            <input type="checkbox" id="modalPermissionWildcard" onchange="handleWildcardToggle(this.checked); updateLivePreview();"
+                                   class="w-5 h-5 rounded border-amber-500/40 text-amber-500 focus:ring-amber-500/30 cursor-pointer shrink-0"/>
+                        </label>
+
+                        <!-- Standard IAM Permissions -->
+                        <div id="standardPermissionsBox" class="space-y-2.5">
+                            <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="roles_modal_iam_permissions_title">
+                                Permessi Standard IAM
+                            </span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                                <label class="iam-checkbox-card">
+                                    <input type="checkbox" value="user:read" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                    <div>
+                                        <span class="font-mono text-purple-300 font-semibold">user:read</span>
+                                        <span class="text-gray-400 text-[11px] block">Lettura profili utenti</span>
+                                    </div>
+                                </label>
+                                <label class="iam-checkbox-card">
+                                    <input type="checkbox" value="user:write" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                    <div>
+                                        <span class="font-mono text-purple-300 font-semibold">user:write</span>
+                                        <span class="text-gray-400 text-[11px] block">Creazione e modifica utenti</span>
+                                    </div>
+                                </label>
+                                <label class="iam-checkbox-card">
+                                    <input type="checkbox" value="user:delete" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                    <div>
+                                        <span class="font-mono text-purple-300 font-semibold">user:delete</span>
+                                        <span class="text-gray-400 text-[11px] block">Eliminazione e blocco utenti</span>
+                                    </div>
+                                </label>
+                                <label class="iam-checkbox-card">
+                                    <input type="checkbox" value="client:read" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                    <div>
+                                        <span class="font-mono text-purple-300 font-semibold">client:read</span>
+                                        <span class="text-gray-400 text-[11px] block">Consultazione parametri client</span>
+                                    </div>
+                                </label>
+                                <label class="iam-checkbox-card">
+                                    <input type="checkbox" value="client:write" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                    <div>
+                                        <span class="font-mono text-purple-300 font-semibold">client:write</span>
+                                        <span class="text-gray-400 text-[11px] block">Modifica credenziali e redirect</span>
+                                    </div>
+                                </label>
+                                <label class="iam-checkbox-card">
+                                    <input type="checkbox" value="roles:manage" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                    <div>
+                                        <span class="font-mono text-purple-300 font-semibold">roles:manage</span>
+                                        <span class="text-gray-400 text-[11px] block">Gestione ruoli e permessi</span>
+                                    </div>
+                                </label>
+                                <label class="iam-checkbox-card">
+                                    <input type="checkbox" value="settings:read" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                    <div>
+                                        <span class="font-mono text-purple-300 font-semibold">settings:read</span>
+                                        <span class="text-gray-400 text-[11px] block">Visualizzazione impostazioni</span>
+                                    </div>
+                                </label>
+                                <label class="iam-checkbox-card">
+                                    <input type="checkbox" value="settings:write" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
+                                    <div>
+                                        <span class="font-mono text-purple-300 font-semibold">settings:write</span>
+                                        <span class="text-gray-400 text-[11px] block">Modifica branding e sistema</span>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
+
+                        <!-- Custom Application Permissions -->
+                        <div class="space-y-2.5">
+                            <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="roles_modal_custom_permissions_title">
+                                Permessi Applicativi Personalizzati
+                            </span>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="customPermissionInput"
+                                       class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white placeholder-gray-500 font-mono text-xs focus:outline-none focus:border-purple-400/60 transition-all lowercase"
+                                       placeholder="es. orders:create, reports:export, billing:view"
+                                       data-i18n-placeholder="roles_modal_custom_perm_placeholder"
+                                       onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomPermission(); }"/>
+                                <button type="button" onclick="addCustomPermission()" class="m3-btn-secondary py-2.5 px-4 text-xs shrink-0">
+                                    <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="btn_add_permission">Aggiungi</span>
+                                </button>
+                            </div>
+                            <!-- Chips container -->
+                            <div id="customPermissionsList" class="flex flex-wrap gap-1.5 min-h-[38px] p-2.5 rounded-xl bg-white/5 border border-white/10">
+                                <!-- Injected dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Live Preview Card -->
+                        <div class="pt-4 border-t border-purple-500/15">
+                            <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                                <i class="fa-solid fa-eye text-purple-400"></i> <span data-i18n="roles_modal_preview_title">Anteprima Live Scheda Ruolo</span>
+                            </span>
+                            <div class="m3-bento-card p-5 border border-purple-500/25 bg-purple-950/20">
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-300 font-mono text-xs border border-purple-500/30">
+                                            <i class="fa-solid fa-shield-halved"></i>
+                                        </div>
+                                        <div>
+                                            <h6 id="previewRoleName" class="text-sm font-bold text-white font-mono mb-0">NOME_RUOLO</h6>
+                                            <span id="previewRoleClient" class="text-[10px] text-purple-300/80 font-mono">Client: N/D</span>
+                                        </div>
+                                    </div>
+                                    <span id="previewRoleType" class="role-badge-user px-2 py-0.5 rounded-md font-mono text-[10px] font-bold">USER</span>
+                                </div>
+                                <p id="previewRoleDesc" class="text-xs text-gray-400 mb-3 line-clamp-2">Nessuna descrizione inserita</p>
+                                <div id="previewRolePerms" class="flex flex-wrap gap-1">
+                                    <span class="text-[11px] text-gray-500 italic">Nessun permesso assegnato</span>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
-
-            </div>
-
-            <!-- Footer Modale -->
-            <div class="modal-footer px-6 py-4 flex items-center justify-end gap-2"
-                 style="background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.85); border-top: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">
-                <button type="button" class="m3-btn-secondary" data-bs-dismiss="modal" data-i18n="btn_cancel">
-                    Annulla
-                </button>
-                <button type="button" id="btnSaveRole" onclick="saveRole()" class="m3-btn-primary">
-                    <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save_role">Salva Ruolo</span>
-                </button>
             </div>
 
         </div>

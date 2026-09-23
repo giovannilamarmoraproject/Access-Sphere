@@ -1036,5 +1036,10 @@
   "roles_swal_delete_success_desc": "The role was deleted successfully and revoked from all assigned users.",
   "roles_swal_save_success_title": "Role Saved",
   "roles_swal_save_success_desc": "The application role definition was saved successfully.",
-  "roles_swal_validation_error": "Please fill in all required fields (Client, Role Name, and Type)."
+  "roles_swal_validation_error": "Please fill in all required fields (Client, Role Name, and Type).",
+  "roles_modal_subtitle": "Define privileges, client scope, and granular permissions for the application",
+  "roles_modal_preview_title": "Role Card Live Preview",
+  "client_sec_roles_subtitle": "Define client roles and granular permissions granted to each.",
+  "client_role_modal_title": "Configure Application Role",
+  "client_role_modal_subtitle": "Define identifier, type, and permissions for this client"
 }

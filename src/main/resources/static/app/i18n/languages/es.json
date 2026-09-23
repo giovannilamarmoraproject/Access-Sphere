@@ -1036,5 +1036,10 @@
   "roles_swal_delete_success_desc": "El rol se eliminó con éxito y se revocó de todos los usuarios asociados.",
   "roles_swal_save_success_title": "Rol Guardado",
   "roles_swal_save_success_desc": "La definición del rol de aplicación se guardó correctamente.",
-  "roles_swal_validation_error": "Complete todos los campos obligatorios (Cliente, Nombre del rol y Tipo)."
+  "roles_swal_validation_error": "Complete todos los campos obligatorios (Cliente, Nombre del rol y Tipo).",
+  "roles_modal_subtitle": "Defina privilegios, ámbito de cliente y autorizaciones granulares para la aplicación",
+  "roles_modal_preview_title": "Vista previa en vivo de la tarjeta de rol",
+  "client_sec_roles_subtitle": "Defina los roles para el cliente y las autorizaciones granulares otorgadas a cada uno.",
+  "client_role_modal_title": "Configurar rol de aplicación",
+  "client_role_modal_subtitle": "Defina identificador, tipo y autorizaciones para este cliente"
 }
