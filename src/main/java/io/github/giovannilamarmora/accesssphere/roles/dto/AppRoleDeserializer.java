@@ -79,11 +79,25 @@ public class AppRoleDeserializer extends JsonDeserializer<AppRole> {
       description = node.get("desc").asText();
     }
 
+    java.util.List<String> permissions = null;
+    if (node.hasNonNull("permissions") && node.get("permissions").isArray()) {
+      permissions = new java.util.ArrayList<>();
+      for (JsonNode permNode : node.get("permissions")) {
+        if (permNode != null && !permNode.isNull()) {
+          String perm = permNode.asText();
+          if (perm != null && !perm.isBlank()) {
+            permissions.add(perm.trim());
+          }
+        }
+      }
+    }
+
     AppRole appRole = new AppRole();
     appRole.setId(id);
     appRole.setRole(role);
     appRole.setType(type);
     appRole.setDescription(description);
+    appRole.setPermissions(permissions);
     return appRole;
   }
 }

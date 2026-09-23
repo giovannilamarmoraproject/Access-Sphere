@@ -1,10 +1,17 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
+import io.github.giovannilamarmora.accesssphere.client.ClientMapper;
+import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
+import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -12,7 +19,12 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +58,8 @@ public class UserService {
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
   @Autowired private IUserDAO userDAO;
+  @Autowired private IUserClientRoleDAO userClientRoleDAO;
+  @Autowired private IClientDAO clientDAO;
 
   /**
    * Recupera un utente dal database locale tramite il suo identificatore univoco UUID. Valida la
@@ -60,7 +74,7 @@ public class UserService {
     LOG.info("👤 Getting user by identifier: {}", identifier);
     UserEntity userEntity = userDAO.findUserEntityByIdentifier(identifier);
     UserValidator.validateUser(userEntity);
-    return Mono.just(UserMapper.toDTO(userEntity));
+    return Mono.just(enrichUser(UserMapper.toDTO(userEntity)));
   }
 
   /**
@@ -75,7 +89,7 @@ public class UserService {
     LOG.info("👤 Getting user by email: {}", email);
     UserEntity userEntity = userDAO.findUserEntityByEmail(email);
     UserValidator.validateUser(userEntity);
-    return Mono.just(UserMapper.toDTO(userEntity));
+    return Mono.just(enrichUser(UserMapper.toDTO(userEntity)));
   }
 
   /**
@@ -103,7 +117,7 @@ public class UserService {
     UserEntity userEntity = userDAO.findUserEntityByTokenReset(tokenReset);
     UserValidator.validateUser(userEntity);
     UserValidator.validateResetToken(userEntity.getUpdateDate());
-    return Mono.just(UserMapper.toDTO(userEntity));
+    return Mono.just(enrichUser(UserMapper.toDTO(userEntity)));
   }
 
   /**
@@ -116,7 +130,7 @@ public class UserService {
   public Mono<List<User>> getUsers() {
     LOG.info("👥 Getting all users from database");
     List<UserEntity> userEntities = userDAO.findAll();
-    return Mono.just(UserMapper.toDTOList(userEntities));
+    return Mono.just(enrichUsers(UserMapper.toDTOList(userEntities)));
   }
 
   /**
@@ -148,6 +162,7 @@ public class UserService {
 
     User userDTO = UserMapper.toDTO(userEntity);
     userDTO.setPassword(null);
+    enrichUser(userDTO);
     LOG.debug("✅ Credentials successfully validated for user: {}", userDTO.getUsername());
     return Mono.just(userDTO);
   }
@@ -225,18 +240,157 @@ public class UserService {
     UserEntity userSaved = userDAO.saveAndFlush(userEntity);
     userSaved.setPassword(null);
     UserValidator.validateUser(userSaved);
-    return UserMapper.toDTO(userSaved);
+    return enrichUser(UserMapper.toDTO(userSaved));
   }
 
   /**
-   * Cancella fisicamente un utente dal database locale tramite il suo identificatore univoco.
+   * Cancella fisicamente un utente dal database locale tramite il suo identificatore univoco,
+   * rimuovendo a cascata anche le associazioni relazionali di ruoli in USER_CLIENT_ROLE.
    *
    * @param identifier Identificatore univoco UUID dell'utente.
    */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteUserEntityByIdentifier(String identifier) {
-    LOG.info("🗑️ Deleting user entity from database, identifier: {}", identifier);
+    LOG.info("🗑️ Deleting user entity and client roles from database, identifier: {}", identifier);
+    userClientRoleDAO.deleteByUserIdentifier(identifier);
     userDAO.deleteUserEntityByIdentifier(identifier);
+  }
+
+  /**
+   * Arricchisce il DTO {@link User} con i ruoli contestualizzati per Client OAuth2 ({@link UserClientRoleDTO})
+   * recuperati dalla tabella USER_CLIENT_ROLE, estraendo tipologia, descrizione e permessi granulari
+   * dalla configurazione del rispettivo client. Sincronizza inoltre la lista legacy flat {@code roles}.
+   *
+   * @param user Oggetto utente da arricchire.
+   * @return DTO utente arricchito.
+   */
+  public User enrichUser(User user) {
+    if (user == null || user.getIdentifier() == null) return user;
+    List<UserClientRoleEntity> ucrEntities =
+        userClientRoleDAO.findByUserIdentifier(user.getIdentifier());
+    if (ucrEntities != null && !ucrEntities.isEmpty()) {
+      List<UserClientRoleDTO> clientRoleDTOs =
+          ucrEntities.stream()
+              .map(
+                  ucr -> {
+                    UserClientRoleDTO dto =
+                        new UserClientRoleDTO(ucr.getClientId(), ucr.getRole());
+                    ClientCredentialEntity clientEntity =
+                        clientDAO.findByClientId(ucr.getClientId());
+                    if (clientEntity != null && clientEntity.getAppRoles() != null) {
+                      List<AppRole> appRoles =
+                          ClientMapper.parseAppRoles(clientEntity.getAppRoles());
+                      if (appRoles != null) {
+                        appRoles.stream()
+                            .filter(
+                                ar ->
+                                    ar != null
+                                        && ar.getRole() != null
+                                        && ar.getRole().equalsIgnoreCase(ucr.getRole()))
+                            .findFirst()
+                            .ifPresent(
+                                ar -> {
+                                  if (ar.getType() != null) dto.setType(ar.getType());
+                                  if (ar.getDescription() != null)
+                                    dto.setDescription(ar.getDescription());
+                                  if (ar.getPermissions() != null)
+                                    dto.setPermissions(ar.getPermissions());
+                                });
+                      }
+                    }
+                    return dto;
+                  })
+              .toList();
+      user.setClientRoles(clientRoleDTOs);
+
+      // Sincronizza per retrocompatibilita i ruoli flat legacy
+      Set<String> allRoles = new LinkedHashSet<>();
+      if (user.getRoles() != null) {
+        allRoles.addAll(user.getRoles());
+      }
+      clientRoleDTOs.forEach(
+          cr -> {
+            if (cr.getRole() != null) allRoles.add(cr.getRole());
+          });
+      user.setRoles(new ArrayList<>(allRoles));
+    }
+    return user;
+  }
+
+  /**
+   * Arricchisce massivamente un elenco di DTO {@link User} con i rispettivi ruoli client-scoped,
+   * ottimizzando gli accessi a DB con recupero preliminare in batch per evitare query N+1.
+   *
+   * @param users Lista di DTO utenti da arricchire.
+   * @return Lista di DTO utenti arricchita.
+   */
+  public List<User> enrichUsers(List<User> users) {
+    if (users == null || users.isEmpty()) return users;
+    List<UserClientRoleEntity> allUcr = userClientRoleDAO.findAll();
+    if (allUcr == null || allUcr.isEmpty()) return users;
+
+    Map<String, List<UserClientRoleEntity>> ucrByUser =
+        allUcr.stream()
+            .filter(u -> u.getUserIdentifier() != null)
+            .collect(Collectors.groupingBy(UserClientRoleEntity::getUserIdentifier));
+
+    Map<String, List<AppRole>> appRolesByClient =
+        clientDAO.findAll().stream()
+            .filter(c -> c.getClientId() != null && c.getAppRoles() != null)
+            .collect(
+                Collectors.toMap(
+                    ClientCredentialEntity::getClientId,
+                    c -> {
+                      List<AppRole> roles = ClientMapper.parseAppRoles(c.getAppRoles());
+                      return roles != null ? roles : List.of();
+                    },
+                    (a, b) -> a));
+
+    for (User user : users) {
+      if (user == null || user.getIdentifier() == null) continue;
+      List<UserClientRoleEntity> ucrEntities = ucrByUser.get(user.getIdentifier());
+      if (ucrEntities != null && !ucrEntities.isEmpty()) {
+        List<UserClientRoleDTO> clientRoleDTOs =
+            ucrEntities.stream()
+                .map(
+                    ucr -> {
+                      UserClientRoleDTO dto =
+                          new UserClientRoleDTO(ucr.getClientId(), ucr.getRole());
+                      List<AppRole> appRoles = appRolesByClient.get(ucr.getClientId());
+                      if (appRoles != null) {
+                        appRoles.stream()
+                            .filter(
+                                ar ->
+                                    ar != null
+                                        && ar.getRole() != null
+                                        && ar.getRole().equalsIgnoreCase(ucr.getRole()))
+                            .findFirst()
+                            .ifPresent(
+                                ar -> {
+                                  if (ar.getType() != null) dto.setType(ar.getType());
+                                  if (ar.getDescription() != null)
+                                    dto.setDescription(ar.getDescription());
+                                  if (ar.getPermissions() != null)
+                                    dto.setPermissions(ar.getPermissions());
+                                });
+                      }
+                      return dto;
+                    })
+                .toList();
+        user.setClientRoles(clientRoleDTOs);
+
+        Set<String> allRoles = new LinkedHashSet<>();
+        if (user.getRoles() != null) {
+          allRoles.addAll(user.getRoles());
+        }
+        clientRoleDTOs.forEach(
+            cr -> {
+              if (cr.getRole() != null) allRoles.add(cr.getRole());
+            });
+        user.setRoles(new ArrayList<>(allRoles));
+      }
+    }
+    return users;
   }
 }

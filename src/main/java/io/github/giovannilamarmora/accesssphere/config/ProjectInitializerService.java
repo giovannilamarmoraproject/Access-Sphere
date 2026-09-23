@@ -15,6 +15,8 @@ import io.github.giovannilamarmora.accesssphere.email.IEmailTemplateDAO;
 import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
 import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
 import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
@@ -56,6 +58,7 @@ public class ProjectInitializerService implements ApplicationRunner {
   @Autowired private TechUserConfig techUserConfig;
   @Autowired private IClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
+  @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IAppSettingsDAO appSettingsDAO;
   @Autowired private IEmailTemplateDAO emailTemplateDAO;
 
@@ -66,6 +69,7 @@ public class ProjectInitializerService implements ApplicationRunner {
 
     initTechnicalClient();
     initTechnicalUser();
+    migrateLegacyUserRoles();
     initAppSettings();
     initEmailTemplates();
 
@@ -150,6 +154,15 @@ public class ProjectInitializerService implements ApplicationRunner {
             techClientId);
         needsUpdate = true;
       }
+      if (!StringUtils.hasText(existing.getAppRoles()) || !existing.getAppRoles().contains("permissions")) {
+        existing.setAppRoles(
+            "[{\"role\":\"ROLE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
+                + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\",\"permissions\":[\"*\"]}]");
+        LOG.info(
+            "🔄 Migrated appRoles to include default permissions [*] for Technical OAuth Client [{}]",
+            techClientId);
+        needsUpdate = true;
+      }
       if (needsUpdate) {
         clientDAO.save(existing);
         LOG.info("✅ Existing Technical OAuth Client [{}] successfully updated in DB", techClientId);
@@ -172,8 +185,8 @@ public class ProjectInitializerService implements ApplicationRunner {
     client.setJwtSecret(jwtSecret);
     client.setRedirect_uri(redirectUriJson);
     client.setAppRoles(
-        "[{\"role\":\"ROLE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default administrator role for Access Sphere\"},"
-            + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\"}]");
+        "[{\"role\":\"ROLE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
+            + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\",\"permissions\":[\"*\"]}]");
     client.setMfaEnabled(false);
     client.setAuthorize_redirect_status(HttpStatus.FOUND);
     client.setJwtExpiration(3600000L);
@@ -250,11 +263,50 @@ public class ProjectInitializerService implements ApplicationRunner {
       user.setPassword(bCryptPasswordEncoder.encode(techPassword));
       user.setRoles("ROLE_ADMIN ROLE_TECH");
       userDAO.save(user);
+
+      // Associa i ruoli iniziali nella tabella relazionale USER_CLIENT_ROLE
+      String techClientId = techUserConfig.getTechClientId();
+      userClientRoleDAO.save(new UserClientRoleEntity(user.getIdentifier(), techClientId, "ROLE_ADMIN"));
+      userClientRoleDAO.save(new UserClientRoleEntity(user.getIdentifier(), techClientId, "ROLE_TECH"));
+
       LOG.info(
-          "✅ Technical User [{}] successfully seeded in DB with roles ROLE_ADMIN ROLE_TECH",
+          "✅ Technical User [{}] successfully seeded in DB with roles ROLE_ADMIN ROLE_TECH in USER_CLIENT_ROLE",
           techUsername);
     } else {
       LOG.debug("Technical User [{}] already present in DB", techUsername);
+    }
+  }
+
+  /**
+   * Esegue la migrazione automatica e trasparente dei ruoli dalla colonna denormalizzata USERS.ROLES
+   * alla tabella relazionale USER_CLIENT_ROLE per tutti gli utenti censiti che non presentano ancora
+   * record associati in USER_CLIENT_ROLE. I ruoli migrati vengono contestualizzati sul client tecnico di sistema.
+   */
+  private void migrateLegacyUserRoles() {
+    String techClientId = techUserConfig.getTechClientId();
+    List<UserEntity> users = userDAO.findAll();
+    for (UserEntity user : users) {
+      if (user.getRoles() != null && !user.getRoles().isBlank()) {
+        List<UserClientRoleEntity> existingUcr =
+            userClientRoleDAO.findByUserIdentifier(user.getIdentifier());
+        if (existingUcr == null || existingUcr.isEmpty()) {
+          LOG.info("🔄 Migrating legacy roles for user [{}] to USER_CLIENT_ROLE", user.getUsername());
+          String[] roleTokens = user.getRoles().split("\\s+");
+          int count = 0;
+          for (String r : roleTokens) {
+            if (!r.isBlank()) {
+              UserClientRoleEntity ucr =
+                  new UserClientRoleEntity(user.getIdentifier(), techClientId, r.trim().toUpperCase());
+              userClientRoleDAO.save(ucr);
+              count++;
+            }
+          }
+          LOG.info(
+              "✅ Successfully migrated {} roles to USER_CLIENT_ROLE for user [{}]",
+              count,
+              user.getUsername());
+        }
+      }
     }
   }
 

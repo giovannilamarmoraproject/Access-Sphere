@@ -187,6 +187,9 @@ public class TokenService {
     claims.add(TokenClaims.AZP.claim(), jwtData.getAzp());
     claims.add(TokenClaims.AT_HASH.claim(), jwtData.getAt_hash());
     claims.add(TokenClaims.ROLE.claim(), jwtData.getRoles());
+    if (!ObjectToolkit.isNullOrEmpty(jwtData.getPermissions())) {
+      claims.add(TokenClaims.PERMISSIONS.claim(), jwtData.getPermissions());
+    }
     claims.add(TokenClaims.AUTH_TYPE.claim(), jwtData.getType());
     claims.add(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id());
     claims.add(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes());
@@ -219,6 +222,9 @@ public class TokenService {
     idClaims.add(TokenClaims.FAMILY_NAME.claim(), jwtData.getFamily_name());
     idClaims.add(TokenClaims.AT_HASH.claim(), jwtData.getAt_hash());
     idClaims.add(TokenClaims.ROLE.claim(), jwtData.getRoles());
+    if (!ObjectToolkit.isNullOrEmpty(jwtData.getPermissions())) {
+      idClaims.add(TokenClaims.PERMISSIONS.claim(), jwtData.getPermissions());
+    }
     idClaims.add(TokenClaims.AUTH_TYPE.claim(), jwtData.getType());
     idClaims.add(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id());
     idClaims.add(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes());
@@ -262,46 +268,56 @@ public class TokenService {
       throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
     }
 
-    return new JWTData(
-        (@NotNull String) body.get(TokenClaims.IDENTIFIER.claim()),
-        String.join(", ", (Set) (body.get(TokenClaims.AUD.claim()))),
-        (String) body.get(TokenClaims.AZP.claim()),
-        (Long) body.get(TokenClaims.EXP.claim()),
-        (Long) body.get(TokenClaims.IAT.claim()),
-        (@NotNull String) body.get(TokenClaims.ISS.claim()),
-        body.getSubject(),
-        ObjectUtils.isEmpty(body.get(TokenClaims.SUBJECT_TYPE.claim()))
-            ? null
-            : SubjectType.valueOf((String) body.get(TokenClaims.SUBJECT_TYPE.claim())),
-        ObjectUtils.isEmpty(body.get(TokenClaims.NAME.claim()))
-            ? null
-            : (String) body.get(TokenClaims.NAME.claim()),
-        (@NotNull String) body.get(TokenClaims.EMAIL.claim()),
-        // ObjectUtils.isEmpty(body.get(TokenClaims.PICTURE.claim()))
-        //    ? null
-        //    : (String) body.get(TokenClaims.PICTURE.claim()),
-        ObjectUtils.isEmpty(body.get(TokenClaims.GIVEN_NAME.claim()))
-            ? null
-            : (String) body.get(TokenClaims.GIVEN_NAME.claim()),
-        ObjectUtils.isEmpty(body.get(TokenClaims.FAMILY_NAME.claim()))
-            ? null
-            : (String) body.get(TokenClaims.FAMILY_NAME.claim()),
-        (@NotNull String) body.get(TokenClaims.AT_HASH.claim()),
-        true,
-        ObjectUtils.isEmpty(body.get(TokenClaims.ROLE.claim()))
-            ? null
-            : Utils.mapper()
-                .convertValue(body.get(TokenClaims.ROLE.claim()), new TypeReference<>() {}),
-        ObjectUtils.isEmpty(body.get(TokenClaims.AUTH_TYPE.claim()))
-            ? null
-            : OAuthType.valueOf((String) body.get(TokenClaims.AUTH_TYPE.claim())),
-        ObjectUtils.isEmpty(body.get(TokenClaims.CLIENT_ID.claim()))
-            ? clientCredential.getClientId()
-            : (String) body.get(TokenClaims.CLIENT_ID.claim()),
-        ObjectUtils.isEmpty(body.get(TokenClaims.ATTRIBUTES.claim()))
-            ? null
-            : Utils.mapper()
-                .convertValue(body.get(TokenClaims.ATTRIBUTES.claim()), new TypeReference<>() {}));
+    JWTData jwtData =
+        new JWTData(
+            (@NotNull String) body.get(TokenClaims.IDENTIFIER.claim()),
+            String.join(", ", (Set) (body.get(TokenClaims.AUD.claim()))),
+            (String) body.get(TokenClaims.AZP.claim()),
+            (Long) body.get(TokenClaims.EXP.claim()),
+            (Long) body.get(TokenClaims.IAT.claim()),
+            (@NotNull String) body.get(TokenClaims.ISS.claim()),
+            body.getSubject(),
+            ObjectUtils.isEmpty(body.get(TokenClaims.SUBJECT_TYPE.claim()))
+                ? null
+                : SubjectType.valueOf((String) body.get(TokenClaims.SUBJECT_TYPE.claim())),
+            ObjectUtils.isEmpty(body.get(TokenClaims.NAME.claim()))
+                ? null
+                : (String) body.get(TokenClaims.NAME.claim()),
+            (@NotNull String) body.get(TokenClaims.EMAIL.claim()),
+            // ObjectUtils.isEmpty(body.get(TokenClaims.PICTURE.claim()))
+            //    ? null
+            //    : (String) body.get(TokenClaims.PICTURE.claim()),
+            ObjectUtils.isEmpty(body.get(TokenClaims.GIVEN_NAME.claim()))
+                ? null
+                : (String) body.get(TokenClaims.GIVEN_NAME.claim()),
+            ObjectUtils.isEmpty(body.get(TokenClaims.FAMILY_NAME.claim()))
+                ? null
+                : (String) body.get(TokenClaims.FAMILY_NAME.claim()),
+            (@NotNull String) body.get(TokenClaims.AT_HASH.claim()),
+            true,
+            ObjectUtils.isEmpty(body.get(TokenClaims.ROLE.claim()))
+                ? null
+                : Utils.mapper()
+                    .convertValue(body.get(TokenClaims.ROLE.claim()), new TypeReference<>() {}),
+            ObjectUtils.isEmpty(body.get(TokenClaims.AUTH_TYPE.claim()))
+                ? null
+                : OAuthType.valueOf((String) body.get(TokenClaims.AUTH_TYPE.claim())),
+            ObjectUtils.isEmpty(body.get(TokenClaims.CLIENT_ID.claim()))
+                ? clientCredential.getClientId()
+                : (String) body.get(TokenClaims.CLIENT_ID.claim()),
+            ObjectUtils.isEmpty(body.get(TokenClaims.ATTRIBUTES.claim()))
+                ? null
+                : Utils.mapper()
+                    .convertValue(body.get(TokenClaims.ATTRIBUTES.claim()), new TypeReference<>() {}));
+
+    if (!ObjectUtils.isEmpty(body.get(TokenClaims.PERMISSIONS.claim()))) {
+      jwtData.setPermissions(
+          Utils.mapper()
+              .convertValue(
+                  body.get(TokenClaims.PERMISSIONS.claim()),
+                  new TypeReference<List<String>>() {}));
+    }
+    return jwtData;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -321,6 +337,7 @@ public class TokenService {
             .claim(TokenClaims.AZP.claim(), jwtData.getAzp())
             .claim(TokenClaims.AT_HASH.claim(), jwtData.getAt_hash())
             .claim(TokenClaims.ROLE.claim(), jwtData.getRoles())
+            .claim(TokenClaims.PERMISSIONS.claim(), jwtData.getPermissions())
             .claim(TokenClaims.AUTH_TYPE.claim(), jwtData.getType())
             .claim(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes())
             .claim(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id())
@@ -358,6 +375,7 @@ public class TokenService {
             .claim(TokenClaims.AZP.claim(), jwtData.getAzp())
             .claim(TokenClaims.AT_HASH.claim(), jwtData.getAt_hash())
             .claim(TokenClaims.ROLE.claim(), jwtData.getRoles())
+            .claim(TokenClaims.PERMISSIONS.claim(), jwtData.getPermissions())
             .claim(TokenClaims.AUTH_TYPE.claim(), jwtData.getType())
             .claim(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes())
             .claim(TokenClaims.IAT.claim(), new Date(now.toInstant().toEpochMilli()))
@@ -419,49 +437,59 @@ public class TokenService {
 
       JWTClaimsSet claimsSet = jwtProcessor.process(tokenSplit, null);
 
-      return new JWTData(
-          (@NotNull String) claimsSet.getClaim(TokenClaims.IDENTIFIER.claim()),
-          String.join(", ", (List) claimsSet.getClaim(TokenClaims.AUD.claim())),
-          (String) claimsSet.getClaim(TokenClaims.AZP.claim()),
-          ((Date) claimsSet.getClaim(TokenClaims.EXP.claim())).toInstant().toEpochMilli(),
-          ((Date) claimsSet.getClaim(TokenClaims.IAT.claim())).toInstant().toEpochMilli(),
-          (@NotNull String) claimsSet.getClaim(TokenClaims.ISS.claim()),
-          claimsSet.getSubject(),
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim()))
-              ? null
-              : SubjectType.valueOf((String) claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim())),
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.NAME.claim()))
-              ? null
-              : (String) claimsSet.getClaim(TokenClaims.NAME.claim()),
-          (@NotNull String) claimsSet.getClaim(TokenClaims.EMAIL.claim()),
-          // ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.PICTURE.claim()))
-          //    ? null
-          //    : (String) claimsSet.getClaim(TokenClaims.PICTURE.claim()),
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()))
-              ? null
-              : (String) claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()),
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.FAMILY_NAME.claim()))
-              ? null
-              : (String) claimsSet.getClaim(TokenClaims.FAMILY_NAME.claim()),
-          (@NotNull String) claimsSet.getClaim(TokenClaims.AT_HASH.claim()),
-          true,
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.ROLE.claim()))
-              ? null
-              : Utils.mapper()
-                  .convertValue(
-                      claimsSet.getClaim(TokenClaims.ROLE.claim()), new TypeReference<>() {}),
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim()))
-              ? null
-              : OAuthType.valueOf((String) claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim())),
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()))
-              ? clientCredential.getClientId()
-              : (String) claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()),
-          ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.ATTRIBUTES.claim()))
-              ? null
-              : Utils.mapper()
-                  .convertValue(
-                      claimsSet.getClaim(TokenClaims.ATTRIBUTES.claim()),
-                      new TypeReference<>() {}));
+      JWTData jwtData =
+          new JWTData(
+              (@NotNull String) claimsSet.getClaim(TokenClaims.IDENTIFIER.claim()),
+              String.join(", ", (List) claimsSet.getClaim(TokenClaims.AUD.claim())),
+              (String) claimsSet.getClaim(TokenClaims.AZP.claim()),
+              ((Date) claimsSet.getClaim(TokenClaims.EXP.claim())).toInstant().toEpochMilli(),
+              ((Date) claimsSet.getClaim(TokenClaims.IAT.claim())).toInstant().toEpochMilli(),
+              (@NotNull String) claimsSet.getClaim(TokenClaims.ISS.claim()),
+              claimsSet.getSubject(),
+              ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim()))
+                  ? null
+                  : SubjectType.valueOf((String) claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim())),
+              ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.NAME.claim()))
+                  ? null
+                  : (String) claimsSet.getClaim(TokenClaims.NAME.claim()),
+              (@NotNull String) claimsSet.getClaim(TokenClaims.EMAIL.claim()),
+              // ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.PICTURE.claim()))
+              //    ? null
+              //    : (String) claimsSet.getClaim(TokenClaims.PICTURE.claim()),
+              ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()))
+                  ? null
+                  : (String) claimsSet.getClaim(TokenClaims.GIVEN_NAME.claim()),
+              ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.FAMILY_NAME.claim()))
+                  ? null
+                  : (String) claimsSet.getClaim(TokenClaims.FAMILY_NAME.claim()),
+              (@NotNull String) claimsSet.getClaim(TokenClaims.AT_HASH.claim()),
+              true,
+              ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.ROLE.claim()))
+                  ? null
+                  : Utils.mapper()
+                      .convertValue(
+                          claimsSet.getClaim(TokenClaims.ROLE.claim()), new TypeReference<>() {}),
+              ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim()))
+                  ? null
+                  : OAuthType.valueOf((String) claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim())),
+              ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()))
+                  ? clientCredential.getClientId()
+                  : (String) claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()),
+              ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.ATTRIBUTES.claim()))
+                  ? null
+                  : Utils.mapper()
+                      .convertValue(
+                          claimsSet.getClaim(TokenClaims.ATTRIBUTES.claim()),
+                          new TypeReference<>() {}));
+
+      if (!ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.PERMISSIONS.claim()))) {
+        jwtData.setPermissions(
+            Utils.mapper()
+                .convertValue(
+                    claimsSet.getClaim(TokenClaims.PERMISSIONS.claim()),
+                    new TypeReference<List<String>>() {}));
+      }
+      return jwtData;
     } catch (JOSEException | ParseException | BadJOSEException e) {
       LOG.error("An error happen during parsing JWE Token, message is {}", e.getMessage());
       throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());

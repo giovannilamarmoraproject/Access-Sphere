@@ -16,6 +16,19 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserRoles extends GenericDTO {
 
-  @NotNull(message = "Roles are required")
+  /**
+   * @deprecated TODO: Scheduled for removal in future major release. Use clientRoles instead.
+   * Lista legacy di ruoli flat conservata per il 100% di retrocompatibilita con i client e consumer esistenti.
+   */
+  @Deprecated
   private List<String> roles;
+
+  /**
+   * Ruoli contestualizzati per Client OAuth2 con tipologia applicativa e permessi granulari aggregati.
+   */
+  private List<UserClientRoleDTO> clientRoles;
+
+  public UserRoles(List<String> roles) {
+    this.roles = roles;
+  }
 }

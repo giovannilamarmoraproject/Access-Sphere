@@ -35,10 +35,12 @@
   - Registrazione sicura con validazione avanzata dei formati.
   - Gestione profili con caricamento foto e avatar dinamico.
   - **Attributi Custom Avanzati**: Supporto sia per chiavi/valori semplici che per **strutture JSON complesse (oggetti annidati)**, con layout a griglia responsive ottimizzato per smartphone e desktop.
-- 🎛️ **Role-Based Access Control (RBAC) & Client OAuth2**:
-  - Configurazione granulare dei ruoli applicativi e di sistema.
-  - Gestione completa dei Client OAuth2: redirect URIs, scope, webhook e assegnazione ruoli.
-  - Interfaccia mobile-first con pulsanti e switch a pillola disposti verticalmente senza tagli di testo.
+- 🎛️ **Role-Based Access Control (RBAC) Granulare & Client Scoping**:
+  - **Architettura Relazionale Scoped (`USER_CLIENT_ROLE`)**: Assegnazione contestualizzata dei ruoli per singolo Client OAuth2, consentendo allo stesso utente ruoli e privilegi differenti su applicazioni diverse.
+  - **Permessi Granulari & Wildcard (`*`)**: Ogni ruolo applicativo include una lista di permessi granulari (es. `users:read`, `users:write`, `links:delete`) oppure il wildcard di sistema (`*`).
+  - **Token Claims Client-Scoped & Claims `permissions`**: I token JWT/JWE emessi contengono esclusivamente i ruoli e i permessi pertinenti all'applicazione (`client_id`) chiamante.
+  - **Retrocompatibilità 100%**: Mantenimento trasparente del campo legacy `User.roles` (`List<String>`) e sincronizzazione bidirezionale del database per i client consumer esistenti.
+  - **Console M3 Reattiva**: Interfaccia web con live preview in tempo reale di tipologia, descrizione e badge di permessi granulari, con validazione unicità per-client e salvataggio atomico.
 - ⚡ **Architettura Reattiva & High Throughput**: Costruito su **Spring Boot 3.4** e **Spring WebFlux** (Project Reactor) con driver reattivo **R2DBC** e JPA / Hibernate.
 - 🔍 **Tracciamento Distribuito della Sessione**: Propagazione automatica di `Session-ID` e `Span-ID` (Correlation ID) per il monitoraggio end-to-end delle richieste su architetture a microservizi.
 - 💎 **Console di Amministrazione Material Expressive 3**:
@@ -95,7 +97,7 @@ flowchart TD
             UserAdminCtrl["UserAdminController\n(/v1/users, lock, delete)"]
             UserAccountCtrl["UserAccountController\n(/v1/users/profile, /v1/users/{id}, password reset)"]
             ClientCtrl["ClientController\n(/v1/clients)"]
-            RolesCtrl["RolesController\n(/v1/users/{id}/roles)"]
+            RolesCtrl["RolesController\n(/v1/users/{id}/roles,\n/v1/users/{id}/clients/{clientId}/roles/{role})"]
             MFACtrl["MFAController\n(/v1/mfa: setup, confirm, verify, manage)"]
             EmailTemplateCtrl["EmailTemplateController\n(/v1/email-templates)"]
             AppSettingsCtrl["AppSettingsController\n(/v1/app/settings)"]

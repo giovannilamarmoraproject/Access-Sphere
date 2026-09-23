@@ -23,4 +23,16 @@ public class RolesControllerImpl implements RolesController {
       String bearer, String identifier, UserRoles roles) {
     return rolesService.changeRoles(identifier, roles);
   }
+
+  @Override
+  public Mono<ResponseEntity<Response>> assignClientRole(
+      String bearer, String identifier, String clientId, String role) {
+    return rolesService.assignClientRole(identifier, clientId, role);
+  }
+
+  @Override
+  public Mono<ResponseEntity<Response>> revokeClientRole(
+      String bearer, String identifier, String clientId, String role) {
+    return rolesService.revokeClientRole(identifier, clientId, role);
+  }
 }

@@ -18,7 +18,8 @@ public enum TokenClaims {
   AUTH_TYPE("type"),
   ATTRIBUTES("attributes"),
   GOOGLE_TOKEN("google_token"),
-  CLIENT_ID("client_id");
+  CLIENT_ID("client_id"),
+  PERMISSIONS("permissions");
 
   private final String claim;
 

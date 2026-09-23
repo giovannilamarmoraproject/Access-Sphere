@@ -46,7 +46,17 @@ public class User extends GenericDTO {
 
   private String password;
 
+  /**
+   * @deprecated TODO: Legacy flat roles list, to be replaced by clientRoles in future major release.
+   * Mantenuto per il 100% di retrocompatibilita con i frontend e servizi consumer esistenti.
+   */
+  @Deprecated
   private List<String> roles;
+
+  /**
+   * Ruoli contestualizzati per Client OAuth2 con tipologia e permessi granulari aggregati.
+   */
+  private List<io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO> clientRoles;
 
   @JsonAlias({"profile", "profile_photo"})
   private String profilePhoto;
@@ -75,4 +85,48 @@ public class User extends GenericDTO {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private MFASetting mfaSettings;
+
+  public User(
+      String identifier,
+      String name,
+      String surname,
+      String email,
+      String username,
+      String password,
+      List<String> roles,
+      String profilePhoto,
+      String phoneNumber,
+      LocalDate birthDate,
+      String gender,
+      String occupation,
+      String education,
+      String nationality,
+      String ssn,
+      String tokenReset,
+      Boolean confirmed,
+      Boolean blocked,
+      Map<String, Object> attributes,
+      MFASetting mfaSettings) {
+    this.identifier = identifier;
+    this.name = name;
+    this.surname = surname;
+    this.email = email;
+    this.username = username;
+    this.password = password;
+    this.roles = roles;
+    this.clientRoles = null;
+    this.profilePhoto = profilePhoto;
+    this.phoneNumber = phoneNumber;
+    this.birthDate = birthDate;
+    this.gender = gender;
+    this.occupation = occupation;
+    this.education = education;
+    this.nationality = nationality;
+    this.ssn = ssn;
+    this.tokenReset = tokenReset;
+    this.confirmed = confirmed;
+    this.blocked = blocked;
+    this.attributes = attributes;
+    this.mfaSettings = mfaSettings;
+  }
 }

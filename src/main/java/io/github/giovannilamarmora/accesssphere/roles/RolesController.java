@@ -75,4 +75,104 @@ public interface RolesController {
               example = OpenAPI.Params.Example.IDENTIFIER)
           String identifier,
       @RequestBody @Valid @NotNull(message = "Roles are required") UserRoles roles);
+
+  @PostMapping(value = "/users/{identifier}/clients/{clientId}/roles/{role}")
+  @Operation(
+      description = "Assign a role for a specific client to a user, only Tech User",
+      summary = "Assign client-scoped role",
+      tags = OpenAPI.Tag.ROLES,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Role assigned successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = User.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> assignClientRole(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @PathVariable(value = "identifier")
+          @Schema(
+              description = OpenAPI.Params.Description.IDENTIFIER,
+              example = OpenAPI.Params.Example.IDENTIFIER)
+          String identifier,
+      @PathVariable(value = "clientId")
+          @Schema(description = "OAuth2 Client ID")
+          String clientId,
+      @PathVariable(value = "role")
+          @Schema(description = "Role name to assign")
+          String role);
+
+  @DeleteMapping(value = "/users/{identifier}/clients/{clientId}/roles/{role}")
+  @Operation(
+      description = "Revoke a role for a specific client from a user, only Tech User",
+      summary = "Revoke client-scoped role",
+      tags = OpenAPI.Tag.ROLES,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Role revoked successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = User.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> revokeClientRole(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @PathVariable(value = "identifier")
+          @Schema(
+              description = OpenAPI.Params.Description.IDENTIFIER,
+              example = OpenAPI.Params.Example.IDENTIFIER)
+          String identifier,
+      @PathVariable(value = "clientId")
+          @Schema(description = "OAuth2 Client ID")
+          String clientId,
+      @PathVariable(value = "role")
+          @Schema(description = "Role name to revoke")
+          String role);
 }

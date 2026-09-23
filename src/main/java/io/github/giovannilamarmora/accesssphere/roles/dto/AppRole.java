@@ -33,6 +33,8 @@ public class AppRole extends GenericDTO {
 
   private String description;
 
+  private java.util.List<String> permissions;
+
   /**
    * Costruttore di convenienza a partire dal solo nome del ruolo. Assegna automaticamente il tipo
    * canonico {@link AppRoleType#DEFAULT}.
@@ -66,6 +68,34 @@ public class AppRole extends GenericDTO {
    * @param description Descrizione dettagliata dello scope del ruolo.
    */
   public AppRole(String role, String type, String description) {
+    this.role = role != null ? role.trim().toUpperCase() : null;
+    this.type =
+        (type != null && !type.isBlank())
+            ? type.trim().toUpperCase()
+            : AppRoleType.DEFAULT.getValue();
+    this.description = description;
+  }
+
+  /**
+   * Costruttore completo comprensivo di permessi granulari.
+   *
+   * @param role Nome identificativo del ruolo.
+   * @param type Tipologia del ruolo.
+   * @param description Descrizione del ruolo.
+   * @param permissions Lista di permessi associati (es. "users:read").
+   */
+  public AppRole(String role, String type, String description, java.util.List<String> permissions) {
+    this.role = role != null ? role.trim().toUpperCase() : null;
+    this.type =
+        (type != null && !type.isBlank())
+            ? type.trim().toUpperCase()
+            : AppRoleType.DEFAULT.getValue();
+    this.description = description;
+    this.permissions = permissions;
+  }
+
+  public AppRole(Long id, String role, String type, String description) {
+    this.id = id;
     this.role = role != null ? role.trim().toUpperCase() : null;
     this.type =
         (type != null && !type.isBlank())

@@ -30,6 +30,7 @@ class ProjectInitializerServiceTest {
 
   @Mock private IClientDAO clientDAO;
   @Mock private IUserDAO userDAO;
+  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
   @Mock private IAppSettingsDAO appSettingsDAO;
   @Mock private IEmailTemplateDAO emailTemplateDAO;
 
@@ -43,6 +44,7 @@ class ProjectInitializerServiceTest {
     techUserConfig.setTechClientId("ACCESS-SPHERE-TECH");
     techUserConfig.setTechEmail("tech_admin@accesssphere.local");
     ReflectionTestUtils.setField(projectInitializerService, "techUserConfig", techUserConfig);
+    ReflectionTestUtils.setField(projectInitializerService, "userClientRoleDAO", userClientRoleDAO);
     ReflectionTestUtils.setField(
         projectInitializerService, "appDomain", "access-sphere.giovannilamarmora.com");
   }
@@ -107,6 +109,9 @@ class ProjectInitializerServiceTest {
     ClientCredentialEntity existingClient = new ClientCredentialEntity();
     existingClient.setJwtSecret("existing_jwt_secret_value");
     existingClient.setRedirect_uri("{\"fallback_uri\":\"http://localhost/app/login\",\"redirect_uri\":\"http://localhost/app\"}");
+    existingClient.setAppRoles(
+        "[{\"role\":\"ROLE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
+            + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\",\"permissions\":[\"*\"]}]");
     when(clientDAO.findByClientId("ACCESS-SPHERE-TECH"))
         .thenReturn(existingClient);
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))

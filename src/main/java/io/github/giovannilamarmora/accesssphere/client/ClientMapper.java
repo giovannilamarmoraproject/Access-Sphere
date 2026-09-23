@@ -224,7 +224,7 @@ public class ClientMapper {
             (!ObjectUtils.isEmpty(r.getType()) && !r.getType().isBlank())
                 ? r.getType().trim().toUpperCase()
                 : AppRoleType.DEFAULT.getValue();
-        normalized.add(new AppRole(r.getId(), roleName, type, r.getDescription()));
+        normalized.add(new AppRole(r.getId(), roleName, type, r.getDescription(), r.getPermissions()));
       }
     }
     return normalized.isEmpty() ? null : normalized;

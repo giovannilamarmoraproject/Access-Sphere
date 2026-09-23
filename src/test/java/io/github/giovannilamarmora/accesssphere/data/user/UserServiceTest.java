@@ -23,6 +23,8 @@ import reactor.test.StepVerifier;
 class UserServiceTest {
 
   @Mock private IUserDAO userDAO;
+  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
+  @Mock private io.github.giovannilamarmora.accesssphere.client.IClientDAO clientDAO;
 
   @InjectMocks private UserService userService;
 
@@ -31,6 +33,8 @@ class UserServiceTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(userService, "userDAO", userDAO);
+    ReflectionTestUtils.setField(userService, "userClientRoleDAO", userClientRoleDAO);
+    ReflectionTestUtils.setField(userService, "clientDAO", clientDAO);
   }
 
   @Test
