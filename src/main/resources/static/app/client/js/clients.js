@@ -107,6 +107,9 @@ function getClients() {
 }
 
 function loadCachedClients() {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canViewClients()) {
+    return false;
+  }
   try {
     const cfg = getConfig();
     const stored = localStorage.getItem(cfg.client_id + "_clientsData") ||

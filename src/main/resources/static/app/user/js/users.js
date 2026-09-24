@@ -1,6 +1,9 @@
 let cachedUsers = [];
 
 function loadCachedUsers() {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
+    return false;
+  }
   try {
     const cfg = typeof getConfig === "function" ? getConfig() : config;
     const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";

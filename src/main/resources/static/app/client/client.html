@@ -212,22 +212,22 @@
             </a>
 
             <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
-                <a href="/app" class="nav-tab-m3 text-decoration-none">
+                <a href="/app" id="nav-btn-overview" class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
                 </a>
-                <a href="/app/users" class="nav-tab-m3 text-decoration-none">
+                <a href="/app/users" id="nav-btn-users" class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
                 </a>
-                <a href="/app/clients" class="nav-tab-m3 active text-decoration-none">
+                <a href="/app/clients" id="nav-btn-clients" class="nav-tab-m3 active text-decoration-none">
                     <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
                 </a>
                 <a href="/app/role" id="nav-btn-roles" class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-shield-halved"></i> <span data-i18n="nav_roles">Ruoli</span>
                 </a>
-                <a href="/app/emails" class="nav-tab-m3 text-decoration-none">
+                <a href="/app/emails" id="nav-btn-emails" class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
                 </a>
-                <a href="/app/settings" class="nav-tab-m3 text-decoration-none">
+                <a href="/app/settings" id="nav-btn-settings" class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
                 </a>
                 <a href="/webjars/swagger-ui/index.html" target="_blank"
@@ -515,7 +515,7 @@
               <!-- BOTTONI AZIONE -->
               <div class="space-y-2.5 w-full">
                 ${(typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? `
-                <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-btn-primary w-full justify-center text-xs font-bold text-decoration-none flex items-center gap-2 shadow-lg">
+                <a id="client-detail-edit-btn" href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-btn-primary w-full justify-center text-xs font-bold text-decoration-none flex items-center gap-2 shadow-lg">
                   <i class="fa-solid fa-pen-to-square"></i>
                   <span>${typeof t === 'function' ? t('client_detail_edit_all_btn', 'Modifica Tutte le Impostazioni') : 'Modifica Tutte le Impostazioni'}</span>
                 </a>
@@ -527,7 +527,7 @@
                 </button>
 
                 ${(typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? `
-                <button onclick="deleteClientAction('${c.clientId}')" class="w-full text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all mt-2" style="border-radius: 9999px !important; color: #FFFFFF !important; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); padding: 10px 18px;">
+                <button id="client-detail-delete-btn" onclick="deleteClientAction('${c.clientId}')" class="w-full text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all mt-2" style="border-radius: 9999px !important; color: #FFFFFF !important; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); padding: 10px 18px;">
                   <i class="fa-solid fa-trash text-xs" style="color: #F87171;"></i>
                   <span>${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client OAuth2') : 'Elimina Client OAuth2'}</span>
                 </button>
@@ -705,7 +705,8 @@
             </div>
 
             <!-- SCHEDA RUOLI APPLICATIVI (app_roles) -->
-            <div class="m3-card p-6 sm:p-8">
+            ${(typeof AccessControl === "undefined" || AccessControl.canViewRoles()) ? `
+            <div id="client-detail-roles-card" class="m3-card p-6 sm:p-8">
               <div class="detail-card-title flex items-center justify-between">
                 <span><i class="fa-solid fa-user-shield text-purple-400"></i> ${typeof t === 'function' ? t('client_detail_app_roles_title', 'Ruoli Applicativi Configurati') : 'Ruoli Applicativi Configurati'} (${roles.length})</span>
                 <span class="text-xs text-purple-300 font-mono">app_roles</span>
@@ -744,6 +745,7 @@
                 </table>
               </div>
             </div>
+            ` : ''}
 
             <!-- SCHEDA WEBHOOKS -->
             <div class="m3-card p-6 sm:p-8">
@@ -777,6 +779,10 @@
 
         </div>
       `;
+
+      if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+          AccessControl.applyUIPermissions(container);
+      }
     }
 
     function toggleMask(inputId, eyeId) {

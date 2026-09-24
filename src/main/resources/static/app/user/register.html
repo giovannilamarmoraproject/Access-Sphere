@@ -411,7 +411,7 @@
                         <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="user_field_client_id_assoc_desc">Seleziona l'applicazione client a cui appartiene l'utente.</span>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-6" data-require-action="manage-roles">
                         <label for="role_select"
                                class="form-label text-xs font-semibold text-gray-300 uppercase tracking-wider"
                                data-i18n="user_field_roles">Ruoli Client</label>
@@ -430,7 +430,7 @@
                     </div>
 
                     <!-- Lista Ruoli Selezionati -->
-                    <div class="col-12">
+                    <div class="col-12" data-require-action="manage-roles">
                         <div id="roles_list_container" class="flex flex-wrap gap-2 min-h-[32px]"></div>
                         <div id="role_container" style="display: none;"></div>
                     </div>

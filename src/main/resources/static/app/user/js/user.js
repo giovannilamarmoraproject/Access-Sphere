@@ -277,6 +277,7 @@ function displayUserData(user) {
   }
 
   const canManageUsers = typeof AccessControl === "undefined" || AccessControl.canManageUsers();
+  const canViewRoles = typeof AccessControl === "undefined" || AccessControl.canViewRoles();
   const canManageRoles = typeof AccessControl === "undefined" || AccessControl.canManageRoles();
   const canDeleteUsers = typeof AccessControl === "undefined" || AccessControl.canDeleteUsers();
 
@@ -422,18 +423,18 @@ function displayUserData(user) {
         </div>
 
         <!-- Bottoni Azione M3: Tutti Arrotondati (Pill), Testo Bianco, Stesso Font Size e Spessore identici -->
-        ${(canManageUsers || canManageRoles || canDeleteUsers) ? `
+        ${(canManageUsers || (canManageRoles && canViewRoles) || canDeleteUsers) ? `
         <div class="space-y-2.5 w-full">
           ${canManageUsers ? `
-          <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-primary m3-action-pill w-full justify-center py-2.5 px-4 text-decoration-none shadow-lg hover:brightness-110 transition-all" style="border-radius: 9999px !important; color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">
+          <a id="user-detail-edit-profile-btn" href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-primary m3-action-pill w-full justify-center py-2.5 px-4 text-decoration-none shadow-lg hover:brightness-110 transition-all" style="border-radius: 9999px !important; color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">
             <i class="fa-solid fa-user-pen text-sm"></i>
             <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_edit_profile", "Modifica Profilo") : "Modifica Profilo"}</span>
           </a>
           ` : ''}
           
-          ${(canManageRoles || canManageUsers) ? `
-          <div class="grid ${(canManageRoles && canManageUsers) ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 w-full">
-            ${canManageRoles ? `
+          ${((canManageRoles && canViewRoles) || canManageUsers) ? `
+          <div class="grid ${((canManageRoles && canViewRoles) && canManageUsers) ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 w-full">
+            ${(canManageRoles && canViewRoles) ? `
             <a href="/app/users/roles/${encodeURIComponent(user.identifier)}" class="m3-action-pill py-2.5 px-3 text-center text-decoration-none shadow-sm hover:brightness-110 transition-all" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18); color: #FFFFFF !important; border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;">
               <i class="fa-solid fa-shield-halved text-sm" style="color: var(--theme-accent, #D0BCFF);"></i>
               <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_roles_btn", "Ruoli") : "Ruoli"}</span>
@@ -455,7 +456,7 @@ function displayUserData(user) {
           ` : ''}
 
           ${canDeleteUsers ? `
-          <button onclick="deleteUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}')" class="m3-action-pill w-full py-2.5 px-4 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(239, 68, 68, 0.15); color: #FFFFFF !important; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}">
+          <button id="user-detail-delete-btn" onclick="deleteUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}')" class="m3-action-pill w-full py-2.5 px-4 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(239, 68, 68, 0.15); color: #FFFFFF !important; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}">
             <i class="fa-solid fa-trash text-sm" style="color: #F87171;"></i>
             <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}</span>
           </button>
@@ -526,19 +527,23 @@ function displayUserData(user) {
         </div>
 
         <!-- Card Ruoli Applicativi (RBAC) -->
-        <div class="m3-card p-5 sm:p-8">
+        ${canViewRoles ? `
+        <div id="user-detail-roles-card" class="m3-card p-5 sm:p-8">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 gap-3" style="border-bottom: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);">
             <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
               <i class="fa-solid fa-user-shield" style="color: var(--theme-accent, #A855F7);"></i> ${typeof t === 'function' ? t("user_detail_rbac_title", "Ruoli Applicativi (RBAC)") : "Ruoli Applicativi (RBAC)"}
             </h4>
+            ${canManageRoles ? `
             <a href="/app/users/roles/${user.identifier}" class="m3-btn-primary text-xs py-2 px-5 text-decoration-none shadow-md w-full sm:w-auto justify-center" style="border-radius: 9999px !important; color: #FFFFFF !important;">
               <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_manage_roles", "Gestisci Ruoli") : "Gestisci Ruoli"}</span>
             </a>
+            ` : ''}
           </div>
           <div class="flex flex-wrap pt-2">
             ${rolesHtml}
           </div>
         </div>
+        ` : ''}
 
         <!-- Card Autenticazione a Due Fattori (MFA) -->
         <div class="m3-card p-5 sm:p-8">
@@ -580,7 +585,7 @@ function displayUserData(user) {
               <i class="fa-solid fa-sliders" style="color: var(--theme-accent, #A855F7);"></i> ${typeof t === 'function' ? t("user_detail_custom_attributes", "Attributi Personalizzati") : "Attributi Personalizzati"}
             </h4>
             ${canManageUsers ? `
-            <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2 px-3.5 text-decoration-none" style="color: var(--theme-accent, #D0BCFF) !important; border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;">
+            <a id="user-detail-edit-attrs-btn" href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2 px-3.5 text-decoration-none" style="color: var(--theme-accent, #D0BCFF) !important; border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;">
               <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_edit_attributes", "Modifica Attributi") : "Modifica Attributi"}</span>
             </a>
             ` : ''}

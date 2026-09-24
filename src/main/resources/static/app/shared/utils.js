@@ -268,10 +268,27 @@ function enrichUserFromCachedUsers(userObj) {
  * @returns {object|null}
  */
 function getLoggedInUser() {
+    const token =
+        localStorage.getItem("access-token") ||
+        localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
+        (typeof getCookie === "function" ? getCookie("access-token") : null);
+
+    let tokenClaims = null;
+    if (token) {
+        tokenClaims = decodeJwtPayload(token);
+    }
+
     try {
         const cached = localStorage.getItem("access_sphere_user");
         if (cached) {
-            const parsed = JSON.parse(cached);
+            let parsed = JSON.parse(cached);
+            // Verifica di coerenza: se esiste un token attivo con subject (sub), la cache utente
+            // viene invalidata se non corrisponde allo username attualmente autenticato.
+            if (tokenClaims && tokenClaims.sub && parsed && parsed.username &&
+                tokenClaims.sub.toLowerCase() !== parsed.username.toLowerCase()) {
+                parsed = null;
+                localStorage.removeItem("access_sphere_user");
+            }
             if (parsed && (parsed.fullName || parsed.name || parsed.username)) {
                 if (!parsed.profilePhoto || parsed.fullName === parsed.username) {
                     enrichUserFromCachedUsers(parsed);
@@ -284,13 +301,8 @@ function getLoggedInUser() {
         }
     } catch (e) {}
 
-    const token =
-        localStorage.getItem("access-token") ||
-        localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
-        (typeof getCookie === "function" ? getCookie("access-token") : null);
-
     if (token) {
-        const claims = decodeJwtPayload(token);
+        const claims = tokenClaims || decodeJwtPayload(token);
         if (claims) {
             const firstName = claims.given_name || claims.firstName || "";
             const lastName = claims.family_name || claims.lastName || "";
@@ -1280,19 +1292,19 @@ const AccessControl = {
         toggleVisibility(root.querySelector("#nav-btn-emails"), canVEmails);
         toggleVisibility(root.querySelector("#nav-btn-settings"), canVSettings);
 
-        root.querySelectorAll("nav a[href='/app/clients'], nav a[href*='/app/client']").forEach((el) => {
+        root.querySelectorAll("nav a[href='/app/clients'], nav a[href*='/app/client'], a[href='/app/clients']").forEach((el) => {
             toggleVisibility(el, canVClients);
         });
-        root.querySelectorAll("nav a[href='/app/users'], nav a[href*='/app/user']").forEach((el) => {
+        root.querySelectorAll("nav a[href='/app/users'], nav a[href*='/app/user'], a[href='/app/users']").forEach((el) => {
             toggleVisibility(el, canVUsers);
         });
-        root.querySelectorAll("nav a[href='/app/role'], nav a[href='/app/roles']").forEach((el) => {
+        root.querySelectorAll("nav a[href='/app/role'], nav a[href='/app/roles'], nav a[href*='/role'], a[href='/app/role'], a[href='/app/roles'], #nav-btn-roles").forEach((el) => {
             toggleVisibility(el, canVRoles);
         });
-        root.querySelectorAll("nav a[href='/app/emails'], nav a[href='/app/email']").forEach((el) => {
+        root.querySelectorAll("nav a[href='/app/emails'], nav a[href='/app/email'], nav a[href*='/email'], a[href='/app/emails'], #nav-btn-emails").forEach((el) => {
             toggleVisibility(el, canVEmails);
         });
-        root.querySelectorAll("nav a[href='/app/settings']").forEach((el) => {
+        root.querySelectorAll("nav a[href='/app/settings'], nav a[href*='/settings'], a[href='/app/settings'], #nav-btn-settings").forEach((el) => {
             toggleVisibility(el, canVSettings);
         });
 
@@ -1346,30 +1358,69 @@ const AccessControl = {
         });
 
         // 6. In-View Create Action Buttons
-        root.querySelectorAll("a[href='/app/users/register'], #btn-new-user").forEach((el) => {
+        root.querySelectorAll("a[href='/app/users/register'], a[href*='/users/register'], #btn-new-user").forEach((el) => {
             if (!el.closest("#users-primary-action")) {
                 toggleVisibility(el, canMUsers);
             }
         });
-        root.querySelectorAll("a[href='/app/clients/register'], #btn-new-client, #btn-register-new-client").forEach((el) => {
+        root.querySelectorAll("a[href='/app/clients/register'], a[href*='/clients/register'], #btn-new-client, #btn-register-new-client").forEach((el) => {
             if (!el.closest("#clients-primary-action")) {
                 toggleVisibility(el, canMClients);
             }
         });
-        root.querySelectorAll("[onclick*='openRoleModal(\\'create\\')'], #btn-create-role, #btn-new-role").forEach((el) => {
+        root.querySelectorAll("[onclick*='openRoleModal(\\'create\\')'], #btn-create-role, #btn-new-role, #btn-create-role-header, #btn-create-role-empty").forEach((el) => {
             toggleVisibility(el, canMRoles);
         });
-        root.querySelectorAll("[onclick*='openCreateTemplateModal'], #btn-new-template").forEach((el) => {
+        root.querySelectorAll("[onclick*='openCreateTemplateModal'], #btn-new-template, #btn-create-template-header").forEach((el) => {
             toggleVisibility(el, canMEmails);
         });
 
-        // 7. Settings Specific Cards and Actions
+        // 7. Roles Dedicated Cards & Actions across Views
+        toggleVisibility(root.querySelector("#user-detail-roles-card"), canVRoles);
+        toggleVisibility(root.querySelector("#client-detail-roles-card"), canVRoles);
+        toggleVisibility(root.querySelector("#sec-client-roles"), canVRoles);
+
+        root.querySelectorAll(".m3-action-role, a[href*='/users/roles']").forEach((el) => {
+            toggleVisibility(el, canVRoles && canMRoles);
+        });
+        root.querySelectorAll("[onclick*='openRoleModal(\\'edit\\']").forEach((el) => {
+            toggleVisibility(el, canMRoles);
+        });
+        root.querySelectorAll("[onclick*='deleteRoleConfirm']").forEach((el) => {
+            toggleVisibility(el, canMRoles);
+        });
+
+        // 8. User Modification & Deletion Actions
+        root.querySelectorAll("#users-table .m3-action-edit, a[href*='/users/edit'], a[href*='/app/users/edit'], #user-detail-edit-profile-btn, #user-detail-edit-attrs-btn").forEach((el) => {
+            toggleVisibility(el, canMUsers);
+        });
+        root.querySelectorAll("#users-table .m3-action-delete, button[onclick*='deleteUser'], #user-detail-delete-btn").forEach((el) => {
+            toggleVisibility(el, canDUsers);
+        });
+        root.querySelectorAll("[onclick*='toggleBlockUser'], [onclick*='toggleMfaStatus'], [onclick*='finishMfaVerification'], [onclick*='deleteMfaMethod'], a[href*='/app/mfa/']").forEach((el) => {
+            toggleVisibility(el, canMUsers);
+        });
+
+        // 9. Client Modification & Deletion Actions
+        root.querySelectorAll("#clients-table .m3-action-edit, a[href*='/clients/edit'], a[href*='/app/clients/edit'], #client-detail-edit-btn").forEach((el) => {
+            toggleVisibility(el, canMClients);
+        });
+        root.querySelectorAll("#clients-table .m3-action-delete, button[onclick*='deleteClientAction'], #client-detail-delete-btn").forEach((el) => {
+            toggleVisibility(el, canMClients);
+        });
+
+        // 10. Email Template Actions
+        root.querySelectorAll("[onclick*='openEditTemplateModal'], [onclick*='deleteTemplateConfirm'], [onclick*='testSendEmail']").forEach((el) => {
+            toggleVisibility(el, canMEmails);
+        });
+
+        // 11. Settings Specific Cards and Actions
         toggleVisibility(root.querySelector("#settings-card-backup"), canMBackup);
         root.querySelectorAll("[onclick*='saveAllSettings'], [onclick*='resetSettingsToDefault']").forEach((el) => {
             toggleVisibility(el, canESettings);
         });
 
-        // 8. Attributi Dichiarativi HTML
+        // 12. Attributi Dichiarativi HTML
         root.querySelectorAll("[data-require-role]").forEach((el) => {
             const reqRoles = el.getAttribute("data-require-role").split(",");
             toggleVisibility(el, this.hasRole(...reqRoles));
