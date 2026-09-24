@@ -42,9 +42,11 @@ public class UserAdminControllerImpl implements UserAdminController {
   @Autowired private UserAdminService userAdminService;
 
   /**
-   * Endpoint riservato ad operatori tecnici per ottenere l'elenco completo degli utenti registrati.
+   * Endpoint per ottenere l'elenco degli utenti registrati nel sistema IAM.
+   * L'operatore tecnico riceve l'elenco completo, mentre per gli utenti normali
+   * l'utenza tecnica di sistema viene automaticamente filtrata a livello di backend.
    *
-   * @param bearer Token di autorizzazione dell'utente tecnico.
+   * @param bearer Token di autorizzazione opzionale dell'operatore.
    * @param request Richiesta HTTP server reattiva.
    * @return Mono contenente ResponseEntity con stato 200 OK e l'involucro Response con la lista
    *     utenti.

@@ -70,15 +70,23 @@ public class UserAdminService {
   @Autowired @Lazy private WebhookService webhookService;
 
   /**
-   * Recupera la lista di tutti gli utenti registrati (operazione protetta riservata ad operatori
-   * tecnici).
+   * Recupera la lista degli utenti registrati nel sistema IAM.
    *
-   * @param bearer Token di autorizzazione opzionale dell'operatore tecnico per recupero contesto.
-   * @return Mono contenente la lista di tutti i DTO {@link User}.
+   * <p>Interconnessioni logiche:
+   * <ul>
+   *   <li>Se l'operatore autenticato e' l'utente tecnico ({@link TechUserService#isTechUser()}), valida
+   *       i ruoli tecnici su {@link ClientService} e restituisce l'elenco completo di tutti gli utenti da {@link UserService}.
+   *   <li>Se l'operatore autenticato e' un utente normale/amministratore delegato, restituisce l'elenco
+   *       filtrato escludendo l'utenza tecnica di sistema ({@link TechUserService#isTechnicalUser(User)}),
+   *       garantendone l'invisibilita' e la protezione da manomissioni o lockout accidentali.
+   * </ul>
+   *
+   * @param bearer Token di autorizzazione opzionale dell'operatore per recupero contesto.
+   * @return Mono contenente la lista dei DTO {@link User} scoped in base all'identita' dell'operatore.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<User>> getUsers(String bearer) {
-    LOG.info("👥 [USER ADMIN] Starting retrieval of all users");
+    LOG.info("👥 [USER ADMIN] Starting retrieval of users list");
     if (StringUtils.hasText(bearer) && !techUserService.isTechUser()) {
       try {
         AccessTokenData tokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
@@ -88,20 +96,33 @@ public class UserAdminService {
       }
     }
 
-    if (!techUserService.isTechUser()) {
-      LOG.error("❌ Forbidden: Only a tech user can retrieve the list of users");
-      throw new OAuthException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
+    if (techUserService.isTechUser()) {
+      return clientService
+          .getClientCredentialByClientID(techUserService.getTechClientId())
+          .flatMap(
+              clientCredential -> {
+                TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
+                return userService.getUsers();
+              })
+          .doOnSuccess(
+              users ->
+                  LOG.info(
+                      "✅ [USER ADMIN] Successfully retrieved all {} users for technical operator",
+                      users.size()));
     }
 
-    return clientService
-        .getClientCredentialByClientID(techUserService.getTechClientId())
-        .flatMap(
-            clientCredential -> {
-              TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
-              return userService.getUsers();
-            })
+    return userService
+        .getUsers()
+        .map(
+            users ->
+                users.stream()
+                    .filter(user -> !techUserService.isTechnicalUser(user))
+                    .toList())
         .doOnSuccess(
-            users -> LOG.info("✅ [USER ADMIN] Successfully retrieved {} users", users.size()));
+            filteredUsers ->
+                LOG.info(
+                    "✅ [USER ADMIN] Successfully retrieved {} users (technical user excluded for normal operator)",
+                    filteredUsers.size()));
   }
 
   /**
@@ -229,8 +250,16 @@ public class UserAdminService {
   }
 
   /**
-   * Blocca o sblocca lo stato di accesso di un utente (operazione protetta riservata a operatore
-   * tecnico).
+   * Blocca o sblocca lo stato di accesso di un utente.
+   *
+   * <p>Interconnessioni logiche:
+   * <ul>
+   *   <li>Risolve l'utente target da {@link UserService#getUserByIdentifier(String)}.
+   *   <li>Verifica tramite {@link TechUserService#isTechnicalUser(User)} che un utente non tecnico
+   *       non possa mai bloccare o sbloccare l'utenza tecnica di sistema (genera {@link ExceptionMap#ERR_TECH_403}).
+   *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link TechUserValidator#validateTechRoles}.
+   *   <li>Aggiorna lo stato sul database tramite {@link UserService#updateUser(String, User)}.
+   * </ul>
    *
    * @param identifier UUID univoco dell'utente da bloccare o sbloccare.
    * @param block True per bloccare l'accesso, false per sbloccarlo.
@@ -242,23 +271,34 @@ public class UserAdminService {
         "🛡️ [USER ADMIN] Starting user {} process for identifier: {}",
         block ? "lock" : "unlock",
         identifier);
-    if (!techUserService.isTechUser()) {
-      LOG.error("❌ Forbidden: Only a tech user can change lock status of user {}", identifier);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
-    }
 
-    return clientService
-        .getClientCredentialByClientID(techUserService.getTechClientId())
+    return userService
+        .getUserByIdentifier(identifier)
         .flatMap(
-            clientCredential -> {
-              TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
-              return userService
-                  .getUserByIdentifier(identifier)
-                  .flatMap(
-                      user -> {
-                        user.setBlocked(block);
-                        return userService.updateUser(identifier, user);
-                      });
+            targetUser -> {
+              if (techUserService.isTechnicalUser(targetUser) && !techUserService.isTechUser()) {
+                LOG.error(
+                    "❌ Forbidden: Non-tech user cannot change lock status of technical user {}",
+                    identifier);
+                return Mono.error(
+                    new OAuthException(
+                        ExceptionMap.ERR_TECH_403, "Cannot alter technical user status"));
+              }
+
+              if (techUserService.isTechUser()) {
+                return clientService
+                    .getClientCredentialByClientID(techUserService.getTechClientId())
+                    .flatMap(
+                        clientCredential -> {
+                          TechUserValidator.validateTechRoles(
+                              clientCredential, accessTokenData.getRoles());
+                          targetUser.setBlocked(block);
+                          return userService.updateUser(identifier, targetUser);
+                        });
+              } else {
+                targetUser.setBlocked(block);
+                return userService.updateUser(identifier, targetUser);
+              }
             })
         .doOnSuccess(
             updatedUser ->
@@ -269,28 +309,50 @@ public class UserAdminService {
   }
 
   /**
-   * Cancella definitivamente un utente dal sistema IAM (operazione protetta riservata a utente
-   * tecnico) ed esegue il webhook associato.
+   * Cancella definitivamente un utente dal sistema IAM ed esegue il webhook associato.
+   *
+   * <p>Interconnessioni logiche:
+   * <ul>
+   *   <li>Risolve l'utente target da {@link UserService#getUserByIdentifier(String)}.
+   *   <li>Impedisce tassativamente l'eliminazione dell'utenza tecnica di sistema ({@link TechUserService#isTechnicalUser(User)}),
+   *       restituendo {@link ExceptionMap#ERR_TECH_403}.
+   *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link TechUserValidator#validateTechRoles}.
+   *   <li>Cancella l'entita' dal database ed esegue il webhook associato tramite {@link #deleteUserInternal}.
+   * </ul>
    *
    * @param identifier UUID univoco dell'utente da cancellare.
-   * @param bearer Token di autorizzazione dell'utente tecnico.
+   * @param bearer Token di autorizzazione del chiamante.
    * @param exchange Scambio HTTP reattivo corrente.
    * @return Mono vuoto indicante il completamento della cancellazione.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<Void> deleteUser(String identifier, String bearer, ServerWebExchange exchange) {
     LOG.info("🗑️ [USER ADMIN] Starting user deletion process for identifier: {}", identifier);
-    if (!techUserService.isTechUser()) {
-      LOG.error("❌ Forbidden: Only a tech user can delete user {}", identifier);
-      throw new OAuthException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
-    }
 
-    return clientService
-        .getClientCredentialByClientID(techUserService.getTechClientId())
+    return userService
+        .getUserByIdentifier(identifier)
         .flatMap(
-            clientCredential -> {
-              TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
-              return deleteUserInternal(identifier, bearer, exchange);
+            targetUser -> {
+              if (techUserService.isTechnicalUser(targetUser)) {
+                LOG.error(
+                    "❌ Forbidden: The technical user {} cannot be deleted", identifier);
+                return Mono.error(
+                    new OAuthException(
+                        ExceptionMap.ERR_TECH_403, "The technical user cannot be deleted"));
+              }
+
+              if (techUserService.isTechUser()) {
+                return clientService
+                    .getClientCredentialByClientID(techUserService.getTechClientId())
+                    .flatMap(
+                        clientCredential -> {
+                          TechUserValidator.validateTechRoles(
+                              clientCredential, accessTokenData.getRoles());
+                          return deleteUserInternal(identifier, bearer, exchange);
+                        });
+              } else {
+                return deleteUserInternal(identifier, bearer, exchange);
+              }
             })
         .doOnSuccess(
             unused ->

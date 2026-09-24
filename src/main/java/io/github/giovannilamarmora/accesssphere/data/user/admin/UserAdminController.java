@@ -26,7 +26,8 @@ public interface UserAdminController {
 
   @GetMapping("/users")
   @Operation(
-      description = "Get the full list of users, works only with Tech User or Tech Roles",
+      description =
+          "Get the list of users (full list for Tech User, filtered excluding the technical user for standard users)",
       summary = "User List",
       tags = OpenAPI.Tag.USERS,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))

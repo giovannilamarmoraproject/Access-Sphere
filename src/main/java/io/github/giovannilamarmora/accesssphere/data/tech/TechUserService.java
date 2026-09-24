@@ -24,6 +24,37 @@ public class TechUserService extends TechUserConfig {
         && clientId.equalsIgnoreCase(techClientId);
   }
 
+  /**
+   * Verifica se l'utente specificato corrisponde all'utenza tecnica di sistema censita.
+   *
+   * @param user DTO dell'utente da verificare.
+   * @return true se l'utente corrisponde all'utenza tecnica (per username o email), false altrimenti.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public boolean isTechnicalUser(User user) {
+    if (ObjectToolkit.isNullOrEmpty(user)) return false;
+    return isTechnicalUser(user.getUsername(), user.getEmail());
+  }
+
+  /**
+   * Verifica se la combinazione username ed email corrisponde all'utenza tecnica di sistema.
+   *
+   * @param username Username da verificare.
+   * @param email Indirizzo email da verificare.
+   * @return true se coincide con l'utenza tecnica configurata, false altrimenti.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public boolean isTechnicalUser(String username, String email) {
+    boolean matchUsername =
+        org.springframework.util.StringUtils.hasText(techUsername)
+            && techUsername.equalsIgnoreCase(username);
+    boolean matchEmail =
+        org.springframework.util.StringUtils.hasText(techEmail)
+            && org.springframework.util.StringUtils.hasText(email)
+            && techEmail.equalsIgnoreCase(email);
+    return matchUsername || matchEmail;
+  }
+
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public boolean isTechUser() {
     return isTechUser(accessTokenData);

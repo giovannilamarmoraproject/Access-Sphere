@@ -9,10 +9,12 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
+import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,16 +48,34 @@ class UserAdminServiceTest {
   }
 
   @Test
-  @DisplayName("getUsers should throw forbidden when not a tech user")
-  void getUsers_notTechUser_throws() {
+  @DisplayName("getUsers should return filtered list excluding tech user when caller is normal user")
+  void getUsers_normalUser_filtersOutTechUser() {
     when(techUserService.isTechUser()).thenReturn(false);
 
-    assertThrows(OAuthException.class, () -> userAdminService.getUsers());
+    User techUser = new User();
+    techUser.setUsername("tech_admin");
+    techUser.setEmail("admin@accesssphere.local");
+
+    User normalUser = new User();
+    normalUser.setUsername("john_doe");
+    normalUser.setEmail("john@example.com");
+
+    when(techUserService.isTechnicalUser(techUser)).thenReturn(true);
+    when(techUserService.isTechnicalUser(normalUser)).thenReturn(false);
+    when(userService.getUsers()).thenReturn(Mono.just(List.of(techUser, normalUser)));
+
+    StepVerifier.create(userAdminService.getUsers())
+        .assertNext(
+            users -> {
+              assertEquals(1, users.size());
+              assertEquals("john_doe", users.getFirst().getUsername());
+            })
+        .verifyComplete();
   }
 
   @Test
-  @DisplayName("getUsers should succeed when tech user with valid roles")
-  void getUsers_techUser_success() {
+  @DisplayName("getUsers should succeed and return all users including tech user when caller is tech user")
+  void getUsers_techUser_returnsAllUsers() {
     when(techUserService.isTechUser()).thenReturn(true);
     when(techUserService.getTechClientId()).thenReturn("CLIENT-TECH");
 
@@ -69,25 +89,40 @@ class UserAdminServiceTest {
 
     when(accessTokenData.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
 
-    User user = new User();
-    user.setUsername("user1");
-    when(userService.getUsers()).thenReturn(Mono.just(List.of(user)));
+    User techUser = new User();
+    techUser.setUsername("tech_admin");
+    User normalUser = new User();
+    normalUser.setUsername("user1");
+    when(userService.getUsers()).thenReturn(Mono.just(List.of(techUser, normalUser)));
 
     StepVerifier.create(userAdminService.getUsers())
         .assertNext(
             users -> {
-              assertEquals(1, users.size());
-              assertEquals("user1", users.get(0).getUsername());
+              assertEquals(2, users.size());
+              assertEquals("tech_admin", users.get(0).getUsername());
+              assertEquals("user1", users.get(1).getUsername());
             })
         .verifyComplete();
   }
 
   @Test
-  @DisplayName("unlockUser should throw forbidden when caller is not tech user")
-  void unlockUser_notTechUser_throws() {
+  @DisplayName("unlockUser should throw forbidden when normal user targets technical user")
+  void unlockUser_normalUser_targetingTechUser_throwsForbidden() {
     when(techUserService.isTechUser()).thenReturn(false);
 
-    assertThrows(OAuthException.class, () -> userAdminService.unlockUser("uuid-1", true));
+    User techUser = new User();
+    techUser.setIdentifier("uuid-tech");
+    techUser.setUsername("tech_admin");
+
+    when(userService.getUserByIdentifier("uuid-tech")).thenReturn(Mono.just(techUser));
+    when(techUserService.isTechnicalUser(techUser)).thenReturn(true);
+
+    StepVerifier.create(userAdminService.unlockUser("uuid-tech", true))
+        .expectErrorMatches(
+            throwable ->
+                throwable instanceof OAuthException
+                    && ((OAuthException) throwable).getExceptionCode().equals(ExceptionMap.ERR_TECH_403))
+        .verify();
   }
 
   @Test
@@ -111,6 +146,7 @@ class UserAdminServiceTest {
     user.setBlocked(false);
 
     when(userService.getUserByIdentifier("uuid-1")).thenReturn(Mono.just(user));
+    when(techUserService.isTechnicalUser(user)).thenReturn(false);
     when(userService.updateUser(any(), any(User.class)))
         .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
 
@@ -120,5 +156,97 @@ class UserAdminServiceTest {
               assertTrue(updated.getBlocked());
             })
         .verifyComplete();
+  }
+
+  @Test
+  @DisplayName("unlockUser should update normal user blocked state when caller is normal user")
+  void unlockUser_normalUser_targetingNormalUser_success() {
+    when(techUserService.isTechUser()).thenReturn(false);
+
+    User user = new User();
+    user.setIdentifier("uuid-2");
+    user.setUsername("normal_user");
+    user.setBlocked(false);
+
+    when(userService.getUserByIdentifier("uuid-2")).thenReturn(Mono.just(user));
+    when(techUserService.isTechnicalUser(user)).thenReturn(false);
+    when(userService.updateUser(any(), any(User.class)))
+        .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
+
+    StepVerifier.create(userAdminService.unlockUser("uuid-2", true))
+        .assertNext(
+            updated -> {
+              assertTrue(updated.getBlocked());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  @DisplayName("deleteUser should throw forbidden when target is technical user")
+  void deleteUser_targetingTechUser_throwsForbidden() {
+    User techUser = new User();
+    techUser.setIdentifier("uuid-tech");
+    techUser.setUsername("tech_admin");
+
+    when(userService.getUserByIdentifier("uuid-tech")).thenReturn(Mono.just(techUser));
+    when(techUserService.isTechnicalUser(techUser)).thenReturn(true);
+
+    StepVerifier.create(userAdminService.deleteUser("uuid-tech", null, null))
+        .expectErrorMatches(
+            throwable ->
+                throwable instanceof OAuthException
+                    && ((OAuthException) throwable).getExceptionCode().equals(ExceptionMap.ERR_TECH_403))
+        .verify();
+  }
+
+  @Test
+  @DisplayName("deleteUser should succeed for normal user deletion by tech user")
+  void deleteUser_techUser_deletingNormalUser_success() {
+    when(techUserService.isTechUser()).thenReturn(true);
+    when(techUserService.getTechClientId()).thenReturn("CLIENT-TECH");
+
+    ClientCredential credential = new ClientCredential();
+    credential.setClientId("CLIENT-TECH");
+    AppRole appRole = new AppRole();
+    appRole.setRole("ROLE_ADMIN");
+    credential.setAppRoles(List.of(appRole));
+    when(clientService.getClientCredentialByClientID("CLIENT-TECH"))
+        .thenReturn(Mono.just(credential));
+
+    when(accessTokenData.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
+
+    User normalUser = new User();
+    normalUser.setIdentifier("uuid-normal");
+    normalUser.setUsername("user_to_delete");
+
+    when(userService.getUserByIdentifier("uuid-normal")).thenReturn(Mono.just(normalUser));
+    when(techUserService.isTechnicalUser(normalUser)).thenReturn(false);
+    doNothing().when(userService).deleteUserEntityByIdentifier("uuid-normal");
+    when(webhookService.checkAndExecuteWebhook(any(), any(), any(), any())).thenReturn(Mono.empty());
+
+    StepVerifier.create(userAdminService.deleteUser("uuid-normal", "bearer", null))
+        .verifyComplete();
+
+    verify(userService, times(1)).deleteUserEntityByIdentifier("uuid-normal");
+  }
+
+  @Test
+  @DisplayName("deleteUser should succeed for normal user deletion by normal user")
+  void deleteUser_normalUser_deletingNormalUser_success() {
+    when(techUserService.isTechUser()).thenReturn(false);
+
+    User normalUser = new User();
+    normalUser.setIdentifier("uuid-normal");
+    normalUser.setUsername("user_to_delete");
+
+    when(userService.getUserByIdentifier("uuid-normal")).thenReturn(Mono.just(normalUser));
+    when(techUserService.isTechnicalUser(normalUser)).thenReturn(false);
+    doNothing().when(userService).deleteUserEntityByIdentifier("uuid-normal");
+    when(webhookService.checkAndExecuteWebhook(any(), any(), any(), any())).thenReturn(Mono.empty());
+
+    StepVerifier.create(userAdminService.deleteUser("uuid-normal", "bearer", null))
+        .verifyComplete();
+
+    verify(userService, times(1)).deleteUserEntityByIdentifier("uuid-normal");
   }
 }
