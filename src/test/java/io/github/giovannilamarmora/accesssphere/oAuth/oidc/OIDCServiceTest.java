@@ -1,16 +1,15 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.oidc;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +28,7 @@ class OIDCServiceTest {
 
   @Mock private ClientService clientService;
   @Mock private TokenService tokenService;
-  @Mock private AccessTokenData accessTokenData;
+  @Mock private OAuth2Authorization oAuth2Authorization;
   @Mock private UserService userService;
 
   @InjectMocks private OIDCService oidcService;
@@ -38,15 +37,15 @@ class OIDCServiceTest {
   void setUp() {
     ReflectionTestUtils.setField(oidcService, "clientService", clientService);
     ReflectionTestUtils.setField(oidcService, "tokenService", tokenService);
-    ReflectionTestUtils.setField(oidcService, "accessTokenData", accessTokenData);
+    ReflectionTestUtils.setField(oidcService, "accessTokenData", oAuth2Authorization);
     ReflectionTestUtils.setField(oidcService, "userService", userService);
   }
 
   @Test
   @DisplayName("userInfo should resolve bearer token and return OAuthTokenResponse")
   void userInfo_bearerSuccess() {
-    when(accessTokenData.getClientId()).thenReturn("CLIENT-01");
-    when(accessTokenData.getType()).thenReturn(OAuthType.BEARER);
+    when(oAuth2Authorization.getClientId()).thenReturn("CLIENT-01");
+    when(oAuth2Authorization.getType()).thenReturn(OAuthType.BEARER);
 
     ClientCredential credential = new ClientCredential();
     credential.setClientId("CLIENT-01");
@@ -65,7 +64,8 @@ class OIDCServiceTest {
     user.setEmail("user@example.com");
     when(userService.getUserByEmail("user@example.com")).thenReturn(Mono.just(user));
 
-    MockServerHttpRequest request = MockServerHttpRequest.get("/v1/userInfo?include_user_data=true").build();
+    MockServerHttpRequest request =
+        MockServerHttpRequest.get("/v1/userInfo?include_user_data=true").build();
 
     StepVerifier.create(oidcService.userInfo("Bearer valid-token", request))
         .assertNext(

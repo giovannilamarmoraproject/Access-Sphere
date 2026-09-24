@@ -1,13 +1,11 @@
-package io.github.giovannilamarmora.accesssphere.token.data;
+package io.github.giovannilamarmora.accesssphere.oAuth.authorization;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.entity.OAuth2AuthorizationEntity;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
-import io.github.giovannilamarmora.accesssphere.token.data.entity.AccessTokenEntity;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
-import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.auth.TokenUtils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -21,14 +19,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 @Service
-public class AccessTokenService {
+public class OAuth2AuthorizationService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  @Autowired private IAccessTokenDAO accessTokenDAO;
-  private static final Long REFRESH_TOKEN_1D = 86400000L;
+  @Autowired private IOAuth2AuthorizationDAO accessTokenDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public AccessTokenData save(
+  public OAuth2Authorization save(
       JWTData jwtData,
       String refreshToken,
       String accessToken,
@@ -36,46 +33,31 @@ public class AccessTokenService {
       String client_id,
       String session_id,
       List<String> roles,
+      List<String> permissions,
       Object payload) {
-    AccessTokenEntity accessTokenToBeSaved = new AccessTokenEntity();
-    try {
-      accessTokenToBeSaved =
-          new AccessTokenEntity(
-              null,
-              refreshToken,
-              accessToken,
-              idToken,
-              session_id,
-              client_id,
-              jwtData.getSub(),
-              jwtData.getSubject_type(),
-              jwtData.getEmail(),
-              jwtData.getIdentifier(),
-              jwtData.getType(),
-              jwtData.getIat(),
-              jwtData.getExp() + REFRESH_TOKEN_1D,
-              jwtData.getExp(),
-              Utils.mapper().writeValueAsString(payload),
-              TokenStatus.ISSUED,
-              Utils.mapper().writeValueAsString(roles));
-    } catch (JsonProcessingException e) {
-      LOG.error(
-          "An error happen during creating and storing refresh token, message is {}",
-          e.getMessage());
-      throw new TokenException(ExceptionMap.ERR_TOKEN_500, ExceptionMap.ERR_TOKEN_500.getMessage());
-    }
-    AccessTokenEntity accessTokenSaved = accessTokenDAO.save(accessTokenToBeSaved);
+    OAuth2AuthorizationEntity accessTokenToBeSaved =
+        OAuth2AuthorizationMapper.toEntity(
+            jwtData,
+            refreshToken,
+            accessToken,
+            idToken,
+            client_id,
+            session_id,
+            roles,
+            permissions,
+            payload);
+    OAuth2AuthorizationEntity accessTokenSaved = accessTokenDAO.save(accessTokenToBeSaved);
     accessTokenDAO.revokeTokensExcept(
         TokenStatus.REVOKED, accessToken, jwtData.getIdentifier(), System.currentTimeMillis());
     if (ObjectUtils.isEmpty(accessTokenSaved)) {
       LOG.error("Refresh Token not saved");
       throw new TokenException(ExceptionMap.ERR_TOKEN_500, ExceptionMap.ERR_TOKEN_500.getMessage());
     }
-    return AccessTokenMapper.fromAccessTokenEntityToData(accessTokenSaved);
+    return OAuth2AuthorizationMapper.toDto(accessTokenSaved);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public AccessTokenData getByAccessTokenOrIdToken(String token) {
+  public OAuth2Authorization getByAccessTokenOrIdToken(String token) {
     if (ObjectToolkit.isNullOrEmpty(token)) {
       LOG.error("Token not found, please provide a valid token");
       throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
@@ -90,7 +72,7 @@ public class AccessTokenService {
     }
 
     String hashedToken = TokenUtils.hashingToken(extractedToken);
-    List<AccessTokenEntity> accessTokens = accessTokenDAO.findByTokenHash(hashedToken);
+    List<OAuth2AuthorizationEntity> accessTokens = accessTokenDAO.findByTokenHash(hashedToken);
 
     if (ObjectToolkit.isNullOrEmpty(accessTokens)
         || ObjectToolkit.isNullOrEmpty(accessTokens.getFirst())) {
@@ -98,7 +80,7 @@ public class AccessTokenService {
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    AccessTokenEntity accessToken = accessTokens.getFirst();
+    OAuth2AuthorizationEntity accessToken = accessTokens.getFirst();
 
     Date now = new Date();
     if (now.after(new Date(accessToken.getAccessExpireDate()))
@@ -111,14 +93,14 @@ public class AccessTokenService {
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    return AccessTokenMapper.fromAccessTokenEntityToData(accessToken);
+    return OAuth2AuthorizationMapper.toDto(accessToken);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public AccessTokenData getByRefreshToken(String token) {
+  public OAuth2Authorization getByRefreshToken(String token) {
     String hashedToken =
         token.contains("Bearer") ? TokenUtils.hashingToken(token.split("Bearer ")[1]) : token;
-    List<AccessTokenEntity> accessTokens = accessTokenDAO.findByTokenHash(hashedToken);
+    List<OAuth2AuthorizationEntity> accessTokens = accessTokenDAO.findByTokenHash(hashedToken);
 
     if (ObjectToolkit.isNullOrEmpty(accessTokens)
         || ObjectToolkit.isNullOrEmpty(accessTokens.getFirst())) {
@@ -126,7 +108,7 @@ public class AccessTokenService {
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    AccessTokenEntity accessToken = accessTokens.getFirst();
+    OAuth2AuthorizationEntity accessToken = accessTokens.getFirst();
 
     Date now = new Date();
     if (now.after(new Date(accessToken.getRefreshExpireDate()))
@@ -139,7 +121,7 @@ public class AccessTokenService {
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    return AccessTokenMapper.fromAccessTokenEntityToData(accessToken);
+    return OAuth2AuthorizationMapper.toDto(accessToken);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

@@ -1,10 +1,10 @@
-package io.github.giovannilamarmora.accesssphere.token.data.model;
+package io.github.giovannilamarmora.accesssphere.oAuth.authorization.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
-import jakarta.persistence.*;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AccessTokenData extends GenericDTO {
+public class OAuth2Authorization extends GenericDTO {
   private String refreshTokenHash;
   private String accessTokenHash;
   private String idTokenHash;
@@ -33,4 +33,5 @@ public class AccessTokenData extends GenericDTO {
   private JsonNode payload;
   private TokenStatus status;
   private List<String> roles;
+  private List<String> permissions;
 }

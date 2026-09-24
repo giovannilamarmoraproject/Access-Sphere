@@ -7,11 +7,11 @@ import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -40,7 +40,7 @@ import reactor.core.publisher.Mono;
 public class ClientService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Autowired private AccessTokenData accessTokenData;
+  @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private IClientDAO iClientDAO;
   @Autowired private TechUserService techUserService;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
@@ -101,7 +101,12 @@ public class ClientService {
                     Collectors.groupingBy(
                         r -> r.getClientId().toUpperCase(),
                         Collectors.mapping(
-                            r -> new AppRole(r.getRole(), r.getType(), r.getDescription(), r.getPermissions()),
+                            r ->
+                                new AppRole(
+                                    r.getRole(),
+                                    r.getType(),
+                                    r.getDescription(),
+                                    r.getPermissions()),
                             Collectors.toList())))
             : Map.of();
 
@@ -115,11 +120,14 @@ public class ClientService {
             .toList();
 
     TechUserValidator.validateTechClient(
-        dtos, accessTokenData, techUserService.getTechClientId());
+        dtos, oAuth2Authorization, techUserService.getTechClientId());
     return Mono.just(dtos);
   }
 
-  /** Inserisce un nuovo ClientCredential a database e persiste le definizioni ruoli nella tabella relazionale. */
+  /**
+   * Inserisce un nuovo ClientCredential a database e persiste le definizioni ruoli nella tabella
+   * relazionale.
+   */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void addClientToDatabase(ClientCredential clientCredential) {
@@ -199,7 +207,10 @@ public class ClientService {
     }
   }
 
-  /** Rimuove un ClientCredential dal database ripulendo definizioni ruoli e assegnazioni utenti associate. */
+  /**
+   * Rimuove un ClientCredential dal database ripulendo definizioni ruoli e assegnazioni utenti
+   * associate.
+   */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteClientFromDatabase(ClientCredential clientCredential) {
@@ -219,8 +230,8 @@ public class ClientService {
   }
 
   /**
-   * Helper per popolare l'elenco dei ruoli applicativi sul DTO ClientCredential
-   * leggendo direttamente dalla tabella relazionale ROLE_DEFINITIONS.
+   * Helper per popolare l'elenco dei ruoli applicativi sul DTO ClientCredential leggendo
+   * direttamente dalla tabella relazionale ROLE_DEFINITIONS.
    */
   private void populateAppRoles(ClientCredential dto) {
     if (dto == null || dto.getClientId() == null) return;
@@ -228,7 +239,9 @@ public class ClientService {
     if (roles != null) {
       dto.setAppRoles(
           roles.stream()
-              .map(r -> new AppRole(r.getRole(), r.getType(), r.getDescription(), r.getPermissions()))
+              .map(
+                  r ->
+                      new AppRole(r.getRole(), r.getType(), r.getDescription(), r.getPermissions()))
               .toList());
     }
   }

@@ -13,8 +13,8 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.email.EmailTemplateService;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ class UserAccountServiceTest {
   @Mock private EmailTemplateService emailTemplateService;
   @Mock private EmailSenderService emailSenderService;
   @Mock private UserService userService;
-  @Mock private AccessTokenData accessTokenData;
+  @Mock private OAuth2Authorization oAuth2Authorization;
 
   @InjectMocks private UserAccountService userAccountService;
 
@@ -47,7 +47,7 @@ class UserAccountServiceTest {
     ReflectionTestUtils.setField(userAccountService, "emailTemplateService", emailTemplateService);
     ReflectionTestUtils.setField(userAccountService, "emailSenderService", emailSenderService);
     ReflectionTestUtils.setField(userAccountService, "userService", userService);
-    ReflectionTestUtils.setField(userAccountService, "accessTokenData", accessTokenData);
+    ReflectionTestUtils.setField(userAccountService, "accessTokenData", oAuth2Authorization);
   }
 
   @Test

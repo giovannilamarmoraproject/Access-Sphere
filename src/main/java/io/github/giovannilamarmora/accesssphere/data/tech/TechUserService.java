@@ -4,10 +4,10 @@ import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
@@ -28,7 +28,8 @@ public class TechUserService extends TechUserConfig {
    * Verifica se l'utente specificato corrisponde all'utenza tecnica di sistema censita.
    *
    * @param user DTO dell'utente da verificare.
-   * @return true se l'utente corrisponde all'utenza tecnica (per username o email), false altrimenti.
+   * @return true se l'utente corrisponde all'utenza tecnica (per username o email), false
+   *     altrimenti.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public boolean isTechnicalUser(User user) {
@@ -57,17 +58,18 @@ public class TechUserService extends TechUserConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public boolean isTechUser() {
-    return isTechUser(accessTokenData);
+    return isTechUser(oAuth2Authorization);
   }
 
   /**
    * Determina se i dati del token di accesso appartengono all'operatore tecnico IAM di sistema.
    *
    * <p>Interconnessioni logiche:
+   *
    * <ul>
    *   <li>Riconosce il subject type esplicito {@link SubjectType#TECHNICAL}.
-   *   <li>Verifica tramite {@link #isTechnicalUser(String, String)} se username o email corrispondono
-   *       all'utenza tecnica configurata in {@link TechUserConfig}.
+   *   <li>Verifica tramite {@link #isTechnicalUser(String, String)} se username o email
+   *       corrispondono all'utenza tecnica configurata in {@link TechUserConfig}.
    *   <li>Verifica la presenza del ruolo di sistema infrastrutturale {@code ROLE_TECH}.
    *   <li>Per chiamate puramente M2M / client-credentials (senza anagrafica utente associata),
    *       riconosce il client tecnico {@link #getTechClientId()}.
@@ -77,9 +79,9 @@ public class TechUserService extends TechUserConfig {
    * @return true se l'operatore e' l'utenza tecnica di sistema, false per utenti ordinari/delegati.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public boolean isTechUser(AccessTokenData tokenData) {
-    if (ObjectToolkit.isNullOrEmpty(tokenData)
-        || ObjectToolkit.fieldsNullOrEmpty(tokenData)) return false;
+  public boolean isTechUser(OAuth2Authorization tokenData) {
+    if (ObjectToolkit.isNullOrEmpty(tokenData) || ObjectToolkit.fieldsNullOrEmpty(tokenData))
+      return false;
 
     // 1. SubjectType esplicitamente impostato come TECHNICAL
     if (SubjectType.TECHNICAL.equals(tokenData.getSubjectType())) {
@@ -109,9 +111,9 @@ public class TechUserService extends TechUserConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<Boolean> hasTechUserRoles(
-      AccessTokenData accessTokenData, ClientService clientService) {
-    if (accessTokenData.getSubjectType().equals(SubjectType.TECHNICAL)) {
-      logTechRole(accessTokenData.getSubject());
+      OAuth2Authorization oAuth2Authorization, ClientService clientService) {
+    if (oAuth2Authorization.getSubjectType().equals(SubjectType.TECHNICAL)) {
+      logTechRole(oAuth2Authorization.getSubject());
       return Mono.just(true);
     }
     return clientService
@@ -120,25 +122,25 @@ public class TechUserService extends TechUserConfig {
             clientCredential ->
                 clientCredential.getAppRoles().stream()
                     .map(AppRole::getRole)
-                    .anyMatch(accessTokenData.getRoles()::contains))
+                    .anyMatch(oAuth2Authorization.getRoles()::contains))
         .doOnSuccess(
             aBoolean -> {
-              if (aBoolean) logTechRole(accessTokenData.getSubject());
+              if (aBoolean) logTechRole(oAuth2Authorization.getSubject());
             });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Boolean hasTechUserRoles(
-      AccessTokenData accessTokenData, ClientCredential clientCredential) {
-    if (accessTokenData.getSubjectType().equals(SubjectType.TECHNICAL)) {
-      logTechRole(accessTokenData.getSubject());
+      OAuth2Authorization oAuth2Authorization, ClientCredential clientCredential) {
+    if (oAuth2Authorization.getSubjectType().equals(SubjectType.TECHNICAL)) {
+      logTechRole(oAuth2Authorization.getSubject());
       return true;
     }
     boolean hasTechRole =
         clientCredential.getAppRoles().stream()
             .map(AppRole::getRole)
-            .anyMatch(accessTokenData.getRoles()::contains);
-    if (hasTechRole) logTechRole(accessTokenData.getSubject());
+            .anyMatch(oAuth2Authorization.getRoles()::contains);
+    if (hasTechRole) logTechRole(oAuth2Authorization.getSubject());
     return hasTechRole;
   }
 

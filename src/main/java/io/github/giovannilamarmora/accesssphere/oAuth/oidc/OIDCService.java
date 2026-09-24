@@ -5,9 +5,9 @@ import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -50,7 +50,7 @@ public class OIDCService {
 
   @Autowired private ClientService clientService;
   @Autowired private TokenService tokenService;
-  @Autowired private AccessTokenData accessTokenData;
+  @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private UserService userService;
 
   /**
@@ -69,10 +69,10 @@ public class OIDCService {
         "👤 [OIDC USER INFO] Starting UserInfo retrieval (includeUserData: {})", includeUserData);
 
     return clientService
-        .getClientCredentialByClientID(accessTokenData.getClientId())
+        .getClientCredentialByClientID(oAuth2Authorization.getClientId())
         .flatMap(
             clientCredential -> {
-              UserValidator.validateAuthType(clientCredential, accessTokenData);
+              UserValidator.validateAuthType(clientCredential, oAuth2Authorization);
               JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
               switch (decryptToken.getType()) {
                 case BEARER -> {
@@ -87,7 +87,7 @@ public class OIDCService {
                 case GOOGLE -> {
                   GoogleModel userInfo =
                       GrpcService.userInfo(
-                          accessTokenData.getPayload().get("id_token").textValue(),
+                          oAuth2Authorization.getPayload().get("id_token").textValue(),
                           clientCredential);
                   UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
                   if (includeUserData) {

@@ -6,8 +6,8 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
-import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,8 @@ class JWTDataTest {
     user.setEmail("mario@example.com");
 
     UserClientRoleDTO linkatuttoRole =
-        new UserClientRoleDTO("linkatutto", "LINKATUTTO_EDITOR", "USER", List.of("links:read", "links:write"));
+        new UserClientRoleDTO(
+            "linkatutto", "LINKATUTTO_EDITOR", "USER", List.of("links:read", "links:write"));
     UserClientRoleDTO accessSphereRole =
         new UserClientRoleDTO("ACCESS-SPHERE-TECH", "ROLE_ADMIN", "DEFAULT", List.of("*"));
     user.setClientRoles(List.of(linkatuttoRole, accessSphereRole));
@@ -38,7 +39,8 @@ class JWTDataTest {
 
     MockServerHttpRequest request = MockServerHttpRequest.get("/v1/oauth2/token").build();
 
-    JWTData jwtData = JWTData.generateJWTData(user, linkatuttoClient, SubjectType.CUSTOMER, request);
+    JWTData jwtData =
+        JWTData.generateJWTData(user, linkatuttoClient, SubjectType.CUSTOMER, request);
 
     assertNotNull(jwtData);
     assertEquals("user-uuid-1", jwtData.getIdentifier());
@@ -57,7 +59,8 @@ class JWTDataTest {
   }
 
   @Test
-  @DisplayName("generateJWTData fallback to user.roles and clientCredential.appRoles when clientRoles are absent")
+  @DisplayName(
+      "generateJWTData fallback to user.roles and clientCredential.appRoles when clientRoles are absent")
   void generateJWTData_fallbackLegacy() {
     User user = new User();
     user.setIdentifier("user-uuid-2");
@@ -67,7 +70,8 @@ class JWTDataTest {
     ClientCredential client = new ClientCredential();
     client.setClientId("ACCESS-SPHERE-TECH");
     client.setJwtExpiration(3600000L);
-    AppRole adminRole = new AppRole("ROLE_ADMIN", "DEFAULT", "Admin", List.of("users:read", "users:write", "*"));
+    AppRole adminRole =
+        new AppRole("ROLE_ADMIN", "DEFAULT", "Admin", List.of("users:read", "users:write", "*"));
     client.setAppRoles(List.of(adminRole));
 
     MockServerHttpRequest request = MockServerHttpRequest.get("/v1/oauth2/token").build();

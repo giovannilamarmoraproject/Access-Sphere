@@ -9,12 +9,12 @@ import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.GoogleAuthService;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
-import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
@@ -59,8 +59,8 @@ public class OAuthService {
   @Autowired private ClientService clientService;
   @Autowired private AuthService authService;
   @Autowired private GoogleAuthService googleAuthService;
-  @Autowired private AccessTokenService accessTokenService;
-  @Autowired private AccessTokenData accessTokenData;
+  @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
+  @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private UserService userService;
 
   /**
@@ -235,7 +235,7 @@ public class OAuthService {
         clientService.getClientCredentialByClientID(tokenExchange.getClient_id());
 
     Mono<ClientCredential> clientCredentialToExchangeMono =
-        clientService.getClientCredentialByClientID(accessTokenData.getClientId());
+        clientService.getClientCredentialByClientID(oAuth2Authorization.getClientId());
 
     return clientCredentialMono
         .zipWith(clientCredentialToExchangeMono)
@@ -247,7 +247,7 @@ public class OAuthService {
               OAuthValidator.validateTokenExchange(bearer, tokenExchange, objects.getT1());
               return authService.exchangeToken(
                   tokenExchange,
-                  accessTokenData,
+                  oAuth2Authorization,
                   objects.getT1(),
                   objects.getT2(),
                   exchange.getRequest());
@@ -273,15 +273,16 @@ public class OAuthService {
     LOG.info("🛡️ [OAUTH BEARER] Bearer token detected, executing authorization validation");
 
     try {
-      AccessTokenData accessTokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
-      OAuthValidator.validateUserRoles(clientCredential, accessTokenData.getRoles());
+      OAuth2Authorization oAuth2Authorization =
+          oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
+      OAuthValidator.validateUserRoles(clientCredential, oAuth2Authorization.getRoles());
       OAuthValidator.validateClientId(
-          accessTokenData.getClientId(), clientCredential.getClientId());
+          oAuth2Authorization.getClientId(), clientCredential.getClientId());
 
       AuthToken token = new AuthToken();
       token.setAccess_token(bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
       token.setToken_type("Bearer");
-      token.setExpires_at(accessTokenData.getAccessExpireDate());
+      token.setExpires_at(oAuth2Authorization.getAccessExpireDate());
 
       boolean includeUserData =
           (!ObjectUtils.isEmpty(exchange.getRequest().getQueryParams().get("include_user_data"))
@@ -295,12 +296,11 @@ public class OAuthService {
       if (includeUserData) {
         Mono<ResponseEntity<Response>> userResponse =
             userService
-                .getUserByIdentifier(accessTokenData.getIdentifier())
+                .getUserByIdentifier(oAuth2Authorization.getIdentifier())
                 .map(
                     user -> {
                       user.setPassword(null);
-                      OAuthTokenResponse tokenResponse =
-                          new OAuthTokenResponse(token, user);
+                      OAuthTokenResponse tokenResponse = new OAuthTokenResponse(token, user);
                       if (!ObjectUtils.isEmpty(state)) {
                         tokenResponse.setState(state);
                       }
@@ -481,7 +481,7 @@ public class OAuthService {
         .flatMap(
             clientCredential -> {
               OAuthType authType =
-                  OAuthMapper.getOAuthType(clientCredential, accessTokenData, grant_type, code);
+                  OAuthMapper.getOAuthType(clientCredential, oAuth2Authorization, grant_type, code);
               LOG.debug(
                   "🔍 [OAUTH TOKEN] Resolved OAuth authentication type: {} for clientId: {}",
                   authType,
@@ -559,8 +559,8 @@ public class OAuthService {
     return clientCredentialMono
         .flatMap(
             clientCredential -> {
-              AccessTokenData refreshTokenData =
-                  accessTokenService.getByRefreshToken(refresh_token);
+              OAuth2Authorization refreshTokenData =
+                  oAuth2AuthorizationService.getByRefreshToken(refresh_token);
               OAuthType authType =
                   OAuthMapper.getOAuthType(clientCredential, refreshTokenData, null, null);
               LOG.debug(
@@ -607,8 +607,8 @@ public class OAuthService {
       return createLogoutSuccessResponse(clientId, redirect_uri, response);
     }
 
-    AccessTokenData tokenData = new AccessTokenData();
-    BeanUtils.copyProperties(accessTokenData, tokenData);
+    OAuth2Authorization tokenData = new OAuth2Authorization();
+    BeanUtils.copyProperties(oAuth2Authorization, tokenData);
     OAuthValidator.validateClientId(tokenData.getClientId(), clientId);
 
     return clientCredentialMono
@@ -625,7 +625,7 @@ public class OAuthService {
   }
 
   private boolean isLogoutAlreadyDone() {
-    return ObjectUtils.isEmpty(accessTokenData.getClientId());
+    return ObjectUtils.isEmpty(oAuth2Authorization.getClientId());
   }
 
   private Mono<ResponseEntity<?>> createLogoutSuccessResponse(
@@ -646,18 +646,20 @@ public class OAuthService {
   }
 
   private Mono<ResponseEntity<?>> processLogoutByAuthType(
-      AccessTokenData accessTokenData,
+      OAuth2Authorization oAuth2Authorization,
       ClientCredential clientCredential,
       String redirect_uri,
       ServerHttpResponse response) {
-    OAuthType authType = OAuthMapper.getOAuthType(clientCredential, accessTokenData, null, null);
+    OAuthType authType =
+        OAuthMapper.getOAuthType(clientCredential, oAuth2Authorization, null, null);
     LOG.debug(
         "🔍 [OAUTH LOGOUT] Processing logout for authType: {}, subject: {}",
         authType,
-        accessTokenData.getSubject());
+        oAuth2Authorization.getSubject());
     return switch (authType) {
-      case BEARER -> authService.logout(redirect_uri, accessTokenData, response);
-      case GOOGLE -> googleAuthService.processGoogleLogout(redirect_uri, accessTokenData, response);
+      case BEARER -> authService.logout(redirect_uri, oAuth2Authorization, response);
+      case GOOGLE ->
+          googleAuthService.processGoogleLogout(redirect_uri, oAuth2Authorization, response);
       default -> defaultErrorType();
     };
   }

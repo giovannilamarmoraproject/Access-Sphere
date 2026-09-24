@@ -4,7 +4,7 @@ import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechnicalException;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

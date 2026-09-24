@@ -12,10 +12,10 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.RoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -48,8 +48,8 @@ import reactor.core.publisher.Mono;
  *   <li>Risolve la configurazione dei client OAuth tramite {@link ClientService}.
  *   <li>Esegue le operazioni di lettura, creazione e cancellazione delegando al layer di
  *       persistenza puro {@link UserService}.
- *   <li>Interagisce con {@link AccessTokenService} per l'analisi dei privilegi di token Bearer in
- *       fase di registrazione.
+ *   <li>Interagisce con {@link OAuth2AuthorizationService} per l'analisi dei privilegi di token
+ *       Bearer in fase di registrazione.
  *   <li>Scatena eventi di notifica asincrona e webhook tramite {@link WebhookService} in caso di
  *       cancellazione utente.
  * </ul>
@@ -65,32 +65,37 @@ public class UserAdminService {
   @Autowired private TechUserService techUserService;
   @Autowired private ClientService clientService;
   @Autowired private UserService userService;
-  @Autowired private AccessTokenData accessTokenData;
-  @Autowired private AccessTokenService accessTokenService;
+  @Autowired private OAuth2Authorization oAuth2Authorization;
+  @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
   @Autowired @Lazy private WebhookService webhookService;
 
   /**
    * Recupera la lista degli utenti registrati nel sistema IAM.
    *
    * <p>Interconnessioni logiche:
+   *
    * <ul>
-   *   <li>Se l'operatore autenticato e' l'utente tecnico ({@link TechUserService#isTechUser()}), valida
-   *       i ruoli tecnici su {@link ClientService} e restituisce l'elenco completo di tutti gli utenti da {@link UserService}.
-   *   <li>Se l'operatore autenticato e' un utente normale/amministratore delegato, restituisce l'elenco
-   *       filtrato escludendo l'utenza tecnica di sistema ({@link TechUserService#isTechnicalUser(User)}),
-   *       garantendone l'invisibilita' e la protezione da manomissioni o lockout accidentali.
+   *   <li>Se l'operatore autenticato e' l'utente tecnico ({@link TechUserService#isTechUser()}),
+   *       valida i ruoli tecnici su {@link ClientService} e restituisce l'elenco completo di tutti
+   *       gli utenti da {@link UserService}.
+   *   <li>Se l'operatore autenticato e' un utente normale/amministratore delegato, restituisce
+   *       l'elenco filtrato escludendo l'utenza tecnica di sistema ({@link
+   *       TechUserService#isTechnicalUser(User)}), garantendone l'invisibilita' e la protezione da
+   *       manomissioni o lockout accidentali.
    * </ul>
    *
    * @param bearer Token di autorizzazione opzionale dell'operatore per recupero contesto.
-   * @return Mono contenente la lista dei DTO {@link User} scoped in base all'identita' dell'operatore.
+   * @return Mono contenente la lista dei DTO {@link User} scoped in base all'identita'
+   *     dell'operatore.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<User>> getUsers(String bearer) {
     LOG.info("👥 [USER ADMIN] Starting retrieval of users list");
     if (StringUtils.hasText(bearer) && !techUserService.isTechUser()) {
       try {
-        AccessTokenData tokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
-        BeanUtils.copyProperties(tokenData, accessTokenData);
+        OAuth2Authorization tokenData =
+            oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
+        BeanUtils.copyProperties(tokenData, oAuth2Authorization);
       } catch (Exception e) {
         LOG.warn("Could not retrieve AccessTokenData from bearer: {}", e.getMessage());
       }
@@ -101,7 +106,8 @@ public class UserAdminService {
           .getClientCredentialByClientID(techUserService.getTechClientId())
           .flatMap(
               clientCredential -> {
-                TechUserValidator.validateTechRoles(clientCredential, accessTokenData.getRoles());
+                TechUserValidator.validateTechRoles(
+                    clientCredential, oAuth2Authorization.getRoles());
                 return userService.getUsers();
               })
           .doOnSuccess(
@@ -114,10 +120,7 @@ public class UserAdminService {
     return userService
         .getUsers()
         .map(
-            users ->
-                users.stream()
-                    .filter(user -> !techUserService.isTechnicalUser(user))
-                    .toList())
+            users -> users.stream().filter(user -> !techUserService.isTechnicalUser(user)).toList())
         .doOnSuccess(
             filteredUsers ->
                 LOG.info(
@@ -210,7 +213,7 @@ public class UserAdminService {
 
     if (!ObjectToolkit.isNullOrEmpty(bearer)) {
       LOG.info("🛡️ Bearer token present, checking technical roles");
-      AccessTokenData tokenData = accessTokenService.getByAccessTokenOrIdToken(bearer);
+      OAuth2Authorization tokenData = oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
 
       if (RoleManager.hasPermissionRoles(tokenData, clientCredential)
           && !ObjectToolkit.isNullOrEmpty(user.getRoles())) {
@@ -253,11 +256,14 @@ public class UserAdminService {
    * Blocca o sblocca lo stato di accesso di un utente.
    *
    * <p>Interconnessioni logiche:
+   *
    * <ul>
    *   <li>Risolve l'utente target da {@link UserService#getUserByIdentifier(String)}.
    *   <li>Verifica tramite {@link TechUserService#isTechnicalUser(User)} che un utente non tecnico
-   *       non possa mai bloccare o sbloccare l'utenza tecnica di sistema (genera {@link ExceptionMap#ERR_TECH_403}).
-   *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link TechUserValidator#validateTechRoles}.
+   *       non possa mai bloccare o sbloccare l'utenza tecnica di sistema (genera {@link
+   *       ExceptionMap#ERR_TECH_403}).
+   *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link
+   *       TechUserValidator#validateTechRoles}.
    *   <li>Aggiorna lo stato sul database tramite {@link UserService#updateUser(String, User)}.
    * </ul>
    *
@@ -291,7 +297,7 @@ public class UserAdminService {
                     .flatMap(
                         clientCredential -> {
                           TechUserValidator.validateTechRoles(
-                              clientCredential, accessTokenData.getRoles());
+                              clientCredential, oAuth2Authorization.getRoles());
                           targetUser.setBlocked(block);
                           return userService.updateUser(identifier, targetUser);
                         });
@@ -312,12 +318,15 @@ public class UserAdminService {
    * Cancella definitivamente un utente dal sistema IAM ed esegue il webhook associato.
    *
    * <p>Interconnessioni logiche:
+   *
    * <ul>
    *   <li>Risolve l'utente target da {@link UserService#getUserByIdentifier(String)}.
-   *   <li>Impedisce tassativamente l'eliminazione dell'utenza tecnica di sistema ({@link TechUserService#isTechnicalUser(User)}),
-   *       restituendo {@link ExceptionMap#ERR_TECH_403}.
-   *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link TechUserValidator#validateTechRoles}.
-   *   <li>Cancella l'entita' dal database ed esegue il webhook associato tramite {@link #deleteUserInternal}.
+   *   <li>Impedisce tassativamente l'eliminazione dell'utenza tecnica di sistema ({@link
+   *       TechUserService#isTechnicalUser(User)}), restituendo {@link ExceptionMap#ERR_TECH_403}.
+   *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link
+   *       TechUserValidator#validateTechRoles}.
+   *   <li>Cancella l'entita' dal database ed esegue il webhook associato tramite {@link
+   *       #deleteUserInternal}.
    * </ul>
    *
    * @param identifier UUID univoco dell'utente da cancellare.
@@ -334,8 +343,7 @@ public class UserAdminService {
         .flatMap(
             targetUser -> {
               if (techUserService.isTechnicalUser(targetUser)) {
-                LOG.error(
-                    "❌ Forbidden: The technical user {} cannot be deleted", identifier);
+                LOG.error("❌ Forbidden: The technical user {} cannot be deleted", identifier);
                 return Mono.error(
                     new OAuthException(
                         ExceptionMap.ERR_TECH_403, "The technical user cannot be deleted"));
@@ -347,7 +355,7 @@ public class UserAdminService {
                     .flatMap(
                         clientCredential -> {
                           TechUserValidator.validateTechRoles(
-                              clientCredential, accessTokenData.getRoles());
+                              clientCredential, oAuth2Authorization.getRoles());
                           return deleteUserInternal(identifier, bearer, exchange);
                         });
               } else {

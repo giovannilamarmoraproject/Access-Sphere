@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.data.tech;
 
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,7 +41,7 @@ public class TechUserConfig {
   public String techJwtSecret;
 
   @Autowired public TokenService tokenService;
-  @Autowired public AccessTokenData accessTokenData;
+  @Autowired public OAuth2Authorization oAuth2Authorization;
 
   public static final String DEFAULT_RESET_PASSWORD_TEMPLATE_UUID =
       "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95";

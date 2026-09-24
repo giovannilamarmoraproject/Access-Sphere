@@ -3,7 +3,7 @@ package io.github.giovannilamarmora.accesssphere.data.tech;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -39,12 +39,14 @@ public class TechUserValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public static void validateTechClient(
-      List<ClientCredential> clients, AccessTokenData accessTokenData, String techClientID) {
+      List<ClientCredential> clients,
+      OAuth2Authorization oAuth2Authorization,
+      String techClientID) {
     ClientCredential clientCredentialToCheck =
         clients.stream()
             .filter(c -> c.getClientId().equalsIgnoreCase(techClientID))
             .toList()
             .getFirst();
-    validateTechRoles(clientCredentialToCheck, accessTokenData.getRoles());
+    validateTechRoles(clientCredentialToCheck, oAuth2Authorization.getRoles());
   }
 }

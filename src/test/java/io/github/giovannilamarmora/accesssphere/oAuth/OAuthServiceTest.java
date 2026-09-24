@@ -8,12 +8,12 @@ import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
-import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import java.util.Map;
@@ -36,18 +36,18 @@ import reactor.test.StepVerifier;
 class OAuthServiceTest {
 
   @Mock private ClientService clientService;
-  @Mock private AccessTokenService accessTokenService;
+  @Mock private OAuth2AuthorizationService oAuth2AuthorizationService;
   @Mock private UserService userService;
 
   @InjectMocks private OAuthService oAuthService;
 
   private ClientCredential clientCredential;
-  private AccessTokenData accessTokenData;
+  private OAuth2Authorization oAuth2Authorization;
 
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(oAuthService, "clientService", clientService);
-    ReflectionTestUtils.setField(oAuthService, "accessTokenService", accessTokenService);
+    ReflectionTestUtils.setField(oAuthService, "accessTokenService", oAuth2AuthorizationService);
     ReflectionTestUtils.setField(oAuthService, "userService", userService);
 
     clientCredential = new ClientCredential();
@@ -56,11 +56,11 @@ class OAuthServiceTest {
     clientCredential.setAppRoles(
         List.of(new AppRole("ROLE_USER", AppRoleType.USER.getValue(), "Default user role")));
 
-    accessTokenData = new AccessTokenData();
-    accessTokenData.setClientId("TEST-CLIENT");
-    accessTokenData.setIdentifier("user-uuid-123");
-    accessTokenData.setRoles(List.of("ROLE_USER"));
-    accessTokenData.setAccessExpireDate(System.currentTimeMillis() + 3600000);
+    oAuth2Authorization = new OAuth2Authorization();
+    oAuth2Authorization.setClientId("TEST-CLIENT");
+    oAuth2Authorization.setIdentifier("user-uuid-123");
+    oAuth2Authorization.setRoles(List.of("ROLE_USER"));
+    oAuth2Authorization.setAccessExpireDate(System.currentTimeMillis() + 3600000);
   }
 
   @Test
@@ -74,8 +74,8 @@ class OAuthServiceTest {
 
     when(clientService.getClientCredentialByClientID("TEST-CLIENT"))
         .thenReturn(Mono.just(clientCredential));
-    when(accessTokenService.getByAccessTokenOrIdToken("Bearer valid-token"))
-        .thenReturn(accessTokenData);
+    when(oAuth2AuthorizationService.getByAccessTokenOrIdToken("Bearer valid-token"))
+        .thenReturn(oAuth2Authorization);
 
     StepVerifier.create(
             oAuthService.authorize(
@@ -120,8 +120,8 @@ class OAuthServiceTest {
 
     when(clientService.getClientCredentialByClientID("TEST-CLIENT"))
         .thenReturn(Mono.just(clientCredential));
-    when(accessTokenService.getByAccessTokenOrIdToken("Bearer valid-token"))
-        .thenReturn(accessTokenData);
+    when(oAuth2AuthorizationService.getByAccessTokenOrIdToken("Bearer valid-token"))
+        .thenReturn(oAuth2Authorization);
     when(userService.getUserByIdentifier("user-uuid-123")).thenReturn(Mono.just(mockUser));
 
     StepVerifier.create(

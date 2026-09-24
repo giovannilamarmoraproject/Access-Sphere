@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -75,7 +75,7 @@ public class AppConfig {
   }
 
   @Bean
-  public AccessTokenData accessTokenData() {
-    return new AccessTokenData();
+  public OAuth2Authorization accessTokenData() {
+    return new OAuth2Authorization();
   }
 }

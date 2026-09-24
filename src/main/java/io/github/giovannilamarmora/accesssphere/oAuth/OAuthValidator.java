@@ -4,9 +4,9 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -41,7 +41,9 @@ public class OAuthValidator {
     if (ObjectToolkit.isNullOrEmpty(clientCredential.getAppRoles())) {
       LOG.error("❌ The Client must have a valid role configuration to proceed");
       throw new OAuthException(
-          ExceptionMap.ERR_OAUTH_400, ExceptionType.INVALID_ROLES, "Invalid Roles Configuration! At least one role is required.");
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_ROLES,
+          "Invalid Roles Configuration! At least one role is required.");
     }
   }
 
@@ -151,13 +153,15 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRefreshTokenData(
-      AccessTokenData accessTokenData, ClientCredential clientCredential, OAuthType oAuthType) {
-    validateClientId(accessTokenData.getClientId(), clientCredential.getClientId());
+      OAuth2Authorization oAuth2Authorization,
+      ClientCredential clientCredential,
+      OAuthType oAuthType) {
+    validateClientId(oAuth2Authorization.getClientId(), clientCredential.getClientId());
 
-    if (!accessTokenData.getType().equals(oAuthType)) {
+    if (!oAuth2Authorization.getType().equals(oAuthType)) {
       LOG.error(
           "The OAuthType should be {} instead of {}",
-          accessTokenData.getType(),
+          oAuth2Authorization.getType(),
           clientCredential.getAuthType());
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_400,
@@ -317,7 +321,9 @@ public class OAuthValidator {
         if (actual_redirectUri.equals(u)
             || actual_redirectUri.equals(u.replace("/app/users", "/app"))
             || actual_redirectUri.equals(u.replace("/app/users", "/app/dashboard"))
-            || (u.endsWith("/app/users") && (actual_redirectUri.equals(u.replace("/app/users", "")) || actual_redirectUri.startsWith(u.replace("/app/users", "/app"))))) {
+            || (u.endsWith("/app/users")
+                && (actual_redirectUri.equals(u.replace("/app/users", ""))
+                    || actual_redirectUri.startsWith(u.replace("/app/users", "/app"))))) {
           isValid = true;
           break;
         }

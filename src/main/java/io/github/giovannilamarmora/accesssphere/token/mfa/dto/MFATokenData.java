@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.token.mfa.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
-import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import java.util.List;
 import lombok.AllArgsConstructor;

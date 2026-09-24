@@ -16,8 +16,8 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -71,7 +71,7 @@ public class UserAccountService {
   @Autowired private EmailTemplateService emailTemplateService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private UserService userService;
-  @Autowired private AccessTokenData accessTokenData;
+  @Autowired private OAuth2Authorization oAuth2Authorization;
 
   /**
    * Recupera il profilo dell'utente attualmente autenticato nella sessione corrente.
@@ -85,10 +85,10 @@ public class UserAccountService {
     LOG.info("👤 [USER ACCOUNT] Starting user profile retrieval process");
 
     return clientService
-        .getClientCredentialByClientID(accessTokenData.getClientId())
+        .getClientCredentialByClientID(oAuth2Authorization.getClientId())
         .flatMap(
             clientCredential -> {
-              UserValidator.validateAuthType(clientCredential, accessTokenData);
+              UserValidator.validateAuthType(clientCredential, oAuth2Authorization);
               JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
               switch (decryptToken.getType()) {
                 case BEARER -> {
@@ -97,7 +97,7 @@ public class UserAccountService {
                 case GOOGLE -> {
                   GoogleModel userInfo =
                       GrpcService.userInfo(
-                          accessTokenData.getPayload().get("id_token").textValue(),
+                          oAuth2Authorization.getPayload().get("id_token").textValue(),
                           clientCredential);
                   UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
                   return userService.getUserByEmail(decryptToken.getEmail());
@@ -137,12 +137,13 @@ public class UserAccountService {
         finalIdentifier);
 
     return techUserService
-        .hasTechUserRoles(accessTokenData, clientService)
+        .hasTechUserRoles(oAuth2Authorization, clientService)
         .flatMap(
             hasTechRoles -> {
               if (!hasTechRoles) {
-                UserValidator.validateUpdate(accessTokenData, userToUpdate);
-                // Impedisce a utenti non tecnici di alterare i propri ruoli tramite l'endpoint di aggiornamento profilo
+                UserValidator.validateUpdate(oAuth2Authorization, userToUpdate);
+                // Impedisce a utenti non tecnici di alterare i propri ruoli tramite l'endpoint di
+                // aggiornamento profilo
                 userToUpdate.setRoles(null);
               }
               return userService.updateUser(finalIdentifier, userToUpdate);

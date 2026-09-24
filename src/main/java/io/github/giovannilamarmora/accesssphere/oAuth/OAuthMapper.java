@@ -2,9 +2,9 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -22,7 +22,7 @@ public class OAuthMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static OAuthType getOAuthType(
       ClientCredential clientCredential,
-      AccessTokenData accessTokenData,
+      OAuth2Authorization oAuth2Authorization,
       String grant_type,
       String code) {
     if (!ObjectUtils.isEmpty(grant_type) || !ObjectUtils.isEmpty(code))
@@ -32,7 +32,7 @@ public class OAuthMapper {
                   && grant_type.equalsIgnoreCase(GrantType.PASSWORD.type())
               ? OAuthType.BEARER
               : clientCredential.getAuthType());
-    else return accessTokenData.getType();
+    else return oAuth2Authorization.getType();
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)

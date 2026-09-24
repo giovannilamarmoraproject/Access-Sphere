@@ -5,11 +5,10 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
-import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -26,9 +25,9 @@ public class UserValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateAuthType(
-      ClientCredential clientCredential, AccessTokenData accessTokenData) {
+      ClientCredential clientCredential, OAuth2Authorization oAuth2Authorization) {
     if (!clientCredential.getAuthType().equals(OAuthType.ALL_TYPE))
-      if (!clientCredential.getAuthType().equals(accessTokenData.getType())) {
+      if (!clientCredential.getAuthType().equals(oAuth2Authorization.getType())) {
         LOG.error("❌ Invalid Authentication Type on client");
         throw new OAuthException(
             ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
@@ -47,7 +46,8 @@ public class UserValidator {
   }
 
   /**
-   * Restituisce un errore reattivo standard in caso di mancata corrispondenza del tipo di autenticazione client.
+   * Restituisce un errore reattivo standard in caso di mancata corrispondenza del tipo di
+   * autenticazione client.
    *
    * @param <T> Tipo generico di ritorno per integrarsi con qualsiasi catena reattiva Mono.
    * @return Mono con errore {@link OAuthException} ERR_OAUTH_400.
@@ -83,15 +83,15 @@ public class UserValidator {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateUpdate(AccessTokenData accessTokenData, User userToUpdate) {
+  public static void validateUpdate(OAuth2Authorization oAuth2Authorization, User userToUpdate) {
     if (userToUpdate == null
         || userToUpdate.getIdentifier() == null
-        || accessTokenData == null
-        || accessTokenData.getIdentifier() == null
-        || !accessTokenData.getIdentifier().equalsIgnoreCase(userToUpdate.getIdentifier())) {
+        || oAuth2Authorization == null
+        || oAuth2Authorization.getIdentifier() == null
+        || !oAuth2Authorization.getIdentifier().equalsIgnoreCase(userToUpdate.getIdentifier())) {
       LOG.error(
           "Identifier miss match, you should use {} instead of {}",
-          accessTokenData != null ? accessTokenData.getIdentifier() : "null",
+          oAuth2Authorization != null ? oAuth2Authorization.getIdentifier() : "null",
           userToUpdate != null ? userToUpdate.getIdentifier() : "null");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid identifier!");
     }
@@ -103,7 +103,8 @@ public class UserValidator {
    * @param userEntity L'entita' da verificare.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateUser(io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity userEntity) {
+  public static void validateUser(
+      io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity userEntity) {
     if (ObjectUtils.isEmpty(userEntity)) {
       LOG.error("❌ User not found into database");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());

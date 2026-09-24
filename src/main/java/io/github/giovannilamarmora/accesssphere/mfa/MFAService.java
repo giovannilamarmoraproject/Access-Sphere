@@ -8,7 +8,7 @@ import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationServic
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategy;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenDataService;
 import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -33,7 +33,7 @@ public class MFAService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   @Autowired private UserService userService;
   @Autowired private MFAStrategyFactory strategyFactory;
-  @Autowired private AccessTokenData accessTokenData;
+  @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private MFATokenDataService mfaTokenDataService;
   @Autowired private MFAAuthenticationService mfaAuthenticationService;
   @Autowired private TechUserService techUserService;
@@ -44,7 +44,8 @@ public class MFAService {
         "\uD83E\uDD37\u200D♂\uFE0F Setup MFA for user: {} process started.",
         setupRequest.identifier());
     if (!techUserService.isTechUser())
-      UserValidator.validateIdentifier(setupRequest.identifier(), accessTokenData.getIdentifier());
+      UserValidator.validateIdentifier(
+          setupRequest.identifier(), oAuth2Authorization.getIdentifier());
     Mono<User> userMono = userService.getUserByIdentifier(setupRequest.identifier());
     return userMono
         .flatMap(
@@ -64,7 +65,7 @@ public class MFAService {
 
     if (!techUserService.isTechUser())
       UserValidator.validateIdentifier(
-          confirmationRequest.identifier(), accessTokenData.getIdentifier());
+          confirmationRequest.identifier(), oAuth2Authorization.getIdentifier());
     Mono<User> userMono = userService.getUserByIdentifier(confirmationRequest.identifier());
     return userMono
         .flatMap(

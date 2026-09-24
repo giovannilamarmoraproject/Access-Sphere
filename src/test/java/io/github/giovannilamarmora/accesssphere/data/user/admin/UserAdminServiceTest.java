@@ -11,10 +11,9 @@ import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
-import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +32,7 @@ class UserAdminServiceTest {
   @Mock private TechUserService techUserService;
   @Mock private ClientService clientService;
   @Mock private UserService userService;
-  @Mock private AccessTokenData accessTokenData;
+  @Mock private OAuth2Authorization oAuth2Authorization;
   @Mock private WebhookService webhookService;
 
   @InjectMocks private UserAdminService userAdminService;
@@ -43,12 +42,13 @@ class UserAdminServiceTest {
     ReflectionTestUtils.setField(userAdminService, "techUserService", techUserService);
     ReflectionTestUtils.setField(userAdminService, "clientService", clientService);
     ReflectionTestUtils.setField(userAdminService, "userService", userService);
-    ReflectionTestUtils.setField(userAdminService, "accessTokenData", accessTokenData);
+    ReflectionTestUtils.setField(userAdminService, "accessTokenData", oAuth2Authorization);
     ReflectionTestUtils.setField(userAdminService, "webhookService", webhookService);
   }
 
   @Test
-  @DisplayName("getUsers should return filtered list excluding tech user when caller is normal user")
+  @DisplayName(
+      "getUsers should return filtered list excluding tech user when caller is normal user")
   void getUsers_normalUser_filtersOutTechUser() {
     when(techUserService.isTechUser()).thenReturn(false);
 
@@ -74,7 +74,8 @@ class UserAdminServiceTest {
   }
 
   @Test
-  @DisplayName("getUsers should succeed and return all users including tech user when caller is tech user")
+  @DisplayName(
+      "getUsers should succeed and return all users including tech user when caller is tech user")
   void getUsers_techUser_returnsAllUsers() {
     when(techUserService.isTechUser()).thenReturn(true);
     when(techUserService.getTechClientId()).thenReturn("CLIENT-TECH");
@@ -87,7 +88,7 @@ class UserAdminServiceTest {
     when(clientService.getClientCredentialByClientID("CLIENT-TECH"))
         .thenReturn(Mono.just(credential));
 
-    when(accessTokenData.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
+    when(oAuth2Authorization.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
 
     User techUser = new User();
     techUser.setUsername("tech_admin");
@@ -121,7 +122,9 @@ class UserAdminServiceTest {
         .expectErrorMatches(
             throwable ->
                 throwable instanceof OAuthException
-                    && ((OAuthException) throwable).getExceptionCode().equals(ExceptionMap.ERR_TECH_403))
+                    && ((OAuthException) throwable)
+                        .getExceptionCode()
+                        .equals(ExceptionMap.ERR_TECH_403))
         .verify();
   }
 
@@ -139,7 +142,7 @@ class UserAdminServiceTest {
     when(clientService.getClientCredentialByClientID("CLIENT-TECH"))
         .thenReturn(Mono.just(credential));
 
-    when(accessTokenData.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
+    when(oAuth2Authorization.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
 
     User user = new User();
     user.setIdentifier("uuid-1");
@@ -195,7 +198,9 @@ class UserAdminServiceTest {
         .expectErrorMatches(
             throwable ->
                 throwable instanceof OAuthException
-                    && ((OAuthException) throwable).getExceptionCode().equals(ExceptionMap.ERR_TECH_403))
+                    && ((OAuthException) throwable)
+                        .getExceptionCode()
+                        .equals(ExceptionMap.ERR_TECH_403))
         .verify();
   }
 
@@ -213,7 +218,7 @@ class UserAdminServiceTest {
     when(clientService.getClientCredentialByClientID("CLIENT-TECH"))
         .thenReturn(Mono.just(credential));
 
-    when(accessTokenData.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
+    when(oAuth2Authorization.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
 
     User normalUser = new User();
     normalUser.setIdentifier("uuid-normal");
@@ -222,7 +227,8 @@ class UserAdminServiceTest {
     when(userService.getUserByIdentifier("uuid-normal")).thenReturn(Mono.just(normalUser));
     when(techUserService.isTechnicalUser(normalUser)).thenReturn(false);
     doNothing().when(userService).deleteUserEntityByIdentifier("uuid-normal");
-    when(webhookService.checkAndExecuteWebhook(any(), any(), any(), any())).thenReturn(Mono.empty());
+    when(webhookService.checkAndExecuteWebhook(any(), any(), any(), any()))
+        .thenReturn(Mono.empty());
 
     StepVerifier.create(userAdminService.deleteUser("uuid-normal", "bearer", null))
         .verifyComplete();
@@ -242,7 +248,8 @@ class UserAdminServiceTest {
     when(userService.getUserByIdentifier("uuid-normal")).thenReturn(Mono.just(normalUser));
     when(techUserService.isTechnicalUser(normalUser)).thenReturn(false);
     doNothing().when(userService).deleteUserEntityByIdentifier("uuid-normal");
-    when(webhookService.checkAndExecuteWebhook(any(), any(), any(), any())).thenReturn(Mono.empty());
+    when(webhookService.checkAndExecuteWebhook(any(), any(), any(), any()))
+        .thenReturn(Mono.empty());
 
     StepVerifier.create(userAdminService.deleteUser("uuid-normal", "bearer", null))
         .verifyComplete();

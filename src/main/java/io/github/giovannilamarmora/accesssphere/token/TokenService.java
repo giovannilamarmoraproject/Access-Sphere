@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.token;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -17,15 +16,14 @@ import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
-import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenDataService;
 import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.model.TempToken;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenClaims;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
@@ -60,7 +58,7 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class TokenService {
 
-  @Autowired private AccessTokenService accessTokenService;
+  @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   @Autowired private SessionID sessionID;
   @Autowired private MFATokenDataService mfaTokenDataService;
@@ -150,22 +148,19 @@ public class TokenService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public AuthToken exchangeToken(
       User user,
-      AccessTokenData accessTokenData,
+      OAuth2Authorization oAuth2Authorization,
       ClientCredential clientCredential,
       ServerHttpRequest request) {
     // Log per il processo di exchange
     LOG.info("🔄 Performing token exchange for client: {}", clientCredential.getClientId());
 
     JWTData exchangeToken =
-        JWTData.generateJWTData(user, clientCredential, accessTokenData.getSubjectType(), request);
-    
+        JWTData.generateJWTData(
+            user, clientCredential, oAuth2Authorization.getSubjectType(), request);
 
     // Esegui la logica per lo scambio del token
     AuthToken newToken =
-        generateToken(
-            exchangeToken,
-            clientCredential,
-            accessTokenData.getPayload());
+        generateToken(exchangeToken, clientCredential, oAuth2Authorization.getPayload());
 
     // Log il risultato dell'exchange
     LOG.info(
@@ -236,7 +231,7 @@ public class TokenService {
     String refreshToken =
         generateRefreshToken(UUID.randomUUID().toString(), jwtData.getIdentifier());
 
-    accessTokenService.save(
+    oAuth2AuthorizationService.save(
         jwtData,
         refreshToken,
         TokenUtils.hashingToken(accessToken),
@@ -244,6 +239,7 @@ public class TokenService {
         clientCredential.getClientId(),
         sessionID.getSessionID(),
         jwtData.getRoles(),
+        jwtData.getPermissions(),
         payload);
 
     return new AuthToken(
@@ -308,14 +304,14 @@ public class TokenService {
             ObjectUtils.isEmpty(body.get(TokenClaims.ATTRIBUTES.claim()))
                 ? null
                 : Utils.mapper()
-                    .convertValue(body.get(TokenClaims.ATTRIBUTES.claim()), new TypeReference<>() {}));
+                    .convertValue(
+                        body.get(TokenClaims.ATTRIBUTES.claim()), new TypeReference<>() {}));
 
     if (!ObjectUtils.isEmpty(body.get(TokenClaims.PERMISSIONS.claim()))) {
       jwtData.setPermissions(
           Utils.mapper()
               .convertValue(
-                  body.get(TokenClaims.PERMISSIONS.claim()),
-                  new TypeReference<List<String>>() {}));
+                  body.get(TokenClaims.PERMISSIONS.claim()), new TypeReference<List<String>>() {}));
     }
     return jwtData;
   }
@@ -404,7 +400,7 @@ public class TokenService {
     String refreshToken =
         generateRefreshToken(UUID.randomUUID().toString(), jwtData.getIdentifier());
 
-    accessTokenService.save(
+    oAuth2AuthorizationService.save(
         jwtData,
         refreshToken,
         TokenUtils.hashingToken(accessToken),
@@ -412,6 +408,7 @@ public class TokenService {
         clientCredential.getClientId(),
         sessionID.getSessionID(),
         jwtData.getRoles(),
+        jwtData.getPermissions(),
         payload);
 
     return new AuthToken(
@@ -448,7 +445,8 @@ public class TokenService {
               claimsSet.getSubject(),
               ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim()))
                   ? null
-                  : SubjectType.valueOf((String) claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim())),
+                  : SubjectType.valueOf(
+                      (String) claimsSet.getClaim(TokenClaims.SUBJECT_TYPE.claim())),
               ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.NAME.claim()))
                   ? null
                   : (String) claimsSet.getClaim(TokenClaims.NAME.claim()),

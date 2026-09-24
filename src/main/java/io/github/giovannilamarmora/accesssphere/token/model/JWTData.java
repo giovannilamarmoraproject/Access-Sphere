@@ -5,7 +5,6 @@ import com.google.common.base.Joiner;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.WebManager;
@@ -96,15 +95,16 @@ public class JWTData {
 
     if (user != null && user.getClientRoles() != null && !user.getClientRoles().isEmpty()) {
       String targetClientId = clientCredential != null ? clientCredential.getClientId() : null;
-      List<io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO> matchingClientRoles =
-          targetClientId == null
-              ? List.of()
-              : user.getClientRoles().stream()
-                  .filter(
-                      cr ->
-                          cr.getClientId() != null
-                              && cr.getClientId().equalsIgnoreCase(targetClientId))
-                  .toList();
+      List<io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO>
+          matchingClientRoles =
+              targetClientId == null
+                  ? List.of()
+                  : user.getClientRoles().stream()
+                      .filter(
+                          cr ->
+                              cr.getClientId() != null
+                                  && cr.getClientId().equalsIgnoreCase(targetClientId))
+                      .toList();
 
       if (!matchingClientRoles.isEmpty()) {
         effectiveRoles =
@@ -137,7 +137,11 @@ public class JWTData {
       List<String> finalRoles = effectiveRoles;
       effectivePermissions =
           clientCredential.getAppRoles().stream()
-              .filter(ar -> ar != null && ar.getRole() != null && finalRoles.stream().anyMatch(ar::matches))
+              .filter(
+                  ar ->
+                      ar != null
+                          && ar.getRole() != null
+                          && finalRoles.stream().anyMatch(ar::matches))
               .filter(ar -> ar.getPermissions() != null)
               .flatMap(ar -> ar.getPermissions().stream())
               .filter(java.util.Objects::nonNull)
@@ -158,7 +162,9 @@ public class JWTData {
         URLUtils.resolveIssuer(remoteAddress, request),
         user != null ? user.getUsername() : null,
         subject_type,
-        user == null || ObjectUtils.isEmpty(user.getSurname()) || ObjectUtils.isEmpty(user.getName())
+        user == null
+                || ObjectUtils.isEmpty(user.getSurname())
+                || ObjectUtils.isEmpty(user.getName())
             ? null
             : Joiner.on(" ").join(user.getSurname(), user.getName()),
         user != null ? user.getEmail() : null,

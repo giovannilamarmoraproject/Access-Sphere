@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.token.mfa;
 
-import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.token.mfa.entity.MFATokenDataEntity;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;

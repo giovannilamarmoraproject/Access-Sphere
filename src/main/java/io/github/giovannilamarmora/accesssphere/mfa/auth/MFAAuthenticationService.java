@@ -1,6 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.mfa.auth;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
@@ -12,14 +11,14 @@ import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
-import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenDataService;
 import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.utilities.ExposedHeaders;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -27,7 +26,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
-import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.RequestManager;
 import io.github.giovannilamarmora.utils.web.ResponseManager;
@@ -129,11 +127,7 @@ public class MFAAuthenticationService {
         payload.put("expires_at", jwtData.getExp());
       }
       AuthToken mfaToken = tokenService.generateMFAToken(user, clientCredential, payload);
-      return Mono.just(
-          new OAuthTokenResponse(
-              mfaToken,
-              jwtData,
-              user));
+      return Mono.just(new OAuthTokenResponse(mfaToken, jwtData, user));
     }
 
     return Mono.empty();
@@ -161,11 +155,8 @@ public class MFAAuthenticationService {
     return clientCredentialMono.flatMap(
         clientCredential -> {
           SubjectType subjectType =
-              techUserService.isTechnicalUser(user)
-                  ? SubjectType.TECHNICAL
-                  : SubjectType.CUSTOMER;
-          JWTData jwtData =
-              JWTData.generateJWTData(user, clientCredential, subjectType, request);
+              techUserService.isTechnicalUser(user) ? SubjectType.TECHNICAL : SubjectType.CUSTOMER;
+          JWTData jwtData = JWTData.generateJWTData(user, clientCredential, subjectType, request);
           return userService
               .getUserByEmail(jwtData.getEmail())
               .map(

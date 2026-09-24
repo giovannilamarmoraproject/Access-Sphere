@@ -1,10 +1,10 @@
-package io.github.giovannilamarmora.accesssphere.token.data.entity;
+package io.github.giovannilamarmora.accesssphere.oAuth.authorization.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
-import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -18,8 +18,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Table(name = "ACCESS_TOKEN_DATA")
-public class AccessTokenEntity extends GenericEntity {
+@Table(name = "OAUTH2_AUTHORIZATIONS")
+public class OAuth2AuthorizationEntity extends GenericEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -81,4 +81,7 @@ public class AccessTokenEntity extends GenericEntity {
 
   @Column(name = "ROLES")
   private String roles;
+
+  @Column(name = "PERMISSIONS")
+  private String permissions;
 }

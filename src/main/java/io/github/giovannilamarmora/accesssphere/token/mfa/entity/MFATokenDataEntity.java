@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.token.mfa.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
-import io.github.giovannilamarmora.accesssphere.token.data.model.TokenStatus;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.token.mfa.dto.LoginStatus;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;

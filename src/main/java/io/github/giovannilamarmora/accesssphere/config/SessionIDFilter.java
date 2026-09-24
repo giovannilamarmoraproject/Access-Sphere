@@ -5,10 +5,10 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMessage;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
-import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.utilities.*;
 import io.github.giovannilamarmora.utils.logger.MDCUtils;
 import io.github.giovannilamarmora.utils.web.*;
@@ -54,9 +54,9 @@ public class SessionIDFilter implements WebFilter {
   private String cookieDomain;
 
   private final SessionID sessionID;
-  @Autowired private AccessTokenData accessTokenData;
+  @Autowired private OAuth2Authorization oAuth2Authorization;
 
-  @Autowired private AccessTokenService accessTokenService;
+  @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -110,10 +110,10 @@ public class SessionIDFilter implements WebFilter {
           exchange);
     }
 
-    AccessTokenData accessTokenDB = new AccessTokenData();
+    OAuth2Authorization accessTokenDB = new OAuth2Authorization();
     try {
       LOG.info("Checking Bearer token for request {}", request.getPath());
-      accessTokenDB = accessTokenService.getByAccessTokenOrIdToken(bearer);
+      accessTokenDB = oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
     } catch (TokenException e) {
       LOG.error("An error happen during validation of token, message is {}", e.getMessage());
       return ExceptionHandler.handleFilterException(
@@ -134,7 +134,7 @@ public class SessionIDFilter implements WebFilter {
     }
     addSessionInContext(session_id);
     setSessionIDInResponse(session_id, response, request);
-    BeanUtils.copyProperties(accessTokenDB, accessTokenData);
+    BeanUtils.copyProperties(accessTokenDB, oAuth2Authorization);
     return chain.filter(exchange);
   }
 
@@ -158,9 +158,9 @@ public class SessionIDFilter implements WebFilter {
           exchange);
     }
 
-    AccessTokenData accessTokenDB = new AccessTokenData();
+    OAuth2Authorization accessTokenDB = new OAuth2Authorization();
     try {
-      accessTokenDB = accessTokenService.getByAccessTokenOrIdToken(bearer);
+      accessTokenDB = oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
       if (ObjectUtils.isEmpty(accessTokenDB)
           || ObjectUtils.isEmpty(accessTokenDB.getSessionId())
           || !accessTokenDB.getSessionId().equalsIgnoreCase(session_id)) {
@@ -178,7 +178,7 @@ public class SessionIDFilter implements WebFilter {
     } catch (TokenException e) {
       LOG.warn("Access Token not found, already logged out");
     }
-    BeanUtils.copyProperties(accessTokenDB, accessTokenData);
+    BeanUtils.copyProperties(accessTokenDB, oAuth2Authorization);
     return chain.filter(exchange);
   }
 
@@ -204,14 +204,14 @@ public class SessionIDFilter implements WebFilter {
     // Se è l'endpoint token e ha il parametro code (authorization code grant)
     boolean isTokenPathWithCode =
         (PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path)
-            || PatternMatchUtils.simpleMatch("*/v1/oauth2/token", path))
-        && codeParam != null;
+                || PatternMatchUtils.simpleMatch("*/v1/oauth2/token", path))
+            && codeParam != null;
 
     // Se è l'endpoint token e ha il parametro refresh_token (refresh token grant)
     boolean isTokenPathWithRefresh =
         (PatternMatchUtils.simpleMatch("*/v1/oAuth/2.0/token", path)
-            || PatternMatchUtils.simpleMatch("*/v1/oauth2/token", path))
-        && refreshTokenParam != null;
+                || PatternMatchUtils.simpleMatch("*/v1/oauth2/token", path))
+            && refreshTokenParam != null;
 
     return isTokenPathWithCode
         || isTokenPathWithRefresh
@@ -233,9 +233,7 @@ public class SessionIDFilter implements WebFilter {
     boolean isAuthorizePath =
         path.equalsIgnoreCase("/v1/oAuth/2.0/authorize")
             || path.equalsIgnoreCase("/v1/oauth2/authorize");
-    return (isAuthorizePath
-        && request.getHeaders().containsKey("Authorization")
-        && isNull);
+    return (isAuthorizePath && request.getHeaders().containsKey("Authorization") && isNull);
   }
 
   private boolean isAuthorizeCheckWithBearer(ServerHttpRequest request) {
@@ -243,8 +241,7 @@ public class SessionIDFilter implements WebFilter {
     boolean isAuthorizePath =
         path.equalsIgnoreCase("/v1/oAuth/2.0/authorize")
             || path.equalsIgnoreCase("/v1/oauth2/authorize");
-    return (isAuthorizePath
-        && request.getHeaders().containsKey("Authorization"));
+    return (isAuthorizePath && request.getHeaders().containsKey("Authorization"));
   }
 
   private void addSessionInContext(String session_id) {

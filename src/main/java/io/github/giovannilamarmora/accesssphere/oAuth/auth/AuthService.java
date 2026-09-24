@@ -9,13 +9,13 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.AccessTokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
-import io.github.giovannilamarmora.accesssphere.token.data.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
@@ -53,7 +53,7 @@ import reactor.core.publisher.Mono;
  *   <li>Genera i claim JWT standard e compila i token di accesso/refresh tramite {@link
  *       TokenService#generateToken}.
  *   <li>Gestisce il rinnovo dei token di sessione (refresh grant) e la revoca asincrona tramite
- *       {@link AccessTokenService#revokeTokenByIdentifier}.
+ *       {@link OAuth2AuthorizationService#revokeTokenByIdentifier}.
  *   <li>Imposta i cookie di sessione sicuri nella risposta HTTP e determina i redirect URI
  *       configurati sul client OAuth2.
  * </ul>
@@ -68,7 +68,7 @@ public class AuthService {
   private String cookieDomain;
 
   @Autowired private TokenService tokenService;
-  @Autowired private AccessTokenService accessTokenService;
+  @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
   @Autowired @Lazy private UserService userService;
   @Autowired private TechUserService techUserService;
 
@@ -112,9 +112,11 @@ public class AuthService {
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_info").getFirst());
     boolean includeUserData =
         (!ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
-            && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst()))
-        || (!ObjectUtils.isEmpty(request.getQueryParams().get("includeUserData"))
-            && Boolean.parseBoolean(request.getQueryParams().get("includeUserData").getFirst()));
+                && Boolean.parseBoolean(
+                    request.getQueryParams().get("include_user_data").getFirst()))
+            || (!ObjectUtils.isEmpty(request.getQueryParams().get("includeUserData"))
+                && Boolean.parseBoolean(
+                    request.getQueryParams().get("includeUserData").getFirst()));
 
     String state = request.getQueryParams().getFirst("state");
     if (ObjectUtils.isEmpty(state)) {
@@ -181,7 +183,8 @@ public class AuthService {
                       ? SubjectType.TECHNICAL
                       : SubjectType.CUSTOMER;
               JWTData jwtData =
-                  JWTData.generateJWTData(authenticatedUser, clientCredential, subjectType, request);
+                  JWTData.generateJWTData(
+                      authenticatedUser, clientCredential, subjectType, request);
               AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
               LOG.debug(
                   "✅ Login process ended successfully for user {}",
@@ -272,14 +275,14 @@ public class AuthService {
   /**
    * Rinnova il token JWT di sessione a partire dai dati dell'access token corrente.
    *
-   * @param accessTokenData Dati decodificati della sessione utente.
+   * @param oAuth2Authorization Dati decodificati della sessione utente.
    * @param clientCredential Credenziali del client OAuth.
    * @param request Richiesta HTTP server.
    * @return Mono contenente ResponseEntity con esito del rinnovo.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> refreshToken(
-      AccessTokenData accessTokenData,
+      OAuth2Authorization oAuth2Authorization,
       ClientCredential clientCredential,
       ServerHttpRequest request) {
 
@@ -290,7 +293,7 @@ public class AuthService {
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
-    return refreshJWTToken(accessTokenData, clientCredential, request)
+    return refreshJWTToken(oAuth2Authorization, clientCredential, request)
         .map(
             tokenResponse -> {
               String message =
@@ -314,25 +317,25 @@ public class AuthService {
   /**
    * Esegue il rinnovo del token JWT estraendo i dati utente e rigenerando la firma del token.
    *
-   * @param accessTokenData Dati del token di accesso da rinnovare.
+   * @param oAuth2Authorization Dati del token di accesso da rinnovare.
    * @param clientCredential Credenziali del client OAuth.
    * @param request Richiesta HTTP server.
    * @return Mono contenente {@link OAuthTokenResponse} con il nuovo token generato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<OAuthTokenResponse> refreshJWTToken(
-      AccessTokenData accessTokenData,
+      OAuth2Authorization oAuth2Authorization,
       ClientCredential clientCredential,
       ServerHttpRequest request) {
-    LOG.info("🔄 Refreshing JWT token for user email: {}", accessTokenData.getEmail());
+    LOG.info("🔄 Refreshing JWT token for user email: {}", oAuth2Authorization.getEmail());
     return userService
-        .getUserByEmail(accessTokenData.getEmail())
+        .getUserByEmail(oAuth2Authorization.getEmail())
         .map(
             user -> {
               user.setPassword(null);
               JWTData jwtData =
                   JWTData.generateJWTData(
-                      user, clientCredential, accessTokenData.getSubjectType(), request);
+                      user, clientCredential, oAuth2Authorization.getSubjectType(), request);
               AuthToken authToken = tokenService.generateToken(jwtData, clientCredential, null);
               return new OAuthTokenResponse(user, jwtData, authToken);
             });
@@ -342,24 +345,25 @@ public class AuthService {
    * Esegue il logout dell'utente revocando i token associati nel registro token.
    *
    * @param redirect_uri URI di ritorno post-logout.
-   * @param accessTokenData Dati del token di accesso dell'utente.
+   * @param oAuth2Authorization Dati del token di accesso dell'utente.
    * @param response Risposta HTTP server.
    * @return Mono contenente ResponseEntity di conferma logout.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> logout(
-      String redirect_uri, AccessTokenData accessTokenData, ServerHttpResponse response) {
+      String redirect_uri, OAuth2Authorization oAuth2Authorization, ServerHttpResponse response) {
     String refreshToken =
-        (!ObjectToolkit.isNullOrEmpty(accessTokenData.getPayload())
-                && !ObjectToolkit.isNullOrEmpty(accessTokenData.getPayload().get("refresh_token")))
-            ? accessTokenData.getPayload().get("refresh_token").textValue()
+        (!ObjectToolkit.isNullOrEmpty(oAuth2Authorization.getPayload())
+                && !ObjectToolkit.isNullOrEmpty(
+                    oAuth2Authorization.getPayload().get("refresh_token")))
+            ? oAuth2Authorization.getPayload().get("refresh_token").textValue()
             : null;
 
     if (ObjectUtils.isEmpty(refreshToken)) {
       LOG.info("⚠️ Refresh token not found in payload");
     }
 
-    String message = "Logout Successfully for " + accessTokenData.getSubject() + "!";
+    String message = "Logout Successfully for " + oAuth2Authorization.getSubject() + "!";
     Response res = new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), null);
 
     ResponseEntity<Response> responseResponseEntity = ResponseEntity.ok(res);
@@ -367,8 +371,8 @@ public class AuthService {
       responseResponseEntity =
           ResponseEntity.status(HttpStatus.OK).location(URI.create(redirect_uri)).body(res);
 
-    LOG.info("🚪 Logging out user: {}", accessTokenData.getIdentifier());
-    accessTokenService.revokeTokenByIdentifier(accessTokenData.getIdentifier());
+    LOG.info("🚪 Logging out user: {}", oAuth2Authorization.getIdentifier());
+    oAuth2AuthorizationService.revokeTokenByIdentifier(oAuth2Authorization.getIdentifier());
     SessionID.invalidateSessionID(response);
 
     return Mono.just(responseResponseEntity);
@@ -378,7 +382,7 @@ public class AuthService {
    * Esegue lo scambio di token (Token Exchange RFC 8693) tra client OAuth2.
    *
    * @param tokenExchange Richiesta di token exchange.
-   * @param accessTokenData Dati del token di accesso del chiamante.
+   * @param oAuth2Authorization Dati del token di accesso del chiamante.
    * @param clientCredential Credenziali del client ricevente.
    * @param clientCredentialToExchange Credenziali del client emittente del token soggetto.
    * @param request Richiesta HTTP server.
@@ -387,7 +391,7 @@ public class AuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> exchangeToken(
       TokenExchange tokenExchange,
-      AccessTokenData accessTokenData,
+      OAuth2Authorization oAuth2Authorization,
       ClientCredential clientCredential,
       ClientCredential clientCredentialToExchange,
       ServerHttpRequest request) {
@@ -406,7 +410,7 @@ public class AuthService {
           exchangeTokenBuildResponse(
               tokenExchange,
               new User(),
-              accessTokenData,
+              oAuth2Authorization,
               clientCredential,
               includeUserInfo,
               includeUserData,
@@ -419,7 +423,7 @@ public class AuthService {
                 exchangeTokenBuildResponse(
                     tokenExchange,
                     user,
-                    accessTokenData,
+                    oAuth2Authorization,
                     clientCredential,
                     includeUserInfo,
                     includeUserData,
@@ -430,12 +434,13 @@ public class AuthService {
   private ResponseEntity<Response> exchangeTokenBuildResponse(
       TokenExchange tokenExchange,
       User user,
-      AccessTokenData accessTokenData,
+      OAuth2Authorization oAuth2Authorization,
       ClientCredential clientCredential,
       boolean includeUserInfo,
       boolean includeUserData,
       ServerHttpRequest request) {
-    AuthToken token = tokenService.exchangeToken(user, accessTokenData, clientCredential, request);
+    AuthToken token =
+        tokenService.exchangeToken(user, oAuth2Authorization, clientCredential, request);
     String message =
         "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
     Response response =

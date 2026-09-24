@@ -13,10 +13,10 @@ import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -221,7 +221,7 @@ public class GoogleAuthService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> refreshGoogleToken(
-      AccessTokenData accessTokenData,
+      OAuth2Authorization oAuth2Authorization,
       ClientCredential clientCredential,
       ServerHttpRequest request) {
 
@@ -236,7 +236,7 @@ public class GoogleAuthService {
                 && Boolean.parseBoolean(
                     request.getQueryParams().get("includeUserData").getFirst()));
 
-    String token = accessTokenData.getPayload().get("refresh_token").textValue();
+    String token = oAuth2Authorization.getPayload().get("refresh_token").textValue();
 
     GoogleModel googleModel = GrpcService.refreshToken(token, clientCredential);
 
@@ -265,12 +265,12 @@ public class GoogleAuthService {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> processGoogleLogout(
-      String redirect_uri, AccessTokenData accessTokenData, ServerHttpResponse response) {
+      String redirect_uri, OAuth2Authorization oAuth2Authorization, ServerHttpResponse response) {
     LOG.info("Google oAuth 2.0 Logout started");
-    String accessToken = accessTokenData.getPayload().get("access_token").textValue();
+    String accessToken = oAuth2Authorization.getPayload().get("access_token").textValue();
     GrpcService.logout(accessToken);
     return authService
-        .logout(redirect_uri, accessTokenData, response)
+        .logout(redirect_uri, oAuth2Authorization, response)
         .doOnSuccess(responseResponseEntity -> LOG.info("Google oAuth 2.0 Logout ended"));
   }
 }
