@@ -35,14 +35,15 @@
   - Registrazione sicura con validazione avanzata dei formati.
   - Gestione profili con caricamento foto e avatar dinamico.
   - **Attributi Custom Avanzati**: Supporto sia per chiavi/valori semplici che per **strutture JSON complesse (oggetti annidati)**, con layout a griglia responsive ottimizzato per smartphone e desktop.
-- 🎛️ **Role-Based Access Control (RBAC) Granulare & Client Scoping**:
+- 🎛️ **Role-Based Access Control (RBAC) Granulare & Relational Client Scoping**:
+  - **Modello Relazionale Normalizzato Enterprise (`ROLE_DEFINITIONS` & `ROLE_PERMISSIONS`)**: Superamento del modello legacy basato su colonna JSON denormalizzata (`OAUTH_CLIENT.APP_ROLES`). Il catalogo ruoli risiede ora su tabelle relazionali dedicate con chiave univoca composita `(CLIENT_ID, ROLE_NAME)`, audit timestamp (`CREATION_DATE`, `LAST_UPDATE`) e tabella collezionale dei permessi per query $O(1)$ e integrità referenziale garantita.
   - **Architettura Relazionale Scoped (`USER_CLIENT_ROLE`)**: Assegnazione contestualizzata dei ruoli per singolo Client OAuth2, consentendo allo stesso utente ruoli e privilegi differenti su applicazioni diverse.
   - **Catalogo Centralizzato Ruoli & Permessi (`/v1/roles`)**: Endpoint unificati RESTful per consultazione catalogo (`GET /v1/roles`), creazione (`POST /v1/roles`), modifica (`PUT /v1/roles/{role}`) ed eliminazione con revoca a cascata (`DELETE /v1/roles/{role}`).
   - **8 Tipologie di Ruolo Enterprise**: Supporto nativo per `USER` (predefinito), `ADMIN`, `MANAGER`, `OPERATOR`, `TECHNICAL`, `AUDITOR`, `GUEST`, `SUPER_ADMIN` con eliminazione della tipologia legacy `DEFAULT`.
   - **Vincolo di Ruolo Minimo Obbligatorio**: Ogni Client OAuth2 deve possedere almeno un ruolo configurato (non cancellabile) per garantire la corretta profilazione degli utenti.
   - **Permessi Granulari & Wildcard (`*`)**: Ogni ruolo applicativo include una lista di permessi granulari (es. `users:read`, `users:write`, `roles:manage`) oppure il wildcard di sistema (`*`).
   - **Token Claims Client-Scoped & Claims `permissions`**: I token JWT/JWE emessi contengono esclusivamente i ruoli e i permessi pertinenti all'applicazione (`client_id`) chiamante.
-  - **Retrocompatibilità 100%**: Mantenimento trasparente del campo legacy `User.roles` (`List<String>`) e sincronizzazione bidirezionale del database per i client consumer esistenti.
+  - **Migrazione Automatica & Retrocompatibilità Trasparente (100%)**: Al boot dell'applicazione, `ProjectInitializerService` rileva e migra automaticamente qualsiasi configurazione ruoli JSON legacy in `ROLE_DEFINITIONS`. Tutte le mutazioni continuano inoltre a mantenere sincronizzato il campo specchio `OAUTH_CLIENT.APP_ROLES` e `User.roles`, garantendo compatibilità assoluta a ritroso per qualsiasi microservizio o client esistente.
   - **Console M3 Catalogo Ruoli (`/app/role`)**: Nuova vista dedicata con KPI Bento, ricerca real-time, filtri Client/Tipo, modale per creazione/modifica permessi con chip dinamici e flusso di cancellazione protetto con SweetAlert2 e scansione preventiva degli utenti impattati.
   - **Console M3 Assegnazione Utente (`/app/users/roles/{id}`)**: Interfaccia web con live preview in tempo reale di tipologia, descrizione e badge di permessi granulari, con validazione unicità per-client e salvataggio atomico.
 - ⚡ **Architettura Reattiva & High Throughput**: Costruito su **Spring Boot 3.4** e **Spring WebFlux** (Project Reactor) con driver reattivo **R2DBC** e JPA / Hibernate.
@@ -140,6 +141,64 @@ flowchart TD
 
 ---
 
+## 🗄️ **Modello Relazionale Dati & RBAC Enterprise**
+
+AccessSphere adotta un modello relazionale 3NF normalizzato per garantire elevata integrità referenziale, query scalabili indicizzate e isolamento multi-tenant basato su `CLIENT_ID`:
+
+```mermaid
+erDiagram
+    OAUTH_CLIENT ||--o{ ROLE_DEFINITIONS : "definisce ruoli (CLIENT_ID)"
+    ROLE_DEFINITIONS ||--|{ ROLE_PERMISSIONS : "possiede permessi (ROLE_ID)"
+    USERS ||--o{ USER_CLIENT_ROLE : "assegnato a (USER_ID)"
+    OAUTH_CLIENT ||--o{ USER_CLIENT_ROLE : "scoping applicazione (CLIENT_ID)"
+    ROLE_DEFINITIONS ||--o{ USER_CLIENT_ROLE : "valida ruolo applicativo"
+
+    ROLE_DEFINITIONS {
+        varchar ID PK "UUID univoco ruolo"
+        varchar CLIENT_ID "FK logica -> OAUTH_CLIENT.CLIENT_ID"
+        varchar ROLE_NAME "Identificativo ruolo (es. ROLE_ADMIN)"
+        varchar TYPE "Tipo enum (ADMIN, USER, MANAGER, ...)"
+        varchar DESCRIPTION "Descrizione del ruolo"
+        datetime CREATION_DATE "Audit data creazione"
+        datetime LAST_UPDATE "Audit ultimo aggiornamento"
+    }
+
+    ROLE_PERMISSIONS {
+        varchar ROLE_ID FK "FK -> ROLE_DEFINITIONS.ID"
+        varchar PERMISSION "Permesso granulare (es. users:read o *)"
+    }
+
+    USER_CLIENT_ROLE {
+        bigint ID PK "ID autoincrementale associazione"
+        bigint USER_ID "FK logica -> USERS.ID"
+        varchar CLIENT_ID "FK logica -> OAUTH_CLIENT.CLIENT_ID"
+        varchar ROLE "Nome del ruolo assegnato"
+        datetime CREATION_DATE "Data assegnazione"
+    }
+
+    USERS {
+        bigint ID PK "ID univoco utente"
+        varchar USERNAME "Username unico"
+        varchar EMAIL "Indirizzo email"
+        json ROLES "Mirror legacy List<String> retrocompatibile"
+    }
+
+    OAUTH_CLIENT {
+        bigint ID PK "ID univoco client"
+        varchar CLIENT_ID "Identificativo univoco OAuth2"
+        json APP_ROLES "Mirror legacy List<RoleDefinition> retrocompatibile"
+    }
+```
+
+### Caratteristiche Chiave del Modello:
+1. **Normalizzazione & Integrità**: Vincolo di unicità `(CLIENT_ID, ROLE_NAME)` sulla tabella `ROLE_DEFINITIONS`, garantendo che lo stesso nome ruolo sia univoco all'interno del perimetro di ciascun client OAuth2.
+2. **Collezione Permessi (`ROLE_PERMISSIONS`)**: Ogni ruolo è collegato alla tabella dei permessi via chiave esterna `ROLE_ID`, consentendo verifiche veloci ed estrazione diretta sulle claim JWT `permissions`.
+3. **Cascading Automatico**: Modifiche a un ruolo (es. rinomina) o cancellazioni si propagano a cascata su `USER_CLIENT_ROLE` e sul legacy field `USERS.ROLES`.
+4. **Bootstrap & Auto-Migrazione Zero-Touch**: Al primo avvio, se vengono rilevati ruoli memorizzati nel formato JSON legacy `OAUTH_CLIENT.APP_ROLES`, `ProjectInitializerService` estrae e migra automaticamente record e permessi nelle nuove tabelle relazionali.
+5. **Dual-Write Backward Compatibility (100%)**: Qualsiasi operazione di creazione, modifica o eliminazione aggiorna sia le tabelle relazionali sia il campo JSON `APP_ROLES`, assicurando che client legacy o tool esterni continuino a funzionare senza interruzioni.
+
+---
+
 ## ⚙️ **Configurazione & Variabili d'Ambiente (ENV)**
 
 L'applicazione può essere configurata tramite variabili d'ambiente di sistema, file `.env` (per Docker Compose) o profili Spring (`application.yml` / `application-deploy.yml`).
@@ -226,9 +285,14 @@ La documentazione OpenAPI 3.0 interattiva è accessibile a runtime all'indirizzo
 
 | Metodo | Endpoint | Descrizione | Autenticazione |
 |---|---|---|---|
-| `GET` | `/v1/roles` | Elenco di tutti i ruoli definiti nel sistema | Bearer (Admin) |
-| `GET` | `/v1/roles/user/{identifier}` | Ruoli assegnati all'utente per applicazione | Bearer Token |
-| `POST` | `/v1/roles/assign` | Assegna o revoca ruoli operativi a un utente | Bearer (Admin) |
+| `GET` | `/v1/roles` | Catalogo completo ruoli definiti (opzionale query param `?clientId=...`) | Bearer (Admin) |
+| `POST` | `/v1/roles` | Creazione di una nuova definizione ruolo per uno specifico client | Bearer (Admin) |
+| `PUT` | `/v1/roles/{role}?clientId=...` | Modifica definizione ruolo (nome, tipo, descrizione, permessi) e cascata | Bearer (Admin) |
+| `DELETE` | `/v1/roles/{role}?clientId=...` | Eliminazione ruolo con revoca atomica a cascata per tutti gli utenti | Bearer (Admin) |
+| `GET` | `/v1/roles/{role}/users?clientId=...` | Elenco sintetico degli utenti assegnati a un ruolo | Bearer (Admin) |
+| `PUT` / `PATCH` | `/v1/users/{identifier}/roles` | Aggiornamento massivo ruoli assegnati a un utente | Bearer (Admin) |
+| `POST` | `/v1/users/{identifier}/clients/{clientId}/roles/{role}` | Assegnazione di un ruolo contestualizzato a un client | Bearer (Admin) |
+| `DELETE` | `/v1/users/{identifier}/clients/{clientId}/roles/{role}` | Revoca di un ruolo contestualizzato a un client | Bearer (Admin) |
 
 ### 5. 📲 **MFA Controller** (`/v1/mfa`)
 

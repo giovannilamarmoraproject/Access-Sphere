@@ -37,6 +37,7 @@ class RolesServiceTest {
   @Mock private TechUserService techUserService;
   @Mock private io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig techUserConfig;
   @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
+  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO roleDefinitionDAO;
   @Mock private io.github.giovannilamarmora.accesssphere.client.IClientDAO clientDAO;
   @Mock private io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO userDAO;
 
@@ -49,6 +50,7 @@ class RolesServiceTest {
     ReflectionTestUtils.setField(rolesService, "techUserService", techUserService);
     ReflectionTestUtils.setField(rolesService, "techUserConfig", techUserConfig);
     ReflectionTestUtils.setField(rolesService, "userClientRoleDAO", userClientRoleDAO);
+    ReflectionTestUtils.setField(rolesService, "roleDefinitionDAO", roleDefinitionDAO);
     ReflectionTestUtils.setField(rolesService, "clientDAO", clientDAO);
     ReflectionTestUtils.setField(rolesService, "userDAO", userDAO);
     lenient().when(techUserConfig.getTechClientId()).thenReturn("ACCESS-SPHERE-TECH");
@@ -227,16 +229,14 @@ class RolesServiceTest {
   void getRolesCatalog_success() {
     when(techUserService.isTechUser()).thenReturn(true);
 
-    io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity clientEntity =
-        new io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity();
-    clientEntity.setClientId("linkatutto");
-    clientEntity.setAppRoles("[{\"role\":\"ROLE_EDITOR\",\"type\":\"ADMIN\",\"permissions\":[\"links:write\"]}]");
-
-    when(clientDAO.findAll()).thenReturn(List.of(clientEntity));
+    io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity roleDef =
+        new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity(
+            "linkatutto", "ROLE_EDITOR", "ADMIN", null, List.of("links:write"));
+    when(roleDefinitionDAO.findAll()).thenReturn(List.of(roleDef));
 
     io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity ucr =
-        new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity("u-1", "linkatutto", "ROLE_EDITOR");
-    when(userClientRoleDAO.findByClientIdAndRole("linkatutto", "ROLE_EDITOR")).thenReturn(List.of(ucr));
+        new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity("u-1", "LINKATUTTO", "ROLE_EDITOR");
+    when(userClientRoleDAO.findByClientIdAndRole("LINKATUTTO", "ROLE_EDITOR")).thenReturn(List.of(ucr));
 
     io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity userEntity =
         new io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity();
@@ -255,7 +255,7 @@ class RolesServiceTest {
               assertEquals(1, catalog.size());
               io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO dto =
                   (io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO) catalog.get(0);
-              assertEquals("linkatutto", dto.getClientId());
+              assertEquals("LINKATUTTO", dto.getClientId());
               assertEquals("ROLE_EDITOR", dto.getRole());
               assertEquals(1, dto.getAssignedUsersCount());
               assertEquals("mario", dto.getAssignedUsers().get(0).getUsername());
@@ -274,6 +274,7 @@ class RolesServiceTest {
     clientEntity.setAppRoles("[]");
 
     when(clientDAO.findByClientId("linkatutto")).thenReturn(clientEntity);
+    when(roleDefinitionDAO.existsByClientIdAndRole("linkatutto", "ROLE_NEW")).thenReturn(false);
 
     io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO newRoleDTO =
         new io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO(
@@ -283,7 +284,7 @@ class RolesServiceTest {
         .assertNext(
             response -> {
               assertEquals(HttpStatus.CREATED, response.getStatusCode());
-              verify(clientDAO).save(any());
+              verify(roleDefinitionDAO).save(any());
             })
         .verifyComplete();
   }
@@ -300,6 +301,12 @@ class RolesServiceTest {
 
     when(clientDAO.findByClientId("linkatutto")).thenReturn(clientEntity);
 
+    io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity r1 =
+        new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity("linkatutto", "ROLE_OBSOLETE", "USER", null, List.of());
+    io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity r2 =
+        new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity("linkatutto", "ROLE_REMAINING", "USER", null, List.of());
+    when(roleDefinitionDAO.findByClientId("linkatutto")).thenReturn(List.of(r1, r2));
+
     io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity ucr =
         new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity("u-99", "linkatutto", "ROLE_OBSOLETE");
     when(userClientRoleDAO.findByClientIdAndRole("linkatutto", "ROLE_OBSOLETE")).thenReturn(List.of(ucr));
@@ -315,7 +322,7 @@ class RolesServiceTest {
         .assertNext(
             response -> {
               assertEquals(HttpStatus.OK, response.getStatusCode());
-              verify(clientDAO).save(clientEntity);
+              verify(roleDefinitionDAO).deleteByClientIdAndRole("linkatutto", "ROLE_OBSOLETE");
               verify(userClientRoleDAO).deleteByClientIdAndRole("linkatutto", "ROLE_OBSOLETE");
               verify(userDAO).save(userEntity);
               assertFalse(userEntity.getRoles().contains("ROLE_OBSOLETE"));

@@ -12,6 +12,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
@@ -20,6 +21,7 @@ import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
+import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -65,6 +67,7 @@ public class RolesService {
   @Autowired private TechUserService techUserService;
   @Autowired private TechUserConfig techUserConfig;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
+  @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private IClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
 
@@ -366,24 +369,35 @@ public class RolesService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
-    List<ClientCredentialEntity> clientEntities;
+    List<RoleDefinitionEntity> roleEntities;
     if (StringUtils.hasText(clientId)) {
-      ClientCredentialEntity singleClient = clientDAO.findByClientId(clientId.trim());
-      clientEntities = singleClient != null ? List.of(singleClient) : List.of();
+      roleEntities = roleDefinitionDAO.findByClientId(clientId.trim());
+      if (roleEntities == null || roleEntities.isEmpty()) {
+        ClientCredentialEntity singleClient = clientDAO.findByClientId(clientId.trim());
+        if (singleClient != null && StringUtils.hasText(singleClient.getAppRoles())) {
+          syncRoleDefinitionsFromLegacyJson(singleClient);
+          roleEntities = roleDefinitionDAO.findByClientId(clientId.trim());
+        }
+      }
     } else {
-      clientEntities = clientDAO.findAll();
+      roleEntities = roleDefinitionDAO.findAll();
+      if (roleEntities == null || roleEntities.isEmpty()) {
+        List<ClientCredentialEntity> allClients = clientDAO.findAll();
+        for (ClientCredentialEntity c : allClients) {
+          if (StringUtils.hasText(c.getAppRoles())) {
+            syncRoleDefinitionsFromLegacyJson(c);
+          }
+        }
+        roleEntities = roleDefinitionDAO.findAll();
+      }
     }
 
     List<RoleDefinitionDTO> catalog = new ArrayList<>();
-    for (ClientCredentialEntity clientEntity : clientEntities) {
-      if (clientEntity.getAppRoles() == null) continue;
-      List<AppRole> roles = ClientMapper.parseAppRoles(clientEntity.getAppRoles());
-      if (roles == null) continue;
-
-      for (AppRole role : roles) {
-        if (role == null || role.getRole() == null) continue;
-        String roleName = role.getRole().toUpperCase();
-        String cId = clientEntity.getClientId();
+    if (roleEntities != null) {
+      for (RoleDefinitionEntity roleDef : roleEntities) {
+        if (roleDef == null || roleDef.getRole() == null) continue;
+        String roleName = roleDef.getRole().toUpperCase();
+        String cId = roleDef.getClientId();
 
         List<UserClientRoleEntity> assignments =
             userClientRoleDAO.findByClientIdAndRole(cId, roleName);
@@ -412,9 +426,9 @@ public class RolesService {
             new RoleDefinitionDTO(
                 cId,
                 roleName,
-                role.getType(),
-                role.getDescription(),
-                role.getPermissions(),
+                roleDef.getType(),
+                roleDef.getDescription(),
+                roleDef.getPermissions(),
                 assignedUsers.size(),
                 assignedUsers);
         catalog.add(def);
@@ -507,12 +521,7 @@ public class RolesService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_404, "Client not found: " + clientId);
     }
 
-    List<AppRole> currentRoles = ClientMapper.parseAppRoles(clientEntity.getAppRoles());
-    currentRoles = currentRoles != null ? new ArrayList<>(currentRoles) : new ArrayList<>();
-
-    boolean exists =
-        currentRoles.stream()
-            .anyMatch(r -> r.getRole() != null && r.getRole().equalsIgnoreCase(roleName));
+    boolean exists = roleDefinitionDAO.existsByClientIdAndRole(clientId, roleName);
     if (exists) {
       LOG.error("❌ Role [{}] already exists for client [{}]", roleName, clientId);
       throw new OAuthException(
@@ -524,20 +533,22 @@ public class RolesService {
         StringUtils.hasText(rawType)
             ? ("DEFAULT".equalsIgnoreCase(rawType.trim()) ? AppRoleType.USER.getValue() : rawType.trim().toUpperCase())
             : AppRoleType.USER.getValue();
-    AppRole newRole = new AppRole();
-    newRole.setRole(roleName);
-    newRole.setType(type);
-    newRole.setDescription(dto.getDescription());
-    newRole.setPermissions(dto.getPermissions() != null ? dto.getPermissions() : List.of());
 
-    currentRoles.add(newRole);
-    clientEntity.setAppRoles(
-        Mapper.writeObjectToString(ClientMapper.normalizeAppRoles(currentRoles)));
-    clientDAO.save(clientEntity);
+    RoleDefinitionEntity newRoleEntity =
+        new RoleDefinitionEntity(
+            clientId,
+            roleName,
+            type,
+            dto.getDescription(),
+            dto.getPermissions() != null ? dto.getPermissions() : List.of());
+    roleDefinitionDAO.save(newRoleEntity);
+
+    // Sincronizza per retrocompatibilita la colonna APP_ROLES del client
+    syncClientAppRoles(clientEntity);
 
     RoleDefinitionDTO result =
         new RoleDefinitionDTO(
-            clientId, roleName, type, dto.getDescription(), newRole.getPermissions(), 0, List.of());
+            clientId, roleName, type, dto.getDescription(), newRoleEntity.getPermissions(), 0, List.of());
     Response response =
         new Response(
             HttpStatus.CREATED.value(),
@@ -576,41 +587,25 @@ public class RolesService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_404, "Client not found: " + normalizedClientId);
     }
 
-    List<AppRole> currentRoles = ClientMapper.parseAppRoles(clientEntity.getAppRoles());
-    if (currentRoles == null || currentRoles.isEmpty()) {
-      throw new OAuthException(
-          ExceptionMap.ERR_OAUTH_404,
-          "Role " + currentRoleName + " not found for client " + normalizedClientId);
-    }
-    currentRoles = new ArrayList<>(currentRoles);
-
-    AppRole targetAppRole =
-        currentRoles.stream()
-            .filter(r -> r.getRole() != null && r.getRole().equalsIgnoreCase(currentRoleName))
-            .findFirst()
-            .orElse(null);
-
-    if (targetAppRole == null) {
-      throw new OAuthException(
-          ExceptionMap.ERR_OAUTH_404,
-          "Role " + currentRoleName + " not found for client " + normalizedClientId);
-    }
+    RoleDefinitionEntity targetRoleEntity =
+        roleDefinitionDAO
+            .findByClientIdAndRole(normalizedClientId, currentRoleName)
+            .orElseThrow(
+                () ->
+                    new OAuthException(
+                        ExceptionMap.ERR_OAUTH_404,
+                        "Role " + currentRoleName + " not found for client " + normalizedClientId));
 
     // Se il nome è variato, verifica che non entri in collisione con un altro ruolo esistente del client
     if (!currentRoleName.equalsIgnoreCase(newRoleName)) {
       boolean duplicate =
-          currentRoles.stream()
-              .anyMatch(
-                  r ->
-                      r != targetAppRole
-                          && r.getRole() != null
-                          && r.getRole().equalsIgnoreCase(newRoleName));
+          roleDefinitionDAO.existsByClientIdAndRole(normalizedClientId, newRoleName);
       if (duplicate) {
         throw new OAuthException(
             ExceptionMap.ERR_OAUTH_400,
             "Role " + newRoleName + " already exists for client " + normalizedClientId);
       }
-      targetAppRole.setRole(newRoleName);
+      targetRoleEntity.setRole(newRoleName);
 
       // Aggiorna a cascata le associazioni in USER_CLIENT_ROLE
       List<UserClientRoleEntity> existingMappings =
@@ -623,16 +618,17 @@ public class RolesService {
 
     if (StringUtils.hasText(dto.getType())) {
       String rawType = dto.getType().trim().toUpperCase();
-      targetAppRole.setType("DEFAULT".equalsIgnoreCase(rawType) ? AppRoleType.USER.getValue() : rawType);
+      targetRoleEntity.setType("DEFAULT".equalsIgnoreCase(rawType) ? AppRoleType.USER.getValue() : rawType);
     }
-    targetAppRole.setDescription(dto.getDescription());
+    targetRoleEntity.setDescription(dto.getDescription());
     if (dto.getPermissions() != null) {
-      targetAppRole.setPermissions(dto.getPermissions());
+      targetRoleEntity.setPermissions(dto.getPermissions());
     }
 
-    clientEntity.setAppRoles(
-        Mapper.writeObjectToString(ClientMapper.normalizeAppRoles(currentRoles)));
-    clientDAO.save(clientEntity);
+    roleDefinitionDAO.save(targetRoleEntity);
+
+    // Sincronizza per retrocompatibilita la colonna APP_ROLES del client
+    syncClientAppRoles(clientEntity);
 
     // Recupera conteggio e lista utenti aggiornata
     List<UserClientRoleEntity> assignments =
@@ -661,9 +657,9 @@ public class RolesService {
         new RoleDefinitionDTO(
             normalizedClientId,
             newRoleName,
-            targetAppRole.getType(),
-            targetAppRole.getDescription(),
-            targetAppRole.getPermissions(),
+            targetRoleEntity.getType(),
+            targetRoleEntity.getDescription(),
+            targetRoleEntity.getPermissions(),
             assignedUsers.size(),
             assignedUsers);
     Response response =
@@ -701,13 +697,12 @@ public class RolesService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_404, "Client not found: " + normalizedClientId);
     }
 
-    List<AppRole> currentRoles = ClientMapper.parseAppRoles(clientEntity.getAppRoles());
+    List<RoleDefinitionEntity> currentRoles = roleDefinitionDAO.findByClientId(normalizedClientId);
     if (currentRoles == null || currentRoles.isEmpty()) {
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_404,
           "Role " + normalizedRole + " not found for client " + normalizedClientId);
     }
-    currentRoles = new ArrayList<>(currentRoles);
 
     if (currentRoles.size() <= 1) {
       LOG.error("❌ Cannot delete the only remaining role for client [{}]", normalizedClientId);
@@ -716,20 +711,17 @@ public class RolesService {
           "Cannot delete role " + normalizedRole + ". Every OAuth2 client must have at least one role configured.");
     }
 
-    boolean removed =
-        currentRoles.removeIf(
-            r -> r.getRole() != null && r.getRole().equalsIgnoreCase(normalizedRole));
-    if (!removed) {
+    boolean exists = currentRoles.stream().anyMatch(r -> r.getRole().equalsIgnoreCase(normalizedRole));
+    if (!exists) {
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_404,
           "Role " + normalizedRole + " not found for client " + normalizedClientId);
     }
 
-    clientEntity.setAppRoles(
-        Mapper.writeObjectToString(ClientMapper.normalizeAppRoles(currentRoles)));
-    clientDAO.save(clientEntity);
+    // 1. Elimina la definizione del ruolo dalla tabella relazionale ROLE_DEFINITIONS
+    roleDefinitionDAO.deleteByClientIdAndRole(normalizedClientId, normalizedRole);
 
-    // 1. Identifica tutti gli utenti che avevano questo ruolo per questo client
+    // 2. Identifica tutti gli utenti che avevano questo ruolo per questo client
     List<UserClientRoleEntity> impactedAssignments =
         userClientRoleDAO.findByClientIdAndRole(normalizedClientId, normalizedRole);
     List<String> impactedUserIdentifiers =
@@ -738,7 +730,7 @@ public class RolesService {
             .distinct()
             .toList();
 
-    // 2. Cancella a cascata tutte le associazioni relazionali per questo (clientId, role)
+    // 3. Cancella a cascata tutte le associazioni relazionali per questo (clientId, role)
     userClientRoleDAO.deleteByClientIdAndRole(normalizedClientId, normalizedRole);
     LOG.info(
         "🗑️ [ROLES] Deleted {} assignments from USER_CLIENT_ROLE for role [{}] on client [{}]",
@@ -746,7 +738,7 @@ public class RolesService {
         normalizedRole,
         normalizedClientId);
 
-    // 3. Sincronizza USERS.ROLES per ciascun utente impattato
+    // 4. Sincronizza USERS.ROLES per ciascun utente impattato
     for (String uId : impactedUserIdentifiers) {
       UserEntity user = userDAO.findUserEntityByIdentifier(uId);
       if (user != null) {
@@ -764,6 +756,9 @@ public class RolesService {
       }
     }
 
+    // 5. Sincronizza la colonna legacy OAUTH_CLIENT.APP_ROLES per retrocompatibilità
+    syncClientAppRoles(clientEntity);
+
     Response response =
         new Response(
             HttpStatus.OK.value(),
@@ -777,6 +772,60 @@ public class RolesService {
             TraceUtils.getSpanID(),
             null);
     return Mono.just(ResponseEntity.ok(response));
+  }
+
+  /**
+   * Sincronizza la colonna denormalizzata legacy {@code OAUTH_CLIENT.APP_ROLES} con lo stato
+   * attuale memorizzato nella tabella relazionale {@code ROLE_DEFINITIONS} e {@code ROLE_PERMISSIONS}.
+   * Garantisce la completa retrocompatibilita per i moduli o servizi che consumano le credenziali client.
+   *
+   * @param clientEntity Entita del client OAuth2 da aggiornare.
+   */
+  private void syncClientAppRoles(ClientCredentialEntity clientEntity) {
+    if (clientEntity == null) return;
+    List<RoleDefinitionEntity> roleEntities = roleDefinitionDAO.findByClientId(clientEntity.getClientId());
+    if (roleEntities != null) {
+      List<AppRole> appRoles =
+          roleEntities.stream()
+              .map(
+                  re ->
+                      new AppRole(
+                          re.getId(),
+                          re.getRole(),
+                          re.getType(),
+                          re.getDescription(),
+                          re.getPermissions()))
+              .toList();
+      clientEntity.setAppRoles(
+          Mapper.writeObjectToString(ClientMapper.normalizeAppRoles(appRoles)));
+      clientDAO.save(clientEntity);
+    }
+  }
+
+  /**
+   * Helper di sincronizzazione al volo: converte ruoli memorizzati nel formato JSON legacy
+   * in entità della tabella relazionale {@code ROLE_DEFINITIONS}.
+   *
+   * @param client Client contenente ruoli JSON.
+   */
+  private void syncRoleDefinitionsFromLegacyJson(ClientCredentialEntity client) {
+    if (client == null || !StringUtils.hasText(client.getAppRoles())) return;
+    List<AppRole> roles = ClientMapper.parseAppRoles(client.getAppRoles());
+    if (roles == null) return;
+    String cId = client.getClientId();
+    for (AppRole r : roles) {
+      if (r == null || !StringUtils.hasText(r.getRole())) continue;
+      String rName = r.getRole().trim().toUpperCase();
+      if (!roleDefinitionDAO.existsByClientIdAndRole(cId, rName)) {
+        roleDefinitionDAO.save(
+            new RoleDefinitionEntity(
+                cId,
+                rName,
+                r.getType(),
+                r.getDescription(),
+                r.getPermissions() != null ? r.getPermissions() : List.of("*")));
+      }
+    }
   }
 }
 

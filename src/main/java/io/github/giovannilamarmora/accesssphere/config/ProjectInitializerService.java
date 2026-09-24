@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.config;
 import static io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID;
 import static io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER;
 
+import io.github.giovannilamarmora.accesssphere.client.ClientMapper;
 import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
@@ -15,7 +16,10 @@ import io.github.giovannilamarmora.accesssphere.email.IEmailTemplateDAO;
 import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
 import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
@@ -59,6 +63,7 @@ public class ProjectInitializerService implements ApplicationRunner {
   @Autowired private IClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
+  @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private IAppSettingsDAO appSettingsDAO;
   @Autowired private IEmailTemplateDAO emailTemplateDAO;
 
@@ -68,6 +73,7 @@ public class ProjectInitializerService implements ApplicationRunner {
     LOG.info("🚀 Checking Access Sphere Initial DB Seeding...");
 
     initTechnicalClient();
+    initRoleDefinitions();
     initTechnicalUser();
     migrateLegacyUserRoles();
     initAppSettings();
@@ -193,6 +199,83 @@ public class ProjectInitializerService implements ApplicationRunner {
     client.setAccessToken(true);
     client.setIdToken(true);
     return client;
+  }
+
+  /**
+   * Inizializza e sincronizza le definizioni dei ruoli applicativi nella tabella relazionale
+   * {@code ROLE_DEFINITIONS} e {@code ROLE_PERMISSIONS}.
+   *
+   * <p>Interconnessioni:
+   * <ul>
+   *   <li>Assicura la presenza dei ruoli tecnici di base ({@code ROLE_ADMIN}, {@code ROLE_TECH}) per il client tecnico.</li>
+   *   <li>Esegue la migrazione automatica e idempotente da eventuale configurazione JSON legacy ({@code OAUTH_CLIENT.APP_ROLES}) alla tabella relazionale per tutti i client OAuth2 presenti a DB.</li>
+   * </ul>
+   */
+  private void initRoleDefinitions() {
+    LOG.info("🔐 Checking enterprise Role Definitions and Permissions seeding...");
+    String techClientId = techUserConfig.getTechClientId();
+
+    // 1. Assicura i ruoli tecnici di base in ROLE_DEFINITIONS
+    List<RoleDefinitionEntity> techRoles = roleDefinitionDAO.findByClientId(techClientId);
+    if (techRoles == null || techRoles.isEmpty()) {
+      LOG.info("🔧 Seeding default technical roles in ROLE_DEFINITIONS for client [{}]", techClientId);
+      RoleDefinitionEntity adminRole =
+          new RoleDefinitionEntity(
+              techClientId,
+              "ROLE_ADMIN",
+              "ADMIN",
+              "Administrator role for Access Sphere",
+              List.of("*"));
+      RoleDefinitionEntity techRole =
+          new RoleDefinitionEntity(
+              techClientId,
+              "ROLE_TECH",
+              "TECHNICAL",
+              "Technical service role for Access Sphere",
+              List.of("*"));
+      roleDefinitionDAO.save(adminRole);
+      roleDefinitionDAO.save(techRole);
+      LOG.info("✅ Default technical roles seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
+    }
+
+    // 2. Migrazione trasparente e idempotente da JSON legacy (OAUTH_CLIENT.APP_ROLES) a ROLE_DEFINITIONS
+    List<ClientCredentialEntity> allClients = clientDAO.findAll();
+    for (ClientCredentialEntity client : allClients) {
+      if (!StringUtils.hasText(client.getAppRoles())) {
+        continue;
+      }
+      List<AppRole> parsedRoles = ClientMapper.parseAppRoles(client.getAppRoles());
+      if (parsedRoles == null || parsedRoles.isEmpty()) {
+        continue;
+      }
+      String cId = client.getClientId();
+      for (AppRole appRole : parsedRoles) {
+        if (appRole == null || !StringUtils.hasText(appRole.getRole())) {
+          continue;
+        }
+        String rName = appRole.getRole().trim().toUpperCase();
+        boolean exists = roleDefinitionDAO.existsByClientIdAndRole(cId, rName);
+        if (!exists) {
+          List<String> perms =
+              (appRole.getPermissions() != null && !appRole.getPermissions().isEmpty())
+                  ? appRole.getPermissions()
+                  : List.of("*");
+          RoleDefinitionEntity entity =
+              new RoleDefinitionEntity(
+                  cId,
+                  rName,
+                  appRole.getType(),
+                  appRole.getDescription(),
+                  perms);
+          roleDefinitionDAO.save(entity);
+          LOG.info(
+              "🔄 [MIGRATION] Migrated legacy JSON role [{}] for client [{}] into ROLE_DEFINITIONS",
+              rName,
+              cId);
+        }
+      }
+    }
+    LOG.info("✅ Role Definitions and Permissions seeding check completed successfully.");
   }
 
   /**

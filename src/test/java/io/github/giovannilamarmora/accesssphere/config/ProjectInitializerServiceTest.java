@@ -31,6 +31,7 @@ class ProjectInitializerServiceTest {
   @Mock private IClientDAO clientDAO;
   @Mock private IUserDAO userDAO;
   @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
+  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO roleDefinitionDAO;
   @Mock private IAppSettingsDAO appSettingsDAO;
   @Mock private IEmailTemplateDAO emailTemplateDAO;
 
@@ -45,6 +46,7 @@ class ProjectInitializerServiceTest {
     techUserConfig.setTechEmail("tech_admin@accesssphere.local");
     ReflectionTestUtils.setField(projectInitializerService, "techUserConfig", techUserConfig);
     ReflectionTestUtils.setField(projectInitializerService, "userClientRoleDAO", userClientRoleDAO);
+    ReflectionTestUtils.setField(projectInitializerService, "roleDefinitionDAO", roleDefinitionDAO);
     ReflectionTestUtils.setField(
         projectInitializerService, "appDomain", "access-sphere.giovannilamarmora.com");
   }
@@ -125,6 +127,9 @@ class ProjectInitializerServiceTest {
         .thenReturn(List.of(existingTpl));
     when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER))
         .thenReturn(Collections.emptyList());
+    when(roleDefinitionDAO.findByClientId("ACCESS-SPHERE-TECH"))
+        .thenReturn(List.of(new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity()));
+    lenient().when(roleDefinitionDAO.existsByClientIdAndRole(any(), any())).thenReturn(true);
 
     projectInitializerService.run(null);
 

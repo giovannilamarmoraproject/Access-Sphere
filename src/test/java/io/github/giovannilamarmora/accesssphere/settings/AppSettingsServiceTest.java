@@ -31,6 +31,8 @@ class AppSettingsServiceTest {
   @Mock private IAppSettingsDAO appSettingsDAO;
   @Mock private IClientDAO clientDAO;
   @Mock private IUserDAO userDAO;
+  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO roleDefinitionDAO;
+  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
 
   @InjectMocks private AppSettingsService appSettingsService;
 
@@ -39,6 +41,8 @@ class AppSettingsServiceTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(appSettingsService, "appVersion", "2.0.0");
+    ReflectionTestUtils.setField(appSettingsService, "roleDefinitionDAO", roleDefinitionDAO);
+    ReflectionTestUtils.setField(appSettingsService, "userClientRoleDAO", userClientRoleDAO);
     appSettingsService.invalidateCache();
 
     sampleEntity = new AppSettingsEntity();
@@ -144,6 +148,8 @@ class AppSettingsServiceTest {
     when(appSettingsDAO.findAll()).thenReturn(List.of(sampleEntity));
     when(clientDAO.findAll()).thenReturn(List.of(client));
     when(userDAO.findAll()).thenReturn(List.of(user));
+    when(roleDefinitionDAO.findAll()).thenReturn(List.of());
+    when(userClientRoleDAO.findAll()).thenReturn(List.of());
 
     StepVerifier.create(appSettingsService.createBackup("ADMIN_TEST"))
         .assertNext(

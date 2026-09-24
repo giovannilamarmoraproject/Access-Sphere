@@ -7,6 +7,10 @@ import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
+import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
+import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.token.data.model.AccessTokenData;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -36,6 +40,8 @@ public class ClientService {
   @Autowired private AccessTokenData accessTokenData;
   @Autowired private IClientDAO iClientDAO;
   @Autowired private TechUserService techUserService;
+  @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
+  @Autowired private IUserClientRoleDAO userClientRoleDAO;
 
   /**
    * Recupera le credenziali di un Client dato il suo clientID.
@@ -91,7 +97,7 @@ public class ClientService {
             });
   }
 
-  /** Inserisce un nuovo ClientCredential a database. */
+  /** Inserisce un nuovo ClientCredential a database e persiste le definizioni ruoli nella tabella relazionale. */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void addClientToDatabase(ClientCredential clientCredential) {
@@ -99,6 +105,24 @@ public class ClientService {
     OAuthValidator.validateClientRoles(clientCredential);
     ClientCredentialEntity clientEntity = ClientMapper.toEntity(clientCredential);
     iClientDAO.save(clientEntity);
+
+    // Persiste le definizioni ruoli su ROLE_DEFINITIONS
+    if (clientCredential.getAppRoles() != null) {
+      for (AppRole appRole : clientCredential.getAppRoles()) {
+        if (appRole != null && appRole.getRole() != null) {
+          String rName = appRole.getRole().trim().toUpperCase();
+          if (!roleDefinitionDAO.existsByClientIdAndRole(clientCredential.getClientId(), rName)) {
+            roleDefinitionDAO.save(
+                new RoleDefinitionEntity(
+                    clientCredential.getClientId(),
+                    rName,
+                    appRole.getType(),
+                    appRole.getDescription(),
+                    appRole.getPermissions() != null ? appRole.getPermissions() : List.of("*")));
+          }
+        }
+      }
+    }
     LOG.debug("Client {} successfully inserted", clientCredential.getClientId());
   }
 
@@ -119,6 +143,24 @@ public class ClientService {
     if (!ObjectUtils.isEmpty(existingClientEntity)) {
       ClientMapper.updateEntity(existingClientEntity, clientCredential);
       iClientDAO.save(existingClientEntity);
+
+      // Sincronizza i ruoli nella tabella relazionale ROLE_DEFINITIONS
+      if (clientCredential.getAppRoles() != null) {
+        for (AppRole appRole : clientCredential.getAppRoles()) {
+          if (appRole != null && appRole.getRole() != null) {
+            String rName = appRole.getRole().trim().toUpperCase();
+            if (!roleDefinitionDAO.existsByClientIdAndRole(clientCredential.getClientId(), rName)) {
+              roleDefinitionDAO.save(
+                  new RoleDefinitionEntity(
+                      clientCredential.getClientId(),
+                      rName,
+                      appRole.getType(),
+                      appRole.getDescription(),
+                      appRole.getPermissions() != null ? appRole.getPermissions() : List.of("*")));
+            }
+          }
+        }
+      }
       LOG.debug("Client {} successfully updated", clientCredential.getClientId());
     } else {
       LOG.error("Cannot update: Client {} not found", clientCredential.getClientId());
@@ -126,7 +168,7 @@ public class ClientService {
     }
   }
 
-  /** Rimuove un ClientCredential dal database. */
+  /** Rimuove un ClientCredential dal database ripulendo definizioni ruoli e assegnazioni utenti associate. */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteClientFromDatabase(ClientCredential clientCredential) {
@@ -134,6 +176,10 @@ public class ClientService {
     ClientCredentialEntity existingClientOptional =
         iClientDAO.findByClientId(clientCredential.getClientId());
     if (!ObjectUtils.isEmpty(existingClientOptional)) {
+      // Pulizia relazionale a cascata per ruoli e associazioni del client
+      roleDefinitionDAO.deleteByClientId(clientCredential.getClientId());
+      userClientRoleDAO.deleteByClientId(clientCredential.getClientId());
+
       iClientDAO.delete(existingClientOptional);
       LOG.debug("Client {} successfully removed", clientCredential.getClientId());
     } else {

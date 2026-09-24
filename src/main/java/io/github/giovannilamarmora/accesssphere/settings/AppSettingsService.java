@@ -12,8 +12,13 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.time.LocalDateTime;
+import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
+import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
+import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -36,6 +41,8 @@ public class AppSettingsService {
   @Autowired private IAppSettingsDAO appSettingsDAO;
   @Autowired private IClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
+  @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
+  @Autowired private IUserClientRoleDAO userClientRoleDAO;
 
   private final AtomicReference<AppSettingsDTO> publicCache = new AtomicReference<>();
 
@@ -97,6 +104,8 @@ public class AppSettingsService {
           AppSettingsEntity settings = settingsList.isEmpty() ? null : settingsList.getFirst();
           List<ClientCredentialEntity> clients = clientDAO.findAll();
           List<UserEntity> users = userDAO.findAll();
+          List<RoleDefinitionEntity> roles = roleDefinitionDAO.findAll();
+          List<UserClientRoleEntity> userClientRoles = userClientRoleDAO.findAll();
 
           String timestamp =
               LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -108,6 +117,8 @@ public class AppSettingsService {
               .settings(settings)
               .clients(clients)
               .users(users)
+              .roles(roles)
+              .userClientRoles(userClientRoles)
               .build();
         });
   }
@@ -158,6 +169,31 @@ public class AppSettingsService {
                 user.setId(null);
               }
               userDAO.save(user);
+            }
+          }
+
+          if (backupData.getRoles() != null && !backupData.getRoles().isEmpty()) {
+            for (RoleDefinitionEntity role : backupData.getRoles()) {
+              Optional<RoleDefinitionEntity> existing =
+                  roleDefinitionDAO.findByClientIdAndRole(role.getClientId(), role.getRole());
+              if (existing.isPresent()) {
+                role.setId(existing.get().getId());
+              } else {
+                role.setId(null);
+              }
+              roleDefinitionDAO.save(role);
+            }
+          }
+
+          if (backupData.getUserClientRoles() != null && !backupData.getUserClientRoles().isEmpty()) {
+            for (UserClientRoleEntity ucr : backupData.getUserClientRoles()) {
+              boolean exists =
+                  userClientRoleDAO.existsByUserIdentifierAndClientIdAndRole(
+                      ucr.getUserIdentifier(), ucr.getClientId(), ucr.getRole());
+              if (!exists) {
+                ucr.setId(null);
+                userClientRoleDAO.save(ucr);
+              }
             }
           }
 

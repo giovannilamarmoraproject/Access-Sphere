@@ -36,4 +36,7 @@ public interface IUserClientRoleDAO extends JpaRepository<UserClientRoleEntity, 
 
   @Transactional
   void deleteByClientIdAndRole(String clientId, String role);
+
+  @Transactional
+  void deleteByClientId(String clientId);
 }

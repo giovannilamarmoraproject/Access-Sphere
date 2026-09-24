@@ -8,9 +8,11 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +62,7 @@ public class UserService {
 
   @Autowired private IUserDAO userDAO;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
+  @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private IClientDAO clientDAO;
 
   /**
@@ -260,7 +264,8 @@ public class UserService {
   /**
    * Arricchisce il DTO {@link User} con i ruoli contestualizzati per Client OAuth2 ({@link UserClientRoleDTO})
    * recuperati dalla tabella USER_CLIENT_ROLE, estraendo tipologia, descrizione e permessi granulari
-   * dalla configurazione del rispettivo client. Sincronizza inoltre la lista legacy flat {@code roles}.
+   * dalla tabella relazionale ROLE_DEFINITIONS (con fallback su configurazione legacy del client).
+   * Sincronizza inoltre la lista legacy flat {@code roles}.
    *
    * @param user Oggetto utente da arricchire.
    * @return DTO utente arricchito.
@@ -276,27 +281,37 @@ public class UserService {
                   ucr -> {
                     UserClientRoleDTO dto =
                         new UserClientRoleDTO(ucr.getClientId(), ucr.getRole());
-                    ClientCredentialEntity clientEntity =
-                        clientDAO.findByClientId(ucr.getClientId());
-                    if (clientEntity != null && clientEntity.getAppRoles() != null) {
-                      List<AppRole> appRoles =
-                          ClientMapper.parseAppRoles(clientEntity.getAppRoles());
-                      if (appRoles != null) {
-                        appRoles.stream()
-                            .filter(
-                                ar ->
-                                    ar != null
-                                        && ar.getRole() != null
-                                        && ar.getRole().equalsIgnoreCase(ucr.getRole()))
-                            .findFirst()
-                            .ifPresent(
-                                ar -> {
-                                  if (ar.getType() != null) dto.setType(ar.getType());
-                                  if (ar.getDescription() != null)
-                                    dto.setDescription(ar.getDescription());
-                                  if (ar.getPermissions() != null)
-                                    dto.setPermissions(ar.getPermissions());
-                                });
+                    Optional<RoleDefinitionEntity> roleDef =
+                        roleDefinitionDAO.findByClientIdAndRole(ucr.getClientId(), ucr.getRole());
+                    if (roleDef.isPresent()) {
+                      RoleDefinitionEntity rd = roleDef.get();
+                      if (rd.getType() != null) dto.setType(rd.getType());
+                      if (rd.getDescription() != null) dto.setDescription(rd.getDescription());
+                      if (rd.getPermissions() != null) dto.setPermissions(rd.getPermissions());
+                    } else {
+                      // Fallback di sicurezza su OAUTH_CLIENT.APP_ROLES se non ancora migrato
+                      ClientCredentialEntity clientEntity =
+                          clientDAO.findByClientId(ucr.getClientId());
+                      if (clientEntity != null && clientEntity.getAppRoles() != null) {
+                        List<AppRole> appRoles =
+                            ClientMapper.parseAppRoles(clientEntity.getAppRoles());
+                        if (appRoles != null) {
+                          appRoles.stream()
+                              .filter(
+                                  ar ->
+                                      ar != null
+                                          && ar.getRole() != null
+                                          && ar.getRole().equalsIgnoreCase(ucr.getRole()))
+                              .findFirst()
+                              .ifPresent(
+                                  ar -> {
+                                    if (ar.getType() != null) dto.setType(ar.getType());
+                                    if (ar.getDescription() != null)
+                                      dto.setDescription(ar.getDescription());
+                                    if (ar.getPermissions() != null)
+                                      dto.setPermissions(ar.getPermissions());
+                                  });
+                        }
                       }
                     }
                     return dto;
@@ -320,7 +335,7 @@ public class UserService {
 
   /**
    * Arricchisce massivamente un elenco di DTO {@link User} con i rispettivi ruoli client-scoped,
-   * ottimizzando gli accessi a DB con recupero preliminare in batch per evitare query N+1.
+   * ottimizzando gli accessi a DB interrogando ROLE_DEFINITIONS con recupero preliminare in batch per evitare query N+1.
    *
    * @param users Lista di DTO utenti da arricchire.
    * @return Lista di DTO utenti arricchita.
@@ -335,17 +350,17 @@ public class UserService {
             .filter(u -> u.getUserIdentifier() != null)
             .collect(Collectors.groupingBy(UserClientRoleEntity::getUserIdentifier));
 
-    Map<String, List<AppRole>> appRolesByClient =
-        clientDAO.findAll().stream()
-            .filter(c -> c.getClientId() != null && c.getAppRoles() != null)
-            .collect(
-                Collectors.toMap(
-                    ClientCredentialEntity::getClientId,
-                    c -> {
-                      List<AppRole> roles = ClientMapper.parseAppRoles(c.getAppRoles());
-                      return roles != null ? roles : List.of();
-                    },
-                    (a, b) -> a));
+    List<RoleDefinitionEntity> allRoleDefs = roleDefinitionDAO.findAll();
+    Map<String, RoleDefinitionEntity> roleDefMap =
+        allRoleDefs != null
+            ? allRoleDefs.stream()
+                .filter(r -> r.getClientId() != null && r.getRole() != null)
+                .collect(
+                    Collectors.toMap(
+                        r -> r.getClientId().trim().toUpperCase() + ":" + r.getRole().trim().toUpperCase(),
+                        r -> r,
+                        (a, b) -> a))
+            : Map.of();
 
     for (User user : users) {
       if (user == null || user.getIdentifier() == null) continue;
@@ -357,23 +372,15 @@ public class UserService {
                     ucr -> {
                       UserClientRoleDTO dto =
                           new UserClientRoleDTO(ucr.getClientId(), ucr.getRole());
-                      List<AppRole> appRoles = appRolesByClient.get(ucr.getClientId());
-                      if (appRoles != null) {
-                        appRoles.stream()
-                            .filter(
-                                ar ->
-                                    ar != null
-                                        && ar.getRole() != null
-                                        && ar.getRole().equalsIgnoreCase(ucr.getRole()))
-                            .findFirst()
-                            .ifPresent(
-                                ar -> {
-                                  if (ar.getType() != null) dto.setType(ar.getType());
-                                  if (ar.getDescription() != null)
-                                    dto.setDescription(ar.getDescription());
-                                  if (ar.getPermissions() != null)
-                                    dto.setPermissions(ar.getPermissions());
-                                });
+                      String key =
+                          (ucr.getClientId() != null ? ucr.getClientId().trim().toUpperCase() : "")
+                              + ":"
+                              + (ucr.getRole() != null ? ucr.getRole().trim().toUpperCase() : "");
+                      RoleDefinitionEntity rd = roleDefMap.get(key);
+                      if (rd != null) {
+                        if (rd.getType() != null) dto.setType(rd.getType());
+                        if (rd.getDescription() != null) dto.setDescription(rd.getDescription());
+                        if (rd.getPermissions() != null) dto.setPermissions(rd.getPermissions());
                       }
                       return dto;
                     })
