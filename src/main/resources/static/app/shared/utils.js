@@ -217,12 +217,68 @@ function decodeJwtPayload(token) {
  * Garantisce rendering immediato a zero flicker del profilo utente nella sidebar.
  * @returns {object|null}
  */
+const DEFAULT_USER_AVATAR = "https://bootdey.com/img/Content/avatar/avatar7.png";
+
+/**
+ * Arricchisce l'oggetto utente loggato con nome, cognome e foto profilo
+ * estraendoli dalla cache utenti globale se presenti, garantendo visualizzazione immediata.
+ * @param {object} userObj
+ */
+function enrichUserFromCachedUsers(userObj) {
+    if (!userObj) return;
+    try {
+        const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-TECH";
+        const rawUsers =
+            localStorage.getItem(clientId + "_usersData") ||
+            localStorage.getItem("ACCESS-SPHERE-TECH_usersData");
+        if (rawUsers) {
+            const users = JSON.parse(rawUsers);
+            if (Array.isArray(users)) {
+                const found = users.find(
+                    (u) =>
+                        (userObj.username && u.username && u.username.toLowerCase() === userObj.username.toLowerCase()) ||
+                        (userObj.email && u.email && u.email.toLowerCase() === userObj.email.toLowerCase())
+                );
+                if (found) {
+                    if (found.name) userObj.name = found.name;
+                    if (found.surname) userObj.surname = found.surname;
+                    if (found.name && found.surname) {
+                        userObj.fullName = `${found.name} ${found.surname}`;
+                    } else if (found.name) {
+                        userObj.fullName = found.name;
+                    }
+                    if (found.profilePhoto || found.profile) {
+                        userObj.profilePhoto = found.profilePhoto || found.profile;
+                    }
+                }
+            }
+        }
+    } catch (e) {}
+
+    if (!userObj.profilePhoto) {
+        userObj.profilePhoto = DEFAULT_USER_AVATAR;
+    }
+}
+
+/**
+ * Recupera l'utente correntemente autenticato con fallback a catena:
+ * 1. Cache locale 'access_sphere_user'
+ * 2. Decodifica immediata del payload JWT da 'access-token'
+ * Garantisce rendering immediato a zero flicker del profilo utente nella sidebar.
+ * @returns {object|null}
+ */
 function getLoggedInUser() {
     try {
         const cached = localStorage.getItem("access_sphere_user");
         if (cached) {
             const parsed = JSON.parse(cached);
             if (parsed && (parsed.fullName || parsed.name || parsed.username)) {
+                if (!parsed.profilePhoto || parsed.fullName === parsed.username) {
+                    enrichUserFromCachedUsers(parsed);
+                    try {
+                        localStorage.setItem("access_sphere_user", JSON.stringify(parsed));
+                    } catch (e) {}
+                }
                 return parsed;
             }
         }
@@ -258,6 +314,7 @@ function getLoggedInUser() {
                 roles: claims.roles || [],
                 profilePhoto: claims.profilePhoto || claims.picture || claims.photo || null
             };
+            enrichUserFromCachedUsers(userObj);
             try {
                 localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
             } catch (e) {}
@@ -280,13 +337,49 @@ function syncLoggedInUserProfile() {
 
     if (!token) return Promise.resolve(null);
 
+    // 1. Arricchimento immediato da cache per zero attese
+    const current = getLoggedInUser();
+    if (current) {
+        enrichUserFromCachedUsers(current);
+        updateSidebarUserDOM(current);
+    }
+
+    // 2. Chiamata di sincronizzazione con tutti gli header di sessione
     const profileUrl = window.location.origin + "/v1/users/profile";
+    const headers = {
+        Authorization: `Bearer ${token}`,
+        ...(typeof getSavedHeaders === "function" ? getSavedHeaders() : {})
+    };
+    const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-TECH";
+    if (!headers["Client-ID"]) {
+        headers["Client-ID"] = clientId;
+    }
+
     return fetch(profileUrl, {
         method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: headers
     })
         .then((res) => {
-            if (!res.ok) return null;
+            if (!res.ok) {
+                // Fallback trasparente su /v1/users per recuperare l'anagrafica completa
+                const usersUrl = window.location.origin + "/v1/users";
+                return fetch(usersUrl, { method: "GET", headers: headers })
+                    .then((uRes) => (uRes.ok ? uRes.json() : null))
+                    .then((uData) => {
+                        if (uData && Array.isArray(uData.data)) {
+                            const myUser = uData.data.find(
+                                (u) =>
+                                    (current && current.username && u.username && u.username.toLowerCase() === current.username.toLowerCase()) ||
+                                    (current && current.email && u.email && u.email.toLowerCase() === current.email.toLowerCase())
+                            );
+                            if (myUser) {
+                                return { data: myUser };
+                            }
+                        }
+                        return null;
+                    })
+                    .catch(() => null);
+            }
             return res.json();
         })
         .then((data) => {
@@ -307,6 +400,8 @@ function syncLoggedInUserProfile() {
                     fullName = "Utente";
                 }
 
+                const photo = u.profilePhoto || u.profile || DEFAULT_USER_AVATAR;
+
                 const userObj = {
                     name: firstName,
                     surname: lastName,
@@ -314,7 +409,7 @@ function syncLoggedInUserProfile() {
                     username: u.username || "",
                     email: u.email || "",
                     roles: u.roles || [],
-                    profilePhoto: u.profilePhoto || u.profile || null
+                    profilePhoto: photo
                 };
                 try {
                     localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
@@ -329,19 +424,17 @@ function syncLoggedInUserProfile() {
 
 /**
  * Aggiorna i selettori DOM del profilo utente per la sidebar desktop e il drawer mobile.
- * Gestisce sia avatar fotografico che fallback affidabile all'icona Material/FA fa-user.
+ * Gestisce sia avatar fotografico che fallback affidabile all'avatar standard.
  * @param {object} userObj
  */
 function updateSidebarUserDOM(userObj) {
     if (!userObj) return;
 
+    const photoUrl = userObj.profilePhoto || DEFAULT_USER_AVATAR;
+
     function renderAvatarContent(containerEl) {
         if (!containerEl) return;
-        if (userObj.profilePhoto) {
-            containerEl.innerHTML = `<img src="${userObj.profilePhoto}" alt="Avatar" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-user\\'></i>';" />`;
-        } else {
-            containerEl.innerHTML = '<i class="fa-solid fa-user"></i>';
-        }
+        containerEl.innerHTML = `<img src="${photoUrl}" alt="${escapeHtmlAttr(userObj.fullName || 'User')}" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.src='${DEFAULT_USER_AVATAR}';" />`;
     }
 
     // Sidebar Desktop
@@ -667,7 +760,7 @@ function initMobileNavigation() {
       <!-- Scheda Profilo Utente Mobile (Icona, Nome e Cognome) -->
       <div class="m3-mobile-user-card" id="mobile-drawer-user-card">
         <div class="sidebar-user-avatar" id="mobile-drawer-user-avatar">
-          ${currentUser && currentUser.profilePhoto ? `<img src="${escapeHtmlAttr(currentUser.profilePhoto)}" alt="Avatar" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-user\\'></i>';" />` : `<i class="fa-solid fa-user"></i>`}
+          <img src="${escapeHtmlAttr(currentUser && currentUser.profilePhoto ? currentUser.profilePhoto : 'https://bootdey.com/img/Content/avatar/avatar7.png')}" alt="${escapeHtmlAttr(currentUser ? currentUser.fullName : 'Utente')}" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.src='https://bootdey.com/img/Content/avatar/avatar7.png';" />
         </div>
         <div class="sidebar-user-info">
           <span class="sidebar-user-name" id="mobile-drawer-user-fullname">${escapeHtmlAttr(currentUser ? currentUser.fullName : "Utente")}</span>

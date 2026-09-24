@@ -67,6 +67,32 @@ async function doLogin(clientId, redirectUri) {
             return sweetalert("error", error.title, error.message);
         } else {
             checkMFAAndSetupOTP(responseData, clientId);
+            if (responseData.data && responseData.data.user) {
+                try {
+                    const u = responseData.data.user;
+                    const firstName = u.name || u.firstName || "";
+                    const lastName = u.surname || u.lastName || "";
+                    let fullName = "";
+                    if (firstName && lastName) fullName = `${firstName} ${lastName}`;
+                    else if (firstName) fullName = firstName;
+                    else if (lastName) fullName = lastName;
+                    else if (u.username) fullName = u.username;
+                    else fullName = "Utente";
+
+                    const photo = u.profilePhoto || u.profile || "https://bootdey.com/img/Content/avatar/avatar7.png";
+
+                    const userObj = {
+                        name: firstName,
+                        surname: lastName,
+                        fullName: fullName,
+                        username: u.username || "",
+                        email: u.email || "",
+                        roles: u.roles || [],
+                        profilePhoto: photo
+                    };
+                    localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
+                } catch (e) {}
+            }
             const redirect_uri = token.headers.get("location");
             if (redirect_uri) {
                 let target = `${redirect_uri}?client-id=${clientId}&access-token=${
@@ -115,6 +141,32 @@ async function verifyOTP() {
             return sweetalert("error", error.title, error.message);
         } else {
             fetchHeader(verifyOtp.headers);
+            if (response.data && response.data.user) {
+                try {
+                    const u = response.data.user;
+                    const firstName = u.name || u.firstName || "";
+                    const lastName = u.surname || u.lastName || "";
+                    let fullName = "";
+                    if (firstName && lastName) fullName = `${firstName} ${lastName}`;
+                    else if (firstName) fullName = firstName;
+                    else if (lastName) fullName = lastName;
+                    else if (u.username) fullName = u.username;
+                    else fullName = "Utente";
+
+                    const photo = u.profilePhoto || u.profile || "https://bootdey.com/img/Content/avatar/avatar7.png";
+
+                    const userObj = {
+                        name: firstName,
+                        surname: lastName,
+                        fullName: fullName,
+                        username: u.username || "",
+                        email: u.email || "",
+                        roles: u.roles || [],
+                        profilePhoto: photo
+                    };
+                    localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
+                } catch (e) {}
+            }
             const redirect_uri = verifyOtp.headers.get("location");
             if (redirect_uri) {
                 let target = `${redirect_uri}?client-id=${client_id}&access-token=${

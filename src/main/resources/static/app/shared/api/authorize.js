@@ -95,4 +95,37 @@ function saveTokens(response) {
     localStorage.setItem(config.client_id + "_" + config.access_token, access_token);
     localStorage.setItem("access-token", access_token);
   }
+
+  // Se la risposta contiene i dati anagrafici dell'utente, arricchiamo immediatamente la sessione
+  const u = response.data.user;
+  if (u) {
+    try {
+      const firstName = u.name || u.firstName || "";
+      const lastName = u.surname || u.lastName || "";
+      let fullName = "";
+      if (firstName && lastName) fullName = `${firstName} ${lastName}`;
+      else if (firstName) fullName = firstName;
+      else if (lastName) fullName = lastName;
+      else if (u.username) fullName = u.username;
+      else fullName = "Utente";
+
+      const photo = u.profilePhoto || u.profile || "https://bootdey.com/img/Content/avatar/avatar7.png";
+
+      const userObj = {
+        name: firstName,
+        surname: lastName,
+        fullName: fullName,
+        username: u.username || "",
+        email: u.email || "",
+        roles: u.roles || [],
+        profilePhoto: photo
+      };
+      localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
+      if (typeof updateSidebarUserDOM === "function") {
+        updateSidebarUserDOM(userObj);
+      }
+    } catch (e) {
+      console.warn("Error caching user from authorize response:", e);
+    }
+  }
 }
