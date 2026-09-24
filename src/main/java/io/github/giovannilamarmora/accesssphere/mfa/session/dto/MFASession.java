@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.token.mfa.dto;
+package io.github.giovannilamarmora.accesssphere.mfa.session.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MFATokenData extends GenericDTO {
+public class MFASession extends GenericDTO {
 
   private String tempToken;
 

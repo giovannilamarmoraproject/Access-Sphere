@@ -1,9 +1,9 @@
-package io.github.giovannilamarmora.accesssphere.token.mfa.entity;
+package io.github.giovannilamarmora.accesssphere.mfa.session.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import io.github.giovannilamarmora.accesssphere.mfa.session.dto.LoginStatus;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
-import io.github.giovannilamarmora.accesssphere.token.mfa.dto.LoginStatus;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,8 +17,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Table(name = "MFA_TOKEN_DATA")
-public class MFATokenDataEntity extends GenericEntity {
+@Table(name = "MFA_SESSIONS")
+public class MFASessionEntity extends GenericEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID", nullable = false)

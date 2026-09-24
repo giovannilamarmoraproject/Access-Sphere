@@ -9,13 +9,13 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
+import io.github.giovannilamarmora.accesssphere.mfa.session.MFASessionService;
+import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.mfa.MFATokenDataService;
-import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
@@ -52,7 +52,7 @@ public class MFAAuthenticationService {
   private static final Logger LOG = LoggerFilter.getLogger(MFAStrategyFactory.class);
   @Autowired private ClientService clientService;
   @Autowired private TokenService tokenService;
-  @Autowired private MFATokenDataService mfaTokenDataService;
+  @Autowired private MFASessionService mfaSessionService;
   @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -97,14 +97,14 @@ public class MFAAuthenticationService {
           RequestManager.getCookieOrHeaderData(ExposedHeaders.DEVICE_TOKEN, request);
 
       if (!ObjectToolkit.isNullOrEmpty(deviceToken)) {
-        MFATokenData mfaTokenData = mfaTokenDataService.getByDeviceToken(deviceToken);
+        MFASession mfaSession = mfaSessionService.getByDeviceToken(deviceToken);
 
-        if (!ObjectToolkit.isNullOrEmpty(mfaTokenData)) {
+        if (!ObjectToolkit.isNullOrEmpty(mfaSession)) {
           Date now = new Date();
-          boolean isExpired = now.after(new Date(mfaTokenData.getExpireDate()));
+          boolean isExpired = now.after(new Date(mfaSession.getExpireDate()));
           boolean isRevokedOrExpired =
-              mfaTokenData.getStatus() == TokenStatus.EXPIRED
-                  || mfaTokenData.getStatus() == TokenStatus.REVOKED;
+              mfaSession.getStatus() == TokenStatus.EXPIRED
+                  || mfaSession.getStatus() == TokenStatus.REVOKED;
 
           if (!isExpired && !isRevokedOrExpired) {
             LOG.info("Valid MFA device token found, skipping MFA login step");
@@ -112,8 +112,8 @@ public class MFAAuthenticationService {
           } else {
             LOG.warn(
                 "MFA token is expired or revoked (exp: {}, status: {})",
-                mfaTokenData.getExpireDate(),
-                mfaTokenData.getStatus());
+                mfaSession.getExpireDate(),
+                mfaSession.getStatus());
           }
         } else {
           LOG.warn("MFA token not found for device token");
@@ -136,7 +136,7 @@ public class MFAAuthenticationService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> verifyMfaAndGenerateToken(
       MfaVerificationRequest mfaRequest,
-      MFATokenData mfaTokenData,
+      MFASession mfaSession,
       User user,
       ServerWebExchange exchange,
       UserService userService) {
@@ -151,7 +151,7 @@ public class MFAAuthenticationService {
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
     Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(mfaTokenData.getClientId());
+        clientService.getClientCredentialByClientID(mfaSession.getClientId());
     return clientCredentialMono.flatMap(
         clientCredential -> {
           SubjectType subjectType =
@@ -168,12 +168,12 @@ public class MFAAuthenticationService {
                       ResponseManager.setCookieAndHeaderData(
                           ExposedHeaders.DEVICE_TOKEN, deviceToken, cookieDomain, response);
                     }
-                    mfaTokenDataService.completeLogin(
-                        mfaTokenData, deviceToken, mfaRequest.mfaMethod().name());
+                    mfaSessionService.completeLogin(
+                        mfaSession, deviceToken, mfaRequest.mfaMethod().name());
                     jwtData.setRoles(user1.getRoles());
                     AuthToken token =
                         tokenService.generateToken(
-                            jwtData, clientCredential, mfaTokenData.getPayload());
+                            jwtData, clientCredential, mfaSession.getPayload());
                     OAuthTokenResponse oAuthTokenResponse =
                         new OAuthTokenResponse(token, jwtData, user1);
 

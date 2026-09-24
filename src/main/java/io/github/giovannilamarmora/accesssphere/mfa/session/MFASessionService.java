@@ -1,12 +1,12 @@
-package io.github.giovannilamarmora.accesssphere.token.mfa;
+package io.github.giovannilamarmora.accesssphere.mfa.session;
 
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.mfa.session.dto.LoginStatus;
+import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
+import io.github.giovannilamarmora.accesssphere.mfa.session.entity.MFASessionEntity;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
-import io.github.giovannilamarmora.accesssphere.token.mfa.dto.LoginStatus;
-import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
-import io.github.giovannilamarmora.accesssphere.token.mfa.entity.MFATokenDataEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -22,19 +22,19 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Logged
-public class MFATokenDataService {
+public class MFASessionService {
 
-  private static final Logger LOG = LoggerFilter.getLogger(MFATokenDataService.class);
-  @Autowired private IMFATokenDataDAO mfaTokenDAO;
+  private static final Logger LOG = LoggerFilter.getLogger(MFASessionService.class);
+  @Autowired private IMFASessionDAO mfaTokenDAO;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public MFATokenData save(
+  public MFASession save(
       User user, List<String> mfaMethods, String client_id, String session_id, Object payload) {
     Date now = new Date(System.currentTimeMillis());
     Date exp = new Date(now.toInstant().toEpochMilli() + 600000);
     String tempToken = UUID.randomUUID().toString();
-    MFATokenDataEntity mfaTokenToSave =
-        new MFATokenDataEntity(
+    MFASessionEntity mfaTokenToSave =
+        new MFASessionEntity(
             null,
             tempToken,
             null,
@@ -48,38 +48,37 @@ public class MFATokenDataService {
             exp.toInstant().toEpochMilli(),
             Mapper.writeObjectToString(payload),
             TokenStatus.ISSUED);
-    MFATokenDataEntity mfaTokenDataEntity = mfaTokenDAO.save(mfaTokenToSave);
+    MFASessionEntity mfaSessionEntity = mfaTokenDAO.save(mfaTokenToSave);
     mfaTokenDAO.revokeTokensExcept(
         TokenStatus.REVOKED, tempToken, user.getIdentifier(), System.currentTimeMillis());
-    return MFATokenDataMapper.fromMFATokenEntityToMFAToken(mfaTokenDataEntity);
+    return MFASessionMapper.toDto(mfaSessionEntity);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public MFATokenData completeLogin(
-      MFATokenData mfaTokenData, String deviceToken, String mfaMethod) {
+  public MFASession completeLogin(MFASession mfaSession, String deviceToken, String mfaMethod) {
     Date now = new Date(System.currentTimeMillis());
     Date exp = new Date(now.toInstant().toEpochMilli() + 2592000000L);
-    MFATokenDataEntity mfaTokenToSave =
-        new MFATokenDataEntity(
-            mfaTokenData.getId(),
+    MFASessionEntity mfaTokenToSave =
+        new MFASessionEntity(
+            mfaSession.getId(),
             null,
             deviceToken,
             LoginStatus.COMPLETED,
             mfaMethod,
-            mfaTokenData.getSubject(),
-            mfaTokenData.getClientId(),
-            mfaTokenData.getSessionId(),
-            mfaTokenData.getIdentifier(),
+            mfaSession.getSubject(),
+            mfaSession.getClientId(),
+            mfaSession.getSessionId(),
+            mfaSession.getIdentifier(),
             now.toInstant().toEpochMilli(),
             exp.toInstant().toEpochMilli(),
-            Mapper.writeObjectToString(mfaTokenData.getPayload()),
+            Mapper.writeObjectToString(mfaSession.getPayload()),
             TokenStatus.ISSUED);
-    MFATokenDataEntity mfaTokenDataEntity = mfaTokenDAO.save(mfaTokenToSave);
-    return MFATokenDataMapper.fromMFATokenEntityToMFAToken(mfaTokenDataEntity);
+    MFASessionEntity mfaSessionEntity = mfaTokenDAO.save(mfaTokenToSave);
+    return MFASessionMapper.toDto(mfaSessionEntity);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public MFATokenData getByTempToken(String token) {
+  public MFASession getByTempToken(String token) {
     if (ObjectToolkit.isNullOrEmpty(token)) {
       LOG.error("Token not found, please provide a valid token");
       throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
@@ -93,7 +92,7 @@ public class MFATokenDataService {
       throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
     }
 
-    List<MFATokenDataEntity> mfaTokenEntities =
+    List<MFASessionEntity> mfaTokenEntities =
         mfaTokenDAO.findByTempTokenOrDeviceToken(extractedToken);
 
     if (ObjectToolkit.isNullOrEmpty(mfaTokenEntities)
@@ -102,7 +101,7 @@ public class MFATokenDataService {
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    MFATokenDataEntity mfaToken = mfaTokenEntities.getFirst();
+    MFASessionEntity mfaToken = mfaTokenEntities.getFirst();
 
     Date now = new Date();
     if (now.after(new Date(mfaToken.getExpireDate()))
@@ -116,17 +115,17 @@ public class MFATokenDataService {
       throw new TokenException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    return MFATokenDataMapper.fromMFATokenEntityToMFAToken(mfaToken);
+    return MFASessionMapper.toDto(mfaToken);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public MFATokenData getByDeviceToken(String token) {
+  public MFASession getByDeviceToken(String token) {
     if (ObjectToolkit.isNullOrEmpty(token)) {
       LOG.error("❌ Device Token not found, please provide a valid token");
       throw new TokenException(ExceptionMap.ERR_TOKEN_401, ExceptionMap.ERR_TOKEN_401.getMessage());
     }
 
-    List<MFATokenDataEntity> mfaTokenEntities = mfaTokenDAO.findByTempTokenOrDeviceToken(token);
+    List<MFASessionEntity> mfaTokenEntities = mfaTokenDAO.findByTempTokenOrDeviceToken(token);
 
     if (ObjectToolkit.isNullOrEmpty(mfaTokenEntities)
         || ObjectToolkit.isNullOrEmpty(mfaTokenEntities.getFirst())) {
@@ -134,9 +133,9 @@ public class MFATokenDataService {
       return null;
     }
 
-    MFATokenDataEntity mfaToken = mfaTokenEntities.getFirst();
+    MFASessionEntity mfaToken = mfaTokenEntities.getFirst();
 
-    return MFATokenDataMapper.fromMFATokenEntityToMFAToken(mfaToken);
+    return MFASessionMapper.toDto(mfaToken);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

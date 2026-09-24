@@ -1,12 +1,12 @@
-package io.github.giovannilamarmora.accesssphere.token.mfa;
+package io.github.giovannilamarmora.accesssphere.mfa.session;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
+import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
+import io.github.giovannilamarmora.accesssphere.mfa.session.entity.MFASessionEntity;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
-import io.github.giovannilamarmora.accesssphere.token.mfa.dto.MFATokenData;
-import io.github.giovannilamarmora.accesssphere.token.mfa.entity.MFATokenDataEntity;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -21,43 +21,43 @@ import org.springframework.util.ObjectUtils;
 
 @Component
 @Logged
-public class MFATokenDataMapper {
-  private static final Logger LOG = LoggerFilter.getLogger(MFATokenDataService.class);
+public class MFASessionMapper {
+  private static final Logger LOG = LoggerFilter.getLogger(MFASessionMapper.class);
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static MFATokenData fromMFATokenEntityToMFAToken(MFATokenDataEntity mfaTokenDataEntity) {
-    MFATokenData mfaTokenData = new MFATokenData();
-    BeanUtils.copyProperties(mfaTokenDataEntity, mfaTokenData);
+  public static MFASession toDto(MFASessionEntity mfaSessionEntity) {
+    MFASession mfaSession = new MFASession();
+    BeanUtils.copyProperties(mfaSessionEntity, mfaSession);
     List<MFAType> mfaMethods =
-        Arrays.stream(mfaTokenDataEntity.getMfaMethods().split(" ")).map(MFAType::valueOf).toList();
-    mfaTokenData.setMfaMethods(mfaMethods);
+        Arrays.stream(mfaSessionEntity.getMfaMethods().split(" ")).map(MFAType::valueOf).toList();
+    mfaSession.setMfaMethods(mfaMethods);
     try {
-      if (!ObjectUtils.isEmpty(mfaTokenDataEntity.getPayload()))
-        mfaTokenData.setPayload(
-            Utils.mapper().readValue(mfaTokenDataEntity.getPayload().toString(), JsonNode.class));
+      if (!ObjectUtils.isEmpty(mfaSessionEntity.getPayload()))
+        mfaSession.setPayload(
+            Utils.mapper().readValue(mfaSessionEntity.getPayload().toString(), JsonNode.class));
     } catch (JsonProcessingException e) {
       LOG.error(
           "An error occurred during parsing payload to string, message is {}", e.getMessage());
       throw new TokenException(ExceptionMap.ERR_TOKEN_500, ExceptionMap.ERR_TOKEN_500.getMessage());
     }
-    return mfaTokenData;
+    return mfaSession;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static MFATokenDataEntity fromMFATokenToMFATokenEntity(MFATokenData mfaTokenData) {
-    MFATokenDataEntity mfaTokenDataEntity = new MFATokenDataEntity();
-    BeanUtils.copyProperties(mfaTokenData, mfaTokenDataEntity);
+  public static MFASessionEntity toEntity(MFASession mfaSession) {
+    MFASessionEntity mfaSessionEntity = new MFASessionEntity();
+    BeanUtils.copyProperties(mfaSession, mfaSessionEntity);
     // List<MFAType> mfaMethods = mfaToken.getMfaMethods();
     // mfaTokenEntity.setMfaMethods(mfaMethods);
     try {
-      if (!ObjectUtils.isEmpty(mfaTokenData.getPayload()))
-        mfaTokenDataEntity.setPayload(
-            Utils.mapper().readValue(mfaTokenData.getPayload().toString(), JsonNode.class));
+      if (!ObjectUtils.isEmpty(mfaSession.getPayload()))
+        mfaSessionEntity.setPayload(
+            Utils.mapper().readValue(mfaSession.getPayload().toString(), JsonNode.class));
     } catch (JsonProcessingException e) {
       LOG.error(
-          "An error occurred during parsing payload to string, message is {}", e.getMessage());
+          "An error occurred during parsing payload to JsonNode, message is {}", e.getMessage());
       throw new TokenException(ExceptionMap.ERR_TOKEN_500, ExceptionMap.ERR_TOKEN_500.getMessage());
     }
-    return mfaTokenDataEntity;
+    return mfaSessionEntity;
   }
 }
