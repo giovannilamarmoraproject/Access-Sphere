@@ -71,9 +71,7 @@ class ProjectInitializerServiceTest {
     verify(clientDAO, times(1)).save(clientCaptor.capture());
     ClientCredentialEntity savedClient = clientCaptor.getValue();
     assertEquals("ACCESS-SPHERE-TECH", savedClient.getClientId());
-    assertNotNull(savedClient.getAppRoles());
-    assertTrue(savedClient.getAppRoles().contains("ROLE_ADMIN"));
-    assertTrue(savedClient.getAppRoles().contains("ROLE_TECH"));
+    verify(roleDefinitionDAO, times(2)).save(any());
 
     // Verify User Seed
     ArgumentCaptor<UserEntity> userCaptor = ArgumentCaptor.forClass(UserEntity.class);
@@ -111,9 +109,6 @@ class ProjectInitializerServiceTest {
     ClientCredentialEntity existingClient = new ClientCredentialEntity();
     existingClient.setJwtSecret("existing_jwt_secret_value");
     existingClient.setRedirect_uri("{\"fallback_uri\":\"http://localhost/app/login\",\"redirect_uri\":\"http://localhost/app\"}");
-    existingClient.setAppRoles(
-        "[{\"role\":\"ROLE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
-            + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\",\"permissions\":[\"*\"]}]");
     when(clientDAO.findByClientId("ACCESS-SPHERE-TECH"))
         .thenReturn(existingClient);
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))

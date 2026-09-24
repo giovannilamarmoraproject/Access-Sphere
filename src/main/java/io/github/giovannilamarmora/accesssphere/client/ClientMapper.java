@@ -49,10 +49,7 @@ public class ClientMapper {
               clientCredentialEntity.getJweSecret(),
               clientCredentialEntity.getJweExpiration(),
               clientCredentialEntity.getRegistrationToken(),
-              /*ObjectUtils.isEmpty(clientCredentialEntity.getDefaultRoles())
-              ? null
-              : Arrays.stream(clientCredentialEntity.getDefaultRoles().split(" ")).toList()*/
-              parseAppRoles(clientCredentialEntity.getAppRoles()),
+              null, // appRoles popolati da ROLE_DEFINITIONS a livello di ClientService
               clientCredentialEntity.getIdToken(),
               clientCredentialEntity.getAccessToken(),
               clientCredentialEntity.getAuthorize_redirect_status(),
@@ -89,9 +86,6 @@ public class ClientMapper {
         clientCredential.getJweSecret(),
         clientCredential.getJweExpiration(),
         clientCredential.getRegistrationToken(),
-        ObjectUtils.isEmpty(clientCredential.getAppRoles())
-            ? null
-            : Mapper.writeObjectToString(normalizeAppRoles(clientCredential.getAppRoles())),
         clientCredential.getIdToken(),
         clientCredential.getAccessToken(),
         clientCredential.getAuthorize_redirect_status(),
@@ -123,10 +117,6 @@ public class ClientMapper {
     existingClient.setJweSecret(clientCredential.getJweSecret());
     existingClient.setJweExpiration(clientCredential.getJweExpiration());
     existingClient.setRegistrationToken(clientCredential.getRegistrationToken());
-    existingClient.setAppRoles(
-        ObjectUtils.isEmpty(clientCredential.getAppRoles())
-            ? null
-            : Mapper.writeObjectToString(normalizeAppRoles(clientCredential.getAppRoles())));
     existingClient.setIdToken(clientCredential.getIdToken());
     existingClient.setAccessToken(clientCredential.getAccessToken());
     existingClient.setAuthorize_redirect_status(clientCredential.getAuthorize_redirect_status());

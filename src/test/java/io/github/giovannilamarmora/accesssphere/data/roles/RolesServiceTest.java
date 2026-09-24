@@ -271,7 +271,6 @@ class RolesServiceTest {
     io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity clientEntity =
         new io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity();
     clientEntity.setClientId("linkatutto");
-    clientEntity.setAppRoles("[]");
 
     when(clientDAO.findByClientId("linkatutto")).thenReturn(clientEntity);
     when(roleDefinitionDAO.existsByClientIdAndRole("linkatutto", "ROLE_NEW")).thenReturn(false);
@@ -297,7 +296,6 @@ class RolesServiceTest {
     io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity clientEntity =
         new io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity();
     clientEntity.setClientId("linkatutto");
-    clientEntity.setAppRoles("[{\"role\":\"ROLE_OBSOLETE\"},{\"role\":\"ROLE_REMAINING\"}]");
 
     when(clientDAO.findByClientId("linkatutto")).thenReturn(clientEntity);
 

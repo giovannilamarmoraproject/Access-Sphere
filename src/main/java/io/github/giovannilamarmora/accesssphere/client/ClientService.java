@@ -19,6 +19,9 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -58,7 +61,9 @@ public class ClientService {
       LOG.error("Client with ID: {} not found in Database", clientID);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
-    return Mono.just(clientCredentialEntity).map(ClientMapper::toDTO);
+    ClientCredential dto = ClientMapper.toDTO(clientCredentialEntity);
+    populateAppRoles(dto);
+    return Mono.just(dto);
   }
 
   /** Recupera la lista di tutti i Client restituiti come oggetto Response reattivo. */
@@ -87,14 +92,31 @@ public class ClientService {
       LOG.error("No clients found in Database");
       return Mono.error(new OAuthException(ExceptionMap.ERR_OAUTH_404, "Clients not found!"));
     }
-    return Mono.just(clientCredentialEntity)
-        .map(ClientMapper::toDTOList)
-        .map(
-            client -> {
-              TechUserValidator.validateTechClient(
-                  client, accessTokenData, techUserService.getTechClientId());
-              return client;
-            });
+    List<RoleDefinitionEntity> allRoles = roleDefinitionDAO.findAll();
+    Map<String, List<AppRole>> rolesByClient =
+        allRoles != null
+            ? allRoles.stream()
+                .filter(r -> r.getClientId() != null)
+                .collect(
+                    Collectors.groupingBy(
+                        r -> r.getClientId().toUpperCase(),
+                        Collectors.mapping(
+                            r -> new AppRole(r.getRole(), r.getType(), r.getDescription(), r.getPermissions()),
+                            Collectors.toList())))
+            : Map.of();
+
+    List<ClientCredential> dtos =
+        clientCredentialEntity.stream()
+            .map(ClientMapper::toDTO)
+            .peek(
+                dto ->
+                    dto.setAppRoles(
+                        rolesByClient.getOrDefault(dto.getClientId().toUpperCase(), List.of())))
+            .toList();
+
+    TechUserValidator.validateTechClient(
+        dtos, accessTokenData, techUserService.getTechClientId());
+    return Mono.just(dtos);
   }
 
   /** Inserisce un nuovo ClientCredential a database e persiste le definizioni ruoli nella tabella relazionale. */
@@ -149,7 +171,16 @@ public class ClientService {
         for (AppRole appRole : clientCredential.getAppRoles()) {
           if (appRole != null && appRole.getRole() != null) {
             String rName = appRole.getRole().trim().toUpperCase();
-            if (!roleDefinitionDAO.existsByClientIdAndRole(clientCredential.getClientId(), rName)) {
+            Optional<RoleDefinitionEntity> existingRole =
+                roleDefinitionDAO.findByClientIdAndRole(clientCredential.getClientId(), rName);
+            if (existingRole.isPresent()) {
+              RoleDefinitionEntity roleEntity = existingRole.get();
+              roleEntity.setType(appRole.getType());
+              roleEntity.setDescription(appRole.getDescription());
+              roleEntity.setPermissions(
+                  appRole.getPermissions() != null ? appRole.getPermissions() : List.of("*"));
+              roleDefinitionDAO.save(roleEntity);
+            } else {
               roleDefinitionDAO.save(
                   new RoleDefinitionEntity(
                       clientCredential.getClientId(),
@@ -184,6 +215,21 @@ public class ClientService {
       LOG.debug("Client {} successfully removed", clientCredential.getClientId());
     } else {
       LOG.warn("No action taken: Client {} not found for removal", clientCredential.getClientId());
+    }
+  }
+
+  /**
+   * Helper per popolare l'elenco dei ruoli applicativi sul DTO ClientCredential
+   * leggendo direttamente dalla tabella relazionale ROLE_DEFINITIONS.
+   */
+  private void populateAppRoles(ClientCredential dto) {
+    if (dto == null || dto.getClientId() == null) return;
+    List<RoleDefinitionEntity> roles = roleDefinitionDAO.findByClientId(dto.getClientId());
+    if (roles != null) {
+      dto.setAppRoles(
+          roles.stream()
+              .map(r -> new AppRole(r.getRole(), r.getType(), r.getDescription(), r.getPermissions()))
+              .toList());
     }
   }
 }

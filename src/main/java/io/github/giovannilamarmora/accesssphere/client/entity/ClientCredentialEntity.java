@@ -70,10 +70,6 @@ public class ClientCredentialEntity extends GenericEntity {
   @Column(name = "REGISTRATION_TOKEN")
   private String registrationToken;
 
-  @Lob
-  @Column(name = "APP_ROLES", columnDefinition = "TEXT")
-  private String appRoles;
-
   @Column(name = "ID_TOKEN")
   private Boolean idToken;
 

@@ -160,15 +160,6 @@ public class ProjectInitializerService implements ApplicationRunner {
             techClientId);
         needsUpdate = true;
       }
-      if (!StringUtils.hasText(existing.getAppRoles()) || !existing.getAppRoles().contains("permissions")) {
-        existing.setAppRoles(
-            "[{\"role\":\"ROLE_ADMIN\",\"type\":\"ADMIN\",\"description\":\"Administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
-                + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\",\"permissions\":[\"*\"]}]");
-        LOG.info(
-            "🔄 Migrated appRoles to include default permissions [*] for Technical OAuth Client [{}]",
-            techClientId);
-        needsUpdate = true;
-      }
       if (needsUpdate) {
         clientDAO.save(existing);
         LOG.info("✅ Existing Technical OAuth Client [{}] successfully updated in DB", techClientId);
@@ -190,9 +181,6 @@ public class ProjectInitializerService implements ApplicationRunner {
     client.setScopes("openid profile email read write admin");
     client.setJwtSecret(jwtSecret);
     client.setRedirect_uri(redirectUriJson);
-    client.setAppRoles(
-        "[{\"role\":\"ROLE_ADMIN\",\"type\":\"ADMIN\",\"description\":\"Administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
-            + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\",\"permissions\":[\"*\"]}]");
     client.setMfaEnabled(false);
     client.setAuthorize_redirect_status(HttpStatus.FOUND);
     client.setJwtExpiration(3600000L);
@@ -202,13 +190,12 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Inizializza e sincronizza le definizioni dei ruoli applicativi nella tabella relazionale
-   * {@code ROLE_DEFINITIONS} e {@code ROLE_PERMISSIONS}.
+   * Inizializza le definizioni dei ruoli applicativi di default nella tabella relazionale
+   * {@code ROLE_DEFINITIONS}.
    *
    * <p>Interconnessioni:
    * <ul>
    *   <li>Assicura la presenza dei ruoli tecnici di base ({@code ROLE_ADMIN}, {@code ROLE_TECH}) per il client tecnico.</li>
-   *   <li>Esegue la migrazione automatica e idempotente da eventuale configurazione JSON legacy ({@code OAUTH_CLIENT.APP_ROLES}) alla tabella relazionale per tutti i client OAuth2 presenti a DB.</li>
    * </ul>
    */
   private void initRoleDefinitions() {
@@ -236,44 +223,6 @@ public class ProjectInitializerService implements ApplicationRunner {
       roleDefinitionDAO.save(adminRole);
       roleDefinitionDAO.save(techRole);
       LOG.info("✅ Default technical roles seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
-    }
-
-    // 2. Migrazione trasparente e idempotente da JSON legacy (OAUTH_CLIENT.APP_ROLES) a ROLE_DEFINITIONS
-    List<ClientCredentialEntity> allClients = clientDAO.findAll();
-    for (ClientCredentialEntity client : allClients) {
-      if (!StringUtils.hasText(client.getAppRoles())) {
-        continue;
-      }
-      List<AppRole> parsedRoles = ClientMapper.parseAppRoles(client.getAppRoles());
-      if (parsedRoles == null || parsedRoles.isEmpty()) {
-        continue;
-      }
-      String cId = client.getClientId();
-      for (AppRole appRole : parsedRoles) {
-        if (appRole == null || !StringUtils.hasText(appRole.getRole())) {
-          continue;
-        }
-        String rName = appRole.getRole().trim().toUpperCase();
-        boolean exists = roleDefinitionDAO.existsByClientIdAndRole(cId, rName);
-        if (!exists) {
-          List<String> perms =
-              (appRole.getPermissions() != null && !appRole.getPermissions().isEmpty())
-                  ? appRole.getPermissions()
-                  : List.of("*");
-          RoleDefinitionEntity entity =
-              new RoleDefinitionEntity(
-                  cId,
-                  rName,
-                  appRole.getType(),
-                  appRole.getDescription(),
-                  perms);
-          roleDefinitionDAO.save(entity);
-          LOG.info(
-              "🔄 [MIGRATION] Migrated legacy JSON role [{}] for client [{}] into ROLE_DEFINITIONS",
-              rName,
-              cId);
-        }
-      }
     }
     LOG.info("✅ Role Definitions and Permissions seeding check completed successfully.");
   }

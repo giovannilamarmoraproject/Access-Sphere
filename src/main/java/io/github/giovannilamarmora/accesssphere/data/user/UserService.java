@@ -288,31 +288,6 @@ public class UserService {
                       if (rd.getType() != null) dto.setType(rd.getType());
                       if (rd.getDescription() != null) dto.setDescription(rd.getDescription());
                       if (rd.getPermissions() != null) dto.setPermissions(rd.getPermissions());
-                    } else {
-                      // Fallback di sicurezza su OAUTH_CLIENT.APP_ROLES se non ancora migrato
-                      ClientCredentialEntity clientEntity =
-                          clientDAO.findByClientId(ucr.getClientId());
-                      if (clientEntity != null && clientEntity.getAppRoles() != null) {
-                        List<AppRole> appRoles =
-                            ClientMapper.parseAppRoles(clientEntity.getAppRoles());
-                        if (appRoles != null) {
-                          appRoles.stream()
-                              .filter(
-                                  ar ->
-                                      ar != null
-                                          && ar.getRole() != null
-                                          && ar.getRole().equalsIgnoreCase(ucr.getRole()))
-                              .findFirst()
-                              .ifPresent(
-                                  ar -> {
-                                    if (ar.getType() != null) dto.setType(ar.getType());
-                                    if (ar.getDescription() != null)
-                                      dto.setDescription(ar.getDescription());
-                                    if (ar.getPermissions() != null)
-                                      dto.setPermissions(ar.getPermissions());
-                                  });
-                        }
-                      }
                     }
                     return dto;
                   })

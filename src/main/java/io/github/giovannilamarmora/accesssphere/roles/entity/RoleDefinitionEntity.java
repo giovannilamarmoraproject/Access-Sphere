@@ -13,14 +13,14 @@ import lombok.NoArgsConstructor;
 
 /**
  * Entità relazionale enterprise che definisce un Ruolo applicativo all'interno del catalogo di un Client OAuth2.
- * Sostituisce la serializzazione JSON monolitica su colonna TEXT con un modello relazionale normalizzato.
- * I permessi granulari associati a ciascun ruolo sono persistiti sulla tabella dedicata {@code ROLE_PERMISSIONS}.
+ * Sostituisce la serializzazione JSON nei client memorizzando ciascun ruolo applicativo nella tabella dedicata {@code ROLE_DEFINITIONS}.
+ * I permessi granulari associati a ciascun ruolo sono memorizzati direttamente nella colonna {@code PERMISSIONS} tramite {@link JsonStringListConverter}.
  *
  * <p>Interconnessioni:
  * <ul>
  *   <li>Mappato per Client ID ({@code CLIENT_ID}) e nome ruolo ({@code ROLE_NAME}).</li>
- *   <li>I permessi in {@link #permissions} sono collegati tramite chiave esterna {@code ROLE_ID} sulla tabella {@code ROLE_PERMISSIONS}.</li>
- *   <li>Utilizzato da {@code RolesService} per il catalogo e da {@code UserService} per l'arricchimento RBAC.</li>
+ *   <li>I permessi in {@link #permissions} sono serializzati in formato JSON nella colonna {@code PERMISSIONS} della stessa tabella.</li>
+ *   <li>Utilizzato da {@code RolesService} per il catalogo, da {@code ClientService} e da {@code UserService} per l'arricchimento RBAC.</li>
  * </ul>
  */
 @EqualsAndHashCode(callSuper = true)
@@ -60,11 +60,9 @@ public class RoleDefinitionEntity extends GenericEntity {
   @Column(name = "DESCRIPTION")
   private String description;
 
-  @ElementCollection(fetch = FetchType.EAGER)
-  @CollectionTable(
-      name = "ROLE_PERMISSIONS",
-      joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"))
-  @Column(name = "PERMISSION")
+  @Convert(converter = JsonStringListConverter.class)
+  @Lob
+  @Column(name = "PERMISSIONS", columnDefinition = "TEXT")
   private List<String> permissions = new ArrayList<>();
 
   public RoleDefinitionEntity(
