@@ -255,7 +255,8 @@ function getLoggedInUser() {
                 fullName: fullName,
                 username: claims.sub || claims.username || "",
                 email: claims.email || "",
-                roles: claims.roles || []
+                roles: claims.roles || [],
+                profilePhoto: claims.profilePhoto || claims.picture || claims.photo || null
             };
             try {
                 localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
@@ -312,7 +313,8 @@ function syncLoggedInUserProfile() {
                     fullName: fullName,
                     username: u.username || "",
                     email: u.email || "",
-                    roles: u.roles || []
+                    roles: u.roles || [],
+                    profilePhoto: u.profilePhoto || u.profile || null
                 };
                 try {
                     localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
@@ -327,28 +329,46 @@ function syncLoggedInUserProfile() {
 
 /**
  * Aggiorna i selettori DOM del profilo utente per la sidebar desktop e il drawer mobile.
+ * Gestisce sia avatar fotografico che fallback affidabile all'icona Material/FA fa-user.
  * @param {object} userObj
  */
 function updateSidebarUserDOM(userObj) {
     if (!userObj) return;
 
+    function renderAvatarContent(containerEl) {
+        if (!containerEl) return;
+        if (userObj.profilePhoto) {
+            containerEl.innerHTML = `<img src="${userObj.profilePhoto}" alt="Avatar" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-user\\'></i>';" />`;
+        } else {
+            containerEl.innerHTML = '<i class="fa-solid fa-user"></i>';
+        }
+    }
+
     // Sidebar Desktop
     const desktopNameEl = document.getElementById("sidebar-user-fullname");
     const desktopUserEl = document.getElementById("sidebar-user-username");
     const desktopCard = document.getElementById("sidebar-user-card");
+    const desktopAvatar = document.getElementById("sidebar-user-avatar");
 
     if (desktopNameEl) desktopNameEl.textContent = userObj.fullName || "Utente";
     if (desktopUserEl) desktopUserEl.textContent = userObj.username ? `@${userObj.username}` : (userObj.email || "");
     if (desktopCard) {
         desktopCard.title = `${userObj.fullName || "Utente"}${userObj.username ? ` (@${userObj.username})` : ""}`;
     }
+    if (desktopAvatar) {
+        renderAvatarContent(desktopAvatar);
+    }
 
     // Drawer Mobile
     const mobileNameEl = document.getElementById("mobile-drawer-user-fullname");
     const mobileUserEl = document.getElementById("mobile-drawer-user-username");
+    const mobileAvatar = document.getElementById("mobile-drawer-user-avatar");
 
     if (mobileNameEl) mobileNameEl.textContent = userObj.fullName || "Utente";
     if (mobileUserEl) mobileUserEl.textContent = userObj.username ? `@${userObj.username}` : (userObj.email || "");
+    if (mobileAvatar) {
+        renderAvatarContent(mobileAvatar);
+    }
 }
 
 window.decodeJwtPayload = decodeJwtPayload;
@@ -646,8 +666,8 @@ function initMobileNavigation() {
 
       <!-- Scheda Profilo Utente Mobile (Icona, Nome e Cognome) -->
       <div class="m3-mobile-user-card" id="mobile-drawer-user-card">
-        <div class="sidebar-user-avatar">
-          <i class="fa-solid fa-circle-user"></i>
+        <div class="sidebar-user-avatar" id="mobile-drawer-user-avatar">
+          ${currentUser && currentUser.profilePhoto ? `<img src="${escapeHtmlAttr(currentUser.profilePhoto)}" alt="Avatar" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-user\\'></i>';" />` : `<i class="fa-solid fa-user"></i>`}
         </div>
         <div class="sidebar-user-info">
           <span class="sidebar-user-name" id="mobile-drawer-user-fullname">${escapeHtmlAttr(currentUser ? currentUser.fullName : "Utente")}</span>

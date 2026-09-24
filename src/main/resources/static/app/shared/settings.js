@@ -329,12 +329,13 @@ const AppSettings = (function () {
             const esc = typeof escapeHtmlAttr === "function" ? escapeHtmlAttr : (s => s ? String(s).replace(/"/g, '&quot;') : '');
             const userFullName = currentUser && currentUser.fullName ? currentUser.fullName : "Utente";
             const userHandle = currentUser && currentUser.username ? `@${currentUser.username}` : (currentUser && currentUser.email ? currentUser.email : "");
+            const userPhoto = currentUser && currentUser.profilePhoto ? currentUser.profilePhoto : null;
 
             sidebar.innerHTML = `
         <!-- Scheda Profilo Utente Desktop (Icona, Nome e Cognome) -->
         <div class="sidebar-user-card" id="sidebar-user-card" title="${esc(userFullName)}${userHandle ? ` (${esc(userHandle)})` : ''}">
-          <div class="sidebar-user-avatar">
-            <i class="fa-solid fa-circle-user"></i>
+          <div class="sidebar-user-avatar" id="sidebar-user-avatar">
+            ${userPhoto ? `<img src="${esc(userPhoto)}" alt="Avatar" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-user\\'></i>';" />` : `<i class="fa-solid fa-user"></i>`}
           </div>
           <div class="sidebar-user-info">
             <span class="sidebar-user-name" id="sidebar-user-fullname">${esc(userFullName)}</span>
