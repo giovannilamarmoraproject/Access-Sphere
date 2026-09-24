@@ -40,9 +40,9 @@ class UserAdminServiceTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(userAdminService, "techUserService", techUserService);
-    ReflectionTestUtils.setField(userAdminService, "clientService", oAuth2ClientService);
+    ReflectionTestUtils.setField(userAdminService, "oAuth2ClientService", oAuth2ClientService);
     ReflectionTestUtils.setField(userAdminService, "userService", userService);
-    ReflectionTestUtils.setField(userAdminService, "accessTokenData", oAuth2Authorization);
+    ReflectionTestUtils.setField(userAdminService, "oAuth2Authorization", oAuth2Authorization);
     ReflectionTestUtils.setField(userAdminService, "webhookService", webhookService);
   }
 

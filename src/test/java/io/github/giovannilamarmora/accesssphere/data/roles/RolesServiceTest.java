@@ -54,7 +54,7 @@ class RolesServiceTest {
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(rolesService, "clientService", oAuth2ClientService);
+    ReflectionTestUtils.setField(rolesService, "oAuth2ClientService", oAuth2ClientService);
     ReflectionTestUtils.setField(rolesService, "userService", userService);
     ReflectionTestUtils.setField(rolesService, "techUserService", techUserService);
     ReflectionTestUtils.setField(rolesService, "techUserConfig", techUserConfig);

@@ -46,8 +46,8 @@ class OAuthServiceTest {
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(oAuthService, "clientService", oAuth2ClientService);
-    ReflectionTestUtils.setField(oAuthService, "accessTokenService", oAuth2AuthorizationService);
+    ReflectionTestUtils.setField(oAuthService, "oAuth2ClientService", oAuth2ClientService);
+    ReflectionTestUtils.setField(oAuthService, "oAuth2AuthorizationService", oAuth2AuthorizationService);
     ReflectionTestUtils.setField(oAuthService, "userService", userService);
 
     oAuth2Client = new OAuth2Client();

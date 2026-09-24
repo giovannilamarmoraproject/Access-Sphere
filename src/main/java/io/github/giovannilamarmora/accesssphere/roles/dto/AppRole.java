@@ -24,15 +24,22 @@ import lombok.NoArgsConstructor;
 @JsonDeserialize(using = AppRoleDeserializer.class)
 public class AppRole extends GenericDTO {
 
+  @io.swagger.v3.oas.annotations.media.Schema(description = "Identificativo numerico del ruolo a database", example = "1")
   private Long id;
 
   @JsonAlias({"name", "roleName", "value"})
+  @io.swagger.v3.oas.annotations.media.Schema(description = "Nome identificativo univoco del ruolo per il client", example = "ROLE_USER")
   private String role;
 
+  @io.swagger.v3.oas.annotations.media.Schema(description = "Tipologia di ruolo (USER, ADMIN, TECHNICAL, MANAGER)", example = "USER")
   private String type = AppRoleType.USER.getValue();
 
+  @io.swagger.v3.oas.annotations.media.Schema(description = "Descrizione testuale delle responsabilita del ruolo", example = "Ruolo standard utente applicativo")
   private String description;
 
+  @io.swagger.v3.oas.annotations.media.Schema(
+      description = "Lista dei permessi granulari associati al ruolo (es. [\"user:read\", \"user:write\"])",
+      example = "[\"user:read\", \"user:write\"]")
   private java.util.List<String> permissions;
 
   /**

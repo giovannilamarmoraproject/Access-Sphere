@@ -35,9 +35,9 @@ class OIDCServiceTest {
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(oidcService, "clientService", oAuth2ClientService);
+    ReflectionTestUtils.setField(oidcService, "oAuth2ClientService", oAuth2ClientService);
     ReflectionTestUtils.setField(oidcService, "tokenService", tokenService);
-    ReflectionTestUtils.setField(oidcService, "accessTokenData", oAuth2Authorization);
+    ReflectionTestUtils.setField(oidcService, "oAuth2Authorization", oAuth2Authorization);
     ReflectionTestUtils.setField(oidcService, "userService", userService);
   }
 

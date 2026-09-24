@@ -41,13 +41,13 @@ class UserAccountServiceTest {
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(userAccountService, "clientService", oAuth2ClientService);
+    ReflectionTestUtils.setField(userAccountService, "oAuth2ClientService", oAuth2ClientService);
     ReflectionTestUtils.setField(userAccountService, "tokenService", tokenService);
     ReflectionTestUtils.setField(userAccountService, "techUserService", techUserService);
     ReflectionTestUtils.setField(userAccountService, "emailTemplateService", emailTemplateService);
     ReflectionTestUtils.setField(userAccountService, "emailSenderService", emailSenderService);
     ReflectionTestUtils.setField(userAccountService, "userService", userService);
-    ReflectionTestUtils.setField(userAccountService, "accessTokenData", oAuth2Authorization);
+    ReflectionTestUtils.setField(userAccountService, "oAuth2Authorization", oAuth2Authorization);
   }
 
   @Test

@@ -1,224 +1,457 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientDeleteResponse;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientListResponse;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientResponse;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
-import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
-import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-@Logged
-@RestController
-@RequestMapping("/v1")
+/**
+ * Contratto OpenAPI per la gestione amministrativa dei Client OAuth 2.0.
+ *
+ * <p>Definisce le operazioni REST esposte da Access-Sphere per la registrazione, consultazione,
+ * aggiornamento ed eliminazione dei Client OAuth2. Tutti gli endpoint richiedono l'autenticazione
+ * dell'operatore tecnico/amministratore mediante Bearer token fornito nell'header HTTP Authorization.
+ *
+ * <p>Interconnessioni:
+ *
+ * <ul>
+ *   <li>Consumato dal controller di implementazione {@link OAuth2ClientControllerImpl}.
+ *   <li>Inoltra la business logic a {@link OAuth2ClientService}.
+ *   <li>Utilizza gli involucri di risposta tipizzati {@link OAuth2ClientResponse}, {@link
+ *       OAuth2ClientListResponse} e {@link OAuth2ClientDeleteResponse} per garantire una resa
+ *       dettagliata e completa dei modelli e degli esempi in Swagger UI.
+ * </ul>
+ */
 @Tag(name = OpenAPI.Tag.CLIENTS, description = OpenAPI.Description.CLIENTS)
-public class OAuth2ClientController {
+public interface OAuth2ClientController {
 
-  @Autowired private OAuth2ClientService oAuth2ClientService;
-
+  /**
+   * Recupera l'elenco completo di tutti i Client OAuth 2.0 registrati a catalogo.
+   *
+   * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
+   * @param request Richiesta HTTP server reattiva.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e lista di {@link
+   *     OAuth2Client}.
+   */
   @GetMapping("/clients")
   @Operation(
-      description = "API to get the Clients (Only Tech User)",
       summary = "Get Clients",
-      tags = OpenAPI.Tag.CLIENTS)
-  @ApiResponse(
-      responseCode = "200",
-      description = "Successful operation",
-      content = @Content(schema = @Schema(implementation = Response.class)))
-  @ApiResponse(
-      responseCode = "401",
-      description = "Unauthorized",
-      content =
-          @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = ExceptionResponse.class)))
-  @ApiResponse(
-      responseCode = "403",
-      description = "Forbidden",
-      content =
-          @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = ExceptionResponse.class)))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> getClientCredentials(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      ServerHttpRequest request) {
-    return oAuth2ClientService.getClients();
-  }
+      description = "API to get all registered OAuth 2.0 Clients (Reserved for Technical/Admin Operators)",
+      tags = OpenAPI.Tag.CLIENTS,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "List of OAuth 2.0 clients retrieved successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = OAuth2ClientListResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Missing or invalid Bearer token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Caller does not have sufficient technical permissions",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No clients found in Database",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  Mono<ResponseEntity<Response>> getClientCredentials(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      ServerHttpRequest request);
 
+  /**
+   * Recupera i dettagli e le credenziali di un singolo Client OAuth 2.0 specificato tramite Client ID.
+   *
+   * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
+   * @param clientId Identificativo univoco del client desiderato.
+   * @param request Richiesta HTTP server reattiva.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link OAuth2Client}.
+   */
+  @GetMapping("/clients/{clientId}")
+  @Operation(
+      summary = "Get Client by ID",
+      description = "API to retrieve details of a specific OAuth 2.0 Client by Client ID (Reserved for Technical/Admin Operators)",
+      tags = OpenAPI.Tag.CLIENTS,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "OAuth 2.0 client retrieved successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = OAuth2ClientResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request - Invalid client ID provided",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Missing or invalid Bearer token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Caller does not have sufficient technical permissions",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Client not found in Database",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  Mono<ResponseEntity<Response>> getClientById(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @PathVariable(value = "clientId")
+          @Schema(
+              description = OpenAPI.Params.Description.CLIENT_ID,
+              example = OpenAPI.Params.Example.CLIENT_ID)
+          String clientId,
+      ServerHttpRequest request);
+
+  /**
+   * Registra e crea un nuovo Client OAuth 2.0 nel catalogo del sistema IAM.
+   *
+   * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
+   * @param oAuth2Client DTO con la configurazione e le credenziali del nuovo client.
+   * @param request Richiesta HTTP server reattiva.
+   * @return {@link Mono} contenente {@link ResponseEntity} con stato 201 CREATED e {@link OAuth2Client}.
+   */
   @PostMapping("/clients")
   @Operation(
-      description = "API to create a new Client (Only Tech User)",
       summary = "Create Client",
-      tags = OpenAPI.Tag.CLIENTS)
-  @ApiResponse(
-      responseCode = "201",
-      description = "Client successfully created",
-      content = @Content(schema = @Schema(implementation = Response.class)))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> createClient(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid OAuth2Client oAuth2Client,
-      ServerHttpRequest request) {
-    oAuth2ClientService.addClientToDatabase(oAuth2Client);
-    Response response =
-        new Response(
-            HttpStatus.CREATED.value(),
-            "Client created",
-            io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
-            oAuth2Client);
-    return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(response));
-  }
-
-  @Deprecated(since = "2.0.0")
-  @PostMapping("/client")
-  @Operation(
-      description =
-          "Deprecated: use POST /v1/clients instead. API to create a new Client (Only Tech User)",
-      summary = "Create Client (Deprecated)",
+      description = "API to create a new OAuth 2.0 Client (Reserved for Technical/Admin Operators)",
       tags = OpenAPI.Tag.CLIENTS,
-      deprecated = true)
-  @ApiResponse(
-      responseCode = "200",
-      description = "Client successfully created (Legacy)",
-      content = @Content(schema = @Schema(implementation = Response.class)))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> createClientLegacy(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid OAuth2Client oAuth2Client,
-      ServerHttpRequest request) {
-    return createClient(bearer, oAuth2Client, request)
-        .map(entity -> ResponseEntity.ok(entity.getBody()));
-  }
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Client successfully created",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = OAuth2ClientResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request - Invalid client configuration or validation failure",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Missing or invalid Bearer token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Caller does not have sufficient technical permissions",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  Mono<ResponseEntity<Response>> createClient(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @RequestBody @Valid @NotNull(message = "Client payload cannot be null") OAuth2Client oAuth2Client,
+      ServerHttpRequest request);
 
+  /**
+   * Aggiorna un Client OAuth 2.0 esistente identificato tramite il Client ID passato come path variable.
+   *
+   * @param clientId Identificativo univoco del client da aggiornare.
+   * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
+   * @param oAuth2Client DTO contenente le nuove configurazioni del client.
+   * @param request Richiesta HTTP server reattiva.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link OAuth2Client}.
+   */
   @PutMapping("/clients/{clientId}")
   @Operation(
-      description = "API to update an existing Client by Client ID (Only Tech User)",
       summary = "Update Client by ID",
-      tags = OpenAPI.Tag.CLIENTS)
-  @ApiResponse(
-      responseCode = "200",
-      description = "Client successfully updated",
-      content = @Content(schema = @Schema(implementation = Response.class)))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> updateClientById(
-      @PathVariable String clientId,
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid OAuth2Client oAuth2Client,
-      ServerHttpRequest request) {
-    if (oAuth2Client.getClientId() == null) {
-      oAuth2Client.setClientId(clientId);
-    }
-    oAuth2ClientService.updateClientInDatabase(oAuth2Client);
-    Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            "Client updated",
-            io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
-            oAuth2Client);
-    return Mono.just(ResponseEntity.ok(response));
-  }
+      description = "API to update an existing OAuth 2.0 Client identified by path variable (Reserved for Technical/Admin Operators)",
+      tags = OpenAPI.Tag.CLIENTS,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Client successfully updated",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = OAuth2ClientResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request - Invalid client data or payload",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Missing or invalid Bearer token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Caller does not have sufficient technical permissions",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Client not found in Database",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  Mono<ResponseEntity<Response>> updateClientById(
+      @PathVariable(value = "clientId")
+          @Schema(
+              description = OpenAPI.Params.Description.CLIENT_ID,
+              example = OpenAPI.Params.Example.CLIENT_ID)
+          String clientId,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @RequestBody @Valid @NotNull(message = "Client payload cannot be null") OAuth2Client oAuth2Client,
+      ServerHttpRequest request);
 
+  /**
+   * Aggiorna un Client OAuth 2.0 esistente utilizzando il Client ID specificato all'interno del body.
+   *
+   * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
+   * @param oAuth2Client DTO contenente il client_id e le nuove configurazioni.
+   * @param request Richiesta HTTP server reattiva.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link OAuth2Client}.
+   */
   @PutMapping("/clients")
   @Operation(
-      description = "API to update an existing Client (Only Tech User)",
       summary = "Update Client",
-      tags = OpenAPI.Tag.CLIENTS)
-  @ApiResponse(
-      responseCode = "200",
-      description = "Client successfully updated",
-      content = @Content(schema = @Schema(implementation = Response.class)))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> updateClient(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid OAuth2Client oAuth2Client,
-      ServerHttpRequest request) {
-    oAuth2ClientService.updateClientInDatabase(oAuth2Client);
-    Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            "Client updated",
-            io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
-            oAuth2Client);
-    return Mono.just(ResponseEntity.ok(response));
-  }
-
-  @Deprecated(since = "2.0.0")
-  @PutMapping("/client")
-  @Operation(
-      description =
-          "Deprecated: use PUT /v1/clients or PUT /v1/clients/{clientId} instead. API to update an existing Client (Only Tech User)",
-      summary = "Update Client (Deprecated)",
+      description = "API to update an existing OAuth 2.0 Client using the clientId in the request body (Reserved for Technical/Admin Operators)",
       tags = OpenAPI.Tag.CLIENTS,
-      deprecated = true)
-  @ApiResponse(
-      responseCode = "200",
-      description = "Client successfully updated",
-      content = @Content(schema = @Schema(implementation = Response.class)))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> updateClientLegacy(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid OAuth2Client oAuth2Client,
-      ServerHttpRequest request) {
-    return updateClient(bearer, oAuth2Client, request);
-  }
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Client successfully updated",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = OAuth2ClientResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request - Invalid client data or payload",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Missing or invalid Bearer token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Caller does not have sufficient technical permissions",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Client not found in Database",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  Mono<ResponseEntity<Response>> updateClient(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @RequestBody @Valid @NotNull(message = "Client payload cannot be null") OAuth2Client oAuth2Client,
+      ServerHttpRequest request);
 
+  /**
+   * Elimina un Client OAuth 2.0 specificato tramite Client ID dal database del sistema IAM.
+   *
+   * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
+   * @param clientId Identificativo univoco del client da eliminare.
+   * @param request Richiesta HTTP server reattiva.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} dell'avvenuta eliminazione.
+   */
   @DeleteMapping("/clients/{clientId}")
   @Operation(
-      description = "API to delete an existing Client (Only Tech User)",
       summary = "Delete Client",
-      tags = OpenAPI.Tag.CLIENTS)
-  @ApiResponse(
-      responseCode = "200",
-      description = "Client successfully deleted",
-      content = @Content(schema = @Schema(implementation = Response.class)))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> deleteClient(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @PathVariable String clientId,
-      ServerHttpRequest request) {
-    OAuth2Client cred = new OAuth2Client();
-    cred.setClientId(clientId);
-    oAuth2ClientService.deleteClientFromDatabase(cred);
-    Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            "Client deleted",
-            io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
-            null);
-    return Mono.just(ResponseEntity.ok(response));
-  }
-
-  @Deprecated(since = "2.0.0")
-  @DeleteMapping("/client/{clientId}")
-  @Operation(
-      description =
-          "Deprecated: use DELETE /v1/clients/{clientId} instead. API to delete an existing Client (Only Tech User)",
-      summary = "Delete Client (Deprecated)",
+      description = "API to delete an existing OAuth 2.0 Client (Reserved for Technical/Admin Operators)",
       tags = OpenAPI.Tag.CLIENTS,
-      deprecated = true)
-  @ApiResponse(
-      responseCode = "200",
-      description = "Client successfully deleted",
-      content = @Content(schema = @Schema(implementation = Response.class)))
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> deleteClientLegacy(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @PathVariable String clientId,
-      ServerHttpRequest request) {
-    return deleteClient(bearer, clientId, request);
-  }
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Client successfully deleted",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = OAuth2ClientDeleteResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request - Invalid client ID",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Missing or invalid Bearer token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Caller does not have sufficient technical permissions",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Client not found in Database",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  Mono<ResponseEntity<Response>> deleteClient(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      @PathVariable(value = "clientId")
+          @Schema(
+              description = OpenAPI.Params.Description.CLIENT_ID,
+              example = OpenAPI.Params.Example.CLIENT_ID)
+          String clientId,
+      ServerHttpRequest request);
 }

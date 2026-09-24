@@ -66,6 +66,23 @@ public class OAuth2ClientService {
     return Mono.just(dto);
   }
 
+  /**
+   * Recupera le credenziali di un Client dato il suo clientID restituendo una Response HTTP 200.
+   *
+   * @param clientID Identificativo univoco del client.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response}.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> getClientById(String clientID) {
+    return getClientCredentialByClientID(clientID)
+        .map(
+            client -> {
+              Response response =
+                  new Response(HttpStatus.OK.value(), "Client details", TraceUtils.getSpanID(), client);
+              return ResponseEntity.ok(response);
+            });
+  }
+
   /** Recupera la lista di tutti i Client restituiti come oggetto Response reattivo. */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> getClients() {
