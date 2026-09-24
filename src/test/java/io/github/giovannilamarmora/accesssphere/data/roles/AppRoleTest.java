@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.giovannilamarmora.accesssphere.client.ClientMapper;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientMapper;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
@@ -64,7 +64,7 @@ class AppRoleTest {
   void shouldDeserializeMixedAppRolesList() throws JsonProcessingException {
     String json =
         "{\"clientId\":\"TEST-CLIENT\",\"appRoles\":[\"ROLE_USER\",{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\"}]}";
-    ClientCredential client = mapper.readValue(json, ClientCredential.class);
+    OAuth2Client client = mapper.readValue(json, OAuth2Client.class);
 
     assertNotNull(client);
     assertNotNull(client.getAppRoles());
@@ -78,12 +78,12 @@ class AppRoleTest {
   @Test
   @DisplayName("ClientMapper.parseAppRoles should handle JSON array, plain strings and null")
   void shouldParseAppRolesResiliently() {
-    assertNull(ClientMapper.parseAppRoles(null));
-    assertNull(ClientMapper.parseAppRoles(""));
+    assertNull(OAuth2ClientMapper.parseAppRoles(null));
+    assertNull(OAuth2ClientMapper.parseAppRoles(""));
 
     // JSON array
     List<AppRole> parsedJson =
-        ClientMapper.parseAppRoles(
+        OAuth2ClientMapper.parseAppRoles(
             "[{\"role\":\"ROLE_USER\"},{\"role\":\"ROLE_ADMIN\",\"type\":\"ADMIN\"}]");
     assertNotNull(parsedJson);
     assertEquals(2, parsedJson.size());
@@ -91,7 +91,8 @@ class AppRoleTest {
     assertEquals("USER", parsedJson.get(0).getType());
 
     // Legacy space/comma separated strings
-    List<AppRole> parsedDelimited = ClientMapper.parseAppRoles("ROLE_ADMIN, ROLE_TECH ROLE_USER");
+    List<AppRole> parsedDelimited =
+        OAuth2ClientMapper.parseAppRoles("ROLE_ADMIN, ROLE_TECH ROLE_USER");
     assertNotNull(parsedDelimited);
     assertEquals(3, parsedDelimited.size());
     assertEquals("ROLE_ADMIN", parsedDelimited.get(0).getRole());
@@ -102,11 +103,11 @@ class AppRoleTest {
   @Test
   @DisplayName("OAuthValidator.validateClientRoles should enforce at least one role")
   void shouldValidateMandatoryRole() {
-    ClientCredential clientWithoutRoles = new ClientCredential();
+    OAuth2Client clientWithoutRoles = new OAuth2Client();
     assertThrows(
         OAuthException.class, () -> OAuthValidator.validateClientRoles(clientWithoutRoles));
 
-    ClientCredential clientWithUserRole = new ClientCredential();
+    OAuth2Client clientWithUserRole = new OAuth2Client();
     clientWithUserRole.setAppRoles(List.of(new AppRole("ROLE_USER", "USER", "User role")));
     assertDoesNotThrow(() -> OAuthValidator.validateClientRoles(clientWithUserRole));
   }

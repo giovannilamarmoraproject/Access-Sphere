@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
@@ -35,25 +35,25 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class OAuthServiceTest {
 
-  @Mock private ClientService clientService;
+  @Mock private OAuth2ClientService oAuth2ClientService;
   @Mock private OAuth2AuthorizationService oAuth2AuthorizationService;
   @Mock private UserService userService;
 
   @InjectMocks private OAuthService oAuthService;
 
-  private ClientCredential clientCredential;
+  private OAuth2Client oAuth2Client;
   private OAuth2Authorization oAuth2Authorization;
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(oAuthService, "clientService", clientService);
+    ReflectionTestUtils.setField(oAuthService, "clientService", oAuth2ClientService);
     ReflectionTestUtils.setField(oAuthService, "accessTokenService", oAuth2AuthorizationService);
     ReflectionTestUtils.setField(oAuthService, "userService", userService);
 
-    clientCredential = new ClientCredential();
-    clientCredential.setClientId("TEST-CLIENT");
-    clientCredential.setAuthType(OAuthType.BEARER);
-    clientCredential.setAppRoles(
+    oAuth2Client = new OAuth2Client();
+    oAuth2Client.setClientId("TEST-CLIENT");
+    oAuth2Client.setAuthType(OAuthType.BEARER);
+    oAuth2Client.setAppRoles(
         List.of(new AppRole("ROLE_USER", AppRoleType.USER.getValue(), "Default user role")));
 
     oAuth2Authorization = new OAuth2Authorization();
@@ -72,8 +72,8 @@ class OAuthServiceTest {
             .build();
     MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
-    when(clientService.getClientCredentialByClientID("TEST-CLIENT"))
-        .thenReturn(Mono.just(clientCredential));
+    when(oAuth2ClientService.getClientCredentialByClientID("TEST-CLIENT"))
+        .thenReturn(Mono.just(oAuth2Client));
     when(oAuth2AuthorizationService.getByAccessTokenOrIdToken("Bearer valid-token"))
         .thenReturn(oAuth2Authorization);
 
@@ -118,8 +118,8 @@ class OAuthServiceTest {
     mockUser.setEmail("test@example.com");
     mockUser.setAttributes(Map.of("strapi-token", "strapi-jwt-secret-xyz"));
 
-    when(clientService.getClientCredentialByClientID("TEST-CLIENT"))
-        .thenReturn(Mono.just(clientCredential));
+    when(oAuth2ClientService.getClientCredentialByClientID("TEST-CLIENT"))
+        .thenReturn(Mono.just(oAuth2Client));
     when(oAuth2AuthorizationService.getByAccessTokenOrIdToken("Bearer valid-token"))
         .thenReturn(oAuth2Authorization);
     when(userService.getUserByIdentifier("user-uuid-123")).thenReturn(Mono.just(mockUser));

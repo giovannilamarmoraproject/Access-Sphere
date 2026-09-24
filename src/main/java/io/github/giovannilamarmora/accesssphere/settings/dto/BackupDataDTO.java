@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.settings.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
+import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
@@ -22,7 +22,7 @@ public class BackupDataDTO {
   private String timestamp;
   private String exportedBy;
   private AppSettingsEntity settings;
-  private List<ClientCredentialEntity> clients;
+  private List<OAuth2ClientEntity> clients;
   private List<UserEntity> users;
   private List<RoleDefinitionEntity> roles;
   private List<UserClientRoleEntity> userClientRoles;

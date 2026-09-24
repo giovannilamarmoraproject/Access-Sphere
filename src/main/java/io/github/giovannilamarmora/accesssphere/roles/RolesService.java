@@ -1,20 +1,18 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientMapper;
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
-import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
-import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
-import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
@@ -28,7 +26,6 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
-import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,12 +46,18 @@ import reactor.core.publisher.Mono;
  * Servizio di dominio per l'amministrazione dei ruoli e permessi utente (RBAC).
  *
  * <p>Interconnessioni logiche:
+ *
  * <ul>
- *   <li>Persiste le relazioni utente-client-ruolo su tabella relazionale {@code USER_CLIENT_ROLE} via {@link IUserClientRoleDAO}.
- *   <li>Mantiene la retrocompatibilita al 100% sincronizzando la colonna denormalizzata legacy {@code USERS.ROLES} via {@link UserService}.
- *   <li>Risolve la validita dei ruoli dai client OAuth2 registrati tramite {@link ClientService} e {@link IClientDAO}.
- *   <li>Gestisce il catalogo centralizzato dei ruoli e permessi su {@code /v1/roles} con CRUD atomico e revoca a cascata.
- *   <li>Consente l'esecuzione delle operazioni esclusivamente a operatori autenticati con ruolo tecnico ({@link TechUserService}).
+ *   <li>Persiste le relazioni utente-client-ruolo su tabella relazionale {@code USER_CLIENT_ROLE}
+ *       via {@link IUserClientRoleDAO}.
+ *   <li>Mantiene la retrocompatibilita al 100% sincronizzando la colonna denormalizzata legacy
+ *       {@code USERS.ROLES} via {@link UserService}.
+ *   <li>Risolve la validita dei ruoli dai client OAuth2 registrati tramite {@link
+ *       OAuth2ClientService} e {@link IOAuth2ClientDAO}.
+ *   <li>Gestisce il catalogo centralizzato dei ruoli e permessi su {@code /v1/roles} con CRUD
+ *       atomico e revoca a cascata.
+ *   <li>Consente l'esecuzione delle operazioni esclusivamente a operatori autenticati con ruolo
+ *       tecnico ({@link TechUserService}).
  * </ul>
  */
 @Service
@@ -62,21 +65,22 @@ import reactor.core.publisher.Mono;
 public class RolesService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  @Autowired private ClientService clientService;
+  @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private UserService userService;
   @Autowired private TechUserService techUserService;
   @Autowired private TechUserConfig techUserConfig;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
-  @Autowired private IClientDAO clientDAO;
+  @Autowired private IOAuth2ClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
 
   /**
-   * Modifica i ruoli assegnati a un determinato utente, persistendo le associazioni nella tabella relazionale
-   * {@code USER_CLIENT_ROLE} e mantenendo allineata per retrocompatibilita la lista flat legacy in {@code USERS.ROLES}.
-   * Supporta sia il formato moderno basato su {@code clientRoles} (client-scoped con permessi aggregati), sia
-   * il formato legacy basato su array flat di stringhe {@code roles}.
-   * L'operazione e consentita esclusivamente a un utente tecnico autorizzato.
+   * Modifica i ruoli assegnati a un determinato utente, persistendo le associazioni nella tabella
+   * relazionale {@code USER_CLIENT_ROLE} e mantenendo allineata per retrocompatibilita la lista
+   * flat legacy in {@code USERS.ROLES}. Supporta sia il formato moderno basato su {@code
+   * clientRoles} (client-scoped con permessi aggregati), sia il formato legacy basato su array flat
+   * di stringhe {@code roles}. L'operazione e consentita esclusivamente a un utente tecnico
+   * autorizzato.
    *
    * @param identifier Identificatore univoco UUID dell'utente.
    * @param roles Oggetto contenente la lista dei ruoli da assegnare (clientRoles e/o roles legacy).
@@ -92,12 +96,13 @@ public class RolesService {
     }
 
     String techClientId = techUserConfig.getTechClientId();
-    Mono<List<ClientCredential>> getClients = clientService.getClientCredentials();
+    Mono<List<OAuth2Client>> getClients = oAuth2ClientService.getClientCredentials();
 
     return getClients
         .flatMap(
             clientCredentials -> {
-              // 1. Raccoglie tutti i ruoli ammessi dai client registrati (nome ruolo e tipologia applicativa)
+              // 1. Raccoglie tutti i ruoli ammessi dai client registrati (nome ruolo e tipologia
+              // applicativa)
               Set<String> allowedRoles = new HashSet<>();
               if (clientCredentials != null) {
                 clientCredentials.forEach(
@@ -117,7 +122,8 @@ public class RolesService {
                     });
               }
 
-              // 2. Raccoglie i ruoli canonici/di sistema definiti a livello di piattaforma (UserRole e AppRoleType)
+              // 2. Raccoglie i ruoli canonici/di sistema definiti a livello di piattaforma
+              // (UserRole e AppRoleType)
               Arrays.stream(UserRole.values())
                   .forEach(
                       ur -> {
@@ -132,25 +138,39 @@ public class RolesService {
               List<String> distinctRoleNames = new ArrayList<>();
 
               // CASO A: Ricevuto formato moderno 'clientRoles'
-              if (roles != null && roles.getClientRoles() != null && !roles.getClientRoles().isEmpty()) {
-                LOG.info("👥 [ROLES] Processing modern clientRoles payload with {} entries", roles.getClientRoles().size());
+              if (roles != null
+                  && roles.getClientRoles() != null
+                  && !roles.getClientRoles().isEmpty()) {
+                LOG.info(
+                    "👥 [ROLES] Processing modern clientRoles payload with {} entries",
+                    roles.getClientRoles().size());
                 for (UserClientRoleDTO cr : roles.getClientRoles()) {
                   if (cr == null || cr.getRole() == null || cr.getRole().isBlank()) continue;
-                  String targetClientId = (cr.getClientId() != null && !cr.getClientId().isBlank())
-                      ? cr.getClientId().trim()
-                      : techClientId;
+                  String targetClientId =
+                      (cr.getClientId() != null && !cr.getClientId().isBlank())
+                          ? cr.getClientId().trim()
+                          : techClientId;
                   String roleName = cr.getRole().trim().toUpperCase();
 
-                  boolean valid = allowedRoles.stream().anyMatch(ar -> ar.equalsIgnoreCase(roleName));
+                  boolean valid =
+                      allowedRoles.stream().anyMatch(ar -> ar.equalsIgnoreCase(roleName));
                   if (!valid) {
-                    LOG.warn("⚠️ [ROLES] Discarding unrecognized client-scoped role [{}] for client [{}]", roleName, targetClientId);
+                    LOG.warn(
+                        "⚠️ [ROLES] Discarding unrecognized client-scoped role [{}] for client [{}]",
+                        roleName,
+                        targetClientId);
                     continue;
                   }
 
-                  boolean alreadyAdded = entitiesToSave.stream()
-                      .anyMatch(e -> e.getClientId().equalsIgnoreCase(targetClientId) && e.getRole().equalsIgnoreCase(roleName));
+                  boolean alreadyAdded =
+                      entitiesToSave.stream()
+                          .anyMatch(
+                              e ->
+                                  e.getClientId().equalsIgnoreCase(targetClientId)
+                                      && e.getRole().equalsIgnoreCase(roleName));
                   if (!alreadyAdded) {
-                    entitiesToSave.add(new UserClientRoleEntity(identifier, targetClientId, roleName));
+                    entitiesToSave.add(
+                        new UserClientRoleEntity(identifier, targetClientId, roleName));
                   }
                   if (!distinctRoleNames.contains(roleName)) {
                     distinctRoleNames.add(roleName);
@@ -159,29 +179,38 @@ public class RolesService {
               }
               // CASO B: Ricevuto formato legacy 'roles' (array flat di stringhe)
               else if (roles != null && roles.getRoles() != null && !roles.getRoles().isEmpty()) {
-                LOG.info("👥 [ROLES] Processing legacy roles payload with {} entries", roles.getRoles().size());
-                List<String> validLegacyRoles = roles.getRoles().stream()
-                    .filter(Objects::nonNull)
-                    .map(String::trim)
-                    .filter(r -> !r.isBlank())
-                    .filter(r -> {
-                      boolean valid = allowedRoles.stream().anyMatch(ar -> ar.equalsIgnoreCase(r));
-                      if (!valid) {
-                        LOG.warn("⚠️ [ROLES] Discarding unrecognized role [{}] for user {}", r, identifier);
-                      }
-                      return valid;
-                    })
-                    .map(String::toUpperCase)
-                    .distinct()
-                    .toList();
+                LOG.info(
+                    "👥 [ROLES] Processing legacy roles payload with {} entries",
+                    roles.getRoles().size());
+                List<String> validLegacyRoles =
+                    roles.getRoles().stream()
+                        .filter(Objects::nonNull)
+                        .map(String::trim)
+                        .filter(r -> !r.isBlank())
+                        .filter(
+                            r -> {
+                              boolean valid =
+                                  allowedRoles.stream().anyMatch(ar -> ar.equalsIgnoreCase(r));
+                              if (!valid) {
+                                LOG.warn(
+                                    "⚠️ [ROLES] Discarding unrecognized role [{}] for user {}",
+                                    r,
+                                    identifier);
+                              }
+                              return valid;
+                            })
+                        .map(String::toUpperCase)
+                        .distinct()
+                        .toList();
 
                 for (String r : validLegacyRoles) {
                   // Determina a quale client appartiene il ruolo
                   String targetClientId = techClientId;
                   if (clientCredentials != null) {
-                    for (ClientCredential cc : clientCredentials) {
+                    for (OAuth2Client cc : clientCredentials) {
                       if (cc.getAppRoles() != null) {
-                        boolean match = cc.getAppRoles().stream().anyMatch(ar -> ar != null && ar.matches(r));
+                        boolean match =
+                            cc.getAppRoles().stream().anyMatch(ar -> ar != null && ar.matches(r));
                         if (match) {
                           targetClientId = cc.getClientId();
                           break;
@@ -199,7 +228,10 @@ public class RolesService {
               userClientRoleDAO.deleteByUserIdentifier(identifier);
               if (!entitiesToSave.isEmpty()) {
                 userClientRoleDAO.saveAll(entitiesToSave);
-                LOG.info("💾 [ROLES] Persisted {} entries in USER_CLIENT_ROLE for user {}", entitiesToSave.size(), identifier);
+                LOG.info(
+                    "💾 [ROLES] Persisted {} entries in USER_CLIENT_ROLE for user {}",
+                    entitiesToSave.size(),
+                    identifier);
               }
 
               // 4. Sincronizzazione per retrocompatibilita su USERS.ROLES
@@ -242,7 +274,8 @@ public class RolesService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> assignClientRole(
       String identifier, String clientId, String role) {
-    LOG.info("👥 [ROLES] Assigning role [{}] for client [{}] to user [{}]", role, clientId, identifier);
+    LOG.info(
+        "👥 [ROLES] Assigning role [{}] for client [{}] to user [{}]", role, clientId, identifier);
     if (!techUserService.isTechUser()) {
       LOG.error("❌ Only a tech user can assign client roles");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
@@ -269,7 +302,8 @@ public class RolesService {
               }
 
               // Sincronizza campo flat legacy
-              List<String> currentRoles = new ArrayList<>(user.getRoles() != null ? user.getRoles() : List.of());
+              List<String> currentRoles =
+                  new ArrayList<>(user.getRoles() != null ? user.getRoles() : List.of());
               if (!currentRoles.contains(normalizedRole)) {
                 currentRoles.add(normalizedRole);
                 user.setRoles(currentRoles);
@@ -282,7 +316,10 @@ public class RolesService {
                         Response response =
                             new Response(
                                 HttpStatus.OK.value(),
-                                "Role " + normalizedRole + " successfully assigned for client " + normalizedClientId,
+                                "Role "
+                                    + normalizedRole
+                                    + " successfully assigned for client "
+                                    + normalizedClientId,
                                 TraceUtils.getSpanID(),
                                 updatedUser);
                         return ResponseEntity.ok(response);
@@ -302,7 +339,8 @@ public class RolesService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> revokeClientRole(
       String identifier, String clientId, String role) {
-    LOG.info("👥 [ROLES] Revoking role [{}] for client [{}] from user [{}]", role, clientId, identifier);
+    LOG.info(
+        "👥 [ROLES] Revoking role [{}] for client [{}] from user [{}]", role, clientId, identifier);
     if (!techUserService.isTechUser()) {
       LOG.error("❌ Only a tech user can revoke client roles");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
@@ -345,7 +383,10 @@ public class RolesService {
                         Response response =
                             new Response(
                                 HttpStatus.OK.value(),
-                                "Role " + normalizedRole + " successfully revoked for client " + normalizedClientId,
+                                "Role "
+                                    + normalizedRole
+                                    + " successfully revoked for client "
+                                    + normalizedClientId,
                                 TraceUtils.getSpanID(),
                                 updatedUser);
                         return ResponseEntity.ok(response);
@@ -429,9 +470,9 @@ public class RolesService {
   }
 
   /**
-   * Restituisce la lista degli utenti a cui è attualmente assegnato uno specifico ruolo per un client.
-   * Utilizzato in particolare dalla console prima della cancellazione per mostrare l'elenco nominativo
-   * degli utenti impattati nel popup di conferma SweetAlert2.
+   * Restituisce la lista degli utenti a cui è attualmente assegnato uno specifico ruolo per un
+   * client. Utilizzato in particolare dalla console prima della cancellazione per mostrare l'elenco
+   * nominativo degli utenti impattati nel popup di conferma SweetAlert2.
    *
    * @param clientId Identificativo univoco del client OAuth2.
    * @param role Nome identificativo del ruolo.
@@ -499,7 +540,7 @@ public class RolesService {
     String clientId = dto.getClientId().trim();
     String roleName = dto.getRole().trim().toUpperCase();
 
-    ClientCredentialEntity clientEntity = clientDAO.findByClientId(clientId);
+    OAuth2ClientEntity clientEntity = clientDAO.findByClientId(clientId);
     if (clientEntity == null) {
       LOG.error("❌ Client [{}] not found", clientId);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_404, "Client not found: " + clientId);
@@ -509,13 +550,16 @@ public class RolesService {
     if (exists) {
       LOG.error("❌ Role [{}] already exists for client [{}]", roleName, clientId);
       throw new OAuthException(
-          ExceptionMap.ERR_OAUTH_400, "Role " + roleName + " already exists for client " + clientId);
+          ExceptionMap.ERR_OAUTH_400,
+          "Role " + roleName + " already exists for client " + clientId);
     }
 
     String rawType = dto.getType();
     String type =
         StringUtils.hasText(rawType)
-            ? ("DEFAULT".equalsIgnoreCase(rawType.trim()) ? AppRoleType.USER.getValue() : rawType.trim().toUpperCase())
+            ? ("DEFAULT".equalsIgnoreCase(rawType.trim())
+                ? AppRoleType.USER.getValue()
+                : rawType.trim().toUpperCase())
             : AppRoleType.USER.getValue();
 
     RoleDefinitionEntity newRoleEntity =
@@ -529,7 +573,13 @@ public class RolesService {
 
     RoleDefinitionDTO result =
         new RoleDefinitionDTO(
-            clientId, roleName, type, dto.getDescription(), newRoleEntity.getPermissions(), 0, List.of());
+            clientId,
+            roleName,
+            type,
+            dto.getDescription(),
+            newRoleEntity.getPermissions(),
+            0,
+            List.of());
     Response response =
         new Response(
             HttpStatus.CREATED.value(),
@@ -541,7 +591,8 @@ public class RolesService {
 
   /**
    * Aggiorna metadati, tipologia e permessi di un ruolo esistente su uno specifico Client OAuth2.
-   * Se il nome del ruolo viene modificato, aggiorna a cascata le associazioni corrispondenti in USER_CLIENT_ROLE.
+   * Se il nome del ruolo viene modificato, aggiorna a cascata le associazioni corrispondenti in
+   * USER_CLIENT_ROLE.
    *
    * @param clientId Identificativo univoco del client OAuth2.
    * @param role Nome attuale del ruolo da aggiornare.
@@ -563,9 +614,10 @@ public class RolesService {
     String newRoleName =
         StringUtils.hasText(dto.getRole()) ? dto.getRole().trim().toUpperCase() : currentRoleName;
 
-    ClientCredentialEntity clientEntity = clientDAO.findByClientId(normalizedClientId);
+    OAuth2ClientEntity clientEntity = clientDAO.findByClientId(normalizedClientId);
     if (clientEntity == null) {
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_404, "Client not found: " + normalizedClientId);
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_404, "Client not found: " + normalizedClientId);
     }
 
     RoleDefinitionEntity targetRoleEntity =
@@ -577,7 +629,8 @@ public class RolesService {
                         ExceptionMap.ERR_OAUTH_404,
                         "Role " + currentRoleName + " not found for client " + normalizedClientId));
 
-    // Se il nome è variato, verifica che non entri in collisione con un altro ruolo esistente del client
+    // Se il nome è variato, verifica che non entri in collisione con un altro ruolo esistente del
+    // client
     if (!currentRoleName.equalsIgnoreCase(newRoleName)) {
       boolean duplicate =
           roleDefinitionDAO.existsByClientIdAndRole(normalizedClientId, newRoleName);
@@ -599,7 +652,8 @@ public class RolesService {
 
     if (StringUtils.hasText(dto.getType())) {
       String rawType = dto.getType().trim().toUpperCase();
-      targetRoleEntity.setType("DEFAULT".equalsIgnoreCase(rawType) ? AppRoleType.USER.getValue() : rawType);
+      targetRoleEntity.setType(
+          "DEFAULT".equalsIgnoreCase(rawType) ? AppRoleType.USER.getValue() : rawType);
     }
     targetRoleEntity.setDescription(dto.getDescription());
     if (dto.getPermissions() != null) {
@@ -651,8 +705,8 @@ public class RolesService {
 
   /**
    * Elimina un ruolo applicativo dal Client e revoca a cascata tutte le assegnazioni utente
-   * corrispondenti dalla tabella USER_CLIENT_ROLE, sincronizzando la colonna legacy USERS.ROLES
-   * per gli utenti impattati.
+   * corrispondenti dalla tabella USER_CLIENT_ROLE, sincronizzando la colonna legacy USERS.ROLES per
+   * gli utenti impattati.
    *
    * @param clientId Identificativo univoco del client OAuth2.
    * @param role Nome del ruolo da eliminare.
@@ -670,9 +724,10 @@ public class RolesService {
     String normalizedClientId = clientId.trim();
     String normalizedRole = role.trim().toUpperCase();
 
-    ClientCredentialEntity clientEntity = clientDAO.findByClientId(normalizedClientId);
+    OAuth2ClientEntity clientEntity = clientDAO.findByClientId(normalizedClientId);
     if (clientEntity == null) {
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_404, "Client not found: " + normalizedClientId);
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_404, "Client not found: " + normalizedClientId);
     }
 
     List<RoleDefinitionEntity> currentRoles = roleDefinitionDAO.findByClientId(normalizedClientId);
@@ -686,10 +741,13 @@ public class RolesService {
       LOG.error("❌ Cannot delete the only remaining role for client [{}]", normalizedClientId);
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_400,
-          "Cannot delete role " + normalizedRole + ". Every OAuth2 client must have at least one role configured.");
+          "Cannot delete role "
+              + normalizedRole
+              + ". Every OAuth2 client must have at least one role configured.");
     }
 
-    boolean exists = currentRoles.stream().anyMatch(r -> r.getRole().equalsIgnoreCase(normalizedRole));
+    boolean exists =
+        currentRoles.stream().anyMatch(r -> r.getRole().equalsIgnoreCase(normalizedRole));
     if (!exists) {
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_404,
@@ -720,8 +778,7 @@ public class RolesService {
     for (String uId : impactedUserIdentifiers) {
       UserEntity user = userDAO.findUserEntityByIdentifier(uId);
       if (user != null) {
-        List<UserClientRoleEntity> remainingUserRoles =
-            userClientRoleDAO.findByUserIdentifier(uId);
+        List<UserClientRoleEntity> remainingUserRoles = userClientRoleDAO.findByUserIdentifier(uId);
         boolean stillHasRole =
             remainingUserRoles.stream().anyMatch(r -> r.getRole().equalsIgnoreCase(normalizedRole));
 
@@ -749,4 +806,3 @@ public class RolesService {
     return Mono.just(ResponseEntity.ok(response));
   }
 }
-

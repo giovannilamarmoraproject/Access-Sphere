@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.data.user.admin;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.UserException;
@@ -45,7 +45,7 @@ import reactor.core.publisher.Mono;
  * <ul>
  *   <li>Verifica l'autorizzazione tecnica degli operatori tramite {@link TechUserService} e {@link
  *       TechUserValidator}.
- *   <li>Risolve la configurazione dei client OAuth tramite {@link ClientService}.
+ *   <li>Risolve la configurazione dei client OAuth tramite {@link OAuth2ClientService}.
  *   <li>Esegue le operazioni di lettura, creazione e cancellazione delegando al layer di
  *       persistenza puro {@link UserService}.
  *   <li>Interagisce con {@link OAuth2AuthorizationService} per l'analisi dei privilegi di token
@@ -63,7 +63,7 @@ public class UserAdminService {
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
   @Autowired private TechUserService techUserService;
-  @Autowired private ClientService clientService;
+  @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private UserService userService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
@@ -76,8 +76,8 @@ public class UserAdminService {
    *
    * <ul>
    *   <li>Se l'operatore autenticato e' l'utente tecnico ({@link TechUserService#isTechUser()}),
-   *       valida i ruoli tecnici su {@link ClientService} e restituisce l'elenco completo di tutti
-   *       gli utenti da {@link UserService}.
+   *       valida i ruoli tecnici su {@link OAuth2ClientService} e restituisce l'elenco completo di
+   *       tutti gli utenti da {@link UserService}.
    *   <li>Se l'operatore autenticato e' un utente normale/amministratore delegato, restituisce
    *       l'elenco filtrato escludendo l'utenza tecnica di sistema ({@link
    *       TechUserService#isTechnicalUser(User)}), garantendone l'invisibilita' e la protezione da
@@ -102,7 +102,7 @@ public class UserAdminService {
     }
 
     if (techUserService.isTechUser()) {
-      return clientService
+      return oAuth2ClientService
           .getClientCredentialByClientID(techUserService.getTechClientId())
           .flatMap(
               clientCredential -> {
@@ -174,7 +174,7 @@ public class UserAdminService {
           ExceptionMap.ERR_USER_400, "User %s already exist".formatted(user.getUsername()));
     }
 
-    return clientService
+    return oAuth2ClientService
         .getClientCredentialByClientID(clientId)
         .flatMap(
             clientCredential -> {
@@ -197,17 +197,17 @@ public class UserAdminService {
    *
    * @param bearer Token di autorizzazione opzionale dell'utente chiamante.
    * @param user DTO con i dati del nuovo utente.
-   * @param clientCredential Credenziali del client OAuth2 associato.
+   * @param oAuth2Client Credenziali del client OAuth2 associato.
    * @param assignNewClient Flag per eventuale generazione nuove credenziali.
    * @return Mono contenente il DTO {@link User} persistito.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> registerUser(
-      String bearer, User user, ClientCredential clientCredential, Boolean assignNewClient) {
+      String bearer, User user, OAuth2Client oAuth2Client, Boolean assignNewClient) {
     LOG.info(
         "👤 [USER ADMIN] Registering user: {}, email: {}", user.getUsername(), user.getEmail());
     List<AppRole> clientRoles =
-        clientCredential.getAppRoles() != null ? clientCredential.getAppRoles() : List.of();
+        oAuth2Client.getAppRoles() != null ? oAuth2Client.getAppRoles() : List.of();
     List<AppRole> userRoles =
         clientRoles.stream().filter(appRole -> appRole != null && appRole.isUser()).toList();
 
@@ -215,7 +215,7 @@ public class UserAdminService {
       LOG.info("🛡️ Bearer token present, checking technical roles");
       OAuth2Authorization tokenData = oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
 
-      if (RoleManager.hasPermissionRoles(tokenData, clientCredential)
+      if (RoleManager.hasPermissionRoles(tokenData, oAuth2Client)
           && !ObjectToolkit.isNullOrEmpty(user.getRoles())) {
         userRoles =
             clientRoles.stream()
@@ -231,12 +231,12 @@ public class UserAdminService {
         userRoles = List.of(clientRoles.getFirst());
         LOG.warn(
             "⚠️ No USER role explicitly found on client {}; falling back to first available role [{}]",
-            clientCredential.getClientId(),
+            oAuth2Client.getClientId(),
             userRoles.getFirst().getRole());
       } else {
         LOG.error(
             "❌ Roles not present on client configuration for client_id {}",
-            clientCredential.getClientId());
+            oAuth2Client.getClientId());
         throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
       }
     }
@@ -292,7 +292,7 @@ public class UserAdminService {
               }
 
               if (techUserService.isTechUser()) {
-                return clientService
+                return oAuth2ClientService
                     .getClientCredentialByClientID(techUserService.getTechClientId())
                     .flatMap(
                         clientCredential -> {
@@ -350,7 +350,7 @@ public class UserAdminService {
               }
 
               if (techUserService.isTechUser()) {
-                return clientService
+                return oAuth2ClientService
                     .getClientCredentialByClientID(techUserService.getTechClientId())
                     .flatMap(
                         clientCredential -> {

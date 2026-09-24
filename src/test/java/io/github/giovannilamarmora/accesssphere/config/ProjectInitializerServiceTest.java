@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
-import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
+import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
+import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
@@ -29,10 +29,17 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class ProjectInitializerServiceTest {
 
-  @Mock private IClientDAO clientDAO;
+  @Mock private IOAuth2ClientDAO clientDAO;
   @Mock private IUserDAO userDAO;
-  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
-  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO roleDefinitionDAO;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO
+      userClientRoleDAO;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO
+      roleDefinitionDAO;
+
   @Mock private IAppSettingsDAO appSettingsDAO;
   @Mock private IEmailTemplateDAO emailTemplateDAO;
 
@@ -59,18 +66,20 @@ class ProjectInitializerServiceTest {
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))
         .thenReturn(null);
     when(appSettingsDAO.findAll()).thenReturn(Collections.emptyList());
-    when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID))
+    when(emailTemplateDAO.findByIdentifier(
+            ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID))
         .thenReturn(Collections.emptyList());
-    when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER))
+    when(emailTemplateDAO.findByIdentifier(
+            ProjectInitializerService.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER))
         .thenReturn(Collections.emptyList());
 
     projectInitializerService.run(null);
 
     // Verify Client Seed
-    ArgumentCaptor<ClientCredentialEntity> clientCaptor =
-        ArgumentCaptor.forClass(ClientCredentialEntity.class);
+    ArgumentCaptor<OAuth2ClientEntity> clientCaptor =
+        ArgumentCaptor.forClass(OAuth2ClientEntity.class);
     verify(clientDAO, times(1)).save(clientCaptor.capture());
-    ClientCredentialEntity savedClient = clientCaptor.getValue();
+    OAuth2ClientEntity savedClient = clientCaptor.getValue();
     assertEquals("ACCESS-SPHERE-TECH", savedClient.getClientId());
     verify(roleDefinitionDAO, times(2)).save(any());
 
@@ -97,7 +106,9 @@ class ProjectInitializerServiceTest {
         ArgumentCaptor.forClass(EmailTemplateEntity.class);
     verify(emailTemplateDAO, times(1)).save(templateCaptor.capture());
     EmailTemplateEntity savedTemplate = templateCaptor.getValue();
-    assertEquals(ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID, savedTemplate.getIdentifier());
+    assertEquals(
+        ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID,
+        savedTemplate.getIdentifier());
     assertEquals("Reset Password", savedTemplate.getSubject());
     assertNotNull(savedTemplate.getTemplate());
     assertTrue(savedTemplate.getTemplate().contains("Poppins"));
@@ -107,11 +118,11 @@ class ProjectInitializerServiceTest {
   @Test
   @DisplayName("run does not seed when client, user, settings, and email templates already exist")
   void testRunSkipsWhenAlreadyPresent() {
-    ClientCredentialEntity existingClient = new ClientCredentialEntity();
+    OAuth2ClientEntity existingClient = new OAuth2ClientEntity();
     existingClient.setJwtSecret("existing_jwt_secret_value");
-    existingClient.setRedirect_uri("{\"fallback_uri\":\"http://localhost/app/login\",\"redirect_uri\":\"http://localhost/app\"}");
-    when(clientDAO.findByClientId("ACCESS-SPHERE-TECH"))
-        .thenReturn(existingClient);
+    existingClient.setRedirect_uri(
+        "{\"fallback_uri\":\"http://localhost/app/login\",\"redirect_uri\":\"http://localhost/app\"}");
+    when(clientDAO.findByClientId("ACCESS-SPHERE-TECH")).thenReturn(existingClient);
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))
         .thenReturn(new UserEntity());
     when(appSettingsDAO.findAll()).thenReturn(List.of(new AppSettingsEntity()));
@@ -119,9 +130,11 @@ class ProjectInitializerServiceTest {
     existingTpl.setIdentifier(ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
     existingTpl.setClientId("ACCESS-SPHERE-TECH");
     existingTpl.setTemplate("<html>Poppins</html>");
-    when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID))
+    when(emailTemplateDAO.findByIdentifier(
+            ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID))
         .thenReturn(List.of(existingTpl));
-    when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER))
+    when(emailTemplateDAO.findByIdentifier(
+            ProjectInitializerService.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER))
         .thenReturn(Collections.emptyList());
     io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity existingRole =
         new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity(
@@ -139,9 +152,11 @@ class ProjectInitializerServiceTest {
   }
 
   @Test
-  @DisplayName("resolveBaseUrl handles custom domain without scheme, with http, and with trailing slashes")
+  @DisplayName(
+      "resolveBaseUrl handles custom domain without scheme, with http, and with trailing slashes")
   void testResolveBaseUrlFormats() {
-    // Caso 1: dominio remoto senza schema e con slash finali -> assegna https:// e rimuove trailing slash
+    // Caso 1: dominio remoto senza schema e con slash finali -> assegna https:// e rimuove trailing
+    // slash
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", "my-domain.com///");
     assertEquals("https://my-domain.com", projectInitializerService.resolveBaseUrl());
 
@@ -170,20 +185,20 @@ class ProjectInitializerServiceTest {
     assertEquals("http://localhost:8080", projectInitializerService.resolveBaseUrl());
 
     // Caso 8: dominio con https esplicito -> mantiene https://
-    ReflectionTestUtils.setField(projectInitializerService, "appDomain", "https://auth.example.org/");
+    ReflectionTestUtils.setField(
+        projectInitializerService, "appDomain", "https://auth.example.org/");
     assertEquals("https://auth.example.org", projectInitializerService.resolveBaseUrl());
 
     // Caso 9: https esplicito su localhost -> mantiene https://
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", "https://localhost:8443");
     assertEquals("https://localhost:8443", projectInitializerService.resolveBaseUrl());
 
-    // Caso 10: dominio vuoto o null -> lancia IllegalArgumentException perche il dominio e obbligatorio
+    // Caso 10: dominio vuoto o null -> lancia IllegalArgumentException perche il dominio e
+    // obbligatorio
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", "");
-    assertThrows(
-        IllegalArgumentException.class, () -> projectInitializerService.resolveBaseUrl());
+    assertThrows(IllegalArgumentException.class, () -> projectInitializerService.resolveBaseUrl());
 
     ReflectionTestUtils.setField(projectInitializerService, "appDomain", null);
-    assertThrows(
-        IllegalArgumentException.class, () -> projectInitializerService.resolveBaseUrl());
+    assertThrows(IllegalArgumentException.class, () -> projectInitializerService.resolveBaseUrl());
   }
 }

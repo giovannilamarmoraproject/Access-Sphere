@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.mfa.auth;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -50,25 +50,25 @@ public class MFAAuthenticationService {
   private String cookieDomain;
 
   private static final Logger LOG = LoggerFilter.getLogger(MFAStrategyFactory.class);
-  @Autowired private ClientService clientService;
+  @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private TokenService tokenService;
   @Autowired private MFASessionService mfaSessionService;
   @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public static boolean isMfaEnabled(User user, ClientCredential clientCredential) {
+  public static boolean isMfaEnabled(User user, OAuth2Client oAuth2Client) {
     boolean isEnabled =
         !ObjectToolkit.isNullOrEmpty(user.getMfaSettings())
             && user.getMfaSettings().getEnabled()
             && !ObjectToolkit.isNullOrEmpty(user.getMfaSettings().getMfaMethods())
-            && !ObjectToolkit.isNullOrEmpty(clientCredential.getMfaEnabled())
-            && clientCredential.getMfaEnabled();
+            && !ObjectToolkit.isNullOrEmpty(oAuth2Client.getMfaEnabled())
+            && oAuth2Client.getMfaEnabled();
     if (!isEnabled)
       LOG.info(
           "🔐 No MFA found for user {} and client {} (Config is {})",
           user.getIdentifier(),
-          clientCredential.getClientId(),
-          clientCredential.getMfaEnabled());
+          oAuth2Client.getClientId(),
+          oAuth2Client.getMfaEnabled());
     return isEnabled;
   }
 
@@ -79,7 +79,7 @@ public class MFAAuthenticationService {
    * @param payload Payload opzionale o claim aggiuntivi.
    * @param jwtData Dati del token JWT.
    * @param user Utente in fase di login.
-   * @param clientCredential Credenziali del Client chiamante.
+   * @param oAuth2Client Credenziali del Client chiamante.
    * @param request Richiesta HTTP in ingresso.
    * @return Mono con la risposta OAuthTokenResponse per step MFA, oppure Mono.empty() se MFA non
    *     richiesto.
@@ -89,10 +89,10 @@ public class MFAAuthenticationService {
       Map<String, Object> payload,
       JWTData jwtData,
       User user,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
 
-    if (MFAAuthenticationService.isMfaEnabled(user, clientCredential)) {
+    if (MFAAuthenticationService.isMfaEnabled(user, oAuth2Client)) {
       String deviceToken =
           RequestManager.getCookieOrHeaderData(ExposedHeaders.DEVICE_TOKEN, request);
 
@@ -126,7 +126,7 @@ public class MFAAuthenticationService {
       if (payload != null) {
         payload.put("expires_at", jwtData.getExp());
       }
-      AuthToken mfaToken = tokenService.generateMFAToken(user, clientCredential, payload);
+      AuthToken mfaToken = tokenService.generateMFAToken(user, oAuth2Client, payload);
       return Mono.just(new OAuthTokenResponse(mfaToken, jwtData, user));
     }
 
@@ -150,8 +150,8 @@ public class MFAAuthenticationService {
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(mfaSession.getClientId());
+    Mono<OAuth2Client> clientCredentialMono =
+        oAuth2ClientService.getClientCredentialByClientID(mfaSession.getClientId());
     return clientCredentialMono.flatMap(
         clientCredential -> {
           SubjectType subjectType =

@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
@@ -25,9 +25,9 @@ public class UserValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateAuthType(
-      ClientCredential clientCredential, OAuth2Authorization oAuth2Authorization) {
-    if (!clientCredential.getAuthType().equals(OAuthType.ALL_TYPE))
-      if (!clientCredential.getAuthType().equals(oAuth2Authorization.getType())) {
+      OAuth2Client oAuth2Client, OAuth2Authorization oAuth2Authorization) {
+    if (!oAuth2Client.getAuthType().equals(OAuthType.ALL_TYPE))
+      if (!oAuth2Client.getAuthType().equals(oAuth2Authorization.getType())) {
         LOG.error("❌ Invalid Authentication Type on client");
         throw new OAuthException(
             ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
@@ -61,7 +61,7 @@ public class UserValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRegistration(
-      String registration_token, ClientCredential clientCredential, User user) {
+      String registration_token, OAuth2Client oAuth2Client, User user) {
     if (!Utilities.isCharacterAndRegexValid(user.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
       LOG.error("Invalid regex for field password for user {}", user.getUsername());
       throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
@@ -76,7 +76,7 @@ public class UserValidator {
       LOG.error("Missing registration_token");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Missing registration_token!");
     }
-    if (!registration_token.equalsIgnoreCase(clientCredential.getRegistrationToken())) {
+    if (!registration_token.equalsIgnoreCase(oAuth2Client.getRegistrationToken())) {
       LOG.error("Invalid registration_token");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid registration_token!");
     }

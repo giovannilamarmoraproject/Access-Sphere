@@ -18,8 +18,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Table(name = "OAUTH_CLIENT")
-public class ClientCredentialEntity extends GenericEntity {
+@Table(name = "OAUTH2_CLIENT")
+public class OAuth2ClientEntity extends GenericEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

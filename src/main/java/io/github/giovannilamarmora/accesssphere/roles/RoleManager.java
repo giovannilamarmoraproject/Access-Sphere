@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
@@ -15,13 +15,13 @@ public class RoleManager {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public static Boolean hasPermissionRoles(
-      OAuth2Authorization oAuth2Authorization, ClientCredential clientCredential) {
+      OAuth2Authorization oAuth2Authorization, OAuth2Client oAuth2Client) {
     if (oAuth2Authorization.getSubjectType().equals(SubjectType.TECHNICAL)) {
       LOG.info("The subject {} has Technical Roles", oAuth2Authorization.getSubjectType());
       return true;
     }
     boolean hasTechRole =
-        clientCredential.getAppRoles().stream()
+        oAuth2Client.getAppRoles().stream()
             .map(AppRole::getRole)
             .anyMatch(oAuth2Authorization.getRoles()::contains);
     if (hasTechRole)

@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.token.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.Joiner;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
@@ -84,17 +84,14 @@ public class JWTData {
   }
 
   public static JWTData generateJWTData(
-      User user,
-      ClientCredential clientCredential,
-      SubjectType subject_type,
-      ServerHttpRequest request) {
+      User user, OAuth2Client oAuth2Client, SubjectType subject_type, ServerHttpRequest request) {
     String remoteAddress = WebManager.getRemoteAddress(request);
 
     List<String> effectiveRoles = null;
     List<String> effectivePermissions = null;
 
     if (user != null && user.getClientRoles() != null && !user.getClientRoles().isEmpty()) {
-      String targetClientId = clientCredential != null ? clientCredential.getClientId() : null;
+      String targetClientId = oAuth2Client != null ? oAuth2Client.getClientId() : null;
       List<io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO>
           matchingClientRoles =
               targetClientId == null
@@ -131,12 +128,12 @@ public class JWTData {
 
     // Risoluzione permessi da clientCredential.appRoles se non definiti a livello di UserClientRole
     if (ObjectToolkit.isNullOrEmpty(effectivePermissions)
-        && clientCredential != null
-        && clientCredential.getAppRoles() != null
+        && oAuth2Client != null
+        && oAuth2Client.getAppRoles() != null
         && effectiveRoles != null) {
       List<String> finalRoles = effectiveRoles;
       effectivePermissions =
-          clientCredential.getAppRoles().stream()
+          oAuth2Client.getAppRoles().stream()
               .filter(
                   ar ->
                       ar != null
@@ -153,11 +150,11 @@ public class JWTData {
         user != null ? user.getIdentifier() : null,
         ObjectToolkit.isNullOrEmpty(remoteAddress)
             ? null
-            : clientCredential.getClientId() + "." + remoteAddress,
+            : oAuth2Client.getClientId() + "." + remoteAddress,
         ObjectToolkit.isNullOrEmpty(remoteAddress)
             ? null
-            : clientCredential.getClientId() + "." + remoteAddress,
-        clientCredential.getJwtExpiration(),
+            : oAuth2Client.getClientId() + "." + remoteAddress,
+        oAuth2Client.getJwtExpiration(),
         System.currentTimeMillis(),
         URLUtils.resolveIssuer(remoteAddress, request),
         user != null ? user.getUsername() : null,
@@ -175,7 +172,7 @@ public class JWTData {
         ObjectToolkit.isNullOrEmpty(effectiveRoles) ? null : effectiveRoles,
         ObjectToolkit.isNullOrEmpty(effectivePermissions) ? null : effectivePermissions,
         OAuthType.BEARER,
-        clientCredential.getClientId(),
+        oAuth2Client.getClientId(),
         null);
   }
 }

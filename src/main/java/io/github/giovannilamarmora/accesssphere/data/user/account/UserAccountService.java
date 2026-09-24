@@ -4,7 +4,7 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderServi
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
@@ -46,7 +46,7 @@ import reactor.core.publisher.Mono;
  *
  * <ul>
  *   <li>Risolve la configurazione del client e le tipologie di autenticazione tramite {@link
- *       ClientService}.
+ *       OAuth2ClientService}.
  *   <li>Decodifica i token Bearer con {@link TokenService#parseToken} e valida le identita' Google
  *       federate tramite {@link GrpcService#userInfo}.
  *   <li>Interroga e aggiorna l'anagrafica utente delegando al layer di persistenza {@link
@@ -65,7 +65,7 @@ public class UserAccountService {
 
   private static final Logger LOG = LoggerFilter.getLogger(UserAccountService.class);
 
-  @Autowired private ClientService clientService;
+  @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private TokenService tokenService;
   @Autowired private TechUserService techUserService;
   @Autowired private EmailTemplateService emailTemplateService;
@@ -84,7 +84,7 @@ public class UserAccountService {
   public Mono<User> profile(String bearer, ServerHttpRequest request) {
     LOG.info("👤 [USER ACCOUNT] Starting user profile retrieval process");
 
-    return clientService
+    return oAuth2ClientService
         .getClientCredentialByClientID(oAuth2Authorization.getClientId())
         .flatMap(
             clientCredential -> {
@@ -137,7 +137,7 @@ public class UserAccountService {
         finalIdentifier);
 
     return techUserService
-        .hasTechUserRoles(oAuth2Authorization, clientService)
+        .hasTechUserRoles(oAuth2Authorization, oAuth2ClientService)
         .flatMap(
             hasTechRoles -> {
               if (!hasTechRoles) {

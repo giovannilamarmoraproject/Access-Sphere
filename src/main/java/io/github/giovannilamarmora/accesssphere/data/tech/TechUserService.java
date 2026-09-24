@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.data.tech;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
@@ -111,12 +111,12 @@ public class TechUserService extends TechUserConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<Boolean> hasTechUserRoles(
-      OAuth2Authorization oAuth2Authorization, ClientService clientService) {
+      OAuth2Authorization oAuth2Authorization, OAuth2ClientService oAuth2ClientService) {
     if (oAuth2Authorization.getSubjectType().equals(SubjectType.TECHNICAL)) {
       logTechRole(oAuth2Authorization.getSubject());
       return Mono.just(true);
     }
-    return clientService
+    return oAuth2ClientService
         .getClientCredentialByClientID(techClientId)
         .map(
             clientCredential ->
@@ -131,13 +131,13 @@ public class TechUserService extends TechUserConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Boolean hasTechUserRoles(
-      OAuth2Authorization oAuth2Authorization, ClientCredential clientCredential) {
+      OAuth2Authorization oAuth2Authorization, OAuth2Client oAuth2Client) {
     if (oAuth2Authorization.getSubjectType().equals(SubjectType.TECHNICAL)) {
       logTechRole(oAuth2Authorization.getSubject());
       return true;
     }
     boolean hasTechRole =
-        clientCredential.getAppRoles().stream()
+        oAuth2Client.getAppRoles().stream()
             .map(AppRole::getRole)
             .anyMatch(oAuth2Authorization.getRoles()::contains);
     if (hasTechRole) logTechRole(oAuth2Authorization.getSubject());

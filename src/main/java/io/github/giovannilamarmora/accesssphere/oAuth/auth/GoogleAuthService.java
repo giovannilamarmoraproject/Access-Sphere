@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.admin.UserAdminService;
@@ -56,7 +56,7 @@ public class GoogleAuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> performGoogleLogin(
       GoogleModel googleModel,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       String redirect_uri,
       ServerHttpRequest request,
       ServerHttpResponse serverHttpResponse) {
@@ -85,7 +85,7 @@ public class GoogleAuthService {
         .getUserByEmail(googleModel.getJwtData().getEmail())
         .map(
             user -> {
-              OAuthValidator.validateUserRoles(clientCredential, user.getRoles());
+              OAuthValidator.validateUserRoles(oAuth2Client, user.getRoles());
               googleModel.setJwtData(
                   GrpcMapper.setIdentifier(googleModel.getJwtData(), user.getIdentifier()));
               googleModel.getJwtData().setRoles(user.getRoles());
@@ -93,7 +93,7 @@ public class GoogleAuthService {
 
               AuthToken token =
                   tokenService.generateToken(
-                      googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
+                      googleModel.getJwtData(), oAuth2Client, googleModel.getTokenResponse());
 
               OAuthTokenResponse tokenData =
                   new OAuthTokenResponse(
@@ -119,7 +119,7 @@ public class GoogleAuthService {
 
               URI finalRedirectURI =
                   OAuthMapper.getFinalRedirectURI(
-                      clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+                      oAuth2Client, RedirectUris.POST_LOGIN_URL, redirect_uri);
               if (!ObjectUtils.isEmpty(finalState)
                   && !finalRedirectURI.toString().contains("state=")) {
                 String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";
@@ -146,7 +146,7 @@ public class GoogleAuthService {
                       ExceptionMap.ERR_OAUTH_401,
                       "Missing registration_token, you cannot proceed!");
                 }
-                if (!registration_token.equalsIgnoreCase(clientCredential.getRegistrationToken())) {
+                if (!registration_token.equalsIgnoreCase(oAuth2Client.getRegistrationToken())) {
                   LOG.error("Invalid registration_token");
                   throw new OAuthException(
                       ExceptionMap.ERR_OAUTH_401,
@@ -155,20 +155,20 @@ public class GoogleAuthService {
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
                 userGoogle.setPassword(registration_token);
                 return userAdminService
-                    .registerUser(null, userGoogle, clientCredential, true)
+                    .registerUser(null, userGoogle, oAuth2Client, true)
                     .map(
                         user1 -> {
                           AppRole defaultRole =
-                              (clientCredential.getAppRoles() == null)
+                              (oAuth2Client.getAppRoles() == null)
                                   ? null
-                                  : clientCredential.getAppRoles().stream()
+                                  : oAuth2Client.getAppRoles().stream()
                                       .filter(appRole -> appRole != null && appRole.isUser())
                                       .findFirst()
                                       .orElseGet(
                                           () ->
-                                              clientCredential.getAppRoles().isEmpty()
+                                              oAuth2Client.getAppRoles().isEmpty()
                                                   ? null
-                                                  : clientCredential.getAppRoles().getFirst());
+                                                  : oAuth2Client.getAppRoles().getFirst());
                           googleModel.setJwtData(
                               GrpcMapper.setIdentifier(
                                   googleModel.getJwtData(), user1.getIdentifier()));
@@ -181,7 +181,7 @@ public class GoogleAuthService {
                           AuthToken token =
                               tokenService.generateToken(
                                   googleModel.getJwtData(),
-                                  clientCredential,
+                                  oAuth2Client,
                                   googleModel.getTokenResponse());
                           OAuthTokenResponse tokenData =
                               new OAuthTokenResponse(
@@ -199,7 +199,7 @@ public class GoogleAuthService {
                                   tokenData);
                           URI finalRedirectURI =
                               OAuthMapper.getFinalRedirectURI(
-                                  clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+                                  oAuth2Client, RedirectUris.POST_LOGIN_URL, redirect_uri);
                           if (!ObjectUtils.isEmpty(finalState)
                               && !finalRedirectURI.toString().contains("state=")) {
                             String separator =
@@ -222,7 +222,7 @@ public class GoogleAuthService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> refreshGoogleToken(
       OAuth2Authorization oAuth2Authorization,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
 
     boolean includeUserInfo =
@@ -238,7 +238,7 @@ public class GoogleAuthService {
 
     String token = oAuth2Authorization.getPayload().get("refresh_token").textValue();
 
-    GoogleModel googleModel = GrpcService.refreshToken(token, clientCredential);
+    GoogleModel googleModel = GrpcService.refreshToken(token, oAuth2Client);
 
     return userService
         .getUserByEmail(googleModel.getJwtData().getEmail())
@@ -249,7 +249,7 @@ public class GoogleAuthService {
               googleModel.getJwtData().setSub(user.getUsername());
               AuthToken authToken =
                   tokenService.generateToken(
-                      googleModel.getJwtData(), clientCredential, googleModel.getTokenResponse());
+                      googleModel.getJwtData(), oAuth2Client, googleModel.getTokenResponse());
               Response response =
                   new Response(
                       HttpStatus.OK.value(),

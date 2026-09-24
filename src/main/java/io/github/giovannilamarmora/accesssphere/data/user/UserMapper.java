@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
@@ -121,17 +121,17 @@ public class UserMapper {
    * definiti nel client.
    *
    * @param username Username dell'utente tecnico.
-   * @param clientCredential Credenziali del client OAuth che definiscono gli AppRole concessi.
+   * @param oAuth2Client Credenziali del client OAuth che definiscono gli AppRole concessi.
    * @return DTO {@link User} configurato per l'utente tecnico.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static User getTechUser(String username, ClientCredential clientCredential) {
+  public static User getTechUser(String username, OAuth2Client oAuth2Client) {
     User user = new User();
     user.setUsername(username);
     user.setRoles(
-        clientCredential.getAppRoles() == null
+        oAuth2Client.getAppRoles() == null
             ? null
-            : clientCredential.getAppRoles().stream().map(AppRole::getRole).toList());
+            : oAuth2Client.getAppRoles().stream().map(AppRole::getRole).toList());
     return user;
   }
 

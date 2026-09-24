@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
@@ -23,8 +24,12 @@ import reactor.test.StepVerifier;
 class UserServiceTest {
 
   @Mock private IUserDAO userDAO;
-  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
-  @Mock private io.github.giovannilamarmora.accesssphere.client.IClientDAO clientDAO;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO
+      userClientRoleDAO;
+
+  @Mock private IOAuth2ClientDAO clientDAO;
 
   @InjectMocks private UserService userService;
 
@@ -154,7 +159,8 @@ class UserServiceTest {
   }
 
   @Test
-  @DisplayName("updateUser should update user and preserve existing mfaSettings, tokenReset and roles")
+  @DisplayName(
+      "updateUser should update user and preserve existing mfaSettings, tokenReset and roles")
   void updateUser_success() {
     UserEntity existing = new UserEntity();
     existing.setId(99L);

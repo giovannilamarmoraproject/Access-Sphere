@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
@@ -21,26 +21,26 @@ public class OAuthMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static OAuthType getOAuthType(
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       OAuth2Authorization oAuth2Authorization,
       String grant_type,
       String code) {
     if (!ObjectUtils.isEmpty(grant_type) || !ObjectUtils.isEmpty(code))
-      return clientCredential.getAuthType().equals(OAuthType.ALL_TYPE) && !ObjectUtils.isEmpty(code)
+      return oAuth2Client.getAuthType().equals(OAuthType.ALL_TYPE) && !ObjectUtils.isEmpty(code)
           ? OAuthType.GOOGLE
-          : (clientCredential.getAuthType().equals(OAuthType.ALL_TYPE)
+          : (oAuth2Client.getAuthType().equals(OAuthType.ALL_TYPE)
                   && grant_type.equalsIgnoreCase(GrantType.PASSWORD.type())
               ? OAuthType.BEARER
-              : clientCredential.getAuthType());
+              : oAuth2Client.getAuthType());
     else return oAuth2Authorization.getType();
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static URI getFinalRedirectURI(
-      ClientCredential clientCredential, RedirectUris redirectUris, String defaultRedirectUri) {
-    if (!ObjectToolkit.isNullOrEmpty(clientCredential.getRedirect_uri())
-        && clientCredential.getRedirect_uri().containsKey(redirectUris.url()))
-      return URI.create(clientCredential.getRedirect_uri().get(redirectUris.url()));
+      OAuth2Client oAuth2Client, RedirectUris redirectUris, String defaultRedirectUri) {
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getRedirect_uri())
+        && oAuth2Client.getRedirect_uri().containsKey(redirectUris.url()))
+      return URI.create(oAuth2Client.getRedirect_uri().get(redirectUris.url()));
     else return URI.create(defaultRedirectUri);
   }
 }

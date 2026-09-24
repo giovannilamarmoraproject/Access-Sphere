@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -30,7 +30,7 @@ import reactor.test.StepVerifier;
 class UserAdminServiceTest {
 
   @Mock private TechUserService techUserService;
-  @Mock private ClientService clientService;
+  @Mock private OAuth2ClientService oAuth2ClientService;
   @Mock private UserService userService;
   @Mock private OAuth2Authorization oAuth2Authorization;
   @Mock private WebhookService webhookService;
@@ -40,7 +40,7 @@ class UserAdminServiceTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(userAdminService, "techUserService", techUserService);
-    ReflectionTestUtils.setField(userAdminService, "clientService", clientService);
+    ReflectionTestUtils.setField(userAdminService, "clientService", oAuth2ClientService);
     ReflectionTestUtils.setField(userAdminService, "userService", userService);
     ReflectionTestUtils.setField(userAdminService, "accessTokenData", oAuth2Authorization);
     ReflectionTestUtils.setField(userAdminService, "webhookService", webhookService);
@@ -80,12 +80,12 @@ class UserAdminServiceTest {
     when(techUserService.isTechUser()).thenReturn(true);
     when(techUserService.getTechClientId()).thenReturn("CLIENT-TECH");
 
-    ClientCredential credential = new ClientCredential();
+    OAuth2Client credential = new OAuth2Client();
     credential.setClientId("CLIENT-TECH");
     AppRole appRole = new AppRole();
     appRole.setRole("ROLE_ADMIN");
     credential.setAppRoles(List.of(appRole));
-    when(clientService.getClientCredentialByClientID("CLIENT-TECH"))
+    when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-TECH"))
         .thenReturn(Mono.just(credential));
 
     when(oAuth2Authorization.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
@@ -134,12 +134,12 @@ class UserAdminServiceTest {
     when(techUserService.isTechUser()).thenReturn(true);
     when(techUserService.getTechClientId()).thenReturn("CLIENT-TECH");
 
-    ClientCredential credential = new ClientCredential();
+    OAuth2Client credential = new OAuth2Client();
     credential.setClientId("CLIENT-TECH");
     AppRole appRole = new AppRole();
     appRole.setRole("ROLE_ADMIN");
     credential.setAppRoles(List.of(appRole));
-    when(clientService.getClientCredentialByClientID("CLIENT-TECH"))
+    when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-TECH"))
         .thenReturn(Mono.just(credential));
 
     when(oAuth2Authorization.getRoles()).thenReturn(List.of("ROLE_ADMIN"));
@@ -210,12 +210,12 @@ class UserAdminServiceTest {
     when(techUserService.isTechUser()).thenReturn(true);
     when(techUserService.getTechClientId()).thenReturn("CLIENT-TECH");
 
-    ClientCredential credential = new ClientCredential();
+    OAuth2Client credential = new OAuth2Client();
     credential.setClientId("CLIENT-TECH");
     AppRole appRole = new AppRole();
     appRole.setRole("ROLE_ADMIN");
     credential.setAppRoles(List.of(appRole));
-    when(clientService.getClientCredentialByClientID("CLIENT-TECH"))
+    when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-TECH"))
         .thenReturn(Mono.just(credential));
 
     when(oAuth2Authorization.getRoles()).thenReturn(List.of("ROLE_ADMIN"));

@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.oidc;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
@@ -28,7 +28,8 @@ import reactor.core.publisher.Mono;
  * <p>Interconnessioni logiche:
  *
  * <ul>
- *   <li>Risolve la configurazione e i permessi del client chiamante tramite {@link ClientService}.
+ *   <li>Risolve la configurazione e i permessi del client chiamante tramite {@link
+ *       OAuth2ClientService}.
  *   <li>Convalida la conformita' del tipo di autorizzazione del token tramite {@link
  *       UserValidator#validateAuthType}.
  *   <li>Decodifica e verifica la firma del token Bearer tramite {@link TokenService#parseToken}.
@@ -48,7 +49,7 @@ public class OIDCService {
 
   private static final Logger LOG = LoggerFilter.getLogger(OIDCService.class);
 
-  @Autowired private ClientService clientService;
+  @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private TokenService tokenService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private UserService userService;
@@ -68,7 +69,7 @@ public class OIDCService {
     LOG.info(
         "👤 [OIDC USER INFO] Starting UserInfo retrieval (includeUserData: {})", includeUserData);
 
-    return clientService
+    return oAuth2ClientService
         .getClientCredentialByClientID(oAuth2Authorization.getClientId())
         .flatMap(
             clientCredential -> {

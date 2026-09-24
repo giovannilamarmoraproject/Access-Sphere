@@ -1,14 +1,13 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
-import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
+import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import reactor.core.publisher.Mono;
 
 @Repository
 // public interface IClientDAO extends R2dbcRepository<ClientCredentialEntity, Long> {
-public interface IClientDAO extends JpaRepository<ClientCredentialEntity, Long> {
+public interface IOAuth2ClientDAO extends JpaRepository<OAuth2ClientEntity, Long> {
 
   // Mono<ClientCredentialEntity> findByClientId(String clientId);
-  ClientCredentialEntity findByClientId(String clientId);
+  OAuth2ClientEntity findByClientId(String clientId);
 }

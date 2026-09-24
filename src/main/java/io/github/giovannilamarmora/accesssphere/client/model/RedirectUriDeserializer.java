@@ -11,15 +11,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Deserializzatore personalizzato Jackson per il campo 'redirect_uri' in {@link ClientCredential}.
+ * Deserializzatore personalizzato Jackson per il campo 'redirect_uri' in {@link OAuth2Client}.
  * Permette la gestione polimorfica trasparente in ingresso per diversi formati:
+ *
  * <ul>
- *   <li>Oggetto JSON chiave-valore (es. {"fallback_uri": "...", "redirect_uri": "..."})</li>
- *   <li>Stringa JSON serializzata (es. "{\"fallback_uri\": \"...\", \"redirect_uri\": \"...\"}")</li>
- *   <li>Stringa semplice di URI separati da spazi/virgole (con conversione automatica alla chiave 'redirect_uri')</li>
+ *   <li>Oggetto JSON chiave-valore (es. {"fallback_uri": "...", "redirect_uri": "..."})
+ *   <li>Stringa JSON serializzata (es. "{\"fallback_uri\": \"...\", \"redirect_uri\": \"...\"}")
+ *   <li>Stringa semplice di URI separati da spazi/virgole (con conversione automatica alla chiave
+ *       'redirect_uri')
  * </ul>
  *
- * <p>Interconnesso direttamente con {@link ClientCredential} tramite l'annotazione
+ * <p>Interconnesso direttamente con {@link OAuth2Client} tramite l'annotazione
  * {@code @JsonDeserialize(using = RedirectUriDeserializer.class)}.
  */
 public class RedirectUriDeserializer extends JsonDeserializer<Map<String, String>> {

@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.token;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
@@ -33,7 +33,7 @@ class JWTDataTest {
     user.setClientRoles(List.of(linkatuttoRole, accessSphereRole));
     user.setRoles(List.of("LINKATUTTO_EDITOR", "ROLE_ADMIN"));
 
-    ClientCredential linkatuttoClient = new ClientCredential();
+    OAuth2Client linkatuttoClient = new OAuth2Client();
     linkatuttoClient.setClientId("linkatutto");
     linkatuttoClient.setJwtExpiration(3600000L);
 
@@ -67,7 +67,7 @@ class JWTDataTest {
     user.setUsername("luigi_verdi");
     user.setRoles(List.of("ROLE_ADMIN"));
 
-    ClientCredential client = new ClientCredential();
+    OAuth2Client client = new OAuth2Client();
     client.setClientId("ACCESS-SPHERE-TECH");
     client.setJwtExpiration(3600000L);
     AppRole adminRole =

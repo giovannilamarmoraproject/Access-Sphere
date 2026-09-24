@@ -1,11 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
-import static io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID;
-import static io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER;
-
-import io.github.giovannilamarmora.accesssphere.client.ClientMapper;
-import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
-import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
+import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
+import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
@@ -18,7 +14,6 @@ import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategor
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
@@ -61,7 +56,7 @@ public class ProjectInitializerService implements ApplicationRunner {
   private String appDomain;
 
   @Autowired private TechUserConfig techUserConfig;
-  @Autowired private IClientDAO clientDAO;
+  @Autowired private IOAuth2ClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
@@ -85,8 +80,8 @@ public class ProjectInitializerService implements ApplicationRunner {
 
   /**
    * Risolve l'URL base dell'applicazione per la composizione dei redirect URI di default del client
-   * tecnico a partire da 'app.domain'.
-   * Interconnesso con {@link URLUtils#resolveBaseUrl(String)} per la gestione centralizzata dei protocolli.
+   * tecnico a partire da 'app.domain'. Interconnesso con {@link URLUtils#resolveBaseUrl(String)}
+   * per la gestione centralizzata dei protocolli.
    *
    * @return URL base normalizzato comprensivo di schema (http o https) e privo di trailing slash.
    */
@@ -95,11 +90,12 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Determina se l'host specificato rappresenta un ambiente locale o che richiede protocollo HTTP in chiaro.
-   * Interconnesso con {@link URLUtils#isLocalOrInsecureHost(String)}.
+   * Determina se l'host specificato rappresenta un ambiente locale o che richiede protocollo HTTP
+   * in chiaro. Interconnesso con {@link URLUtils#isLocalOrInsecureHost(String)}.
    *
    * @param domain Dominio o stringa host:port da verificare
-   * @return true se l'host e locale o utilizza la porta standard HTTP 80, false per domini remoti sicuri
+   * @return true se l'host e locale o utilizza la porta standard HTTP 80, false per domini remoti
+   *     sicuri
    */
   public static boolean isLocalOrInsecureHost(String domain) {
     return URLUtils.isLocalOrInsecureHost(domain);
@@ -107,8 +103,8 @@ public class ProjectInitializerService implements ApplicationRunner {
 
   /**
    * Inizializzazione del client OAuth 2.0 tecnico all'avvio dell'applicazione. Utilizza {@link
-   * TechUserConfig} per i parametri del client tecnico ed {@link IClientDAO} per la persistenza. Se
-   * il client non esiste nel database, lo crea configurando:
+   * TechUserConfig} per i parametri del client tecnico ed {@link IOAuth2ClientDAO} per la
+   * persistenza. Se il client non esiste nel database, lo crea configurando:
    *
    * <ul>
    *   <li>JWT Secret: letto da {@link TechUserConfig} o generato a mano a 256-bit
@@ -136,10 +132,10 @@ public class ProjectInitializerService implements ApplicationRunner {
     redirectMap.put(RedirectUris.REDIRECT_URI.url(), redirectUri);
     String redirectUriJson = Mapper.writeObjectToString(redirectMap);
 
-    ClientCredentialEntity existing = clientDAO.findByClientId(techClientId);
+    OAuth2ClientEntity existing = clientDAO.findByClientId(techClientId);
     if (existing == null) {
       LOG.info("🔧 Seeding Technical OAuth Client: {}", techClientId);
-      ClientCredentialEntity client = createClient(techClientId, jwtSecret, redirectUriJson);
+      OAuth2ClientEntity client = createClient(techClientId, jwtSecret, redirectUriJson);
       clientDAO.save(client);
       LOG.info(
           "✅ Technical OAuth Client [{}] successfully seeded in DB with JWT Secret and redirect_uri JSON map",
@@ -171,9 +167,9 @@ public class ProjectInitializerService implements ApplicationRunner {
     }
   }
 
-  private static @NonNull ClientCredentialEntity createClient(
+  private static @NonNull OAuth2ClientEntity createClient(
       String techClientId, String jwtSecret, String redirectUriJson) {
-    ClientCredentialEntity client = new ClientCredentialEntity();
+    OAuth2ClientEntity client = new OAuth2ClientEntity();
     client.setClientId(techClientId);
     client.setExternalClientId(techClientId);
     client.setAccessType(AccessType.OFFLINE);
@@ -191,12 +187,14 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Inizializza le definizioni dei ruoli applicativi di default nella tabella relazionale
-   * {@code ROLE_DEFINITIONS}.
+   * Inizializza le definizioni dei ruoli applicativi di default nella tabella relazionale {@code
+   * ROLE_DEFINITIONS}.
    *
    * <p>Interconnessioni:
+   *
    * <ul>
-   *   <li>Assicura la presenza dei ruoli tecnici di base ({@code ROLE_ADMIN}, {@code ROLE_TECH}) per il client tecnico.</li>
+   *   <li>Assicura la presenza dei ruoli tecnici di base ({@code ROLE_ADMIN}, {@code ROLE_TECH})
+   *       per il client tecnico.
    * </ul>
    */
   private void initRoleDefinitions() {
@@ -214,7 +212,8 @@ public class ProjectInitializerService implements ApplicationRunner {
               "ADMIN",
               "Administrator role for Access Sphere",
               List.of("*")));
-      LOG.info("🔧 Default role [ROLE_ADMIN] seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
+      LOG.info(
+          "🔧 Default role [ROLE_ADMIN] seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
     }
 
     Optional<RoleDefinitionEntity> techRoleOpt =
@@ -227,7 +226,8 @@ public class ProjectInitializerService implements ApplicationRunner {
               "TECHNICAL",
               "Technical service role for Access Sphere",
               List.of("*")));
-      LOG.info("🔧 Default role [ROLE_TECH] seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
+      LOG.info(
+          "🔧 Default role [ROLE_TECH] seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
     }
 
     // 2. Controllo e ripristino automatico permessi: per qualsiasi ruolo a DB privo di permessi
@@ -329,8 +329,10 @@ public class ProjectInitializerService implements ApplicationRunner {
 
       // Associa i ruoli iniziali nella tabella relazionale USER_CLIENT_ROLE
       String techClientId = techUserConfig.getTechClientId();
-      userClientRoleDAO.save(new UserClientRoleEntity(user.getIdentifier(), techClientId, "ROLE_ADMIN"));
-      userClientRoleDAO.save(new UserClientRoleEntity(user.getIdentifier(), techClientId, "ROLE_TECH"));
+      userClientRoleDAO.save(
+          new UserClientRoleEntity(user.getIdentifier(), techClientId, "ROLE_ADMIN"));
+      userClientRoleDAO.save(
+          new UserClientRoleEntity(user.getIdentifier(), techClientId, "ROLE_TECH"));
 
       LOG.info(
           "✅ Technical User [{}] successfully seeded in DB with roles ROLE_ADMIN ROLE_TECH in USER_CLIENT_ROLE",
@@ -341,9 +343,10 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Esegue la migrazione automatica e trasparente dei ruoli dalla colonna denormalizzata USERS.ROLES
-   * alla tabella relazionale USER_CLIENT_ROLE per tutti gli utenti censiti che non presentano ancora
-   * record associati in USER_CLIENT_ROLE. I ruoli migrati vengono contestualizzati sul client tecnico di sistema.
+   * Esegue la migrazione automatica e trasparente dei ruoli dalla colonna denormalizzata
+   * USERS.ROLES alla tabella relazionale USER_CLIENT_ROLE per tutti gli utenti censiti che non
+   * presentano ancora record associati in USER_CLIENT_ROLE. I ruoli migrati vengono
+   * contestualizzati sul client tecnico di sistema.
    */
   private void migrateLegacyUserRoles() {
     String techClientId = techUserConfig.getTechClientId();
@@ -353,13 +356,15 @@ public class ProjectInitializerService implements ApplicationRunner {
         List<UserClientRoleEntity> existingUcr =
             userClientRoleDAO.findByUserIdentifier(user.getIdentifier());
         if (existingUcr == null || existingUcr.isEmpty()) {
-          LOG.info("🔄 Migrating legacy roles for user [{}] to USER_CLIENT_ROLE", user.getUsername());
+          LOG.info(
+              "🔄 Migrating legacy roles for user [{}] to USER_CLIENT_ROLE", user.getUsername());
           String[] roleTokens = user.getRoles().split("\\s+");
           int count = 0;
           for (String r : roleTokens) {
             if (!r.isBlank()) {
               UserClientRoleEntity ucr =
-                  new UserClientRoleEntity(user.getIdentifier(), techClientId, r.trim().toUpperCase());
+                  new UserClientRoleEntity(
+                      user.getIdentifier(), techClientId, r.trim().toUpperCase());
               userClientRoleDAO.save(ucr);
               count++;
             }

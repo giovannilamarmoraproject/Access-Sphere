@@ -1,8 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientMapper;
-import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
-import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
+import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
@@ -10,7 +8,6 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
@@ -63,7 +60,7 @@ public class UserService {
   @Autowired private IUserDAO userDAO;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
-  @Autowired private IClientDAO clientDAO;
+  @Autowired private IOAuth2ClientDAO clientDAO;
 
   /**
    * Recupera un utente dal database locale tramite il suo identificatore univoco UUID. Valida la
@@ -262,10 +259,10 @@ public class UserService {
   }
 
   /**
-   * Arricchisce il DTO {@link User} con i ruoli contestualizzati per Client OAuth2 ({@link UserClientRoleDTO})
-   * recuperati dalla tabella USER_CLIENT_ROLE, estraendo tipologia, descrizione e permessi granulari
-   * dalla tabella relazionale ROLE_DEFINITIONS (con fallback su configurazione legacy del client).
-   * Sincronizza inoltre la lista legacy flat {@code roles}.
+   * Arricchisce il DTO {@link User} con i ruoli contestualizzati per Client OAuth2 ({@link
+   * UserClientRoleDTO}) recuperati dalla tabella USER_CLIENT_ROLE, estraendo tipologia, descrizione
+   * e permessi granulari dalla tabella relazionale ROLE_DEFINITIONS (con fallback su configurazione
+   * legacy del client). Sincronizza inoltre la lista legacy flat {@code roles}.
    *
    * @param user Oggetto utente da arricchire.
    * @return DTO utente arricchito.
@@ -279,8 +276,7 @@ public class UserService {
           ucrEntities.stream()
               .map(
                   ucr -> {
-                    UserClientRoleDTO dto =
-                        new UserClientRoleDTO(ucr.getClientId(), ucr.getRole());
+                    UserClientRoleDTO dto = new UserClientRoleDTO(ucr.getClientId(), ucr.getRole());
                     Optional<RoleDefinitionEntity> roleDef =
                         roleDefinitionDAO.findByClientIdAndRole(ucr.getClientId(), ucr.getRole());
                     if (roleDef.isPresent()) {
@@ -310,7 +306,8 @@ public class UserService {
 
   /**
    * Arricchisce massivamente un elenco di DTO {@link User} con i rispettivi ruoli client-scoped,
-   * ottimizzando gli accessi a DB interrogando ROLE_DEFINITIONS con recupero preliminare in batch per evitare query N+1.
+   * ottimizzando gli accessi a DB interrogando ROLE_DEFINITIONS con recupero preliminare in batch
+   * per evitare query N+1.
    *
    * @param users Lista di DTO utenti da arricchire.
    * @return Lista di DTO utenti arricchita.
@@ -332,7 +329,10 @@ public class UserService {
                 .filter(r -> r.getClientId() != null && r.getRole() != null)
                 .collect(
                     Collectors.toMap(
-                        r -> r.getClientId().trim().toUpperCase() + ":" + r.getRole().trim().toUpperCase(),
+                        r ->
+                            r.getClientId().trim().toUpperCase()
+                                + ":"
+                                + r.getRole().trim().toUpperCase(),
                         r -> r,
                         (a, b) -> a))
             : Map.of();

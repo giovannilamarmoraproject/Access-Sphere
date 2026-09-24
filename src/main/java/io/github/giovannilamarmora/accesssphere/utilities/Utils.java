@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.utilities;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenClaims;
 import io.github.giovannilamarmora.utils.context.ContextConfig;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -33,9 +33,9 @@ public class Utils {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
   public static Map<String, Object> putGoogleClaimsIntoToken(
-      ClientCredential clientCredential, TokenClaims claim, Object data) {
+      OAuth2Client oAuth2Client, TokenClaims claim, Object data) {
     Map<String, Object> attributes = new HashMap<>();
-    attributes.put(claim.claim(), clientCredential.getAuthType());
+    attributes.put(claim.claim(), oAuth2Client.getAuthType());
     attributes.put(TokenClaims.GOOGLE_TOKEN.claim(), Mapper.writeObjectToString(data));
     return attributes;
   }

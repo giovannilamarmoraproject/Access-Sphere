@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -56,7 +56,7 @@ public class OAuthService {
   @Value("${cookie-domain:}")
   private String cookieDomain;
 
-  @Autowired private ClientService clientService;
+  @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private AuthService authService;
   @Autowired private GoogleAuthService googleAuthService;
   @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
@@ -125,8 +125,8 @@ public class OAuthService {
         state,
         prompt);
 
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(clientId);
+    Mono<OAuth2Client> clientCredentialMono =
+        oAuth2ClientService.getClientCredentialByClientID(clientId);
     String finalRedirectUri = URLUtils.decodeURLValue(redirect_uri);
 
     return clientCredentialMono.flatMap(
@@ -231,11 +231,11 @@ public class OAuthService {
         tokenExchange.getClient_id());
 
     // Recupera le credenziali del client target e del client sorgente
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(tokenExchange.getClient_id());
+    Mono<OAuth2Client> clientCredentialMono =
+        oAuth2ClientService.getClientCredentialByClientID(tokenExchange.getClient_id());
 
-    Mono<ClientCredential> clientCredentialToExchangeMono =
-        clientService.getClientCredentialByClientID(oAuth2Authorization.getClientId());
+    Mono<OAuth2Client> clientCredentialToExchangeMono =
+        oAuth2ClientService.getClientCredentialByClientID(oAuth2Authorization.getClientId());
 
     return clientCredentialMono
         .zipWith(clientCredentialToExchangeMono)
@@ -264,20 +264,20 @@ public class OAuthService {
    * appartenenza client.
    *
    * @param bearer Token bearer ricevuto.
-   * @param clientCredential Credenziali del client configurato.
+   * @param oAuth2Client Credenziali del client configurato.
    * @param exchange Contesto HTTP.
    * @return ResponseEntity con l'esito della validazione.
    */
   private Mono<ResponseEntity<?>> handleBearerToken(
-      String bearer, ClientCredential clientCredential, ServerWebExchange exchange, String state) {
+      String bearer, OAuth2Client oAuth2Client, ServerWebExchange exchange, String state) {
     LOG.info("🛡️ [OAUTH BEARER] Bearer token detected, executing authorization validation");
 
     try {
       OAuth2Authorization oAuth2Authorization =
           oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
-      OAuthValidator.validateUserRoles(clientCredential, oAuth2Authorization.getRoles());
+      OAuthValidator.validateUserRoles(oAuth2Client, oAuth2Authorization.getRoles());
       OAuthValidator.validateClientId(
-          oAuth2Authorization.getClientId(), clientCredential.getClientId());
+          oAuth2Authorization.getClientId(), oAuth2Client.getClientId());
 
       AuthToken token = new AuthToken();
       token.setAccess_token(bearer.contains("Bearer") ? bearer.split("Bearer ")[1] : bearer);
@@ -312,7 +312,7 @@ public class OAuthService {
                               tokenResponse);
                       LOG.info(
                           "✅ [OAUTH BEARER] Authorization successful with user data for clientId: {}",
-                          clientCredential.getClientId());
+                          oAuth2Client.getClientId());
                       return ResponseEntity.ok(response);
                     })
                 .defaultIfEmpty(
@@ -334,12 +334,11 @@ public class OAuthService {
               HttpStatus.OK.value(), "Token is valid", TraceUtils.getSpanID(), tokenResponse);
 
       LOG.info(
-          "✅ [OAUTH BEARER] Authorization successful for clientId: {}",
-          clientCredential.getClientId());
+          "✅ [OAUTH BEARER] Authorization successful for clientId: {}", oAuth2Client.getClientId());
       return Mono.just(ResponseEntity.ok(response));
 
     } catch (TokenException | OAuthException e) {
-      return Mono.just(handleInvalidToken(clientCredential, e, exchange));
+      return Mono.just(handleInvalidToken(oAuth2Client, e, exchange));
     }
   }
 
@@ -347,16 +346,16 @@ public class OAuthService {
    * Gestisce gli errori di validazione del token cancellando i cookie di sessione ed eseguendo il
    * redirect alla fallback URI (se configurata) o restituendo 401 Unauthorized.
    *
-   * @param clientCredential Credenziali del client.
+   * @param oAuth2Client Credenziali del client.
    * @param e Eccezione intercettata.
    * @param exchange Contesto HTTP.
    * @return ResponseEntity con fallback redirect o status non autorizzato.
    */
   private ResponseEntity<?> handleInvalidToken(
-      ClientCredential clientCredential, Exception e, ServerWebExchange exchange) {
+      OAuth2Client oAuth2Client, Exception e, ServerWebExchange exchange) {
     LOG.warn(
         "❌ [OAUTH ERROR] Token validation failed for clientId {}: {}",
-        clientCredential.getClientId(),
+        oAuth2Client.getClientId(),
         e.getMessage());
 
     /** Deleting all cookie if validation failed */
@@ -368,12 +367,12 @@ public class OAuthService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    if (!ObjectToolkit.isNullOrEmpty(clientCredential.getRedirect_uri())
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getRedirect_uri())
         && !ObjectToolkit.isNullOrEmpty(
-            clientCredential.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()))) {
+            oAuth2Client.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()))) {
 
       URI fallbackLocation =
-          URI.create(clientCredential.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()));
+          URI.create(oAuth2Client.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()));
 
       Response response =
           new Response(
@@ -399,7 +398,7 @@ public class OAuthService {
    * Costruisce il reindirizzamento verso l'identity provider configurato (Google OAuth o form di
    * login). Imposta i cookie di contesto per redirect URI e registration token.
    *
-   * @param clientCredential Credenziali del client.
+   * @param oAuth2Client Credenziali del client.
    * @param responseType Tipo di risposta richiesta.
    * @param accessType Tipo di accesso (online/offline).
    * @param finalRedirectUri URI di reindirizzamento finale decodificata.
@@ -409,7 +408,7 @@ public class OAuthService {
    * @return Risposta di reindirizzamento HTTP verso la location autorizzativa.
    */
   private ResponseEntity<?> handleOAuthAuthorization(
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       String responseType,
       String accessType,
       String finalRedirectUri,
@@ -422,12 +421,11 @@ public class OAuthService {
     ServerHttpRequest request = exchange.getRequest();
     ServerHttpResponse response = exchange.getResponse();
 
-    OAuthValidator.validateClient(
-        clientCredential, responseType, accessType, finalRedirectUri, scope);
+    OAuthValidator.validateClient(oAuth2Client, responseType, accessType, finalRedirectUri, scope);
     OAuthValidator.validatePrompt(prompt);
     URI location =
         GrpcService.getGoogleOAuthLocation(
-            scope, finalRedirectUri, accessType, state, prompt, clientCredential);
+            scope, finalRedirectUri, accessType, state, prompt, oAuth2Client);
 
     if (!ObjectToolkit.isNullOrEmpty(finalRedirectUri))
       CookieManager.setCookieInResponse(
@@ -440,14 +438,14 @@ public class OAuthService {
 
     LOG.info(
         "✅ [OAUTH AUTHORIZE] Authorization redirect prepared - clientId: {}, accessType: {}, responseType: {}, state: {}, prompt: {}, targetLocation: {}",
-        clientCredential.getClientId(),
+        oAuth2Client.getClientId(),
         accessType,
         responseType,
         state,
         prompt,
         location);
 
-    return ResponseEntity.status(clientCredential.getAuthorize_redirect_status())
+    return ResponseEntity.status(oAuth2Client.getAuthorize_redirect_status())
         .location(location)
         .build();
   }
@@ -474,8 +472,8 @@ public class OAuthService {
         prompt);
     OAuthValidator.validateOAuthToken(clientId, grant_type);
     OAuthValidator.validatePrompt(prompt);
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(clientId);
+    Mono<OAuth2Client> clientCredentialMono =
+        oAuth2ClientService.getClientCredentialByClientID(clientId);
 
     return clientCredentialMono
         .flatMap(
@@ -553,8 +551,8 @@ public class OAuthService {
         clientId,
         grant_type);
     OAuthValidator.validateRefreshToken(refresh_token, grant_type);
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(clientId);
+    Mono<OAuth2Client> clientCredentialMono =
+        oAuth2ClientService.getClientCredentialByClientID(clientId);
 
     return clientCredentialMono
         .flatMap(
@@ -600,8 +598,8 @@ public class OAuthService {
   public Mono<ResponseEntity<?>> logout(
       String clientId, String redirect_uri, String bearer, ServerHttpResponse response) {
     LOG.info("🚪 [OAUTH LOGOUT] Starting oAuth/2.0/logout endpoint for clientId: {}", clientId);
-    Mono<ClientCredential> clientCredentialMono =
-        clientService.getClientCredentialByClientID(clientId);
+    Mono<OAuth2Client> clientCredentialMono =
+        oAuth2ClientService.getClientCredentialByClientID(clientId);
 
     if (isLogoutAlreadyDone()) {
       return createLogoutSuccessResponse(clientId, redirect_uri, response);
@@ -647,11 +645,10 @@ public class OAuthService {
 
   private Mono<ResponseEntity<?>> processLogoutByAuthType(
       OAuth2Authorization oAuth2Authorization,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       String redirect_uri,
       ServerHttpResponse response) {
-    OAuthType authType =
-        OAuthMapper.getOAuthType(clientCredential, oAuth2Authorization, null, null);
+    OAuthType authType = OAuthMapper.getOAuthType(oAuth2Client, oAuth2Authorization, null, null);
     LOG.debug(
         "🔍 [OAUTH LOGOUT] Processing logout for authType: {}, subject: {}",
         authType,

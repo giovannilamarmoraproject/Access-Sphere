@@ -12,7 +12,7 @@ import com.nimbusds.jose.proc.SimpleSecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
@@ -64,7 +64,7 @@ public class TokenService {
   @Autowired private MFASessionService mfaSessionService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public AuthToken generateMFAToken(User user, ClientCredential clientCredential, Object payload) {
+  public AuthToken generateMFAToken(User user, OAuth2Client oAuth2Client, Object payload) {
     List<String> mfaMethods =
         user.getMfaSettings().getMfaMethods().stream()
             .filter(MFAMethod::isConfirmed)
@@ -73,7 +73,7 @@ public class TokenService {
             .toList();
     MFASession mfaSession =
         mfaSessionService.save(
-            user, mfaMethods, clientCredential.getClientId(), sessionID.getSessionID(), payload);
+            user, mfaMethods, oAuth2Client.getClientId(), sessionID.getSessionID(), payload);
 
     TempToken tempToken =
         new TempToken(mfaSession.getTempToken(), mfaSession.getExpireDate(), "Bearer");
@@ -81,34 +81,33 @@ public class TokenService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public AuthToken generateToken(
-      JWTData jwtData, ClientCredential clientCredential, Object payload) {
-    switch (clientCredential.getTokenType()) {
+  public AuthToken generateToken(JWTData jwtData, OAuth2Client oAuth2Client, Object payload) {
+    switch (oAuth2Client.getTokenType()) {
       case BEARER_JWT -> {
-        if (ObjectUtils.isEmpty(clientCredential.getJwtSecret())) {
+        if (ObjectUtils.isEmpty(oAuth2Client.getJwtSecret())) {
           LOG.error("JWT Secret is not defined, please define them into the client");
           throw new TokenException(
               ExceptionMap.ERR_TOKEN_400, "Invalid JWT Secret on client configuration");
         }
-        if (ObjectUtils.isEmpty(clientCredential.getJwtExpiration())) {
+        if (ObjectUtils.isEmpty(oAuth2Client.getJwtExpiration())) {
           LOG.error("JWT Expiration is not defined, please define them into the client");
           throw new TokenException(
               ExceptionMap.ERR_TOKEN_400, "Invalid JWT Expiration on client configuration");
         }
-        return generateJWTToken(jwtData, clientCredential, payload);
+        return generateJWTToken(jwtData, oAuth2Client, payload);
       }
       case BEARER_JWE -> {
-        if (ObjectUtils.isEmpty(clientCredential.getJweSecret())) {
+        if (ObjectUtils.isEmpty(oAuth2Client.getJweSecret())) {
           LOG.error("JWE Secret is not defined, please define them into the client");
           throw new TokenException(
               ExceptionMap.ERR_TOKEN_400, "Invalid JWE Secret on client configuration");
         }
-        if (ObjectUtils.isEmpty(clientCredential.getJweExpiration())) {
+        if (ObjectUtils.isEmpty(oAuth2Client.getJweExpiration())) {
           LOG.error("JWE Expiration is not defined, please define them into the client");
           throw new TokenException(
               ExceptionMap.ERR_TOKEN_400, "Invalid JWE Expiration on client configuration");
         }
-        return generateJWEToken(jwtData, clientCredential, payload);
+        return generateJWEToken(jwtData, oAuth2Client, payload);
       }
       default -> {
         LOG.error("Token type is not defined, please define them into the client");
@@ -119,23 +118,23 @@ public class TokenService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public JWTData parseToken(String token, ClientCredential clientCredential) {
-    switch (clientCredential.getTokenType()) {
+  public JWTData parseToken(String token, OAuth2Client oAuth2Client) {
+    switch (oAuth2Client.getTokenType()) {
       case BEARER_JWT -> {
-        if (ObjectUtils.isEmpty(clientCredential.getJwtSecret())) {
+        if (ObjectUtils.isEmpty(oAuth2Client.getJwtSecret())) {
           LOG.error("JWT Secret is not defined, please define them into the client");
           throw new TokenException(
               ExceptionMap.ERR_TOKEN_400, "Invalid JWT Secret on client configuration");
         }
-        return parseJWTToken(token, clientCredential);
+        return parseJWTToken(token, oAuth2Client);
       }
       case BEARER_JWE -> {
-        if (ObjectUtils.isEmpty(clientCredential.getJweSecret())) {
+        if (ObjectUtils.isEmpty(oAuth2Client.getJweSecret())) {
           LOG.error("JWE Secret is not defined, please define them into the client");
           throw new TokenException(
               ExceptionMap.ERR_TOKEN_400, "Invalid JWE Secret on client configuration");
         }
-        return parseJWEToken(token, clientCredential);
+        return parseJWEToken(token, oAuth2Client);
       }
       default -> {
         LOG.error("Token type is not defined, please define them into the client");
@@ -149,29 +148,26 @@ public class TokenService {
   public AuthToken exchangeToken(
       User user,
       OAuth2Authorization oAuth2Authorization,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
     // Log per il processo di exchange
-    LOG.info("🔄 Performing token exchange for client: {}", clientCredential.getClientId());
+    LOG.info("🔄 Performing token exchange for client: {}", oAuth2Client.getClientId());
 
     JWTData exchangeToken =
-        JWTData.generateJWTData(
-            user, clientCredential, oAuth2Authorization.getSubjectType(), request);
+        JWTData.generateJWTData(user, oAuth2Client, oAuth2Authorization.getSubjectType(), request);
 
     // Esegui la logica per lo scambio del token
     AuthToken newToken =
-        generateToken(exchangeToken, clientCredential, oAuth2Authorization.getPayload());
+        generateToken(exchangeToken, oAuth2Client, oAuth2Authorization.getPayload());
 
     // Log il risultato dell'exchange
-    LOG.info(
-        "🔄 Token exchange completed successfully for client: {}", clientCredential.getClientId());
+    LOG.info("🔄 Token exchange completed successfully for client: {}", oAuth2Client.getClientId());
 
     return newToken;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  private AuthToken generateJWTToken(
-      JWTData jwtData, ClientCredential clientCredential, Object payload) {
+  private AuthToken generateJWTToken(JWTData jwtData, OAuth2Client oAuth2Client, Object payload) {
     // Access Token
     ClaimsBuilder claims = Jwts.claims().subject(jwtData.getSub());
     claims.add(TokenClaims.SUBJECT_TYPE.claim(), jwtData.getSubject_type());
@@ -189,15 +185,15 @@ public class TokenService {
     claims.add(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id());
     claims.add(TokenClaims.ATTRIBUTES.claim(), jwtData.getAttributes());
 
-    long jwtExpiration = clientCredential.getJwtExpiration();
+    long jwtExpiration = oAuth2Client.getJwtExpiration();
     Date now = new Date(System.currentTimeMillis());
     claims.add(TokenClaims.IAT.claim(), now.toInstant().toEpochMilli());
-    jwtData.setExp(now.toInstant().toEpochMilli() + clientCredential.getJwtExpiration());
+    jwtData.setExp(now.toInstant().toEpochMilli() + oAuth2Client.getJwtExpiration());
     jwtData.setIat(now.toInstant().toEpochMilli());
 
     Date exp = new Date(now.toInstant().toEpochMilli() + jwtExpiration);
 
-    SecretKey key = Keys.hmacShaKeyFor(clientCredential.getJwtSecret().getBytes());
+    SecretKey key = Keys.hmacShaKeyFor(oAuth2Client.getJwtSecret().getBytes());
 
     String accessToken =
         Jwts.builder().claims(claims.build()).issuedAt(now).expiration(exp).signWith(key).compact();
@@ -236,15 +232,15 @@ public class TokenService {
         refreshToken,
         TokenUtils.hashingToken(accessToken),
         TokenUtils.hashingToken(idToken),
-        clientCredential.getClientId(),
+        oAuth2Client.getClientId(),
         sessionID.getSessionID(),
         jwtData.getRoles(),
         jwtData.getPermissions(),
         payload);
 
     return new AuthToken(
-        clientCredential.getIdToken() ? idToken : null,
-        clientCredential.getAccessToken() ? accessToken : null,
+        oAuth2Client.getIdToken() ? idToken : null,
+        oAuth2Client.getAccessToken() ? accessToken : null,
         refreshToken,
         now.toInstant().toEpochMilli() + jwtExpiration,
         jwtExpiration,
@@ -252,9 +248,9 @@ public class TokenService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  private JWTData parseJWTToken(String token, ClientCredential clientCredential) {
+  private JWTData parseJWTToken(String token, OAuth2Client oAuth2Client) {
     Claims body = null;
-    SecretKey key = Keys.hmacShaKeyFor(clientCredential.getJwtSecret().getBytes());
+    SecretKey key = Keys.hmacShaKeyFor(oAuth2Client.getJwtSecret().getBytes());
     try {
       String tokenSplit = token.contains("Bearer") ? token.split("Bearer ")[1] : token;
       Jws<Claims> jwt = Jwts.parser().verifyWith(key).build().parseSignedClaims(tokenSplit);
@@ -299,7 +295,7 @@ public class TokenService {
                 ? null
                 : OAuthType.valueOf((String) body.get(TokenClaims.AUTH_TYPE.claim())),
             ObjectUtils.isEmpty(body.get(TokenClaims.CLIENT_ID.claim()))
-                ? clientCredential.getClientId()
+                ? oAuth2Client.getClientId()
                 : (String) body.get(TokenClaims.CLIENT_ID.claim()),
             ObjectUtils.isEmpty(body.get(TokenClaims.ATTRIBUTES.claim()))
                 ? null
@@ -317,9 +313,8 @@ public class TokenService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  private AuthToken generateJWEToken(
-      JWTData jwtData, ClientCredential clientCredential, Object payload) {
-    long jweExpiration = clientCredential.getJweExpiration();
+  private AuthToken generateJWEToken(JWTData jwtData, OAuth2Client oAuth2Client, Object payload) {
+    long jweExpiration = oAuth2Client.getJweExpiration();
     Date now = new Date(System.currentTimeMillis());
     // Access Token
     JWTClaimsSet claimsSet =
@@ -339,15 +334,15 @@ public class TokenService {
             .claim(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id())
             .claim(TokenClaims.IAT.claim(), new Date(now.toInstant().toEpochMilli()))
             .expirationTime(
-                new Date(now.toInstant().toEpochMilli() + clientCredential.getJweExpiration()))
+                new Date(now.toInstant().toEpochMilli() + oAuth2Client.getJweExpiration()))
             .build();
-    jwtData.setExp(now.toInstant().toEpochMilli() + clientCredential.getJweExpiration());
+    jwtData.setExp(now.toInstant().toEpochMilli() + oAuth2Client.getJweExpiration());
     jwtData.setIat(now.toInstant().toEpochMilli());
     Payload payloadAccess = new Payload(claimsSet.toJSONObject());
 
     JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A256CBC_HS512);
 
-    byte[] secretKey = clientCredential.getJweSecret().getBytes();
+    byte[] secretKey = oAuth2Client.getJweSecret().getBytes();
     DirectEncrypter encrypted = null;
     JWEObject jweObject = new JWEObject(header, payloadAccess);
     try {
@@ -381,7 +376,7 @@ public class TokenService {
             .claim(TokenClaims.FAMILY_NAME.claim(), jwtData.getFamily_name())
             .claim(TokenClaims.CLIENT_ID.claim(), jwtData.getClient_id())
             .expirationTime(
-                new Date(now.toInstant().toEpochMilli() + clientCredential.getJwtExpiration()))
+                new Date(now.toInstant().toEpochMilli() + oAuth2Client.getJwtExpiration()))
             .build();
 
     Payload payloadId = new Payload(idClaimsSet.toJSONObject());
@@ -405,15 +400,15 @@ public class TokenService {
         refreshToken,
         TokenUtils.hashingToken(accessToken),
         TokenUtils.hashingToken(idToken),
-        clientCredential.getClientId(),
+        oAuth2Client.getClientId(),
         sessionID.getSessionID(),
         jwtData.getRoles(),
         jwtData.getPermissions(),
         payload);
 
     return new AuthToken(
-        clientCredential.getIdToken() ? idToken : null,
-        clientCredential.getAccessToken() ? accessToken : null,
+        oAuth2Client.getIdToken() ? idToken : null,
+        oAuth2Client.getAccessToken() ? accessToken : null,
         refreshToken,
         claimsSet.getExpirationTime().getTime(),
         jweExpiration,
@@ -421,12 +416,12 @@ public class TokenService {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  private JWTData parseJWEToken(String token, ClientCredential clientCredential) {
+  private JWTData parseJWEToken(String token, OAuth2Client oAuth2Client) {
     try {
       String tokenSplit = token.split("Bearer ")[1];
       ConfigurableJWTProcessor<SimpleSecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
       JWKSource<SimpleSecurityContext> jweKeySource =
-          new ImmutableSecret<>(clientCredential.getJweSecret().getBytes());
+          new ImmutableSecret<>(oAuth2Client.getJweSecret().getBytes());
       JWEKeySelector<SimpleSecurityContext> jweKeySelector =
           new JWEDecryptionKeySelector<>(
               JWEAlgorithm.DIR, EncryptionMethod.A256CBC_HS512, jweKeySource);
@@ -471,7 +466,7 @@ public class TokenService {
                   ? null
                   : OAuthType.valueOf((String) claimsSet.getClaim(TokenClaims.AUTH_TYPE.claim())),
               ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()))
-                  ? clientCredential.getClientId()
+                  ? oAuth2Client.getClientId()
                   : (String) claimsSet.getClaim(TokenClaims.CLIENT_ID.claim()),
               ObjectUtils.isEmpty(claimsSet.getClaim(TokenClaims.ATTRIBUTES.claim()))
                   ? null

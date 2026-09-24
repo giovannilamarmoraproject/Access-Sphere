@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
@@ -26,19 +26,19 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateTokenExchange(
-      String token, TokenExchange tokenExchange, ClientCredential clientCredential) {
+      String token, TokenExchange tokenExchange, OAuth2Client oAuth2Client) {
     validateSubjectToken(token, tokenExchange.getSubject_token());
 
     validateGrantType(GrantType.TOKEN_EXCHANGE.type(), tokenExchange.getGrant_type());
 
     validateRequestedTokenType(tokenExchange.getRequested_token_type());
 
-    validateScopes(clientCredential.getScopes(), tokenExchange.getScope());
+    validateScopes(oAuth2Client.getScopes(), tokenExchange.getScope());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateClientRoles(ClientCredential clientCredential) {
-    if (ObjectToolkit.isNullOrEmpty(clientCredential.getAppRoles())) {
+  public static void validateClientRoles(OAuth2Client oAuth2Client) {
+    if (ObjectToolkit.isNullOrEmpty(oAuth2Client.getAppRoles())) {
       LOG.error("❌ The Client must have a valid role configuration to proceed");
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_400,
@@ -48,20 +48,20 @@ public class OAuthValidator {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateUserRoles(ClientCredential clientCredential, List<String> userRoles) {
+  public static void validateUserRoles(OAuth2Client oAuth2Client, List<String> userRoles) {
     if (ObjectToolkit.isNullOrEmpty(userRoles)) {
       LOG.error("The User must have a role to proceed {}", userRoles);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
-    validateClientRoles(clientCredential);
+    validateClientRoles(oAuth2Client);
 
-    if (clientCredential.getAppRoles().stream()
+    if (oAuth2Client.getAppRoles().stream()
         .filter(java.util.Objects::nonNull)
         .noneMatch(appRole -> userRoles.stream().anyMatch(appRole::matches))) {
       LOG.error(
           "The User must have a valid role as {} to proceed {}",
-          clientCredential.getAppRoles(),
+          oAuth2Client.getAppRoles(),
           userRoles);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
@@ -69,7 +69,7 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateClient(
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       String responseType,
       String accessType,
       String redirectUri,
@@ -77,17 +77,16 @@ public class OAuthValidator {
 
     validateResponseType("code", responseType);
 
-    validateAccessType(clientCredential.getAccessType().value(), accessType);
+    validateAccessType(oAuth2Client.getAccessType().value(), accessType);
 
-    validateRedirectUri(
-        clientCredential.getRedirect_uri(), redirectUri, clientCredential.getClientId());
+    validateRedirectUri(oAuth2Client.getRedirect_uri(), redirectUri, oAuth2Client.getClientId());
 
-    validateScopes(clientCredential.getScopes(), scope);
+    validateScopes(oAuth2Client.getScopes(), scope);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateBasicAuth(
-      String basic, String grantType, String redirect_uri, ClientCredential clientCredential) {
+      String basic, String grantType, String redirect_uri, OAuth2Client oAuth2Client) {
     if (ObjectUtils.isEmpty(basic) || !basic.contains("Basic")) {
       LOG.error("No Basic Auth found");
       throw new OAuthException(
@@ -98,8 +97,7 @@ public class OAuthValidator {
 
     validateGrantType(GrantType.PASSWORD.type(), grantType);
 
-    validateRedirectUri(
-        clientCredential.getRedirect_uri(), redirect_uri, clientCredential.getClientId());
+    validateRedirectUri(oAuth2Client.getRedirect_uri(), redirect_uri, oAuth2Client.getClientId());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
@@ -119,13 +117,9 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateOAuthGoogle(
-      ClientCredential clientCredential,
-      String code,
-      String scope,
-      String redirect_uri,
-      String grantType) {
+      OAuth2Client oAuth2Client, String code, String scope, String redirect_uri, String grantType) {
 
-    validateClientRoles(clientCredential);
+    validateClientRoles(oAuth2Client);
 
     validateGrantType(GrantType.AUTHORIZATION_CODE.type(), grantType);
 
@@ -134,10 +128,9 @@ public class OAuthValidator {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "The param code is a required field!");
     }
 
-    validateRedirectUri(
-        clientCredential.getRedirect_uri(), redirect_uri, clientCredential.getClientId());
+    validateRedirectUri(oAuth2Client.getRedirect_uri(), redirect_uri, oAuth2Client.getClientId());
 
-    validateScopes(clientCredential.getScopes(), scope);
+    validateScopes(oAuth2Client.getScopes(), scope);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
@@ -153,16 +146,14 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRefreshTokenData(
-      OAuth2Authorization oAuth2Authorization,
-      ClientCredential clientCredential,
-      OAuthType oAuthType) {
-    validateClientId(oAuth2Authorization.getClientId(), clientCredential.getClientId());
+      OAuth2Authorization oAuth2Authorization, OAuth2Client oAuth2Client, OAuthType oAuthType) {
+    validateClientId(oAuth2Authorization.getClientId(), oAuth2Client.getClientId());
 
     if (!oAuth2Authorization.getType().equals(oAuthType)) {
       LOG.error(
           "The OAuthType should be {} instead of {}",
           oAuth2Authorization.getType(),
-          clientCredential.getAuthType());
+          oAuth2Client.getAuthType());
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_400,
           ExceptionType.INVALID_CLIENT_ID,

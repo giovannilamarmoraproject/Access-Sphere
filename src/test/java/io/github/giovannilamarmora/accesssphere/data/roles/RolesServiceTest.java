@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -32,20 +34,27 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class RolesServiceTest {
 
-  @Mock private ClientService clientService;
+  @Mock private OAuth2ClientService oAuth2ClientService;
   @Mock private UserService userService;
   @Mock private TechUserService techUserService;
   @Mock private io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig techUserConfig;
-  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
-  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO roleDefinitionDAO;
-  @Mock private io.github.giovannilamarmora.accesssphere.client.IClientDAO clientDAO;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO
+      userClientRoleDAO;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO
+      roleDefinitionDAO;
+
+  @Mock private IOAuth2ClientDAO clientDAO;
   @Mock private io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO userDAO;
 
   @InjectMocks private RolesService rolesService;
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(rolesService, "clientService", clientService);
+    ReflectionTestUtils.setField(rolesService, "clientService", oAuth2ClientService);
     ReflectionTestUtils.setField(rolesService, "userService", userService);
     ReflectionTestUtils.setField(rolesService, "techUserService", techUserService);
     ReflectionTestUtils.setField(rolesService, "techUserConfig", techUserConfig);
@@ -71,15 +80,16 @@ class RolesServiceTest {
   void changeRoles_success_deduplicatesAndIncludesSystemRoles() {
     when(techUserService.isTechUser()).thenReturn(true);
 
-    ClientCredential client1 = new ClientCredential();
+    OAuth2Client client1 = new OAuth2Client();
     client1.setClientId("linkatutto");
     client1.setAppRoles(List.of(new AppRole("LINKATUTTO_ADMIN", "DEFAULT")));
 
-    ClientCredential client2 = new ClientCredential();
+    OAuth2Client client2 = new OAuth2Client();
     client2.setClientId("access_sphere");
     client2.setAppRoles(List.of(new AppRole("ACCESS_SPHERE_ADMIN", "ADMIN")));
 
-    when(clientService.getClientCredentials()).thenReturn(Mono.just(List.of(client1, client2)));
+    when(oAuth2ClientService.getClientCredentials())
+        .thenReturn(Mono.just(List.of(client1, client2)));
 
     User user = new User();
     user.setIdentifier("user-123");
@@ -127,15 +137,16 @@ class RolesServiceTest {
   void changeRoles_withModernClientRoles_success() {
     when(techUserService.isTechUser()).thenReturn(true);
 
-    ClientCredential client1 = new ClientCredential();
+    OAuth2Client client1 = new OAuth2Client();
     client1.setClientId("linkatutto");
     client1.setAppRoles(List.of(new AppRole("LINKATUTTO_ADMIN", "DEFAULT")));
 
-    ClientCredential client2 = new ClientCredential();
+    OAuth2Client client2 = new OAuth2Client();
     client2.setClientId("ACCESS-SPHERE-TECH");
     client2.setAppRoles(List.of(new AppRole("ROLE_ADMIN", "DEFAULT")));
 
-    when(clientService.getClientCredentials()).thenReturn(Mono.just(List.of(client1, client2)));
+    when(oAuth2ClientService.getClientCredentials())
+        .thenReturn(Mono.just(List.of(client1, client2)));
 
     User user = new User();
     user.setIdentifier("user-456");
@@ -179,7 +190,8 @@ class RolesServiceTest {
     when(userService.getUserByIdentifier("user-789")).thenReturn(Mono.just(user));
     when(userService.updateUser(eq("user-789"), any(User.class)))
         .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
-    when(userClientRoleDAO.existsByUserIdentifierAndClientIdAndRole("user-789", "linkatutto", "ROLE_ADMIN"))
+    when(userClientRoleDAO.existsByUserIdentifierAndClientIdAndRole(
+            "user-789", "linkatutto", "ROLE_ADMIN"))
         .thenReturn(false);
 
     StepVerifier.create(rolesService.assignClientRole("user-789", "linkatutto", "ROLE_ADMIN"))
@@ -195,7 +207,8 @@ class RolesServiceTest {
   }
 
   @Test
-  @DisplayName("revokeClientRole should delete mapping and remove from legacy roles if not present in other clients")
+  @DisplayName(
+      "revokeClientRole should delete mapping and remove from legacy roles if not present in other clients")
   void revokeClientRole_success() {
     when(techUserService.isTechUser()).thenReturn(true);
 
@@ -208,8 +221,10 @@ class RolesServiceTest {
     when(userService.updateUser(eq("user-789"), any(User.class)))
         .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
     when(userClientRoleDAO.findByUserIdentifier("user-789"))
-        .thenReturn(List.of(new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity(
-            "user-789", "tech-client", "ROLE_TECH")));
+        .thenReturn(
+            List.of(
+                new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity(
+                    "user-789", "tech-client", "ROLE_TECH")));
 
     StepVerifier.create(rolesService.revokeClientRole("user-789", "linkatutto", "ROLE_ADMIN"))
         .assertNext(
@@ -235,8 +250,10 @@ class RolesServiceTest {
     when(roleDefinitionDAO.findAll()).thenReturn(List.of(roleDef));
 
     io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity ucr =
-        new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity("u-1", "LINKATUTTO", "ROLE_EDITOR");
-    when(userClientRoleDAO.findByClientIdAndRole("LINKATUTTO", "ROLE_EDITOR")).thenReturn(List.of(ucr));
+        new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity(
+            "u-1", "LINKATUTTO", "ROLE_EDITOR");
+    when(userClientRoleDAO.findByClientIdAndRole("LINKATUTTO", "ROLE_EDITOR"))
+        .thenReturn(List.of(ucr));
 
     io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity userEntity =
         new io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity();
@@ -254,7 +271,8 @@ class RolesServiceTest {
               List<?> catalog = (List<?>) response.getBody().getData();
               assertEquals(1, catalog.size());
               io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO dto =
-                  (io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO) catalog.get(0);
+                  (io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO)
+                      catalog.get(0);
               assertEquals("LINKATUTTO", dto.getClientId());
               assertEquals("ROLE_EDITOR", dto.getRole());
               assertEquals(1, dto.getAssignedUsersCount());
@@ -268,8 +286,7 @@ class RolesServiceTest {
   void createRole_success() {
     when(techUserService.isTechUser()).thenReturn(true);
 
-    io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity clientEntity =
-        new io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity();
+    OAuth2ClientEntity clientEntity = new OAuth2ClientEntity();
     clientEntity.setClientId("linkatutto");
 
     when(clientDAO.findByClientId("linkatutto")).thenReturn(clientEntity);
@@ -293,21 +310,24 @@ class RolesServiceTest {
   void deleteRole_success() {
     when(techUserService.isTechUser()).thenReturn(true);
 
-    io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity clientEntity =
-        new io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity();
+    OAuth2ClientEntity clientEntity = new OAuth2ClientEntity();
     clientEntity.setClientId("linkatutto");
 
     when(clientDAO.findByClientId("linkatutto")).thenReturn(clientEntity);
 
     io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity r1 =
-        new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity("linkatutto", "ROLE_OBSOLETE", "USER", null, List.of());
+        new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity(
+            "linkatutto", "ROLE_OBSOLETE", "USER", null, List.of());
     io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity r2 =
-        new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity("linkatutto", "ROLE_REMAINING", "USER", null, List.of());
+        new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity(
+            "linkatutto", "ROLE_REMAINING", "USER", null, List.of());
     when(roleDefinitionDAO.findByClientId("linkatutto")).thenReturn(List.of(r1, r2));
 
     io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity ucr =
-        new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity("u-99", "linkatutto", "ROLE_OBSOLETE");
-    when(userClientRoleDAO.findByClientIdAndRole("linkatutto", "ROLE_OBSOLETE")).thenReturn(List.of(ucr));
+        new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity(
+            "u-99", "linkatutto", "ROLE_OBSOLETE");
+    when(userClientRoleDAO.findByClientIdAndRole("linkatutto", "ROLE_OBSOLETE"))
+        .thenReturn(List.of(ucr));
 
     io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity userEntity =
         new io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity();

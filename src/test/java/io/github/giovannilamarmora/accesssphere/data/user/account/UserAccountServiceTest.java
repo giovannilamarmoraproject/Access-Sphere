@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderService;
-import io.github.giovannilamarmora.accesssphere.client.ClientService;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
@@ -29,7 +29,7 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class UserAccountServiceTest {
 
-  @Mock private ClientService clientService;
+  @Mock private OAuth2ClientService oAuth2ClientService;
   @Mock private TokenService tokenService;
   @Mock private TechUserService techUserService;
   @Mock private EmailTemplateService emailTemplateService;
@@ -41,7 +41,7 @@ class UserAccountServiceTest {
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(userAccountService, "clientService", clientService);
+    ReflectionTestUtils.setField(userAccountService, "clientService", oAuth2ClientService);
     ReflectionTestUtils.setField(userAccountService, "tokenService", tokenService);
     ReflectionTestUtils.setField(userAccountService, "techUserService", techUserService);
     ReflectionTestUtils.setField(userAccountService, "emailTemplateService", emailTemplateService);

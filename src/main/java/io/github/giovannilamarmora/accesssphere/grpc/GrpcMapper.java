@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.grpc;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
@@ -17,18 +17,18 @@ public class GrpcMapper {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static JWTData fromGoogleDataToJWTData(
-      GoogleIdToken.Payload payload, ClientCredential clientCredential) {
+      GoogleIdToken.Payload payload, OAuth2Client oAuth2Client) {
     AppRole defaultRole =
-        (clientCredential.getAppRoles() == null)
+        (oAuth2Client.getAppRoles() == null)
             ? null
-            : clientCredential.getAppRoles().stream()
+            : oAuth2Client.getAppRoles().stream()
                 .filter(appRole -> appRole != null && appRole.isUser())
                 .findFirst()
                 .orElseGet(
                     () ->
-                        clientCredential.getAppRoles().isEmpty()
+                        oAuth2Client.getAppRoles().isEmpty()
                             ? null
-                            : clientCredential.getAppRoles().getFirst());
+                            : oAuth2Client.getAppRoles().getFirst());
     return new JWTData(
         null,
         payload.getAudience().toString(),
@@ -48,7 +48,7 @@ public class GrpcMapper {
         ObjectUtils.isEmpty(defaultRole) ? null : List.of(defaultRole.getRole()),
         //    : clientCredential.getDefaultRole().stream().map(AppRole::getRole).toList(),
         OAuthType.GOOGLE,
-        clientCredential.getClientId(),
+        oAuth2Client.getClientId(),
         null);
   }
 

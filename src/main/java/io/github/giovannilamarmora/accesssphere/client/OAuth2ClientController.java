@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -25,9 +25,9 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/v1")
 @Tag(name = OpenAPI.Tag.CLIENTS, description = OpenAPI.Description.CLIENTS)
-public class ClientController {
+public class OAuth2ClientController {
 
-  @Autowired private ClientService clientService;
+  @Autowired private OAuth2ClientService oAuth2ClientService;
 
   @GetMapping("/clients")
   @Operation(
@@ -56,7 +56,7 @@ public class ClientController {
   public Mono<ResponseEntity<Response>> getClientCredentials(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
       ServerHttpRequest request) {
-    return clientService.getClients();
+    return oAuth2ClientService.getClients();
   }
 
   @PostMapping("/clients")
@@ -71,15 +71,15 @@ public class ClientController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> createClient(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid ClientCredential clientCredential,
+      @RequestBody @Valid OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
-    clientService.addClientToDatabase(clientCredential);
+    oAuth2ClientService.addClientToDatabase(oAuth2Client);
     Response response =
         new Response(
             HttpStatus.CREATED.value(),
             "Client created",
             io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
-            clientCredential);
+            oAuth2Client);
     return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(response));
   }
 
@@ -98,9 +98,9 @@ public class ClientController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> createClientLegacy(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid ClientCredential clientCredential,
+      @RequestBody @Valid OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
-    return createClient(bearer, clientCredential, request)
+    return createClient(bearer, oAuth2Client, request)
         .map(entity -> ResponseEntity.ok(entity.getBody()));
   }
 
@@ -117,18 +117,18 @@ public class ClientController {
   public Mono<ResponseEntity<Response>> updateClientById(
       @PathVariable String clientId,
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid ClientCredential clientCredential,
+      @RequestBody @Valid OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
-    if (clientCredential.getClientId() == null) {
-      clientCredential.setClientId(clientId);
+    if (oAuth2Client.getClientId() == null) {
+      oAuth2Client.setClientId(clientId);
     }
-    clientService.updateClientInDatabase(clientCredential);
+    oAuth2ClientService.updateClientInDatabase(oAuth2Client);
     Response response =
         new Response(
             HttpStatus.OK.value(),
             "Client updated",
             io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
-            clientCredential);
+            oAuth2Client);
     return Mono.just(ResponseEntity.ok(response));
   }
 
@@ -144,15 +144,15 @@ public class ClientController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> updateClient(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid ClientCredential clientCredential,
+      @RequestBody @Valid OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
-    clientService.updateClientInDatabase(clientCredential);
+    oAuth2ClientService.updateClientInDatabase(oAuth2Client);
     Response response =
         new Response(
             HttpStatus.OK.value(),
             "Client updated",
             io.github.giovannilamarmora.utils.context.TraceUtils.getSpanID(),
-            clientCredential);
+            oAuth2Client);
     return Mono.just(ResponseEntity.ok(response));
   }
 
@@ -171,9 +171,9 @@ public class ClientController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> updateClientLegacy(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
-      @RequestBody @Valid ClientCredential clientCredential,
+      @RequestBody @Valid OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
-    return updateClient(bearer, clientCredential, request);
+    return updateClient(bearer, oAuth2Client, request);
   }
 
   @DeleteMapping("/clients/{clientId}")
@@ -190,9 +190,9 @@ public class ClientController {
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) @Valid String bearer,
       @PathVariable String clientId,
       ServerHttpRequest request) {
-    ClientCredential cred = new ClientCredential();
+    OAuth2Client cred = new OAuth2Client();
     cred.setClientId(clientId);
-    clientService.deleteClientFromDatabase(cred);
+    oAuth2ClientService.deleteClientFromDatabase(cred);
     Response response =
         new Response(
             HttpStatus.OK.value(),

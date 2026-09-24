@@ -24,7 +24,7 @@ import org.springframework.http.HttpStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ClientCredential extends GenericDTO {
+public class OAuth2Client extends GenericDTO {
 
   @Column(name = "CLIENT_ID", nullable = false, unique = true)
   @NotNull(message = "Client ID is required")

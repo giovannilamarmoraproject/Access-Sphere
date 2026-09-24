@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.tech;
 
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
@@ -16,21 +16,21 @@ public class TechUserValidator {
   private static final Logger LOG = LoggerFilter.getLogger(TechUserValidator.class);
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateTechRoles(ClientCredential clientCredential, List<String> userRoles) {
+  public static void validateTechRoles(OAuth2Client oAuth2Client, List<String> userRoles) {
     if (ObjectToolkit.isNullOrEmpty(userRoles)) {
       LOG.error("The User must have a role to proceed {}", userRoles);
       throw new TechnicalException(
           ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
     }
 
-    OAuthValidator.validateClientRoles(clientCredential);
+    OAuthValidator.validateClientRoles(oAuth2Client);
 
-    if (clientCredential.getAppRoles().stream()
+    if (oAuth2Client.getAppRoles().stream()
         .filter(java.util.Objects::nonNull)
         .noneMatch(appRole -> userRoles.stream().anyMatch(appRole::matches))) {
       LOG.error(
           "The User must have a valid role as {} to proceed {}",
-          clientCredential.getAppRoles(),
+          oAuth2Client.getAppRoles(),
           userRoles);
       throw new TechnicalException(
           ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage());
@@ -39,14 +39,12 @@ public class TechUserValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public static void validateTechClient(
-      List<ClientCredential> clients,
-      OAuth2Authorization oAuth2Authorization,
-      String techClientID) {
-    ClientCredential clientCredentialToCheck =
+      List<OAuth2Client> clients, OAuth2Authorization oAuth2Authorization, String techClientID) {
+    OAuth2Client oAuth2ClientToCheck =
         clients.stream()
             .filter(c -> c.getClientId().equalsIgnoreCase(techClientID))
             .toList()
             .getFirst();
-    validateTechRoles(clientCredentialToCheck, oAuth2Authorization.getRoles());
+    validateTechRoles(oAuth2ClientToCheck, oAuth2Authorization.getRoles());
   }
 }

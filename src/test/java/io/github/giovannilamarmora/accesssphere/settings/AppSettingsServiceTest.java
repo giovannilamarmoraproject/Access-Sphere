@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
-import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
+import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
+import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.settings.dto.AppSettingsDTO;
@@ -29,10 +29,16 @@ import reactor.test.StepVerifier;
 class AppSettingsServiceTest {
 
   @Mock private IAppSettingsDAO appSettingsDAO;
-  @Mock private IClientDAO clientDAO;
+  @Mock private IOAuth2ClientDAO clientDAO;
   @Mock private IUserDAO userDAO;
-  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO roleDefinitionDAO;
-  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO
+      roleDefinitionDAO;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO
+      userClientRoleDAO;
 
   @InjectMocks private AppSettingsService appSettingsService;
 
@@ -108,8 +114,14 @@ class AppSettingsServiceTest {
     AppSettingsDTO updateDTO = new AppSettingsDTO();
     updateDTO.setActiveTheme("emerald-matrix");
     updateDTO.setDefaultLanguage("en");
-    updateDTO.setBrandingSettings(BrandingSettingsDTO.builder().appName("Updated App Name").build());
-    updateDTO.setLoginSettings(LoginSettingsDTO.builder().loginMode("CUSTOM_BG").loginBgUrl("data:image/png;base64,sample").loginBgOpacity(75).build());
+    updateDTO.setBrandingSettings(
+        BrandingSettingsDTO.builder().appName("Updated App Name").build());
+    updateDTO.setLoginSettings(
+        LoginSettingsDTO.builder()
+            .loginMode("CUSTOM_BG")
+            .loginBgUrl("data:image/png;base64,sample")
+            .loginBgOpacity(75)
+            .build());
 
     StepVerifier.create(appSettingsService.updateSettings(updateDTO))
         .assertNext(
@@ -139,7 +151,7 @@ class AppSettingsServiceTest {
   @Test
   @DisplayName("createBackup exports application snapshot")
   void testCreateBackup() {
-    ClientCredentialEntity client = new ClientCredentialEntity();
+    OAuth2ClientEntity client = new OAuth2ClientEntity();
     client.setClientId("TEST-CLIENT");
 
     UserEntity user = new UserEntity();
@@ -173,7 +185,7 @@ class AppSettingsServiceTest {
   void testRestoreBackup() {
     when(appSettingsDAO.findAll()).thenReturn(List.of(sampleEntity));
 
-    ClientCredentialEntity existingClient = new ClientCredentialEntity();
+    OAuth2ClientEntity existingClient = new OAuth2ClientEntity();
     existingClient.setId(10L);
     existingClient.setClientId("EXISTING-CLIENT");
     when(clientDAO.findByClientId("EXISTING-CLIENT")).thenReturn(existingClient);
@@ -192,7 +204,7 @@ class AppSettingsServiceTest {
     restoreSettings.setAppName("Restored App");
     backup.setSettings(restoreSettings);
 
-    ClientCredentialEntity restoreClient = new ClientCredentialEntity();
+    OAuth2ClientEntity restoreClient = new OAuth2ClientEntity();
     restoreClient.setClientId("EXISTING-CLIENT");
     backup.setClients(List.of(restoreClient));
 

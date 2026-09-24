@@ -1,9 +1,13 @@
 package io.github.giovannilamarmora.accesssphere.settings;
 
-import io.github.giovannilamarmora.accesssphere.client.IClientDAO;
-import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
+import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
+import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
+import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
+import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.settings.dto.AppSettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.dto.BackupDataDTO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
@@ -12,10 +16,6 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.time.LocalDateTime;
-import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
-import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
-import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +39,7 @@ public class AppSettingsService {
   private String appVersion;
 
   @Autowired private IAppSettingsDAO appSettingsDAO;
-  @Autowired private IClientDAO clientDAO;
+  @Autowired private IOAuth2ClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
@@ -102,7 +102,7 @@ public class AppSettingsService {
           LOG.info("Creating complete application backup initiated by {}", exportedBy);
           List<AppSettingsEntity> settingsList = appSettingsDAO.findAll();
           AppSettingsEntity settings = settingsList.isEmpty() ? null : settingsList.getFirst();
-          List<ClientCredentialEntity> clients = clientDAO.findAll();
+          List<OAuth2ClientEntity> clients = clientDAO.findAll();
           List<UserEntity> users = userDAO.findAll();
           List<RoleDefinitionEntity> roles = roleDefinitionDAO.findAll();
           List<UserClientRoleEntity> userClientRoles = userClientRoleDAO.findAll();
@@ -148,8 +148,8 @@ public class AppSettingsService {
           }
 
           if (backupData.getClients() != null && !backupData.getClients().isEmpty()) {
-            for (ClientCredentialEntity client : backupData.getClients()) {
-              ClientCredentialEntity existing = clientDAO.findByClientId(client.getClientId());
+            for (OAuth2ClientEntity client : backupData.getClients()) {
+              OAuth2ClientEntity existing = clientDAO.findByClientId(client.getClientId());
               if (existing != null) {
                 client.setId(existing.getId());
               } else {
@@ -185,7 +185,8 @@ public class AppSettingsService {
             }
           }
 
-          if (backupData.getUserClientRoles() != null && !backupData.getUserClientRoles().isEmpty()) {
+          if (backupData.getUserClientRoles() != null
+              && !backupData.getUserClientRoles().isEmpty()) {
             for (UserClientRoleEntity ucr : backupData.getUserClientRoles()) {
               boolean exists =
                   userClientRoleDAO.existsByUserIdentifierAndClientIdAndRole(

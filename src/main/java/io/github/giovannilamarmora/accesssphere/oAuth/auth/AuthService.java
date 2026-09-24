@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
@@ -77,7 +77,7 @@ public class AuthService {
    *
    * @param basic Stringa Base64 contenente le credenziali nell'header HTTP Authorization Basic.
    * @param redirect_uri URI di redirect opzionale configurato sul client.
-   * @param clientCredential Credenziali e configurazione del client OAuth2 chiamante.
+   * @param oAuth2Client Credenziali e configurazione del client OAuth2 chiamante.
    * @param request Richiesta HTTP reattiva corrente.
    * @param serverHttpResponse Risposta HTTP reattiva corrente per il posizionamento dei cookie.
    * @return Mono contenente ResponseEntity con stato 200 OK e il payload dei token generati.
@@ -86,7 +86,7 @@ public class AuthService {
   public Mono<ResponseEntity<Response>> makeClassicLogin(
       String basic,
       String redirect_uri,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       ServerHttpRequest request,
       ServerHttpResponse serverHttpResponse) {
     LOG.debug("🔑 Decoding user using Base64 Decoder");
@@ -124,11 +124,10 @@ public class AuthService {
     }
     final String finalState = state;
 
-    return performLogin(username, email, password, clientCredential, request)
+    return performLogin(username, email, password, oAuth2Client, request)
         .map(
             tokenResponse -> {
-              OAuthValidator.validateUserRoles(
-                  clientCredential, tokenResponse.getUser().getRoles());
+              OAuthValidator.validateUserRoles(oAuth2Client, tokenResponse.getUser().getRoles());
 
               if (!ObjectToolkit.isNullOrEmpty(tokenResponse.getToken().getTemp_token())) {
                 OAuthTokenResponse mfaTokenResponse =
@@ -146,7 +145,7 @@ public class AuthService {
               }
               return setLoginResponse(
                   tokenResponse,
-                  clientCredential,
+                  oAuth2Client,
                   includeUserInfo,
                   includeUserData,
                   redirect_uri,
@@ -162,7 +161,7 @@ public class AuthService {
    * @param username Username dell'utente.
    * @param email Indirizzo email dell'utente.
    * @param password Password in chiaro da verificare.
-   * @param clientCredential Credenziali del client OAuth.
+   * @param oAuth2Client Credenziali del client OAuth.
    * @param request Richiesta HTTP server.
    * @return Mono contenente l'oggetto {@link OAuthTokenResponse}.
    */
@@ -171,7 +170,7 @@ public class AuthService {
       String username,
       String email,
       String password,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
     LOG.debug("🔑 Validating user credentials for username={} and email={}", username, email);
     return userService
@@ -183,9 +182,8 @@ public class AuthService {
                       ? SubjectType.TECHNICAL
                       : SubjectType.CUSTOMER;
               JWTData jwtData =
-                  JWTData.generateJWTData(
-                      authenticatedUser, clientCredential, subjectType, request);
-              AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
+                  JWTData.generateJWTData(authenticatedUser, oAuth2Client, subjectType, request);
+              AuthToken token = tokenService.generateToken(jwtData, oAuth2Client, null);
               LOG.debug(
                   "✅ Login process ended successfully for user {}",
                   authenticatedUser.getUsername());
@@ -197,7 +195,7 @@ public class AuthService {
    * Costruisce la risposta di login popolando cookie ed eventuale reindirizzamento.
    *
    * @param tokenResponse Risposta con token e anagrafica utente.
-   * @param clientCredential Credenziali del client OAuth2.
+   * @param oAuth2Client Credenziali del client OAuth2.
    * @param includeUserInfo Flag per includere i claim OIDC.
    * @param includeUserData Flag per includere il DTO anagrafico utente.
    * @param redirect_uri URI di reindirizzamento opzionale.
@@ -207,7 +205,7 @@ public class AuthService {
    */
   public static ResponseEntity<Response> setLoginResponse(
       OAuthTokenResponse tokenResponse,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       boolean includeUserInfo,
       boolean includeUserData,
       String redirect_uri,
@@ -215,7 +213,7 @@ public class AuthService {
       ServerHttpResponse httpResponse) {
     return setLoginResponse(
         tokenResponse,
-        clientCredential,
+        oAuth2Client,
         includeUserInfo,
         includeUserData,
         redirect_uri,
@@ -226,7 +224,7 @@ public class AuthService {
 
   public static ResponseEntity<Response> setLoginResponse(
       OAuthTokenResponse tokenResponse,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       boolean includeUserInfo,
       boolean includeUserData,
       String redirect_uri,
@@ -258,8 +256,7 @@ public class AuthService {
         httpResponse);
 
     URI finalRedirectURI =
-        OAuthMapper.getFinalRedirectURI(
-            clientCredential, RedirectUris.POST_LOGIN_URL, redirect_uri);
+        OAuthMapper.getFinalRedirectURI(oAuth2Client, RedirectUris.POST_LOGIN_URL, redirect_uri);
     if (!ObjectUtils.isEmpty(state) && !finalRedirectURI.toString().contains("state=")) {
       String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";
       finalRedirectURI =
@@ -276,14 +273,14 @@ public class AuthService {
    * Rinnova il token JWT di sessione a partire dai dati dell'access token corrente.
    *
    * @param oAuth2Authorization Dati decodificati della sessione utente.
-   * @param clientCredential Credenziali del client OAuth.
+   * @param oAuth2Client Credenziali del client OAuth.
    * @param request Richiesta HTTP server.
    * @return Mono contenente ResponseEntity con esito del rinnovo.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> refreshToken(
       OAuth2Authorization oAuth2Authorization,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
 
     boolean includeUserInfo =
@@ -293,7 +290,7 @@ public class AuthService {
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_data"))
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
-    return refreshJWTToken(oAuth2Authorization, clientCredential, request)
+    return refreshJWTToken(oAuth2Authorization, oAuth2Client, request)
         .map(
             tokenResponse -> {
               String message =
@@ -318,14 +315,14 @@ public class AuthService {
    * Esegue il rinnovo del token JWT estraendo i dati utente e rigenerando la firma del token.
    *
    * @param oAuth2Authorization Dati del token di accesso da rinnovare.
-   * @param clientCredential Credenziali del client OAuth.
+   * @param oAuth2Client Credenziali del client OAuth.
    * @param request Richiesta HTTP server.
    * @return Mono contenente {@link OAuthTokenResponse} con il nuovo token generato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<OAuthTokenResponse> refreshJWTToken(
       OAuth2Authorization oAuth2Authorization,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       ServerHttpRequest request) {
     LOG.info("🔄 Refreshing JWT token for user email: {}", oAuth2Authorization.getEmail());
     return userService
@@ -335,8 +332,8 @@ public class AuthService {
               user.setPassword(null);
               JWTData jwtData =
                   JWTData.generateJWTData(
-                      user, clientCredential, oAuth2Authorization.getSubjectType(), request);
-              AuthToken authToken = tokenService.generateToken(jwtData, clientCredential, null);
+                      user, oAuth2Client, oAuth2Authorization.getSubjectType(), request);
+              AuthToken authToken = tokenService.generateToken(jwtData, oAuth2Client, null);
               return new OAuthTokenResponse(user, jwtData, authToken);
             });
   }
@@ -383,8 +380,8 @@ public class AuthService {
    *
    * @param tokenExchange Richiesta di token exchange.
    * @param oAuth2Authorization Dati del token di accesso del chiamante.
-   * @param clientCredential Credenziali del client ricevente.
-   * @param clientCredentialToExchange Credenziali del client emittente del token soggetto.
+   * @param oAuth2Client Credenziali del client ricevente.
+   * @param oAuth2ClientToExchange Credenziali del client emittente del token soggetto.
    * @param request Richiesta HTTP server.
    * @return Mono contenente la risposta {@link ResponseEntity} con il token scambiato.
    */
@@ -392,8 +389,8 @@ public class AuthService {
   public Mono<ResponseEntity<Response>> exchangeToken(
       TokenExchange tokenExchange,
       OAuth2Authorization oAuth2Authorization,
-      ClientCredential clientCredential,
-      ClientCredential clientCredentialToExchange,
+      OAuth2Client oAuth2Client,
+      OAuth2Client oAuth2ClientToExchange,
       ServerHttpRequest request) {
     boolean includeUserInfo =
         !ObjectUtils.isEmpty(request.getQueryParams().get("include_user_info"))
@@ -403,7 +400,7 @@ public class AuthService {
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
     JWTData decryptToken =
-        tokenService.parseToken(tokenExchange.getSubject_token(), clientCredentialToExchange);
+        tokenService.parseToken(tokenExchange.getSubject_token(), oAuth2ClientToExchange);
 
     if (techUserService.isTechUser()) {
       return Mono.just(
@@ -411,7 +408,7 @@ public class AuthService {
               tokenExchange,
               new User(),
               oAuth2Authorization,
-              clientCredential,
+              oAuth2Client,
               includeUserInfo,
               includeUserData,
               request));
@@ -424,7 +421,7 @@ public class AuthService {
                     tokenExchange,
                     user,
                     oAuth2Authorization,
-                    clientCredential,
+                    oAuth2Client,
                     includeUserInfo,
                     includeUserData,
                     request));
@@ -435,12 +432,11 @@ public class AuthService {
       TokenExchange tokenExchange,
       User user,
       OAuth2Authorization oAuth2Authorization,
-      ClientCredential clientCredential,
+      OAuth2Client oAuth2Client,
       boolean includeUserInfo,
       boolean includeUserData,
       ServerHttpRequest request) {
-    AuthToken token =
-        tokenService.exchangeToken(user, oAuth2Authorization, clientCredential, request);
+    AuthToken token = tokenService.exchangeToken(user, oAuth2Authorization, oAuth2Client, request);
     String message =
         "Token for client " + tokenExchange.getClient_id() + " successfully exchanged!";
     Response response =
@@ -451,7 +447,7 @@ public class AuthService {
             new OAuthTokenResponse(
                 token,
                 includeUserInfo
-                    ? tokenService.parseToken(token.getAccess_token(), clientCredential)
+                    ? tokenService.parseToken(token.getAccess_token(), oAuth2Client)
                     : null,
                 includeUserData ? user : null));
     return ResponseEntity.ok(response);

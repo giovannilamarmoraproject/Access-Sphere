@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity;
-import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -23,114 +23,111 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @Component
-public class ClientMapper {
+public class OAuth2ClientMapper {
 
   private static final ObjectMapper mapper = MapperUtils.mapper().build();
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static ClientCredential toDTO(ClientCredentialEntity clientCredentialEntity) {
+  public static OAuth2Client toDTO(OAuth2ClientEntity oAuth2ClientEntity) {
     try {
-      ClientCredential clientCredential =
-          new ClientCredential(
-              clientCredentialEntity.getClientId(),
-              clientCredentialEntity.getExternalClientId(),
-              clientCredentialEntity.getClientSecret(),
-              ObjectUtils.isEmpty(clientCredentialEntity.getScopes())
+      OAuth2Client oAuth2Client =
+          new OAuth2Client(
+              oAuth2ClientEntity.getClientId(),
+              oAuth2ClientEntity.getExternalClientId(),
+              oAuth2ClientEntity.getClientSecret(),
+              ObjectUtils.isEmpty(oAuth2ClientEntity.getScopes())
                   ? null
-                  : List.of(clientCredentialEntity.getScopes().split(" ")),
-              ObjectUtils.isEmpty(clientCredentialEntity.getRedirect_uri())
+                  : List.of(oAuth2ClientEntity.getScopes().split(" ")),
+              ObjectUtils.isEmpty(oAuth2ClientEntity.getRedirect_uri())
                   ? null
-                  : parseRedirectUri(clientCredentialEntity.getRedirect_uri()),
-              clientCredentialEntity.getAccessType(),
-              clientCredentialEntity.getAuthType(),
-              clientCredentialEntity.getTokenType(),
-              clientCredentialEntity.getJwtSecret(),
-              clientCredentialEntity.getJwtExpiration(),
-              clientCredentialEntity.getJweSecret(),
-              clientCredentialEntity.getJweExpiration(),
-              clientCredentialEntity.getRegistrationToken(),
+                  : parseRedirectUri(oAuth2ClientEntity.getRedirect_uri()),
+              oAuth2ClientEntity.getAccessType(),
+              oAuth2ClientEntity.getAuthType(),
+              oAuth2ClientEntity.getTokenType(),
+              oAuth2ClientEntity.getJwtSecret(),
+              oAuth2ClientEntity.getJwtExpiration(),
+              oAuth2ClientEntity.getJweSecret(),
+              oAuth2ClientEntity.getJweExpiration(),
+              oAuth2ClientEntity.getRegistrationToken(),
               null, // appRoles popolati da ROLE_DEFINITIONS a livello di ClientService
-              clientCredentialEntity.getIdToken(),
-              clientCredentialEntity.getAccessToken(),
-              clientCredentialEntity.getAuthorize_redirect_status(),
-              clientCredentialEntity.getMfaEnabled(),
-              ObjectUtils.isEmpty(clientCredentialEntity.getWebhooks())
+              oAuth2ClientEntity.getIdToken(),
+              oAuth2ClientEntity.getAccessToken(),
+              oAuth2ClientEntity.getAuthorize_redirect_status(),
+              oAuth2ClientEntity.getMfaEnabled(),
+              ObjectUtils.isEmpty(oAuth2ClientEntity.getWebhooks())
                   ? null
-                  : mapper.readValue(
-                      clientCredentialEntity.getWebhooks(), new TypeReference<>() {}));
-      clientCredential.setId(clientCredentialEntity.getId());
-      return clientCredential;
+                  : mapper.readValue(oAuth2ClientEntity.getWebhooks(), new TypeReference<>() {}));
+      oAuth2Client.setId(oAuth2ClientEntity.getId());
+      return oAuth2Client;
     } catch (JsonProcessingException e) {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_500, ExceptionMap.ERR_OAUTH_500.getMessage());
     }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static ClientCredentialEntity toEntity(ClientCredential clientCredential) {
-    return new ClientCredentialEntity(
-        clientCredential.getId(),
-        clientCredential.getClientId(),
-        clientCredential.getExternalClientId(),
-        clientCredential.getClientSecret(),
-        ObjectUtils.isEmpty(clientCredential.getScopes())
+  public static OAuth2ClientEntity toEntity(OAuth2Client oAuth2Client) {
+    return new OAuth2ClientEntity(
+        oAuth2Client.getId(),
+        oAuth2Client.getClientId(),
+        oAuth2Client.getExternalClientId(),
+        oAuth2Client.getClientSecret(),
+        ObjectUtils.isEmpty(oAuth2Client.getScopes())
             ? null
-            : Joiner.on(" ").join(clientCredential.getScopes()),
-        ObjectUtils.isEmpty(clientCredential.getRedirect_uri())
+            : Joiner.on(" ").join(oAuth2Client.getScopes()),
+        ObjectUtils.isEmpty(oAuth2Client.getRedirect_uri())
             ? null
-            : Mapper.writeObjectToString(clientCredential.getRedirect_uri()),
-        clientCredential.getAccessType(),
-        clientCredential.getAuthType(),
-        clientCredential.getTokenType(),
-        clientCredential.getJwtSecret(),
-        clientCredential.getJwtExpiration(),
-        clientCredential.getJweSecret(),
-        clientCredential.getJweExpiration(),
-        clientCredential.getRegistrationToken(),
-        clientCredential.getIdToken(),
-        clientCredential.getAccessToken(),
-        clientCredential.getAuthorize_redirect_status(),
-        clientCredential.getMfaEnabled(),
-        ObjectUtils.isEmpty(clientCredential.getWebhooks())
+            : Mapper.writeObjectToString(oAuth2Client.getRedirect_uri()),
+        oAuth2Client.getAccessType(),
+        oAuth2Client.getAuthType(),
+        oAuth2Client.getTokenType(),
+        oAuth2Client.getJwtSecret(),
+        oAuth2Client.getJwtExpiration(),
+        oAuth2Client.getJweSecret(),
+        oAuth2Client.getJweExpiration(),
+        oAuth2Client.getRegistrationToken(),
+        oAuth2Client.getIdToken(),
+        oAuth2Client.getAccessToken(),
+        oAuth2Client.getAuthorize_redirect_status(),
+        oAuth2Client.getMfaEnabled(),
+        ObjectUtils.isEmpty(oAuth2Client.getWebhooks())
             ? null
-            : Mapper.writeObjectToString(clientCredential.getWebhooks()));
+            : Mapper.writeObjectToString(oAuth2Client.getWebhooks()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static void updateEntity(
-      ClientCredentialEntity existingClient, ClientCredential clientCredential) {
+  public static void updateEntity(OAuth2ClientEntity existingClient, OAuth2Client oAuth2Client) {
     // Aggiorna i campi dell'entità esistente con i valori del ClientCredential
-    existingClient.setExternalClientId(clientCredential.getExternalClientId());
-    existingClient.setClientSecret(clientCredential.getClientSecret());
+    existingClient.setExternalClientId(oAuth2Client.getExternalClientId());
+    existingClient.setClientSecret(oAuth2Client.getClientSecret());
     existingClient.setScopes(
-        ObjectUtils.isEmpty(clientCredential.getScopes())
+        ObjectUtils.isEmpty(oAuth2Client.getScopes())
             ? null
-            : Joiner.on(" ").join(clientCredential.getScopes()));
+            : Joiner.on(" ").join(oAuth2Client.getScopes()));
     existingClient.setRedirect_uri(
-        ObjectUtils.isEmpty(clientCredential.getRedirect_uri())
+        ObjectUtils.isEmpty(oAuth2Client.getRedirect_uri())
             ? null
-            : Mapper.writeObjectToString(clientCredential.getRedirect_uri()));
-    existingClient.setAccessType(clientCredential.getAccessType());
-    existingClient.setAuthType(clientCredential.getAuthType());
-    existingClient.setTokenType(clientCredential.getTokenType());
-    existingClient.setJwtSecret(clientCredential.getJwtSecret());
-    existingClient.setJwtExpiration(clientCredential.getJwtExpiration());
-    existingClient.setJweSecret(clientCredential.getJweSecret());
-    existingClient.setJweExpiration(clientCredential.getJweExpiration());
-    existingClient.setRegistrationToken(clientCredential.getRegistrationToken());
-    existingClient.setIdToken(clientCredential.getIdToken());
-    existingClient.setAccessToken(clientCredential.getAccessToken());
-    existingClient.setAuthorize_redirect_status(clientCredential.getAuthorize_redirect_status());
-    existingClient.setMfaEnabled(clientCredential.getMfaEnabled());
+            : Mapper.writeObjectToString(oAuth2Client.getRedirect_uri()));
+    existingClient.setAccessType(oAuth2Client.getAccessType());
+    existingClient.setAuthType(oAuth2Client.getAuthType());
+    existingClient.setTokenType(oAuth2Client.getTokenType());
+    existingClient.setJwtSecret(oAuth2Client.getJwtSecret());
+    existingClient.setJwtExpiration(oAuth2Client.getJwtExpiration());
+    existingClient.setJweSecret(oAuth2Client.getJweSecret());
+    existingClient.setJweExpiration(oAuth2Client.getJweExpiration());
+    existingClient.setRegistrationToken(oAuth2Client.getRegistrationToken());
+    existingClient.setIdToken(oAuth2Client.getIdToken());
+    existingClient.setAccessToken(oAuth2Client.getAccessToken());
+    existingClient.setAuthorize_redirect_status(oAuth2Client.getAuthorize_redirect_status());
+    existingClient.setMfaEnabled(oAuth2Client.getMfaEnabled());
     existingClient.setWebhooks(
-        ObjectUtils.isEmpty(clientCredential.getWebhooks())
+        ObjectUtils.isEmpty(oAuth2Client.getWebhooks())
             ? null
-            : Mapper.writeObjectToString(clientCredential.getWebhooks()));
+            : Mapper.writeObjectToString(oAuth2Client.getWebhooks()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static List<ClientCredential> toDTOList(
-      List<ClientCredentialEntity> clientCredentialEntities) {
-    return clientCredentialEntities.stream().map(ClientMapper::toDTO).toList();
+  public static List<OAuth2Client> toDTOList(List<OAuth2ClientEntity> clientCredentialEntities) {
+    return clientCredentialEntities.stream().map(OAuth2ClientMapper::toDTO).toList();
   }
 
   /**
@@ -213,9 +210,12 @@ public class ClientMapper {
         String rawType = r.getType();
         String type =
             (!ObjectUtils.isEmpty(rawType) && !rawType.isBlank())
-                ? ("DEFAULT".equalsIgnoreCase(rawType.trim()) ? AppRoleType.USER.getValue() : rawType.trim().toUpperCase())
+                ? ("DEFAULT".equalsIgnoreCase(rawType.trim())
+                    ? AppRoleType.USER.getValue()
+                    : rawType.trim().toUpperCase())
                 : AppRoleType.USER.getValue();
-        normalized.add(new AppRole(r.getId(), roleName, type, r.getDescription(), r.getPermissions()));
+        normalized.add(
+            new AppRole(r.getId(), roleName, type, r.getDescription(), r.getPermissions()));
       }
     }
     return normalized.isEmpty() ? null : normalized;
