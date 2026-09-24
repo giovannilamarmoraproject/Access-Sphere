@@ -29,7 +29,7 @@ public class AppRoleDeserializer extends JsonDeserializer<AppRole> {
       if (text == null || text.isBlank()) {
         return null;
       }
-      return new AppRole(text.trim().toUpperCase(), AppRoleType.DEFAULT.getValue(), null);
+      return new AppRole(text.trim().toUpperCase(), AppRoleType.USER.getValue(), null);
     }
 
     if (token == JsonToken.START_OBJECT) {
@@ -64,11 +64,11 @@ public class AppRoleDeserializer extends JsonDeserializer<AppRole> {
       role = role.trim().toUpperCase();
     }
 
-    String type = AppRoleType.DEFAULT.getValue();
+    String type = AppRoleType.USER.getValue();
     if (node.hasNonNull("type")) {
       String rawType = node.get("type").asText();
       if (rawType != null && !rawType.isBlank()) {
-        type = rawType.trim().toUpperCase();
+        type = "DEFAULT".equalsIgnoreCase(rawType.trim()) ? AppRoleType.USER.getValue() : rawType.trim().toUpperCase();
       }
     }
 

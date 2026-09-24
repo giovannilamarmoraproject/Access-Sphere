@@ -142,7 +142,7 @@ function renderAttributesTable() {
   const subKeyLabel = typeof t === "function" ? t("attr_sub_key_label", "Sotto-Chiave") : "Sotto-Chiave";
   const subValLabel = typeof t === "function" ? t("attr_sub_val_label", "Sotto-Valore") : "Sotto-Valore";
   const noSubPropsText = typeof t === "function" ? t("attr_no_sub_props", "Nessuna proprietà interna. Clicca su \"+ Proprietà\" per aggiungerne una.") : "Nessuna proprietà interna. Clicca su \"+ Proprietà\" per aggiungerne una.";
-  const propNamePlaceholder = typeof t === "function" ? t("attr_prop_name_placeholder", "Nome attributo (es. strapi-token)") : "Nome attributo (es. strapi-token)";
+  const propNamePlaceholder = typeof t === "function" ? t("attr_prop_name_placeholder", "Nome attributo (es. department)") : "Nome attributo (es. department)";
   const propValPlaceholder = typeof t === "function" ? t("attr_prop_val_placeholder", "Valore (stringa, numero o booleano)") : "Valore (stringa, numero o booleano)";
 
   attributesData.forEach((item, index) => {
@@ -204,7 +204,7 @@ function renderAttributesTable() {
         </div>
       `;
     } else {
-      // Proprietà primitiva singola (es. strapi-token)
+      // Proprietà primitiva singola (es. department)
       const isToken = item.key.toLowerCase().includes("token") || (item.value && item.value.length > 30);
       html += `
         <div class="p-3 mb-2 m3-attr-prop-card flex flex-col sm:flex-row items-stretch sm:items-center gap-2">

@@ -634,10 +634,6 @@ function applyTranslations() {
     true
   );
   applyLanguage(
-    ".user_details_attributes_strapi-token",
-    translations[currentLanguage].user_details_attributes_strapi_token
-  );
-  applyLanguage(
     ".user_details_attributes_money_stats_settings",
     translations[currentLanguage].user_details_attributes_money_stats_settings
   );

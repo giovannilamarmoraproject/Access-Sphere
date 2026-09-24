@@ -22,7 +22,7 @@ public class GrpcMapper {
         (clientCredential.getAppRoles() == null)
             ? null
             : clientCredential.getAppRoles().stream()
-                .filter(appRole -> appRole != null && appRole.isDefault())
+                .filter(appRole -> appRole != null && appRole.isUser())
                 .findFirst()
                 .orElseGet(
                     () ->

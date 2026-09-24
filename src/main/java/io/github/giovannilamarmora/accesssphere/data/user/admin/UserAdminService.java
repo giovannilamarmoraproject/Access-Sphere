@@ -185,7 +185,7 @@ public class UserAdminService {
     List<AppRole> clientRoles =
         clientCredential.getAppRoles() != null ? clientCredential.getAppRoles() : List.of();
     List<AppRole> userRoles =
-        clientRoles.stream().filter(appRole -> appRole != null && appRole.isDefault()).toList();
+        clientRoles.stream().filter(appRole -> appRole != null && appRole.isUser()).toList();
 
     if (!ObjectToolkit.isNullOrEmpty(bearer)) {
       LOG.info("🛡️ Bearer token present, checking technical roles");
@@ -206,12 +206,12 @@ public class UserAdminService {
       if (!clientRoles.isEmpty()) {
         userRoles = List.of(clientRoles.getFirst());
         LOG.warn(
-            "⚠️ No DEFAULT role explicitly found on client {}; falling back to first available role [{}]",
+            "⚠️ No USER role explicitly found on client {}; falling back to first available role [{}]",
             clientCredential.getClientId(),
             userRoles.getFirst().getRole());
       } else {
         LOG.error(
-            "❌ Default roles not present on client configuration for client_id {}",
+            "❌ Roles not present on client configuration for client_id {}",
             clientCredential.getClientId());
         throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
       }

@@ -330,10 +330,10 @@ const AppSettings = (function () {
         <!-- Contenitore Categorie di Navigazione -->
         <div class="sidebar-sections-container">
 
-          <!-- Categoria: Principale -->
+          <!-- Categoria: Panoramica -->
           <div class="sidebar-category">
             <div class="sidebar-category-header">
-              <span class="sidebar-category-label" data-i18n="sidebar_cat_main">Principale</span>
+              <span class="sidebar-category-label" data-i18n="sidebar_cat_main">Panoramica</span>
             </div>
             <div class="sidebar-category-divider"></div>
             <ul class="sidebar-nav-list">
@@ -346,10 +346,10 @@ const AppSettings = (function () {
             </ul>
           </div>
 
-          <!-- Categoria: Identità & Accessi (IAM) -->
+          <!-- Categoria: Identità & Utenti -->
           <div class="sidebar-category">
             <div class="sidebar-category-header">
-              <span class="sidebar-category-label" data-i18n="sidebar_cat_iam">Identità & Accessi</span>
+              <span class="sidebar-category-label" data-i18n="sidebar_cat_identity">Identità & Utenti</span>
             </div>
             <div class="sidebar-category-divider"></div>
             <ul class="sidebar-nav-list">
@@ -359,8 +359,18 @@ const AppSettings = (function () {
                   <span class="sidebar-label" data-i18n="nav_users">Utenti</span>
                 </a>
               </li>
+            </ul>
+          </div>
+
+          <!-- Categoria: Ruoli & Permessi -->
+          <div class="sidebar-category">
+            <div class="sidebar-category-header">
+              <span class="sidebar-category-label" data-i18n="sidebar_cat_roles">Ruoli & Permessi</span>
+            </div>
+            <div class="sidebar-category-divider"></div>
+            <ul class="sidebar-nav-list">
               <li>
-                <a href="/app/role" id="sidebar-btn-roles" class="sidebar-nav-item ${isRoles ? 'active' : ''}" title="Ruoli">
+                <a href="/app/role" id="sidebar-btn-roles" class="sidebar-nav-item ${isRoles ? 'active' : ''}" title="Ruoli & Permessi">
                   <i class="fa-solid fa-shield-halved"></i>
                   <span class="sidebar-label" data-i18n="nav_roles">Ruoli & Permessi</span>
                 </a>
@@ -408,6 +418,12 @@ const AppSettings = (function () {
             <div class="sidebar-category-divider"></div>
             <ul class="sidebar-nav-list">
               <li>
+                <a href="/app/settings" id="sidebar-btn-settings" class="sidebar-nav-item ${isSettings ? 'active' : ''}" title="Impostazioni" onclick="if(typeof switchDashboardView === 'function' && document.getElementById('view-settings')){switchDashboardView('settings'); return false;}">
+                  <i class="fa-solid fa-gear"></i>
+                  <span class="sidebar-label" data-i18n="nav_settings">Impostazioni</span>
+                </a>
+              </li>
+              <li>
                 <a href="/webjars/swagger-ui/index.html" target="_blank" class="sidebar-nav-item" title="API Docs">
                   <i class="fa-solid fa-book"></i>
                   <span class="sidebar-label" data-i18n="nav_docs">API Docs</span>
@@ -417,15 +433,6 @@ const AppSettings = (function () {
           </div>
 
         </div>
-
-          <ul class="sidebar-nav-list mb-2">
-            <li>
-              <a href="/app/settings" id="sidebar-btn-settings" class="sidebar-nav-item ${isSettings ? 'active' : ''}" title="Impostazioni" onclick="if(typeof switchDashboardView === 'function' && document.getElementById('view-settings')){switchDashboardView('settings'); return false;}">
-                <i class="fa-solid fa-gear"></i>
-                <span class="sidebar-label" data-i18n="nav_settings">Impostazioni</span>
-              </a>
-            </li>
-          </ul>
         <!-- Sezione Inferiore: Impostazioni & Pulsante Collassa / Espandi Sidebar -->
         <div class="sidebar-footer-box">
           <button type="button" id="sidebar-collapse-btn" onclick="AppSettings.toggleSidebarCollapse()" class="sidebar-collapse-btn" title="Riduci/Espandi barra">

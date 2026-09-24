@@ -91,12 +91,8 @@ function checkLocationAndRedirect(response) {
 function saveTokens(response) {
   if (!response || !response.data) return;
   const access_token = response.data.token ? response.data.token.access_token : null;
-  const strapi_token = response.data.strapiToken ? response.data.strapiToken.access_token : null;
   if (access_token) {
     localStorage.setItem(config.client_id + "_" + config.access_token, access_token);
     localStorage.setItem("access-token", access_token);
-  }
-  if (strapi_token) {
-    localStorage.setItem(config.client_id + "_" + config.strapi_token, strapi_token);
   }
 }

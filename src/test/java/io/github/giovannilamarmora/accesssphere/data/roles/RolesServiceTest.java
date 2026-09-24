@@ -296,7 +296,7 @@ class RolesServiceTest {
     io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity clientEntity =
         new io.github.giovannilamarmora.accesssphere.client.entity.ClientCredentialEntity();
     clientEntity.setClientId("linkatutto");
-    clientEntity.setAppRoles("[{\"role\":\"ROLE_OBSOLETE\"}]");
+    clientEntity.setAppRoles("[{\"role\":\"ROLE_OBSOLETE\"},{\"role\":\"ROLE_REMAINING\"}]");
 
     when(clientDAO.findByClientId("linkatutto")).thenReturn(clientEntity);
 

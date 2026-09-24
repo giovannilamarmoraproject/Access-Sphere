@@ -113,25 +113,45 @@
             background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45);
         }
 
-        .role-badge-default {
-            background: rgba(59, 130, 246, 0.16);
-            border: 1px solid rgba(59, 130, 246, 0.35);
-            color: #93c5fd;
+        .role-badge-user {
+            background: rgba(16, 185, 129, 0.16);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
         }
         .role-badge-admin {
             background: rgba(239, 68, 68, 0.16);
             border: 1px solid rgba(239, 68, 68, 0.35);
             color: #fca5a5;
         }
+        .role-badge-manager {
+            background: rgba(99, 102, 241, 0.16);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            color: #a5b4fc;
+        }
+        .role-badge-operator {
+            background: rgba(20, 184, 166, 0.16);
+            border: 1px solid rgba(20, 184, 166, 0.35);
+            color: #5eead4;
+        }
         .role-badge-technical {
+            background: rgba(245, 158, 11, 0.16);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #fcd34d;
+        }
+        .role-badge-auditor {
             background: rgba(168, 85, 247, 0.16);
             border: 1px solid rgba(168, 85, 247, 0.35);
             color: #d8b4fe;
         }
-        .role-badge-user {
-            background: rgba(16, 185, 129, 0.16);
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            color: #6ee7b7;
+        .role-badge-guest {
+            background: rgba(156, 163, 175, 0.16);
+            border: 1px solid rgba(156, 163, 175, 0.35);
+            color: #d1d5db;
+        }
+        .role-badge-superadmin {
+            background: rgba(234, 179, 8, 0.2);
+            border: 1px solid rgba(234, 179, 8, 0.45);
+            color: #fde047;
         }
 
         .permission-chip {
@@ -225,22 +245,30 @@
             opacity: 1;
         }
 
-        /* Wildcard Banner M3 */
+        /* Material Expressive 3 Wildcard Card */
         .m3-wildcard-card {
-            background: rgba(245, 158, 11, 0.08);
-            border: 1.5px solid rgba(245, 158, 11, 0.28);
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.45);
+            border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
             border-radius: 18px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            cursor: pointer;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
         .m3-wildcard-card:hover {
-            background: rgba(245, 158, 11, 0.12);
-            border-color: rgba(245, 158, 11, 0.45);
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.7);
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.4);
+            transform: translateY(-1px);
         }
         .m3-wildcard-card.active,
         .m3-wildcard-card:has(.m3-switch-input:checked) {
-            background: rgba(245, 158, 11, 0.16);
-            border-color: #F59E0B;
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2), inset 0 0 10px rgba(245, 158, 11, 0.08);
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.12);
+            border-color: var(--theme-primary, #A855F7);
+            box-shadow: 0 0 20px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2), inset 0 0 10px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.06);
         }
 
         /* Material 3 Switch */
@@ -248,14 +276,15 @@
             width: 48px;
             height: 28px;
             border-radius: 9999px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px solid rgba(255, 255, 255, 0.25);
             position: relative;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             padding: 2px;
             cursor: pointer;
+            flex-shrink: 0;
         }
         .m3-switch-thumb {
             width: 20px;
@@ -267,12 +296,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
         }
         .m3-switch-input:checked + .m3-switch-track {
-            background: #F59E0B;
-            border-color: #F59E0B;
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
+            background: var(--theme-primary, #A855F7);
+            border-color: var(--theme-primary, #A855F7);
+            box-shadow: 0 0 14px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.5);
         }
         .m3-switch-input:checked + .m3-switch-track .m3-switch-thumb {
             background: #FFFFFF;
@@ -280,22 +309,41 @@
         }
         .m3-switch-input:checked + .m3-switch-track .m3-switch-thumb i {
             opacity: 1 !important;
+            color: var(--theme-primary, #A855F7);
         }
 
-        .iam-checkbox-card {
+        /* Material Expressive 3 Permission Cards (Same style as Role Cards) */
+        .m3-perm-card {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            border-radius: 10px;
-            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.4);
-            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.15);
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.5);
+            border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
             cursor: pointer;
-            transition: all 0.18s ease;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            min-width: 0;
+            user-select: none;
         }
-        .iam-checkbox-card:hover {
-            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08);
-            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
+        .m3-perm-card:hover {
+            background: rgba(var(--theme-surface-rgb, 14, 11, 22), 0.7);
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.4);
+            transform: translateY(-1px);
+        }
+        .m3-perm-input:checked + .m3-perm-card {
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.14);
+            border-color: var(--theme-primary, #A855F7);
+            box-shadow: 0 0 14px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2), inset 0 0 6px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.06);
+        }
+        .m3-perm-input:checked + .m3-perm-card .m3-radio-indicator {
+            border-color: var(--theme-primary, #A855F7);
+            box-shadow: 0 0 8px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.45);
+        }
+        .m3-perm-input:checked + .m3-perm-card .m3-radio-indicator .m3-radio-dot {
+            transform: scale(1);
+            opacity: 1;
         }
     </style>
 </head>
@@ -507,10 +555,14 @@
                     <select id="filter-type-select" onchange="handleRoleFilterChange()"
                             class="w-full appearance-none pl-4 pr-10 py-2.5 rounded-full bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all cursor-pointer">
                         <option value="" class="bg-gray-900 text-white" data-i18n="roles_filter_all_types">Tutti i Tipi</option>
-                        <option value="DEFAULT" class="bg-gray-900 text-white">DEFAULT</option>
-                        <option value="ADMIN" class="bg-gray-900 text-white">ADMIN</option>
-                        <option value="TECHNICAL" class="bg-gray-900 text-white">TECHNICAL</option>
                         <option value="USER" class="bg-gray-900 text-white">USER</option>
+                        <option value="ADMIN" class="bg-gray-900 text-white">ADMIN</option>
+                        <option value="MANAGER" class="bg-gray-900 text-white">MANAGER</option>
+                        <option value="OPERATOR" class="bg-gray-900 text-white">OPERATOR</option>
+                        <option value="TECHNICAL" class="bg-gray-900 text-white">TECHNICAL</option>
+                        <option value="AUDITOR" class="bg-gray-900 text-white">AUDITOR</option>
+                        <option value="GUEST" class="bg-gray-900 text-white">GUEST</option>
+                        <option value="SUPER_ADMIN" class="bg-gray-900 text-white">SUPER_ADMIN</option>
                     </select>
                     <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
                 </div>
@@ -637,21 +689,7 @@
                                                 <div class="m3-radio-dot"></div>
                                             </div>
                                         </div>
-                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_user_desc">Ruolo operativo ordinario per utenti autorizzati dell'applicazione.</span>
-                                    </label>
-                                </div>
-
-                                <!-- DEFAULT -->
-                                <div class="w-full min-w-0 flex flex-col">
-                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioDEFAULT" value="DEFAULT" class="sr-only type-radio-input" onchange="updateLivePreview()"/>
-                                    <label for="typeRadioDEFAULT" class="m3-role-type-card flex flex-col h-full justify-between">
-                                        <div class="flex items-center justify-between mb-1.5">
-                                            <span class="font-bold text-xs role-badge-default px-2 py-0.5 rounded-md font-mono">DEFAULT</span>
-                                            <div class="m3-radio-indicator">
-                                                <div class="m3-radio-dot"></div>
-                                            </div>
-                                        </div>
-                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_default_desc">Assegnato automaticamente ai nuovi utenti dell'applicazione.</span>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_user_desc">Ruolo standard assegnato automaticamente ai nuovi utenti.</span>
                                     </label>
                                 </div>
 
@@ -665,7 +703,35 @@
                                                 <div class="m3-radio-dot"></div>
                                             </div>
                                         </div>
-                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_admin_desc">Privilegi amministrativi e di gestione per l'applicazione.</span>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_admin_desc">Privilegi completi di amministrazione e configurazione client.</span>
+                                    </label>
+                                </div>
+
+                                <!-- MANAGER -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioMANAGER" value="MANAGER" class="sr-only type-radio-input" onchange="updateLivePreview()"/>
+                                    <label for="typeRadioMANAGER" class="m3-role-type-card flex flex-col h-full justify-between">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="font-bold text-xs role-badge-manager px-2 py-0.5 rounded-md font-mono">MANAGER</span>
+                                            <div class="m3-radio-indicator">
+                                                <div class="m3-radio-dot"></div>
+                                            </div>
+                                        </div>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_manager_desc">Supervisione, moderazione utenti e gestione del team.</span>
+                                    </label>
+                                </div>
+
+                                <!-- OPERATOR -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioOPERATOR" value="OPERATOR" class="sr-only type-radio-input" onchange="updateLivePreview()"/>
+                                    <label for="typeRadioOPERATOR" class="m3-role-type-card flex flex-col h-full justify-between">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="font-bold text-xs role-badge-operator px-2 py-0.5 rounded-md font-mono">OPERATOR</span>
+                                            <div class="m3-radio-indicator">
+                                                <div class="m3-radio-dot"></div>
+                                            </div>
+                                        </div>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_operator_desc">Operatività quotidiana, supporto clienti e front-office.</span>
                                     </label>
                                 </div>
 
@@ -679,7 +745,49 @@
                                                 <div class="m3-radio-dot"></div>
                                             </div>
                                         </div>
-                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_tech_desc">Riservato a sistemi esterni, bot e integrazioni machine-to-machine.</span>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_tech_desc">Integrazioni M2M, bot e servizi di background.</span>
+                                    </label>
+                                </div>
+
+                                <!-- AUDITOR -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioAUDITOR" value="AUDITOR" class="sr-only type-radio-input" onchange="updateLivePreview()"/>
+                                    <label for="typeRadioAUDITOR" class="m3-role-type-card flex flex-col h-full justify-between">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="font-bold text-xs role-badge-auditor px-2 py-0.5 rounded-md font-mono">AUDITOR</span>
+                                            <div class="m3-radio-indicator">
+                                                <div class="m3-radio-dot"></div>
+                                            </div>
+                                        </div>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_auditor_desc">Audit di sicurezza, conformità e reportistica in sola lettura.</span>
+                                    </label>
+                                </div>
+
+                                <!-- GUEST -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioGUEST" value="GUEST" class="sr-only type-radio-input" onchange="updateLivePreview()"/>
+                                    <label for="typeRadioGUEST" class="m3-role-type-card flex flex-col h-full justify-between">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="font-bold text-xs role-badge-guest px-2 py-0.5 rounded-md font-mono">GUEST</span>
+                                            <div class="m3-radio-indicator">
+                                                <div class="m3-radio-dot"></div>
+                                            </div>
+                                        </div>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_guest_desc">Accesso ospite con privilegi minimi di sola consultazione.</span>
+                                    </label>
+                                </div>
+
+                                <!-- SUPER_ADMIN -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="radio" name="modalRoleTypeRadio" id="typeRadioSUPER_ADMIN" value="SUPER_ADMIN" class="sr-only type-radio-input" onchange="updateLivePreview()"/>
+                                    <label for="typeRadioSUPER_ADMIN" class="m3-role-type-card flex flex-col h-full justify-between">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="font-bold text-xs role-badge-superadmin px-2 py-0.5 rounded-md font-mono">SUPER_ADMIN</span>
+                                            <div class="m3-radio-indicator">
+                                                <div class="m3-radio-dot"></div>
+                                            </div>
+                                        </div>
+                                        <span class="text-[11px] text-gray-400 leading-snug" data-i18n="roles_modal_type_superadmin_desc">Privilegi massimi di controllo globale sul sistema.</span>
                                     </label>
                                 </div>
 
@@ -709,25 +817,25 @@
                             <p class="text-xs text-gray-400 mb-0">Configura le abilitazioni e i privilegi concessi agli utenti con questo ruolo</p>
                         </div>
 
-                        <!-- Wildcard Toggle Banner M3 -->
+                        <!-- Wildcard Toggle Banner M3 (Redesigned) -->
                         <label for="modalPermissionWildcard" class="m3-wildcard-card flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all gap-4">
                             <div class="flex items-center gap-3.5 min-w-0 flex-1">
-                                <div class="w-11 h-11 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-300 shrink-0 border border-amber-500/30">
+                                <div class="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/25 flex items-center justify-center text-purple-300 shrink-0 shadow-sm">
                                     <i class="fa-solid fa-asterisk text-base"></i>
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-center gap-2">
-                                        <span class="font-mono font-bold text-amber-300 text-sm truncate" data-i18n="roles_modal_wildcard_label">* (Accesso Globale / Wildcard)</span>
-                                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Full Access</span>
+                                        <span class="font-mono font-bold text-white text-sm truncate" data-i18n="roles_modal_wildcard_label">* (Accesso Globale / Wildcard)</span>
+                                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">Full Access</span>
                                     </div>
-                                    <p class="text-xs text-amber-200/70 mb-0 mt-0.5 truncate sm:whitespace-normal" data-i18n="roles_modal_wildcard_hint">Include tutti i permessi disponibili ed esclude limitazioni granulari.</p>
+                                    <p class="text-xs text-gray-400 mb-0 mt-0.5 truncate sm:whitespace-normal" data-i18n="roles_modal_wildcard_hint">Include tutti i permessi disponibili ed esclude limitazioni granulari.</p>
                                 </div>
                             </div>
                             <div class="relative shrink-0 flex items-center">
                                 <input type="checkbox" id="modalPermissionWildcard" onchange="handleWildcardToggle(this.checked); updateLivePreview();" class="sr-only m3-switch-input"/>
                                 <div class="m3-switch-track">
                                     <div class="m3-switch-thumb">
-                                        <i class="fa-solid fa-check text-[9px] text-amber-950 opacity-0 transition-opacity"></i>
+                                        <i class="fa-solid fa-check text-[9px] opacity-0 transition-opacity"></i>
                                     </div>
                                 </div>
                             </div>
@@ -738,63 +846,120 @@
                             <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="roles_modal_iam_permissions_title">
                                 Permessi Standard IAM
                             </span>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                                <label class="iam-checkbox-card">
-                                    <input type="checkbox" value="user:read" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                    <div>
-                                        <span class="font-mono text-purple-300 font-semibold">user:read</span>
-                                        <span class="text-gray-400 text-[11px] block">Lettura profili utenti</span>
-                                    </div>
-                                </label>
-                                <label class="iam-checkbox-card">
-                                    <input type="checkbox" value="user:write" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                    <div>
-                                        <span class="font-mono text-purple-300 font-semibold">user:write</span>
-                                        <span class="text-gray-400 text-[11px] block">Creazione e modifica utenti</span>
-                                    </div>
-                                </label>
-                                <label class="iam-checkbox-card">
-                                    <input type="checkbox" value="user:delete" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                    <div>
-                                        <span class="font-mono text-purple-300 font-semibold">user:delete</span>
-                                        <span class="text-gray-400 text-[11px] block">Eliminazione e blocco utenti</span>
-                                    </div>
-                                </label>
-                                <label class="iam-checkbox-card">
-                                    <input type="checkbox" value="client:read" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                    <div>
-                                        <span class="font-mono text-purple-300 font-semibold">client:read</span>
-                                        <span class="text-gray-400 text-[11px] block">Consultazione parametri client</span>
-                                    </div>
-                                </label>
-                                <label class="iam-checkbox-card">
-                                    <input type="checkbox" value="client:write" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                    <div>
-                                        <span class="font-mono text-purple-300 font-semibold">client:write</span>
-                                        <span class="text-gray-400 text-[11px] block">Modifica credenziali e redirect</span>
-                                    </div>
-                                </label>
-                                <label class="iam-checkbox-card">
-                                    <input type="checkbox" value="roles:manage" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                    <div>
-                                        <span class="font-mono text-purple-300 font-semibold">roles:manage</span>
-                                        <span class="text-gray-400 text-[11px] block">Gestione ruoli e permessi</span>
-                                    </div>
-                                </label>
-                                <label class="iam-checkbox-card">
-                                    <input type="checkbox" value="settings:read" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                    <div>
-                                        <span class="font-mono text-purple-300 font-semibold">settings:read</span>
-                                        <span class="text-gray-400 text-[11px] block">Visualizzazione impostazioni</span>
-                                    </div>
-                                </label>
-                                <label class="iam-checkbox-card">
-                                    <input type="checkbox" value="settings:write" onchange="updateLivePreview()" class="iam-perm-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500/30"/>
-                                    <div>
-                                        <span class="font-mono text-purple-300 font-semibold">settings:write</span>
-                                        <span class="text-gray-400 text-[11px] block">Modifica branding e sistema</span>
-                                    </div>
-                                </label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+
+                                <!-- user:read -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="perm-user-read" value="user:read" onchange="updateLivePreview()" class="sr-only iam-perm-checkbox m3-perm-input"/>
+                                    <label for="perm-user-read" class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">user:read</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Lettura profili utenti</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- user:write -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="perm-user-write" value="user:write" onchange="updateLivePreview()" class="sr-only iam-perm-checkbox m3-perm-input"/>
+                                    <label for="perm-user-write" class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">user:write</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Creazione e modifica utenti</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- user:delete -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="perm-user-delete" value="user:delete" onchange="updateLivePreview()" class="sr-only iam-perm-checkbox m3-perm-input"/>
+                                    <label for="perm-user-delete" class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">user:delete</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Eliminazione e blocco utenti</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- client:read -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="perm-client-read" value="client:read" onchange="updateLivePreview()" class="sr-only iam-perm-checkbox m3-perm-input"/>
+                                    <label for="perm-client-read" class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">client:read</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Consultazione parametri client</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- client:write -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="perm-client-write" value="client:write" onchange="updateLivePreview()" class="sr-only iam-perm-checkbox m3-perm-input"/>
+                                    <label for="perm-client-write" class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">client:write</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Modifica credenziali e redirect</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- roles:manage -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="perm-roles-manage" value="roles:manage" onchange="updateLivePreview()" class="sr-only iam-perm-checkbox m3-perm-input"/>
+                                    <label for="perm-roles-manage" class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">roles:manage</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Gestione ruoli e permessi</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- settings:read -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="perm-settings-read" value="settings:read" onchange="updateLivePreview()" class="sr-only iam-perm-checkbox m3-perm-input"/>
+                                    <label for="perm-settings-read" class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">settings:read</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Visualizzazione impostazioni</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- settings:write -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="perm-settings-write" value="settings:write" onchange="updateLivePreview()" class="sr-only iam-perm-checkbox m3-perm-input"/>
+                                    <label for="perm-settings-write" class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">settings:write</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Modifica branding e sistema</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
                             </div>
                         </div>
 

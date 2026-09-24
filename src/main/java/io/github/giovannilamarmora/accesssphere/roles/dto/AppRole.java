@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 /**
  * DTO che modella un ruolo applicativo (AppRole) associato a un client OAuth2. Configurato con
  * {@link AppRoleDeserializer} per supportare in ingresso sia oggetti strutturati che stringhe
- * semplici (es. "ROLE_ADMIN"), con fallback automatico al tipo standard DEFAULT.
+ * semplici (es. "ROLE_USER"), con fallback automatico al tipo standard USER.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -29,7 +29,7 @@ public class AppRole extends GenericDTO {
   @JsonAlias({"name", "roleName", "value"})
   private String role;
 
-  private String type = AppRoleType.DEFAULT.getValue();
+  private String type = AppRoleType.USER.getValue();
 
   private String description;
 
@@ -37,27 +37,27 @@ public class AppRole extends GenericDTO {
 
   /**
    * Costruttore di convenienza a partire dal solo nome del ruolo. Assegna automaticamente il tipo
-   * canonico {@link AppRoleType#DEFAULT}.
+   * canonico {@link AppRoleType#USER}.
    *
-   * @param role Nome identificativo del ruolo (es. "ROLE_ADMIN").
+   * @param role Nome identificativo del ruolo (es. "ROLE_USER").
    */
   public AppRole(String role) {
     this.role = role != null ? role.trim().toUpperCase() : null;
-    this.type = AppRoleType.DEFAULT.getValue();
+    this.type = AppRoleType.USER.getValue();
   }
 
   /**
    * Costruttore per specificare nome ruolo e tipologia applicativa.
    *
    * @param role Nome identificativo del ruolo.
-   * @param type Tipologia del ruolo (es. DEFAULT, TECHNICAL, ADMIN).
+   * @param type Tipologia del ruolo (es. USER, TECHNICAL, ADMIN, MANAGER).
    */
   public AppRole(String role, String type) {
     this.role = role != null ? role.trim().toUpperCase() : null;
     this.type =
         (type != null && !type.isBlank())
-            ? type.trim().toUpperCase()
-            : AppRoleType.DEFAULT.getValue();
+            ? ("DEFAULT".equalsIgnoreCase(type.trim()) ? AppRoleType.USER.getValue() : type.trim().toUpperCase())
+            : AppRoleType.USER.getValue();
   }
 
   /**
@@ -71,8 +71,8 @@ public class AppRole extends GenericDTO {
     this.role = role != null ? role.trim().toUpperCase() : null;
     this.type =
         (type != null && !type.isBlank())
-            ? type.trim().toUpperCase()
-            : AppRoleType.DEFAULT.getValue();
+            ? ("DEFAULT".equalsIgnoreCase(type.trim()) ? AppRoleType.USER.getValue() : type.trim().toUpperCase())
+            : AppRoleType.USER.getValue();
     this.description = description;
   }
 
@@ -88,8 +88,8 @@ public class AppRole extends GenericDTO {
     this.role = role != null ? role.trim().toUpperCase() : null;
     this.type =
         (type != null && !type.isBlank())
-            ? type.trim().toUpperCase()
-            : AppRoleType.DEFAULT.getValue();
+            ? ("DEFAULT".equalsIgnoreCase(type.trim()) ? AppRoleType.USER.getValue() : type.trim().toUpperCase())
+            : AppRoleType.USER.getValue();
     this.description = description;
     this.permissions = permissions;
   }
@@ -99,18 +99,18 @@ public class AppRole extends GenericDTO {
     this.role = role != null ? role.trim().toUpperCase() : null;
     this.type =
         (type != null && !type.isBlank())
-            ? type.trim().toUpperCase()
-            : AppRoleType.DEFAULT.getValue();
+            ? ("DEFAULT".equalsIgnoreCase(type.trim()) ? AppRoleType.USER.getValue() : type.trim().toUpperCase())
+            : AppRoleType.USER.getValue();
     this.description = description;
   }
 
   /**
-   * Verifica se il ruolo corrente e' marcato con la tipologia fondamentale DEFAULT.
+   * Verifica se il ruolo corrente e' marcato con la tipologia standard USER.
    *
-   * @return true se il tipo corrisponde a "DEFAULT" (case-insensitive), false altrimenti.
+   * @return true se il tipo corrisponde a "USER" (case-insensitive), false altrimenti.
    */
-  public boolean isDefault() {
-    return AppRoleType.DEFAULT.getValue().equalsIgnoreCase(this.type);
+  public boolean isUser() {
+    return AppRoleType.USER.getValue().equalsIgnoreCase(this.type);
   }
 
   /**

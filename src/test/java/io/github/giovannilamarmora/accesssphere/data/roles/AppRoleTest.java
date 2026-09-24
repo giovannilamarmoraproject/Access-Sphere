@@ -20,29 +20,29 @@ class AppRoleTest {
   private final ObjectMapper mapper = MapperUtils.mapper().build();
 
   @Test
-  @DisplayName("Should deserialize AppRole from plain string")
+  @DisplayName("Should deserialize AppRole from plain string with USER type as default")
   void shouldDeserializeAppRoleFromString() throws JsonProcessingException {
-    String json = "\"ROLE_ADMIN\"";
+    String json = "\"ROLE_USER\"";
     AppRole role = mapper.readValue(json, AppRole.class);
 
     assertNotNull(role);
-    assertEquals("ROLE_ADMIN", role.getRole());
-    assertEquals(AppRoleType.DEFAULT.getValue(), role.getType());
-    assertTrue(role.isDefault());
+    assertEquals("ROLE_USER", role.getRole());
+    assertEquals(AppRoleType.USER.getValue(), role.getType());
+    assertTrue(role.isUser());
   }
 
   @Test
   @DisplayName("Should deserialize AppRole from full JSON object")
   void shouldDeserializeAppRoleFromObject() throws JsonProcessingException {
     String json =
-        "{\"role\":\"ACCESS_SPHERE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default token Type\"}";
+        "{\"role\":\"ACCESS_SPHERE_ADMIN\",\"type\":\"ADMIN\",\"description\":\"Administrator Type\"}";
     AppRole role = mapper.readValue(json, AppRole.class);
 
     assertNotNull(role);
     assertEquals("ACCESS_SPHERE_ADMIN", role.getRole());
-    assertEquals("DEFAULT", role.getType());
-    assertEquals("Default token Type", role.getDescription());
-    assertTrue(role.isDefault());
+    assertEquals("ADMIN", role.getType());
+    assertEquals("Administrator Type", role.getDescription());
+    assertFalse(role.isUser());
     assertTrue(role.matches("access_sphere_admin"));
   }
 
@@ -56,21 +56,21 @@ class AppRoleTest {
     assertNotNull(role);
     assertEquals("ROLE_TECH", role.getRole());
     assertEquals("TECHNICAL", role.getType());
-    assertFalse(role.isDefault());
+    assertFalse(role.isUser());
   }
 
   @Test
   @DisplayName("Should deserialize List of AppRoles with mixed formats in ClientCredential")
   void shouldDeserializeMixedAppRolesList() throws JsonProcessingException {
     String json =
-        "{\"clientId\":\"TEST-CLIENT\",\"appRoles\":[\"ROLE_ADMIN\",{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\"}]}";
+        "{\"clientId\":\"TEST-CLIENT\",\"appRoles\":[\"ROLE_USER\",{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\"}]}";
     ClientCredential client = mapper.readValue(json, ClientCredential.class);
 
     assertNotNull(client);
     assertNotNull(client.getAppRoles());
     assertEquals(2, client.getAppRoles().size());
-    assertEquals("ROLE_ADMIN", client.getAppRoles().get(0).getRole());
-    assertTrue(client.getAppRoles().get(0).isDefault());
+    assertEquals("ROLE_USER", client.getAppRoles().get(0).getRole());
+    assertTrue(client.getAppRoles().get(0).isUser());
     assertEquals("ROLE_TECH", client.getAppRoles().get(1).getRole());
     assertEquals("TECHNICAL", client.getAppRoles().get(1).getType());
   }
@@ -84,11 +84,11 @@ class AppRoleTest {
     // JSON array
     List<AppRole> parsedJson =
         ClientMapper.parseAppRoles(
-            "[{\"role\":\"ROLE_ADMIN\"},{\"role\":\"ROLE_USER\",\"type\":\"USER\"}]");
+            "[{\"role\":\"ROLE_USER\"},{\"role\":\"ROLE_ADMIN\",\"type\":\"ADMIN\"}]");
     assertNotNull(parsedJson);
     assertEquals(2, parsedJson.size());
-    assertEquals("ROLE_ADMIN", parsedJson.get(0).getRole());
-    assertEquals("DEFAULT", parsedJson.get(0).getType());
+    assertEquals("ROLE_USER", parsedJson.get(0).getRole());
+    assertEquals("USER", parsedJson.get(0).getType());
 
     // Legacy space/comma separated strings
     List<AppRole> parsedDelimited = ClientMapper.parseAppRoles("ROLE_ADMIN, ROLE_TECH ROLE_USER");
@@ -100,21 +100,14 @@ class AppRoleTest {
   }
 
   @Test
-  @DisplayName("OAuthValidator.validateClientRoles should enforce mandatory DEFAULT role")
-  void shouldValidateMandatoryDefaultRole() {
+  @DisplayName("OAuthValidator.validateClientRoles should enforce at least one role")
+  void shouldValidateMandatoryRole() {
     ClientCredential clientWithoutRoles = new ClientCredential();
     assertThrows(
         OAuthException.class, () -> OAuthValidator.validateClientRoles(clientWithoutRoles));
 
-    ClientCredential clientWithoutDefault = new ClientCredential();
-    clientWithoutDefault.setAppRoles(List.of(new AppRole("ROLE_USER", "USER", "User role")));
-    OAuthException ex =
-        assertThrows(
-            OAuthException.class, () -> OAuthValidator.validateClientRoles(clientWithoutDefault));
-    assertTrue(ex.getMessage().contains("DEFAULT"));
-
-    ClientCredential clientWithDefault = new ClientCredential();
-    clientWithDefault.setAppRoles(List.of(new AppRole("ROLE_ADMIN", "DEFAULT", "Admin role")));
-    assertDoesNotThrow(() -> OAuthValidator.validateClientRoles(clientWithDefault));
+    ClientCredential clientWithUserRole = new ClientCredential();
+    clientWithUserRole.setAppRoles(List.of(new AppRole("ROLE_USER", "USER", "User role")));
+    assertDoesNotThrow(() -> OAuthValidator.validateClientRoles(clientWithUserRole));
   }
 }

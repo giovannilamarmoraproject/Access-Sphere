@@ -155,7 +155,6 @@ function deleteSelectedCookies() {
         "Parent-ID",
         "Trace-ID",
         "access-token",
-        "strapi-token",
         "Redirect-Uri",
         "Registration-Token",
     ];
@@ -344,11 +343,13 @@ function syncMobileNavState(viewName) {
     // 1. Bottom Navigation Bar Mobile
     const bDash = document.getElementById("bottom-nav-dashboard");
     const bUsers = document.getElementById("bottom-nav-users");
+    const bRoles = document.getElementById("bottom-nav-roles");
     const bClients = document.getElementById("bottom-nav-clients");
     const bEmails = document.getElementById("bottom-nav-emails");
     const bSettings = document.getElementById("bottom-nav-settings");
     if (bDash) bDash.classList.toggle("active", isOverview);
     if (bUsers) bUsers.classList.toggle("active", isUsers);
+    if (bRoles) bRoles.classList.toggle("active", isRoles);
     if (bClients) bClients.classList.toggle("active", isClients);
     if (bEmails) bEmails.classList.toggle("active", isEmails);
     if (bSettings) bSettings.classList.toggle("active", isSettings);
@@ -472,10 +473,10 @@ function initMobileNavigation() {
       <!-- Navigazione Drawer suddivisa nelle stesse categorie desktop -->
       <div class="mobile-drawer-sections-container flex-1 overflow-y-auto pr-1">
 
-        <!-- Categoria: Principale -->
+        <!-- Categoria: Panoramica -->
         <div class="mb-4">
           <div class="sidebar-category-header px-2 py-1">
-            <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_main">Principale</span>
+            <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_main">Panoramica</span>
           </div>
           <a href="/app" id="mobile-nav-dashboard" onclick="return navigateToSection('/app', 'dashboard');" class="m3-mobile-nav-link ${isOverview ? 'active' : ''}">
             <i class="fa-solid fa-gauge-high"></i>
@@ -483,15 +484,22 @@ function initMobileNavigation() {
           </a>
         </div>
 
-        <!-- Categoria: Identità & Accessi (IAM) -->
+        <!-- Categoria: Identità & Utenti -->
         <div class="mb-4">
           <div class="sidebar-category-header px-2 py-1">
-            <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_iam">Identità & Accessi</span>
+            <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_identity">Identità & Utenti</span>
           </div>
           <a href="/app/users" id="mobile-nav-users" onclick="return navigateToSection('/app/users', 'users');" class="m3-mobile-nav-link ${isUsers ? 'active' : ''}">
             <i class="fa-solid fa-users"></i>
             <span data-i18n="nav_users">Utenti</span>
           </a>
+        </div>
+
+        <!-- Categoria: Ruoli & Permessi -->
+        <div class="mb-4">
+          <div class="sidebar-category-header px-2 py-1">
+            <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_roles">Ruoli & Permessi</span>
+          </div>
           <a href="/app/role" id="mobile-nav-roles" onclick="return navigateToSection('/app/role', 'roles');" class="m3-mobile-nav-link ${isRoles ? 'active' : ''}">
             <i class="fa-solid fa-shield-halved"></i>
             <span data-i18n="nav_roles">Ruoli & Permessi</span>
@@ -601,17 +609,17 @@ function initMobileNavigation() {
         </div>
         <span class="m3-bottom-nav-label" data-i18n="nav_users">Utenti</span>
       </a>
+      <a href="/app/role" id="bottom-nav-roles" class="m3-bottom-nav-item ${isRoles ? 'active' : ''}" onclick="return navigateToSection('/app/role', 'roles');">
+        <div class="m3-bottom-nav-pill">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <span class="m3-bottom-nav-label" data-i18n="nav_roles">Ruoli</span>
+      </a>
       <a href="/app/clients" id="bottom-nav-clients" class="m3-bottom-nav-item ${isClients ? 'active' : ''}" onclick="return navigateToSection('/app/clients', 'clients');">
         <div class="m3-bottom-nav-pill">
           <i class="fa-solid fa-key"></i>
         </div>
         <span class="m3-bottom-nav-label" data-i18n="nav_clients_short">Client</span>
-      </a>
-      <a href="/app/emails" id="bottom-nav-emails" class="m3-bottom-nav-item ${isEmails ? 'active' : ''}" onclick="return navigateToSection('/app/emails', 'emails');">
-        <div class="m3-bottom-nav-pill">
-          <i class="fa-solid fa-envelope"></i>
-        </div>
-        <span class="m3-bottom-nav-label" data-i18n="nav_emails_short">Email</span>
       </a>
       <a href="/app/settings" id="bottom-nav-settings" class="m3-bottom-nav-item ${isSettings ? 'active' : ''}" onclick="return navigateToSection('/app/settings', 'settings');">
         <div class="m3-bottom-nav-pill">

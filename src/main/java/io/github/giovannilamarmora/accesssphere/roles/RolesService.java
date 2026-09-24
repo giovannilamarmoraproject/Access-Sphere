@@ -519,10 +519,11 @@ public class RolesService {
           ExceptionMap.ERR_OAUTH_400, "Role " + roleName + " already exists for client " + clientId);
     }
 
+    String rawType = dto.getType();
     String type =
-        StringUtils.hasText(dto.getType())
-            ? dto.getType().trim().toUpperCase()
-            : AppRoleType.DEFAULT.getValue();
+        StringUtils.hasText(rawType)
+            ? ("DEFAULT".equalsIgnoreCase(rawType.trim()) ? AppRoleType.USER.getValue() : rawType.trim().toUpperCase())
+            : AppRoleType.USER.getValue();
     AppRole newRole = new AppRole();
     newRole.setRole(roleName);
     newRole.setType(type);
@@ -621,7 +622,8 @@ public class RolesService {
     }
 
     if (StringUtils.hasText(dto.getType())) {
-      targetAppRole.setType(dto.getType().trim().toUpperCase());
+      String rawType = dto.getType().trim().toUpperCase();
+      targetAppRole.setType("DEFAULT".equalsIgnoreCase(rawType) ? AppRoleType.USER.getValue() : rawType);
     }
     targetAppRole.setDescription(dto.getDescription());
     if (dto.getPermissions() != null) {
@@ -706,6 +708,13 @@ public class RolesService {
           "Role " + normalizedRole + " not found for client " + normalizedClientId);
     }
     currentRoles = new ArrayList<>(currentRoles);
+
+    if (currentRoles.size() <= 1) {
+      LOG.error("❌ Cannot delete the only remaining role for client [{}]", normalizedClientId);
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          "Cannot delete role " + normalizedRole + ". Every OAuth2 client must have at least one role configured.");
+    }
 
     boolean removed =
         currentRoles.removeIf(

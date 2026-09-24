@@ -27,7 +27,7 @@ public class RoleDefinitionDTO extends GenericDTO {
   @NotBlank(message = "Role name is required")
   private String role;
 
-  private String type = AppRoleType.DEFAULT.getValue();
+  private String type = AppRoleType.USER.getValue();
 
   private String description;
 
@@ -40,7 +40,7 @@ public class RoleDefinitionDTO extends GenericDTO {
   public RoleDefinitionDTO(String clientId, String role, String type, String description, List<String> permissions) {
     this.clientId = clientId;
     this.role = role;
-    this.type = type != null ? type : AppRoleType.DEFAULT.getValue();
+    this.type = (type != null && !"DEFAULT".equalsIgnoreCase(type.trim())) ? type : AppRoleType.USER.getValue();
     this.description = description;
     this.permissions = permissions;
   }

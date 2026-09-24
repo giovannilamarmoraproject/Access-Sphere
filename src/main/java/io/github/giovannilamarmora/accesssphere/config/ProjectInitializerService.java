@@ -156,7 +156,7 @@ public class ProjectInitializerService implements ApplicationRunner {
       }
       if (!StringUtils.hasText(existing.getAppRoles()) || !existing.getAppRoles().contains("permissions")) {
         existing.setAppRoles(
-            "[{\"role\":\"ROLE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
+            "[{\"role\":\"ROLE_ADMIN\",\"type\":\"ADMIN\",\"description\":\"Administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
                 + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\",\"permissions\":[\"*\"]}]");
         LOG.info(
             "🔄 Migrated appRoles to include default permissions [*] for Technical OAuth Client [{}]",
@@ -185,7 +185,7 @@ public class ProjectInitializerService implements ApplicationRunner {
     client.setJwtSecret(jwtSecret);
     client.setRedirect_uri(redirectUriJson);
     client.setAppRoles(
-        "[{\"role\":\"ROLE_ADMIN\",\"type\":\"DEFAULT\",\"description\":\"Default administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
+        "[{\"role\":\"ROLE_ADMIN\",\"type\":\"ADMIN\",\"description\":\"Administrator role for Access Sphere\",\"permissions\":[\"*\"]},"
             + "{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\",\"description\":\"Technical service role for Access Sphere\",\"permissions\":[\"*\"]}]");
     client.setMfaEnabled(false);
     client.setAuthorize_redirect_status(HttpStatus.FOUND);

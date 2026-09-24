@@ -54,7 +54,7 @@ class OAuthServiceTest {
     clientCredential.setClientId("TEST-CLIENT");
     clientCredential.setAuthType(OAuthType.BEARER);
     clientCredential.setAppRoles(
-        List.of(new AppRole("ROLE_USER", AppRoleType.DEFAULT.getValue(), "Default user role")));
+        List.of(new AppRole("ROLE_USER", AppRoleType.USER.getValue(), "Default user role")));
 
     accessTokenData = new AccessTokenData();
     accessTokenData.setClientId("TEST-CLIENT");

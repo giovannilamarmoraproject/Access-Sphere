@@ -235,7 +235,6 @@ function getConfig() {
     client_id: configClientID,
     redirect_uri: configRedirectUri,
     access_token: "access-token",
-    strapi_token: "strapi-token",
     login_url: window.location.origin + "/app/login",
     authorize_url:
       urlConfig.baseUrl +

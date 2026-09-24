@@ -412,7 +412,6 @@
         const mfaEnabled = (c.mfaEnabled !== undefined) ? !!c.mfaEnabled : !!c.mfa_enabled;
         const idToken = (c.idToken !== undefined) ? !!c.idToken : !!c.id_token;
         const accessToken = (c.accessToken !== undefined) ? !!c.accessToken : !!c.access_token;
-        const strapiToken = (c.strapiToken !== undefined) ? !!c.strapiToken : !!c.strapi_token;
 
         const scopesList = parseScopesArray(c.scopes);
         const redirectInfo = parseRedirectMap(c.redirect_uri);
@@ -552,14 +551,6 @@
                     <span class="text-[10px] text-gray-400 font-mono">access_token (OAuth2)</span>
                   </div>
                   <span class="pill-badge ${accessToken ? 'pill-active' : 'pill-inactive'}">${accessToken ? activeLabel : inactiveLabel}</span>
-                </div>
-
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                  <div>
-                    <span class="text-xs font-bold text-white block">${typeof t === 'function' ? t('client_flag_strapi_token', 'Emissione Strapi Token') : 'Emissione Strapi Token'}</span>
-                    <span class="text-[10px] text-gray-400 font-mono">strapi_token</span>
-                  </div>
-                  <span class="pill-badge ${strapiToken ? 'pill-active' : 'pill-inactive'}">${strapiToken ? activeLabel : inactiveLabel}</span>
                 </div>
               </div>
             </div>

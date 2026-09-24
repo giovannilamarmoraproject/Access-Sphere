@@ -13,13 +13,13 @@
  * 3. Filtri e Ricerca Dinamica: supporta ricerca full-text istantanea in memoria per nome ruolo,
  *    descrizione, client ID o permesso specifico, con filtri a tendina per Client e Tipo.
  * 4. Creazione & Modifica Modale: modale unificato per gestire nome ruolo, tipologia
- *    (DEFAULT, ADMIN, TECHNICAL, USER), descrizione, toggle wildcard (*) e permessi granulari
- *    standard IAM o personalizzati aggiunti a chip.
+ *    (USER, ADMIN, MANAGER, OPERATOR, TECHNICAL, AUDITOR, GUEST, SUPER_ADMIN), descrizione,
+ *    toggle wildcard (*) e permessi granulari standard IAM o personalizzati aggiunti a chip.
  * 5. Cancellazione con Controllo Impatto Utenti: prima dell'eliminazione, interroga
  *    `GET /v1/roles/{role}/users?clientId=...` per mostrare l'elenco nominativo degli utenti
  *    impattati, avvisando che l'azione revocherà a cascata il ruolo da tutti loro.
- * 6. Protezione Ruolo DEFAULT: intercetta e impedisce la cancellazione di ruoli di tipo DEFAULT,
- *    essenziali per la stabilità del flusso OAuth2 dei client.
+ * 6. Protezione Ultimo Ruolo Obbligatorio: se per un client è configurato un solo ruolo, ne
+ *    impedisce la cancellazione per garantire che ogni client mantenga almeno un ruolo attivo.
  * =========================================================================================
  */
 
@@ -263,15 +263,16 @@ function renderRolesGrid(roles) {
     let html = "";
 
     roles.forEach((r) => {
-        const type = (r.type || "DEFAULT").toUpperCase();
-        let badgeClass = "role-badge-user";
-        if (type === "DEFAULT") badgeClass = "role-badge-default";
-        else if (type === "ADMIN") badgeClass = "role-badge-admin";
-        else if (type === "TECHNICAL") badgeClass = "role-badge-technical";
+        const type = (r.type || "USER").toUpperCase();
+        const badgeClass = getRoleTypeBadgeClass(type);
 
         const permissions = Array.isArray(r.permissions) ? r.permissions : [];
         const isWildcard = permissions.includes("*");
         const assignedCount = r.assignedUsersCount || 0;
+
+        // Verifica se questo è l'unico ruolo configurato per il Client (obbligatorio, non cancellabile)
+        const clientRolesCount = cachedRoles.filter((cr) => cr.clientId === r.clientId).length;
+        const isMandatoryRole = clientRolesCount <= 1;
 
         // Generazione chips dei permessi (massimo 4 con indicatore per gli eccedenti)
         let permsHtml = "";
@@ -348,11 +349,19 @@ function renderRolesGrid(roles) {
                         <i class="fa-solid fa-pen-to-square text-xs"></i>
                     </button>
 
-                    <!-- Elimina Ruolo -->
+                    <!-- Elimina Ruolo / Blocco Ultimo Ruolo Obbligatorio -->
+                    ${isMandatoryRole ? `
+                    <button type="button" onclick="showLastRoleLockedAlert()"
+                            class="m3-icon-btn border-amber-500/30 text-amber-300 opacity-60 hover:opacity-100"
+                            title="Ruolo Obbligatorio (Ultimo rimanente per questo Client)" data-i18n-title="swal_role_last_locked_title">
+                        <i class="fa-solid fa-lock text-xs"></i>
+                    </button>
+                    ` : `
                     <button type="button" onclick="deleteRoleConfirm('${escapeHtml(r.clientId)}', '${escapeHtml(r.role)}', '${escapeHtml(type)}')"
                             class="m3-icon-btn m3-icon-btn-danger" title="Elimina Ruolo" data-i18n-title="btn_delete">
                         <i class="fa-solid fa-trash-can text-xs"></i>
                     </button>
+                    `}
                 </div>
             </div>
 
@@ -494,6 +503,9 @@ function resetModalForm() {
         cb.checked = false;
     });
 
+    const radioUser = document.getElementById("typeRadioUSER");
+    if (radioUser) radioUser.checked = true;
+
     const customInput = document.getElementById("customPermissionInput");
     if (customInput) customInput.value = "";
 
@@ -503,14 +515,31 @@ function resetModalForm() {
 
 /**
  * Restituisce la classe CSS corretta per il badge del tipo ruolo.
- * @param {string} type - Tipo ruolo (USER, DEFAULT, ADMIN, TECHNICAL)
+ * Supporta gli 8 ruoli aziendali standard (USER, ADMIN, MANAGER, OPERATOR, TECHNICAL, AUDITOR, GUEST, SUPER_ADMIN).
+ * @param {string} type - Tipo ruolo
+ * @returns {string} Classe CSS associata
  */
 function getRoleTypeBadgeClass(type) {
     const t = (type || "USER").toUpperCase();
-    if (t === "DEFAULT") return "role-badge-default";
-    if (t === "ADMIN") return "role-badge-admin";
-    if (t === "TECHNICAL") return "role-badge-technical";
-    return "role-badge-user";
+    switch (t) {
+        case "ADMIN":
+            return "role-badge-admin";
+        case "SUPER_ADMIN":
+            return "role-badge-superadmin";
+        case "MANAGER":
+            return "role-badge-manager";
+        case "OPERATOR":
+            return "role-badge-operator";
+        case "TECHNICAL":
+            return "role-badge-technical";
+        case "AUDITOR":
+            return "role-badge-auditor";
+        case "GUEST":
+            return "role-badge-guest";
+        case "USER":
+        default:
+            return "role-badge-user";
+    }
 }
 
 /**
@@ -741,8 +770,17 @@ function saveRole() {
 }
 
 /**
+ * Notifica l'utente dell'impossibilità di eliminare l'ultimo ruolo configurato per un client.
+ */
+function showLastRoleLockedAlert() {
+    const lockedTitle = typeof t === "function" ? t("swal_role_last_locked_title", "Ruolo Obbligatorio") : "Ruolo Obbligatorio";
+    const lockedDesc = typeof t === "function" ? t("swal_role_last_locked_desc", "Ogni Client OAuth2 deve possedere almeno un ruolo configurato. Non è possibile eliminare l'ultimo ruolo rimanente per questo client.") : "Ogni Client OAuth2 deve possedere almeno un ruolo configurato. Non è possibile eliminare l'ultimo ruolo rimanente per questo client.";
+    sweetalert("warning", lockedTitle, lockedDesc);
+}
+
+/**
  * Flusso di cancellazione avanzato con SweetAlert2:
- * 1. Verifica se il ruolo è di tipo DEFAULT (protetto da eliminazione).
+ * 1. Verifica se il ruolo è l'ultimo rimasto per il Client (obbligatorio, non eliminabile).
  * 2. Interroga GET /v1/roles/{role}/users?clientId=... per recuperare gli utenti assegnati.
  * 3. Mostra la lista dettagliata degli utenti impattati chiedendo conferma esplicita
  *    per la revoca a cascata e cancellazione dal client.
@@ -750,14 +788,13 @@ function saveRole() {
  *
  * @param {string} clientId - Identificativo del Client OAuth2
  * @param {string} role - Nome del ruolo da eliminare
- * @param {string} roleType - Tipologia del ruolo ('DEFAULT', 'ADMIN', etc.)
+ * @param {string} [roleType] - Tipologia del ruolo
  */
 function deleteRoleConfirm(clientId, role, roleType) {
-    // 1. Protezione Ruolo DEFAULT
-    if (roleType && roleType.toUpperCase() === "DEFAULT") {
-        const lockedTitle = typeof t === "function" ? t("swal_role_default_locked_title", "Ruolo Protetto") : "Ruolo Protetto";
-        const lockedDesc = typeof t === "function" ? t("swal_role_default_locked_desc", "Il ruolo con tipologia DEFAULT è obbligatorio per ogni Client OAuth2 e non può essere rimosso.") : "Il ruolo con tipologia DEFAULT è obbligatorio per ogni Client OAuth2 e non può essere rimosso.";
-        sweetalert("warning", lockedTitle, lockedDesc);
+    // 1. Protezione Ultimo Ruolo Obbligatorio del Client
+    const clientRoles = cachedRoles.filter((cr) => cr.clientId === clientId);
+    if (clientRoles.length <= 1) {
+        showLastRoleLockedAlert();
         return;
     }
 

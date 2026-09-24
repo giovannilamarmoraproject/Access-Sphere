@@ -43,16 +43,6 @@ public class OAuthValidator {
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_400, ExceptionType.INVALID_ROLES, "Invalid Roles Configuration! At least one role is required.");
     }
-    boolean hasDefaultRole =
-        clientCredential.getAppRoles().stream()
-            .anyMatch(r -> r != null && r.isDefault());
-    if (!hasDefaultRole) {
-      LOG.error("❌ Client configuration must contain at least one role with type 'DEFAULT'");
-      throw new OAuthException(
-          ExceptionMap.ERR_OAUTH_400,
-          ExceptionType.INVALID_ROLES,
-          "Client configuration must contain at least one role with type 'DEFAULT'!");
-    }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)

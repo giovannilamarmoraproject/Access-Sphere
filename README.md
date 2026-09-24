@@ -38,7 +38,9 @@
 - 🎛️ **Role-Based Access Control (RBAC) Granulare & Client Scoping**:
   - **Architettura Relazionale Scoped (`USER_CLIENT_ROLE`)**: Assegnazione contestualizzata dei ruoli per singolo Client OAuth2, consentendo allo stesso utente ruoli e privilegi differenti su applicazioni diverse.
   - **Catalogo Centralizzato Ruoli & Permessi (`/v1/roles`)**: Endpoint unificati RESTful per consultazione catalogo (`GET /v1/roles`), creazione (`POST /v1/roles`), modifica (`PUT /v1/roles/{role}`) ed eliminazione con revoca a cascata (`DELETE /v1/roles/{role}`).
-  - **Permessi Granulari & Wildcard (`*`)**: Ogni ruolo applicativo include una lista di permessi granulari (es. `users:read`, `users:write`, `links:delete`) oppure il wildcard di sistema (`*`).
+  - **8 Tipologie di Ruolo Enterprise**: Supporto nativo per `USER` (predefinito), `ADMIN`, `MANAGER`, `OPERATOR`, `TECHNICAL`, `AUDITOR`, `GUEST`, `SUPER_ADMIN` con eliminazione della tipologia legacy `DEFAULT`.
+  - **Vincolo di Ruolo Minimo Obbligatorio**: Ogni Client OAuth2 deve possedere almeno un ruolo configurato (non cancellabile) per garantire la corretta profilazione degli utenti.
+  - **Permessi Granulari & Wildcard (`*`)**: Ogni ruolo applicativo include una lista di permessi granulari (es. `users:read`, `users:write`, `roles:manage`) oppure il wildcard di sistema (`*`).
   - **Token Claims Client-Scoped & Claims `permissions`**: I token JWT/JWE emessi contengono esclusivamente i ruoli e i permessi pertinenti all'applicazione (`client_id`) chiamante.
   - **Retrocompatibilità 100%**: Mantenimento trasparente del campo legacy `User.roles` (`List<String>`) e sincronizzazione bidirezionale del database per i client consumer esistenti.
   - **Console M3 Catalogo Ruoli (`/app/role`)**: Nuova vista dedicata con KPI Bento, ricerca real-time, filtri Client/Tipo, modale per creazione/modifica permessi con chip dinamici e flusso di cancellazione protetto con SweetAlert2 e scansione preventiva degli utenti impattati.

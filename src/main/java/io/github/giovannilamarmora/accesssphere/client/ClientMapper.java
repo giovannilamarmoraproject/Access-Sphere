@@ -199,7 +199,7 @@ public class ClientMapper {
     for (String token : tokens) {
       if (!token.isBlank()) {
         fallbackList.add(
-            new AppRole(token.trim().toUpperCase(), AppRoleType.DEFAULT.getValue(), null));
+            new AppRole(token.trim().toUpperCase(), AppRoleType.USER.getValue(), null));
       }
     }
     return fallbackList.isEmpty() ? null : fallbackList;
@@ -207,7 +207,7 @@ public class ClientMapper {
 
   /**
    * Normalizza una lista di ruoli assicurando che il nome ruolo sia maiuscolo, che non contenga
-   * elementi nulli e che la tipologia sia valorizzata (con fallback su DEFAULT).
+   * elementi nulli e che la tipologia sia valorizzata (con fallback su USER).
    *
    * @param roles Lista ruoli da normalizzare.
    * @return Lista di ruoli normalizzati, oppure null se la lista in ingresso e' vuota.
@@ -220,10 +220,11 @@ public class ClientMapper {
     for (AppRole r : roles) {
       if (r != null && !ObjectUtils.isEmpty(r.getRole())) {
         String roleName = r.getRole().trim().toUpperCase();
+        String rawType = r.getType();
         String type =
-            (!ObjectUtils.isEmpty(r.getType()) && !r.getType().isBlank())
-                ? r.getType().trim().toUpperCase()
-                : AppRoleType.DEFAULT.getValue();
+            (!ObjectUtils.isEmpty(rawType) && !rawType.isBlank())
+                ? ("DEFAULT".equalsIgnoreCase(rawType.trim()) ? AppRoleType.USER.getValue() : rawType.trim().toUpperCase())
+                : AppRoleType.USER.getValue();
         normalized.add(new AppRole(r.getId(), roleName, type, r.getDescription(), r.getPermissions()));
       }
     }
