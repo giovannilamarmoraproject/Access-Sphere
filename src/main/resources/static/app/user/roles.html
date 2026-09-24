@@ -261,6 +261,7 @@
             <button
                     disabled
                     id="save_role_btn"
+                    data-require-action="manage-roles"
                     onclick="changeRoles()"
                     class="m3-btn-primary px-8 py-3 text-xs font-bold rounded-full shadow-lg justify-center"
             >
@@ -271,6 +272,13 @@
     </div>
 </main>
 
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (typeof AccessControl !== "undefined") {
+            AccessControl.applyUIPermissions();
+        }
+    });
+</script>
 </body>
 </html>
 

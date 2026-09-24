@@ -405,7 +405,7 @@
             </button>
 
             <!-- Contextual Primary Action Button -->
-            <button onclick="openRoleModal('create')" class="m3-btn-primary ml-2">
+            <button id="btn-create-role-header" data-require-action="manage-roles" onclick="openRoleModal('create')" class="m3-btn-primary ml-2">
                 <i class="fa-solid fa-plus"></i> <span data-i18n="btn_create_role" class="hidden sm:inline">Nuovo Ruolo</span>
             </button>
 
@@ -586,7 +586,7 @@
         <p class="text-gray-400 text-sm max-w-md mb-6" data-i18n="roles_empty_desc">
             Nessun ruolo corrisponde ai criteri di ricerca o ai filtri selezionati. Prova a modificare i filtri o crea un nuovo ruolo applicativo.
         </p>
-        <button onclick="openRoleModal('create')" class="m3-btn-primary">
+        <button id="btn-create-role-empty" data-require-action="manage-roles" onclick="openRoleModal('create')" class="m3-btn-primary">
             <i class="fa-solid fa-plus"></i> <span data-i18n="btn_create_role">Nuovo Ruolo</span>
         </button>
     </div>
@@ -1029,6 +1029,12 @@
     }
     setInterval(updateClock, 1000);
     updateClock();
+
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions();
+        }
+    });
 </script>
 
 </body>

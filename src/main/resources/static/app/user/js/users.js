@@ -55,6 +55,15 @@ function refreshUsers() {
 }
 
 function getUsers() {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
+    console.warn("getUsers: Permesso di visualizzazione utenti negato.");
+    if (typeof disableLoader === "function") disableLoader();
+    if (window.location.pathname.includes("/users")) {
+      window.location.href = "/app";
+    }
+    return Promise.resolve();
+  }
+
   const cfg = typeof getConfig === "function" ? getConfig() : config;
   const url = cfg.users_url || (window.location.origin + "/v1/users");
   const token = getCookieOrStorage(cfg.access_token);
@@ -123,11 +132,38 @@ function displayUsersTable(users) {
   if (!table) return;
   table.innerHTML = "";
 
+  const canManage = typeof AccessControl === "undefined" || AccessControl.canManageUsers();
+  const canManageRoles = typeof AccessControl === "undefined" || AccessControl.canManageRoles();
+  const canDelete = typeof AccessControl === "undefined" || AccessControl.canDeleteUsers();
+
   users.forEach((user) => {
     const photo = getOrDefault(user.profilePhoto, "https://bootdey.com/img/Content/avatar/avatar7.png");
     const statusBadge = user.blocked
       ? `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30'>${typeof t === 'function' ? t('user_status_blocked', 'BLOCCATO') : 'BLOCKED'}</span>`
       : `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'>${typeof t === 'function' ? t('user_status_active', 'ATTIVO') : 'ACTIVE'}</span>`;
+
+    let actionButtons = "";
+    if (canManage) {
+      actionButtons += `
+        <a class="m3-action-btn m3-action-edit" title="${typeof t === 'function' ? t('user_btn_edit', 'Modifica Utente') : 'Modifica Utente'}" href="/app/users/edit/${encodeURIComponent(user.identifier)}">
+          <i class="fa-solid fa-user-pen text-xs"></i>
+        </a>`;
+    }
+    if (canManageRoles) {
+      actionButtons += `
+        <a class="m3-action-btn m3-action-role" title="${typeof t === 'function' ? t('user_btn_manage_roles', 'Gestisci Ruoli') : 'Gestisci Ruoli'}" href="/app/users/roles/${encodeURIComponent(user.identifier)}">
+          <i class="fa-solid fa-shield-halved text-xs"></i>
+        </a>`;
+    }
+    if (canDelete) {
+      actionButtons += `
+        <button class="m3-action-btn m3-action-delete" title="${typeof t === 'function' ? t('user_btn_delete', 'Elimina Utente') : 'Elimina Utente'}" onclick="event.stopPropagation(); deleteUser('${user.identifier}','${user.username}')">
+          <i class="fa-solid fa-trash text-xs"></i>
+        </button>`;
+    }
+    if (!actionButtons) {
+      actionButtons = `<span class="text-xs text-gray-500 font-mono">-</span>`;
+    }
 
     const tr = document.createElement("tr");
     tr.style.height = "56px";
@@ -150,15 +186,7 @@ function displayUsersTable(users) {
       <td class="hidden-mobile text-gray-300">${user.email || ""}</td>
       <td>${statusBadge}</td>
       <td class="text-center" style="min-width: 130px;">
-        <a class="m3-action-btn m3-action-edit" title="${typeof t === 'function' ? t('user_btn_edit', 'Modifica Utente') : 'Modifica Utente'}" href="/app/users/edit/${encodeURIComponent(user.identifier)}">
-          <i class="fa-solid fa-user-pen text-xs"></i>
-        </a>
-        <a class="m3-action-btn m3-action-role" title="${typeof t === 'function' ? t('user_btn_manage_roles', 'Gestisci Ruoli') : 'Gestisci Ruoli'}" href="/app/users/roles/${encodeURIComponent(user.identifier)}">
-          <i class="fa-solid fa-shield-halved text-xs"></i>
-        </a>
-        <button class="m3-action-btn m3-action-delete" title="${typeof t === 'function' ? t('user_btn_delete', 'Elimina Utente') : 'Elimina Utente'}" onclick="event.stopPropagation(); deleteUser('${user.identifier}','${user.username}')">
-          <i class="fa-solid fa-trash text-xs"></i>
-        </button>
+        ${actionButtons}
       </td>
     `;
     table.appendChild(tr);

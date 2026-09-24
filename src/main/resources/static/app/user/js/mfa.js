@@ -30,6 +30,21 @@ function goBack() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Verifica autorizzazioni per la gestione MFA dell'utente
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    console.warn("AccessControl: Permesso insufficiente per gestire MFA.");
+    if (typeof AccessControl.showDeniedAlert === "function") {
+      AccessControl.showDeniedAlert(
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per configurare MFA.") : "Non disponi dei permessi necessari per configurare MFA.",
+        "/app/users"
+      );
+    } else {
+      window.location.href = "/app/users";
+    }
+    return;
+  }
+
   const mfaMethod = document.getElementById("mfa-method");
   const button = document.getElementById("mfa_page_setup_select_proceed");
 
@@ -43,6 +58,16 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function setupMFA() {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    if (typeof AccessControl.showDeniedAlert === "function") {
+      AccessControl.showDeniedAlert(
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per configurare MFA.") : "Non disponi dei permessi necessari per configurare MFA."
+      );
+    }
+    return;
+  }
+
   const label = document.getElementById("mfa-method").value;
   const urlParams = window.location.href;
   const identifier = urlParams.split("mfa/")[1];
@@ -129,6 +154,16 @@ function copyMfaSecret() {
 }
 
 function confirmMFA() {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    if (typeof AccessControl.showDeniedAlert === "function") {
+      AccessControl.showDeniedAlert(
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per configurare MFA.") : "Non disponi dei permessi necessari per configurare MFA."
+      );
+    }
+    return;
+  }
+
   const label = document.getElementById("mfa-method").value;
   const urlParams = window.location.href;
   const identifier = urlParams.split("mfa/")[1];

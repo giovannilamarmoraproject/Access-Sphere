@@ -324,7 +324,7 @@
                 <a href="/app/users" class="m3-btn-outline">
                     <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
                 </a>
-                <button id="edit_user_button" class="m3-btn-primary" type="submit">
+                <button id="edit_user_button" data-require-action="manage-users" class="m3-btn-primary" type="submit">
                     <i class="fa-solid fa-check"></i> <span data-i18n="user_btn_save_changes">Salva Modifiche</span>
                 </button>
             </div>
@@ -333,6 +333,13 @@
     </div>
 </main>
 
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (typeof AccessControl !== "undefined") {
+            AccessControl.applyUIPermissions();
+        }
+    });
+</script>
 </body>
 </html>
 

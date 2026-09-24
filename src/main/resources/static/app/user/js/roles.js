@@ -33,6 +33,21 @@ let allClientsData = [];
 let currentTargetIdentifier = null;
 
 $(document).ready(function () {
+  // Verifica autorizzazioni per la gestione dei ruoli utente
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageRoles()) {
+    console.warn("AccessControl: Permesso insufficiente per gestire i ruoli utente.");
+    if (typeof AccessControl.showDeniedAlert === "function") {
+      AccessControl.showDeniedAlert(
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per gestire i ruoli.") : "Non disponi dei permessi necessari per gestire i ruoli.",
+        "/app/users"
+      );
+    } else {
+      window.location.href = "/app/users";
+    }
+    return;
+  }
+
   // Risoluzione dell'identificativo utente e caricamento anagrafica
   getUser();
 
@@ -537,6 +552,16 @@ function displayUserData(user) {
  * la lista flat `roles` per garantire la piena retrocompatibilità con i servizi legacy.
  */
 function changeRoles() {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageRoles()) {
+    if (typeof AccessControl.showDeniedAlert === "function") {
+      AccessControl.showDeniedAlert(
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per modificare i ruoli.") : "Non disponi dei permessi necessari per modificare i ruoli."
+      );
+    }
+    return;
+  }
+
   const identifier = currentTargetIdentifier || (
     window.location.href.includes("roles/")
       ? window.location.href.split("roles/")[1].split("/")[0].split("?")[0].split("#")[0]

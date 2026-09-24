@@ -760,7 +760,7 @@
                 <a id="cancel-link" href="/app/clients" class="m3-btn-outline justify-center">
                     <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
                 </a>
-                <button type="submit" class="m3-btn-primary justify-center">
+                <button type="submit" data-require-action="manage-clients" class="m3-btn-primary justify-center">
                     <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="btn_save_client_changes">Salva Modifiche Client</span>
                 </button>
             </div>
@@ -777,6 +777,22 @@
     let webhooksList = [];
 
     document.addEventListener("DOMContentLoaded", () => {
+        if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+            console.warn("AccessControl: Permesso insufficiente per modificare client.");
+            if (typeof AccessControl.showDeniedAlert === "function") {
+                AccessControl.showDeniedAlert(
+                    typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+                    typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per modificare i client.") : "Non disponi dei permessi necessari per modificare i client.",
+                    "/app/clients"
+                );
+            } else {
+                window.location.href = "/app/clients";
+            }
+            return;
+        }
+        if (typeof AccessControl !== "undefined") {
+            AccessControl.applyUIPermissions();
+        }
         loadClientForEdit();
     });
 
@@ -1522,6 +1538,16 @@
 
     // --- SUBMISSION ---
     function submitEditClient() {
+        if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+            if (typeof AccessControl.showDeniedAlert === "function") {
+                AccessControl.showDeniedAlert(
+                    typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+                    typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per modificare i client.") : "Non disponi dei permessi necessari per modificare i client."
+                );
+            }
+            return;
+        }
+
         if (!validateClientForm()) return;
 
         const clientId = document.getElementById("clientId").value.trim();

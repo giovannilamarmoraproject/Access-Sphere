@@ -39,6 +39,13 @@ let currentModalMode = "create";
 let editingRoleData = null;
 
 $(document).ready(function () {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canViewRoles()) {
+        console.warn("AccessControl: Permission denied for viewing roles.");
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.");
+        setTimeout(() => { window.location.href = "/app"; }, 1500);
+        return;
+    }
+
     // Inizializzazione dati
     loadClients();
     loadRoles();
@@ -342,6 +349,7 @@ function renderRolesGrid(roles) {
                     <span class="text-gray-400" data-i18n="roles_card_users_assigned">Utenti</span>
                 </div>
 
+                ${(typeof AccessControl === "undefined" || AccessControl.canManageRoles()) ? `
                 <div class="flex items-center gap-1.5">
                     <!-- Modifica Ruolo -->
                     <button type="button" onclick="openRoleModal('edit', decodeURIComponent('${safeRoleData}'))"
@@ -363,6 +371,7 @@ function renderRolesGrid(roles) {
                     </button>
                     `}
                 </div>
+                ` : `<span class="text-xs text-gray-500 font-mono">-</span>`}
             </div>
 
         </div>
@@ -375,6 +384,10 @@ function renderRolesGrid(roles) {
     if (typeof translateDOM === "function") {
         translateDOM(grid);
     }
+
+    if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+        AccessControl.applyUIPermissions(grid);
+    }
 }
 
 /**
@@ -383,6 +396,10 @@ function renderRolesGrid(roles) {
  * @param {string|object} [roleData] - Dati del ruolo in caso di modifica
  */
 function openRoleModal(mode, roleData) {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canManageRoles()) {
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+        return;
+    }
     currentModalMode = mode;
     resetModalForm();
 
@@ -791,6 +808,11 @@ function showLastRoleLockedAlert() {
  * @param {string} [roleType] - Tipologia del ruolo
  */
 function deleteRoleConfirm(clientId, role, roleType) {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canManageRoles()) {
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+        return;
+    }
+
     // 1. Protezione Ultimo Ruolo Obbligatorio del Client
     const clientRoles = cachedRoles.filter((cr) => cr.clientId === clientId);
     if (clientRoles.length <= 1) {

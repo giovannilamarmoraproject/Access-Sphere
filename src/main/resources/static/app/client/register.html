@@ -749,7 +749,7 @@
                 <a href="/app/clients" class="m3-btn-outline justify-center">
                     <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
                 </a>
-                <button type="submit" class="m3-btn-primary justify-center">
+                <button type="submit" data-require-action="manage-clients" class="m3-btn-primary justify-center">
                     <i class="fa-solid fa-check mr-1"></i> <span data-i18n="btn_save_register_client">Salva e Registra Client</span>
                 </button>
             </div>
@@ -787,6 +787,22 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+        if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+            console.warn("AccessControl: Permesso insufficiente per registrare client.");
+            if (typeof AccessControl.showDeniedAlert === "function") {
+                AccessControl.showDeniedAlert(
+                    typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+                    typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per creare client.") : "Non disponi dei permessi necessari per creare client.",
+                    "/app/clients"
+                );
+            } else {
+                window.location.href = "/app/clients";
+            }
+            return;
+        }
+        if (typeof AccessControl !== "undefined") {
+            AccessControl.applyUIPermissions();
+        }
         renderAppRolesGrid();
         renderWebhooksTable();
     });
@@ -1362,6 +1378,16 @@
 
     // --- SUBMISSION ---
     function submitCreateClient() {
+        if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+            if (typeof AccessControl.showDeniedAlert === "function") {
+                AccessControl.showDeniedAlert(
+                    typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+                    typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per creare client.") : "Non disponi dei permessi necessari per creare client."
+                );
+            }
+            return;
+        }
+
         if (!validateClientForm()) return;
 
         const clientId = document.getElementById("clientId").value.trim().toUpperCase();

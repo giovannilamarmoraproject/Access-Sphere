@@ -1052,5 +1052,7 @@
   "swal_role_last_locked_desc": "Cada Cliente OAuth2 debe tener al menos un rol configurado. No es posible eliminar el último rol restante.",
   "swal_role_at_least_one_required": "Es obligatorio configurar al menos un rol aplicativo para el Cliente.",
   "sidebar_user_profile": "Perfil de Usuario",
-  "sidebar_user_default": "Usuario"
+  "sidebar_user_default": "Usuario",
+  "swal_permission_denied_title": "Acceso denegado",
+  "swal_permission_denied_desc": "No tienes los permisos necesarios para realizar esta acción o acceder a esta sección."
 }

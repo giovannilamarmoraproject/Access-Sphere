@@ -305,13 +305,22 @@ function getLoggedInUser() {
                 fullName = "Utente";
             }
 
+            const isTechnical = (claims.subject_type === "TECHNICAL") ||
+                (claims.sub && claims.sub.toLowerCase() === "tech_admin") ||
+                (Array.isArray(claims.roles) && claims.roles.some((r) => r === "ROLE_TECH" || r === "ROLE_SUPER_ADMIN"));
+
             const userObj = {
                 name: firstName,
                 surname: lastName,
                 fullName: fullName,
                 username: claims.sub || claims.username || "",
                 email: claims.email || "",
-                roles: claims.roles || [],
+                roles: Array.isArray(claims.roles) ? claims.roles : (claims.roles ? [claims.roles] : []),
+                permissions: Array.isArray(claims.permissions) ? claims.permissions : (claims.permissions ? [claims.permissions] : []),
+                clientRoles: Array.isArray(claims.clientRoles) ? claims.clientRoles : [],
+                type: claims.type || claims.subject_type || "",
+                subjectType: claims.subject_type || "",
+                isTechnical: isTechnical,
                 profilePhoto: claims.profilePhoto || claims.picture || claims.photo || null
             };
             enrichUserFromCachedUsers(userObj);
@@ -402,19 +411,51 @@ function syncLoggedInUserProfile() {
 
                 const photo = u.profilePhoto || u.profile || DEFAULT_USER_AVATAR;
 
+                // Aggrega ruoli completi (da flat roles e clientRoles)
+                let roles = Array.isArray(u.roles) ? [...u.roles] : [];
+                if (Array.isArray(u.clientRoles)) {
+                    u.clientRoles.forEach((cr) => {
+                        if (cr && cr.role) roles.push(cr.role);
+                    });
+                }
+                roles = Array.from(new Set(roles));
+
+                // Aggrega permessi completi (da u.permissions e clientRoles.permissions)
+                let permissions = Array.isArray(u.permissions) ? [...u.permissions] : [];
+                if (Array.isArray(u.clientRoles)) {
+                    u.clientRoles.forEach((cr) => {
+                        if (cr && Array.isArray(cr.permissions)) {
+                            permissions.push(...cr.permissions);
+                        }
+                    });
+                }
+                permissions = Array.from(new Set(permissions));
+
+                const isTechnical = (u.username && u.username.toLowerCase() === "tech_admin") ||
+                    roles.some((r) => r === "ROLE_TECH" || r === "ROLE_SUPER_ADMIN") ||
+                    (current && current.isTechnical === true);
+
                 const userObj = {
                     name: firstName,
                     surname: lastName,
                     fullName: fullName,
                     username: u.username || "",
                     email: u.email || "",
-                    roles: u.roles || [],
+                    roles: roles,
+                    permissions: permissions,
+                    clientRoles: u.clientRoles || [],
+                    type: u.type || (current && current.type) || "",
+                    subjectType: (current && current.subjectType) || (isTechnical ? "TECHNICAL" : "USER"),
+                    isTechnical: isTechnical,
                     profilePhoto: photo
                 };
                 try {
                     localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
                 } catch (e) {}
                 updateSidebarUserDOM(userObj);
+                if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+                    AccessControl.applyUIPermissions();
+                }
                 return userObj;
             }
             return null;
@@ -672,6 +713,48 @@ function syncMobileNavState(viewName) {
 function navigateToSection(targetPath, viewName) {
     closeMobileNavDrawer();
     scrollToTop("instant");
+    if (typeof AccessControl !== "undefined") {
+        if ((viewName === "clients" || targetPath.includes("/clients")) && !AccessControl.canViewClients()) {
+            if (typeof sweetalert === "function") {
+                const title = typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato";
+                const desc = typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei privilegi necessari per accedere a questa sezione.") : "Non disponi dei privilegi necessari per accedere a questa sezione.";
+                sweetalert("warning", title, desc);
+            }
+            return false;
+        }
+        if ((viewName === "users" || targetPath.includes("/users")) && !AccessControl.canViewUsers()) {
+            if (typeof sweetalert === "function") {
+                const title = typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato";
+                const desc = typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei privilegi necessari per accedere a questa sezione.") : "Non disponi dei privilegi necessari per accedere a questa sezione.";
+                sweetalert("warning", title, desc);
+            }
+            return false;
+        }
+        if ((viewName === "roles" || targetPath.includes("/role")) && !AccessControl.canViewRoles()) {
+            if (typeof sweetalert === "function") {
+                const title = typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato";
+                const desc = typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei privilegi necessari per accedere a questa sezione.") : "Non disponi dei privilegi necessari per accedere a questa sezione.";
+                sweetalert("warning", title, desc);
+            }
+            return false;
+        }
+        if ((viewName === "emails" || targetPath.includes("/emails")) && !AccessControl.canViewEmails()) {
+            if (typeof sweetalert === "function") {
+                const title = typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato";
+                const desc = typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei privilegi necessari per accedere a questa sezione.") : "Non disponi dei privilegi necessari per accedere a questa sezione.";
+                sweetalert("warning", title, desc);
+            }
+            return false;
+        }
+        if ((viewName === "settings" || targetPath.includes("/settings")) && !AccessControl.canViewSettings()) {
+            if (typeof sweetalert === "function") {
+                const title = typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato";
+                const desc = typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei privilegi necessari per accedere a questa sezione.") : "Non disponi dei privilegi necessari per accedere a questa sezione.";
+                sweetalert("warning", title, desc);
+            }
+            return false;
+        }
+    }
     if (viewName) {
         syncMobileNavState(viewName);
     }
@@ -772,7 +855,7 @@ function initMobileNavigation() {
       <div class="mobile-drawer-sections-container flex-1 overflow-y-auto pr-1">
 
         <!-- Categoria: Panoramica -->
-        <div class="mb-4">
+        <div class="mb-4" id="mobile-drawer-cat-main">
           <div class="sidebar-category-header px-2 py-1">
             <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_main">Panoramica</span>
           </div>
@@ -783,7 +866,7 @@ function initMobileNavigation() {
         </div>
 
         <!-- Categoria: Identità & Utenti -->
-        <div class="mb-4">
+        <div class="mb-4" id="mobile-drawer-cat-users">
           <div class="sidebar-category-header px-2 py-1">
             <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_identity">Identità & Utenti</span>
           </div>
@@ -794,7 +877,7 @@ function initMobileNavigation() {
         </div>
 
         <!-- Categoria: Ruoli & Permessi -->
-        <div class="mb-4">
+        <div class="mb-4" id="mobile-drawer-cat-roles">
           <div class="sidebar-category-header px-2 py-1">
             <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_roles">Ruoli & Permessi</span>
           </div>
@@ -805,7 +888,7 @@ function initMobileNavigation() {
         </div>
 
         <!-- Categoria: Applicazioni & Client -->
-        <div class="mb-4">
+        <div class="mb-4" id="mobile-drawer-cat-clients">
           <div class="sidebar-category-header px-2 py-1">
             <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_apps">Applicazioni & Client</span>
           </div>
@@ -816,7 +899,7 @@ function initMobileNavigation() {
         </div>
 
         <!-- Categoria: Comunicazioni -->
-        <div class="mb-4">
+        <div class="mb-4" id="mobile-drawer-cat-emails">
           <div class="sidebar-category-header px-2 py-1">
             <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_comms">Comunicazioni</span>
           </div>
@@ -827,7 +910,7 @@ function initMobileNavigation() {
         </div>
 
         <!-- Categoria: Sistema & Risorse -->
-        <div class="mb-4">
+        <div class="mb-4" id="mobile-drawer-cat-system">
           <div class="sidebar-category-header px-2 py-1">
             <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_system">Sistema & Risorse</span>
           </div>
@@ -842,7 +925,7 @@ function initMobileNavigation() {
         </div>
 
         <!-- Categoria: Strumenti & Azioni -->
-        <div class="mb-4">
+        <div class="mb-4" id="mobile-drawer-cat-tools">
           <div class="sidebar-category-header px-2 py-1">
             <span class="sidebar-category-label text-[10px]" data-i18n="sidebar_cat_tools">Strumenti & Azioni</span>
           </div>
@@ -856,15 +939,15 @@ function initMobileNavigation() {
             <span data-i18n="btn_back">Torna Indietro</span>
           </button>
           ` : ''}
-          <a href="/app/users/register" onclick="closeMobileNavDrawer(); scrollToTop('instant');" class="m3-mobile-nav-link">
+          <a href="/app/users/register" id="mobile-tool-new-user" onclick="closeMobileNavDrawer(); scrollToTop('instant');" class="m3-mobile-nav-link">
             <i class="fa-solid fa-user-plus"></i>
             <span data-i18n="btn_new_user">Nuovo Utente</span>
           </a>
-          <a href="/app/clients/register" onclick="closeMobileNavDrawer(); scrollToTop('instant');" class="m3-mobile-nav-link">
+          <a href="/app/clients/register" id="mobile-tool-new-client" onclick="closeMobileNavDrawer(); scrollToTop('instant');" class="m3-mobile-nav-link">
             <i class="fa-solid fa-plus"></i>
             <span data-i18n="btn_new_client">Nuovo Client</span>
           </a>
-          <a href="/app/role" onclick="closeMobileNavDrawer(); scrollToTop('instant');" class="m3-mobile-nav-link">
+          <a href="/app/role" id="mobile-tool-new-role" onclick="closeMobileNavDrawer(); scrollToTop('instant');" class="m3-mobile-nav-link">
             <i class="fa-solid fa-shield-plus"></i>
             <span data-i18n="roles_btn_new">Nuovo Ruolo</span>
           </a>
@@ -966,10 +1049,362 @@ window.triggerMobileRefresh = triggerMobileRefresh;
 window.triggerMobileBack = triggerMobileBack;
 window.initMobileNavigation = initMobileNavigation;
 
+/**
+ * Utility per mostrare o nascondere un elemento DOM rimuovendo o aggiungendo display: none !important.
+ * Rispetta le classi Tailwind esistenti (flex, block, inline-flex, ecc.) al ripristino della visibilità.
+ * @param {HTMLElement|null} el
+ * @param {boolean} isVisible
+ */
+function toggleVisibility(el, isVisible) {
+    if (!el) return;
+    if (isVisible) {
+        el.style.removeProperty("display");
+        if (el.classList.contains("force-hidden")) {
+            el.classList.remove("force-hidden");
+        }
+    } else {
+        el.style.setProperty("display", "none", "important");
+    }
+}
+
+/**
+ * =========================================================================================
+ * AccessControl: Frontend Role-Based Access Control (RBAC) & Visibility Engine
+ * =========================================================================================
+ * Centralizza tutte le regole di autorizzazione, permessi granulari e visibilità condizionale
+ * della UI di Access-Sphere per Header, Sidebar M3, Dashboard Hub e Drawer Mobile:
+ *
+ * Flusso dei dati e interconnessioni architetturali:
+ * 1. isSuperAdmin(): Verifica se l'operatore è un'utenza tecnica di sistema o un Super Admin
+ *    (subject_type == 'TECHNICAL', sub == 'tech_admin', ruoli ROLE_TECH / SUPER_ADMIN, o '*').
+ * 2. canViewClients() / canManageClients(): Controlla i permessi per visualizzare o gestire i client.
+ * 3. canViewUsers() / canManageUsers() / canDeleteUsers(): Controlla i permessi per utenti IAM.
+ * 4. canViewRoles() / canManageRoles(): Controlla l'accesso al catalogo dei ruoli.
+ * 5. canViewEmails() / canManageEmails(): Controlla l'accesso ai template email.
+ * 6. canViewSettings() / canEditSettings() / canManageBackup(): Impostazioni e Backup & Restore.
+ * 7. applyUIPermissions(root): Esegue la scansione degli elementi di navigazione e azioni nel DOM,
+ *    nascondendo completamente qualsiasi percorso o pulsante per cui l'utente non dispone di permessi.
+ * =========================================================================================
+ */
+const AccessControl = {
+    getUser() {
+        if (typeof getLoggedInUser === "function") {
+            return getLoggedInUser();
+        }
+        try {
+            const raw = localStorage.getItem("access_sphere_user");
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    getRoles() {
+        const u = this.getUser();
+        if (!u || !Array.isArray(u.roles)) return [];
+        return u.roles.map((r) => String(r).toUpperCase());
+    },
+
+    getPermissions() {
+        const u = this.getUser();
+        if (!u) return [];
+        const set = new Set();
+        if (Array.isArray(u.permissions)) {
+            u.permissions.forEach((p) => set.add(String(p).trim().toLowerCase()));
+        }
+        if (Array.isArray(u.clientRoles)) {
+            u.clientRoles.forEach((cr) => {
+                if (cr && Array.isArray(cr.permissions)) {
+                    cr.permissions.forEach((p) => set.add(String(p).trim().toLowerCase()));
+                }
+            });
+        }
+        return Array.from(set);
+    },
+
+    hasRole(...roleNames) {
+        const roles = this.getRoles();
+        const u = this.getUser();
+        const userType = u && u.type ? String(u.type).toUpperCase() : "";
+        return roleNames.some((target) => {
+            const upper = String(target).toUpperCase();
+            const stripped = upper.replace(/^ROLE_/, "");
+            return (
+                roles.some((r) => r === upper || r.replace(/^ROLE_/, "") === stripped) ||
+                userType === stripped ||
+                userType === upper
+            );
+        });
+    },
+
+    hasPermission(...permNames) {
+        const perms = this.getPermissions();
+        if (perms.includes("*")) return true;
+        return permNames.some((target) => {
+            const lower = String(target).trim().toLowerCase();
+            const colon = lower.replace(/_/g, ":");
+            const underscore = lower.replace(/:/g, "_");
+            return perms.includes(lower) || perms.includes(colon) || perms.includes(underscore);
+        });
+    },
+
+    isSuperAdmin() {
+        const u = this.getUser();
+        if (!u) return false;
+        if (
+            u.isTechnical === true ||
+            u.subjectType === "TECHNICAL" ||
+            (u.username && u.username.toLowerCase() === "tech_admin")
+        ) {
+            return true;
+        }
+        if (this.hasRole("TECH", "ROLE_TECH", "SUPER_ADMIN", "ROLE_SUPER_ADMIN", "TECHNICAL")) {
+            return true;
+        }
+        const perms = this.getPermissions();
+        return perms.includes("*");
+    },
+
+    canViewClients() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("clients:read", "client:read", "clients:write", "client:write", "clients:manage", "client:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    canManageClients() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("clients:write", "client:write", "clients:manage", "client:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    canViewUsers() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("users:read", "user:read", "users:write", "user:write", "users:manage", "user:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER", "OPERATOR", "ROLE_OPERATOR", "AUDITOR", "ROLE_AUDITOR")
+        );
+    },
+
+    canManageUsers() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("users:write", "user:write", "users:manage", "user:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
+        );
+    },
+
+    canDeleteUsers() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("users:delete", "user:delete", "users:manage", "user:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    canViewRoles() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("roles:read", "role:read", "roles:write", "role:write", "roles:manage", "role:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
+        );
+    },
+
+    canManageRoles() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("roles:write", "role:write", "roles:manage", "role:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    canViewEmails() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("emails:read", "email:read", "emails:write", "email:write", "emails:manage", "email:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
+        );
+    },
+
+    canManageEmails() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("emails:write", "email:write", "emails:manage", "email:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    canViewSettings() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("settings:read", "settings:write", "settings:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    canEditSettings() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("settings:write", "settings:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    canManageBackup() {
+        return this.isSuperAdmin();
+    },
+
+    applyUIPermissions(root = document) {
+        if (!root) return;
+
+        const canVClients = this.canViewClients();
+        const canMClients = this.canManageClients();
+        const canVUsers = this.canViewUsers();
+        const canMUsers = this.canManageUsers();
+        const canDUsers = this.canDeleteUsers();
+        const canVRoles = this.canViewRoles();
+        const canMRoles = this.canManageRoles();
+        const canVEmails = this.canViewEmails();
+        const canMEmails = this.canManageEmails();
+        const canVSettings = this.canViewSettings();
+        const canESettings = this.canEditSettings();
+        const canMBackup = this.canManageBackup();
+
+        // 1. Navigation Header Tabs & Links
+        toggleVisibility(root.querySelector("#nav-btn-clients"), canVClients);
+        toggleVisibility(root.querySelector("#nav-btn-users"), canVUsers);
+        toggleVisibility(root.querySelector("#nav-btn-roles"), canVRoles);
+        toggleVisibility(root.querySelector("#nav-btn-emails"), canVEmails);
+        toggleVisibility(root.querySelector("#nav-btn-settings"), canVSettings);
+
+        root.querySelectorAll("nav a[href='/app/clients'], nav a[href*='/app/client']").forEach((el) => {
+            toggleVisibility(el, canVClients);
+        });
+        root.querySelectorAll("nav a[href='/app/users'], nav a[href*='/app/user']").forEach((el) => {
+            toggleVisibility(el, canVUsers);
+        });
+        root.querySelectorAll("nav a[href='/app/role'], nav a[href='/app/roles']").forEach((el) => {
+            toggleVisibility(el, canVRoles);
+        });
+        root.querySelectorAll("nav a[href='/app/emails'], nav a[href='/app/email']").forEach((el) => {
+            toggleVisibility(el, canVEmails);
+        });
+        root.querySelectorAll("nav a[href='/app/settings']").forEach((el) => {
+            toggleVisibility(el, canVSettings);
+        });
+
+        // 2. Contextual Primary Actions (Header)
+        toggleVisibility(root.querySelector("#users-primary-action"), canMUsers);
+        toggleVisibility(root.querySelector("#clients-primary-action"), canMClients);
+
+        // 3. Desktop Sidebar M3 Categories & Items
+        toggleVisibility(root.querySelector("#sidebar-cat-clients"), canVClients);
+        toggleVisibility(root.querySelector("#sidebar-cat-users"), canVUsers);
+        toggleVisibility(root.querySelector("#sidebar-cat-roles"), canVRoles);
+        toggleVisibility(root.querySelector("#sidebar-cat-emails"), canVEmails);
+        toggleVisibility(root.querySelector("#sidebar-btn-settings"), canVSettings);
+
+        // 4. Mobile Drawer Navigation & Bottom Navigation
+        toggleVisibility(root.querySelector("#bottom-nav-clients"), canVClients);
+        toggleVisibility(root.querySelector("#bottom-nav-users"), canVUsers);
+        toggleVisibility(root.querySelector("#bottom-nav-roles"), canVRoles);
+        toggleVisibility(root.querySelector("#bottom-nav-settings"), canVSettings);
+
+        toggleVisibility(root.querySelector("#mobile-nav-clients"), canVClients);
+        toggleVisibility(root.querySelector("#mobile-nav-users"), canVUsers);
+        toggleVisibility(root.querySelector("#mobile-nav-roles"), canVRoles);
+        toggleVisibility(root.querySelector("#mobile-nav-emails"), canVEmails);
+        toggleVisibility(root.querySelector("#mobile-nav-settings"), canVSettings);
+
+        toggleVisibility(root.querySelector("#mobile-drawer-cat-clients"), canVClients);
+        toggleVisibility(root.querySelector("#mobile-drawer-cat-users"), canVUsers);
+        toggleVisibility(root.querySelector("#mobile-drawer-cat-roles"), canVRoles);
+        toggleVisibility(root.querySelector("#mobile-drawer-cat-emails"), canVEmails);
+        toggleVisibility(root.querySelector("#mobile-drawer-cat-system"), canVSettings);
+
+        toggleVisibility(root.querySelector("#mobile-tool-new-user"), canMUsers);
+        toggleVisibility(root.querySelector("#mobile-tool-new-client"), canMClients);
+        toggleVisibility(root.querySelector("#mobile-tool-new-role"), canMRoles);
+
+        // 5. Dashboard Bento KPI & Hub Cards
+        toggleVisibility(root.querySelector("#stat-recap-users-card, #kpi-card-users"), canVUsers);
+        toggleVisibility(root.querySelector("#stat-recap-clients-card, #kpi-card-clients"), canVClients);
+        toggleVisibility(root.querySelector("#hub-card-users"), canVUsers);
+        toggleVisibility(root.querySelector("#hub-card-clients"), canVClients);
+        toggleVisibility(root.querySelector("#quick-switch-clients"), canVClients);
+        toggleVisibility(root.querySelector("#quick-switch-users"), canVUsers);
+
+        // Sub-azioni nei KPI o Hub Card
+        root.querySelectorAll("#hub-card-users a[href='/app/users/register']").forEach((el) => {
+            toggleVisibility(el, canMUsers);
+        });
+        root.querySelectorAll("#hub-card-clients a[href='/app/clients/register']").forEach((el) => {
+            toggleVisibility(el, canMClients);
+        });
+
+        // 6. In-View Create Action Buttons
+        root.querySelectorAll("a[href='/app/users/register'], #btn-new-user").forEach((el) => {
+            if (!el.closest("#users-primary-action")) {
+                toggleVisibility(el, canMUsers);
+            }
+        });
+        root.querySelectorAll("a[href='/app/clients/register'], #btn-new-client, #btn-register-new-client").forEach((el) => {
+            if (!el.closest("#clients-primary-action")) {
+                toggleVisibility(el, canMClients);
+            }
+        });
+        root.querySelectorAll("[onclick*='openRoleModal(\\'create\\')'], #btn-create-role, #btn-new-role").forEach((el) => {
+            toggleVisibility(el, canMRoles);
+        });
+        root.querySelectorAll("[onclick*='openCreateTemplateModal'], #btn-new-template").forEach((el) => {
+            toggleVisibility(el, canMEmails);
+        });
+
+        // 7. Settings Specific Cards and Actions
+        toggleVisibility(root.querySelector("#settings-card-backup"), canMBackup);
+        root.querySelectorAll("[onclick*='saveAllSettings'], [onclick*='resetSettingsToDefault']").forEach((el) => {
+            toggleVisibility(el, canESettings);
+        });
+
+        // 8. Attributi Dichiarativi HTML
+        root.querySelectorAll("[data-require-role]").forEach((el) => {
+            const reqRoles = el.getAttribute("data-require-role").split(",");
+            toggleVisibility(el, this.hasRole(...reqRoles));
+        });
+        root.querySelectorAll("[data-require-perm]").forEach((el) => {
+            const reqPerms = el.getAttribute("data-require-perm").split(",");
+            toggleVisibility(el, this.hasPermission(...reqPerms));
+        });
+        root.querySelectorAll("[data-require-action]").forEach((el) => {
+            const act = el.getAttribute("data-require-action");
+            let allowed = true;
+            if (act === "manage-clients") allowed = canMClients;
+            else if (act === "manage-users") allowed = canMUsers;
+            else if (act === "delete-users") allowed = canDUsers;
+            else if (act === "manage-roles") allowed = canMRoles;
+            else if (act === "manage-emails") allowed = canMEmails;
+            else if (act === "manage-backup") allowed = canMBackup;
+            else if (act === "edit-settings") allowed = canESettings;
+            toggleVisibility(el, allowed);
+        });
+    }
+};
+
+// Global exports
+window.toggleVisibility = toggleVisibility;
+window.AccessControl = AccessControl;
+
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initMobileNavigation);
+    document.addEventListener("DOMContentLoaded", () => {
+        initMobileNavigation();
+        AccessControl.applyUIPermissions();
+    });
 } else {
     initMobileNavigation();
+    AccessControl.applyUIPermissions();
 }
 
 

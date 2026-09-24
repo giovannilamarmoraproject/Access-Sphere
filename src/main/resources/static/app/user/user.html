@@ -117,6 +117,9 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         getUser();
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions();
+        }
     });
 </script>
 

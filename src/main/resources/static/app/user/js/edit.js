@@ -15,6 +15,21 @@ let currentLoadedUser = null;
 let profileImage = null;
 
 $(document).ready(function () {
+  // Verifica autorizzazioni per la modifica degli utenti
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    console.warn("AccessControl: Permesso insufficiente per modificare gli utenti.");
+    if (typeof AccessControl.showDeniedAlert === "function") {
+      AccessControl.showDeniedAlert(
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per modificare gli utenti.") : "Non disponi dei permessi necessari per modificare gli utenti.",
+        "/app/users"
+      );
+    } else {
+      window.location.href = "/app/users";
+    }
+    return;
+  }
+
   // Inizializza il recupero dei dati utente tramite parametro URL o query string
   getUser();
 
@@ -271,6 +286,16 @@ function populateUserData(user) {
  * @param {string} identifier Identificatore univoco UUID dell'utente
  */
 function editUser(userData, identifier) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    if (typeof AccessControl.showDeniedAlert === "function") {
+      AccessControl.showDeniedAlert(
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per modificare gli utenti.") : "Non disponi dei permessi necessari per modificare gli utenti."
+      );
+    }
+    return;
+  }
+
   const finalId = identifier || userData.identifier;
   if (!finalId) {
     const errTitle = typeof t === "function" ? t("swal_error_title", "Errore") : "Errore";

@@ -247,7 +247,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
 
         <!-- Card 1: Utenti Totali -->
-        <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div id="kpi-card-users" class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
                       data-i18n="dash_card_users_title">Utenti IAM</span>
@@ -274,7 +274,7 @@
         </div>
 
         <!-- Card 2: Client OAuth2 -->
-        <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div id="kpi-card-clients" class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
                       data-i18n="dash_card_clients_title">Client OAuth 2.0</span>
@@ -366,7 +366,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
             <!-- ================= HERO CARD 1: IAM & GESTIONE UTENTI ================= -->
-            <div onclick="switchDashboardView('users')"
+            <div id="hub-card-users" onclick="switchDashboardView('users')"
                  class="hub-hero-card hub-card-users p-8 flex flex-col justify-between cursor-pointer">
                 <div>
                     <!-- Header Card -->
@@ -420,7 +420,7 @@
             </div>
 
             <!-- ================= HERO CARD 2: CLIENT OAUTH 2.0 ================= -->
-            <div onclick="switchDashboardView('clients')"
+            <div id="hub-card-clients" onclick="switchDashboardView('clients')"
                  class="hub-hero-card hub-card-clients p-8 flex flex-col justify-between cursor-pointer">
                 <div>
                     <!-- Header Card -->
@@ -524,7 +524,7 @@
         </div>
 
         <!-- Quick Switch to Clients Bento Card -->
-        <div onclick="switchDashboardView('clients')"
+        <div id="quick-switch-clients" onclick="switchDashboardView('clients')"
              class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-purple-400/50">
             <div>
                 <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="nav_clients">Client OAuth2</span>
@@ -634,7 +634,7 @@
         </div>
 
         <!-- Quick Switch to Users Bento Card -->
-        <div onclick="switchDashboardView('users')"
+        <div id="quick-switch-users" onclick="switchDashboardView('users')"
              class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-emerald-400/50">
             <div>
                 <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="hub_users_title">Console Utenti</span>
@@ -1032,6 +1032,16 @@
     }
 
     function switchDashboardView(viewName, pushState = true) {
+        if (typeof AccessControl !== "undefined") {
+            if (viewName === "clients" && !AccessControl.canViewClients()) {
+                viewName = AccessControl.canViewUsers() ? "users" : "dashboard";
+            } else if (viewName === "users" && !AccessControl.canViewUsers()) {
+                viewName = AccessControl.canViewClients() ? "clients" : "dashboard";
+            } else if (viewName === "settings" && !AccessControl.canViewSettings()) {
+                viewName = "dashboard";
+            }
+        }
+
         if (viewName === "settings") {
             window.location.href = "/app/settings";
             return;
@@ -1149,14 +1159,18 @@
             if (viewName === "clients") {
                 sidebarPrimaryAction.href = "/app/clients/register";
                 sidebarPrimaryAction.innerHTML = '<i class="fa-solid fa-plus"></i> <span class="sidebar-label" data-i18n="btn_new_client">Nuovo Client</span>';
-                sidebarPrimaryAction.style.display = "flex";
+                sidebarPrimaryAction.style.display = (typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? "flex" : "none";
             } else if (viewName === "users") {
                 sidebarPrimaryAction.href = "/app/users/register";
                 sidebarPrimaryAction.innerHTML = '<i class="fa-solid fa-user-plus"></i> <span class="sidebar-label" data-i18n="btn_new_user">Nuovo Utente</span>';
-                sidebarPrimaryAction.style.display = "flex";
+                sidebarPrimaryAction.style.display = (typeof AccessControl === "undefined" || AccessControl.canManageUsers()) ? "flex" : "none";
             } else {
                 sidebarPrimaryAction.style.display = "none";
             }
+        }
+
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions();
         }
 
         // Aggiorna indicatore breadcrumb nell'header minimale
@@ -1272,6 +1286,10 @@
 
         if (typeof disableLoader === "function") {
             disableLoader();
+        }
+
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions();
         }
     });
 </script>

@@ -1,4 +1,8 @@
 function deleteUser(identifier, username) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canDeleteUsers()) {
+    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+    return;
+  }
   sweetalertConfirm(
     "question",
     currentTranslations.delete_user_question_title,

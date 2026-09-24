@@ -1052,5 +1052,7 @@
   "swal_role_last_locked_desc": "Jeder OAuth2-Client muss mindestens eine konfigurierte Rolle haben. Die letzte verbleibende Rolle kann nicht gelöscht werden.",
   "swal_role_at_least_one_required": "Für den Client muss mindestens eine Anwendungsrolle konfiguriert sein.",
   "sidebar_user_profile": "Benutzerprofil",
-  "sidebar_user_default": "Benutzer"
+  "sidebar_user_default": "Benutzer",
+  "swal_permission_denied_title": "Zugriff verweigert",
+  "swal_permission_denied_desc": "Sie verfügen nicht über die erforderlichen Berechtigungen, um diese Aktion auszuführen oder auf diesen Bereich zuzugreifen."
 }

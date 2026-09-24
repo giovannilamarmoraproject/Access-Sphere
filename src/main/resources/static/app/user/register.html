@@ -577,7 +577,7 @@
                 <a href="/app/users" class="m3-btn-outline justify-center">
                     <i class="fa-solid fa-xmark"></i> <span data-i18n="btn_cancel">Annulla</span>
                 </a>
-                <button id="register_form_submit" class="m3-btn-primary justify-center" type="submit">
+                <button id="register_form_submit" data-require-action="manage-users" class="m3-btn-primary justify-center" type="submit">
                     <i class="fa-solid fa-user-plus mr-1"></i> <span
                         data-i18n="user_btn_register">Registra Utente</span>
                 </button>
@@ -587,6 +587,13 @@
     </div>
 </main>
 
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (typeof AccessControl !== "undefined") {
+            AccessControl.applyUIPermissions();
+        }
+    });
+</script>
 </body>
 </html>
 

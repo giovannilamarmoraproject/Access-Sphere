@@ -37,6 +37,21 @@ $(document).ready(function () {
 });
 
 $(document).ready(function () {
+  // Verifica autorizzazioni per la creazione di nuovi utenti
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    console.warn("AccessControl: Permesso insufficiente per registrare nuovi utenti.");
+    if (typeof AccessControl.showDeniedAlert === "function") {
+      AccessControl.showDeniedAlert(
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per creare utenti.") : "Non disponi dei permessi necessari per creare utenti.",
+        "/app/users"
+      );
+    } else {
+      window.location.href = "/app/users";
+    }
+    return;
+  }
+
   $("#add_role_btn").prop("disabled", true);
 
   $("#role_select").on("change", function () {
@@ -140,6 +155,16 @@ $(document).ready(function () {
 });
 
 function registerUser(userForm, clients) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    if (typeof AccessControl.showDeniedAlert === "function") {
+      AccessControl.showDeniedAlert(
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per creare utenti.") : "Non disponi dei permessi necessari per creare utenti."
+      );
+    }
+    return;
+  }
+
   let userClient = (clients || []).find(
     (client) => client.clientId == userForm.clientId
   );

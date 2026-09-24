@@ -347,7 +347,7 @@ const AppSettings = (function () {
         <div class="sidebar-sections-container">
 
           <!-- Categoria: Panoramica -->
-          <div class="sidebar-category">
+          <div class="sidebar-category" id="sidebar-cat-main">
             <div class="sidebar-category-header">
               <span class="sidebar-category-label" data-i18n="sidebar_cat_main">Panoramica</span>
             </div>
@@ -363,7 +363,7 @@ const AppSettings = (function () {
           </div>
 
           <!-- Categoria: Identità & Utenti -->
-          <div class="sidebar-category">
+          <div class="sidebar-category" id="sidebar-cat-users">
             <div class="sidebar-category-header">
               <span class="sidebar-category-label" data-i18n="sidebar_cat_identity">Identità & Utenti</span>
             </div>
@@ -379,7 +379,7 @@ const AppSettings = (function () {
           </div>
 
           <!-- Categoria: Ruoli & Permessi -->
-          <div class="sidebar-category">
+          <div class="sidebar-category" id="sidebar-cat-roles">
             <div class="sidebar-category-header">
               <span class="sidebar-category-label" data-i18n="sidebar_cat_roles">Ruoli & Permessi</span>
             </div>
@@ -395,7 +395,7 @@ const AppSettings = (function () {
           </div>
 
           <!-- Categoria: Applicazioni & Client -->
-          <div class="sidebar-category">
+          <div class="sidebar-category" id="sidebar-cat-clients">
             <div class="sidebar-category-header">
               <span class="sidebar-category-label" data-i18n="sidebar_cat_apps">Applicazioni & Client</span>
             </div>
@@ -411,7 +411,7 @@ const AppSettings = (function () {
           </div>
 
           <!-- Categoria: Comunicazioni -->
-          <div class="sidebar-category">
+          <div class="sidebar-category" id="sidebar-cat-emails">
             <div class="sidebar-category-header">
               <span class="sidebar-category-label" data-i18n="sidebar_cat_comms">Comunicazioni</span>
             </div>
@@ -427,7 +427,7 @@ const AppSettings = (function () {
           </div>
 
           <!-- Categoria: Sistema & Risorse -->
-          <div class="sidebar-category">
+          <div class="sidebar-category" id="sidebar-cat-system">
             <div class="sidebar-category-header">
               <span class="sidebar-category-label" data-i18n="sidebar_cat_system">Sistema & Risorse</span>
             </div>
@@ -464,6 +464,9 @@ const AppSettings = (function () {
             }
             if (typeof translateDOM === "function") {
                 translateDOM(sidebar);
+            }
+            if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+                AccessControl.applyUIPermissions(sidebar);
             }
         }
     }

@@ -250,7 +250,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
 
         <!-- Card 1: Utenti Totali -->
-        <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div id="kpi-card-users" class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
                       data-i18n="dash_card_users_title">Utenti IAM</span>
@@ -277,7 +277,7 @@
         </div>
 
         <!-- Card 2: Client OAuth2 -->
-        <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div id="kpi-card-clients" class="m3-bento-card p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
                       data-i18n="dash_card_clients_title">Client OAuth 2.0</span>
@@ -369,7 +369,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
             <!-- ================= HERO CARD 1: IAM & GESTIONE UTENTI ================= -->
-            <div onclick="switchDashboardView('users')"
+            <div id="hub-card-users" onclick="switchDashboardView('users')"
                  class="hub-hero-card hub-card-users p-8 flex flex-col justify-between cursor-pointer">
                 <div>
                     <!-- Header Card -->
@@ -423,7 +423,7 @@
             </div>
 
             <!-- ================= HERO CARD 2: CLIENT OAUTH 2.0 ================= -->
-            <div onclick="switchDashboardView('clients')"
+            <div id="hub-card-clients" onclick="switchDashboardView('clients')"
                  class="hub-hero-card hub-card-clients p-8 flex flex-col justify-between cursor-pointer">
                 <div>
                     <!-- Header Card -->
@@ -527,7 +527,7 @@
         </div>
 
         <!-- Quick Switch to Clients Bento Card -->
-        <div onclick="switchDashboardView('clients')"
+        <div id="quick-switch-clients" onclick="switchDashboardView('clients')"
              class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-purple-400/50">
             <div>
                 <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="nav_clients">Client OAuth2</span>
@@ -637,7 +637,7 @@
         </div>
 
         <!-- Quick Switch to Users Bento Card -->
-        <div onclick="switchDashboardView('users')"
+        <div id="quick-switch-users" onclick="switchDashboardView('users')"
              class="m3-card p-6 flex items-center justify-between text-decoration-none group cursor-pointer hover:border-emerald-400/50">
             <div>
                 <span class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="hub_users_title">Gestione Utenti</span>
@@ -1262,7 +1262,7 @@
         </div>
 
         <!-- ================= CARD 5: BACKUP & RIPRISTINO ================= -->
-        <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div id="settings-card-backup" class="m3-bento-card p-6 flex flex-col justify-between">
             <div>
                 <div class="flex items-start gap-3.5 mb-4">
                     <div class="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-base shrink-0 aspect-square settings-card-icon">
@@ -1660,6 +1660,16 @@
     }
 
     function switchDashboardView(viewName, pushState = true) {
+        if (typeof AccessControl !== "undefined") {
+            if (viewName === "clients" && !AccessControl.canViewClients()) {
+                viewName = AccessControl.canViewUsers() ? "users" : "dashboard";
+            } else if (viewName === "users" && !AccessControl.canViewUsers()) {
+                viewName = AccessControl.canViewClients() ? "clients" : "dashboard";
+            } else if (viewName === "settings" && !AccessControl.canViewSettings()) {
+                viewName = "dashboard";
+            }
+        }
+
         if (typeof scrollToTop === "function") {
             scrollToTop("instant");
         } else {
@@ -1801,11 +1811,11 @@
             if (viewName === "clients") {
                 sidebarPrimaryAction.href = "/app/clients/register";
                 sidebarPrimaryAction.innerHTML = '<i class="fa-solid fa-plus"></i> <span class="sidebar-label" data-i18n="btn_new_client">Nuovo Client</span>';
-                sidebarPrimaryAction.style.display = "flex";
+                sidebarPrimaryAction.style.display = (typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? "flex" : "none";
             } else if (viewName === "users") {
                 sidebarPrimaryAction.href = "/app/users/register";
                 sidebarPrimaryAction.innerHTML = '<i class="fa-solid fa-user-plus"></i> <span class="sidebar-label" data-i18n="btn_new_user">Nuovo Utente</span>';
-                sidebarPrimaryAction.style.display = "flex";
+                sidebarPrimaryAction.style.display = (typeof AccessControl === "undefined" || AccessControl.canManageUsers()) ? "flex" : "none";
             } else {
                 sidebarPrimaryAction.style.display = "none";
             }
@@ -1820,6 +1830,10 @@
                 settings: (typeof t === "function" ? t("nav_settings", "Impostazioni") : "Impostazioni")
             };
             AppSettings.updateHeaderBreadcrumb(breadcrumbMap[viewName] || "Panoramica");
+        }
+
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions();
         }
 
         setTimeout(() => {
@@ -2375,9 +2389,12 @@
             }
         }
 
-        // 3. Orologio e Session info
+        // 3. Orologio, Session info e Controllo Accessi UI
         updateClock();
         fetchSessionInfo();
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions();
+        }
 
         // 4. Attivazione istantanea della vista corretta in base alla URL
         const path = window.location.pathname;
@@ -2390,6 +2407,10 @@
             switchDashboardView("settings", false);
         } else {
             switchDashboardView("dashboard", false);
+        }
+
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions();
         }
 
         if (typeof disableLoader === "function") {

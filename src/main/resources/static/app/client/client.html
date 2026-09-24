@@ -341,6 +341,9 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         loadClientDetails();
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions();
+        }
     });
 
     window.addEventListener("languageChanged", () => {
@@ -350,6 +353,11 @@
     });
 
     function loadClientDetails() {
+        if (typeof AccessControl !== "undefined" && !AccessControl.canViewClients()) {
+            sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.");
+            setTimeout(() => { window.location.href = "/app"; }, 1500);
+            return;
+        }
         const path = window.location.href;
         let clientId = null;
         if (path.includes("details/")) {
@@ -506,20 +514,24 @@
 
               <!-- BOTTONI AZIONE -->
               <div class="space-y-2.5 w-full">
+                ${(typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? `
                 <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-btn-primary w-full justify-center text-xs font-bold text-decoration-none flex items-center gap-2 shadow-lg">
                   <i class="fa-solid fa-pen-to-square"></i>
                   <span>${typeof t === 'function' ? t('client_detail_edit_all_btn', 'Modifica Tutte le Impostazioni') : 'Modifica Tutte le Impostazioni'}</span>
                 </a>
+                ` : ""}
                 
                 <button onclick="copyFullConfigJson()" class="m3-btn-outline w-full justify-center text-xs flex items-center gap-2">
                   <i class="fa-solid fa-code"></i>
                   <span>${typeof t === 'function' ? t('client_detail_copy_json_btn', 'Copia Configurazione JSON') : 'Copia Configurazione JSON'}</span>
                 </button>
 
+                ${(typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? `
                 <button onclick="deleteClientAction('${c.clientId}')" class="w-full text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all mt-2" style="border-radius: 9999px !important; color: #FFFFFF !important; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); padding: 10px 18px;">
                   <i class="fa-solid fa-trash text-xs" style="color: #F87171;"></i>
                   <span>${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client OAuth2') : 'Elimina Client OAuth2'}</span>
                 </button>
+                ` : ""}
               </div>
             </div>
 
@@ -806,6 +818,10 @@
     }
 
     function deleteClientAction(clientId) {
+        if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+            sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+            return;
+        }
         Swal.fire({
             title: (typeof t === 'function' ? t("swal_delete_client_title", "Sei sicuro?") : "Sei sicuro?"),
             text: (typeof t === 'function' ? t("swal_delete_client_desc", `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`).replace("#CLIENT_ID#", clientId) : `Vuoi davvero eliminare il client ${clientId}? L'operazione è irreversibile!`),

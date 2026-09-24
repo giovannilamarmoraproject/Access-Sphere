@@ -73,6 +73,10 @@ function refreshClients() {
 }
 
 function getClients() {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canViewClients()) {
+    console.warn("AccessControl: Permission denied for viewing clients.");
+    return Promise.resolve();
+  }
   const cfg = getConfig();
   const token = getCookieOrStorage(cfg.access_token);
   const url = cfg.client_id_url || (window.location.origin + "/v1/clients");
@@ -186,12 +190,14 @@ function displayClientsTable(clients) {
       <td>${redirectPreview}</td>
       <td>${mfaBadge}</td>
       <td class="text-center">
-        <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-action-btn m3-action-edit" title="${typeof t === 'function' ? t('client_edit_page_title', 'Modifica Client') : 'Modifica Client'}">
-          <i class="fa-solid fa-pen-to-square text-xs"></i>
-        </a>
-        <button onclick="deleteClientAction('${c.clientId}')" class="m3-action-btn m3-action-delete" title="${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client') : 'Elimina Client'}">
-          <i class="fa-solid fa-trash text-xs"></i>
-        </button>
+        ${(typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? `
+          <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-action-btn m3-action-edit" title="${typeof t === 'function' ? t('client_edit_page_title', 'Modifica Client') : 'Modifica Client'}">
+            <i class="fa-solid fa-pen-to-square text-xs"></i>
+          </a>
+          <button onclick="deleteClientAction('${c.clientId}')" class="m3-action-btn m3-action-delete" title="${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client') : 'Elimina Client'}">
+            <i class="fa-solid fa-trash text-xs"></i>
+          </button>
+        ` : `<span class="text-xs text-gray-500 font-mono">-</span>`}
       </td>
     `;
     tbody.appendChild(tr);
@@ -228,6 +234,10 @@ function displayClientsTable(clients) {
 }
 
 function openClientModal(client = null) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+    return;
+  }
   isEditMode = !!client;
   document.getElementById("modal-action-title").innerText = isEditMode
     ? (typeof t === "function" ? t("client_modal_edit_title", "Modifica Client OAuth2") : "Modifica Client OAuth2")
@@ -322,6 +332,10 @@ function saveClient() {
 }
 
 function deleteClientAction(clientId) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+    return;
+  }
   const confirmText = (typeof t === "function" ? t("swal_delete_client_desc", `Vuoi davvero eliminare il client ${clientId}? Questa azione è irreversibile!`) : `Vuoi davvero eliminare il client ${clientId}? Questa azione è irreversibile!`).replace("#CLIENT_ID#", clientId);
   Swal.fire({
     title: (typeof t === "function" ? t("swal_delete_client_title", "Sei sicuro?") : "Sei sicuro?"),
@@ -384,11 +398,16 @@ function viewClientDetails(clientId) {
   // Store current client id on edit button inside detail modal
   const editBtn = document.getElementById("detail-editBtn");
   if (editBtn) {
-    editBtn.onclick = () => {
-      const modal = bootstrap.Modal.getInstance(detailModalEl);
-      if (modal) modal.hide();
-      setTimeout(() => openClientModal(client), 300);
-    };
+    if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+      editBtn.style.setProperty("display", "none", "important");
+    } else {
+      editBtn.style.removeProperty("display");
+      editBtn.onclick = () => {
+        const modal = bootstrap.Modal.getInstance(detailModalEl);
+        if (modal) modal.hide();
+        setTimeout(() => openClientModal(client), 300);
+      };
+    }
   }
 
   const modal = new bootstrap.Modal(detailModalEl);

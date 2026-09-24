@@ -1,4 +1,10 @@
 function getUser() {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
+    console.warn("AccessControl: Permission denied for viewing user details.");
+    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.");
+    setTimeout(() => { window.location.href = "/app"; }, 1500);
+    return;
+  }
   const urlParams = window.location.href;
   let identifier = null;
   if (urlParams.includes("details/")) {
@@ -270,6 +276,10 @@ function displayUserData(user) {
     return;
   }
 
+  const canManageUsers = typeof AccessControl === "undefined" || AccessControl.canManageUsers();
+  const canManageRoles = typeof AccessControl === "undefined" || AccessControl.canManageRoles();
+  const canDeleteUsers = typeof AccessControl === "undefined" || AccessControl.canDeleteUsers();
+
   const photo = getOrDefault(user.profilePhoto, "https://bootdey.com/img/Content/avatar/avatar7.png");
   const isBlocked = !!user.blocked;
   const isConfirmed = user.confirmed !== false;
@@ -346,14 +356,16 @@ function displayUserData(user) {
             </div>
 
             <div class="flex items-center justify-end gap-2.5">
-              ${m.confirmed === false ? `
+              ${(canManageUsers && m.confirmed === false) ? `
                 <button type="button" onclick="finishMfaVerification('${user.identifier}', '${(m.label || '').replace(/'/g, "\\'")}', '${m.type || 'totp'}')" class="m3-btn-primary text-xs py-1.5 px-3.5 flex items-center gap-1.5 shadow-md cursor-pointer" style="border-radius: 9999px !important; color: #FFFFFF !important;" title="Inserisci il codice OTP per completare la verifica">
                   <i class="fa-solid fa-circle-check text-xs"></i> <span>${typeof t === 'function' ? t("user_detail_complete_verify", "Completa Verifica") : "Completa Verifica"}</span>
                 </button>
               ` : ''}
+              ${canManageUsers ? `
               <button type="button" onclick="deleteMfaMethod('${user.identifier}', '${(m.label || '').replace(/'/g, "\\'")}')" class="m3-icon-btn m3-icon-btn-danger" title="Elimina Metodo MFA">
                 <i class="fa-solid fa-trash text-xs"></i>
               </button>
+              ` : ''}
             </div>
           </div>
         `).join("")}
@@ -365,9 +377,11 @@ function displayUserData(user) {
         <i class="fa-solid fa-shield-virus text-3xl mb-2 block" style="color: var(--theme-accent, #A855F7); opacity: 0.5;"></i>
         <p class="text-sm text-gray-300 font-medium m-0">${typeof t === 'function' ? t("user_detail_no_mfa", "Nessun metodo di autenticazione a due fattori configurato.") : "Nessun metodo di autenticazione a due fattori configurato."}</p>
         <p class="text-xs text-gray-400 mt-1 mb-4">${typeof t === 'function' ? t("user_detail_no_mfa_desc", "Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account.") : "Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account."}</p>
+        ${canManageUsers ? `
         <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-5 inline-flex items-center gap-2 text-decoration-none shadow-md" style="border-radius: 9999px !important; color: #FFFFFF !important;">
           <i class="fa-solid fa-qrcode"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_setup_mfa", "Configura MFA Ora") : "Configura MFA Ora"}</span>
         </a>
+        ` : ''}
       </div>
     `;
   }
@@ -408,19 +422,25 @@ function displayUserData(user) {
         </div>
 
         <!-- Bottoni Azione M3: Tutti Arrotondati (Pill), Testo Bianco, Stesso Font Size e Spessore identici -->
+        ${(canManageUsers || canManageRoles || canDeleteUsers) ? `
         <div class="space-y-2.5 w-full">
+          ${canManageUsers ? `
           <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-primary m3-action-pill w-full justify-center py-2.5 px-4 text-decoration-none shadow-lg hover:brightness-110 transition-all" style="border-radius: 9999px !important; color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">
             <i class="fa-solid fa-user-pen text-sm"></i>
             <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_edit_profile", "Modifica Profilo") : "Modifica Profilo"}</span>
           </a>
+          ` : ''}
           
-          <div class="grid grid-cols-2 gap-2.5 w-full">
+          ${(canManageRoles || canManageUsers) ? `
+          <div class="grid ${(canManageRoles && canManageUsers) ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 w-full">
+            ${canManageRoles ? `
             <a href="/app/users/roles/${encodeURIComponent(user.identifier)}" class="m3-action-pill py-2.5 px-3 text-center text-decoration-none shadow-sm hover:brightness-110 transition-all" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18); color: #FFFFFF !important; border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;">
               <i class="fa-solid fa-shield-halved text-sm" style="color: var(--theme-accent, #D0BCFF);"></i>
               <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_roles_btn", "Ruoli") : "Ruoli"}</span>
             </a>
+            ` : ''}
             
-            ${isBlocked ? `
+            ${canManageUsers ? (isBlocked ? `
               <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', false)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(16, 185, 129, 0.18); color: #FFFFFF !important; border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_unlock_btn", "Sblocca") : "Sblocca"}">
                 <i class="fa-solid fa-lock-open text-sm" style="color: #6EE7B7;"></i>
                 <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_unlock_btn", "Sblocca") : "Sblocca"}</span>
@@ -430,14 +450,18 @@ function displayUserData(user) {
                 <i class="fa-solid fa-lock text-sm" style="color: #FCD34D;"></i>
                 <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_lock_btn", "Blocca") : "Blocca"}</span>
               </button>
-            `}
+            `) : ''}
           </div>
+          ` : ''}
 
+          ${canDeleteUsers ? `
           <button onclick="deleteUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}')" class="m3-action-pill w-full py-2.5 px-4 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(239, 68, 68, 0.15); color: #FFFFFF !important; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}">
             <i class="fa-solid fa-trash text-sm" style="color: #F87171;"></i>
             <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}</span>
           </button>
+          ` : ''}
         </div>
+        ` : ''}
 
       </div>
 
@@ -527,6 +551,7 @@ function displayUserData(user) {
                 ? `<span class="px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35);">${typeof t === 'function' ? t("user_detail_active_f", "ATTIVA") : "ATTIVA"}</span>`
                 : `<span class="px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0" style="background: rgba(255, 255, 255, 0.08); color: #9CA3AF; border: 1px solid rgba(255, 255, 255, 0.15);">${typeof t === 'function' ? t("user_detail_disabled_f", "DISATTIVATA") : "DISATTIVATA"}</span>`}
             </div>
+            ${canManageUsers ? `
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               ${isMfaActive ? `
                 <button type="button" onclick="toggleMfaStatus('${user.identifier}', false)" class="m3-btn-outline m3-btn-warning-outline text-xs cursor-pointer justify-center flex items-center gap-1.5 py-2 px-3.5" title="${typeof t === 'function' ? t("user_detail_disable_mfa", "Disattiva MFA") : "Disattiva MFA"}">
@@ -541,6 +566,7 @@ function displayUserData(user) {
                 <i class="fa-solid fa-plus text-xs"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_config_method", "Configura Metodo") : "Configura Metodo"}</span>
               </a>
             </div>
+            ` : ''}
           </div>
 
           <!-- Elenco Metodi MFA Configurati -->
@@ -553,9 +579,11 @@ function displayUserData(user) {
             <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
               <i class="fa-solid fa-sliders" style="color: var(--theme-accent, #A855F7);"></i> ${typeof t === 'function' ? t("user_detail_custom_attributes", "Attributi Personalizzati") : "Attributi Personalizzati"}
             </h4>
+            ${canManageUsers ? `
             <a href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-outline text-xs w-full sm:w-auto justify-center py-2 px-3.5 text-decoration-none" style="color: var(--theme-accent, #D0BCFF) !important; border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;">
               <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_edit_attributes", "Modifica Attributi") : "Modifica Attributi"}</span>
             </a>
+            ` : ''}
           </div>
           <div>
             ${attributesHtml}
@@ -566,9 +594,17 @@ function displayUserData(user) {
 
     </div>
   `;
+
+  if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+    AccessControl.applyUIPermissions(container);
+  }
 }
 
 function toggleBlockUser(identifier, username, block) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+    return;
+  }
   const actionTitle = block 
     ? (typeof t === 'function' ? t("swal_user_blocked_title", "Conferma Blocco") : "Conferma Blocco") 
     : (typeof t === 'function' ? t("swal_user_unblocked_title", "Conferma Sblocco") : "Conferma Sblocco");
@@ -700,6 +736,10 @@ function formatMfaLabel(label) {
 }
 
 function toggleMfaStatus(identifier, enable) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+    return;
+  }
   const title = enable 
     ? (typeof t === "function" ? t("swal_enable_mfa_title", "Attiva Autenticazione a Due Fattori") : "Attiva Autenticazione a Due Fattori")
     : (typeof t === "function" ? t("swal_disable_mfa_title", "Disattiva Autenticazione a Due Fattori") : "Disattiva Autenticazione a Due Fattori");
@@ -771,6 +811,10 @@ function toggleMfaStatus(identifier, enable) {
 }
 
 function deleteMfaMethod(identifier, label) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canManageUsers()) {
+    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+    return;
+  }
   const formattedLabel = formatMfaLabel(label);
   const title = (typeof t === "function" ? t("swal_delete_mfa_title", "Elimina Metodo MFA") : "Elimina Metodo MFA");
   const text = (typeof t === "function" ? t("swal_delete_mfa_desc", `Sei sicuro di voler eliminare il metodo "${formattedLabel}"? Se non rimangono altri metodi configurati, l'MFA verrà automaticamente disattivata.`).replace("#LABEL#", formattedLabel) : `Sei sicuro di voler eliminare il metodo "${formattedLabel}"? Se non rimangono altri metodi configurati, l'MFA verrà automaticamente disattivata.`);

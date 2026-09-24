@@ -112,6 +112,9 @@ const EMAIL_CATEGORIES = {
 document.addEventListener("DOMContentLoaded", () => {
     initClock();
     checkAuthAndLoad();
+    if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+        AccessControl.applyUIPermissions();
+    }
 });
 
 // Ascolta l'evento di cambio lingua globale per aggiornare istantaneamente la vista
@@ -135,6 +138,13 @@ function initClock() {
 }
 
 function checkAuthAndLoad() {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canViewEmails()) {
+        console.warn("AccessControl: Permission denied for viewing email templates.");
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.");
+        setTimeout(() => { window.location.href = "/app"; }, 1500);
+        return;
+    }
+
     const cfg = typeof getConfig === "function" ? getConfig() : null;
     const tokenKey = cfg ? cfg.access_token : "access-token";
     const token = typeof getCookieOrStorage === "function" ? getCookieOrStorage(tokenKey) : localStorage.getItem(tokenKey);
@@ -397,9 +407,11 @@ function renderTemplatesList(templates) {
         <p class="text-gray-400 text-sm max-w-md mx-auto mb-5">
           ${emptyDesc}
         </p>
-        <button onclick="openCreateTemplateModal()" class="m3-btn-primary">
+        ${(typeof AccessControl === "undefined" || AccessControl.canManageEmails()) ? `
+        <button id="btn-create-template-empty" data-require-action="manage-emails" onclick="openCreateTemplateModal()" class="m3-btn-primary">
           <i class="fa-solid fa-plus mr-1.5"></i> ${btnNew}
         </button>
+        ` : ""}
       </div>
     `;
         return;
@@ -471,6 +483,7 @@ function renderTemplatesList(templates) {
           <button type="button" onclick="event.stopPropagation(); openEmailDetailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="${lblDetail}">
             <i class="fa-solid fa-eye text-emerald-400 mr-1.5"></i> ${lblDetail}
           </button>
+          ${(typeof AccessControl === "undefined" || AccessControl.canManageEmails()) ? `
           <button type="button" onclick="event.stopPropagation(); openTestEmailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="${lblTestSend}">
             <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> ${lblTestSend}
           </button>
@@ -480,6 +493,7 @@ function renderTemplatesList(templates) {
           <button type="button" onclick="event.stopPropagation(); confirmDeleteTemplate(${item.id}, '${escapeHtml(item.identifier)}')" class="m3-icon-btn m3-icon-btn-danger text-xs" title="${lblDeleteTitle}">
             <i class="fa-solid fa-trash-can"></i>
           </button>
+          ` : ""}
         </div>
 
       </div>
@@ -488,6 +502,10 @@ function renderTemplatesList(templates) {
 
     html += `</div>`;
     container.innerHTML = html;
+
+    if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+        AccessControl.applyUIPermissions(container);
+    }
 }
 
 function getCategoryBadgeHtml(catKey) {
@@ -916,6 +934,10 @@ function checkDuplicateConflictDebounced() {
 }
 
 function openCreateTemplateModal() {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+        return;
+    }
     const cfg = typeof getConfig === "function" ? getConfig() : null;
     const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-TECH";
 
@@ -1068,6 +1090,10 @@ function openCreateTemplateModal() {
 }
 
 function openEditTemplateModal(id) {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+        return;
+    }
     const template = cachedTemplates.find((t) => t.id === id);
     if (!template) {
         sweetalert("error", typeof t === "function" ? t("error", "Errore") : "Errore", typeof t === "function" ? t("email_swal_load_error_desc", "Template non trovato in memoria locale.") : "Template non trovato in memoria locale.");
@@ -1230,6 +1256,10 @@ function saveTemplateForm() {
 // =========================================================================
 
 function openTestEmailModal(id) {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+        return;
+    }
     const template = cachedTemplates.find((t) => t.id === id);
     if (!template) {
         sweetalert("error", typeof t === "function" ? t("error", "Errore") : "Errore", typeof t === "function" ? t("email_swal_load_error_desc", "Template non trovato per il test.") : "Template non trovato per il test.");
@@ -1508,24 +1538,35 @@ function openEmailDetailModal(id) {
     }
 
     // 5. Interconnessione pulsanti azione rapida dell'header del dettaglio
+    const canManageEmails = typeof AccessControl === "undefined" || AccessControl.canManageEmails();
     const btnTest = document.getElementById("btn-detail-test-send");
     if (btnTest) {
-        btnTest.onclick = () => {
-            const modalEl = document.getElementById("emailDetailModal");
-            const modalInst = bootstrap.Modal.getInstance(modalEl);
-            if (modalInst) modalInst.hide();
-            openTestEmailModal(template.id);
-        };
+        if (!canManageEmails) {
+            btnTest.style.setProperty("display", "none", "important");
+        } else {
+            btnTest.style.removeProperty("display");
+            btnTest.onclick = () => {
+                const modalEl = document.getElementById("emailDetailModal");
+                const modalInst = bootstrap.Modal.getInstance(modalEl);
+                if (modalInst) modalInst.hide();
+                openTestEmailModal(template.id);
+            };
+        }
     }
 
     const btnEdit = document.getElementById("btn-detail-edit");
     if (btnEdit) {
-        btnEdit.onclick = () => {
-            const modalEl = document.getElementById("emailDetailModal");
-            const modalInst = bootstrap.Modal.getInstance(modalEl);
-            if (modalInst) modalInst.hide();
-            openEditTemplateModal(template.id);
-        };
+        if (!canManageEmails) {
+            btnEdit.style.setProperty("display", "none", "important");
+        } else {
+            btnEdit.style.removeProperty("display");
+            btnEdit.onclick = () => {
+                const modalEl = document.getElementById("emailDetailModal");
+                const modalInst = bootstrap.Modal.getInstance(modalEl);
+                if (modalInst) modalInst.hide();
+                openEditTemplateModal(template.id);
+            };
+        }
     }
 
     // 6. Reset viewport e rendering dell'anteprima
@@ -1611,6 +1652,10 @@ function openQuickPreview(id) {
 }
 
 function confirmDeleteTemplate(id, identifier) {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+        return;
+    }
     const titleText = typeof t === "function" ? t("email_swal_delete_confirm_title", "Eliminare il Template?") : "Eliminare il Template?";
     const descText = typeof t === "function" ? t("email_swal_delete_confirm_desc", `L'eliminazione del template [${identifier}] è irreversibile. Procedere?`) : `L'eliminazione del template [${identifier}] è irreversibile. Procedere?`;
     const confirmBtn = typeof t === "function" ? t("delete", "Sì, elimina") : "Sì, elimina";
