@@ -406,7 +406,7 @@
 
             <!-- Contextual Primary Action Button -->
             <button onclick="openRoleModal('create')" class="m3-btn-primary ml-2">
-                <i class="fa-solid fa-plus"></i> <span data-i18n="btn_create_role">Nuovo Ruolo</span>
+                <i class="fa-solid fa-plus"></i> <span data-i18n="btn_create_role" class="hidden sm:inline">Nuovo Ruolo</span>
             </button>
 
             <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout"
@@ -438,28 +438,28 @@
             </div>
 
             <!-- System Clock & Status Pill -->
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-purple-950/40 p-4 rounded-2xl border border-purple-500/20 shrink-0">
+            <div class="flex flex-row items-center justify-between w-full lg:w-auto gap-4 bg-purple-950/40 p-3.5 sm:p-4 rounded-2xl border border-purple-500/20 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300">
-                        <i class="fa-solid fa-clock text-base"></i>
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300">
+                        <i class="fa-solid fa-clock text-sm sm:text-base"></i>
                     </div>
                     <div>
-                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_system_clock">
+                        <div class="text-[10px] sm:text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_system_clock">
                             Orario Sistema
                         </div>
-                        <div id="live-clock" class="text-white font-mono font-bold text-sm">--:--:--</div>
+                        <div id="live-clock" class="text-white font-mono font-bold text-xs sm:text-sm">--:--:--</div>
                     </div>
                 </div>
-                <div class="hidden sm:block h-8 w-px bg-purple-500/20"></div>
+                <div class="h-8 w-px bg-purple-500/20"></div>
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300">
-                        <i class="fa-solid fa-signal text-base"></i>
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300">
+                        <i class="fa-solid fa-signal text-sm sm:text-base"></i>
                     </div>
                     <div>
-                        <div class="text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_service_status">
+                        <div class="text-[10px] sm:text-[11px] text-gray-400 uppercase font-semibold" data-i18n="dash_service_status">
                             Stato Servizi
                         </div>
-                        <div class="text-emerald-300 font-semibold text-sm flex items-center gap-1.5">
+                        <div class="text-emerald-300 font-semibold text-xs sm:text-sm flex items-center gap-1.5">
                             <i class="fa-solid fa-check-circle text-xs"></i> <span data-i18n="dash_status_operational">Operativo</span>
                         </div>
                     </div>
@@ -469,10 +469,10 @@
     </div>
 
     <!-- Bento Grid dei KPI (Rule 4.2 compliant: NO data-i18n on dynamically populated spans) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
 
         <!-- KPI 1: Ruoli Configurati -->
-        <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div class="m3-bento-card p-4 sm:p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="roles_kpi_total_roles">Ruoli Configurati</span>
                 <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300">
@@ -489,7 +489,7 @@
         </div>
 
         <!-- KPI 2: Client Connessi -->
-        <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div class="m3-bento-card p-4 sm:p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="roles_kpi_clients_count">Client Collegati</span>
                 <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center text-blue-300">
@@ -506,7 +506,7 @@
         </div>
 
         <!-- KPI 3: Assegnazioni Utente -->
-        <div class="m3-bento-card p-6 flex flex-col justify-between">
+        <div class="m3-bento-card p-4 sm:p-6 flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider" data-i18n="roles_kpi_assignments">Assegnazioni Utente</span>
                 <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300">
@@ -526,10 +526,10 @@
 
     <!-- Filter & Search Toolbar -->
     <div class="m3-bento-card p-4 sm:p-5 mb-8">
-        <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4">
 
             <!-- Search Bar -->
-            <div class="relative flex-1 min-w-[260px]">
+            <div class="relative flex-1 w-full">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                 <input type="search" id="role-search-input"
                        class="w-full pl-11 pr-4 py-2.5 rounded-full bg-white/5 border border-white/10 text-white placeholder-gray-400 text-sm focus:outline-none focus:border-purple-400/60 focus:ring-2 focus:ring-purple-400/20 transition-all"
@@ -538,11 +538,11 @@
                        oninput="handleRoleFilterChange()"/>
             </div>
 
-            <!-- Filters & Actions -->
-            <div class="flex flex-wrap items-center gap-3">
+            <!-- Filters & Actions (Responsive 2-col on mobile, inline on desktop) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center gap-3 w-full lg:w-auto">
 
                 <!-- Client Selector Filter -->
-                <div class="relative min-w-[190px]">
+                <div class="relative w-full lg:min-w-[190px]">
                     <select id="filter-client-select" onchange="handleRoleFilterChange()"
                             class="w-full appearance-none pl-4 pr-10 py-2.5 rounded-full bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all cursor-pointer">
                         <option value="" class="bg-gray-900 text-white" data-i18n="roles_filter_all_clients">Tutti i Client OAuth2</option>
@@ -551,7 +551,7 @@
                 </div>
 
                 <!-- Type Selector Filter -->
-                <div class="relative min-w-[150px]">
+                <div class="relative w-full lg:min-w-[150px]">
                     <select id="filter-type-select" onchange="handleRoleFilterChange()"
                             class="w-full appearance-none pl-4 pr-10 py-2.5 rounded-full bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all cursor-pointer">
                         <option value="" class="bg-gray-900 text-white" data-i18n="roles_filter_all_types">Tutti i Tipi</option>
@@ -600,32 +600,32 @@
              style="background: var(--theme-surface, #0E0B16);">
 
             <!-- Header Modale Fullscreen -->
-            <div class="modal-header theme-modal-header px-4 sm:px-8 py-4 flex items-center justify-between backdrop-blur-md gap-4 border-b border-purple-500/20">
-                <div class="flex items-center gap-3.5 min-w-0 flex-1">
-                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300 border border-purple-500/30 shrink-0">
-                        <i id="roleModalIcon" class="fa-solid fa-shield-plus text-base"></i>
+            <div class="modal-header theme-modal-header px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between backdrop-blur-md gap-3 sm:gap-4 border-b border-purple-500/20">
+                <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300 border border-purple-500/30 shrink-0">
+                        <i id="roleModalIcon" class="fa-solid fa-shield-plus text-sm sm:text-base"></i>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h5 class="modal-title font-bold text-lg text-white mb-0 truncate" id="roleModalLabel"
+                        <h5 class="modal-title font-bold text-base sm:text-lg text-white mb-0 truncate" id="roleModalLabel"
                             data-i18n="roles_modal_create_title">
                             Nuovo Ruolo Applicativo
                         </h5>
                         <p class="text-xs text-gray-400 mb-0 truncate hidden sm:block" id="roleModalSubtitle"
-                           data-i18n="roles_modal_subtitle">
+                            data-i18n="roles_modal_subtitle">
                             Definisci privilegi, ambito client e autorizzazioni granulari per l'applicazione
                         </p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2.5 shrink-0">
-                    <button type="button" class="m3-btn-secondary py-2 px-4 text-xs"
+                <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                    <button type="button" class="m3-btn-secondary py-1.5 px-3 sm:py-2 sm:px-4 text-xs"
                             data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark mr-1"></i> <span data-i18n="btn_cancel">Annulla</span>
+                        <i class="fa-solid fa-xmark mr-0 sm:mr-1"></i> <span data-i18n="btn_cancel" class="hidden sm:inline">Annulla</span>
                     </button>
-                    <button type="button" id="btnSaveRole" onclick="saveRole()" class="m3-btn-primary py-2 px-5 text-xs">
-                        <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="btn_save_role">Salva Ruolo</span>
+                    <button type="button" id="btnSaveRole" onclick="saveRole()" class="m3-btn-primary py-1.5 px-3.5 sm:py-2 sm:px-5 text-xs">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> <span data-i18n="btn_save_role">Salva</span>
                     </button>
-                    <button type="button" class="m3-icon-btn shrink-0 ml-1" data-bs-dismiss="modal" aria-label="Chiudi"
+                    <button type="button" class="m3-icon-btn shrink-0 ml-1 hidden sm:inline-flex" data-bs-dismiss="modal" aria-label="Chiudi"
                             title="Chiudi">
                         <i class="fa-solid fa-xmark text-sm"></i>
                     </button>
@@ -633,11 +633,11 @@
             </div>
 
             <!-- Body Modale Fullscreen: Split-View su due colonne -->
-            <div class="modal-body p-0 overflow-y-auto lg:overflow-hidden">
+            <div class="modal-body p-0 overflow-y-auto lg:overflow-hidden pb-20 lg:pb-0">
                 <div class="grid grid-cols-1 lg:grid-cols-12 h-auto lg:h-[calc(100vh-73px)]">
 
                     <!-- Colonna Sinistra (Col 5): Configurazione Principale -->
-                    <div class="lg:col-span-5 p-6 sm:p-8 overflow-y-auto lg:h-[calc(100vh-73px)] border-b lg:border-b-0 lg:border-r border-purple-500/15 space-y-6">
+                    <div class="lg:col-span-5 p-4 sm:p-8 overflow-y-auto lg:h-[calc(100vh-73px)] border-b lg:border-b-0 lg:border-r border-purple-500/15 space-y-5 sm:space-y-6">
 
                         <!-- Client Selector -->
                         <div>
@@ -809,7 +809,7 @@
                     </div>
 
                     <!-- Colonna Destra (Col 7): Permessi Granulari & Live Preview -->
-                    <div class="lg:col-span-7 p-6 sm:p-8 overflow-y-auto lg:h-[calc(100vh-73px)] space-y-6">
+                    <div class="lg:col-span-7 p-4 sm:p-8 overflow-y-auto lg:h-[calc(100vh-73px)] space-y-5 sm:space-y-6">
 
                         <!-- Sezione Permessi Header -->
                         <div>
@@ -818,17 +818,17 @@
                         </div>
 
                         <!-- Wildcard Toggle Banner M3 (Redesigned) -->
-                        <label for="modalPermissionWildcard" class="m3-wildcard-card flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all gap-4">
-                            <div class="flex items-center gap-3.5 min-w-0 flex-1">
-                                <div class="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/25 flex items-center justify-center text-purple-300 shrink-0 shadow-sm">
-                                    <i class="fa-solid fa-asterisk text-base"></i>
+                        <label for="modalPermissionWildcard" class="m3-wildcard-card flex items-center justify-between p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all gap-3 sm:gap-4">
+                            <div class="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
+                                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-purple-500/10 border border-purple-500/25 flex items-center justify-center text-purple-300 shrink-0 shadow-sm">
+                                    <i class="fa-solid fa-asterisk text-sm sm:text-base"></i>
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-mono font-bold text-white text-sm truncate" data-i18n="roles_modal_wildcard_label">* (Accesso Globale / Wildcard)</span>
-                                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">Full Access</span>
+                                    <div class="flex items-center flex-wrap sm:flex-nowrap gap-1.5 sm:gap-2">
+                                        <span class="font-mono font-bold text-white text-xs sm:text-sm truncate" data-i18n="roles_modal_wildcard_label">* (Accesso Globale / Wildcard)</span>
+                                        <span class="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">Full Access</span>
                                     </div>
-                                    <p class="text-xs text-gray-400 mb-0 mt-0.5 truncate sm:whitespace-normal" data-i18n="roles_modal_wildcard_hint">Include tutti i permessi disponibili ed esclude limitazioni granulari.</p>
+                                    <p class="text-[11px] sm:text-xs text-gray-400 mb-0 mt-0.5 truncate sm:whitespace-normal" data-i18n="roles_modal_wildcard_hint">Include tutti i permessi disponibili ed esclude limitazioni granulari.</p>
                                 </div>
                             </div>
                             <div class="relative shrink-0 flex items-center">

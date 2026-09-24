@@ -183,6 +183,179 @@ function loggingOut() {
     localStorage.setItem("ACCESS-SPHERE_logged_in", false);
 }
 
+/**
+ * Decodifica in modo sicuro un token JWT e ne estrae il payload JSON.
+ * @param {string} token - Token JWT standard
+ * @returns {object|null}
+ */
+function decodeJwtPayload(token) {
+    if (!token || typeof token !== "string" || !token.includes(".")) return null;
+    try {
+        const parts = token.split(".");
+        if (parts.length < 2) return null;
+        let base64Url = parts[1];
+        let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        while (base64.length % 4) {
+            base64 += "=";
+        }
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+                .split("")
+                .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+                .join("")
+        );
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Recupera l'utente correntemente autenticato con fallback a catena:
+ * 1. Cache locale 'access_sphere_user'
+ * 2. Decodifica immediata del payload JWT da 'access-token'
+ * Garantisce rendering immediato a zero flicker del profilo utente nella sidebar.
+ * @returns {object|null}
+ */
+function getLoggedInUser() {
+    try {
+        const cached = localStorage.getItem("access_sphere_user");
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && (parsed.fullName || parsed.name || parsed.username)) {
+                return parsed;
+            }
+        }
+    } catch (e) {}
+
+    const token =
+        localStorage.getItem("access-token") ||
+        localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
+        (typeof getCookie === "function" ? getCookie("access-token") : null);
+
+    if (token) {
+        const claims = decodeJwtPayload(token);
+        if (claims) {
+            const firstName = claims.given_name || claims.firstName || "";
+            const lastName = claims.family_name || claims.lastName || "";
+            let fullName = "";
+            if (firstName && lastName) {
+                fullName = `${firstName} ${lastName}`;
+            } else if (claims.name) {
+                fullName = claims.name;
+            } else if (claims.sub) {
+                fullName = claims.sub;
+            } else {
+                fullName = "Utente";
+            }
+
+            const userObj = {
+                name: firstName,
+                surname: lastName,
+                fullName: fullName,
+                username: claims.sub || claims.username || "",
+                email: claims.email || "",
+                roles: claims.roles || []
+            };
+            try {
+                localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
+            } catch (e) {}
+            return userObj;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Esegue la sincronizzazione asincrona con l'endpoint del profilo (/v1/users/profile)
+ * aggiornando la cache locale e riflettendo immediatamente le modifiche nel DOM.
+ */
+function syncLoggedInUserProfile() {
+    const token =
+        localStorage.getItem("access-token") ||
+        localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
+        (typeof getCookie === "function" ? getCookie("access-token") : null);
+
+    if (!token) return Promise.resolve(null);
+
+    const profileUrl = window.location.origin + "/v1/users/profile";
+    return fetch(profileUrl, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+    })
+        .then((res) => {
+            if (!res.ok) return null;
+            return res.json();
+        })
+        .then((data) => {
+            if (data && data.data) {
+                const u = data.data;
+                const firstName = u.name || u.firstName || "";
+                const lastName = u.surname || u.lastName || "";
+                let fullName = "";
+                if (firstName && lastName) {
+                    fullName = `${firstName} ${lastName}`;
+                } else if (firstName) {
+                    fullName = firstName;
+                } else if (lastName) {
+                    fullName = lastName;
+                } else if (u.username) {
+                    fullName = u.username;
+                } else {
+                    fullName = "Utente";
+                }
+
+                const userObj = {
+                    name: firstName,
+                    surname: lastName,
+                    fullName: fullName,
+                    username: u.username || "",
+                    email: u.email || "",
+                    roles: u.roles || []
+                };
+                try {
+                    localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
+                } catch (e) {}
+                updateSidebarUserDOM(userObj);
+                return userObj;
+            }
+            return null;
+        })
+        .catch(() => null);
+}
+
+/**
+ * Aggiorna i selettori DOM del profilo utente per la sidebar desktop e il drawer mobile.
+ * @param {object} userObj
+ */
+function updateSidebarUserDOM(userObj) {
+    if (!userObj) return;
+
+    // Sidebar Desktop
+    const desktopNameEl = document.getElementById("sidebar-user-fullname");
+    const desktopUserEl = document.getElementById("sidebar-user-username");
+    const desktopCard = document.getElementById("sidebar-user-card");
+
+    if (desktopNameEl) desktopNameEl.textContent = userObj.fullName || "Utente";
+    if (desktopUserEl) desktopUserEl.textContent = userObj.username ? `@${userObj.username}` : (userObj.email || "");
+    if (desktopCard) {
+        desktopCard.title = `${userObj.fullName || "Utente"}${userObj.username ? ` (@${userObj.username})` : ""}`;
+    }
+
+    // Drawer Mobile
+    const mobileNameEl = document.getElementById("mobile-drawer-user-fullname");
+    const mobileUserEl = document.getElementById("mobile-drawer-user-username");
+
+    if (mobileNameEl) mobileNameEl.textContent = userObj.fullName || "Utente";
+    if (mobileUserEl) mobileUserEl.textContent = userObj.username ? `@${userObj.username}` : (userObj.email || "");
+}
+
+window.decodeJwtPayload = decodeJwtPayload;
+window.getLoggedInUser = getLoggedInUser;
+window.syncLoggedInUserProfile = syncLoggedInUserProfile;
+window.updateSidebarUserDOM = updateSidebarUserDOM;
+
 const formatDateIntl = (inputDate) => {
     const date = new Date(inputDate);
 
@@ -444,6 +617,7 @@ function initMobileNavigation() {
         const isRootDashboard = currentPath === '/app' || currentPath === '/app/' || currentPath === '';
         const savedAppName = localStorage.getItem("access_sphere_app_name") || "Access Sphere";
         const savedLogoUrl = localStorage.getItem("access_sphere_logo_url") || "/img/logo-minimal.svg";
+        const currentUser = getLoggedInUser();
 
         const overlay = document.createElement("div");
         overlay.id = "m3-mobile-nav-overlay";
@@ -468,6 +642,17 @@ function initMobileNavigation() {
         <button type="button" class="m3-icon-btn" onclick="closeMobileNavDrawer()" title="Chiudi menu">
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
+      </div>
+
+      <!-- Scheda Profilo Utente Mobile (Icona, Nome e Cognome) -->
+      <div class="m3-mobile-user-card" id="mobile-drawer-user-card">
+        <div class="sidebar-user-avatar">
+          <i class="fa-solid fa-circle-user"></i>
+        </div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-user-name" id="mobile-drawer-user-fullname">${escapeHtmlAttr(currentUser ? currentUser.fullName : "Utente")}</span>
+          <span class="sidebar-user-role" id="mobile-drawer-user-username">${escapeHtmlAttr(currentUser && currentUser.username ? `@${currentUser.username}` : "")}</span>
+        </div>
       </div>
 
       <!-- Navigazione Drawer suddivisa nelle stesse categorie desktop -->
@@ -588,6 +773,7 @@ function initMobileNavigation() {
       </div>
     `;
         document.body.appendChild(drawer);
+        syncLoggedInUserProfile();
     }
 
     // 3. Material 3 Expressive Bottom Navigation Bar (Mobile <992px)

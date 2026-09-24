@@ -241,18 +241,6 @@ public class AuthService {
     if (!ObjectUtils.isEmpty(state)) {
       tokenData.setState(state);
     }
-    if (!ObjectToolkit.isNullOrEmpty(tokenResponse.getUser())
-        && !ObjectToolkit.isNullOrEmpty(tokenResponse.getUser().getAttributes())) {
-      try {
-        tokenData.setPayload(
-            io.github.giovannilamarmora.utils.utilities.Mapper.readObject(
-                io.github.giovannilamarmora.utils.utilities.Mapper.writeObjectToString(
-                    tokenResponse.getUser().getAttributes()),
-                com.fasterxml.jackson.databind.JsonNode.class));
-      } catch (Exception e) {
-        LOG.warn("⚠️ Failed to serialize user attributes to payload: {}", e.getMessage());
-      }
-    }
 
     Response response =
         new Response(HttpStatus.OK.value(), message, TraceUtils.getSpanID(), tokenData);
@@ -457,7 +445,6 @@ public class AuthService {
             TraceUtils.getSpanID(),
             new OAuthTokenResponse(
                 token,
-                accessTokenData.getPayload(),
                 includeUserInfo
                     ? tokenService.parseToken(token.getAccess_token(), clientCredential)
                     : null,

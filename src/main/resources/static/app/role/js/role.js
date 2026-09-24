@@ -293,12 +293,12 @@ function renderRolesGrid(roles) {
         const safeRoleData = encodeURIComponent(JSON.stringify(r));
 
         html += `
-        <div class="m3-bento-card p-5 flex flex-col justify-between transition-all duration-300 hover:border-purple-400/40">
+        <div class="m3-bento-card p-4 sm:p-5 flex flex-col justify-between transition-all duration-300 hover:border-purple-400/40">
 
             <!-- Card Header: Client & Tipologia -->
             <div>
                 <div class="flex items-center justify-between gap-2 mb-3">
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-300 text-xs font-mono font-medium truncate max-w-[200px]"
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-300 text-xs font-mono font-medium truncate max-w-[55%] sm:max-w-[200px]"
                          title="Client ID: ${escapeHtml(r.clientId)}">
                         <i class="fa-solid fa-cubes text-purple-400 text-xs shrink-0"></i>
                         <span class="truncate">${escapeHtml(r.clientId)}</span>

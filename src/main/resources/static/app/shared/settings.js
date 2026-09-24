@@ -325,8 +325,23 @@ const AppSettings = (function () {
             const isRoles = currentPath === "/app/role" || currentPath === "/app/roles" || currentPath.startsWith("/app/role");
             const isEmails = currentPath.includes("/email");
             const isSettings = currentPath.includes("/settings");
+            const currentUser = typeof getLoggedInUser === "function" ? getLoggedInUser() : null;
+            const esc = typeof escapeHtmlAttr === "function" ? escapeHtmlAttr : (s => s ? String(s).replace(/"/g, '&quot;') : '');
+            const userFullName = currentUser && currentUser.fullName ? currentUser.fullName : "Utente";
+            const userHandle = currentUser && currentUser.username ? `@${currentUser.username}` : (currentUser && currentUser.email ? currentUser.email : "");
 
             sidebar.innerHTML = `
+        <!-- Scheda Profilo Utente Desktop (Icona, Nome e Cognome) -->
+        <div class="sidebar-user-card" id="sidebar-user-card" title="${esc(userFullName)}${userHandle ? ` (${esc(userHandle)})` : ''}">
+          <div class="sidebar-user-avatar">
+            <i class="fa-solid fa-circle-user"></i>
+          </div>
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name" id="sidebar-user-fullname">${esc(userFullName)}</span>
+            <span class="sidebar-user-role" id="sidebar-user-username">${esc(userHandle)}</span>
+          </div>
+        </div>
+
         <!-- Contenitore Categorie di Navigazione -->
         <div class="sidebar-sections-container">
 
@@ -443,6 +458,9 @@ const AppSettings = (function () {
       `;
 
             document.body.prepend(sidebar);
+            if (typeof syncLoggedInUserProfile === "function") {
+                syncLoggedInUserProfile();
+            }
             if (typeof translateDOM === "function") {
                 translateDOM(sidebar);
             }

@@ -1050,5 +1050,7 @@
   "sidebar_cat_roles": "Roles y Permisos",
   "swal_role_last_locked_title": "Rol Obligatorio",
   "swal_role_last_locked_desc": "Cada Cliente OAuth2 debe tener al menos un rol configurado. No es posible eliminar el último rol restante.",
-  "swal_role_at_least_one_required": "Es obligatorio configurar al menos un rol aplicativo para el Cliente."
+  "swal_role_at_least_one_required": "Es obligatorio configurar al menos un rol aplicativo para el Cliente.",
+  "sidebar_user_profile": "Perfil de Usuario",
+  "sidebar_user_default": "Usuario"
 }

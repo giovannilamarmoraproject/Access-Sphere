@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OAuthTokenResponse extends GenericDTO {
   private AuthToken token;
-  private JsonNode payload;
   private JsonNode googleToken;
   private JWTData userInfo;
   private User user;
@@ -55,30 +54,6 @@ public class OAuthTokenResponse extends GenericDTO {
   }
 
   public OAuthTokenResponse(JWTData userInfo, User user) {
-    this.userInfo = userInfo;
-    this.user = user;
-  }
-
-  public OAuthTokenResponse(AuthToken token, JsonNode payload, JWTData userInfo) {
-    this.token = token;
-    this.payload = payload;
-    this.userInfo = userInfo;
-  }
-
-  public OAuthTokenResponse(AuthToken token, JsonNode payload, JsonNode googleToken) {
-    this.token = token;
-    this.payload = payload;
-    this.googleToken = googleToken;
-  }
-
-  public OAuthTokenResponse(AuthToken token, JsonNode payload) {
-    this.token = token;
-    this.payload = payload;
-  }
-
-  public OAuthTokenResponse(AuthToken token, JsonNode payload, JWTData userInfo, User user) {
-    this.token = token;
-    this.payload = payload;
     this.userInfo = userInfo;
     this.user = user;
   }

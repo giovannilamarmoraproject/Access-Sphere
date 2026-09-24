@@ -1818,6 +1818,108 @@ body.swal2-shown .m3-mobile-bottom-nav,
     opacity: 0;
 }
 
+/* Material Design 3 Sidebar User Profile Card (Desktop & Collapsed) */
+.sidebar-user-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    margin-bottom: 0.75rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
+    border-radius: 18px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none !important;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.sidebar-user-card:hover {
+    background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.12);
+    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.38);
+}
+
+.sidebar-user-avatar {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+    background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2);
+    border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-accent, #D0BCFF);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.sidebar-user-card:hover .sidebar-user-avatar {
+    transform: scale(1.05);
+    border-color: var(--theme-accent, #D0BCFF);
+}
+
+.sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.sidebar-user-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+    font-size: 0.68rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--theme-accent, #D0BCFF);
+    opacity: 0.8;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Collapsed sidebar adjustments for user card */
+.m3-app-sidebar.collapsed .sidebar-user-card {
+    padding: 0.45rem 0.25rem;
+    justify-content: center;
+    background: transparent;
+    border-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.m3-app-sidebar.collapsed .sidebar-user-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);
+    border-radius: 50%;
+}
+
+.m3-app-sidebar.collapsed .sidebar-user-info {
+    display: none !important;
+}
+
+/* Mobile Drawer User Profile Card */
+.m3-mobile-user-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 0.85rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
+    border-radius: 18px;
+    flex-shrink: 0;
+}
+
 /* Contenitore delle Categorie di Navigazione */
 .sidebar-sections-container {
     display: flex;

@@ -300,7 +300,7 @@ public class OAuthService {
                     user -> {
                       user.setPassword(null);
                       OAuthTokenResponse tokenResponse =
-                          new OAuthTokenResponse(token, accessTokenData.getPayload(), null, user);
+                          new OAuthTokenResponse(token, user);
                       if (!ObjectUtils.isEmpty(state)) {
                         tokenResponse.setState(state);
                       }
@@ -321,12 +321,11 @@ public class OAuthService {
                             HttpStatus.OK.value(),
                             "Token is valid",
                             TraceUtils.getSpanID(),
-                            new OAuthTokenResponse(token, accessTokenData.getPayload()))));
+                            new OAuthTokenResponse(token))));
         return userResponse.map(r -> (ResponseEntity<?>) r);
       }
 
-      OAuthTokenResponse tokenResponse =
-          new OAuthTokenResponse(token, accessTokenData.getPayload());
+      OAuthTokenResponse tokenResponse = new OAuthTokenResponse(token);
       if (!ObjectUtils.isEmpty(state)) {
         tokenResponse.setState(state);
       }
