@@ -60,14 +60,51 @@ public class TechUserService extends TechUserConfig {
     return isTechUser(accessTokenData);
   }
 
+  /**
+   * Determina se i dati del token di accesso appartengono all'operatore tecnico IAM di sistema.
+   *
+   * <p>Interconnessioni logiche:
+   * <ul>
+   *   <li>Riconosce il subject type esplicito {@link SubjectType#TECHNICAL}.
+   *   <li>Verifica tramite {@link #isTechnicalUser(String, String)} se username o email corrispondono
+   *       all'utenza tecnica configurata in {@link TechUserConfig}.
+   *   <li>Verifica la presenza del ruolo di sistema infrastrutturale {@code ROLE_TECH}.
+   *   <li>Per chiamate puramente M2M / client-credentials (senza anagrafica utente associata),
+   *       riconosce il client tecnico {@link #getTechClientId()}.
+   * </ul>
+   *
+   * @param tokenData Dati del token di accesso da valutare.
+   * @return true se l'operatore e' l'utenza tecnica di sistema, false per utenti ordinari/delegati.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public boolean isTechUser(AccessTokenData tokenData) {
     if (ObjectToolkit.isNullOrEmpty(tokenData)
-        || ObjectToolkit.isNullOrEmpty(tokenData.getSubjectType())
-        || ObjectToolkit.isNullOrEmpty(tokenData.getClientId())
         || ObjectToolkit.fieldsNullOrEmpty(tokenData)) return false;
-    return tokenData.getSubjectType().equals(SubjectType.TECHNICAL)
-        || tokenData.getClientId().equalsIgnoreCase(techClientId);
+
+    // 1. SubjectType esplicitamente impostato come TECHNICAL
+    if (SubjectType.TECHNICAL.equals(tokenData.getSubjectType())) {
+      return true;
+    }
+
+    // 2. Corrispondenza anagrafica con l'utenza tecnica configurata (username o email)
+    if (isTechnicalUser(tokenData.getSubject(), tokenData.getEmail())) {
+      return true;
+    }
+
+    // 3. Possesso del ruolo infrastrutturale di sistema ROLE_TECH
+    if (tokenData.getRoles() != null && tokenData.getRoles().contains("ROLE_TECH")) {
+      return true;
+    }
+
+    // 4. Token puramente client-credentials M2M (senza anagrafica utente) per il client tecnico
+    if (ObjectToolkit.isNullOrEmpty(tokenData.getSubject())
+        && ObjectToolkit.isNullOrEmpty(tokenData.getEmail())
+        && org.springframework.util.StringUtils.hasText(tokenData.getClientId())
+        && tokenData.getClientId().equalsIgnoreCase(techClientId)) {
+      return true;
+    }
+
+    return false;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

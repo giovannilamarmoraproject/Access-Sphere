@@ -6,8 +6,29 @@ function loadCachedUsers() {
     const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
     const raw = localStorage.getItem(key) || localStorage.getItem("ACCESS-SPHERE-TECH_usersData");
     if (raw) {
-      const parsed = JSON.parse(raw);
+      let parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        // Verifica se l'operatore attualmente autenticato e' l'utenza tecnica di sistema
+        const loggedUserRaw = localStorage.getItem("access_sphere_user");
+        let isTech = false;
+        const techUsername = (cfg && cfg.tech_username) || "tech_admin";
+        const techEmail = (cfg && cfg.tech_email) || "admin@accesssphere.local";
+        if (loggedUserRaw) {
+          try {
+            const loggedUser = JSON.parse(loggedUserRaw);
+            if ((loggedUser.username && loggedUser.username.toLowerCase() === techUsername.toLowerCase()) ||
+                (loggedUser.email && loggedUser.email.toLowerCase() === techEmail.toLowerCase()) ||
+                (Array.isArray(loggedUser.roles) && loggedUser.roles.includes("ROLE_TECH"))) {
+              isTech = true;
+            }
+          } catch (e) {}
+        }
+        if (!isTech) {
+          parsed = parsed.filter(u => u &&
+            (!u.username || u.username.toLowerCase() !== techUsername.toLowerCase()) &&
+            (!u.email || u.email.toLowerCase() !== techEmail.toLowerCase())
+          );
+        }
         cachedUsers = parsed;
         displayUsersTable(parsed);
         updateUserKpis(parsed);

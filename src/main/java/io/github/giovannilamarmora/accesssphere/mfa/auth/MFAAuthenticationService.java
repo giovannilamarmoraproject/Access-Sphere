@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.mfa.auth;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.client.ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.ClientCredential;
+import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -54,6 +55,7 @@ public class MFAAuthenticationService {
   @Autowired private ClientService clientService;
   @Autowired private TokenService tokenService;
   @Autowired private MFATokenDataService mfaTokenDataService;
+  @Autowired private TechUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public static boolean isMfaEnabled(User user, ClientCredential clientCredential) {
@@ -158,8 +160,12 @@ public class MFAAuthenticationService {
         clientService.getClientCredentialByClientID(mfaTokenData.getClientId());
     return clientCredentialMono.flatMap(
         clientCredential -> {
+          SubjectType subjectType =
+              techUserService.isTechnicalUser(user)
+                  ? SubjectType.TECHNICAL
+                  : SubjectType.CUSTOMER;
           JWTData jwtData =
-              JWTData.generateJWTData(user, clientCredential, SubjectType.CUSTOMER, request);
+              JWTData.generateJWTData(user, clientCredential, subjectType, request);
           return userService
               .getUserByEmail(jwtData.getEmail())
               .map(

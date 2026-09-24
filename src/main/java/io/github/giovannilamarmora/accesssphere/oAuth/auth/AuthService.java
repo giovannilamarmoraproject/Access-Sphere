@@ -176,12 +176,12 @@ public class AuthService {
         .authenticateUser(username, email, password)
         .map(
             authenticatedUser -> {
+              SubjectType subjectType =
+                  techUserService.isTechnicalUser(authenticatedUser)
+                      ? SubjectType.TECHNICAL
+                      : SubjectType.CUSTOMER;
               JWTData jwtData =
-                  JWTData.generateJWTData(
-                      authenticatedUser, clientCredential, SubjectType.CUSTOMER, request);
-              // AuthToken token =
-              //    tokenService.generateToken(
-              //        jwtData, clientCredential, authenticatedUser.getAttributes());
+                  JWTData.generateJWTData(authenticatedUser, clientCredential, subjectType, request);
               AuthToken token = tokenService.generateToken(jwtData, clientCredential, null);
               LOG.debug(
                   "✅ Login process ended successfully for user {}",

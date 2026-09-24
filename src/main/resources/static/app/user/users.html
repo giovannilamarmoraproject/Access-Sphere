@@ -1111,14 +1111,12 @@
                 history.pushState({view: "users"}, "", "/app/users");
             }
 
-            const hasLoadedUsers = (typeof loadCachedUsers === "function") && loadCachedUsers();
-            const usersTbody = document.getElementById("users-data");
-            const isUsersTableEmpty = !usersTbody || usersTbody.children.length === 0;
+            if (typeof loadCachedUsers === "function") {
+                loadCachedUsers();
+            }
 
             if (typeof getUsers === "function") {
-                if (!hasLoadedUsers || isUsersTableEmpty || !cachedUsers || cachedUsers.length === 0) {
-                    getUsers();
-                }
+                getUsers();
             }
 
             if (window.$ && $.fn && $.fn.DataTable && $.fn.DataTable.isDataTable('#users-table')) {
