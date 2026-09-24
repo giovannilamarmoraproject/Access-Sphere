@@ -15,6 +15,7 @@ import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -122,9 +123,12 @@ class ProjectInitializerServiceTest {
         .thenReturn(List.of(existingTpl));
     when(emailTemplateDAO.findByIdentifier(ProjectInitializerService.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER))
         .thenReturn(Collections.emptyList());
-    when(roleDefinitionDAO.findByClientId("ACCESS-SPHERE-TECH"))
-        .thenReturn(List.of(new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity()));
-    lenient().when(roleDefinitionDAO.existsByClientIdAndRole(any(), any())).thenReturn(true);
+    io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity existingRole =
+        new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity(
+            "ACCESS-SPHERE-TECH", "ROLE_ADMIN", "ADMIN", "desc", List.of("*"));
+    when(roleDefinitionDAO.findByClientIdAndRole(eq("ACCESS-SPHERE-TECH"), any()))
+        .thenReturn(Optional.of(existingRole));
+    when(roleDefinitionDAO.findAll()).thenReturn(List.of(existingRole));
 
     projectInitializerService.run(null);
 

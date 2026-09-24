@@ -30,6 +30,7 @@ import java.security.SecureRandom;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -202,29 +203,59 @@ public class ProjectInitializerService implements ApplicationRunner {
     LOG.info("🔐 Checking enterprise Role Definitions and Permissions seeding...");
     String techClientId = techUserConfig.getTechClientId();
 
-    // 1. Assicura i ruoli tecnici di base in ROLE_DEFINITIONS
-    List<RoleDefinitionEntity> techRoles = roleDefinitionDAO.findByClientId(techClientId);
-    if (techRoles == null || techRoles.isEmpty()) {
-      LOG.info("🔧 Seeding default technical roles in ROLE_DEFINITIONS for client [{}]", techClientId);
-      RoleDefinitionEntity adminRole =
+    // 1. Assicura che i ruoli tecnici di base esistano per il client tecnico
+    Optional<RoleDefinitionEntity> adminRoleOpt =
+        roleDefinitionDAO.findByClientIdAndRole(techClientId, "ROLE_ADMIN");
+    if (adminRoleOpt.isEmpty()) {
+      roleDefinitionDAO.save(
           new RoleDefinitionEntity(
               techClientId,
               "ROLE_ADMIN",
               "ADMIN",
               "Administrator role for Access Sphere",
-              List.of("*"));
-      RoleDefinitionEntity techRole =
+              List.of("*")));
+      LOG.info("🔧 Default role [ROLE_ADMIN] seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
+    }
+
+    Optional<RoleDefinitionEntity> techRoleOpt =
+        roleDefinitionDAO.findByClientIdAndRole(techClientId, "ROLE_TECH");
+    if (techRoleOpt.isEmpty()) {
+      roleDefinitionDAO.save(
           new RoleDefinitionEntity(
               techClientId,
               "ROLE_TECH",
               "TECHNICAL",
               "Technical service role for Access Sphere",
-              List.of("*"));
-      roleDefinitionDAO.save(adminRole);
-      roleDefinitionDAO.save(techRole);
-      LOG.info("✅ Default technical roles seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
+              List.of("*")));
+      LOG.info("🔧 Default role [ROLE_TECH] seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
     }
-    LOG.info("✅ Role Definitions and Permissions seeding check completed successfully.");
+
+    // 2. Controllo e ripristino automatico permessi: per qualsiasi ruolo a DB privo di permessi
+    List<RoleDefinitionEntity> allRoles = roleDefinitionDAO.findAll();
+    if (allRoles != null) {
+      for (RoleDefinitionEntity r : allRoles) {
+        if (r.getPermissions() == null || r.getPermissions().isEmpty()) {
+          r.setPermissions(List.of("*"));
+          roleDefinitionDAO.save(r);
+          LOG.info(
+              "🔄 Initialized missing default permissions [*] for role [{}] on client [{}]",
+              r.getRole(),
+              r.getClientId());
+        }
+        LOG.info(
+            "🔑 [INIT ROLE] Client: [{}], Role: [{}], Type: [{}], Permissions ({}): {}",
+            r.getClientId(),
+            r.getRole(),
+            r.getType(),
+            r.getPermissions() != null ? r.getPermissions().size() : 0,
+            r.getPermissions());
+      }
+      LOG.info(
+          "✅ Role Definitions and Permissions initialization completed successfully ({} roles verified).",
+          allRoles.size());
+    } else {
+      LOG.info("✅ Role Definitions and Permissions initialization completed successfully.");
+    }
   }
 
   /**
