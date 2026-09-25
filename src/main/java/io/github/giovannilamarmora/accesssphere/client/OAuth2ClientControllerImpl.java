@@ -56,17 +56,16 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<OAuth2ClientListResponse>> getOAuth2Clients(
       String bearer, ServerHttpRequest request) {
-    LOG.info("🌐 [CLIENT CONTROLLER] Retrieving all authorized OAuth 2.0 clients");
     return oAuth2ClientService
         .getClients()
         .map(
             clients -> {
+              String message =
+                  "Successfully retrieved %s OAuth2 client(s).".formatted(clients.size());
+
               OAuth2ClientListResponse response =
                   new OAuth2ClientListResponse(
-                      HttpStatus.OK.value(),
-                      "Client credential list",
-                      TraceUtils.getSpanID(),
-                      clients);
+                      HttpStatus.OK.value(), message, TraceUtils.getSpanID(), clients);
               return ResponseEntity.ok(response);
             });
   }

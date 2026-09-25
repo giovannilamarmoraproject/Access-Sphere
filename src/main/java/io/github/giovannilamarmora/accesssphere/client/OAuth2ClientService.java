@@ -58,6 +58,8 @@ public class OAuth2ClientService {
   public Mono<List<OAuth2Client>> getClients() {
     permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
 
+    LOG.info("🌐 Retrieving all authorized OAuth 2.0 clients");
+
     return oAuth2ClientDomainService
         .getClientCredentials()
         .map(

@@ -25,10 +25,10 @@ public class AdminUserConfig {
 
   public final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Value(value = "${app.admin-user.username:tech_admin}")
+  @Value(value = "${app.admin-user.username:admin}")
   public String adminUsername;
 
-  @Value(value = "${app.admin-user.password:tech_password}")
+  @Value(value = "${app.admin-user.password:password}")
   public String adminPassword;
 
   @Value(value = "${app.admin-user.client-id:ACCESS-SPHERE-AUTH}")
