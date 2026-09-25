@@ -39,19 +39,23 @@ class OAuth2ClientControllerTest {
   @Test
   @DisplayName("getClientCredentials returns 200 OK with list of clients")
   void testGetClientCredentials() {
-    Response mockResponse = new Response(HttpStatus.OK.value(), "Client credential list", "span-1", List.of(sampleClient));
+    Response mockResponse =
+        new Response(
+            HttpStatus.OK.value(), "Client credential list", "span-1", List.of(sampleClient));
     when(oAuth2ClientService.getClients()).thenReturn(Mono.just(ResponseEntity.ok(mockResponse)));
 
     Mono<ResponseEntity<Response>> result =
-        oAuth2ClientController.getClientCredentials("Bearer sample-token", MockServerHttpRequest.get("/v1/clients").build());
+        oAuth2ClientController.getOAuth2Clients(
+            "Bearer sample-token", MockServerHttpRequest.get("/v1/clients").build());
 
     StepVerifier.create(result)
-        .assertNext(responseEntity -> {
-          assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-          assertNotNull(responseEntity.getBody());
-          assertEquals(200, responseEntity.getBody().getStatus());
-          assertEquals(List.of(sampleClient), responseEntity.getBody().getData());
-        })
+        .assertNext(
+            responseEntity -> {
+              assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+              assertNotNull(responseEntity.getBody());
+              assertEquals(200, responseEntity.getBody().getStatus());
+              assertEquals(List.of(sampleClient), responseEntity.getBody().getData());
+            })
         .verifyComplete();
 
     verify(oAuth2ClientService, times(1)).getClients();
@@ -60,18 +64,24 @@ class OAuth2ClientControllerTest {
   @Test
   @DisplayName("getClientById returns 200 OK with single client")
   void testGetClientById() {
-    Response mockResponse = new Response(HttpStatus.OK.value(), "Client details", "span-2", sampleClient);
-    when(oAuth2ClientService.getClientById("TEST-CLIENT-001")).thenReturn(Mono.just(ResponseEntity.ok(mockResponse)));
+    Response mockResponse =
+        new Response(HttpStatus.OK.value(), "Client details", "span-2", sampleClient);
+    when(oAuth2ClientService.getClientById("TEST-CLIENT-001"))
+        .thenReturn(Mono.just(ResponseEntity.ok(mockResponse)));
 
     Mono<ResponseEntity<Response>> result =
-        oAuth2ClientController.getClientById("Bearer sample-token", "TEST-CLIENT-001", MockServerHttpRequest.get("/v1/clients/TEST-CLIENT-001").build());
+        oAuth2ClientController.getClientById(
+            "Bearer sample-token",
+            "TEST-CLIENT-001",
+            MockServerHttpRequest.get("/v1/clients/TEST-CLIENT-001").build());
 
     StepVerifier.create(result)
-        .assertNext(responseEntity -> {
-          assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-          assertNotNull(responseEntity.getBody());
-          assertEquals(sampleClient, responseEntity.getBody().getData());
-        })
+        .assertNext(
+            responseEntity -> {
+              assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+              assertNotNull(responseEntity.getBody());
+              assertEquals(sampleClient, responseEntity.getBody().getData());
+            })
         .verifyComplete();
 
     verify(oAuth2ClientService, times(1)).getClientById("TEST-CLIENT-001");
@@ -83,15 +93,17 @@ class OAuth2ClientControllerTest {
     doNothing().when(oAuth2ClientService).addClientToDatabase(any(OAuth2Client.class));
 
     Mono<ResponseEntity<Response>> result =
-        oAuth2ClientController.createClient("Bearer sample-token", sampleClient, MockServerHttpRequest.post("/v1/clients").build());
+        oAuth2ClientController.createClient(
+            "Bearer sample-token", sampleClient, MockServerHttpRequest.post("/v1/clients").build());
 
     StepVerifier.create(result)
-        .assertNext(responseEntity -> {
-          assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
-          assertNotNull(responseEntity.getBody());
-          assertEquals(HttpStatus.CREATED.value(), responseEntity.getBody().getStatus());
-          assertEquals(sampleClient, responseEntity.getBody().getData());
-        })
+        .assertNext(
+            responseEntity -> {
+              assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
+              assertNotNull(responseEntity.getBody());
+              assertEquals(HttpStatus.CREATED.value(), responseEntity.getBody().getStatus());
+              assertEquals(sampleClient, responseEntity.getBody().getData());
+            })
         .verifyComplete();
 
     verify(oAuth2ClientService, times(1)).addClientToDatabase(sampleClient);
@@ -105,14 +117,19 @@ class OAuth2ClientControllerTest {
     doNothing().when(oAuth2ClientService).updateClientInDatabase(any(OAuth2Client.class));
 
     Mono<ResponseEntity<Response>> result =
-        oAuth2ClientController.updateClientById("PATH-CLIENT-ID", "Bearer sample-token", clientWithoutId, MockServerHttpRequest.put("/v1/clients/PATH-CLIENT-ID").build());
+        oAuth2ClientController.updateClientById(
+            "PATH-CLIENT-ID",
+            "Bearer sample-token",
+            clientWithoutId,
+            MockServerHttpRequest.put("/v1/clients/PATH-CLIENT-ID").build());
 
     StepVerifier.create(result)
-        .assertNext(responseEntity -> {
-          assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-          assertNotNull(responseEntity.getBody());
-          assertEquals("PATH-CLIENT-ID", clientWithoutId.getClientId());
-        })
+        .assertNext(
+            responseEntity -> {
+              assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+              assertNotNull(responseEntity.getBody());
+              assertEquals("PATH-CLIENT-ID", clientWithoutId.getClientId());
+            })
         .verifyComplete();
 
     verify(oAuth2ClientService, times(1)).updateClientInDatabase(clientWithoutId);
@@ -124,14 +141,16 @@ class OAuth2ClientControllerTest {
     doNothing().when(oAuth2ClientService).updateClientInDatabase(any(OAuth2Client.class));
 
     Mono<ResponseEntity<Response>> result =
-        oAuth2ClientController.updateClient("Bearer sample-token", sampleClient, MockServerHttpRequest.put("/v1/clients").build());
+        oAuth2ClientController.updateClient(
+            "Bearer sample-token", sampleClient, MockServerHttpRequest.put("/v1/clients").build());
 
     StepVerifier.create(result)
-        .assertNext(responseEntity -> {
-          assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-          assertNotNull(responseEntity.getBody());
-          assertEquals(sampleClient, responseEntity.getBody().getData());
-        })
+        .assertNext(
+            responseEntity -> {
+              assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+              assertNotNull(responseEntity.getBody());
+              assertEquals(sampleClient, responseEntity.getBody().getData());
+            })
         .verifyComplete();
 
     verify(oAuth2ClientService, times(1)).updateClientInDatabase(sampleClient);
@@ -143,15 +162,19 @@ class OAuth2ClientControllerTest {
     doNothing().when(oAuth2ClientService).deleteClientFromDatabase(any(OAuth2Client.class));
 
     Mono<ResponseEntity<Response>> result =
-        oAuth2ClientController.deleteClient("Bearer sample-token", "DELETE-CLIENT-ID", MockServerHttpRequest.delete("/v1/clients/DELETE-CLIENT-ID").build());
+        oAuth2ClientController.deleteClient(
+            "Bearer sample-token",
+            "DELETE-CLIENT-ID",
+            MockServerHttpRequest.delete("/v1/clients/DELETE-CLIENT-ID").build());
 
     StepVerifier.create(result)
-        .assertNext(responseEntity -> {
-          assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-          assertNotNull(responseEntity.getBody());
-          assertEquals("Client deleted", responseEntity.getBody().getMessage());
-          assertNull(responseEntity.getBody().getData());
-        })
+        .assertNext(
+            responseEntity -> {
+              assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+              assertNotNull(responseEntity.getBody());
+              assertEquals("Client deleted", responseEntity.getBody().getMessage());
+              assertNull(responseEntity.getBody().getData());
+            })
         .verifyComplete();
 
     verify(oAuth2ClientService, times(1)).deleteClientFromDatabase(any(OAuth2Client.class));

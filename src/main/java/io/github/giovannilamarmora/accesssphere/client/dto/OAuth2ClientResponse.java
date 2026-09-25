@@ -20,24 +20,22 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Involucro di risposta standard contenente i dettagli completi di un Client OAuth 2.0")
+@Schema(description = "Standard response wrapper containing full details of an OAuth 2.0 client")
 public class OAuth2ClientResponse extends Response {
 
-  @Schema(
-      description = "Codice di stato HTTP dell'operazione",
-      example = "200")
+  @Schema(description = "HTTP status code of the operation", example = "200")
   private Integer status;
 
   @Schema(
-      description = "Messaggio descrittivo sintetico dell'esito dell'operazione",
+      description = "Brief descriptive message of the operation outcome",
       example = "Client details")
   private String message;
 
   @Schema(
-      description = "Identificativo di tracciamento univoco della richiesta distribuita (Span ID)",
+      description = "Unique trace identifier for the distributed request (Span ID)",
       example = "d18124b1-ba15-4b51-a344-78e5a6c0a205")
   private String spanId;
 
-  @Schema(description = "Dati del Client OAuth 2.0 configurato nel sistema")
+  @Schema(description = "Details of the OAuth 2.0 client configured in the system")
   private OAuth2Client data;
 }

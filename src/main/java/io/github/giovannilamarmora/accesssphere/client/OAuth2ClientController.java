@@ -27,7 +27,8 @@ import reactor.core.publisher.Mono;
  *
  * <p>Definisce le operazioni REST esposte da Access-Sphere per la registrazione, consultazione,
  * aggiornamento ed eliminazione dei Client OAuth2. Tutti gli endpoint richiedono l'autenticazione
- * dell'operatore tecnico/amministratore mediante Bearer token fornito nell'header HTTP Authorization.
+ * dell'operatore tecnico/amministratore mediante Bearer token fornito nell'header HTTP
+ * Authorization.
  *
  * <p>Interconnessioni:
  *
@@ -53,7 +54,8 @@ public interface OAuth2ClientController {
   @GetMapping("/clients")
   @Operation(
       summary = "Get Clients",
-      description = "API to get all registered OAuth 2.0 Clients (Reserved for Technical/Admin Operators)",
+      description =
+          "API to get all registered OAuth 2.0 Clients (Reserved for Technical/Admin Operators)",
       tags = OpenAPI.Tag.CLIENTS,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
@@ -94,7 +96,7 @@ public interface OAuth2ClientController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
-  Mono<ResponseEntity<Response>> getClientCredentials(
+  Mono<ResponseEntity<OAuth2ClientListResponse>> getOAuth2Clients(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(
@@ -104,17 +106,20 @@ public interface OAuth2ClientController {
       ServerHttpRequest request);
 
   /**
-   * Recupera i dettagli e le credenziali di un singolo Client OAuth 2.0 specificato tramite Client ID.
+   * Recupera i dettagli e le credenziali di un singolo Client OAuth 2.0 specificato tramite Client
+   * ID.
    *
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param clientId Identificativo univoco del client desiderato.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link OAuth2Client}.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link
+   *     OAuth2Client}.
    */
   @GetMapping("/clients/{clientId}")
   @Operation(
       summary = "Get Client by ID",
-      description = "API to retrieve details of a specific OAuth 2.0 Client by Client ID (Reserved for Technical/Admin Operators)",
+      description =
+          "API to retrieve details of a specific OAuth 2.0 Client by Client ID (Reserved for Technical/Admin Operators)",
       tags = OpenAPI.Tag.CLIENTS,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
@@ -182,7 +187,8 @@ public interface OAuth2ClientController {
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param oAuth2Client DTO con la configurazione e le credenziali del nuovo client.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con stato 201 CREATED e {@link OAuth2Client}.
+   * @return {@link Mono} contenente {@link ResponseEntity} con stato 201 CREATED e {@link
+   *     OAuth2Client}.
    */
   @PostMapping("/clients")
   @Operation(
@@ -235,22 +241,26 @@ public interface OAuth2ClientController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @RequestBody @Valid @NotNull(message = "Client payload cannot be null") OAuth2Client oAuth2Client,
+      @RequestBody @Valid @NotNull(message = "Client payload cannot be null")
+          OAuth2Client oAuth2Client,
       ServerHttpRequest request);
 
   /**
-   * Aggiorna un Client OAuth 2.0 esistente identificato tramite il Client ID passato come path variable.
+   * Aggiorna un Client OAuth 2.0 esistente identificato tramite il Client ID passato come path
+   * variable.
    *
    * @param clientId Identificativo univoco del client da aggiornare.
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param oAuth2Client DTO contenente le nuove configurazioni del client.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link OAuth2Client}.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link
+   *     OAuth2Client}.
    */
   @PutMapping("/clients/{clientId}")
   @Operation(
       summary = "Update Client by ID",
-      description = "API to update an existing OAuth 2.0 Client identified by path variable (Reserved for Technical/Admin Operators)",
+      description =
+          "API to update an existing OAuth 2.0 Client identified by path variable (Reserved for Technical/Admin Operators)",
       tags = OpenAPI.Tag.CLIENTS,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
@@ -310,21 +320,25 @@ public interface OAuth2ClientController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @RequestBody @Valid @NotNull(message = "Client payload cannot be null") OAuth2Client oAuth2Client,
+      @RequestBody @Valid @NotNull(message = "Client payload cannot be null")
+          OAuth2Client oAuth2Client,
       ServerHttpRequest request);
 
   /**
-   * Aggiorna un Client OAuth 2.0 esistente utilizzando il Client ID specificato all'interno del body.
+   * Aggiorna un Client OAuth 2.0 esistente utilizzando il Client ID specificato all'interno del
+   * body.
    *
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param oAuth2Client DTO contenente il client_id e le nuove configurazioni.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link OAuth2Client}.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link
+   *     OAuth2Client}.
    */
   @PutMapping("/clients")
   @Operation(
       summary = "Update Client",
-      description = "API to update an existing OAuth 2.0 Client using the clientId in the request body (Reserved for Technical/Admin Operators)",
+      description =
+          "API to update an existing OAuth 2.0 Client using the clientId in the request body (Reserved for Technical/Admin Operators)",
       tags = OpenAPI.Tag.CLIENTS,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
@@ -379,7 +393,8 @@ public interface OAuth2ClientController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @RequestBody @Valid @NotNull(message = "Client payload cannot be null") OAuth2Client oAuth2Client,
+      @RequestBody @Valid @NotNull(message = "Client payload cannot be null")
+          OAuth2Client oAuth2Client,
       ServerHttpRequest request);
 
   /**
@@ -388,12 +403,14 @@ public interface OAuth2ClientController {
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param clientId Identificativo univoco del client da eliminare.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} dell'avvenuta eliminazione.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} dell'avvenuta
+   *     eliminazione.
    */
   @DeleteMapping("/clients/{clientId}")
   @Operation(
       summary = "Delete Client",
-      description = "API to delete an existing OAuth 2.0 Client (Reserved for Technical/Admin Operators)",
+      description =
+          "API to delete an existing OAuth 2.0 Client (Reserved for Technical/Admin Operators)",
       tags = OpenAPI.Tag.CLIENTS,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(

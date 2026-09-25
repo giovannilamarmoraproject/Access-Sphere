@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientListResponse;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -49,10 +50,11 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
    * @return Mono con ResponseEntity e Response contenente la lista dei client.
    */
   @Override
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> getClientCredentials(
+  public Mono<ResponseEntity<OAuth2ClientListResponse>> getOAuth2Clients(
       String bearer, ServerHttpRequest request) {
-    LOG.info("🌐 [CLIENT CONTROLLER] Retrieving all registered OAuth 2.0 clients");
+    OAuth2ClientListResponse response =
+        new OAuth2ClientListResponse(
+            HttpStatus.OK.value(), "Client credential list", TraceUtils.getSpanID(), null);
     return oAuth2ClientService.getClients();
   }
 
@@ -89,10 +91,7 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
     oAuth2ClientService.addClientToDatabase(oAuth2Client);
     Response response =
         new Response(
-            HttpStatus.CREATED.value(),
-            "Client created",
-            TraceUtils.getSpanID(),
-            oAuth2Client);
+            HttpStatus.CREATED.value(), "Client created", TraceUtils.getSpanID(), oAuth2Client);
     return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(response));
   }
 
@@ -115,11 +114,7 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
     }
     oAuth2ClientService.updateClientInDatabase(oAuth2Client);
     Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            "Client updated",
-            TraceUtils.getSpanID(),
-            oAuth2Client);
+        new Response(HttpStatus.OK.value(), "Client updated", TraceUtils.getSpanID(), oAuth2Client);
     return Mono.just(ResponseEntity.ok(response));
   }
 
@@ -138,11 +133,7 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
     LOG.info("🌐 [CLIENT CONTROLLER] Updating OAuth 2.0 client: {}", oAuth2Client.getClientId());
     oAuth2ClientService.updateClientInDatabase(oAuth2Client);
     Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            "Client updated",
-            TraceUtils.getSpanID(),
-            oAuth2Client);
+        new Response(HttpStatus.OK.value(), "Client updated", TraceUtils.getSpanID(), oAuth2Client);
     return Mono.just(ResponseEntity.ok(response));
   }
 
@@ -163,11 +154,7 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
     cred.setClientId(clientId);
     oAuth2ClientService.deleteClientFromDatabase(cred);
     Response response =
-        new Response(
-            HttpStatus.OK.value(),
-            "Client deleted",
-            TraceUtils.getSpanID(),
-            null);
+        new Response(HttpStatus.OK.value(), "Client deleted", TraceUtils.getSpanID(), null);
     return Mono.just(ResponseEntity.ok(response));
   }
 }

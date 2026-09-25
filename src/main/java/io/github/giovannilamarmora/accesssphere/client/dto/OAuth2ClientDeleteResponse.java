@@ -17,26 +17,24 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Involucro di risposta standard per l'esito di cancellazione di un Client OAuth 2.0")
+@Schema(description = "Standard response wrapper for the deletion outcome of an OAuth 2.0 client")
 public class OAuth2ClientDeleteResponse extends Response {
 
-  @Schema(
-      description = "Codice di stato HTTP dell'operazione",
-      example = "200")
+  @Schema(description = "HTTP status code of the operation", example = "200")
   private Integer status;
 
   @Schema(
-      description = "Messaggio descrittivo dell'avvenuta eliminazione",
+      description = "Descriptive message confirming successful deletion",
       example = "Client deleted")
   private String message;
 
   @Schema(
-      description = "Identificativo di tracciamento univoco della richiesta distribuita (Span ID)",
+      description = "Unique trace identifier for the distributed request (Span ID)",
       example = "d18124b1-ba15-4b51-a344-78e5a6c0a205")
   private String spanId;
 
   @Schema(
-      description = "Dati del payload (nullo a seguito di eliminazione avvenuta con successo)",
+      description = "Payload data (null following successful deletion)",
       nullable = true,
       example = "null")
   private Object data;

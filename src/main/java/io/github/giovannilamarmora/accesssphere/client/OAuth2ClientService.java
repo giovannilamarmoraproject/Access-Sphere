@@ -46,45 +46,7 @@ public class OAuth2ClientService {
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
 
-  /**
-   * Recupera le credenziali di un Client dato il suo clientID.
-   *
-   * @param clientID Identificativo univoco del client.
-   * @return {@link Mono} contenente il {@link OAuth2Client}.
-   * @throws OAuthException se il client non viene trovato.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<OAuth2Client> getClientCredentialByClientID(String clientID) {
-    LOG.info("Searching for credentials for client ID: {}", clientID);
-    OAuth2ClientEntity oAuth2ClientEntity = ioAuth2ClientDAO.findByClientId(clientID);
-    if (ObjectUtils.isEmpty(oAuth2ClientEntity)) {
-      LOG.error("Client with ID: {} not found in Database", clientID);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
-    }
-    OAuth2Client dto = OAuth2ClientMapper.toDTO(oAuth2ClientEntity);
-    populateAppRoles(dto);
-    return Mono.just(dto);
-  }
-
-  /**
-   * Recupera le credenziali di un Client dato il suo clientID restituendo una Response HTTP 200.
-   *
-   * @param clientID Identificativo univoco del client.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response}.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> getClientById(String clientID) {
-    return getClientCredentialByClientID(clientID)
-        .map(
-            client -> {
-              Response response =
-                  new Response(HttpStatus.OK.value(), "Client details", TraceUtils.getSpanID(), client);
-              return ResponseEntity.ok(response);
-            });
-  }
-
   /** Recupera la lista di tutti i Client restituiti come oggetto Response reattivo. */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> getClients() {
     Response response =
         new Response(HttpStatus.OK.value(), "Client credential list", TraceUtils.getSpanID(), null);
@@ -139,6 +101,44 @@ public class OAuth2ClientService {
     TechUserValidator.validateTechClient(
         dtos, oAuth2Authorization, techUserService.getTechClientId());
     return Mono.just(dtos);
+  }
+
+  /**
+   * Recupera le credenziali di un Client dato il suo clientID.
+   *
+   * @param clientID Identificativo univoco del client.
+   * @return {@link Mono} contenente il {@link OAuth2Client}.
+   * @throws OAuthException se il client non viene trovato.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<OAuth2Client> getClientCredentialByClientID(String clientID) {
+    LOG.info("Searching for credentials for client ID: {}", clientID);
+    OAuth2ClientEntity oAuth2ClientEntity = ioAuth2ClientDAO.findByClientId(clientID);
+    if (ObjectUtils.isEmpty(oAuth2ClientEntity)) {
+      LOG.error("Client with ID: {} not found in Database", clientID);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
+    }
+    OAuth2Client dto = OAuth2ClientMapper.toDTO(oAuth2ClientEntity);
+    populateAppRoles(dto);
+    return Mono.just(dto);
+  }
+
+  /**
+   * Recupera le credenziali di un Client dato il suo clientID restituendo una Response HTTP 200.
+   *
+   * @param clientID Identificativo univoco del client.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response}.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<ResponseEntity<Response>> getClientById(String clientID) {
+    return getClientCredentialByClientID(clientID)
+        .map(
+            client -> {
+              Response response =
+                  new Response(
+                      HttpStatus.OK.value(), "Client details", TraceUtils.getSpanID(), client);
+              return ResponseEntity.ok(response);
+            });
   }
 
   /**
