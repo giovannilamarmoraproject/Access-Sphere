@@ -13,6 +13,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,8 @@ class UserAdminServiceTest {
   @Mock private UserService userService;
   @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
   @Mock private OAuth2Authorization oAuth2Authorization;
+  @Mock private io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService oAuth2AuthorizationService;
+  @Mock private io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager permissionRoleManager;
   @Mock private WebhookService webhookService;
 
   @InjectMocks private UserAdminService userAdminService;
@@ -45,6 +48,8 @@ class UserAdminServiceTest {
     ReflectionTestUtils.setField(userAdminService, "userService", userService);
     ReflectionTestUtils.setField(userAdminService, "userClientRoleDAO", userClientRoleDAO);
     ReflectionTestUtils.setField(userAdminService, "oAuth2Authorization", oAuth2Authorization);
+    ReflectionTestUtils.setField(userAdminService, "oAuth2AuthorizationService", oAuth2AuthorizationService);
+    ReflectionTestUtils.setField(userAdminService, "permissionRoleManager", permissionRoleManager);
     ReflectionTestUtils.setField(userAdminService, "webhookService", webhookService);
   }
 
@@ -433,5 +438,104 @@ class UserAdminServiceTest {
                 t instanceof OAuthException
                     && ((OAuthException) t).getExceptionCode().equals(ExceptionMap.ERR_OAUTH_403))
         .verify();
+  }
+
+  @Test
+  @DisplayName("register should succeed when client registration is disabled but caller has users:write permission")
+  void register_clientRegistrationDisabled_withAdminBearer_bypassesCheckAndSucceeds() {
+    User user = new User();
+    user.setUsername("provisioned_user");
+    user.setEmail("prov@example.com");
+    user.setPassword("Strong1Password!");
+    user.setRoles(
+        List.of(
+            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                "CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
+
+    when(userService.existsByUsername("provisioned_user")).thenReturn(false);
+    when(userService.existsByEmail("prov@example.com")).thenReturn(false);
+
+    OAuth2Client client = new OAuth2Client();
+    client.setClientId("CLIENT-BLOCKED");
+    client.setEnableRegistration(false);
+    AppRole role = new AppRole("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
+    client.setAppRoles(List.of(role));
+
+    when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-BLOCKED"))
+        .thenReturn(Mono.just(client));
+
+    OAuth2Authorization adminAuth = new OAuth2Authorization();
+    adminAuth.setSubject("admin");
+    adminAuth.setIdentifier("admin-uuid");
+    adminAuth.setPermissions(List.of("users:write"));
+
+    when(oAuth2AuthorizationService.getByAccessTokenOrIdToken("Bearer admin-token"))
+        .thenReturn(adminAuth);
+    when(permissionRoleManager.canWriteUsers(adminAuth, "CLIENT-BLOCKED")).thenReturn(true);
+
+    when(userService.saveUserEntityIntoDatabase(any()))
+        .thenAnswer(
+            inv -> {
+              io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity entity =
+                  inv.getArgument(0);
+              User dto = new User();
+              dto.setIdentifier(entity.getIdentifier());
+              dto.setUsername(entity.getUsername());
+              dto.setEmail(entity.getEmail());
+              return dto;
+            });
+    when(userClientRoleDAO.saveAll(any())).thenReturn(List.of());
+
+    StepVerifier.create(userAdminService.register("Bearer admin-token", user))
+        .assertNext(
+            registered -> {
+              assertNotNull(registered.getIdentifier());
+              assertEquals("provisioned_user", registered.getUsername());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  @DisplayName("registerUser should succeed when client registration is disabled but caller has admin bearer")
+  void registerUser_clientRegistrationDisabled_withAdminBearer_bypassesCheckAndSucceeds() {
+    User user = new User();
+    user.setUsername("admin_created_user");
+    user.setEmail("admin_created@example.com");
+
+    OAuth2Client client = new OAuth2Client();
+    client.setClientId("CLIENT-LOCKED");
+    client.setEnableRegistration(false);
+    client.setAppRoles(List.of(new AppRole("ACCESS-SPHERE_USER", "USER", "desc", List.of())));
+
+    OAuth2Authorization adminAuth = new OAuth2Authorization();
+    adminAuth.setSubject("admin");
+    adminAuth.setIdentifier("admin-uuid");
+    adminAuth.setSubjectType(SubjectType.TECHNICAL);
+    adminAuth.setRoles(List.of("ROLE_ADMIN"));
+
+    when(oAuth2AuthorizationService.getByAccessTokenOrIdToken("Bearer admin-token"))
+        .thenReturn(adminAuth);
+    when(permissionRoleManager.canWriteUsers(adminAuth, "CLIENT-LOCKED")).thenReturn(true);
+
+    when(userService.saveUserEntityIntoDatabase(any()))
+        .thenAnswer(
+            inv -> {
+              io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity entity =
+                  inv.getArgument(0);
+              User dto = new User();
+              dto.setIdentifier(entity.getIdentifier());
+              dto.setUsername(entity.getUsername());
+              dto.setEmail(entity.getEmail());
+              return dto;
+            });
+    when(userClientRoleDAO.saveAll(any())).thenReturn(List.of());
+
+    StepVerifier.create(userAdminService.registerUser("Bearer admin-token", user, client, true))
+        .assertNext(
+            registered -> {
+              assertNotNull(registered.getIdentifier());
+              assertEquals("admin_created_user", registered.getUsername());
+            })
+        .verifyComplete();
   }
 }

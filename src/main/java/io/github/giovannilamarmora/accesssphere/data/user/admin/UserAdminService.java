@@ -14,6 +14,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
+import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.RoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
@@ -74,6 +75,7 @@ public class UserAdminService {
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
+  @Autowired private PermissionRoleManager permissionRoleManager;
   @Autowired @Lazy private WebhookService webhookService;
 
   /**
@@ -183,7 +185,7 @@ public class UserAdminService {
             return true;
           })
           .subscribeOn(Schedulers.boundedElastic())
-          .flatMap(ignored -> validateAndEnrichRoles(user.getRoles()))
+          .flatMap(ignored -> validateAndEnrichRoles(user.getRoles(), bearer))
           .flatMap(enrichedRoles -> {
             user.setRoles(enrichedRoles);
             return Mono.fromCallable(() -> {
@@ -218,13 +220,44 @@ public class UserAdminService {
   }
 
   /**
+   * Determina se l'operatore chiamante possiede i privilegi amministrativi per bypassare il
+   * blocco preventivo della registrazione autonoma (Super Admin, utente tecnico o utente dotato
+   * del permesso 'users:write' / '*').
+   *
+   * @param bearer Token di autorizzazione opzionale dell'operatore.
+   * @param targetClientId Identificativo del client OAuth2 bersaglio.
+   * @return true se l'operatore e autorizzato ad aggiungere utenti anche con registrazione disattivata.
+   */
+  public boolean canBypassRegistrationCheck(String bearer, String targetClientId) {
+    if (techUserService.isTechUser()) {
+      return true;
+    }
+    if (!StringUtils.hasText(bearer)) {
+      return false;
+    }
+    try {
+      OAuth2Authorization tokenData = oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
+      if (tokenData == null) {
+        return false;
+      }
+      return permissionRoleManager.canWriteUsers(tokenData, targetClientId);
+    } catch (Exception e) {
+      LOG.debug("Bearer token is not an authorized operator token for registration bypass: {}", e.getMessage());
+      return false;
+    }
+  }
+
+  /**
    * Convalida che ciascun ruolo passato nel payload appartenga a un client esistente con registrazione
-   * abilitata, e che il ruolo sia effettivamente presente nel catalogo ruoli del client.
+   * abilitata (o bypassata se l'operatore ha permessi users:write/admin), e che il ruolo sia
+   * effettivamente presente nel catalogo ruoli del client.
    *
    * @param requestedRoles Lista di ruoli richiesti con associazione client.
+   * @param bearer Token di autorizzazione opzionale dell'operatore.
    * @return Mono con la lista dei ruoli arricchiti con tipologia, descrizione e permessi.
    */
-  private Mono<List<UserClientRoleDTO>> validateAndEnrichRoles(List<UserClientRoleDTO> requestedRoles) {
+  private Mono<List<UserClientRoleDTO>> validateAndEnrichRoles(
+      List<UserClientRoleDTO> requestedRoles, String bearer) {
     List<String> clientIds = requestedRoles.stream()
         .map(r -> {
           if (r == null || !StringUtils.hasText(r.getClientId())) {
@@ -252,7 +285,11 @@ public class UserAdminService {
               LOG.error("❌ Client {} not found", cId);
               throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + cId);
             }
-            UserValidator.validateClientRegistrationEnabled(client);
+
+            // Gli utenti admin o con permesso users:write possono registrare utenti anche se enableRegistration e disattivato
+            if (!canBypassRegistrationCheck(bearer, client.getClientId())) {
+              UserValidator.validateClientRegistrationEnabled(client);
+            }
 
             List<AppRole> clientAppRoles = client.getAppRoles() != null ? client.getAppRoles() : List.of();
             AppRole matched = clientAppRoles.stream()
@@ -309,7 +346,10 @@ public class UserAdminService {
       LOG.info(
           "👤 [USER ADMIN] Registering user: {}, email: {}", user.getUsername(), user.getEmail());
 
-      UserValidator.validateClientRegistrationEnabled(oAuth2Client);
+      // Gli utenti admin o con permesso users:write possono registrare utenti anche se enableRegistration e disattivato
+      if (!canBypassRegistrationCheck(bearer, oAuth2Client.getClientId())) {
+        UserValidator.validateClientRegistrationEnabled(oAuth2Client);
+      }
 
       List<AppRole> clientRoles =
           oAuth2Client.getAppRoles() != null ? oAuth2Client.getAppRoles() : List.of();

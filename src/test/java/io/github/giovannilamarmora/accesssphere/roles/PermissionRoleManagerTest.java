@@ -129,4 +129,22 @@ class PermissionRoleManagerTest {
             permissionRoleManager.assertPermission(
                 delegatedAuth, "LINKATUTTO-ADMIN", "clients:delete"));
   }
+
+  @Test
+  @DisplayName("canWriteUsers returns true for Super Admin, token with users:write, and false for unprivileged")
+  void testCanWriteUsers() {
+    when(techUserService.isTechUser(techAuth)).thenReturn(true);
+    assertTrue(permissionRoleManager.canWriteUsers(techAuth, "ANY-CLIENT"));
+
+    OAuth2Authorization tokenWithWrite = new OAuth2Authorization();
+    tokenWithWrite.setPermissions(List.of("users:write"));
+    assertTrue(permissionRoleManager.canWriteUsers(tokenWithWrite, "ANY-CLIENT"));
+
+    OAuth2Authorization guestAuth = new OAuth2Authorization();
+    guestAuth.setIdentifier("guest-id");
+    guestAuth.setPermissions(List.of());
+    assertFalse(permissionRoleManager.canWriteUsers(guestAuth, "LINKATUTTO-ADMIN"));
+
+    assertFalse(permissionRoleManager.canWriteUsers(null, "LINKATUTTO-ADMIN"));
+  }
 }

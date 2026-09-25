@@ -6,6 +6,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -207,5 +208,90 @@ public class PermissionRoleManager {
               + targetClientId
               + "]");
     }
+  }
+
+  /**
+   * Determina se l'operatore autenticato possiede i permessi per la creazione/amministrazione di
+   * utenti IAM (Super Admin, utente tecnico o possesso del permesso 'users:write' / '*').
+   *
+   * @param auth Dati del token di autorizzazione dell'operatore.
+   * @param targetClientId Identificativo opzionale del client bersaglio su cui si intende operare.
+   * @return true se l'operatore possiede i privilegi di scrittura utenti, false altrimenti.
+   */
+  public boolean canWriteUsers(OAuth2Authorization auth, String targetClientId) {
+    if (auth == null) return false;
+    if (isSuperAdmin(auth)) return true;
+
+    // 1. Verifica se i permessi diretti presenti nel token contengono '*' o 'users:write'
+    if (auth.getPermissions() != null) {
+      boolean match =
+          auth.getPermissions().stream()
+              .filter(Objects::nonNull)
+              .anyMatch(
+                  p ->
+                      p.equals("*")
+                          || p.equalsIgnoreCase(SystemPermission.ALL.getValue())
+                          || p.equalsIgnoreCase(SystemPermission.USERS_WRITE.getValue())
+                          || p.equalsIgnoreCase("users:*")
+                          || p.equalsIgnoreCase("users:write"));
+      if (match) return true;
+    }
+
+    // 2. Verifica se l'operatore possiede ruoli con permessi di scrittura utenti sulla Console (ACCESS-SPHERE-AUTH)
+    String adminClientId = techUserService.getAdminClientId();
+    if (auth.getIdentifier() != null) {
+      List<UserClientRoleEntity> consoleRoles =
+          userClientRoleDAO.findByUserIdentifierAndClientId(auth.getIdentifier(), adminClientId);
+      if (consoleRoles != null && !consoleRoles.isEmpty()) {
+        for (UserClientRoleEntity ucr : consoleRoles) {
+          if (ucr == null || ucr.getRole() == null) continue;
+          Optional<RoleDefinitionEntity> def =
+              roleDefinitionDAO.findByClientIdAndRole(adminClientId, ucr.getRole());
+          if (def.isPresent() && def.get().getPermissions() != null) {
+            boolean match =
+                def.get().getPermissions().stream()
+                    .filter(Objects::nonNull)
+                    .anyMatch(
+                        p ->
+                            p.equals("*")
+                                || p.equalsIgnoreCase(SystemPermission.ALL.getValue())
+                                || p.equalsIgnoreCase(SystemPermission.USERS_WRITE.getValue())
+                                || p.equalsIgnoreCase("users:*")
+                                || p.equalsIgnoreCase("users:write"));
+            if (match) return true;
+          }
+        }
+      }
+
+      // 3. Verifica sullo specifico client target (se specificato)
+      if (targetClientId != null && !targetClientId.isBlank()) {
+        List<UserClientRoleEntity> targetRoles =
+            userClientRoleDAO.findByUserIdentifierAndClientId(
+                auth.getIdentifier(), targetClientId.trim().toUpperCase());
+        if (targetRoles != null && !targetRoles.isEmpty()) {
+          for (UserClientRoleEntity ucr : targetRoles) {
+            if (ucr == null || ucr.getRole() == null) continue;
+            Optional<RoleDefinitionEntity> def =
+                roleDefinitionDAO.findByClientIdAndRole(
+                    targetClientId.trim().toUpperCase(), ucr.getRole());
+            if (def.isPresent() && def.get().getPermissions() != null) {
+              boolean match =
+                  def.get().getPermissions().stream()
+                      .filter(Objects::nonNull)
+                      .anyMatch(
+                          p ->
+                              p.equals("*")
+                                  || p.equalsIgnoreCase(SystemPermission.ALL.getValue())
+                                  || p.equalsIgnoreCase(SystemPermission.USERS_WRITE.getValue())
+                                  || p.equalsIgnoreCase("users:*")
+                                  || p.equalsIgnoreCase("users:write"));
+              if (match) return true;
+            }
+          }
+        }
+      }
+    }
+
+    return false;
   }
 }

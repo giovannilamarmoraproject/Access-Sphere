@@ -16,12 +16,19 @@ public class RoleManager {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public static Boolean hasPermissionRoles(
       OAuth2Authorization oAuth2Authorization, OAuth2Client oAuth2Client) {
-    if (oAuth2Authorization.getSubjectType().equals(SubjectType.TECHNICAL)) {
+    if (oAuth2Authorization == null) {
+      return false;
+    }
+    if (SubjectType.TECHNICAL.equals(oAuth2Authorization.getSubjectType())) {
       LOG.info("The subject {} has Technical Roles", oAuth2Authorization.getSubjectType());
       return true;
     }
+    if (oAuth2Client == null || oAuth2Client.getAppRoles() == null || oAuth2Authorization.getRoles() == null) {
+      return false;
+    }
     boolean hasTechRole =
         oAuth2Client.getAppRoles().stream()
+            .filter(ar -> ar != null && ar.getRole() != null)
             .map(AppRole::getRole)
             .anyMatch(oAuth2Authorization.getRoles()::contains);
     if (hasTechRole)
