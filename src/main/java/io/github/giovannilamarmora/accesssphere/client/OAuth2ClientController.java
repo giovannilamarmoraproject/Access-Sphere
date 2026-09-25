@@ -112,8 +112,7 @@ public interface OAuth2ClientController {
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param clientId Identificativo univoco del client desiderato.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link
-   *     OAuth2Client}.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link OAuth2ClientResponse}.
    */
   @GetMapping("/clients/{clientId}")
   @Operation(
@@ -167,7 +166,7 @@ public interface OAuth2ClientController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
-  Mono<ResponseEntity<Response>> getClientById(
+  Mono<ResponseEntity<OAuth2ClientResponse>> getClientById(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(
@@ -188,7 +187,7 @@ public interface OAuth2ClientController {
    * @param oAuth2Client DTO con la configurazione e le credenziali del nuovo client.
    * @param request Richiesta HTTP server reattiva.
    * @return {@link Mono} contenente {@link ResponseEntity} con stato 201 CREATED e {@link
-   *     OAuth2Client}.
+   *     OAuth2ClientResponse}.
    */
   @PostMapping("/clients")
   @Operation(
@@ -234,7 +233,7 @@ public interface OAuth2ClientController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
-  Mono<ResponseEntity<Response>> createClient(
+  Mono<ResponseEntity<OAuth2ClientResponse>> createClient(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(
@@ -253,8 +252,7 @@ public interface OAuth2ClientController {
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param oAuth2Client DTO contenente le nuove configurazioni del client.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link
-   *     OAuth2Client}.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link OAuth2ClientResponse}.
    */
   @PutMapping("/clients/{clientId}")
   @Operation(
@@ -308,7 +306,7 @@ public interface OAuth2ClientController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
-  Mono<ResponseEntity<Response>> updateClientById(
+  Mono<ResponseEntity<OAuth2ClientResponse>> updateClientById(
       @PathVariable(value = "clientId")
           @Schema(
               description = OpenAPI.Params.Description.CLIENT_ID,
@@ -331,8 +329,7 @@ public interface OAuth2ClientController {
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param oAuth2Client DTO contenente il client_id e le nuove configurazioni.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} e {@link
-   *     OAuth2Client}.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link OAuth2ClientResponse}.
    */
   @PutMapping("/clients")
   @Operation(
@@ -386,7 +383,7 @@ public interface OAuth2ClientController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
-  Mono<ResponseEntity<Response>> updateClient(
+  Mono<ResponseEntity<OAuth2ClientResponse>> updateClient(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(
@@ -403,8 +400,7 @@ public interface OAuth2ClientController {
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param clientId Identificativo univoco del client da eliminare.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response} dell'avvenuta
-   *     eliminazione.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link OAuth2ClientDeleteResponse}.
    */
   @DeleteMapping("/clients/{clientId}")
   @Operation(
@@ -458,7 +454,7 @@ public interface OAuth2ClientController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
-  Mono<ResponseEntity<Response>> deleteClient(
+  Mono<ResponseEntity<OAuth2ClientDeleteResponse>> deleteClient(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(

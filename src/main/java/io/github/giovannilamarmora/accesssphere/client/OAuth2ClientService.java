@@ -1,265 +1,197 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
-import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
-import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
+import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
-import io.github.giovannilamarmora.utils.context.TraceUtils;
-import io.github.giovannilamarmora.utils.generic.Response;
+import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 /**
- * Service per la gestione dei Client OAuth2. Fornisce funzionalita di base (lettura, inserimento,
- * aggiornamento, eliminazione) basate esclusivamente sul database locale.
+ * Application Service per la gestione dei Client OAuth 2.0.
+ *
+ * <p>Responsabilita:
+ *
+ * <ul>
+ *   <li>Funge da Gatekeeper di sicurezza e perimetro per gli endpoint REST consumati dalla UI o da
+ *       chiamanti API.
+ *   <li>Verifica l'accesso alla console e i permessi granulari (es. {@code clients:read}, {@code
+ *       clients:write}, {@code clients:delete}) tramite {@link PermissionRoleManager}.
+ *   <li>Applica lo Scoping Multi-Tenant: per gli operatori delegati restituisce e consente
+ *       l'amministrazione unicamente dei client presenti nei loro {@code managedClients}.
+ *   <li>Delega le operazioni effettive di persistenza al Domain Service sottostante {@link
+ *       OAuth2ClientDomainService}.
+ *   <li>Restituisce direttamente modelli DTO puri; la costruzione delle risposte HTTP {@link
+ *       org.springframework.http.ResponseEntity} e delegata al Controller.
+ * </ul>
  */
 @Logged
 @Service
 public class OAuth2ClientService {
+
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Autowired private OAuth2Authorization oAuth2Authorization;
-  @Autowired private IOAuth2ClientDAO ioAuth2ClientDAO;
+  @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
+  @Autowired private PermissionRoleManager permissionRoleManager;
   @Autowired private TechUserService techUserService;
-  @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
+  @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
 
-  /** Recupera la lista di tutti i Client restituiti come oggetto Response reattivo. */
-  public Mono<ResponseEntity<Response>> getClients() {
-    Response response =
-        new Response(HttpStatus.OK.value(), "Client credential list", TraceUtils.getSpanID(), null);
+  /**
+   * Recupera la lista dei Client registrati applicando i vincoli di perimetro (Data Scoping)
+   * dell'operatore chiamante.
+   *
+   * @return {@link Mono} con la lista di {@link OAuth2Client} autorizzati per l'operatore.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<OAuth2Client>> getClients() {
+    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
 
-    return getClientCredentials()
+    return oAuth2ClientDomainService
+        .getClientCredentials()
         .map(
-            client -> {
-              response.setData(client);
-              return ResponseEntity.ok(response);
+            allClients -> {
+              if (permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
+                return allClients;
+              }
+              List<String> managed = permissionRoleManager.getManagedClientIds(oAuth2Authorization);
+              return allClients.stream()
+                  .filter(
+                      c ->
+                          c.getClientId() != null
+                              && managed != null
+                              && managed.contains(c.getClientId().toUpperCase())
+                              && permissionRoleManager.hasPermission(
+                                  oAuth2Authorization, c.getClientId(), "clients:read"))
+                  .toList();
             });
   }
 
   /**
-   * Recupera la lista di tutti i ClientCredential dal database. Applica validazione sui permessi
-   * del tech client.
+   * Recupera i dettagli di un singolo client tramite ID verificando che sia nel perimetro
+   * autorizzato dell'operatore chiamante e che possieda il permesso {@code clients:read}.
+   *
+   * @param clientID Identificativo univoco del client.
+   * @return {@link Mono} contenente il {@link OAuth2Client} richiesto.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<OAuth2Client>> getClientCredentials() {
-    LOG.info("Retrieving all registered clients from Database");
-    List<OAuth2ClientEntity> oAuth2ClientEntity = ioAuth2ClientDAO.findAll();
-    if (ObjectUtils.isEmpty(oAuth2ClientEntity)) {
-      LOG.error("No clients found in Database");
-      return Mono.error(new OAuthException(ExceptionMap.ERR_OAUTH_404, "Clients not found!"));
-    }
-    List<RoleDefinitionEntity> allRoles = roleDefinitionDAO.findAll();
-    Map<String, List<AppRole>> rolesByClient =
-        allRoles != null
-            ? allRoles.stream()
-                .filter(r -> r.getClientId() != null)
-                .collect(
-                    Collectors.groupingBy(
-                        r -> r.getClientId().toUpperCase(),
-                        Collectors.mapping(
-                            r ->
-                                new AppRole(
-                                    r.getRole(),
-                                    r.getType(),
-                                    r.getDescription(),
-                                    r.getPermissions()),
-                            Collectors.toList())))
-            : Map.of();
+  public Mono<OAuth2Client> getClientById(String clientID) {
+    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
+    permissionRoleManager.assertPermission(oAuth2Authorization, clientID, "clients:read");
 
-    List<OAuth2Client> dtos =
-        oAuth2ClientEntity.stream()
-            .map(OAuth2ClientMapper::toDTO)
-            .peek(
-                dto ->
-                    dto.setAppRoles(
-                        rolesByClient.getOrDefault(dto.getClientId().toUpperCase(), List.of())))
-            .toList();
-
-    TechUserValidator.validateTechClient(
-        dtos, oAuth2Authorization, techUserService.getTechClientId());
-    return Mono.just(dtos);
+    return oAuth2ClientDomainService.getClientCredentialByClientID(clientID);
   }
 
   /**
-   * Recupera le credenziali di un Client dato il suo clientID.
+   * Metodo delegato di dominio per recuperare le credenziali di un Client.
    *
-   * @param clientID Identificativo univoco del client.
-   * @return {@link Mono} contenente il {@link OAuth2Client}.
-   * @throws OAuthException se il client non viene trovato.
+   * @param clientID Identificativo del client.
+   * @return Mono con il client.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<OAuth2Client> getClientCredentialByClientID(String clientID) {
-    LOG.info("Searching for credentials for client ID: {}", clientID);
-    OAuth2ClientEntity oAuth2ClientEntity = ioAuth2ClientDAO.findByClientId(clientID);
-    if (ObjectUtils.isEmpty(oAuth2ClientEntity)) {
-      LOG.error("Client with ID: {} not found in Database", clientID);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
-    }
-    OAuth2Client dto = OAuth2ClientMapper.toDTO(oAuth2ClientEntity);
-    populateAppRoles(dto);
-    return Mono.just(dto);
+    return oAuth2ClientDomainService.getClientCredentialByClientID(clientID);
   }
 
   /**
-   * Recupera le credenziali di un Client dato il suo clientID restituendo una Response HTTP 200.
+   * Metodo delegato per recuperare la lista dei client registrati.
    *
-   * @param clientID Identificativo univoco del client.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response}.
+   * @return Mono con la lista completa dei client.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> getClientById(String clientID) {
-    return getClientCredentialByClientID(clientID)
-        .map(
-            client -> {
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(), "Client details", TraceUtils.getSpanID(), client);
-              return ResponseEntity.ok(response);
-            });
+  public Mono<List<OAuth2Client>> getClientCredentials() {
+    return oAuth2ClientDomainService.getClientCredentials();
   }
 
   /**
-   * Inserisce un nuovo ClientCredential a database e persiste le definizioni ruoli nella tabella
-   * relazionale.
+   * Registra un nuovo client OAuth2 nel sistema verificando le autorizzazioni dell'operatore.
+   *
+   * @param oAuth2Client DTO con la configurazione del nuovo client.
    */
-  @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void addClientToDatabase(OAuth2Client oAuth2Client) {
-    LOG.info("Inserting new client into Database: {}", oAuth2Client.getClientId());
-    OAuthValidator.validateClientRoles(oAuth2Client);
-    OAuth2ClientEntity clientEntity = OAuth2ClientMapper.toEntity(oAuth2Client);
-    ioAuth2ClientDAO.save(clientEntity);
+    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
 
-    // Persiste le definizioni ruoli su ROLE_DEFINITIONS
-    if (oAuth2Client.getAppRoles() != null) {
-      for (AppRole appRole : oAuth2Client.getAppRoles()) {
-        if (appRole != null && appRole.getRole() != null) {
-          String rName = appRole.getRole().trim().toUpperCase();
-          if (!roleDefinitionDAO.existsByClientIdAndRole(oAuth2Client.getClientId(), rName)) {
-            roleDefinitionDAO.save(
-                new RoleDefinitionEntity(
-                    oAuth2Client.getClientId(),
-                    rName,
-                    appRole.getType(),
-                    appRole.getDescription(),
-                    appRole.getPermissions() != null ? appRole.getPermissions() : List.of("*")));
-          }
-        }
+    if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
+      if (oAuth2Client.getClientId() != null
+          && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getTechClientId())) {
+        throw new OAuthException(
+            ExceptionMap.ERR_TECH_403, "Non-technical users cannot register technical clients");
       }
+      permissionRoleManager.assertPermission(
+          oAuth2Authorization, oAuth2Client.getClientId(), "clients:write");
     }
-    LOG.debug("Client {} successfully inserted", oAuth2Client.getClientId());
+
+    oAuth2ClientDomainService.addClientToDatabase(oAuth2Client);
+
+    // Auto-associazione del creatore non-tech come amministratore del nuovo client
+    if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)
+        && oAuth2Authorization.getIdentifier() != null
+        && oAuth2Client.getClientId() != null) {
+      userClientRoleDAO.save(
+          new UserClientRoleEntity(
+              oAuth2Authorization.getIdentifier(),
+              oAuth2Client.getClientId().trim().toUpperCase(),
+              "ROLE_ADMIN"));
+    }
   }
 
   /**
-   * Aggiorna un ClientCredential esistente a database.
+   * Aggiorna le configurazioni di un client garantendo che appartenga al perimetro dell'operatore
+   * e che questi possieda il permesso {@code clients:write}.
    *
-   * @throws IllegalArgumentException se il client non esiste.
+   * @param oAuth2Client DTO con i parametri aggiornati.
    */
-  @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void updateClientInDatabase(OAuth2Client oAuth2Client) {
-    LOG.info("Updating client in Database: {}", oAuth2Client.getClientId());
-    if (oAuth2Client.getAppRoles() != null) {
-      OAuthValidator.validateClientRoles(oAuth2Client);
-    }
-    OAuth2ClientEntity existingClientEntity =
-        ioAuth2ClientDAO.findByClientId(oAuth2Client.getClientId());
-    if (!ObjectUtils.isEmpty(existingClientEntity)) {
-      OAuth2ClientMapper.updateEntity(existingClientEntity, oAuth2Client);
-      ioAuth2ClientDAO.save(existingClientEntity);
+    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
 
-      // Sincronizza i ruoli nella tabella relazionale ROLE_DEFINITIONS
-      if (oAuth2Client.getAppRoles() != null) {
-        for (AppRole appRole : oAuth2Client.getAppRoles()) {
-          if (appRole != null && appRole.getRole() != null) {
-            String rName = appRole.getRole().trim().toUpperCase();
-            Optional<RoleDefinitionEntity> existingRole =
-                roleDefinitionDAO.findByClientIdAndRole(oAuth2Client.getClientId(), rName);
-            if (existingRole.isPresent()) {
-              RoleDefinitionEntity roleEntity = existingRole.get();
-              roleEntity.setType(appRole.getType());
-              roleEntity.setDescription(appRole.getDescription());
-              roleEntity.setPermissions(
-                  appRole.getPermissions() != null ? appRole.getPermissions() : List.of("*"));
-              roleDefinitionDAO.save(roleEntity);
-            } else {
-              roleDefinitionDAO.save(
-                  new RoleDefinitionEntity(
-                      oAuth2Client.getClientId(),
-                      rName,
-                      appRole.getType(),
-                      appRole.getDescription(),
-                      appRole.getPermissions() != null ? appRole.getPermissions() : List.of("*")));
-            }
-          }
-        }
+    if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
+      if (oAuth2Client.getClientId() != null
+          && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getTechClientId())) {
+        throw new OAuthException(
+            ExceptionMap.ERR_TECH_403, "Non-technical users cannot modify the technical client");
       }
-      LOG.debug("Client {} successfully updated", oAuth2Client.getClientId());
-    } else {
-      LOG.error("Cannot update: Client {} not found", oAuth2Client.getClientId());
-      throw new IllegalArgumentException("Client not found: " + oAuth2Client.getClientId());
+      permissionRoleManager.assertPermission(
+          oAuth2Authorization, oAuth2Client.getClientId(), "clients:write");
     }
+
+    oAuth2ClientDomainService.updateClientInDatabase(oAuth2Client);
   }
 
   /**
-   * Rimuove un ClientCredential dal database ripulendo definizioni ruoli e assegnazioni utenti
-   * associate.
+   * Elimina un client dal database verificando che l'operatore possieda il permesso {@code
+   * clients:delete}. Il client tecnico di sistema {@code ACCESS-SPHERE-TECH} non puo mai essere
+   * eliminato.
+   *
+   * @param oAuth2Client DTO del client da cancellare.
    */
-  @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteClientFromDatabase(OAuth2Client oAuth2Client) {
-    LOG.info("Removing client from Database: {}", oAuth2Client.getClientId());
-    OAuth2ClientEntity existingClientOptional =
-        ioAuth2ClientDAO.findByClientId(oAuth2Client.getClientId());
-    if (!ObjectUtils.isEmpty(existingClientOptional)) {
-      // Pulizia relazionale a cascata per ruoli e associazioni del client
-      roleDefinitionDAO.deleteByClientId(oAuth2Client.getClientId());
-      userClientRoleDAO.deleteByClientId(oAuth2Client.getClientId());
+    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
 
-      ioAuth2ClientDAO.delete(existingClientOptional);
-      LOG.debug("Client {} successfully removed", oAuth2Client.getClientId());
-    } else {
-      LOG.warn("No action taken: Client {} not found for removal", oAuth2Client.getClientId());
+    if (oAuth2Client.getClientId() != null
+        && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getTechClientId())) {
+      throw new OAuthException(
+          ExceptionMap.ERR_TECH_403, "The technical client cannot be deleted under any circumstance");
     }
-  }
 
-  /**
-   * Helper per popolare l'elenco dei ruoli applicativi sul DTO ClientCredential leggendo
-   * direttamente dalla tabella relazionale ROLE_DEFINITIONS.
-   */
-  private void populateAppRoles(OAuth2Client dto) {
-    if (dto == null || dto.getClientId() == null) return;
-    List<RoleDefinitionEntity> roles = roleDefinitionDAO.findByClientId(dto.getClientId());
-    if (roles != null) {
-      dto.setAppRoles(
-          roles.stream()
-              .map(
-                  r ->
-                      new AppRole(r.getRole(), r.getType(), r.getDescription(), r.getPermissions()))
-              .toList());
+    if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
+      permissionRoleManager.assertPermission(
+          oAuth2Authorization, oAuth2Client.getClientId(), "clients:delete");
     }
+
+    oAuth2ClientDomainService.deleteClientFromDatabase(oAuth2Client);
   }
 }

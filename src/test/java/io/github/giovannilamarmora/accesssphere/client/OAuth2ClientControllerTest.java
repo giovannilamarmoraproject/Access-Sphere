@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientDeleteResponse;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientListResponse;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientResponse;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,12 +41,9 @@ class OAuth2ClientControllerTest {
   @Test
   @DisplayName("getClientCredentials returns 200 OK with list of clients")
   void testGetClientCredentials() {
-    Response mockResponse =
-        new Response(
-            HttpStatus.OK.value(), "Client credential list", "span-1", List.of(sampleClient));
-    when(oAuth2ClientService.getClients()).thenReturn(Mono.just(ResponseEntity.ok(mockResponse)));
+    when(oAuth2ClientService.getClients()).thenReturn(Mono.just(List.of(sampleClient)));
 
-    Mono<ResponseEntity<Response>> result =
+    Mono<ResponseEntity<OAuth2ClientListResponse>> result =
         oAuth2ClientController.getOAuth2Clients(
             "Bearer sample-token", MockServerHttpRequest.get("/v1/clients").build());
 
@@ -54,6 +53,7 @@ class OAuth2ClientControllerTest {
               assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
               assertNotNull(responseEntity.getBody());
               assertEquals(200, responseEntity.getBody().getStatus());
+              assertEquals("Client credential list", responseEntity.getBody().getMessage());
               assertEquals(List.of(sampleClient), responseEntity.getBody().getData());
             })
         .verifyComplete();
@@ -64,12 +64,10 @@ class OAuth2ClientControllerTest {
   @Test
   @DisplayName("getClientById returns 200 OK with single client")
   void testGetClientById() {
-    Response mockResponse =
-        new Response(HttpStatus.OK.value(), "Client details", "span-2", sampleClient);
     when(oAuth2ClientService.getClientById("TEST-CLIENT-001"))
-        .thenReturn(Mono.just(ResponseEntity.ok(mockResponse)));
+        .thenReturn(Mono.just(sampleClient));
 
-    Mono<ResponseEntity<Response>> result =
+    Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.getClientById(
             "Bearer sample-token",
             "TEST-CLIENT-001",
@@ -80,6 +78,8 @@ class OAuth2ClientControllerTest {
             responseEntity -> {
               assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
               assertNotNull(responseEntity.getBody());
+              assertEquals(200, responseEntity.getBody().getStatus());
+              assertEquals("Client details", responseEntity.getBody().getMessage());
               assertEquals(sampleClient, responseEntity.getBody().getData());
             })
         .verifyComplete();
@@ -92,7 +92,7 @@ class OAuth2ClientControllerTest {
   void testCreateClient() {
     doNothing().when(oAuth2ClientService).addClientToDatabase(any(OAuth2Client.class));
 
-    Mono<ResponseEntity<Response>> result =
+    Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.createClient(
             "Bearer sample-token", sampleClient, MockServerHttpRequest.post("/v1/clients").build());
 
@@ -102,6 +102,7 @@ class OAuth2ClientControllerTest {
               assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
               assertNotNull(responseEntity.getBody());
               assertEquals(HttpStatus.CREATED.value(), responseEntity.getBody().getStatus());
+              assertEquals("Client created", responseEntity.getBody().getMessage());
               assertEquals(sampleClient, responseEntity.getBody().getData());
             })
         .verifyComplete();
@@ -116,7 +117,7 @@ class OAuth2ClientControllerTest {
     clientWithoutId.setClientSecret("updated-secret");
     doNothing().when(oAuth2ClientService).updateClientInDatabase(any(OAuth2Client.class));
 
-    Mono<ResponseEntity<Response>> result =
+    Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.updateClientById(
             "PATH-CLIENT-ID",
             "Bearer sample-token",
@@ -128,6 +129,8 @@ class OAuth2ClientControllerTest {
             responseEntity -> {
               assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
               assertNotNull(responseEntity.getBody());
+              assertEquals(HttpStatus.OK.value(), responseEntity.getBody().getStatus());
+              assertEquals("Client updated", responseEntity.getBody().getMessage());
               assertEquals("PATH-CLIENT-ID", clientWithoutId.getClientId());
             })
         .verifyComplete();
@@ -140,7 +143,7 @@ class OAuth2ClientControllerTest {
   void testUpdateClient() {
     doNothing().when(oAuth2ClientService).updateClientInDatabase(any(OAuth2Client.class));
 
-    Mono<ResponseEntity<Response>> result =
+    Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.updateClient(
             "Bearer sample-token", sampleClient, MockServerHttpRequest.put("/v1/clients").build());
 
@@ -149,6 +152,8 @@ class OAuth2ClientControllerTest {
             responseEntity -> {
               assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
               assertNotNull(responseEntity.getBody());
+              assertEquals(HttpStatus.OK.value(), responseEntity.getBody().getStatus());
+              assertEquals("Client updated", responseEntity.getBody().getMessage());
               assertEquals(sampleClient, responseEntity.getBody().getData());
             })
         .verifyComplete();
@@ -161,7 +166,7 @@ class OAuth2ClientControllerTest {
   void testDeleteClient() {
     doNothing().when(oAuth2ClientService).deleteClientFromDatabase(any(OAuth2Client.class));
 
-    Mono<ResponseEntity<Response>> result =
+    Mono<ResponseEntity<OAuth2ClientDeleteResponse>> result =
         oAuth2ClientController.deleteClient(
             "Bearer sample-token",
             "DELETE-CLIENT-ID",
