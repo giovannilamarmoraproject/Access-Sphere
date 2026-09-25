@@ -4,8 +4,8 @@ import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -56,7 +55,7 @@ import reactor.core.publisher.Mono;
  *   <li>Gestisce il catalogo centralizzato dei ruoli e permessi su {@code /v1/roles} con CRUD
  *       atomico e revoca a cascata.
  *   <li>Consente l'esecuzione delle operazioni esclusivamente a operatori autenticati con ruolo
- *       tecnico ({@link TechUserService}).
+ *       tecnico ({@link AdminUserService}).
  * </ul>
  */
 @Service
@@ -66,8 +65,8 @@ public class RolesService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private UserService userService;
-  @Autowired private TechUserService techUserService;
-  @Autowired private TechUserConfig techUserConfig;
+  @Autowired private AdminUserService techUserService;
+  @Autowired private AdminUserConfig adminUserConfig;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private IOAuth2ClientDAO clientDAO;
@@ -94,7 +93,7 @@ public class RolesService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
-    String techClientId = techUserConfig.getTechClientId();
+    String techClientId = adminUserConfig.getAdminClientId();
     Mono<List<OAuth2Client>> getClients = oAuth2ClientService.getClientCredentials();
 
     return getClients
@@ -121,7 +120,8 @@ public class RolesService {
                     });
               }
 
-              // 2. Raccoglie i ruoli canonici/di sistema definiti a livello di piattaforma (AppRoleType)
+              // 2. Raccoglie i ruoli canonici/di sistema definiti a livello di piattaforma
+              // (AppRoleType)
               Arrays.stream(AppRoleType.values())
                   .forEach(
                       art -> {
@@ -136,12 +136,9 @@ public class RolesService {
               List<String> distinctRoleNames = new ArrayList<>();
 
               // 2. Elaborazione ruoli ricevuti
-              if (roles != null
-                  && roles.getRoles() != null
-                  && !roles.getRoles().isEmpty()) {
+              if (roles != null && roles.getRoles() != null && !roles.getRoles().isEmpty()) {
                 LOG.info(
-                    "👥 [ROLES] Processing roles payload with {} entries",
-                    roles.getRoles().size());
+                    "👥 [ROLES] Processing roles payload with {} entries", roles.getRoles().size());
                 for (UserClientRoleDTO cr : roles.getRoles()) {
                   if (cr == null || cr.getRole() == null || cr.getRole().isBlank()) continue;
                   String roleName = cr.getRole().trim().toUpperCase();
@@ -164,7 +161,8 @@ public class RolesService {
                     for (OAuth2Client cc : clientCredentials) {
                       if (cc.getAppRoles() != null) {
                         boolean match =
-                            cc.getAppRoles().stream().anyMatch(ar -> ar != null && ar.matches(roleName));
+                            cc.getAppRoles().stream()
+                                .anyMatch(ar -> ar != null && ar.matches(roleName));
                         if (match) {
                           targetClientId = cc.getClientId();
                           break;
@@ -752,23 +750,6 @@ public class RolesService {
         impactedAssignments.size(),
         normalizedRole,
         normalizedClientId);
-
-    // 4. Sincronizza USERS.ROLES per ciascun utente impattato
-    for (String uId : impactedUserIdentifiers) {
-      UserEntity user = userDAO.findUserEntityByIdentifier(uId);
-      if (user != null) {
-        List<UserClientRoleEntity> remainingUserRoles = userClientRoleDAO.findByUserIdentifier(uId);
-        boolean stillHasRole =
-            remainingUserRoles.stream().anyMatch(r -> r.getRole().equalsIgnoreCase(normalizedRole));
-
-        if (!stillHasRole && user.getRoles() != null) {
-          List<String> legacyList = new ArrayList<>(Arrays.asList(user.getRoles().split(",")));
-          legacyList.removeIf(r -> r.trim().equalsIgnoreCase(normalizedRole));
-          user.setRoles(String.join(",", legacyList));
-          userDAO.save(user);
-        }
-      }
-    }
 
     Response response =
         new Response(

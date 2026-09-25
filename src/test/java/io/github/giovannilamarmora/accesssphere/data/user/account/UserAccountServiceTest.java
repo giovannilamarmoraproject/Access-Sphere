@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -31,7 +31,7 @@ class UserAccountServiceTest {
 
   @Mock private OAuth2ClientService oAuth2ClientService;
   @Mock private TokenService tokenService;
-  @Mock private TechUserService techUserService;
+  @Mock private AdminUserService techUserService;
   @Mock private EmailTemplateService emailTemplateService;
   @Mock private EmailSenderService emailSenderService;
   @Mock private UserService userService;

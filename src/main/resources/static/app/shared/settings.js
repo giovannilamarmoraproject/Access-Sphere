@@ -622,10 +622,10 @@ const AppSettings = (function () {
             const tok = localStorage.getItem(authConfig.access_token_name);
             if (tok) return tok;
         }
-        const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-TECH";
+        const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-AUTH";
         return (
             localStorage.getItem(`${clientId}_access-token`) ||
-            localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
+            localStorage.getItem("ACCESS-SPHERE-AUTH_access-token") ||
             localStorage.getItem("access-token") ||
             (typeof getCookie === "function" ? getCookie("access-token") : null) ||
             sessionStorage.getItem("access-token") ||

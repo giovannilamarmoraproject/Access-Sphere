@@ -90,13 +90,13 @@ public class JWTData {
     List<String> effectiveRoles = null;
     List<String> effectivePermissions = null;
 
-    if (user != null && user.getClientRoles() != null && !user.getClientRoles().isEmpty()) {
+    if (user != null && user.getRoles() != null && !user.getRoles().isEmpty()) {
       String targetClientId = oAuth2Client != null ? oAuth2Client.getClientId() : null;
       List<io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO>
           matchingClientRoles =
               targetClientId == null
                   ? List.of()
-                  : user.getClientRoles().stream()
+                  : user.getRoles().stream()
                       .filter(
                           cr ->
                               cr.getClientId() != null

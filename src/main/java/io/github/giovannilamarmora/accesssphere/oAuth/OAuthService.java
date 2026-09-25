@@ -80,31 +80,6 @@ public class OAuthService {
    * @param exchange Contesto dello scambio HTTP server reattivo.
    * @return Mono contenente la risposta HTTP con reindirizzamento o payload token.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<?>> authorize(
-      String responseType,
-      String accessType,
-      String clientId,
-      String redirect_uri,
-      String scope,
-      String registration_token,
-      String bearer,
-      String state,
-      ServerWebExchange exchange) {
-    return authorize(
-        responseType,
-        accessType,
-        clientId,
-        redirect_uri,
-        scope,
-        registration_token,
-        bearer,
-        state,
-        null,
-        exchange);
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<?>> authorize(
       String responseType,
       String accessType,

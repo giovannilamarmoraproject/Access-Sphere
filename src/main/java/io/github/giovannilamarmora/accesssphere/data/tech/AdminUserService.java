@@ -15,13 +15,13 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
-public class TechUserService extends TechUserConfig {
+public class AdminUserService extends AdminUserConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public boolean checkIfTechUser(String username, String password, String clientId) {
-    return username.equalsIgnoreCase(techUsername)
-        && password.equalsIgnoreCase(techPassword)
-        && clientId.equalsIgnoreCase(techClientId);
+    return username.equalsIgnoreCase(adminUsername)
+        && password.equalsIgnoreCase(adminPassword)
+        && clientId.equalsIgnoreCase(adminClientId);
   }
 
   /**
@@ -47,12 +47,12 @@ public class TechUserService extends TechUserConfig {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public boolean isTechnicalUser(String username, String email) {
     boolean matchUsername =
-        org.springframework.util.StringUtils.hasText(techUsername)
-            && techUsername.equalsIgnoreCase(username);
+        org.springframework.util.StringUtils.hasText(adminUsername)
+            && adminUsername.equalsIgnoreCase(username);
     boolean matchEmail =
-        org.springframework.util.StringUtils.hasText(techEmail)
+        org.springframework.util.StringUtils.hasText(adminEmail)
             && org.springframework.util.StringUtils.hasText(email)
-            && techEmail.equalsIgnoreCase(email);
+            && adminEmail.equalsIgnoreCase(email);
     return matchUsername || matchEmail;
   }
 
@@ -69,10 +69,10 @@ public class TechUserService extends TechUserConfig {
    * <ul>
    *   <li>Riconosce il subject type esplicito {@link SubjectType#TECHNICAL}.
    *   <li>Verifica tramite {@link #isTechnicalUser(String, String)} se username o email
-   *       corrispondono all'utenza tecnica configurata in {@link TechUserConfig}.
+   *       corrispondono all'utenza tecnica configurata in {@link AdminUserConfig}.
    *   <li>Verifica la presenza del ruolo di sistema infrastrutturale {@code ROLE_TECH}.
    *   <li>Per chiamate puramente M2M / client-credentials (senza anagrafica utente associata),
-   *       riconosce il client tecnico {@link #getTechClientId()}.
+   *       riconosce il client tecnico {@link #getAdminClientId()}.
    * </ul>
    *
    * @param tokenData Dati del token di accesso da valutare.
@@ -102,7 +102,7 @@ public class TechUserService extends TechUserConfig {
     if (ObjectToolkit.isNullOrEmpty(tokenData.getSubject())
         && ObjectToolkit.isNullOrEmpty(tokenData.getEmail())
         && org.springframework.util.StringUtils.hasText(tokenData.getClientId())
-        && tokenData.getClientId().equalsIgnoreCase(techClientId)) {
+        && tokenData.getClientId().equalsIgnoreCase(adminClientId)) {
       return true;
     }
 
@@ -117,7 +117,7 @@ public class TechUserService extends TechUserConfig {
       return Mono.just(true);
     }
     return oAuth2ClientService
-        .getClientCredentialByClientID(techClientId)
+        .getClientCredentialByClientID(adminClientId)
         .map(
             clientCredential ->
                 clientCredential.getAppRoles().stream()
@@ -153,6 +153,6 @@ public class TechUserService extends TechUserConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   private void logTechRole(String subject) {
-    LOG.info(TECH_ROLE_LOG, subject);
+    LOG.info("TECH_ROLE_LOG", subject);
   }
 }

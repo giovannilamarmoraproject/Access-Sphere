@@ -18,12 +18,9 @@ import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -218,10 +215,6 @@ public class UserService {
     if (!ObjectToolkit.isNullOrEmpty(userFind.getId())) userEntity.setId(userFind.getId());
     userEntity.setIdentifier(userFind.getIdentifier());
     if (!isUpdatePassword) userEntity.setPassword(userFind.getPassword());
-    // Preserva i ruoli esistenti solo se userEntity non specifica nuovi ruoli (fallback null-safe)
-    if (ObjectToolkit.isNullOrEmpty(userEntity.getRoles())) {
-      userEntity.setRoles(userFind.getRoles());
-    }
     if (ObjectToolkit.isNullOrEmpty(userEntity.getMfaSettings())) {
       userEntity.setMfaSettings(userFind.getMfaSettings());
     }

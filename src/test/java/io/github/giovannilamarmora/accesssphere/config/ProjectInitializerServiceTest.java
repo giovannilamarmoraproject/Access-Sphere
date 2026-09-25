@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.email.IEmailTemplateDAO;
@@ -47,12 +47,12 @@ class ProjectInitializerServiceTest {
 
   @BeforeEach
   void setUp() {
-    TechUserConfig techUserConfig = new TechUserConfig();
-    techUserConfig.setTechUsername("tech_admin");
-    techUserConfig.setTechPassword("tech_password");
-    techUserConfig.setTechClientId("ACCESS-SPHERE-TECH");
-    techUserConfig.setTechEmail("tech_admin@accesssphere.local");
-    ReflectionTestUtils.setField(projectInitializerService, "techUserConfig", techUserConfig);
+    AdminUserConfig adminUserConfig = new AdminUserConfig();
+    adminUserConfig.setAdminUsername("tech_admin");
+    adminUserConfig.setAdminPassword("tech_password");
+    adminUserConfig.setAdminClientId("ACCESS-SPHERE-AUTH");
+    adminUserConfig.setAdminEmail("tech_admin@accesssphere.local");
+    ReflectionTestUtils.setField(projectInitializerService, "techUserConfig", adminUserConfig);
     ReflectionTestUtils.setField(projectInitializerService, "userClientRoleDAO", userClientRoleDAO);
     ReflectionTestUtils.setField(projectInitializerService, "roleDefinitionDAO", roleDefinitionDAO);
     ReflectionTestUtils.setField(
@@ -62,7 +62,7 @@ class ProjectInitializerServiceTest {
   @Test
   @DisplayName("run seeds client, user, and settings when database is empty")
   void testRunSeedsWhenEmpty() {
-    when(clientDAO.findByClientId("ACCESS-SPHERE-TECH")).thenReturn(null);
+    when(clientDAO.findByClientId("ACCESS-SPHERE-AUTH")).thenReturn(null);
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))
         .thenReturn(null);
     when(appSettingsDAO.findAll()).thenReturn(Collections.emptyList());
@@ -80,7 +80,7 @@ class ProjectInitializerServiceTest {
         ArgumentCaptor.forClass(OAuth2ClientEntity.class);
     verify(clientDAO, times(1)).save(clientCaptor.capture());
     OAuth2ClientEntity savedClient = clientCaptor.getValue();
-    assertEquals("ACCESS-SPHERE-TECH", savedClient.getClientId());
+    assertEquals("ACCESS-SPHERE-AUTH", savedClient.getClientId());
     verify(roleDefinitionDAO, times(9)).save(any());
 
     // Verify User Seed
@@ -122,13 +122,13 @@ class ProjectInitializerServiceTest {
     existingClient.setJwtSecret("existing_jwt_secret_value");
     existingClient.setRedirect_uri(
         "{\"fallback_uri\":\"http://localhost/app/login\",\"redirect_uri\":\"http://localhost/app\"}");
-    when(clientDAO.findByClientId("ACCESS-SPHERE-TECH")).thenReturn(existingClient);
+    when(clientDAO.findByClientId("ACCESS-SPHERE-AUTH")).thenReturn(existingClient);
     when(userDAO.findUserEntityByUsernameOrEmail("tech_admin", "tech_admin@accesssphere.local"))
         .thenReturn(new UserEntity());
     when(appSettingsDAO.findAll()).thenReturn(List.of(new AppSettingsEntity()));
     EmailTemplateEntity existingTpl = new EmailTemplateEntity();
     existingTpl.setIdentifier(ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
-    existingTpl.setClientId("ACCESS-SPHERE-TECH");
+    existingTpl.setClientId("ACCESS-SPHERE-AUTH");
     existingTpl.setTemplate("<html>Poppins</html>");
     when(emailTemplateDAO.findByIdentifier(
             ProjectInitializerService.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID))
@@ -138,8 +138,8 @@ class ProjectInitializerServiceTest {
         .thenReturn(Collections.emptyList());
     io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity existingRole =
         new io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity(
-            "ACCESS-SPHERE-TECH", "ROLE_ADMIN", "ADMIN", "desc", List.of("*"));
-    when(roleDefinitionDAO.findByClientIdAndRole(eq("ACCESS-SPHERE-TECH"), any()))
+            "ACCESS-SPHERE-AUTH", "ROLE_ADMIN", "ADMIN", "desc", List.of("*"));
+    when(roleDefinitionDAO.findByClientIdAndRole(eq("ACCESS-SPHERE-AUTH"), any()))
         .thenReturn(Optional.of(existingRole));
     when(roleDefinitionDAO.findAll()).thenReturn(List.of(existingRole));
 

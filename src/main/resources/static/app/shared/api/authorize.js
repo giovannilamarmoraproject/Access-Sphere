@@ -1,131 +1,131 @@
 // Cattura sincrona immediata dei parametri del token prima di qualunque altra chiamata
 (function () {
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const access_token = urlParams.get("access-token");
-    const session_id = urlParams.get("session-id");
-    const client_id = urlParams.get("client-id") || "ACCESS-SPHERE-TECH";
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const access_token = urlParams.get("access-token");
+        const session_id = urlParams.get("session-id");
+        const client_id = urlParams.get("client-id") || "ACCESS-SPHERE-AUTH";
 
-    if (access_token) {
-      if (session_id) localStorage.setItem("Session-ID", session_id);
-      localStorage.setItem("access-token", access_token);
-      localStorage.setItem(client_id + "_access-token", access_token);
-      localStorage.setItem("ACCESS-SPHERE-TECH_access-token", access_token);
-      
-      const cleanUrl = window.location.origin + window.location.pathname;
-      window.history.replaceState(null, "", cleanUrl);
+        if (access_token) {
+            if (session_id) localStorage.setItem("Session-ID", session_id);
+            localStorage.setItem("access-token", access_token);
+            localStorage.setItem(client_id + "_access-token", access_token);
+            localStorage.setItem("ACCESS-SPHERE-AUTH_access-token", access_token);
+
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState(null, "", cleanUrl);
+        }
+    } catch (e) {
+        console.error("Early token parse error:", e);
     }
-  } catch (e) {
-    console.error("Early token parse error:", e);
-  }
 })();
 
 $(document).ready(function () {
-  authorizeRequest();
+    authorizeRequest();
 });
 
 function authorizeRequest() {
-  const token = getCookieOrStorage(config.access_token);
-  if (!token) {
-    // Se non siamo in una pagina pubblica e non c'è token, vai a login
-    if (window.location.pathname.startsWith("/app/") && window.location.pathname !== "/app/login") {
-      console.warn("Nessun token di accesso trovato. Reindirizzamento al login...");
-      window.location.href = config.login_url;
-    }
-    return;
-  }
-
-  const url = config.authorize_url;
-
-  fetch(url, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${token}`, ...getSavedHeaders() },
-    redirect: "follow",
-    mode: "cors",
-    credentials: "include",
-  })
-    .then((response) => {
-      fetchHeader(response.headers);
-      if (response.ok) {
-        checkLocationAndRedirect(response);
-      } else {
-        console.warn("Authorization verification status:", response.status);
-        if (response.status === 401 || response.status === 403) {
-          console.warn("🔒 Token non valido o scaduto nella verifica autorizzazione. Esecuzione logout...");
-          if (typeof logout === "function") {
-            logout();
-          } else {
-            if (typeof cleanStorageAndCookies === "function") cleanStorageAndCookies();
-            else localStorage.clear();
+    const token = getCookieOrStorage(config.access_token);
+    if (!token) {
+        // Se non siamo in una pagina pubblica e non c'è token, vai a login
+        if (window.location.pathname.startsWith("/app/") && window.location.pathname !== "/app/login") {
+            console.warn("Nessun token di accesso trovato. Reindirizzamento al login...");
             window.location.href = config.login_url;
-          }
-          return null;
         }
-      }
-      return response.json().catch(() => null);
-    })
-    .then((response) => {
-      if (response && response.error && typeof isUnauthorizedError === "function" && isUnauthorizedError(response.error)) {
-        if (typeof logout === "function") logout();
         return;
-      }
-      if (response) {
-        saveTokens(response);
-      }
+    }
+
+    const url = config.authorize_url;
+
+    fetch(url, {
+        method: "GET",
+        headers: {Authorization: `Bearer ${token}`, ...getSavedHeaders()},
+        redirect: "follow",
+        mode: "cors",
+        credentials: "include",
     })
-    .catch((error) => {
-      console.error("Authorization check network error:", error);
-    });
+        .then((response) => {
+            fetchHeader(response.headers);
+            if (response.ok) {
+                checkLocationAndRedirect(response);
+            } else {
+                console.warn("Authorization verification status:", response.status);
+                if (response.status === 401 || response.status === 403) {
+                    console.warn("🔒 Token non valido o scaduto nella verifica autorizzazione. Esecuzione logout...");
+                    if (typeof logout === "function") {
+                        logout();
+                    } else {
+                        if (typeof cleanStorageAndCookies === "function") cleanStorageAndCookies();
+                        else localStorage.clear();
+                        window.location.href = config.login_url;
+                    }
+                    return null;
+                }
+            }
+            return response.json().catch(() => null);
+        })
+        .then((response) => {
+            if (response && response.error && typeof isUnauthorizedError === "function" && isUnauthorizedError(response.error)) {
+                if (typeof logout === "function") logout();
+                return;
+            }
+            if (response) {
+                saveTokens(response);
+            }
+        })
+        .catch((error) => {
+            console.error("Authorization check network error:", error);
+        });
 }
 
 function checkLocationAndRedirect(response) {
-  if (window.location.pathname.startsWith("/app/") && window.location.pathname !== "/app/login") {
-    return;
-  }
-  const locationHeader = response.headers.get("Location");
-  if (locationHeader && locationHeader !== window.location.href) {
-    window.location.href = locationHeader;
-  }
+    if (window.location.pathname.startsWith("/app/") && window.location.pathname !== "/app/login") {
+        return;
+    }
+    const locationHeader = response.headers.get("Location");
+    if (locationHeader && locationHeader !== window.location.href) {
+        window.location.href = locationHeader;
+    }
 }
 
 function saveTokens(response) {
-  if (!response || !response.data) return;
-  const access_token = response.data.token ? response.data.token.access_token : null;
-  if (access_token) {
-    localStorage.setItem(config.client_id + "_" + config.access_token, access_token);
-    localStorage.setItem("access-token", access_token);
-  }
-
-  // Se la risposta contiene i dati anagrafici dell'utente, arricchiamo immediatamente la sessione
-  const u = response.data.user;
-  if (u) {
-    try {
-      const firstName = u.name || u.firstName || "";
-      const lastName = u.surname || u.lastName || "";
-      let fullName = "";
-      if (firstName && lastName) fullName = `${firstName} ${lastName}`;
-      else if (firstName) fullName = firstName;
-      else if (lastName) fullName = lastName;
-      else if (u.username) fullName = u.username;
-      else fullName = "Utente";
-
-      const photo = u.profilePhoto || u.profile || "https://bootdey.com/img/Content/avatar/avatar7.png";
-
-      const userObj = {
-        name: firstName,
-        surname: lastName,
-        fullName: fullName,
-        username: u.username || "",
-        email: u.email || "",
-        roles: u.roles || [],
-        profilePhoto: photo
-      };
-      localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
-      if (typeof updateSidebarUserDOM === "function") {
-        updateSidebarUserDOM(userObj);
-      }
-    } catch (e) {
-      console.warn("Error caching user from authorize response:", e);
+    if (!response || !response.data) return;
+    const access_token = response.data.token ? response.data.token.access_token : null;
+    if (access_token) {
+        localStorage.setItem(config.client_id + "_" + config.access_token, access_token);
+        localStorage.setItem("access-token", access_token);
     }
-  }
+
+    // Se la risposta contiene i dati anagrafici dell'utente, arricchiamo immediatamente la sessione
+    const u = response.data.user;
+    if (u) {
+        try {
+            const firstName = u.name || u.firstName || "";
+            const lastName = u.surname || u.lastName || "";
+            let fullName = "";
+            if (firstName && lastName) fullName = `${firstName} ${lastName}`;
+            else if (firstName) fullName = firstName;
+            else if (lastName) fullName = lastName;
+            else if (u.username) fullName = u.username;
+            else fullName = "Utente";
+
+            const photo = u.profilePhoto || u.profile || "https://bootdey.com/img/Content/avatar/avatar7.png";
+
+            const userObj = {
+                name: firstName,
+                surname: lastName,
+                fullName: fullName,
+                username: u.username || "",
+                email: u.email || "",
+                roles: u.roles || [],
+                profilePhoto: photo
+            };
+            localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
+            if (typeof updateSidebarUserDOM === "function") {
+                updateSidebarUserDOM(userObj);
+            }
+        } catch (e) {
+            console.warn("Error caching user from authorize response:", e);
+        }
+    }
 }

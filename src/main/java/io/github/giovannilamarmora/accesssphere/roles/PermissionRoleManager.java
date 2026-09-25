@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Manager centralizzato per il controllo accessi basato su permessi granulari (RBAC)
- * e perimetro multi-tenant (Data Scoping).
+ * Manager centralizzato per il controllo accessi basato su permessi granulari (RBAC) e perimetro
+ * multi-tenant (Data Scoping).
  *
  * <p>Regole di sicurezza implementate:
  *
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
  *   <li>Super Admin (Tech User): possiede tutti i permessi (wildcard "*") e accesso illimitato a
  *       tutti i client registrati e impostazioni di sistema.
  *   <li>Accesso alla Console UI: consentito esclusivamente agli utenti che possiedono almeno un
- *       ruolo associato al client di piattaforma {@code ACCESS-SPHERE-TECH}.
+ *       ruolo associato al client di piattaforma {@code ACCESS-SPHERE-AUTH}.
  *   <li>Perimetro dei Client Delegati (Managed Clients): un operatore delegato puo visualizzare e
  *       amministrare unicamente i client applicativi assegnati nella tabella {@code
  *       USER_CLIENT_ROLE}.
@@ -39,7 +39,7 @@ public class PermissionRoleManager {
 
   private static final Logger LOG = LoggerFilter.getLogger(PermissionRoleManager.class);
 
-  @Autowired private TechUserService techUserService;
+  @Autowired private AdminUserService techUserService;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
 
@@ -54,8 +54,8 @@ public class PermissionRoleManager {
   }
 
   /**
-   * Verifica se l'operatore possiede il diritto di accedere alla Console di amministrazione
-   * di Access-Sphere (ovvero possiede almeno un ruolo su {@code ACCESS-SPHERE-TECH}).
+   * Verifica se l'operatore possiede il diritto di accedere alla Console di amministrazione di
+   * Access-Sphere (ovvero possiede almeno un ruolo su {@code ACCESS-SPHERE-AUTH}).
    *
    * @param auth Dati del token di autorizzazione dell'operatore.
    * @return true se autorizzato all'uso della console, false altrimenti.
@@ -69,7 +69,7 @@ public class PermissionRoleManager {
     }
     List<UserClientRoleEntity> consoleRoles =
         userClientRoleDAO.findByUserIdentifierAndClientId(
-            auth.getIdentifier(), techUserService.getTechClientId());
+            auth.getIdentifier(), techUserService.getAdminClientId());
     return consoleRoles != null && !consoleRoles.isEmpty();
   }
 
@@ -85,9 +85,10 @@ public class PermissionRoleManager {
       LOG.warn(
           "⛔ [SECURITY] User [{}] denied console access: No role found on technical client [{}]",
           auth != null ? auth.getSubject() : "unknown",
-          techUserService.getTechClientId());
+          techUserService.getAdminClientId());
       throw new OAuthException(
-          ExceptionMap.ERR_OAUTH_403, "Access to Access-Sphere Console is not authorized for this user");
+          ExceptionMap.ERR_OAUTH_403,
+          "Access to Access-Sphere Console is not authorized for this user");
     }
   }
 
@@ -114,7 +115,7 @@ public class PermissionRoleManager {
         .filter(Objects::nonNull)
         .map(String::trim)
         .map(String::toUpperCase)
-        .filter(cid -> !cid.equalsIgnoreCase(techUserService.getTechClientId()))
+        .filter(cid -> !cid.equalsIgnoreCase(techUserService.getAdminClientId()))
         .distinct()
         .toList();
   }
@@ -130,8 +131,9 @@ public class PermissionRoleManager {
     if (targetClientId == null) return false;
     if (isSuperAdmin(auth)) return true;
 
-    // Gli operatori non-tech non possono in alcun caso accedere direttamente al client tecnico di sistema
-    if (targetClientId.equalsIgnoreCase(techUserService.getTechClientId())) {
+    // Gli operatori non-tech non possono in alcun caso accedere direttamente al client tecnico di
+    // sistema
+    if (targetClientId.equalsIgnoreCase(techUserService.getAdminClientId())) {
       return false;
     }
 

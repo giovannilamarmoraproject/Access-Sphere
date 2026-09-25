@@ -41,14 +41,6 @@ public class UserEntity extends GenericEntity {
   @Column(name = "PASSWORD")
   private String password;
 
-  /**
-   * @deprecated TODO: Legacy column USERS.ROLES, to be dropped in favor of USER_CLIENT_ROLE table in future major release.
-   * Mantenuta sincronizzata per retrocompatibilita.
-   */
-  @Deprecated
-  @Column(name = "ROLES", nullable = false)
-  private String roles;
-
   @Lob
   @Column(name = "PROFILE_PHOTO", columnDefinition = "LONGTEXT")
   private String profilePhoto;

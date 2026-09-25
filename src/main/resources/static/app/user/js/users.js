@@ -1,186 +1,188 @@
 let cachedUsers = [];
 
 function loadCachedUsers() {
-  if (typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
-    return false;
-  }
-  try {
-    const cfg = typeof getConfig === "function" ? getConfig() : config;
-    const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
-    const raw = localStorage.getItem(key) || localStorage.getItem("ACCESS-SPHERE-TECH_usersData");
-    if (raw) {
-      let parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // Verifica se l'operatore attualmente autenticato e' l'utenza tecnica di sistema
-        const loggedUserRaw = localStorage.getItem("access_sphere_user");
-        let isTech = false;
-        const techUsername = (cfg && cfg.tech_username) || "tech_admin";
-        const techEmail = (cfg && cfg.tech_email) || "admin@accesssphere.local";
-        if (loggedUserRaw) {
-          try {
-            const loggedUser = JSON.parse(loggedUserRaw);
-            if ((loggedUser.username && loggedUser.username.toLowerCase() === techUsername.toLowerCase()) ||
-                (loggedUser.email && loggedUser.email.toLowerCase() === techEmail.toLowerCase()) ||
-                (Array.isArray(loggedUser.roles) && loggedUser.roles.some(r => {
-                  const rName = (typeof r === 'object' && r !== null && r.role) ? r.role : String(r);
-                  return rName.toUpperCase() === "ROLE_TECH" || rName.toUpperCase() === "ACCESS-SPHERE_TECHNICAL";
-                }))) {
-              isTech = true;
-            }
-          } catch (e) {}
-        }
-        if (!isTech) {
-          parsed = parsed.filter(u => u &&
-            (!u.username || u.username.toLowerCase() !== techUsername.toLowerCase()) &&
-            (!u.email || u.email.toLowerCase() !== techEmail.toLowerCase())
-          );
-        }
-        cachedUsers = parsed;
-        displayUsersTable(parsed);
-        updateUserKpis(parsed);
-        return true;
-      }
+    if (typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
+        return false;
     }
-  } catch (e) {
-    console.error("Error loading cached users:", e);
-  }
-  return false;
+    try {
+        const cfg = typeof getConfig === "function" ? getConfig() : config;
+        const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-AUTH_usersData";
+        const raw = localStorage.getItem(key) || localStorage.getItem("ACCESS-SPHERE-AUTH_usersData");
+        if (raw) {
+            let parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                // Verifica se l'operatore attualmente autenticato e' l'utenza tecnica di sistema
+                const loggedUserRaw = localStorage.getItem("access_sphere_user");
+                let isTech = false;
+                const techUsername = (cfg && cfg.tech_username) || "tech_admin";
+                const techEmail = (cfg && cfg.tech_email) || "admin@accesssphere.local";
+                if (loggedUserRaw) {
+                    try {
+                        const loggedUser = JSON.parse(loggedUserRaw);
+                        if ((loggedUser.username && loggedUser.username.toLowerCase() === techUsername.toLowerCase()) ||
+                            (loggedUser.email && loggedUser.email.toLowerCase() === techEmail.toLowerCase()) ||
+                            (Array.isArray(loggedUser.roles) && loggedUser.roles.some(r => {
+                                const rName = (typeof r === 'object' && r !== null && r.role) ? r.role : String(r);
+                                return rName.toUpperCase() === "ROLE_TECH" || rName.toUpperCase() === "ACCESS-SPHERE_TECHNICAL";
+                            }))) {
+                            isTech = true;
+                        }
+                    } catch (e) {
+                    }
+                }
+                if (!isTech) {
+                    parsed = parsed.filter(u => u &&
+                        (!u.username || u.username.toLowerCase() !== techUsername.toLowerCase()) &&
+                        (!u.email || u.email.toLowerCase() !== techEmail.toLowerCase())
+                    );
+                }
+                cachedUsers = parsed;
+                displayUsersTable(parsed);
+                updateUserKpis(parsed);
+                return true;
+            }
+        }
+    } catch (e) {
+        console.error("Error loading cached users:", e);
+    }
+    return false;
 }
 
 function refreshUsers() {
-  console.log("Refreshing Users...");
-  cachedUsers = [];
-  const cfg = typeof getConfig === "function" ? getConfig() : config;
-  const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
-  localStorage.removeItem(key);
-  const icon = document.getElementById("refresh-icon");
-  if (icon) icon.classList.add("fa-spin");
-  getUsers().finally(() => {
-    if (icon) setTimeout(() => icon.classList.remove("fa-spin"), 500);
-  });
+    console.log("Refreshing Users...");
+    cachedUsers = [];
+    const cfg = typeof getConfig === "function" ? getConfig() : config;
+    const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-AUTH_usersData";
+    localStorage.removeItem(key);
+    const icon = document.getElementById("refresh-icon");
+    if (icon) icon.classList.add("fa-spin");
+    getUsers().finally(() => {
+        if (icon) setTimeout(() => icon.classList.remove("fa-spin"), 500);
+    });
 }
 
 function getUsers() {
-  if (typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
-    console.warn("getUsers: Permesso di visualizzazione utenti negato.");
-    if (typeof disableLoader === "function") disableLoader();
-    if (window.location.pathname.includes("/users")) {
-      window.location.href = "/app";
+    if (typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
+        console.warn("getUsers: Permesso di visualizzazione utenti negato.");
+        if (typeof disableLoader === "function") disableLoader();
+        if (window.location.pathname.includes("/users")) {
+            window.location.href = "/app";
+        }
+        return Promise.resolve();
     }
-    return Promise.resolve();
-  }
 
-  const cfg = typeof getConfig === "function" ? getConfig() : config;
-  const url = cfg.users_url || (window.location.origin + "/v1/users");
-  const token = getCookieOrStorage(cfg.access_token);
+    const cfg = typeof getConfig === "function" ? getConfig() : config;
+    const url = cfg.users_url || (window.location.origin + "/v1/users");
+    const token = getCookieOrStorage(cfg.access_token);
 
-  if (!token) {
-    console.warn("getUsers: Nessun token disponibile.");
-    if (typeof disableLoader === "function") disableLoader();
-    return Promise.resolve();
-  }
-
-  return GET(url, token).then(async (data) => {
-    const responseData = await data.json();
-    if (responseData.error != null) {
-      console.warn("getUsers error response:", responseData.error);
-      if (typeof isUnauthorizedError === "function" && isUnauthorizedError(responseData.error)) {
-        if (typeof logout === "function") logout();
-        return;
-      }
-      const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
-      const cached = localStorage.getItem(key);
-      if (!cached) {
-        const error = getErrorCode(responseData.error);
-        sweetalert("error", error.title, error.message);
-      }
-    } else {
-      fetchHeader(data.headers);
-      cachedUsers = responseData.data || [];
-      const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData";
-      try {
-        localStorage.setItem(key, JSON.stringify(cachedUsers));
-      } catch (e) {}
-      displayUsersTable(cachedUsers);
-      updateUserKpis(cachedUsers);
+    if (!token) {
+        console.warn("getUsers: Nessun token disponibile.");
+        if (typeof disableLoader === "function") disableLoader();
+        return Promise.resolve();
     }
-  }).catch((err) => {
-    console.error("Fetch users network error:", err);
-  }).finally(() => {
-    if (typeof disableLoader === "function") disableLoader();
-  });
+
+    return GET(url, token).then(async (data) => {
+        const responseData = await data.json();
+        if (responseData.error != null) {
+            console.warn("getUsers error response:", responseData.error);
+            if (typeof isUnauthorizedError === "function" && isUnauthorizedError(responseData.error)) {
+                if (typeof logout === "function") logout();
+                return;
+            }
+            const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-AUTH_usersData";
+            const cached = localStorage.getItem(key);
+            if (!cached) {
+                const error = getErrorCode(responseData.error);
+                sweetalert("error", error.title, error.message);
+            }
+        } else {
+            fetchHeader(data.headers);
+            cachedUsers = responseData.data || [];
+            const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-AUTH_usersData";
+            try {
+                localStorage.setItem(key, JSON.stringify(cachedUsers));
+            } catch (e) {
+            }
+            displayUsersTable(cachedUsers);
+            updateUserKpis(cachedUsers);
+        }
+    }).catch((err) => {
+        console.error("Fetch users network error:", err);
+    }).finally(() => {
+        if (typeof disableLoader === "function") disableLoader();
+    });
 }
 
 function updateUserKpis(users) {
-  if (!Array.isArray(users)) return;
-  const total = users.length;
-  const active = users.filter(u => !u.blocked).length;
-  const blocked = users.filter(u => !!u.blocked).length;
+    if (!Array.isArray(users)) return;
+    const total = users.length;
+    const active = users.filter(u => !u.blocked).length;
+    const blocked = users.filter(u => !!u.blocked).length;
 
-  const totalEl = document.getElementById("stat-total-users");
-  const activeEl = document.getElementById("stat-active-users");
-  const blockedEl = document.getElementById("stat-blocked-users");
+    const totalEl = document.getElementById("stat-total-users");
+    const activeEl = document.getElementById("stat-active-users");
+    const blockedEl = document.getElementById("stat-blocked-users");
 
-  if (totalEl) totalEl.innerText = total;
-  if (activeEl) activeEl.innerText = active;
-  if (blockedEl) blockedEl.innerText = blocked;
+    if (totalEl) totalEl.innerText = total;
+    if (activeEl) activeEl.innerText = active;
+    if (blockedEl) blockedEl.innerText = blocked;
 }
 
 function displayUsersTable(users) {
-  if (!Array.isArray(users)) return;
-  console.log("Displaying Users table with " + users.length + " entries");
+    if (!Array.isArray(users)) return;
+    console.log("Displaying Users table with " + users.length + " entries");
 
-  if ($.fn.DataTable.isDataTable('#users-table')) {
-    $('#users-table').DataTable().destroy();
-  }
+    if ($.fn.DataTable.isDataTable('#users-table')) {
+        $('#users-table').DataTable().destroy();
+    }
 
-  const table = document.getElementById("users-data");
-  if (!table) return;
-  table.innerHTML = "";
+    const table = document.getElementById("users-data");
+    if (!table) return;
+    table.innerHTML = "";
 
-  const canManage = typeof AccessControl === "undefined" || AccessControl.canManageUsers();
-  const canManageRoles = typeof AccessControl === "undefined" || AccessControl.canManageRoles();
-  const canDelete = typeof AccessControl === "undefined" || AccessControl.canDeleteUsers();
+    const canManage = typeof AccessControl === "undefined" || AccessControl.canManageUsers();
+    const canManageRoles = typeof AccessControl === "undefined" || AccessControl.canManageRoles();
+    const canDelete = typeof AccessControl === "undefined" || AccessControl.canDeleteUsers();
 
-  users.forEach((user) => {
-    const photo = getOrDefault(user.profilePhoto, "https://bootdey.com/img/Content/avatar/avatar7.png");
-    const statusBadge = user.blocked
-      ? `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30'>${typeof t === 'function' ? t('user_status_blocked', 'BLOCCATO') : 'BLOCKED'}</span>`
-      : `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'>${typeof t === 'function' ? t('user_status_active', 'ATTIVO') : 'ACTIVE'}</span>`;
+    users.forEach((user) => {
+        const photo = getOrDefault(user.profilePhoto, "https://bootdey.com/img/Content/avatar/avatar7.png");
+        const statusBadge = user.blocked
+            ? `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30'>${typeof t === 'function' ? t('user_status_blocked', 'BLOCCATO') : 'BLOCKED'}</span>`
+            : `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'>${typeof t === 'function' ? t('user_status_active', 'ATTIVO') : 'ACTIVE'}</span>`;
 
-    let actionButtons = "";
-    if (canManage) {
-      actionButtons += `
+        let actionButtons = "";
+        if (canManage) {
+            actionButtons += `
         <a class="m3-action-btn m3-action-edit" title="${typeof t === 'function' ? t('user_btn_edit', 'Modifica Utente') : 'Modifica Utente'}" href="/app/users/edit/${encodeURIComponent(user.identifier)}">
           <i class="fa-solid fa-user-pen text-xs"></i>
         </a>`;
-    }
-    if (canManageRoles) {
-      actionButtons += `
+        }
+        if (canManageRoles) {
+            actionButtons += `
         <a class="m3-action-btn m3-action-role" title="${typeof t === 'function' ? t('user_btn_manage_roles', 'Gestisci Ruoli') : 'Gestisci Ruoli'}" href="/app/users/roles/${encodeURIComponent(user.identifier)}">
           <i class="fa-solid fa-shield-halved text-xs"></i>
         </a>`;
-    }
-    if (canDelete) {
-      actionButtons += `
+        }
+        if (canDelete) {
+            actionButtons += `
         <button class="m3-action-btn m3-action-delete" title="${typeof t === 'function' ? t('user_btn_delete', 'Elimina Utente') : 'Elimina Utente'}" onclick="event.stopPropagation(); deleteUser('${user.identifier}','${user.username}')">
           <i class="fa-solid fa-trash text-xs"></i>
         </button>`;
-    }
-    if (!actionButtons) {
-      actionButtons = `<span class="text-xs text-gray-500 font-mono">-</span>`;
-    }
+        }
+        if (!actionButtons) {
+            actionButtons = `<span class="text-xs text-gray-500 font-mono">-</span>`;
+        }
 
-    const tr = document.createElement("tr");
-    tr.style.height = "56px";
-    tr.style.verticalAlign = "middle";
-    tr.className = "cursor-pointer hover:bg-purple-500/10 transition-colors";
-    tr.onclick = (e) => {
-      if (e.target.closest("button") || e.target.closest("a")) return;
-      window.location.href = `/app/users/details/${encodeURIComponent(user.identifier)}`;
-    };
+        const tr = document.createElement("tr");
+        tr.style.height = "56px";
+        tr.style.verticalAlign = "middle";
+        tr.className = "cursor-pointer hover:bg-purple-500/10 transition-colors";
+        tr.onclick = (e) => {
+            if (e.target.closest("button") || e.target.closest("a")) return;
+            window.location.href = `/app/users/details/${encodeURIComponent(user.identifier)}`;
+        };
 
-    tr.innerHTML = `
+        tr.innerHTML = `
       <td class="text-center">
         <a href="/app/users/details/${encodeURIComponent(user.identifier)}">
           <img src="${photo}" alt="${user.username}" class="rounded-full mx-auto object-cover border border-purple-500/30" style="width: 42px; height: 42px;" />
@@ -195,44 +197,44 @@ function displayUsersTable(users) {
         ${actionButtons}
       </td>
     `;
-    table.appendChild(tr);
-  });
-
-  const userDt = $('#users-table').DataTable({
-    pageLength: 10,
-    responsive: true,
-    language: {
-      search: typeof t === "function" ? t("dt_search_users", "Cerca utente:") : "Cerca utente:",
-      lengthMenu: typeof t === "function" ? t("dt_length_users", "Mostra _MENU_ utenti") : "Mostra _MENU_ utenti",
-      info: typeof t === "function" ? t("dt_info_users", "Visualizzati _START_ a _END_ di _TOTAL_ utenti") : "Visualizzati _START_ a _END_ di _TOTAL_ utenti",
-      infoEmpty: typeof t === "function" ? t("dt_info_empty", "Nessun dato presente") : "Nessun dato presente",
-      zeroRecords: typeof t === "function" ? t("dt_zero_records", "Nessun risultato trovato") : "Nessun risultato trovato",
-      paginate: {
-        first: typeof t === "function" ? t("dt_first", "Primo") : "Primo",
-        last: typeof t === "function" ? t("dt_last", "Ultimo") : "Ultimo",
-        next: typeof t === "function" ? t("dt_next", "Succ.") : "Succ.",
-        previous: typeof t === "function" ? t("dt_prev", "Prec.") : "Prec."
-      }
-    }
-  });
-
-  function stylePaginationButtons() {
-    $('.dt-paging-button').each(function() {
-      this.style.setProperty('color', '#FFFFFF', 'important');
-      this.style.setProperty('-webkit-text-fill-color', '#FFFFFF', 'important');
-      this.style.setProperty('opacity', '1', 'important');
+        table.appendChild(tr);
     });
-  }
 
-  userDt.on('draw', stylePaginationButtons);
-  stylePaginationButtons();
+    const userDt = $('#users-table').DataTable({
+        pageLength: 10,
+        responsive: true,
+        language: {
+            search: typeof t === "function" ? t("dt_search_users", "Cerca utente:") : "Cerca utente:",
+            lengthMenu: typeof t === "function" ? t("dt_length_users", "Mostra _MENU_ utenti") : "Mostra _MENU_ utenti",
+            info: typeof t === "function" ? t("dt_info_users", "Visualizzati _START_ a _END_ di _TOTAL_ utenti") : "Visualizzati _START_ a _END_ di _TOTAL_ utenti",
+            infoEmpty: typeof t === "function" ? t("dt_info_empty", "Nessun dato presente") : "Nessun dato presente",
+            zeroRecords: typeof t === "function" ? t("dt_zero_records", "Nessun risultato trovato") : "Nessun risultato trovato",
+            paginate: {
+                first: typeof t === "function" ? t("dt_first", "Primo") : "Primo",
+                last: typeof t === "function" ? t("dt_last", "Ultimo") : "Ultimo",
+                next: typeof t === "function" ? t("dt_next", "Succ.") : "Succ.",
+                previous: typeof t === "function" ? t("dt_prev", "Prec.") : "Prec."
+            }
+        }
+    });
 
-  updateUserKpis(users);
+    function stylePaginationButtons() {
+        $('.dt-paging-button').each(function () {
+            this.style.setProperty('color', '#FFFFFF', 'important');
+            this.style.setProperty('-webkit-text-fill-color', '#FFFFFF', 'important');
+            this.style.setProperty('opacity', '1', 'important');
+        });
+    }
+
+    userDt.on('draw', stylePaginationButtons);
+    stylePaginationButtons();
+
+    updateUserKpis(users);
 }
 
 // Re-render users table on language changed
 window.addEventListener("languageChanged", () => {
-  if (cachedUsers && cachedUsers.length > 0) {
-    displayUsersTable(cachedUsers);
-  }
+    if (cachedUsers && cachedUsers.length > 0) {
+        displayUsersTable(cachedUsers);
+    }
 });

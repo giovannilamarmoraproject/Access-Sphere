@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.data.user.dto;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
@@ -46,20 +47,9 @@ public class User extends GenericDTO {
 
   private String password;
 
-  /**
-   * Ruoli contestualizzati per Client OAuth2 con tipologia e permessi granulari aggregati.
-   */
+  /** Ruoli contestualizzati per Client OAuth2 con tipologia e permessi granulari aggregati. */
   @JsonAlias({"clientRoles", "client_roles"})
-  private List<io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO> roles;
-
-  public List<io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO> getClientRoles() {
-    return this.roles;
-  }
-
-  public void setClientRoles(
-      List<io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO> clientRoles) {
-    this.roles = clientRoles;
-  }
+  private List<UserClientRoleDTO> roles;
 
   @JsonAlias({"profile", "profile_photo"})
   private String profilePhoto;

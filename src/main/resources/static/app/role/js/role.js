@@ -42,7 +42,9 @@ $(document).ready(function () {
     if (typeof AccessControl !== "undefined" && !AccessControl.canViewRoles()) {
         console.warn("AccessControl: Permission denied for viewing roles.");
         sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.");
-        setTimeout(() => { window.location.href = "/app"; }, 1500);
+        setTimeout(() => {
+            window.location.href = "/app";
+        }, 1500);
         return;
     }
 
@@ -70,10 +72,10 @@ function getBearerToken() {
         const tok = getCookieOrStorage(key);
         if (tok) return tok;
     }
-    const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-TECH";
+    const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-AUTH";
     return (
         localStorage.getItem(`${clientId}_access-token`) ||
-        localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
+        localStorage.getItem("ACCESS-SPHERE-AUTH_access-token") ||
         localStorage.getItem("access-token") ||
         (typeof getCookie === "function" ? getCookie("access-token") : null) ||
         sessionStorage.getItem("access-token") ||

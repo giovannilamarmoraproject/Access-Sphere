@@ -8,7 +8,8 @@ import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -37,8 +38,8 @@ class RolesServiceTest {
 
   @Mock private OAuth2ClientService oAuth2ClientService;
   @Mock private UserService userService;
-  @Mock private TechUserService techUserService;
-  @Mock private io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig techUserConfig;
+  @Mock private AdminUserService techUserService;
+  @Mock private AdminUserConfig adminUserConfig;
 
   @Mock
   private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO
@@ -58,12 +59,12 @@ class RolesServiceTest {
     ReflectionTestUtils.setField(rolesService, "oAuth2ClientService", oAuth2ClientService);
     ReflectionTestUtils.setField(rolesService, "userService", userService);
     ReflectionTestUtils.setField(rolesService, "techUserService", techUserService);
-    ReflectionTestUtils.setField(rolesService, "techUserConfig", techUserConfig);
+    ReflectionTestUtils.setField(rolesService, "techUserConfig", adminUserConfig);
     ReflectionTestUtils.setField(rolesService, "userClientRoleDAO", userClientRoleDAO);
     ReflectionTestUtils.setField(rolesService, "roleDefinitionDAO", roleDefinitionDAO);
     ReflectionTestUtils.setField(rolesService, "clientDAO", clientDAO);
     ReflectionTestUtils.setField(rolesService, "userDAO", userDAO);
-    lenient().when(techUserConfig.getTechClientId()).thenReturn("ACCESS-SPHERE-TECH");
+    lenient().when(adminUserConfig.getAdminClientId()).thenReturn("ACCESS-SPHERE-AUTH");
   }
 
   @Test
@@ -125,7 +126,8 @@ class RolesServiceTest {
               assertNotNull(assignedRoles);
               // Deve contenere LINKATUTTO_ADMIN (una sola volta), ACCESS_SPHERE_ADMIN, SUPER_ADMIN
               assertEquals(3, assignedRoles.size());
-              List<String> roleNames = assignedRoles.stream().map(UserClientRoleDTO::getRole).toList();
+              List<String> roleNames =
+                  assignedRoles.stream().map(UserClientRoleDTO::getRole).toList();
               assertTrue(roleNames.contains("LINKATUTTO_ADMIN"));
               assertTrue(roleNames.contains("ACCESS_SPHERE_ADMIN"));
               assertTrue(roleNames.contains("SUPER_ADMIN"));
@@ -144,7 +146,7 @@ class RolesServiceTest {
     client1.setAppRoles(List.of(new AppRole("LINKATUTTO_ADMIN", "DEFAULT")));
 
     OAuth2Client client2 = new OAuth2Client();
-    client2.setClientId("ACCESS-SPHERE-TECH");
+    client2.setClientId("ACCESS-SPHERE-AUTH");
     client2.setAppRoles(List.of(new AppRole("ROLE_ADMIN", "DEFAULT")));
 
     when(oAuth2ClientService.getClientCredentials())
@@ -163,7 +165,7 @@ class RolesServiceTest {
             new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
                 "linkatutto", "LINKATUTTO_ADMIN"),
             new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
-                "ACCESS-SPHERE-TECH", "ROLE_ADMIN")));
+                "ACCESS-SPHERE-AUTH", "ROLE_ADMIN")));
 
     StepVerifier.create(rolesService.changeRoles("user-456", payload))
         .assertNext(
@@ -171,7 +173,8 @@ class RolesServiceTest {
               assertEquals(HttpStatus.OK, response.getStatusCode());
               User updated = (User) response.getBody().getData();
               assertNotNull(updated);
-              List<String> roleNames = updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
+              List<String> roleNames =
+                  updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
               assertTrue(roleNames.contains("LINKATUTTO_ADMIN"));
               assertTrue(roleNames.contains("ROLE_ADMIN"));
               verify(userClientRoleDAO).deleteByUserIdentifier("user-456");
@@ -188,7 +191,8 @@ class RolesServiceTest {
     User user = new User();
     user.setIdentifier("user-789");
     user.setUsername("giovanni");
-    user.setRoles(new java.util.ArrayList<>(List.of(new UserClientRoleDTO("tech-client", "ROLE_TECH"))));
+    user.setRoles(
+        new java.util.ArrayList<>(List.of(new UserClientRoleDTO("tech-client", "ROLE_TECH"))));
 
     when(userService.getUserByIdentifier("user-789")).thenReturn(Mono.just(user));
     when(userService.updateUser(eq("user-789"), any(User.class)))
@@ -202,7 +206,8 @@ class RolesServiceTest {
             response -> {
               assertEquals(HttpStatus.OK, response.getStatusCode());
               User updated = (User) response.getBody().getData();
-              List<String> roleNames = updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
+              List<String> roleNames =
+                  updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
               assertTrue(roleNames.contains("ROLE_ADMIN"));
               assertTrue(roleNames.contains("ROLE_TECH"));
               verify(userClientRoleDAO).save(any());
@@ -234,7 +239,8 @@ class RolesServiceTest {
             response -> {
               assertEquals(HttpStatus.OK, response.getStatusCode());
               User updated = (User) response.getBody().getData();
-              List<String> roleNames = updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
+              List<String> roleNames =
+                  updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
               assertFalse(roleNames.contains("ROLE_ADMIN"));
               assertTrue(roleNames.contains("ROLE_TECH"));
               verify(userClientRoleDAO)

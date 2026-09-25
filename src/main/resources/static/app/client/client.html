@@ -158,6 +158,7 @@
             border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2);
             color: var(--theme-accent, #D0BCFF);
         }
+
         .permission-chip-wildcard {
             background: rgba(245, 158, 11, 0.18);
             border-color: rgba(245, 158, 11, 0.4);
@@ -355,7 +356,9 @@
     function loadClientDetails() {
         if (typeof AccessControl !== "undefined" && !AccessControl.canViewClients()) {
             sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.");
-            setTimeout(() => { window.location.href = "/app"; }, 1500);
+            setTimeout(() => {
+                window.location.href = "/app";
+            }, 1500);
             return;
         }
         const path = window.location.href;
@@ -793,9 +796,9 @@
         </div>
       `;
 
-      if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
-          AccessControl.applyUIPermissions(container);
-      }
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions(container);
+        }
     }
 
     function toggleMask(inputId, eyeId) {
@@ -841,8 +844,8 @@
             sweetalert(
                 "warning",
                 typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
-                clientId && clientId.toUpperCase() === "ACCESS-SPHERE-TECH"
-                    ? (typeof t === "function" ? t("client_tech_cant_delete", "Il client tecnico di sistema ACCESS-SPHERE-TECH non può essere eliminato.") : "Il client tecnico di sistema ACCESS-SPHERE-TECH non può essere eliminato.")
+                clientId && clientId.toUpperCase() === "ACCESS-SPHERE-AUTH"
+                    ? (typeof t === "function" ? t("client_tech_cant_delete", "Il client tecnico di sistema ACCESS-SPHERE-AUTH non può essere eliminato.") : "Il client tecnico di sistema ACCESS-SPHERE-AUTH non può essere eliminato.")
                     : (typeof t === "function" ? t("client_delete_denied", "Non disponi dei permessi necessari per eliminare questo client.") : "Non disponi dei permessi necessari per eliminare questo client.")
             );
             return;

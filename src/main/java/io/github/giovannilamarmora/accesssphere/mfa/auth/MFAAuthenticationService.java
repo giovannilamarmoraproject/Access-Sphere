@@ -2,20 +2,20 @@ package io.github.giovannilamarmora.accesssphere.mfa.auth;
 
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import io.github.giovannilamarmora.accesssphere.mfa.session.MFASessionService;
 import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
@@ -54,7 +54,7 @@ public class MFAAuthenticationService {
   @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private TokenService tokenService;
   @Autowired private MFASessionService mfaSessionService;
-  @Autowired private TechUserService techUserService;
+  @Autowired private AdminUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public static boolean isMfaEnabled(User user, OAuth2Client oAuth2Client) {

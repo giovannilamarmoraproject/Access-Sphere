@@ -4,12 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +25,7 @@ class OAuth2ClientServiceTest {
 
   @Mock private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Mock private PermissionRoleManager permissionRoleManager;
-  @Mock private TechUserService techUserService;
+  @Mock private AdminUserService techUserService;
   @Mock private OAuth2Authorization oAuth2Authorization;
   @Mock private IUserClientRoleDAO userClientRoleDAO;
 
@@ -38,10 +37,10 @@ class OAuth2ClientServiceTest {
 
   @BeforeEach
   void setUp() {
-    lenient().when(techUserService.getTechClientId()).thenReturn("ACCESS-SPHERE-TECH");
+    lenient().when(techUserService.getAdminClientId()).thenReturn("ACCESS-SPHERE-AUTH");
 
     techClient = new OAuth2Client();
-    techClient.setClientId("ACCESS-SPHERE-TECH");
+    techClient.setClientId("ACCESS-SPHERE-AUTH");
 
     linkatuttoClient = new OAuth2Client();
     linkatuttoClient.setClientId("LINKATUTTO-ADMIN");
@@ -76,7 +75,8 @@ class OAuth2ClientServiceTest {
     when(permissionRoleManager.isSuperAdmin(oAuth2Authorization)).thenReturn(false);
     when(permissionRoleManager.getManagedClientIds(oAuth2Authorization))
         .thenReturn(List.of("LINKATUTTO-ADMIN"));
-    when(permissionRoleManager.hasPermission(oAuth2Authorization, "LINKATUTTO-ADMIN", "clients:read"))
+    when(permissionRoleManager.hasPermission(
+            oAuth2Authorization, "LINKATUTTO-ADMIN", "clients:read"))
         .thenReturn(true);
     when(oAuth2ClientDomainService.getClientCredentials())
         .thenReturn(Mono.just(List.of(techClient, linkatuttoClient, otherClient)));
@@ -129,7 +129,11 @@ class OAuth2ClientServiceTest {
 
     verify(oAuth2ClientDomainService, times(1)).addClientToDatabase(linkatuttoClient);
     verify(userClientRoleDAO, times(1))
-        .save(argThat(entity -> entity.getUserIdentifier().equals("user-uuid-1") && entity.getClientId().equals("LINKATUTTO-ADMIN")));
+        .save(
+            argThat(
+                entity ->
+                    entity.getUserIdentifier().equals("user-uuid-1")
+                        && entity.getClientId().equals("LINKATUTTO-ADMIN")));
   }
 
   @Test

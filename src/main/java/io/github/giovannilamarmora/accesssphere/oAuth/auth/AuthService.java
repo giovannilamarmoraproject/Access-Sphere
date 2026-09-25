@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -70,7 +70,7 @@ public class AuthService {
   @Autowired private TokenService tokenService;
   @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
   @Autowired @Lazy private UserService userService;
-  @Autowired private TechUserService techUserService;
+  @Autowired private AdminUserService techUserService;
 
   /**
    * Esegue l'autenticazione tramite credenziali classiche (username o email e password).

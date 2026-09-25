@@ -3,7 +3,7 @@ package io.github.giovannilamarmora.accesssphere.roles;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
@@ -23,7 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PermissionRoleManagerTest {
 
-  @Mock private TechUserService techUserService;
+  @Mock private AdminUserService techUserService;
   @Mock private IUserClientRoleDAO userClientRoleDAO;
   @Mock private IRoleDefinitionDAO roleDefinitionDAO;
 
@@ -34,7 +34,7 @@ class PermissionRoleManagerTest {
 
   @BeforeEach
   void setUp() {
-    lenient().when(techUserService.getTechClientId()).thenReturn("ACCESS-SPHERE-TECH");
+    lenient().when(techUserService.getAdminClientId()).thenReturn("ACCESS-SPHERE-AUTH");
 
     techAuth = new OAuth2Authorization();
     techAuth.setSubject("tech_admin");
@@ -56,44 +56,47 @@ class PermissionRoleManagerTest {
     assertNull(permissionRoleManager.getManagedClientIds(techAuth));
     assertTrue(permissionRoleManager.canAccessClient(techAuth, "ANY-CLIENT"));
     assertTrue(permissionRoleManager.hasPermission(techAuth, "ANY-CLIENT", "any:permission"));
-    assertDoesNotThrow(() -> permissionRoleManager.assertPermission(techAuth, "ANY-CLIENT", "any:permission"));
+    assertDoesNotThrow(
+        () -> permissionRoleManager.assertPermission(techAuth, "ANY-CLIENT", "any:permission"));
   }
 
   @Test
-  @DisplayName("Non-tech user without role on ACCESS-SPHERE-TECH is denied console access")
+  @DisplayName("Non-tech user without role on ACCESS-SPHERE-AUTH is denied console access")
   void testNonTechUserDeniedConsoleAccess() {
     when(techUserService.isTechUser(delegatedAuth)).thenReturn(false);
-    when(userClientRoleDAO.findByUserIdentifierAndClientId("mario-uuid", "ACCESS-SPHERE-TECH"))
+    when(userClientRoleDAO.findByUserIdentifierAndClientId("mario-uuid", "ACCESS-SPHERE-AUTH"))
         .thenReturn(List.of());
 
     assertFalse(permissionRoleManager.hasConsoleAccess(delegatedAuth));
-    assertThrows(OAuthException.class, () -> permissionRoleManager.assertHasConsoleAccess(delegatedAuth));
+    assertThrows(
+        OAuthException.class, () -> permissionRoleManager.assertHasConsoleAccess(delegatedAuth));
   }
 
   @Test
-  @DisplayName("Delegated user with role on ACCESS-SPHERE-TECH has console access and scoped permissions on LINKATUTTO-ADMIN")
+  @DisplayName(
+      "Delegated user with role on ACCESS-SPHERE-AUTH has console access and scoped permissions on LINKATUTTO-ADMIN")
   void testDelegatedUserScopedPermissions() {
     when(techUserService.isTechUser(delegatedAuth)).thenReturn(false);
 
     // Has console role
     UserClientRoleEntity consoleRole =
-        new UserClientRoleEntity("mario-uuid", "ACCESS-SPHERE-TECH", "ROLE_USER");
+        new UserClientRoleEntity("mario-uuid", "ACCESS-SPHERE-AUTH", "ROLE_USER");
     // Has role on LINKATUTTO-ADMIN
     UserClientRoleEntity linkatuttoRole =
         new UserClientRoleEntity("mario-uuid", "LINKATUTTO-ADMIN", "ROLE_ADMIN");
 
-    when(userClientRoleDAO.findByUserIdentifierAndClientId("mario-uuid", "ACCESS-SPHERE-TECH"))
+    when(userClientRoleDAO.findByUserIdentifierAndClientId("mario-uuid", "ACCESS-SPHERE-AUTH"))
         .thenReturn(List.of(consoleRole));
     when(userClientRoleDAO.findByUserIdentifier("mario-uuid"))
         .thenReturn(List.of(consoleRole, linkatuttoRole));
 
     assertTrue(permissionRoleManager.hasConsoleAccess(delegatedAuth));
 
-    // Managed clients should contain LINKATUTTO-ADMIN and exclude ACCESS-SPHERE-TECH
+    // Managed clients should contain LINKATUTTO-ADMIN and exclude ACCESS-SPHERE-AUTH
     List<String> managed = permissionRoleManager.getManagedClientIds(delegatedAuth);
     assertEquals(List.of("LINKATUTTO-ADMIN"), managed);
     assertTrue(permissionRoleManager.canAccessClient(delegatedAuth, "LINKATUTTO-ADMIN"));
-    assertFalse(permissionRoleManager.canAccessClient(delegatedAuth, "ACCESS-SPHERE-TECH"));
+    assertFalse(permissionRoleManager.canAccessClient(delegatedAuth, "ACCESS-SPHERE-AUTH"));
     assertFalse(permissionRoleManager.canAccessClient(delegatedAuth, "OTHER-CLIENT"));
 
     // Check permissions on LINKATUTTO-ADMIN
@@ -101,19 +104,29 @@ class PermissionRoleManagerTest {
         .thenReturn(List.of(linkatuttoRole));
     RoleDefinitionEntity roleDef =
         new RoleDefinitionEntity(
-            "LINKATUTTO-ADMIN", "ROLE_ADMIN", "ADMIN", "Admin role", List.of("clients:read", "users:*"));
+            "LINKATUTTO-ADMIN",
+            "ROLE_ADMIN",
+            "ADMIN",
+            "Admin role",
+            List.of("clients:read", "users:*"));
     when(roleDefinitionDAO.findByClientIdAndRole("LINKATUTTO-ADMIN", "ROLE_ADMIN"))
         .thenReturn(Optional.of(roleDef));
 
     // Allowed permissions
-    assertTrue(permissionRoleManager.hasPermission(delegatedAuth, "LINKATUTTO-ADMIN", "clients:read"));
-    assertTrue(permissionRoleManager.hasPermission(delegatedAuth, "LINKATUTTO-ADMIN", "users:read"));
-    assertTrue(permissionRoleManager.hasPermission(delegatedAuth, "LINKATUTTO-ADMIN", "users:write"));
+    assertTrue(
+        permissionRoleManager.hasPermission(delegatedAuth, "LINKATUTTO-ADMIN", "clients:read"));
+    assertTrue(
+        permissionRoleManager.hasPermission(delegatedAuth, "LINKATUTTO-ADMIN", "users:read"));
+    assertTrue(
+        permissionRoleManager.hasPermission(delegatedAuth, "LINKATUTTO-ADMIN", "users:write"));
 
     // Missing permission
-    assertFalse(permissionRoleManager.hasPermission(delegatedAuth, "LINKATUTTO-ADMIN", "clients:delete"));
+    assertFalse(
+        permissionRoleManager.hasPermission(delegatedAuth, "LINKATUTTO-ADMIN", "clients:delete"));
     assertThrows(
         OAuthException.class,
-        () -> permissionRoleManager.assertPermission(delegatedAuth, "LINKATUTTO-ADMIN", "clients:delete"));
+        () ->
+            permissionRoleManager.assertPermission(
+                delegatedAuth, "LINKATUTTO-ADMIN", "clients:delete"));
   }
 }

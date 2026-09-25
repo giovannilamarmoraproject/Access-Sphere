@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechnicalException;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -29,7 +29,7 @@ public class AuthorizationFilter implements WebFilter {
   @Value(value = "${filter.authorization.shouldFilter}")
   private List<String> shouldFilter;
 
-  @Autowired private TechUserService techUserService;
+  @Autowired private AdminUserService techUserService;
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {

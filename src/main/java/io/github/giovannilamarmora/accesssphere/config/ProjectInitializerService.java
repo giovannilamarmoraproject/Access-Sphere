@@ -5,7 +5,7 @@ import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserConfig;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
 import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.email.IEmailTemplateDAO;
@@ -24,7 +24,6 @@ import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,14 +50,14 @@ public class ProjectInitializerService implements ApplicationRunner {
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
   public static final String DEFAULT_RESET_PASSWORD_TEMPLATE_UUID =
-      TechUserConfig.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID;
+      AdminUserConfig.DEFAULT_RESET_PASSWORD_TEMPLATE_UUID;
   public static final String LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER =
-      TechUserConfig.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER;
+      AdminUserConfig.LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER;
 
   @Value("${app.domain}")
   private String appDomain;
 
-  @Autowired private TechUserConfig techUserConfig;
+  @Autowired private AdminUserConfig adminUserConfig;
   @Autowired private IOAuth2ClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
@@ -73,8 +72,7 @@ public class ProjectInitializerService implements ApplicationRunner {
 
     initTechnicalClient();
     initRoleDefinitions();
-    initTechnicalUser();
-    migrateLegacyUserRoles();
+    initSuperAdminUser();
     initAppSettings();
     initEmailTemplates();
 
@@ -106,11 +104,11 @@ public class ProjectInitializerService implements ApplicationRunner {
 
   /**
    * Inizializzazione del client OAuth 2.0 tecnico all'avvio dell'applicazione. Utilizza {@link
-   * TechUserConfig} per i parametri del client tecnico ed {@link IOAuth2ClientDAO} per la
+   * AdminUserConfig} per i parametri del client tecnico ed {@link IOAuth2ClientDAO} per la
    * persistenza. Se il client non esiste nel database, lo crea configurando:
    *
    * <ul>
-   *   <li>JWT Secret: letto da {@link TechUserConfig} o generato a mano a 256-bit
+   *   <li>JWT Secret: letto da {@link AdminUserConfig} o generato a mano a 256-bit
    *   <li>Redirect URI: mappa serializzata in formato JSON con fallback_uri e redirect_uri generati
    *       di default
    * </ul>
@@ -119,7 +117,7 @@ public class ProjectInitializerService implements ApplicationRunner {
    * redirect URI.
    */
   private void initTechnicalClient() {
-    String techClientId = techUserConfig.getTechClientId();
+    String techClientId = adminUserConfig.getAdminClientId();
 
     // Risoluzione del JWT Secret: da TechUserConfig o generazione a mano
     String jwtSecret = resolveOrGenerateJwtSecret(techClientId);
@@ -206,7 +204,7 @@ public class ProjectInitializerService implements ApplicationRunner {
    */
   private void initRoleDefinitions() {
     LOG.info("🔐 Checking enterprise Role Definitions and Permissions seeding...");
-    String techClientId = techUserConfig.getTechClientId();
+    String techClientId = adminUserConfig.getAdminClientId();
     final String rolePrefix = "ACCESS-SPHERE_";
 
     // 1. Super Admin: Accesso globale e totale senza alcuna limitazione
@@ -313,46 +311,6 @@ public class ProjectInitializerService implements ApplicationRunner {
         AppRoleType.TECHNICAL.name(),
         "Technical service role for Access Sphere internal integrations and M2M operations",
         List.of(SystemPermission.ALL.getValue()));
-
-    seedRoleDefinition(
-        techClientId,
-        "ROLE_TECH",
-        AppRoleType.TECHNICAL.name(),
-        "Technical service role for Access Sphere internal integrations (legacy alias)",
-        List.of(SystemPermission.ALL.getValue()));
-
-    // 8. Controllo integrità: ripristina la lista permessi per eventuali record a DB con
-    // permissions = null
-    List<RoleDefinitionEntity> allRoles = roleDefinitionDAO.findAll();
-    if (allRoles != null) {
-      for (RoleDefinitionEntity r : allRoles) {
-        if (r.getPermissions() == null) {
-          if (AppRoleType.SUPER_ADMIN.name().equalsIgnoreCase(r.getType())
-              || "ROLE_TECH".equalsIgnoreCase(r.getRole())) {
-            r.setPermissions(List.of(SystemPermission.ALL.getValue()));
-          } else {
-            r.setPermissions(new ArrayList<>());
-          }
-          roleDefinitionDAO.save(r);
-          LOG.info(
-              "🔄 Initialized null permissions for role [{}] on client [{}]",
-              r.getRole(),
-              r.getClientId());
-        }
-        LOG.info(
-            "🔑 [INIT ROLE] Client: [{}], Role: [{}], Type: [{}], Permissions ({}): {}",
-            r.getClientId(),
-            r.getRole(),
-            r.getType(),
-            r.getPermissions() != null ? r.getPermissions().size() : 0,
-            r.getPermissions());
-      }
-      LOG.info(
-          "✅ Role Definitions and Permissions initialization completed successfully ({} roles verified).",
-          allRoles.size());
-    } else {
-      LOG.info("✅ Role Definitions and Permissions initialization completed successfully.");
-    }
   }
 
   /**
@@ -382,18 +340,18 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   /**
-   * Risolve il secret JWT leggendolo da {@link TechUserConfig} oppure generandolo a mano in modo
+   * Risolve il secret JWT leggendolo da {@link AdminUserConfig} oppure generandolo a mano in modo
    * crittograficamente sicuro a 256-bit (stringa esadecimale da 64 caratteri).
    *
    * @param techClientId Identificativo del client tecnico
    * @return secret JWT a 256-bit esadecimale.
    */
   private String resolveOrGenerateJwtSecret(String techClientId) {
-    if (StringUtils.hasText(techUserConfig.getTechJwtSecret())) {
+    if (StringUtils.hasText(adminUserConfig.getAdminJwtSecret())) {
       LOG.debug(
           "Using configured JWT Secret from TechUserConfig for Technical OAuth Client [{}]",
           techClientId);
-      return techUserConfig.getTechJwtSecret().trim();
+      return adminUserConfig.getAdminJwtSecret().trim();
     }
     LOG.info(
         "🔑 Generating new secure 256-bit random JWT Secret for Technical OAuth Client [{}]",
@@ -420,84 +378,46 @@ public class ProjectInitializerService implements ApplicationRunner {
 
   /**
    * Inizializzazione dell'utente tecnico all'avvio dell'applicazione. Interconnesso con {@link
-   * TechUserConfig} per ottenere le credenziali predefinite e con {@link IUserDAO} per la
+   * AdminUserConfig} per ottenere le credenziali predefinite e con {@link IUserDAO} per la
    * persistenza.
    */
-  private void initTechnicalUser() {
-    String techUsername =
-        StringUtils.hasText(techUserConfig.getTechUsername())
-            ? techUserConfig.getTechUsername()
-            : "tech_admin";
-    String techEmail =
-        StringUtils.hasText(techUserConfig.getTechEmail())
-            ? techUserConfig.getTechEmail()
-            : techUsername + "@accesssphere.local";
-    String techPassword =
-        StringUtils.hasText(techUserConfig.getTechPassword())
-            ? techUserConfig.getTechPassword()
-            : "tech_password";
+  private void initSuperAdminUser() {
+    String adminUsername =
+        StringUtils.hasText(adminUserConfig.getAdminUsername())
+            ? adminUserConfig.getAdminUsername()
+            : "admin";
+    String adminEmail =
+        StringUtils.hasText(adminUserConfig.getAdminEmail())
+            ? adminUserConfig.getAdminEmail()
+            : adminUsername + "@accesssphere.local";
+    String adminPassword =
+        StringUtils.hasText(adminUserConfig.getAdminPassword())
+            ? adminUserConfig.getAdminPassword()
+            : "password";
 
-    UserEntity existing = userDAO.findUserEntityByUsernameOrEmail(techUsername, techEmail);
+    UserEntity existing = userDAO.findUserEntityByUsernameOrEmail(adminUsername, adminEmail);
     if (existing == null) {
-      LOG.info("👤 Seeding Technical User: {} ({})", techUsername, techEmail);
+      LOG.info("👤 Seeding Admin User: {} ({})", adminUsername, adminEmail);
       UserEntity user = new UserEntity();
       user.setIdentifier(UUID.randomUUID().toString());
-      user.setUsername(techUsername);
-      user.setEmail(techEmail);
-      user.setName("Technical");
-      user.setSurname("Admin");
-      user.setPassword(bCryptPasswordEncoder.encode(techPassword));
-      user.setRoles("ROLE_ADMIN ROLE_TECH");
+      user.setUsername(adminUsername);
+      user.setEmail(adminEmail);
+      user.setName("Admin");
+      user.setSurname("User");
+      user.setPassword(bCryptPasswordEncoder.encode(adminPassword));
       userDAO.save(user);
 
-      // Associa i ruoli iniziali nella tabella relazionale USER_CLIENT_ROLE
-      String techClientId = techUserConfig.getTechClientId();
+      final String superAdminRoleName = "ACCESS-SPHERE_" + AppRoleType.SUPER_ADMIN.name();
+      String techClientId = adminUserConfig.getAdminClientId();
       userClientRoleDAO.save(
-          new UserClientRoleEntity(user.getIdentifier(), techClientId, "ROLE_ADMIN"));
-      userClientRoleDAO.save(
-          new UserClientRoleEntity(user.getIdentifier(), techClientId, "ROLE_TECH"));
+          new UserClientRoleEntity(user.getIdentifier(), techClientId, superAdminRoleName));
 
       LOG.info(
-          "✅ Technical User [{}] successfully seeded in DB with roles ROLE_ADMIN ROLE_TECH in USER_CLIENT_ROLE",
-          techUsername);
+          "✅ Admin User [{}] successfully seeded in DB with roles {} in USER_CLIENT_ROLE",
+          superAdminRoleName,
+          adminUsername);
     } else {
-      LOG.debug("Technical User [{}] already present in DB", techUsername);
-    }
-  }
-
-  /**
-   * Esegue la migrazione automatica e trasparente dei ruoli dalla colonna denormalizzata
-   * USERS.ROLES alla tabella relazionale USER_CLIENT_ROLE per tutti gli utenti censiti che non
-   * presentano ancora record associati in USER_CLIENT_ROLE. I ruoli migrati vengono
-   * contestualizzati sul client tecnico di sistema.
-   */
-  private void migrateLegacyUserRoles() {
-    String techClientId = techUserConfig.getTechClientId();
-    List<UserEntity> users = userDAO.findAll();
-    for (UserEntity user : users) {
-      if (user.getRoles() != null && !user.getRoles().isBlank()) {
-        List<UserClientRoleEntity> existingUcr =
-            userClientRoleDAO.findByUserIdentifier(user.getIdentifier());
-        if (existingUcr == null || existingUcr.isEmpty()) {
-          LOG.info(
-              "🔄 Migrating legacy roles for user [{}] to USER_CLIENT_ROLE", user.getUsername());
-          String[] roleTokens = user.getRoles().split("\\s+");
-          int count = 0;
-          for (String r : roleTokens) {
-            if (!r.isBlank()) {
-              UserClientRoleEntity ucr =
-                  new UserClientRoleEntity(
-                      user.getIdentifier(), techClientId, r.trim().toUpperCase());
-              userClientRoleDAO.save(ucr);
-              count++;
-            }
-          }
-          LOG.info(
-              "✅ Successfully migrated {} roles to USER_CLIENT_ROLE for user [{}]",
-              count,
-              user.getUsername());
-        }
-      }
+      LOG.debug("Admin User [{}] already present in DB", adminUsername);
     }
   }
 
@@ -542,9 +462,9 @@ public class ProjectInitializerService implements ApplicationRunner {
    */
   private void initEmailTemplates() {
     String techClientId =
-        StringUtils.hasText(techUserConfig.getTechClientId())
-            ? techUserConfig.getTechClientId()
-            : "ACCESS-SPHERE-TECH";
+        StringUtils.hasText(adminUserConfig.getAdminClientId())
+            ? adminUserConfig.getAdminClientId()
+            : "ACCESS-SPHERE-AUTH";
 
     List<EmailTemplateEntity> existing =
         emailTemplateDAO.findByIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);

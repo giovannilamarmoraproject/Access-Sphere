@@ -5,7 +5,7 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
@@ -52,7 +52,7 @@ import reactor.core.publisher.Mono;
  *   <li>Interroga e aggiorna l'anagrafica utente delegando al layer di persistenza {@link
  *       UserService}.
  *   <li>Verifica i diritti di auto-modifica del profilo o la presenza di ruoli privilegiati tramite
- *       {@link TechUserService} e {@link UserValidator#validateUpdate}.
+ *       {@link AdminUserService} e {@link UserValidator#validateUpdate}.
  *   <li>Orchestra il flusso di reset password in due fasi, integrandosi con {@link
  *       EmailTemplateService} per il template localizzato e con {@link EmailSenderService} per la
  *       notifica.
@@ -67,7 +67,7 @@ public class UserAccountService {
 
   @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private TokenService tokenService;
-  @Autowired private TechUserService techUserService;
+  @Autowired private AdminUserService techUserService;
   @Autowired private EmailTemplateService emailTemplateService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private UserService userService;

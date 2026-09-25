@@ -13,47 +13,47 @@ const appVersion = "v" + APP_VERSION.replace(/^v/i, ""); // Retrocompatibilità
  * @param {boolean} prefix Se true include 'v' (es. "v2.0.0"), altrimenti "2.0.0"
  */
 function getAppVersion(prefix = false) {
-  const clean = APP_VERSION.replace(/^v/i, "");
-  return prefix ? "v" + clean : clean;
+    const clean = APP_VERSION.replace(/^v/i, "");
+    return prefix ? "v" + clean : clean;
 }
 
 /**
  * Applica automaticamente la versione a tutti gli elementi HTML dedicati nel DOM
  */
 function applyAppVersion() {
-  const versionWithV = getAppVersion(true);
-  const versionPlain = getAppVersion(false);
+    const versionWithV = getAppVersion(true);
+    const versionPlain = getAppVersion(false);
 
-  if (typeof document !== "undefined") {
-    // 1. Elementi generici con attributo data-app-version="v|full|plain"
-    document.querySelectorAll("[data-app-version]").forEach((el) => {
-      const format = el.getAttribute("data-app-version");
-      if (format === "v") {
-        el.textContent = versionWithV;
-      } else if (format === "full") {
-        el.textContent = "Access Sphere " + versionWithV;
-      } else {
-        el.textContent = versionPlain;
-      }
-    });
+    if (typeof document !== "undefined") {
+        // 1. Elementi generici con attributo data-app-version="v|full|plain"
+        document.querySelectorAll("[data-app-version]").forEach((el) => {
+            const format = el.getAttribute("data-app-version");
+            if (format === "v") {
+                el.textContent = versionWithV;
+            } else if (format === "full") {
+                el.textContent = "Access Sphere " + versionWithV;
+            } else {
+                el.textContent = versionPlain;
+            }
+        });
 
-    // 2. Badge showcase versione nella pagina di Login
-    const showcaseVersion = document.querySelector(".showcase-version-text");
-    if (showcaseVersion) {
-      showcaseVersion.textContent = "Access Sphere " + versionWithV;
+        // 2. Badge showcase versione nella pagina di Login
+        const showcaseVersion = document.querySelector(".showcase-version-text");
+        if (showcaseVersion) {
+            showcaseVersion.textContent = "Access Sphere " + versionWithV;
+        }
+
+        // 3. Badge versione nella Landing Page principale
+        const landingVersion = document.querySelector(".landing-version-badge");
+        if (landingVersion) {
+            landingVersion.textContent = versionWithV;
+        }
+
+        // 4. Elementi con classe app-version-text
+        document.querySelectorAll(".app-version-text").forEach((el) => {
+            el.textContent = versionWithV;
+        });
     }
-
-    // 3. Badge versione nella Landing Page principale
-    const landingVersion = document.querySelector(".landing-version-badge");
-    if (landingVersion) {
-      landingVersion.textContent = versionWithV;
-    }
-
-    // 4. Elementi con classe app-version-text
-    document.querySelectorAll(".app-version-text").forEach((el) => {
-      el.textContent = versionWithV;
-    });
-  }
 }
 
 // Inizializzazione automatica al caricamento del DOM
@@ -61,62 +61,63 @@ function applyAppVersion() {
  * Restituisce l'anno corrente per i copyright
  */
 function getCurrentYear() {
-  return new Date().getFullYear();
+    return new Date().getFullYear();
 }
 
 /**
  * Calcola e applica automaticamente l'anno corrente a tutti i testi di copyright dell'applicazione
  */
 function applyAutoCopyright() {
-  const currentYear = getCurrentYear();
+    const currentYear = getCurrentYear();
 
-  if (typeof document !== "undefined") {
-    // 1. Elementi con classe copyright-year o attributo data-current-year
-    document.querySelectorAll(".copyright-year, [data-current-year]").forEach((el) => {
-      el.textContent = currentYear;
-    });
+    if (typeof document !== "undefined") {
+        // 1. Elementi con classe copyright-year o attributo data-current-year
+        document.querySelectorAll(".copyright-year, [data-current-year]").forEach((el) => {
+            el.textContent = currentYear;
+        });
 
-    // 2. Recupera l'eventuale copyright o appName personalizzato da settings / localStorage
-    let customCopyright = null;
-    let appName = "Access Sphere";
-    try {
-      const s = localStorage.getItem("access_sphere_settings");
-      if (s) {
-        const parsed = JSON.parse(s);
-        const branding = parsed.brandingSettings || {};
-        const fc = parsed.footerCopyright || branding.footerCopyright;
-        if (fc && fc.trim()) {
-          customCopyright = fc.trim();
+        // 2. Recupera l'eventuale copyright o appName personalizzato da settings / localStorage
+        let customCopyright = null;
+        let appName = "Access Sphere";
+        try {
+            const s = localStorage.getItem("access_sphere_settings");
+            if (s) {
+                const parsed = JSON.parse(s);
+                const branding = parsed.brandingSettings || {};
+                const fc = parsed.footerCopyright || branding.footerCopyright;
+                if (fc && fc.trim()) {
+                    customCopyright = fc.trim();
+                }
+                const an = parsed.appName || branding.appName;
+                if (an && an.trim()) {
+                    appName = an.trim();
+                }
+            }
+            const directCopyright = localStorage.getItem("access_sphere_footer_copyright");
+            if (directCopyright && directCopyright.trim()) {
+                customCopyright = directCopyright.trim();
+            }
+            const savedName = localStorage.getItem("access_sphere_app_name");
+            if (savedName && savedName.trim()) {
+                appName = savedName.trim();
+            }
+        } catch (e) {
         }
-        const an = parsed.appName || branding.appName;
-        if (an && an.trim()) {
-          appName = an.trim();
-        }
-      }
-      const directCopyright = localStorage.getItem("access_sphere_footer_copyright");
-      if (directCopyright && directCopyright.trim()) {
-        customCopyright = directCopyright.trim();
-      }
-      const savedName = localStorage.getItem("access_sphere_app_name");
-      if (savedName && savedName.trim()) {
-        appName = savedName.trim();
-      }
-    } catch (e) {}
 
-    // 3. Elementi con classe footer_copyright_text e app-footer-copyright
-    document.querySelectorAll(".footer_copyright_text, .app-footer-copyright").forEach((el) => {
-      if (customCopyright) {
-        el.innerHTML = customCopyright.replace("#YEAR#", currentYear).replace(/202[0-9]/g, currentYear);
-      } else {
-        el.innerHTML = `&copy; ${currentYear} ${appName} - Tutti i diritti riservati`;
-      }
-    });
+        // 3. Elementi con classe footer_copyright_text e app-footer-copyright
+        document.querySelectorAll(".footer_copyright_text, .app-footer-copyright").forEach((el) => {
+            if (customCopyright) {
+                el.innerHTML = customCopyright.replace("#YEAR#", currentYear).replace(/202[0-9]/g, currentYear);
+            } else {
+                el.innerHTML = `&copy; ${currentYear} ${appName} - Tutti i diritti riservati`;
+            }
+        });
 
-    // 4. Elementi generici con classe auto-copyright
-    document.querySelectorAll(".auto-copyright").forEach((el) => {
-      el.innerHTML = el.innerHTML.replace(/202[0-9](-202[0-9])?/g, currentYear);
-    });
-  }
+        // 4. Elementi generici con classe auto-copyright
+        document.querySelectorAll(".auto-copyright").forEach((el) => {
+            el.innerHTML = el.innerHTML.replace(/202[0-9](-202[0-9])?/g, currentYear);
+        });
+    }
 }
 
 /**
@@ -129,145 +130,147 @@ function applyAutoCopyright() {
 const _prefetchedRoutes = new Set();
 
 function prefetchRoute(url) {
-  if (!url || typeof url !== "string") return;
-  if (url.startsWith("#") || url.startsWith("javascript:") || url.startsWith("mailto:") || url.startsWith("tel:")) return;
+    if (!url || typeof url !== "string") return;
+    if (url.startsWith("#") || url.startsWith("javascript:") || url.startsWith("mailto:") || url.startsWith("tel:")) return;
 
-  try {
-    const target = new URL(url, window.location.origin);
-    if (target.origin !== window.location.origin) return;
-    if (target.pathname === window.location.pathname) return;
-    if (_prefetchedRoutes.has(target.pathname)) return;
+    try {
+        const target = new URL(url, window.location.origin);
+        if (target.origin !== window.location.origin) return;
+        if (target.pathname === window.location.pathname) return;
+        if (_prefetchedRoutes.has(target.pathname)) return;
 
-    _prefetchedRoutes.add(target.pathname);
+        _prefetchedRoutes.add(target.pathname);
 
-    // 1. Link prefetch tag
-    const link = document.createElement("link");
-    link.rel = "prefetch";
-    link.href = target.href;
-    link.as = "document";
-    document.head.appendChild(link);
+        // 1. Link prefetch tag
+        const link = document.createElement("link");
+        link.rel = "prefetch";
+        link.href = target.href;
+        link.as = "document";
+        document.head.appendChild(link);
 
-    // 2. Fetch di supporto per riscaldare la cache del browser
-    fetch(target.href, { priority: "low", credentials: "same-origin" }).catch(() => {});
-  } catch (e) {}
+        // 2. Fetch di supporto per riscaldare la cache del browser
+        fetch(target.href, {priority: "low", credentials: "same-origin"}).catch(() => {
+        });
+    } catch (e) {
+    }
 }
 
 function initInstantNavigation() {
-  if (typeof document === "undefined") return;
+    if (typeof document === "undefined") return;
 
-  // Intercetta hover e touch su tutti i link interni
-  document.addEventListener("mouseover", (e) => {
-    const a = e.target.closest("a");
-    if (a && a.href) prefetchRoute(a.href);
-  }, { passive: true });
+    // Intercetta hover e touch su tutti i link interni
+    document.addEventListener("mouseover", (e) => {
+        const a = e.target.closest("a");
+        if (a && a.href) prefetchRoute(a.href);
+    }, {passive: true});
 
-  document.addEventListener("touchstart", (e) => {
-    const a = e.target.closest("a");
-    if (a && a.href) prefetchRoute(a.href);
-  }, { passive: true });
+    document.addEventListener("touchstart", (e) => {
+        const a = e.target.closest("a");
+        if (a && a.href) prefetchRoute(a.href);
+    }, {passive: true});
 
-  // Precaricamento delle rotte chiave in idle
-  const idleFn = window.requestIdleCallback || ((cb) => setTimeout(cb, 250));
-  idleFn(() => {
-    const p = window.location.pathname;
-    if (p === "/" || p === "/index.html") {
-      prefetchRoute("/app/login");
-      prefetchRoute("/app");
-      prefetchRoute("/privacy-policy");
-      prefetchRoute("/cookie-policy");
-    } else if (p.startsWith("/app/login")) {
-      prefetchRoute("/app");
-      prefetchRoute("/");
-    } else if (p.startsWith("/app")) {
-      prefetchRoute("/app/users/register");
-      prefetchRoute("/app/clients/register");
-      prefetchRoute("/app/users");
-      prefetchRoute("/app/clients");
-      prefetchRoute("/app/emails");
-      prefetchRoute("/app/settings");
-    }
-  });
+    // Precaricamento delle rotte chiave in idle
+    const idleFn = window.requestIdleCallback || ((cb) => setTimeout(cb, 250));
+    idleFn(() => {
+        const p = window.location.pathname;
+        if (p === "/" || p === "/index.html") {
+            prefetchRoute("/app/login");
+            prefetchRoute("/app");
+            prefetchRoute("/privacy-policy");
+            prefetchRoute("/cookie-policy");
+        } else if (p.startsWith("/app/login")) {
+            prefetchRoute("/app");
+            prefetchRoute("/");
+        } else if (p.startsWith("/app")) {
+            prefetchRoute("/app/users/register");
+            prefetchRoute("/app/clients/register");
+            prefetchRoute("/app/users");
+            prefetchRoute("/app/clients");
+            prefetchRoute("/app/emails");
+            prefetchRoute("/app/settings");
+        }
+    });
 }
 
 // Inizializzazione automatica al caricamento del DOM
 if (typeof document !== "undefined") {
-  const initAppConfig = () => {
-    applyAppVersion();
-    applyAutoCopyright();
-    initInstantNavigation();
-  };
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initAppConfig);
-  } else {
-    initAppConfig();
-  }
+    const initAppConfig = () => {
+        applyAppVersion();
+        applyAutoCopyright();
+        initInstantNavigation();
+    };
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initAppConfig);
+    } else {
+        initAppConfig();
+    }
 }
 
 function getConfig() {
-  const configClientID = "ACCESS-SPHERE-TECH";
-  const configRedirectUri = window.location.origin + "/app";
+    const configClientID = "ACCESS-SPHERE-AUTH";
+    const configRedirectUri = window.location.origin + "/app";
 
-  const urlConfig = {
-    baseUrl: window.location.origin,
-    authorize: "/v1/oauth2/authorize",
-    token: "/v1/oauth2/token",
-    users: "/v1/users",
-    logout: "/v1/oauth2/logout",
-    client: "/v1/clients",
-    register: "/v1/users",
-    edit: "/v1/users",
-    delete: "/v1/users",
-    forgot: "/v1/users/password/reset-request",
-    reset: "/v1/users/password/reset",
-    verifyOTP: "/v1/mfa/verify?include_user_data=true",
-    param: "?",
-    divider: "&",
-    access_type: "access_type=online",
-    client_id: "client_id=" + configClientID,
-    redirect_uri: "redirect_uri=" + configRedirectUri,
-    scope: "scope=openid",
-    login_type_bearer: "type=bearer",
-    login_type_google: "type=google",
-    response_type: "response_type=token",
-  };
+    const urlConfig = {
+        baseUrl: window.location.origin,
+        authorize: "/v1/oauth2/authorize",
+        token: "/v1/oauth2/token",
+        users: "/v1/users",
+        logout: "/v1/oauth2/logout",
+        client: "/v1/clients",
+        register: "/v1/users",
+        edit: "/v1/users",
+        delete: "/v1/users",
+        forgot: "/v1/users/password/reset-request",
+        reset: "/v1/users/password/reset",
+        verifyOTP: "/v1/mfa/verify?include_user_data=true",
+        param: "?",
+        divider: "&",
+        access_type: "access_type=online",
+        client_id: "client_id=" + configClientID,
+        redirect_uri: "redirect_uri=" + configRedirectUri,
+        scope: "scope=openid",
+        login_type_bearer: "type=bearer",
+        login_type_google: "type=google",
+        response_type: "response_type=token",
+    };
 
-  return {
-    client_id: configClientID,
-    redirect_uri: configRedirectUri,
-    access_token: "access-token",
-    login_url: window.location.origin + "/app/login",
-    authorize_url:
-      urlConfig.baseUrl +
-      urlConfig.authorize +
-      urlConfig.param +
-      urlConfig.client_id +
-      urlConfig.divider +
-      urlConfig.access_type +
-      urlConfig.divider +
-      urlConfig.redirect_uri +
-      urlConfig.divider +
-      urlConfig.scope +
-      urlConfig.divider +
-      urlConfig.response_type,
-    token_url: window.location.origin + urlConfig.token,
-    users_url: urlConfig.baseUrl + urlConfig.users,
-    logout_url:
-      urlConfig.baseUrl +
-      urlConfig.logout +
-      urlConfig.param +
-      urlConfig.client_id,
-    client_id_url: urlConfig.baseUrl + urlConfig.client,
-    register_user_url: urlConfig.baseUrl + urlConfig.register,
-    forgot_password_url: urlConfig.baseUrl + urlConfig.forgot,
-    reset_password_url: urlConfig.baseUrl + urlConfig.reset,
-    edit_user_url: urlConfig.baseUrl + urlConfig.edit,
-    delete_user_url: urlConfig.baseUrl + urlConfig.delete,
-    verify_otp_url: urlConfig.baseUrl + urlConfig.verifyOTP,
-    email_templates_url: urlConfig.baseUrl + "/v1/email-templates",
-    email_templates_test_url: urlConfig.baseUrl + "/v1/email-templates/send-test",
-  };
+    return {
+        client_id: configClientID,
+        redirect_uri: configRedirectUri,
+        access_token: "access-token",
+        login_url: window.location.origin + "/app/login",
+        authorize_url:
+            urlConfig.baseUrl +
+            urlConfig.authorize +
+            urlConfig.param +
+            urlConfig.client_id +
+            urlConfig.divider +
+            urlConfig.access_type +
+            urlConfig.divider +
+            urlConfig.redirect_uri +
+            urlConfig.divider +
+            urlConfig.scope +
+            urlConfig.divider +
+            urlConfig.response_type,
+        token_url: window.location.origin + urlConfig.token,
+        users_url: urlConfig.baseUrl + urlConfig.users,
+        logout_url:
+            urlConfig.baseUrl +
+            urlConfig.logout +
+            urlConfig.param +
+            urlConfig.client_id,
+        client_id_url: urlConfig.baseUrl + urlConfig.client,
+        register_user_url: urlConfig.baseUrl + urlConfig.register,
+        forgot_password_url: urlConfig.baseUrl + urlConfig.forgot,
+        reset_password_url: urlConfig.baseUrl + urlConfig.reset,
+        edit_user_url: urlConfig.baseUrl + urlConfig.edit,
+        delete_user_url: urlConfig.baseUrl + urlConfig.delete,
+        verify_otp_url: urlConfig.baseUrl + urlConfig.verifyOTP,
+        email_templates_url: urlConfig.baseUrl + "/v1/email-templates",
+        email_templates_test_url: urlConfig.baseUrl + "/v1/email-templates/send-test",
+    };
 }
 
 function getVersion() {
-  return sweetalert("info", "Access Sphere - " + appVersion);
+    return sweetalert("info", "Access Sphere - " + appVersion);
 }

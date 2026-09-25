@@ -3,7 +3,7 @@ package io.github.giovannilamarmora.accesssphere.email;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderClient;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailSendTestRequest;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
@@ -38,7 +38,7 @@ public class EmailTemplateService {
 
   @Autowired private IEmailTemplateDAO emailTemplateDAO;
   @Autowired private EmailSenderClient emailSenderClient;
-  @Autowired private TechUserService techUserService;
+  @Autowired private AdminUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<EmailTemplateDTO>> getAllTemplates() {
@@ -179,7 +179,7 @@ public class EmailTemplateService {
           }
 
           // 2. Ricerca tra i template del Client Tecnico predefinito
-          String techClientId = techUserService.getTechClientId();
+          String techClientId = techUserService.getAdminClientId();
           if (!techClientId.equalsIgnoreCase(clientId)) {
             List<EmailTemplateEntity> techClientTemplates =
                 emailTemplateDAO.findByClientIdAndCategory(techClientId, effectiveCategory);

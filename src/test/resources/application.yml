@@ -59,10 +59,10 @@ app:
   version: 1.0.0
   domain: localhost:8081
   aes-key: ${AES_KEY:}
-  tech-user:
+  admin-user:
     username: username
     password: password
-    client-id: ACCESS-SPHERE-TECH
+    client-id: ACCESS-SPHERE-AUTH
     strapi: token
   shouldNotFilter: "*swagger*,*api-docs*,*webjars*"
   exception:

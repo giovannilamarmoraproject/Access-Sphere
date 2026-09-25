@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.data.user.admin;
 
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
@@ -44,7 +44,7 @@ import reactor.core.publisher.Mono;
  * <p>Interconnessioni logiche:
  *
  * <ul>
- *   <li>Verifica l'autorizzazione tecnica degli operatori tramite {@link TechUserService} e {@link
+ *   <li>Verifica l'autorizzazione tecnica degli operatori tramite {@link AdminUserService} e {@link
  *       TechUserValidator}.
  *   <li>Risolve la configurazione dei client OAuth tramite {@link OAuth2ClientService}.
  *   <li>Esegue le operazioni di lettura, creazione e cancellazione delegando al layer di
@@ -63,7 +63,7 @@ public class UserAdminService {
   private static final Logger LOG = LoggerFilter.getLogger(UserAdminService.class);
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
-  @Autowired private TechUserService techUserService;
+  @Autowired private AdminUserService techUserService;
   @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private UserService userService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
@@ -76,12 +76,12 @@ public class UserAdminService {
    * <p>Interconnessioni logiche:
    *
    * <ul>
-   *   <li>Se l'operatore autenticato e' l'utente tecnico ({@link TechUserService#isTechUser()}),
+   *   <li>Se l'operatore autenticato e' l'utente tecnico ({@link AdminUserService#isTechUser()}),
    *       valida i ruoli tecnici su {@link OAuth2ClientService} e restituisce l'elenco completo di
    *       tutti gli utenti da {@link UserService}.
    *   <li>Se l'operatore autenticato e' un utente normale/amministratore delegato, restituisce
    *       l'elenco filtrato escludendo l'utenza tecnica di sistema ({@link
-   *       TechUserService#isTechnicalUser(User)}), garantendone l'invisibilita' e la protezione da
+   *       AdminUserService#isTechnicalUser(User)}), garantendone l'invisibilita' e la protezione da
    *       manomissioni o lockout accidentali.
    * </ul>
    *
@@ -104,7 +104,7 @@ public class UserAdminService {
 
     if (techUserService.isTechUser()) {
       return oAuth2ClientService
-          .getClientCredentialByClientID(techUserService.getTechClientId())
+          .getClientCredentialByClientID(techUserService.getAdminClientId())
           .flatMap(
               clientCredential -> {
                 TechUserValidator.validateTechRoles(
@@ -272,7 +272,7 @@ public class UserAdminService {
    *
    * <ul>
    *   <li>Risolve l'utente target da {@link UserService#getUserByIdentifier(String)}.
-   *   <li>Verifica tramite {@link TechUserService#isTechnicalUser(User)} che un utente non tecnico
+   *   <li>Verifica tramite {@link AdminUserService#isTechnicalUser(User)} che un utente non tecnico
    *       non possa mai bloccare o sbloccare l'utenza tecnica di sistema (genera {@link
    *       ExceptionMap#ERR_TECH_403}).
    *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link
@@ -306,7 +306,7 @@ public class UserAdminService {
 
               if (techUserService.isTechUser()) {
                 return oAuth2ClientService
-                    .getClientCredentialByClientID(techUserService.getTechClientId())
+                    .getClientCredentialByClientID(techUserService.getAdminClientId())
                     .flatMap(
                         clientCredential -> {
                           TechUserValidator.validateTechRoles(
@@ -335,7 +335,7 @@ public class UserAdminService {
    * <ul>
    *   <li>Risolve l'utente target da {@link UserService#getUserByIdentifier(String)}.
    *   <li>Impedisce tassativamente l'eliminazione dell'utenza tecnica di sistema ({@link
-   *       TechUserService#isTechnicalUser(User)}), restituendo {@link ExceptionMap#ERR_TECH_403}.
+   *       AdminUserService#isTechnicalUser(User)}), restituendo {@link ExceptionMap#ERR_TECH_403}.
    *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link
    *       TechUserValidator#validateTechRoles}.
    *   <li>Cancella l'entita' dal database ed esegue il webhook associato tramite {@link
@@ -364,7 +364,7 @@ public class UserAdminService {
 
               if (techUserService.isTechUser()) {
                 return oAuth2ClientService
-                    .getClientCredentialByClientID(techUserService.getTechClientId())
+                    .getClientCredentialByClientID(techUserService.getAdminClientId())
                     .flatMap(
                         clientCredential -> {
                           TechUserValidator.validateTechRoles(

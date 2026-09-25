@@ -141,7 +141,9 @@ function checkAuthAndLoad() {
     if (typeof AccessControl !== "undefined" && !AccessControl.canViewEmails()) {
         console.warn("AccessControl: Permission denied for viewing email templates.");
         sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.");
-        setTimeout(() => { window.location.href = "/app"; }, 1500);
+        setTimeout(() => {
+            window.location.href = "/app";
+        }, 1500);
         return;
     }
 
@@ -184,13 +186,13 @@ function loadOAuthClients() {
 
 /**
  * Popola dinamicamente le select dei client (filtro nella barra strumenti ed editor)
- * Collegando il client predefinito a quello configurato all'avvio dell'app (ACCESS-SPHERE-TECH)
+ * Collegando il client predefinito a quello configurato all'avvio dell'app (ACCESS-SPHERE-AUTH)
  */
 function populateClientSelects() {
     const filterSelect = document.getElementById("client-filter-select");
     const editorSelect = document.getElementById("editor-client");
     const cfg = typeof getConfig === "function" ? getConfig() : null;
-    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-TECH";
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
 
     if (filterSelect) {
         const currentVal = filterSelect.value || "ALL";
@@ -525,7 +527,7 @@ function getCategoryBadgeHtml(catKey) {
 
 function getClientBadgeHtml(clientId) {
     const cfg = typeof getConfig === "function" ? getConfig() : null;
-    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-TECH";
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
 
     if (!clientId || clientId.trim() === "") {
         const lblGlobal = typeof t === "function" ? t("email_client_badge_global", "Globale") : "Globale";
@@ -874,7 +876,7 @@ function handleCategoryChange(catCode) {
 function generateRandomTemplateUuid() {
     const uuid = (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
         ? crypto.randomUUID()
-        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
@@ -939,7 +941,7 @@ function openCreateTemplateModal() {
         return;
     }
     const cfg = typeof getConfig === "function" ? getConfig() : null;
-    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-TECH";
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
 
     document.getElementById("editor-template-id").value = "";
     document.getElementById("editor-identifier").value = "";
@@ -1479,14 +1481,14 @@ function openEmailDetailModal(id) {
 
     if (catSubEl) {
         const catKey = (template.category || "RESET_PASSWORD").toUpperCase();
-        const catMeta = EMAIL_CATEGORIES[catKey] || { icon: "fa-envelope" };
+        const catMeta = EMAIL_CATEGORIES[catKey] || {icon: "fa-envelope"};
         const translatedCat = typeof t === "function" ? t("email_cat_" + catKey.toLowerCase(), catKey) : catKey;
         catSubEl.innerHTML = `<i class="fa-solid ${catMeta.icon} mr-1.5 theme-text-accent"></i> <span>${escapeHtml(translatedCat)}</span>`;
     }
 
     if (clientSubEl) {
         const cfg = typeof getConfig === "function" ? getConfig() : null;
-        const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-TECH";
+        const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
 
         if (template.clientId) {
             const isDefault = template.clientId.toUpperCase() === defaultClientId.toUpperCase();

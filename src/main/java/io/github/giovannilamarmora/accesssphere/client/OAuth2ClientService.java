@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
@@ -44,7 +44,7 @@ public class OAuth2ClientService {
 
   @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private PermissionRoleManager permissionRoleManager;
-  @Autowired private TechUserService techUserService;
+  @Autowired private AdminUserService techUserService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
 
@@ -125,7 +125,7 @@ public class OAuth2ClientService {
 
     if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
       if (oAuth2Client.getClientId() != null
-          && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getTechClientId())) {
+          && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getAdminClientId())) {
         throw new OAuthException(
             ExceptionMap.ERR_TECH_403, "Non-technical users cannot register technical clients");
       }
@@ -148,8 +148,8 @@ public class OAuth2ClientService {
   }
 
   /**
-   * Aggiorna le configurazioni di un client garantendo che appartenga al perimetro dell'operatore
-   * e che questi possieda il permesso {@code clients:write}.
+   * Aggiorna le configurazioni di un client garantendo che appartenga al perimetro dell'operatore e
+   * che questi possieda il permesso {@code clients:write}.
    *
    * @param oAuth2Client DTO con i parametri aggiornati.
    */
@@ -159,7 +159,7 @@ public class OAuth2ClientService {
 
     if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
       if (oAuth2Client.getClientId() != null
-          && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getTechClientId())) {
+          && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getAdminClientId())) {
         throw new OAuthException(
             ExceptionMap.ERR_TECH_403, "Non-technical users cannot modify the technical client");
       }
@@ -172,7 +172,7 @@ public class OAuth2ClientService {
 
   /**
    * Elimina un client dal database verificando che l'operatore possieda il permesso {@code
-   * clients:delete}. Il client tecnico di sistema {@code ACCESS-SPHERE-TECH} non puo mai essere
+   * clients:delete}. Il client tecnico di sistema {@code ACCESS-SPHERE-AUTH} non puo mai essere
    * eliminato.
    *
    * @param oAuth2Client DTO del client da cancellare.
@@ -182,9 +182,10 @@ public class OAuth2ClientService {
     permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
 
     if (oAuth2Client.getClientId() != null
-        && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getTechClientId())) {
+        && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getAdminClientId())) {
       throw new OAuthException(
-          ExceptionMap.ERR_TECH_403, "The technical client cannot be deleted under any circumstance");
+          ExceptionMap.ERR_TECH_403,
+          "The technical client cannot be deleted under any circumstance");
     }
 
     if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {

@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -29,7 +29,7 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class UserAdminServiceTest {
 
-  @Mock private TechUserService techUserService;
+  @Mock private AdminUserService techUserService;
   @Mock private OAuth2ClientService oAuth2ClientService;
   @Mock private UserService userService;
   @Mock private OAuth2Authorization oAuth2Authorization;
@@ -78,7 +78,7 @@ class UserAdminServiceTest {
       "getUsers should succeed and return all users including tech user when caller is tech user")
   void getUsers_techUser_returnsAllUsers() {
     when(techUserService.isTechUser()).thenReturn(true);
-    when(techUserService.getTechClientId()).thenReturn("CLIENT-TECH");
+    when(techUserService.getAdminClientId()).thenReturn("CLIENT-TECH");
 
     OAuth2Client credential = new OAuth2Client();
     credential.setClientId("CLIENT-TECH");
@@ -132,7 +132,7 @@ class UserAdminServiceTest {
   @DisplayName("unlockUser should update user blocked state when caller is tech user")
   void unlockUser_techUser_success() {
     when(techUserService.isTechUser()).thenReturn(true);
-    when(techUserService.getTechClientId()).thenReturn("CLIENT-TECH");
+    when(techUserService.getAdminClientId()).thenReturn("CLIENT-TECH");
 
     OAuth2Client credential = new OAuth2Client();
     credential.setClientId("CLIENT-TECH");
@@ -208,7 +208,7 @@ class UserAdminServiceTest {
   @DisplayName("deleteUser should succeed for normal user deletion by tech user")
   void deleteUser_techUser_deletingNormalUser_success() {
     when(techUserService.isTechUser()).thenReturn(true);
-    when(techUserService.getTechClientId()).thenReturn("CLIENT-TECH");
+    when(techUserService.getAdminClientId()).thenReturn("CLIENT-TECH");
 
     OAuth2Client credential = new OAuth2Client();
     credential.setClientId("CLIENT-TECH");

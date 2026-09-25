@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.mfa;
 
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserService;
+import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -36,7 +36,7 @@ public class MFAService {
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private MFASessionService mfaSessionService;
   @Autowired private MFAAuthenticationService mfaAuthenticationService;
-  @Autowired private TechUserService techUserService;
+  @Autowired private AdminUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> generateSecretForUser(MFASetupRequest setupRequest) {

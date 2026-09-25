@@ -227,10 +227,10 @@ const DEFAULT_USER_AVATAR = "https://bootdey.com/img/Content/avatar/avatar7.png"
 function enrichUserFromCachedUsers(userObj) {
     if (!userObj) return;
     try {
-        const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-TECH";
+        const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-AUTH";
         const rawUsers =
             localStorage.getItem(clientId + "_usersData") ||
-            localStorage.getItem("ACCESS-SPHERE-TECH_usersData");
+            localStorage.getItem("ACCESS-SPHERE-AUTH_usersData");
         if (rawUsers) {
             const users = JSON.parse(rawUsers);
             if (Array.isArray(users)) {
@@ -253,7 +253,8 @@ function enrichUserFromCachedUsers(userObj) {
                 }
             }
         }
-    } catch (e) {}
+    } catch (e) {
+    }
 
     if (!userObj.profilePhoto) {
         userObj.profilePhoto = DEFAULT_USER_AVATAR;
@@ -270,7 +271,7 @@ function enrichUserFromCachedUsers(userObj) {
 function getLoggedInUser() {
     const token =
         localStorage.getItem("access-token") ||
-        localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
+        localStorage.getItem("ACCESS-SPHERE-AUTH_access-token") ||
         (typeof getCookie === "function" ? getCookie("access-token") : null);
 
     let tokenClaims = null;
@@ -294,12 +295,14 @@ function getLoggedInUser() {
                     enrichUserFromCachedUsers(parsed);
                     try {
                         localStorage.setItem("access_sphere_user", JSON.stringify(parsed));
-                    } catch (e) {}
+                    } catch (e) {
+                    }
                 }
                 return parsed;
             }
         }
-    } catch (e) {}
+    } catch (e) {
+    }
 
     if (token) {
         const claims = tokenClaims || decodeJwtPayload(token);
@@ -338,7 +341,8 @@ function getLoggedInUser() {
             enrichUserFromCachedUsers(userObj);
             try {
                 localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
-            } catch (e) {}
+            } catch (e) {
+            }
             return userObj;
         }
     }
@@ -353,7 +357,7 @@ function getLoggedInUser() {
 function syncLoggedInUserProfile() {
     const token =
         localStorage.getItem("access-token") ||
-        localStorage.getItem("ACCESS-SPHERE-TECH_access-token") ||
+        localStorage.getItem("ACCESS-SPHERE-AUTH_access-token") ||
         (typeof getCookie === "function" ? getCookie("access-token") : null);
 
     if (!token) return Promise.resolve(null);
@@ -371,7 +375,7 @@ function syncLoggedInUserProfile() {
         Authorization: `Bearer ${token}`,
         ...(typeof getSavedHeaders === "function" ? getSavedHeaders() : {})
     };
-    const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-TECH";
+    const clientId = localStorage.getItem("Client-ID") || "ACCESS-SPHERE-AUTH";
     if (!headers["Client-ID"]) {
         headers["Client-ID"] = clientId;
     }
@@ -384,7 +388,7 @@ function syncLoggedInUserProfile() {
             if (!res.ok) {
                 // Fallback trasparente su /v1/users per recuperare l'anagrafica completa
                 const usersUrl = window.location.origin + "/v1/users";
-                return fetch(usersUrl, { method: "GET", headers: headers })
+                return fetch(usersUrl, {method: "GET", headers: headers})
                     .then((uRes) => (uRes.ok ? uRes.json() : null))
                     .then((uData) => {
                         if (uData && Array.isArray(uData.data)) {
@@ -394,7 +398,7 @@ function syncLoggedInUserProfile() {
                                     (current && current.email && u.email && u.email.toLowerCase() === current.email.toLowerCase())
                             );
                             if (myUser) {
-                                return { data: myUser };
+                                return {data: myUser};
                             }
                         }
                         return null;
@@ -463,7 +467,8 @@ function syncLoggedInUserProfile() {
                 };
                 try {
                     localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
-                } catch (e) {}
+                } catch (e) {
+                }
                 updateSidebarUserDOM(userObj);
                 if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
                     AccessControl.applyUIPermissions();
@@ -1286,14 +1291,14 @@ const AccessControl = {
 
     /**
      * Verifica se l'operatore può modificare un determinato client.
-     * NOTA: Il client tecnico ACCESS-SPHERE-TECH può essere modificato unicamente dal Super Admin.
+     * NOTA: Il client tecnico ACCESS-SPHERE-AUTH può essere modificato unicamente dal Super Admin.
      * @param {string} clientId
      * @returns {boolean}
      */
     canEditClient(clientId) {
         if (!clientId) return this.canManageClients();
         const target = String(clientId).trim().toUpperCase();
-        if (target === "ACCESS-SPHERE-TECH") {
+        if (target === "ACCESS-SPHERE-AUTH") {
             return this.isSuperAdmin();
         }
         if (this.isSuperAdmin()) return true;
@@ -1305,14 +1310,14 @@ const AccessControl = {
 
     /**
      * Verifica se l'operatore può eliminare un determinato client.
-     * NOTA: Il client tecnico ACCESS-SPHERE-TECH non può MAI essere eliminato da nessun utente.
+     * NOTA: Il client tecnico ACCESS-SPHERE-AUTH non può MAI essere eliminato da nessun utente.
      * @param {string} clientId
      * @returns {boolean}
      */
     canDeleteClient(clientId) {
         if (!clientId) return false;
         const target = String(clientId).trim().toUpperCase();
-        if (target === "ACCESS-SPHERE-TECH") {
+        if (target === "ACCESS-SPHERE-AUTH") {
             return false;
         }
         if (this.isSuperAdmin()) return true;

@@ -94,11 +94,11 @@
                 const params = new URLSearchParams(window.location.search);
                 const token = params.get("access-token");
                 const sessionId = params.get("session-id");
-                const clientId = params.get("client-id") || "ACCESS-SPHERE-TECH";
+                const clientId = params.get("client-id") || "ACCESS-SPHERE-AUTH";
                 if (token) {
                     localStorage.setItem("access-token", token);
                     localStorage.setItem(clientId + "_access-token", token);
-                    localStorage.setItem("ACCESS-SPHERE-TECH_access-token", token);
+                    localStorage.setItem("ACCESS-SPHERE-AUTH_access-token", token);
                 }
                 if (sessionId) {
                     localStorage.setItem("Session-ID", sessionId);
@@ -973,8 +973,8 @@
         try {
             const cachedClientsData = localStorage.getItem(cfg.client_id + "_clientsData") ||
                 localStorage.getItem(cfg.client_id + "_clients") ||
-                localStorage.getItem("ACCESS-SPHERE-TECH_clientsData") ||
-                localStorage.getItem("ACCESS-SPHERE-TECH_clients");
+                localStorage.getItem("ACCESS-SPHERE-AUTH_clientsData") ||
+                localStorage.getItem("ACCESS-SPHERE-AUTH_clients");
             if (cachedClientsData) {
                 const parsed = JSON.parse(cachedClientsData);
                 if (Array.isArray(parsed)) {
@@ -1243,7 +1243,7 @@
             loadCachedUsers();
         }
         const cfg = typeof getConfig === "function" ? getConfig() : config;
-        const cachedUsersRaw = localStorage.getItem((cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-TECH_usersData");
+        const cachedUsersRaw = localStorage.getItem((cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-AUTH_usersData");
         if (cachedUsersRaw) {
             try {
                 const parsed = JSON.parse(cachedUsersRaw);
@@ -1258,8 +1258,8 @@
         }
         const cachedClientsData = localStorage.getItem(config.client_id + "_clientsData") ||
             localStorage.getItem(config.client_id + "_clients") ||
-            localStorage.getItem("ACCESS-SPHERE-TECH_clientsData") ||
-            localStorage.getItem("ACCESS-SPHERE-TECH_clients");
+            localStorage.getItem("ACCESS-SPHERE-AUTH_clientsData") ||
+            localStorage.getItem("ACCESS-SPHERE-AUTH_clients");
         if (cachedClientsData) {
             try {
                 const parsed = JSON.parse(cachedClientsData);
