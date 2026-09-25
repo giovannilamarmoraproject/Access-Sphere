@@ -104,6 +104,28 @@ public class UserService {
   }
 
   /**
+   * Verifica se esiste gia un utente registrato con lo username specificato.
+   *
+   * @param username Lo username da verificare.
+   * @return true se presente, false altrimenti.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public boolean existsByUsername(String username) {
+    return userDAO.existsByUsername(username);
+  }
+
+  /**
+   * Verifica se esiste gia un utente registrato con l'indirizzo email specificato.
+   *
+   * @param email L'indirizzo email da verificare.
+   * @return true se presente, false altrimenti.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public boolean existsByEmail(String email) {
+    return userDAO.existsByEmail(email);
+  }
+
+  /**
    * Recupera un utente associato a un token di reset password e ne convalida la scadenza temporale.
    *
    * @param tokenReset Token UUID di recupero password.

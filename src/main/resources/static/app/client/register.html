@@ -687,6 +687,17 @@
                         </div>
                     </div>
 
+                    <div class="m3-switch-card">
+                        <div>
+                            <span class="text-xs font-bold text-white block" data-i18n="client_flag_enable_registration">Abilita Registrazione Utenti</span>
+                            <span class="text-[10px] text-gray-400 block mt-0.5">enable_registration (IAM register)</span>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input cursor-pointer" type="checkbox" id="enableRegistration" checked
+                                   style="width: 2.8em; height: 1.4em;"/>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -1474,6 +1485,7 @@
             mfaEnabled: document.getElementById("mfaEnabled").checked,
             idToken: document.getElementById("idToken").checked,
             accessToken: document.getElementById("accessToken").checked,
+            enableRegistration: document.getElementById("enableRegistration").checked,
             appRoles: cleanRoles.length > 0 ? cleanRoles : null,
             webhooks: cleanWebhooks.length > 0 ? cleanWebhooks : null
         };

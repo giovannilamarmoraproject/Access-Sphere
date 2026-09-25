@@ -144,6 +144,27 @@ public class OAuth2Client extends GenericDTO {
       example = "false")
   private Boolean mfaEnabled;
 
+  @JsonAlias({
+    "enableRegistration",
+    "enable_registration",
+    "registrationEnabled",
+    "registration_enabled"
+  })
+  @Schema(
+      description = "Indica se la registrazione autonoma o federata degli utenti e abilitata per questo client",
+      example = "true")
+  private Boolean enableRegistration;
+
   @Schema(description = "Elenco degli endpoint webhook registrati per notifiche su eventi del client")
   private List<Webhook> webhooks;
+
+  /**
+   * Verifica se la registrazione utenti e consentita per questo client (abilitata di default a meno che
+   * non sia esplicitamente configurata a false).
+   *
+   * @return true se la registrazione e abilitata o non specificata, false altrimenti.
+   */
+  public boolean isRegistrationEnabled() {
+    return !Boolean.FALSE.equals(this.enableRegistration);
+  }
 }

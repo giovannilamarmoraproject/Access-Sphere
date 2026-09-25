@@ -30,6 +30,10 @@ class UserServiceTest {
   private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO
       userClientRoleDAO;
 
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO
+      roleDefinitionDAO;
+
   @Mock private IOAuth2ClientDAO clientDAO;
 
   @InjectMocks private UserService userService;
@@ -40,6 +44,7 @@ class UserServiceTest {
   void setUp() {
     ReflectionTestUtils.setField(userService, "userDAO", userDAO);
     ReflectionTestUtils.setField(userService, "userClientRoleDAO", userClientRoleDAO);
+    ReflectionTestUtils.setField(userService, "roleDefinitionDAO", roleDefinitionDAO);
     ReflectionTestUtils.setField(userService, "clientDAO", clientDAO);
   }
 
@@ -161,7 +166,7 @@ class UserServiceTest {
 
   @Test
   @DisplayName(
-      "updateUser should update user and preserve existing mfaSettings, tokenReset and roles")
+      "updateUser should update user and preserve existing mfaSettings and tokenReset")
   void updateUser_success() {
     UserEntity existing = new UserEntity();
     existing.setId(99L);
@@ -169,7 +174,6 @@ class UserServiceTest {
     existing.setUsername("original");
     existing.setEmail("orig@example.com");
     existing.setPassword("encodedPass");
-    existing.setRoles("ROLE_USER");
     existing.setMfaSettings("{\"enabled\":true}");
     existing.setTokenReset("reset-token-xyz");
 
@@ -202,10 +206,16 @@ class UserServiceTest {
     existing.setIdentifier("uuid-99");
     existing.setUsername("original");
     existing.setEmail("orig@example.com");
-    existing.setRoles("ROLE_USER");
 
     when(userDAO.findUserEntityByIdentifier("uuid-99")).thenReturn(existing);
     when(userDAO.saveAndFlush(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(userClientRoleDAO.findByUserIdentifier("uuid-99"))
+        .thenReturn(
+            List.of(
+                new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity(
+                    "uuid-99", "access_sphere", "ACCESS_SPHERE_ADMIN"),
+                new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity(
+                    "uuid-99", "access_sphere", "SUPER_ADMIN")));
 
     User updateDto = new User();
     updateDto.setUsername("original");

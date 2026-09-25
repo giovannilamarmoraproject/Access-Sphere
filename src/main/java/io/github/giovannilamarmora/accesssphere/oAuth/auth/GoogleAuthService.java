@@ -29,6 +29,7 @@ import io.github.giovannilamarmora.utils.web.CookieManager;
 import io.github.giovannilamarmora.utils.web.RequestManager;
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -145,22 +146,16 @@ public class GoogleAuthService {
               if (throwable
                   .getMessage()
                   .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_404.getMessage())) {
-                String registration_token =
-                    RequestManager.getCookieOrHeaderData(Cookie.COOKIE_TOKEN, request);
-                if (ObjectUtils.isEmpty(registration_token)) {
-                  LOG.error("Missing registration_token");
+                if (Boolean.FALSE.equals(oAuth2Client.getEnableRegistration())) {
+                  LOG.error(
+                      "❌ Google registration rejected: registration is disabled for client {}",
+                      oAuth2Client.getClientId());
                   throw new OAuthException(
-                      ExceptionMap.ERR_OAUTH_401,
-                      "Missing registration_token, you cannot proceed!");
-                }
-                if (!registration_token.equalsIgnoreCase(oAuth2Client.getRegistrationToken())) {
-                  LOG.error("Invalid registration_token");
-                  throw new OAuthException(
-                      ExceptionMap.ERR_OAUTH_401,
-                      "Invalid registration_token, you cannot proceed!");
+                      ExceptionMap.ERR_OAUTH_403,
+                      "User registration is disabled for client " + oAuth2Client.getClientId());
                 }
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
-                userGoogle.setPassword(registration_token);
+                userGoogle.setPassword(UUID.randomUUID().toString());
                 return userAdminService
                     .registerUser(null, userGoogle, oAuth2Client, true)
                     .map(

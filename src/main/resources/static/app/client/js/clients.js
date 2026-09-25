@@ -288,6 +288,7 @@ function openClientModal(client = null) {
     document.getElementById("form-webhooks").value = client ? formatWebhooks(client.webhooks) : "";
     document.getElementById("form-jwtExpiration").value = client && client.jwtExpiration ? client.jwtExpiration : 3600;
     document.getElementById("form-mfaEnabled").checked = client ? !!client.mfaEnabled : false;
+    document.getElementById("form-enableRegistration").checked = client ? (client.enableRegistration !== undefined ? !!client.enableRegistration : true) : true;
 
     const modal = new bootstrap.Modal(document.getElementById("clientModal"));
     modal.show();
@@ -329,7 +330,8 @@ function saveClient() {
         scopes: scopesInput ? scopesInput.split(",").map(s => s.trim()).filter(Boolean) : null,
         webhooks: webhooksInput ? webhooksInput.split(",").map(w => ({url: w.trim()})) : null,
         jwtExpiration: parseInt(document.getElementById("form-jwtExpiration").value) || 3600,
-        mfaEnabled: document.getElementById("form-mfaEnabled").checked
+        mfaEnabled: document.getElementById("form-mfaEnabled").checked,
+        enableRegistration: document.getElementById("form-enableRegistration").checked
     };
 
     const cfg = getConfig();

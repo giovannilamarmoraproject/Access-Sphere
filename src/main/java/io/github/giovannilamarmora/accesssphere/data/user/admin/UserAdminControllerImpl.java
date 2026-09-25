@@ -69,26 +69,18 @@ public class UserAdminControllerImpl implements UserAdminController {
    * Endpoint per il provisioning e la registrazione di un nuovo utente nel sistema IAM.
    *
    * @param bearer Token di autorizzazione opzionale dell'operatore tecnico.
-   * @param user DTO contenente i dati anagrafici del nuovo utente.
-   * @param clientId Identificatore univoco del client OAuth associato.
-   * @param registration_token Token segreto di registrazione verificato rispetto al client.
-   * @param assignNewClient Flag opzionale per l'assegnazione di nuove credenziali.
+   * @param user DTO contenente i dati anagrafici e i ruoli strutturati del nuovo utente.
    * @return Mono contenente ResponseEntity con stato 201 CREATED e l'involucro Response con
    *     l'utente registrato.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> registerUser(
-      String bearer,
-      User user,
-      String clientId,
-      String registration_token,
-      Boolean assignNewClient) {
+  public Mono<ResponseEntity<Response>> registerUser(String bearer, User user) {
     LOG.info(
         "🌐 [ADMIN CONTROLLER] Invoking RegisterUser endpoint for username: {}",
         user.getUsername());
     return userAdminService
-        .register(bearer, user, clientId, registration_token, assignNewClient)
+        .register(bearer, user)
         .map(
             registeredUser -> {
               Response response =
@@ -112,7 +104,7 @@ public class UserAdminControllerImpl implements UserAdminController {
     LOG.info(
         "🌐 [ADMIN CONTROLLER] Invoking RegisterUser (Deprecated /users/register) for username: {}",
         user.getUsername());
-    return registerUser(bearer, user, clientId, registration_token, assignNewClient);
+    return registerUser(bearer, user);
   }
 
   /**

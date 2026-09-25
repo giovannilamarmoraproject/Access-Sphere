@@ -40,11 +40,12 @@ OAuth 2.0 / OIDC** ad altissime prestazioni. Progettata per proteggere ecosistem
     - **Configurazione Manuale (Senza QR Code)**: Opzione dedicata per utenti su smartphone o senza fotocamera, con
       chiave segreta Base32 in formato monospace, pulsante di copia rapida a 1-click e istruzioni dettagliate.
     - **Email OTP**: Invio codici di verifica effimeri all'indirizzo email dell'utente.
-- 👥 **Gestione Identità (IAM) & Attributi Custom**:
-    - Registrazione sicura con validazione avanzata dei formati.
-    - Gestione profili con caricamento foto e avatar dinamico.
-    - **Attributi Custom Avanzati**: Supporto sia per chiavi/valori semplici che per **strutture JSON complesse (oggetti
-      annidati)**, con layout a griglia responsive ottimizzato per smartphone e desktop.
+- 👥 **Gestione Identità (IAM) & Registrazione Client-Scoped**:
+    - **Controllo Preventivo di Registrazione (`enableRegistration`)**: Protezione granulare che consente o inibisce la registrazione autonoma degli utenti per singolo Client OAuth2 (sia per la registrazione diretta `POST /v1/users` che per il login federato Google OAuth, con codice HTTP 403 Forbidden).
+    - **Provisioning Ruoli Esterni & Validazione Catalogo**: Assegnazione diretta dei ruoli strutturati (`user.roles`) nel payload di registrazione con verifica preventiva di esistenza sul catalogo ruoli del client e salvataggio atomico su `USER_CLIENT_ROLE`.
+    - **Offload Reattivo su Schedulers Bounded Elastic**: Computazione asincrona e non bloccante per l'hashing BCrypt delle password e le verifiche di unicità su DB.
+    - **Attributi Custom Avanzati**: Supporto sia per chiavi/valori semplici che per **strutture JSON complesse (oggetti annidati)**, con layout a griglia responsive ottimizzato per smartphone e desktop.
+    - Gestione profili utente, blocco preventivo, caricamento avatar e recupero credenziali.
 - 🎛️ **Role-Based Access Control (RBAC) Granulare & Relational Client Scoping**:
     - **Modello Relazionale Normalizzato Enterprise (`ROLE_DEFINITIONS`)**: Superamento definitivo della gestione ruoli
       denormalizzata legacy. Il catalogo ruoli risiede ora nella tabella dedicata `ROLE_DEFINITIONS` con chiave univoca
@@ -313,7 +314,8 @@ La documentazione OpenAPI 3.0 interattiva è accessibile a runtime all'indirizzo
 |----------|-------------------------------------|--------------------------------------------------------|-------------------------|
 | `GET`    | `/userInfo`                         | Recupera il profilo e i claims dell'utente autenticato | Bearer Token            |
 | `GET`    | `/v1/users/list`                    | Elenco di tutti gli utenti registrati                  | Bearer (Admin)          |
-| `POST`   | `/v1/users/register`                | Registrazione di una nuova identità utente             | Client ID               |
+| `POST`   | `/v1/users`                         | Registrazione di una nuova identità con ruoli client-scoped | Pubblico / Bearer       |
+| `POST`   | `/v1/users/register`                | *(Deprecated: usa `/v1/users`)* Registrazione legacy utente | Client ID               |
 | `PUT`    | `/v1/users/update`                  | Aggiornamento dati anagrafici, attributi e recapiti    | Bearer Token            |
 | `DELETE` | `/v1/users/delete/{identifier}`     | Eliminazione sicura di un account utente               | Bearer (Admin)          |
 | `POST`   | `/v1/users/profile/photo`           | Caricamento e aggiornamento foto profilo               | Bearer Token            |
@@ -322,13 +324,13 @@ La documentazione OpenAPI 3.0 interattiva è accessibile a runtime all'indirizzo
 
 ### 3. 🔑 **Client Controller** (`/v1/clients`)
 
-| Metodo   | Endpoint                 | Descrizione                                                        | Autenticazione |
-|----------|--------------------------|--------------------------------------------------------------------|----------------|
-| `GET`    | `/v1/clients`            | Elenco di tutti i client OAuth2 registrati                         | Bearer (Admin) |
-| `GET`    | `/v1/clients/{clientId}` | Dettagli di configurazione del singolo client                      | Bearer (Admin) |
-| `POST`   | `/v1/clients`            | Registrazione di un nuovo client applicativo                       | Bearer (Admin) |
-| `PUT`    | `/v1/clients/{clientId}` | Modifica impostazioni, redirect URIs, scadenze, webhook e flag MFA | Bearer (Admin) |
-| `DELETE` | `/v1/clients/{clientId}` | Revoca e cancellazione di un client OAuth2                         | Bearer (Admin) |
+| Metodo   | Endpoint                 | Descrizione                                                                 | Autenticazione |
+|----------|--------------------------|-----------------------------------------------------------------------------|----------------|
+| `GET`    | `/v1/clients`            | Elenco di tutti i client OAuth2 registrati                                  | Bearer (Admin) |
+| `GET`    | `/v1/clients/{clientId}` | Dettagli di configurazione del singolo client                               | Bearer (Admin) |
+| `POST`   | `/v1/clients`            | Registrazione di un nuovo client con flag `enableRegistration` e ruoli     | Bearer (Admin) |
+| `PUT`    | `/v1/clients/{clientId}` | Modifica impostazioni, `enableRegistration`, redirect URIs, scadenze ed MFA | Bearer (Admin) |
+| `DELETE` | `/v1/clients/{clientId}` | Revoca e cancellazione di un client OAuth2                                  | Bearer (Admin) |
 
 ### 4. 🛡️ **Roles & RBAC Controller** (`/v1/roles`)
 

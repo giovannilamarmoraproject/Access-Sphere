@@ -147,7 +147,12 @@ $(document).ready(function () {
       education: $("#education").val().trim(),
       attributes: attributes ? JSON.parse(attributes) : null,
       clientId: $("#client_id_select").val(),
-      roles: roles,
+      roles: roles.map(r => {
+        if (typeof r === "object" && r !== null) {
+          return { clientId: r.clientId || $("#client_id_select").val(), role: r.role || r.name };
+        }
+        return { clientId: $("#client_id_select").val(), role: r };
+      }),
       profile: profilePhoto,
     };
     registerUser(userData, cachedClientsData);
@@ -165,6 +170,12 @@ function registerUser(userForm, clients) {
     return;
   }
 
+  if (!userForm.roles || userForm.roles.length === 0) {
+    const errorTitle = typeof t === "function" ? t("swal_roles_select_error_title", "Ruolo Mancante") : "Ruolo Mancante";
+    const errorDesc = typeof t === "function" ? t("swal_roles_select_error_desc", "Seleziona almeno un ruolo applicativo per l'utente.") : "Seleziona almeno un ruolo applicativo per l'utente.";
+    return sweetalert("error", errorTitle, errorDesc);
+  }
+
   let userClient = (clients || []).find(
     (client) => client.clientId == userForm.clientId
   );
@@ -177,18 +188,13 @@ function registerUser(userForm, clients) {
     }
   }
 
-  if (!userClient) {
-    const errorTitle = typeof t === "function" ? t("swal_client_select_error_title", "Errore Client") : "Errore Client";
-    const errorDesc = typeof t === "function" ? t("swal_client_select_error_desc", "Seleziona un Client ID valido per proseguire.") : "Seleziona un Client ID valido per proseguire.";
+  if (userClient && (userClient.enableRegistration === false || userClient.enable_registration === false)) {
+    const errorTitle = typeof t === "function" ? t("swal_reg_disabled_title", "Registrazione Disabilitata") : "Registrazione Disabilitata";
+    const errorDesc = typeof t === "function" ? t("swal_reg_disabled_desc", "La registrazione degli utenti è disabilitata per questo client.") : "La registrazione degli utenti è disabilitata per questo client.";
     return sweetalert("error", errorTitle, errorDesc);
   }
 
-  const registrationUrl =
-    config.register_user_url +
-    "?client_id=" +
-    userClient.clientId +
-    "&registration_token=" +
-    userClient.registrationToken;
+  const registrationUrl = config.register_user_url;
   const token = getCookieOrStorage(config.access_token);
 
   const user = {

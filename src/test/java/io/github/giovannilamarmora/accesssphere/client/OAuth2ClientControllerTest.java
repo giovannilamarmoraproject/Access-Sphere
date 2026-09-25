@@ -53,7 +53,9 @@ class OAuth2ClientControllerTest {
               assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
               assertNotNull(responseEntity.getBody());
               assertEquals(200, responseEntity.getBody().getStatus());
-              assertEquals("Client credential list", responseEntity.getBody().getMessage());
+              assertEquals(
+                  "Successfully retrieved 1 OAuth2 client(s).",
+                  responseEntity.getBody().getMessage());
               assertEquals(List.of(sampleClient), responseEntity.getBody().getData());
             })
         .verifyComplete();

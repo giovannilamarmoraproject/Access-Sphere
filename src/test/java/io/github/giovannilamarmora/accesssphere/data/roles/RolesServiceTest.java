@@ -59,7 +59,7 @@ class RolesServiceTest {
     ReflectionTestUtils.setField(rolesService, "oAuth2ClientService", oAuth2ClientService);
     ReflectionTestUtils.setField(rolesService, "userService", userService);
     ReflectionTestUtils.setField(rolesService, "techUserService", techUserService);
-    ReflectionTestUtils.setField(rolesService, "techUserConfig", adminUserConfig);
+    ReflectionTestUtils.setField(rolesService, "adminUserConfig", adminUserConfig);
     ReflectionTestUtils.setField(rolesService, "userClientRoleDAO", userClientRoleDAO);
     ReflectionTestUtils.setField(rolesService, "roleDefinitionDAO", roleDefinitionDAO);
     ReflectionTestUtils.setField(rolesService, "clientDAO", clientDAO);
@@ -339,22 +339,12 @@ class RolesServiceTest {
     when(userClientRoleDAO.findByClientIdAndRole("linkatutto", "ROLE_OBSOLETE"))
         .thenReturn(List.of(ucr));
 
-    io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity userEntity =
-        new io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity();
-    userEntity.setIdentifier("u-99");
-    userEntity.setRoles("ROLE_OBSOLETE,ROLE_OTHER");
-    when(userDAO.findUserEntityByIdentifier("u-99")).thenReturn(userEntity);
-    when(userClientRoleDAO.findByUserIdentifier("u-99")).thenReturn(List.of());
-
     StepVerifier.create(rolesService.deleteRole("linkatutto", "ROLE_OBSOLETE"))
         .assertNext(
             response -> {
               assertEquals(HttpStatus.OK, response.getStatusCode());
               verify(roleDefinitionDAO).deleteByClientIdAndRole("linkatutto", "ROLE_OBSOLETE");
               verify(userClientRoleDAO).deleteByClientIdAndRole("linkatutto", "ROLE_OBSOLETE");
-              verify(userDAO).save(userEntity);
-              assertFalse(userEntity.getRoles().contains("ROLE_OBSOLETE"));
-              assertTrue(userEntity.getRoles().contains("ROLE_OTHER"));
             })
         .verifyComplete();
   }

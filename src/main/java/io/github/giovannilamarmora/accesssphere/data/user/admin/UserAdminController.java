@@ -1,6 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.data.user.admin;
 
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.UserListResponse;
+import io.github.giovannilamarmora.accesssphere.data.user.dto.UserResponse;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -39,7 +41,7 @@ public interface UserAdminController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = User.class))),
+                    schema = @Schema(implementation = UserListResponse.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -67,7 +69,7 @@ public interface UserAdminController {
 
   @PostMapping("/users")
   @Operation(
-      description = "Register a new user into IAM system",
+      description = "Register a new user into IAM system with structured client roles",
       summary = "User Registration",
       tags = OpenAPI.Tag.USERS)
   @ApiResponses(
@@ -78,10 +80,17 @@ public interface UserAdminController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = User.class))),
+                    schema = @Schema(implementation = UserResponse.class))),
         @ApiResponse(
             responseCode = "400",
-            description = "Bad Request",
+            description = "Bad Request - Invalid input or role not found for client",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Registration disabled for client",
             content =
                 @Content(
                     mediaType = "application/json",
@@ -102,20 +111,7 @@ public interface UserAdminController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @RequestBody @Valid @NotNull(message = "User cannot be null") User user,
-      @RequestParam(value = "client_id")
-          @Schema(
-              description = OpenAPI.Params.Description.CLIENT_ID,
-              example = OpenAPI.Params.Example.CLIENT_ID)
-          String clientId,
-      @RequestParam(value = "registration_token")
-          @Schema(
-              description = OpenAPI.Params.Description.REGISTRATION_TOKEN,
-              example = OpenAPI.Params.Example.REGISTRATION_TOKEN)
-          String registration_token,
-      @RequestParam(value = "assign_new_client", defaultValue = "false")
-          @Schema(description = OpenAPI.Params.Description.ASSIGN_NEW_CLIENT, example = "false")
-          Boolean assignNewClient);
+      @RequestBody @Valid @NotNull(message = "User cannot be null") User user);
 
   @Deprecated(since = "2.0.0")
   @PostMapping("/users/register")
@@ -132,7 +128,7 @@ public interface UserAdminController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = User.class))),
+                    schema = @Schema(implementation = UserResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -157,17 +153,17 @@ public interface UserAdminController {
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
       @RequestBody @Valid @NotNull(message = "User cannot be null") User user,
-      @RequestParam(value = "client_id")
+      @RequestParam(value = "client_id", required = false)
           @Schema(
               description = OpenAPI.Params.Description.CLIENT_ID,
               example = OpenAPI.Params.Example.CLIENT_ID)
           String clientId,
-      @RequestParam(value = "registration_token")
+      @RequestParam(value = "registration_token", required = false)
           @Schema(
               description = OpenAPI.Params.Description.REGISTRATION_TOKEN,
               example = OpenAPI.Params.Example.REGISTRATION_TOKEN)
           String registration_token,
-      @RequestParam(value = "assign_new_client", defaultValue = "false")
+      @RequestParam(value = "assign_new_client", defaultValue = "false", required = false)
           @Schema(description = OpenAPI.Params.Description.ASSIGN_NEW_CLIENT, example = "false")
           Boolean assignNewClient);
 
@@ -228,7 +224,7 @@ public interface UserAdminController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = User.class))),
+                    schema = @Schema(implementation = UserResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request",

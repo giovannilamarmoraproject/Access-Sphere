@@ -54,6 +54,7 @@ public class OAuth2ClientMapper {
               oAuth2ClientEntity.getAccessToken(),
               oAuth2ClientEntity.getAuthorize_redirect_status(),
               oAuth2ClientEntity.getMfaEnabled(),
+              oAuth2ClientEntity.getEnableRegistration(),
               ObjectUtils.isEmpty(oAuth2ClientEntity.getWebhooks())
                   ? null
                   : mapper.readValue(oAuth2ClientEntity.getWebhooks(), new TypeReference<>() {}));
@@ -89,6 +90,7 @@ public class OAuth2ClientMapper {
         oAuth2Client.getAccessToken(),
         oAuth2Client.getAuthorize_redirect_status(),
         oAuth2Client.getMfaEnabled(),
+        oAuth2Client.getEnableRegistration(),
         ObjectUtils.isEmpty(oAuth2Client.getWebhooks())
             ? null
             : Mapper.writeObjectToString(oAuth2Client.getWebhooks()));
@@ -119,6 +121,7 @@ public class OAuth2ClientMapper {
     existingClient.setAccessToken(oAuth2Client.getAccessToken());
     existingClient.setAuthorize_redirect_status(oAuth2Client.getAuthorize_redirect_status());
     existingClient.setMfaEnabled(oAuth2Client.getMfaEnabled());
+    existingClient.setEnableRegistration(oAuth2Client.getEnableRegistration());
     existingClient.setWebhooks(
         ObjectUtils.isEmpty(oAuth2Client.getWebhooks())
             ? null

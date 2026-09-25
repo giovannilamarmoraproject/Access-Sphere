@@ -52,7 +52,7 @@ class ProjectInitializerServiceTest {
     adminUserConfig.setAdminPassword("tech_password");
     adminUserConfig.setAdminClientId("ACCESS-SPHERE-AUTH");
     adminUserConfig.setAdminEmail("tech_admin@accesssphere.local");
-    ReflectionTestUtils.setField(projectInitializerService, "techUserConfig", adminUserConfig);
+    ReflectionTestUtils.setField(projectInitializerService, "adminUserConfig", adminUserConfig);
     ReflectionTestUtils.setField(projectInitializerService, "userClientRoleDAO", userClientRoleDAO);
     ReflectionTestUtils.setField(projectInitializerService, "roleDefinitionDAO", roleDefinitionDAO);
     ReflectionTestUtils.setField(
@@ -81,7 +81,7 @@ class ProjectInitializerServiceTest {
     verify(clientDAO, times(1)).save(clientCaptor.capture());
     OAuth2ClientEntity savedClient = clientCaptor.getValue();
     assertEquals("ACCESS-SPHERE-AUTH", savedClient.getClientId());
-    verify(roleDefinitionDAO, times(9)).save(any());
+    verify(roleDefinitionDAO, times(8)).save(any());
 
     // Verify User Seed
     ArgumentCaptor<UserEntity> userCaptor = ArgumentCaptor.forClass(UserEntity.class);
@@ -89,8 +89,19 @@ class ProjectInitializerServiceTest {
     UserEntity savedUser = userCaptor.getValue();
     assertEquals("tech_admin", savedUser.getUsername());
     assertEquals("tech_admin@accesssphere.local", savedUser.getEmail());
-    assertEquals("ROLE_ADMIN ROLE_TECH", savedUser.getRoles());
     assertNotNull(savedUser.getPassword());
+
+    // Verify User Client Role Seed
+    ArgumentCaptor<io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity>
+        roleCaptor =
+            ArgumentCaptor.forClass(
+                io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity.class);
+    verify(userClientRoleDAO, times(1)).save(roleCaptor.capture());
+    io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity savedRole =
+        roleCaptor.getValue();
+    assertEquals(savedUser.getIdentifier(), savedRole.getUserIdentifier());
+    assertEquals("ACCESS-SPHERE-AUTH", savedRole.getClientId());
+    assertEquals("ACCESS-SPHERE_SUPER_ADMIN", savedRole.getRole());
 
     // Verify Settings Seed
     ArgumentCaptor<AppSettingsEntity> settingsCaptor =
@@ -141,7 +152,6 @@ class ProjectInitializerServiceTest {
             "ACCESS-SPHERE-AUTH", "ROLE_ADMIN", "ADMIN", "desc", List.of("*"));
     when(roleDefinitionDAO.findByClientIdAndRole(eq("ACCESS-SPHERE-AUTH"), any()))
         .thenReturn(Optional.of(existingRole));
-    when(roleDefinitionDAO.findAll()).thenReturn(List.of(existingRole));
 
     projectInitializerService.run(null);
 

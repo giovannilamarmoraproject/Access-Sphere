@@ -32,6 +32,7 @@ class UserAdminServiceTest {
   @Mock private AdminUserService techUserService;
   @Mock private OAuth2ClientService oAuth2ClientService;
   @Mock private UserService userService;
+  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
   @Mock private OAuth2Authorization oAuth2Authorization;
   @Mock private WebhookService webhookService;
 
@@ -42,6 +43,7 @@ class UserAdminServiceTest {
     ReflectionTestUtils.setField(userAdminService, "techUserService", techUserService);
     ReflectionTestUtils.setField(userAdminService, "oAuth2ClientService", oAuth2ClientService);
     ReflectionTestUtils.setField(userAdminService, "userService", userService);
+    ReflectionTestUtils.setField(userAdminService, "userClientRoleDAO", userClientRoleDAO);
     ReflectionTestUtils.setField(userAdminService, "oAuth2Authorization", oAuth2Authorization);
     ReflectionTestUtils.setField(userAdminService, "webhookService", webhookService);
   }
@@ -255,5 +257,181 @@ class UserAdminServiceTest {
         .verifyComplete();
 
     verify(userService, times(1)).deleteUserEntityByIdentifier("uuid-normal");
+  }
+
+  @Test
+  @DisplayName("register should succeed when user is valid and role exists for client")
+  void register_success() {
+    User user = new User();
+    user.setUsername("john_doe");
+    user.setEmail("john.doe@example.com");
+    user.setPassword("Strong1Password!");
+    user.setRoles(
+        List.of(
+            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                "CLIENT-APP", "ACCESS-SPHERE_USER")));
+
+    when(userService.existsByUsername("john_doe")).thenReturn(false);
+    when(userService.existsByEmail("john.doe@example.com")).thenReturn(false);
+
+    OAuth2Client client = new OAuth2Client();
+    client.setClientId("CLIENT-APP");
+    client.setEnableRegistration(true);
+    AppRole role = new AppRole("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
+    client.setAppRoles(List.of(role));
+
+    when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-APP"))
+        .thenReturn(Mono.just(client));
+    when(userService.saveUserEntityIntoDatabase(any()))
+        .thenAnswer(
+            inv -> {
+              io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity entity =
+                  inv.getArgument(0);
+              User dto = new User();
+              dto.setIdentifier(entity.getIdentifier());
+              dto.setUsername(entity.getUsername());
+              dto.setEmail(entity.getEmail());
+              return dto;
+            });
+    when(userClientRoleDAO.saveAll(any())).thenReturn(List.of());
+
+    StepVerifier.create(userAdminService.register(null, user))
+        .assertNext(
+            registered -> {
+              assertNotNull(registered.getIdentifier());
+              assertEquals("john_doe", registered.getUsername());
+              assertEquals(1, registered.getRoles().size());
+              assertEquals("ACCESS-SPHERE_USER", registered.getRoles().getFirst().getRole());
+              assertEquals("CLIENT-APP", registered.getRoles().getFirst().getClientId());
+            })
+        .verifyComplete();
+
+    verify(userClientRoleDAO, times(1)).saveAll(any());
+    verify(userService, times(1)).saveUserEntityIntoDatabase(any());
+  }
+
+  @Test
+  @DisplayName("register should throw BAD_REQUEST when username already exists")
+  void register_usernameExists_throwsBadRequest() {
+    User user = new User();
+    user.setUsername("existing_user");
+    user.setEmail("existing@example.com");
+    user.setPassword("Strong1Password!");
+    user.setRoles(
+        List.of(
+            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                "CLIENT-APP", "ACCESS-SPHERE_USER")));
+
+    when(userService.existsByUsername("existing_user")).thenReturn(true);
+
+    StepVerifier.create(userAdminService.register(null, user))
+        .expectErrorMatches(
+            t ->
+                t instanceof io.github.giovannilamarmora.accesssphere.data.user.UserException
+                    && ((io.github.giovannilamarmora.accesssphere.data.user.UserException) t)
+                        .getExceptionCode()
+                        .equals(ExceptionMap.ERR_USER_400))
+        .verify();
+  }
+
+  @Test
+  @DisplayName("register should throw BAD_REQUEST when roles are null or empty")
+  void register_emptyRoles_throwsBadRequest() {
+    User user = new User();
+    user.setUsername("john_doe");
+    user.setEmail("john.doe@example.com");
+    user.setPassword("Strong1Password!");
+    user.setRoles(List.of());
+
+    StepVerifier.create(userAdminService.register(null, user))
+        .expectErrorMatches(
+            t ->
+                t instanceof io.github.giovannilamarmora.accesssphere.data.user.UserException
+                    && ((io.github.giovannilamarmora.accesssphere.data.user.UserException) t)
+                        .getExceptionCode()
+                        .equals(ExceptionMap.ERR_USER_400))
+        .verify();
+  }
+
+  @Test
+  @DisplayName("register should throw FORBIDDEN when client has registration disabled")
+  void register_clientRegistrationDisabled_throwsForbidden() {
+    User user = new User();
+    user.setUsername("john_doe");
+    user.setEmail("john.doe@example.com");
+    user.setPassword("Strong1Password!");
+    user.setRoles(
+        List.of(
+            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                "CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
+
+    when(userService.existsByUsername("john_doe")).thenReturn(false);
+    when(userService.existsByEmail("john.doe@example.com")).thenReturn(false);
+
+    OAuth2Client client = new OAuth2Client();
+    client.setClientId("CLIENT-BLOCKED");
+    client.setEnableRegistration(false);
+
+    when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-BLOCKED"))
+        .thenReturn(Mono.just(client));
+
+    StepVerifier.create(userAdminService.register(null, user))
+        .expectErrorMatches(
+            t ->
+                t instanceof OAuthException
+                    && ((OAuthException) t).getExceptionCode().equals(ExceptionMap.ERR_OAUTH_403))
+        .verify();
+  }
+
+  @Test
+  @DisplayName("register should throw BAD_REQUEST when requested role does not exist on client")
+  void register_roleNotFoundOnClient_throwsBadRequest() {
+    User user = new User();
+    user.setUsername("john_doe");
+    user.setEmail("john.doe@example.com");
+    user.setPassword("Strong1Password!");
+    user.setRoles(
+        List.of(
+            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                "CLIENT-APP", "NON_EXISTING_ROLE")));
+
+    when(userService.existsByUsername("john_doe")).thenReturn(false);
+    when(userService.existsByEmail("john.doe@example.com")).thenReturn(false);
+
+    OAuth2Client client = new OAuth2Client();
+    client.setClientId("CLIENT-APP");
+    client.setEnableRegistration(true);
+    client.setAppRoles(List.of(new AppRole("ACCESS-SPHERE_USER")));
+
+    when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-APP"))
+        .thenReturn(Mono.just(client));
+
+    StepVerifier.create(userAdminService.register(null, user))
+        .expectErrorMatches(
+            t ->
+                t instanceof io.github.giovannilamarmora.accesssphere.data.user.UserException
+                    && ((io.github.giovannilamarmora.accesssphere.data.user.UserException) t)
+                        .getExceptionCode()
+                        .equals(ExceptionMap.ERR_USER_400))
+        .verify();
+  }
+
+  @Test
+  @DisplayName("registerUser should throw FORBIDDEN when client registration is disabled")
+  void registerUser_clientRegistrationDisabled_throwsForbidden() {
+    User user = new User();
+    user.setUsername("google_user");
+    user.setEmail("google@example.com");
+
+    OAuth2Client client = new OAuth2Client();
+    client.setClientId("CLIENT-LOCKED");
+    client.setEnableRegistration(false);
+
+    StepVerifier.create(userAdminService.registerUser(null, user, client, true))
+        .expectErrorMatches(
+            t ->
+                t instanceof OAuthException
+                    && ((OAuthException) t).getExceptionCode().equals(ExceptionMap.ERR_OAUTH_403))
+        .verify();
   }
 }

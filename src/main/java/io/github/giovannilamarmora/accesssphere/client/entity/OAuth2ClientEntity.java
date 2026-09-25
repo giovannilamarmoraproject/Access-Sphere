@@ -82,6 +82,9 @@ public class OAuth2ClientEntity extends GenericEntity {
   @Column(name = "MFA_ENABLED")
   private Boolean mfaEnabled;
 
+  @Column(name = "ENABLE_REGISTRATION")
+  private Boolean enableRegistration;
+
   @Lob
   @Column(name = "WEBHOOKS", columnDefinition = "TEXT")
   private String webhooks;

@@ -59,27 +59,56 @@ public class UserValidator {
         new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
   }
 
+  /**
+   * Convalida i dati anagrafici e il rispetto dei vincoli di regex per password ed email.
+   *
+   * @param user DTO utente da validare.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateRegistration(
-      String registration_token, OAuth2Client oAuth2Client, User user) {
+  public static void validateUserData(User user) {
+    if (user == null) {
+      LOG.error("User payload is null");
+      throw new UserException(ExceptionMap.ERR_USER_400, "User data is required!");
+    }
+    if (ObjectUtils.isEmpty(user.getUsername())) {
+      LOG.error("Username is empty");
+      throw new UserException(ExceptionMap.ERR_USER_400, "Username is required!");
+    }
     if (!Utilities.isCharacterAndRegexValid(user.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
       LOG.error("Invalid regex for field password for user {}", user.getUsername());
       throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
     }
-
     if (!Utilities.isCharacterAndRegexValid(user.getEmail(), RegEx.EMAIL.getValue())) {
       LOG.error("Invalid regex for field email for user {}", user.getUsername());
       throw new UserException(ExceptionMap.ERR_USER_400, "Invalid email provided!");
     }
+  }
 
-    if (ObjectUtils.isEmpty(registration_token)) {
-      LOG.error("Missing registration_token");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Missing registration_token!");
+  /**
+   * Convalida che il client specificato consenta la registrazione degli utenti (blocco preventivo).
+   *
+   * @param oAuth2Client Il client da verificare.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateClientRegistrationEnabled(OAuth2Client oAuth2Client) {
+    if (oAuth2Client == null) {
+      LOG.error("OAuth2Client is null");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
-    if (!registration_token.equalsIgnoreCase(oAuth2Client.getRegistrationToken())) {
-      LOG.error("Invalid registration_token");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid registration_token!");
+    if (Boolean.FALSE.equals(oAuth2Client.getEnableRegistration())) {
+      LOG.error("❌ Registration is disabled for client {}", oAuth2Client.getClientId());
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_403,
+          "User registration is disabled for client " + oAuth2Client.getClientId());
     }
+  }
+
+  @Deprecated(since = "2.0.0")
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateRegistration(
+      String registration_token, OAuth2Client oAuth2Client, User user) {
+    validateUserData(user);
+    validateClientRegistrationEnabled(oAuth2Client);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)

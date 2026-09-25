@@ -87,6 +87,7 @@ class OAuthServiceTest {
                 null,
                 "Bearer valid-token",
                 "state-123",
+                null,
                 exchange))
         .assertNext(
             (ResponseEntity<?> res) -> {
@@ -134,6 +135,7 @@ class OAuthServiceTest {
                 null,
                 "Bearer valid-token",
                 "state-123",
+                null,
                 exchange))
         .assertNext(
             (ResponseEntity<?> res) -> {
