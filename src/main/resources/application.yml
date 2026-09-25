@@ -85,7 +85,7 @@ app:
   tech-user:
     username: ${TECH_USERNAME:tech_admin}
     password: ${TECH_PASSWORD:tech_password}
-    client-id: ${TECH_CLIENT_ID:ACCESS-SPHERE-TECH}
+    client-id: ${TECH_CLIENT_ID:ACCESS-SPHERE-AUTH}
     email: ${TECH_EMAIL:admin@accesssphere.local}
     jwt-secret: ${TECH_JWT_SECRET:}
   exception:

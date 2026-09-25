@@ -376,6 +376,19 @@
             return;
         }
 
+        if (typeof AccessControl !== "undefined" && !AccessControl.canViewClient(clientId)) {
+            if (typeof AccessControl.showDeniedAlert === "function") {
+                AccessControl.showDeniedAlert(
+                    typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+                    typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.",
+                    "/app/clients"
+                );
+            } else {
+                window.location.href = "/app/clients";
+            }
+            return;
+        }
+
         const token = getCookieOrStorage(config.access_token);
         const url = window.location.origin + "/v1/clients";
 
@@ -514,7 +527,7 @@
 
               <!-- BOTTONI AZIONE -->
               <div class="space-y-2.5 w-full">
-                ${(typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? `
+                ${(typeof AccessControl === "undefined" || AccessControl.canEditClient(c.clientId)) ? `
                 <a id="client-detail-edit-btn" href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-btn-primary w-full justify-center text-xs font-bold text-decoration-none flex items-center gap-2 shadow-lg">
                   <i class="fa-solid fa-pen-to-square"></i>
                   <span>${typeof t === 'function' ? t('client_detail_edit_all_btn', 'Modifica Tutte le Impostazioni') : 'Modifica Tutte le Impostazioni'}</span>
@@ -526,7 +539,7 @@
                   <span>${typeof t === 'function' ? t('client_detail_copy_json_btn', 'Copia Configurazione JSON') : 'Copia Configurazione JSON'}</span>
                 </button>
 
-                ${(typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? `
+                ${(typeof AccessControl === "undefined" || AccessControl.canDeleteClient(c.clientId)) ? `
                 <button id="client-detail-delete-btn" onclick="deleteClientAction('${c.clientId}')" class="w-full text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all mt-2" style="border-radius: 9999px !important; color: #FFFFFF !important; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); padding: 10px 18px;">
                   <i class="fa-solid fa-trash text-xs" style="color: #F87171;"></i>
                   <span>${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client OAuth2') : 'Elimina Client OAuth2'}</span>
@@ -824,8 +837,14 @@
     }
 
     function deleteClientAction(clientId) {
-        if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
-            sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+        if (typeof AccessControl !== "undefined" && !AccessControl.canDeleteClient(clientId)) {
+            sweetalert(
+                "warning",
+                typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+                clientId && clientId.toUpperCase() === "ACCESS-SPHERE-TECH"
+                    ? (typeof t === "function" ? t("client_tech_cant_delete", "Il client tecnico di sistema ACCESS-SPHERE-TECH non può essere eliminato.") : "Il client tecnico di sistema ACCESS-SPHERE-TECH non può essere eliminato.")
+                    : (typeof t === "function" ? t("client_delete_denied", "Non disponi dei permessi necessari per eliminare questo client.") : "Non disponi dei permessi necessari per eliminare questo client.")
+            );
             return;
         }
         Swal.fire({

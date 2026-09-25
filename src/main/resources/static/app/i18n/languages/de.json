@@ -1054,5 +1054,10 @@
   "sidebar_user_profile": "Benutzerprofil",
   "sidebar_user_default": "Benutzer",
   "swal_permission_denied_title": "Zugriff verweigert",
-  "swal_permission_denied_desc": "Sie verfügen nicht über die erforderlichen Berechtigungen, um diese Aktion auszuführen oder auf diesen Bereich zuzugreifen."
+  "swal_permission_denied_desc": "Sie verfügen nicht über die erforderlichen Berechtigungen, um diese Aktion auszuführen oder auf diesen Bereich zuzugreifen.",
+  "client_tech_cant_modify": "Der technische System-Client ACCESS-SPHERE-TECH kann weder registriert noch bearbeitet werden.",
+  "client_tech_cant_delete": "Der technische System-Client ACCESS-SPHERE-TECH kann nicht gelöscht werden.",
+  "client_create_denied": "Sie verfügen nicht über die erforderlichen Berechtigungen, um neue Clients zu erstellen.",
+  "client_edit_denied": "Sie verfügen nicht über die erforderlichen Berechtigungen, um diesen Client zu bearbeiten.",
+  "client_delete_denied": "Sie verfügen nicht über die erforderlichen Berechtigungen, um diesen Client zu löschen."
 }

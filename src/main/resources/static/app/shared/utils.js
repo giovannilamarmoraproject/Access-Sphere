@@ -1177,6 +1177,71 @@ const AccessControl = {
         return perms.includes("*");
     },
 
+    /**
+     * Recupera tutti i permessi associati a uno specifico clientId (dai ruoli in clientRoles dell'utente).
+     * @param {string} clientId
+     * @returns {string[]}
+     */
+    getClientPermissions(clientId) {
+        if (!clientId) return this.getPermissions();
+        if (this.isSuperAdmin()) return ["*"];
+        const u = this.getUser();
+        if (!u) return [];
+
+        const targetClient = String(clientId).trim().toUpperCase();
+        const set = new Set();
+
+        // 1. Permessi espliciti globali (se presenti nell'utenza)
+        if (Array.isArray(u.permissions)) {
+            u.permissions.forEach((p) => set.add(String(p).trim().toLowerCase()));
+        }
+
+        // 2. Permessi derivati dai ruoli assegnati su questo specifico client
+        if (Array.isArray(u.clientRoles)) {
+            u.clientRoles.forEach((cr) => {
+                if (cr && cr.clientId && String(cr.clientId).trim().toUpperCase() === targetClient) {
+                    if (Array.isArray(cr.permissions)) {
+                        cr.permissions.forEach((p) => set.add(String(p).trim().toLowerCase()));
+                    }
+                }
+            });
+        }
+        return Array.from(set);
+    },
+
+    /**
+     * Verifica se l'utente possiede almeno uno dei permessi specificati per il client target.
+     * Supporta wildcard ('*') e normalizzazione (es. 'clients:write' / 'clients_write').
+     * @param {string} clientId
+     * @param {...string} permNames
+     * @returns {boolean}
+     */
+    hasClientPermission(clientId, ...permNames) {
+        if (this.isSuperAdmin()) return true;
+        const perms = this.getClientPermissions(clientId);
+        if (perms.includes("*")) return true;
+        return permNames.some((target) => {
+            const lower = String(target).trim().toLowerCase();
+            const colon = lower.replace(/_/g, ":");
+            const underscore = lower.replace(/:/g, "_");
+            return perms.includes(lower) || perms.includes(colon) || perms.includes(underscore);
+        });
+    },
+
+    /**
+     * Restituisce la lista dei clientId gestiti dall'utente (multi-tenant scoping).
+     * @returns {string[]}
+     */
+    getManagedClients() {
+        if (this.isSuperAdmin()) return ["*"];
+        const u = this.getUser();
+        if (!u || !Array.isArray(u.clientRoles)) return [];
+        const clients = u.clientRoles
+            .map((cr) => (cr && cr.clientId ? String(cr.clientId).trim().toUpperCase() : null))
+            .filter(Boolean);
+        return Array.from(new Set(clients));
+    },
+
     canViewClients() {
         if (this.isSuperAdmin()) return true;
         return (
@@ -1185,12 +1250,101 @@ const AccessControl = {
         );
     },
 
+    /**
+     * Verifica se l'operatore può visualizzare un determinato client.
+     * @param {string} clientId
+     * @returns {boolean}
+     */
+    canViewClient(clientId) {
+        if (this.isSuperAdmin()) return true;
+        if (!clientId) return this.canViewClients();
+        const target = String(clientId).trim().toUpperCase();
+        return this.hasClientPermission(target, "clients:read", "client:read", "clients:write", "client:write", "clients:manage");
+    },
+
+    /**
+     * Verifica se l'operatore può creare un nuovo client.
+     * @returns {boolean}
+     */
+    canCreateClient() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("clients:write", "client:write", "clients:manage", "client:manage", "clients:create") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    /**
+     * Verifica se l'operatore può modificare un determinato client.
+     * NOTA: Il client tecnico ACCESS-SPHERE-TECH può essere modificato unicamente dal Super Admin.
+     * @param {string} clientId
+     * @returns {boolean}
+     */
+    canEditClient(clientId) {
+        if (!clientId) return this.canManageClients();
+        const target = String(clientId).trim().toUpperCase();
+        if (target === "ACCESS-SPHERE-TECH") {
+            return this.isSuperAdmin();
+        }
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasClientPermission(target, "clients:write", "client:write", "clients:manage", "client:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    /**
+     * Verifica se l'operatore può eliminare un determinato client.
+     * NOTA: Il client tecnico ACCESS-SPHERE-TECH non può MAI essere eliminato da nessun utente.
+     * @param {string} clientId
+     * @returns {boolean}
+     */
+    canDeleteClient(clientId) {
+        if (!clientId) return false;
+        const target = String(clientId).trim().toUpperCase();
+        if (target === "ACCESS-SPHERE-TECH") {
+            return false;
+        }
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasClientPermission(target, "clients:delete", "client:delete", "clients:manage", "client:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
     canManageClients() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("clients:write", "client:write", "clients:manage", "client:manage") ||
+            this.hasPermission("clients:write", "client:write", "clients:delete", "client:delete", "clients:manage", "client:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
+    },
+
+    /**
+     * Visualizza un alert SweetAlert2 di accesso negato e reindirizza l'utente alla schermata sicura.
+     * @param {string} title
+     * @param {string} text
+     * @param {string} redirectUrl
+     */
+    showDeniedAlert(title, text, redirectUrl = "/app/clients") {
+        if (typeof sweetalert === "function") {
+            sweetalert("warning", title, text);
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 1800);
+        } else if (typeof Swal !== "undefined") {
+            Swal.fire({
+                icon: "warning",
+                title: title,
+                text: text,
+                confirmButtonColor: "var(--theme-accent, #7C4DFF)"
+            }).then(() => {
+                window.location.href = redirectUrl;
+            });
+        } else {
+            alert(title + ": " + text);
+            window.location.href = redirectUrl;
+        }
     },
 
     canViewUsers() {
@@ -1273,6 +1427,7 @@ const AccessControl = {
         if (!root) return;
 
         const canVClients = this.canViewClients();
+        const canCClients = this.canCreateClient();
         const canMClients = this.canManageClients();
         const canVUsers = this.canViewUsers();
         const canMUsers = this.canManageUsers();
@@ -1310,7 +1465,7 @@ const AccessControl = {
 
         // 2. Contextual Primary Actions (Header)
         toggleVisibility(root.querySelector("#users-primary-action"), canMUsers);
-        toggleVisibility(root.querySelector("#clients-primary-action"), canMClients);
+        toggleVisibility(root.querySelector("#clients-primary-action"), canCClients);
 
         // 3. Desktop Sidebar M3 Categories & Items
         toggleVisibility(root.querySelector("#sidebar-cat-clients"), canVClients);
@@ -1338,7 +1493,7 @@ const AccessControl = {
         toggleVisibility(root.querySelector("#mobile-drawer-cat-system"), canVSettings);
 
         toggleVisibility(root.querySelector("#mobile-tool-new-user"), canMUsers);
-        toggleVisibility(root.querySelector("#mobile-tool-new-client"), canMClients);
+        toggleVisibility(root.querySelector("#mobile-tool-new-client"), canCClients);
         toggleVisibility(root.querySelector("#mobile-tool-new-role"), canMRoles);
 
         // 5. Dashboard Bento KPI & Hub Cards
@@ -1354,7 +1509,7 @@ const AccessControl = {
             toggleVisibility(el, canMUsers);
         });
         root.querySelectorAll("#hub-card-clients a[href='/app/clients/register']").forEach((el) => {
-            toggleVisibility(el, canMClients);
+            toggleVisibility(el, canCClients);
         });
 
         // 6. In-View Create Action Buttons
@@ -1365,7 +1520,7 @@ const AccessControl = {
         });
         root.querySelectorAll("a[href='/app/clients/register'], a[href*='/clients/register'], #btn-new-client, #btn-register-new-client").forEach((el) => {
             if (!el.closest("#clients-primary-action")) {
-                toggleVisibility(el, canMClients);
+                toggleVisibility(el, canCClients);
             }
         });
         root.querySelectorAll("[onclick*='openRoleModal(\\'create\\')'], #btn-create-role, #btn-new-role, #btn-create-role-header, #btn-create-role-empty").forEach((el) => {

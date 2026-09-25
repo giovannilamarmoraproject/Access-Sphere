@@ -1054,5 +1054,10 @@
   "sidebar_user_profile": "Profilo Utente",
   "sidebar_user_default": "Utente",
   "swal_permission_denied_title": "Accesso Negato",
-  "swal_permission_denied_desc": "Non disponi dei permessi necessari per eseguire questa operazione o accedere a questa sezione."
+  "swal_permission_denied_desc": "Non disponi dei permessi necessari per eseguire questa operazione o accedere a questa sezione.",
+  "client_tech_cant_modify": "Il client tecnico di sistema ACCESS-SPHERE-TECH non può essere registrato o modificato.",
+  "client_tech_cant_delete": "Il client tecnico di sistema ACCESS-SPHERE-TECH non può essere eliminato.",
+  "client_create_denied": "Non disponi dei permessi necessari per creare nuovi client.",
+  "client_edit_denied": "Non disponi dei permessi necessari per modificare questo client.",
+  "client_delete_denied": "Non disponi dei permessi necessari per eliminare questo client."
 }

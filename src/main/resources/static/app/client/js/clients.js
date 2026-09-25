@@ -96,8 +96,11 @@ function getClients() {
           localStorage.setItem(cfg.client_id + "_clientsData", JSON.stringify(cachedClients));
           localStorage.setItem(cfg.client_id + "_clients", JSON.stringify(cachedClients));
         } catch(e) {}
-        displayClientsTable(cachedClients);
-        updateClientKpis(cachedClients);
+        const visibleClients = (typeof AccessControl !== "undefined")
+          ? cachedClients.filter(c => c && c.clientId && AccessControl.canViewClient(c.clientId))
+          : cachedClients;
+        displayClientsTable(visibleClients);
+        updateClientKpis(visibleClients);
       }
     })
     .catch((err) => {
@@ -120,8 +123,11 @@ function loadCachedClients() {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
         cachedClients = parsed;
-        displayClientsTable(parsed);
-        updateClientKpis(parsed);
+        const visible = (typeof AccessControl !== "undefined")
+          ? cachedClients.filter(c => c && c.clientId && AccessControl.canViewClient(c.clientId))
+          : cachedClients;
+        displayClientsTable(visible);
+        updateClientKpis(visible);
         return true;
       }
     }
@@ -158,7 +164,11 @@ function displayClientsTable(clients) {
   const tbody = document.getElementById("clients-data");
   tbody.innerHTML = "";
 
-  clients.forEach((c) => {
+  const visibleClients = (typeof AccessControl !== "undefined")
+    ? (clients || []).filter((c) => c && c.clientId && AccessControl.canViewClient(c.clientId))
+    : (clients || []);
+
+  visibleClients.forEach((c) => {
     const scopesStr = formatScopes(c.scopes);
     const scopesBadge = scopesStr ? `<span class="badge text-bg-secondary text-[10px]">${scopesStr}</span>` : '<span class="text-gray-500 text-xs">Standard</span>';
     const redirectPreview = renderRedirectUrisBadges(c.redirect_uri);
@@ -193,14 +203,24 @@ function displayClientsTable(clients) {
       <td>${redirectPreview}</td>
       <td>${mfaBadge}</td>
       <td class="text-center">
-        ${(typeof AccessControl === "undefined" || AccessControl.canManageClients()) ? `
-          <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-action-btn m3-action-edit" title="${typeof t === 'function' ? t('client_edit_page_title', 'Modifica Client') : 'Modifica Client'}">
-            <i class="fa-solid fa-pen-to-square text-xs"></i>
-          </a>
-          <button onclick="deleteClientAction('${c.clientId}')" class="m3-action-btn m3-action-delete" title="${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client') : 'Elimina Client'}">
-            <i class="fa-solid fa-trash text-xs"></i>
-          </button>
-        ` : `<span class="text-xs text-gray-500 font-mono">-</span>`}
+        ${(() => {
+          const canEdit = typeof AccessControl === "undefined" || AccessControl.canEditClient(c.clientId);
+          const canDelete = typeof AccessControl === "undefined" || AccessControl.canDeleteClient(c.clientId);
+          let btns = "";
+          if (canEdit) {
+            btns += `
+              <a href="/app/clients/edit/${encodeURIComponent(c.clientId)}" class="m3-action-btn m3-action-edit" title="${typeof t === 'function' ? t('client_edit_page_title', 'Modifica Client') : 'Modifica Client'}">
+                <i class="fa-solid fa-pen-to-square text-xs"></i>
+              </a>`;
+          }
+          if (canDelete) {
+            btns += `
+              <button onclick="deleteClientAction('${c.clientId}')" class="m3-action-btn m3-action-delete" title="${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client') : 'Elimina Client'}">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>`;
+          }
+          return btns || `<span class="text-xs text-gray-500 font-mono">-</span>`;
+        })()}
       </td>
     `;
     tbody.appendChild(tr);
@@ -237,9 +257,16 @@ function displayClientsTable(clients) {
 }
 
 function openClientModal(client = null) {
-  if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
-    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
-    return;
+  if (client) {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canEditClient(client.clientId)) {
+      sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("client_edit_denied", "Non disponi dei permessi necessari per modificare questo client.") : "Non disponi dei permessi necessari per modificare questo client.");
+      return;
+    }
+  } else {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canCreateClient()) {
+      sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("client_create_denied", "Non disponi dei permessi necessari per creare nuovi client.") : "Non disponi dei permessi necessari per creare nuovi client.");
+      return;
+    }
   }
   isEditMode = !!client;
   document.getElementById("modal-action-title").innerText = isEditMode
@@ -335,8 +362,14 @@ function saveClient() {
 }
 
 function deleteClientAction(clientId) {
-  if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
-    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+  if (typeof AccessControl !== "undefined" && !AccessControl.canDeleteClient(clientId)) {
+    sweetalert(
+        "warning",
+        typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
+        clientId && clientId.toUpperCase() === "ACCESS-SPHERE-TECH"
+            ? (typeof t === "function" ? t("client_tech_cant_delete", "Il client tecnico di sistema ACCESS-SPHERE-TECH non può essere eliminato.") : "Il client tecnico di sistema ACCESS-SPHERE-TECH non può essere eliminato.")
+            : (typeof t === "function" ? t("client_delete_denied", "Non disponi dei permessi necessari per eliminare questo client.") : "Non disponi dei permessi necessari per eliminare questo client.")
+    );
     return;
   }
   const confirmText = (typeof t === "function" ? t("swal_delete_client_desc", `Vuoi davvero eliminare il client ${clientId}? Questa azione è irreversibile!`) : `Vuoi davvero eliminare il client ${clientId}? Questa azione è irreversibile!`).replace("#CLIENT_ID#", clientId);
@@ -378,6 +411,10 @@ function deleteClientAction(clientId) {
 
 
 function viewClientDetails(clientId) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canViewClient(clientId)) {
+    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+    return;
+  }
   const client = cachedClients.find(c => c.clientId === clientId);
   if (!client) return;
 
@@ -401,7 +438,7 @@ function viewClientDetails(clientId) {
   // Store current client id on edit button inside detail modal
   const editBtn = document.getElementById("detail-editBtn");
   if (editBtn) {
-    if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canEditClient(clientId)) {
       editBtn.style.setProperty("display", "none", "important");
     } else {
       editBtn.style.removeProperty("display");

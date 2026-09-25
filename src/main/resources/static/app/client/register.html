@@ -787,12 +787,12 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+        if (typeof AccessControl !== "undefined" && !AccessControl.canCreateClient()) {
             console.warn("AccessControl: Permesso insufficiente per registrare client.");
             if (typeof AccessControl.showDeniedAlert === "function") {
                 AccessControl.showDeniedAlert(
                     typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
-                    typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per creare client.") : "Non disponi dei permessi necessari per creare client.",
+                    typeof t === "function" ? t("client_create_denied", "Non disponi dei permessi necessari per creare nuovi client.") : "Non disponi dei permessi necessari per creare nuovi client.",
                     "/app/clients"
                 );
             } else {
@@ -1378,11 +1378,12 @@
 
     // --- SUBMISSION ---
     function submitCreateClient() {
-        if (typeof AccessControl !== "undefined" && !AccessControl.canManageClients()) {
+        if (typeof AccessControl !== "undefined" && !AccessControl.canCreateClient()) {
             if (typeof AccessControl.showDeniedAlert === "function") {
                 AccessControl.showDeniedAlert(
                     typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",
-                    typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per creare client.") : "Non disponi dei permessi necessari per creare client."
+                    typeof t === "function" ? t("client_create_denied", "Non disponi dei permessi necessari per creare nuovi client.") : "Non disponi dei permessi necessari per creare nuovi client.",
+                    "/app/clients"
                 );
             }
             return;
@@ -1391,6 +1392,11 @@
         if (!validateClientForm()) return;
 
         const clientId = document.getElementById("clientId").value.trim().toUpperCase();
+
+        if (clientId === "ACCESS-SPHERE-TECH" && typeof AccessControl !== "undefined" && !AccessControl.isSuperAdmin()) {
+            sweetalert("error", typeof t === "function" ? t("swal_error_title", "Errore") : "Errore", typeof t === "function" ? t("client_tech_cant_modify", "Non è consentito registrare o modificare il client tecnico ACCESS-SPHERE-TECH.") : "Non è consentito registrare o modificare il client tecnico ACCESS-SPHERE-TECH.");
+            return;
+        }
 
         let secret = document.getElementById("clientSecret").value.trim();
         if (!secret) {

@@ -14,6 +14,9 @@ import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategor
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.dto.SystemPermission;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserRole;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
@@ -201,19 +204,43 @@ public class ProjectInitializerService implements ApplicationRunner {
     LOG.info("🔐 Checking enterprise Role Definitions and Permissions seeding...");
     String techClientId = techUserConfig.getTechClientId();
 
-    // 1. Assicura che i ruoli tecnici di base esistano per il client tecnico
+    // 1. Super Admin
+    final String superAdminRoleName = UserRole.SUPER_ADMIN.name();
+    Optional<RoleDefinitionEntity> superAdminRoleOpt =
+        roleDefinitionDAO.findByClientIdAndRole(techClientId, superAdminRoleName);
+    if (superAdminRoleOpt.isEmpty()) {
+      roleDefinitionDAO.save(
+          new RoleDefinitionEntity(
+              techClientId,
+              superAdminRoleName,
+              AppRoleType.SUPER_ADMIN.name(),
+              "Super Administrator role for Access Sphere",
+              List.of(SystemPermission.ALL.getValue())));
+      LOG.info(
+          "🔧 Default role [{}] seeded in ROLE_DEFINITIONS for client [{}]",
+          superAdminRoleName,
+          techClientId);
+    }
+
+    // 2. Admin
+    final String adminRoleName = UserRole.ADMIN.name();
     Optional<RoleDefinitionEntity> adminRoleOpt =
-        roleDefinitionDAO.findByClientIdAndRole(techClientId, "ROLE_ADMIN");
+        roleDefinitionDAO.findByClientIdAndRole(techClientId, superAdminRoleName);
     if (adminRoleOpt.isEmpty()) {
       roleDefinitionDAO.save(
           new RoleDefinitionEntity(
               techClientId,
-              "ROLE_ADMIN",
-              "ADMIN",
+              adminRoleName,
+              AppRoleType.ADMIN.name(),
               "Administrator role for Access Sphere",
-              List.of("*")));
+              List.of(
+                  SystemPermission.USERS_READ.getValue(),
+                  SystemPermission.USERS_WRITE.getValue(),
+                  SystemPermission.USERS_READ.getValue())));
       LOG.info(
-          "🔧 Default role [ROLE_ADMIN] seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
+          "🔧 Default role [{}] seeded in ROLE_DEFINITIONS for client [{}]",
+          superAdminRoleName,
+          techClientId);
     }
 
     Optional<RoleDefinitionEntity> techRoleOpt =
