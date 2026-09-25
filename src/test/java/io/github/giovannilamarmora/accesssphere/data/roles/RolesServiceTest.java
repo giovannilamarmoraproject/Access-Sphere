@@ -14,6 +14,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.RolesService;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
@@ -70,7 +71,7 @@ class RolesServiceTest {
   void changeRoles_notTechUser_throwsForbidden() {
     when(techUserService.isTechUser()).thenReturn(false);
 
-    UserRoles userRoles = new UserRoles(List.of("ROLE_ADMIN"));
+    UserRoles userRoles = new UserRoles(List.of(new UserClientRoleDTO("ROLE_ADMIN")));
     assertThrows(OAuthException.class, () -> rolesService.changeRoles("user-123", userRoles));
   }
 
@@ -94,7 +95,7 @@ class RolesServiceTest {
     User user = new User();
     user.setIdentifier("user-123");
     user.setUsername("giovannilamarmora");
-    user.setRoles(List.of("LINKATUTTO_ADMIN"));
+    user.setRoles(List.of(new UserClientRoleDTO("linkatutto", "LINKATUTTO_ADMIN")));
     when(userService.getUserByIdentifier("user-123")).thenReturn(Mono.just(user));
 
     ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -104,11 +105,11 @@ class RolesServiceTest {
     UserRoles payload =
         new UserRoles(
             List.of(
-                "LINKATUTTO_ADMIN",
-                "LINKATUTTO_ADMIN", // duplicato intenzionale
-                "ACCESS_SPHERE_ADMIN",
-                "SUPER_ADMIN", // ruolo di sistema
-                "UNKNOWN_RANDOM_ROLE" // non valido, deve essere scartato
+                new UserClientRoleDTO("linkatutto", "LINKATUTTO_ADMIN"),
+                new UserClientRoleDTO("linkatutto", "LINKATUTTO_ADMIN"), // duplicato intenzionale
+                new UserClientRoleDTO("access_sphere", "ACCESS_SPHERE_ADMIN"),
+                new UserClientRoleDTO("SUPER_ADMIN"), // ruolo di sistema
+                new UserClientRoleDTO("UNKNOWN_RANDOM_ROLE") // non valido, deve essere scartato
                 ));
 
     StepVerifier.create(rolesService.changeRoles("user-123", payload))
@@ -120,14 +121,15 @@ class RolesServiceTest {
               User updated = (User) response.getBody().getData();
               assertNotNull(updated);
 
-              List<String> assignedRoles = updated.getRoles();
+              List<UserClientRoleDTO> assignedRoles = updated.getRoles();
               assertNotNull(assignedRoles);
               // Deve contenere LINKATUTTO_ADMIN (una sola volta), ACCESS_SPHERE_ADMIN, SUPER_ADMIN
               assertEquals(3, assignedRoles.size());
-              assertTrue(assignedRoles.contains("LINKATUTTO_ADMIN"));
-              assertTrue(assignedRoles.contains("ACCESS_SPHERE_ADMIN"));
-              assertTrue(assignedRoles.contains("SUPER_ADMIN"));
-              assertFalse(assignedRoles.contains("UNKNOWN_RANDOM_ROLE"));
+              List<String> roleNames = assignedRoles.stream().map(UserClientRoleDTO::getRole).toList();
+              assertTrue(roleNames.contains("LINKATUTTO_ADMIN"));
+              assertTrue(roleNames.contains("ACCESS_SPHERE_ADMIN"));
+              assertTrue(roleNames.contains("SUPER_ADMIN"));
+              assertFalse(roleNames.contains("UNKNOWN_RANDOM_ROLE"));
             })
         .verifyComplete();
   }
@@ -169,8 +171,9 @@ class RolesServiceTest {
               assertEquals(HttpStatus.OK, response.getStatusCode());
               User updated = (User) response.getBody().getData();
               assertNotNull(updated);
-              assertTrue(updated.getRoles().contains("LINKATUTTO_ADMIN"));
-              assertTrue(updated.getRoles().contains("ROLE_ADMIN"));
+              List<String> roleNames = updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
+              assertTrue(roleNames.contains("LINKATUTTO_ADMIN"));
+              assertTrue(roleNames.contains("ROLE_ADMIN"));
               verify(userClientRoleDAO).deleteByUserIdentifier("user-456");
               verify(userClientRoleDAO).saveAll(any());
             })
@@ -185,7 +188,7 @@ class RolesServiceTest {
     User user = new User();
     user.setIdentifier("user-789");
     user.setUsername("giovanni");
-    user.setRoles(new java.util.ArrayList<>(List.of("ROLE_TECH")));
+    user.setRoles(new java.util.ArrayList<>(List.of(new UserClientRoleDTO("tech-client", "ROLE_TECH"))));
 
     when(userService.getUserByIdentifier("user-789")).thenReturn(Mono.just(user));
     when(userService.updateUser(eq("user-789"), any(User.class)))
@@ -199,8 +202,9 @@ class RolesServiceTest {
             response -> {
               assertEquals(HttpStatus.OK, response.getStatusCode());
               User updated = (User) response.getBody().getData();
-              assertTrue(updated.getRoles().contains("ROLE_ADMIN"));
-              assertTrue(updated.getRoles().contains("ROLE_TECH"));
+              List<String> roleNames = updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
+              assertTrue(roleNames.contains("ROLE_ADMIN"));
+              assertTrue(roleNames.contains("ROLE_TECH"));
               verify(userClientRoleDAO).save(any());
             })
         .verifyComplete();
@@ -215,24 +219,24 @@ class RolesServiceTest {
     User user = new User();
     user.setIdentifier("user-789");
     user.setUsername("giovanni");
-    user.setRoles(new java.util.ArrayList<>(List.of("ROLE_ADMIN", "ROLE_TECH")));
+    user.setRoles(
+        new java.util.ArrayList<>(
+            List.of(
+                new UserClientRoleDTO("linkatutto", "ROLE_ADMIN"),
+                new UserClientRoleDTO("tech-client", "ROLE_TECH"))));
 
     when(userService.getUserByIdentifier("user-789")).thenReturn(Mono.just(user));
     when(userService.updateUser(eq("user-789"), any(User.class)))
         .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
-    when(userClientRoleDAO.findByUserIdentifier("user-789"))
-        .thenReturn(
-            List.of(
-                new io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity(
-                    "user-789", "tech-client", "ROLE_TECH")));
 
     StepVerifier.create(rolesService.revokeClientRole("user-789", "linkatutto", "ROLE_ADMIN"))
         .assertNext(
             response -> {
               assertEquals(HttpStatus.OK, response.getStatusCode());
               User updated = (User) response.getBody().getData();
-              assertFalse(updated.getRoles().contains("ROLE_ADMIN"));
-              assertTrue(updated.getRoles().contains("ROLE_TECH"));
+              List<String> roleNames = updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
+              assertFalse(roleNames.contains("ROLE_ADMIN"));
+              assertTrue(roleNames.contains("ROLE_TECH"));
               verify(userClientRoleDAO)
                   .deleteByUserIdentifierAndClientIdAndRole("user-789", "linkatutto", "ROLE_ADMIN");
             })

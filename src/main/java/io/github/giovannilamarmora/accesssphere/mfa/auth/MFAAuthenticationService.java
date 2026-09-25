@@ -9,6 +9,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import io.github.giovannilamarmora.accesssphere.mfa.session.MFASessionService;
 import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
@@ -170,7 +171,13 @@ public class MFAAuthenticationService {
                     }
                     mfaSessionService.completeLogin(
                         mfaSession, deviceToken, mfaRequest.mfaMethod().name());
-                    jwtData.setRoles(user1.getRoles());
+                    jwtData.setRoles(
+                        user1.getRoles() != null
+                            ? user1.getRoles().stream()
+                                .map(UserClientRoleDTO::getRole)
+                                .filter(Objects::nonNull)
+                                .toList()
+                            : null);
                     AuthToken token =
                         tokenService.generateToken(
                             jwtData, clientCredential, mfaSession.getPayload());

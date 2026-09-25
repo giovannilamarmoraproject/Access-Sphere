@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -48,7 +49,7 @@ public class OAuthValidator {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateUserRoles(OAuth2Client oAuth2Client, List<String> userRoles) {
+  public static void validateUserRoles(OAuth2Client oAuth2Client, List<?> userRoles) {
     if (ObjectToolkit.isNullOrEmpty(userRoles)) {
       LOG.error("The User must have a role to proceed {}", userRoles);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
@@ -56,13 +57,27 @@ public class OAuthValidator {
 
     validateClientRoles(oAuth2Client);
 
+    List<String> roleNames =
+        userRoles.stream()
+            .map(
+                r -> {
+                  if (r instanceof UserClientRoleDTO ucr) {
+                    return ucr.getRole();
+                  } else if (r instanceof String s) {
+                    return s;
+                  }
+                  return r != null ? r.toString() : null;
+                })
+            .filter(java.util.Objects::nonNull)
+            .toList();
+
     if (oAuth2Client.getAppRoles().stream()
         .filter(java.util.Objects::nonNull)
-        .noneMatch(appRole -> userRoles.stream().anyMatch(appRole::matches))) {
+        .noneMatch(appRole -> roleNames.stream().anyMatch(appRole::matches))) {
       LOG.error(
           "The User must have a valid role as {} to proceed {}",
           oAuth2Client.getAppRoles(),
-          userRoles);
+          roleNames);
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
   }

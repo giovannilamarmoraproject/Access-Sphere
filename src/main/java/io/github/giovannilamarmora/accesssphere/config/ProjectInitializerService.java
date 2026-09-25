@@ -16,7 +16,6 @@ import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDA
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.dto.SystemPermission;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserRole;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
@@ -25,6 +24,7 @@ import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -196,76 +196,146 @@ public class ProjectInitializerService implements ApplicationRunner {
    * <p>Interconnessioni:
    *
    * <ul>
-   *   <li>Assicura la presenza dei ruoli tecnici di base ({@code ROLE_ADMIN}, {@code ROLE_TECH})
-   *       per il client tecnico.
+   *   <li>Assicura la presenza e il corretto catalogo di permessi granulari {@link
+   *       SystemPermission} per tutti i ruoli canonici definiti in {@link AppRoleType} ({@code
+   *       SUPER_ADMIN}, {@code ADMIN}, {@code MANAGER}, {@code MODERATOR}, {@code USER}, {@code
+   *       GUEST}) e per i ruoli tecnici ({@code ROLE_TECH}).
+   *   <li>I ruoli censiti per il client tecnico governano l'accesso e la visibilità della console
+   *       IAM, lo scoping multi-tenant e l'autorizzazione degli endpoint amministrativi.
    * </ul>
    */
   private void initRoleDefinitions() {
     LOG.info("🔐 Checking enterprise Role Definitions and Permissions seeding...");
     String techClientId = techUserConfig.getTechClientId();
+    final String rolePrefix = "ACCESS-SPHERE_";
 
-    // 1. Super Admin
-    final String superAdminRoleName = UserRole.SUPER_ADMIN.name();
-    Optional<RoleDefinitionEntity> superAdminRoleOpt =
-        roleDefinitionDAO.findByClientIdAndRole(techClientId, superAdminRoleName);
-    if (superAdminRoleOpt.isEmpty()) {
-      roleDefinitionDAO.save(
-          new RoleDefinitionEntity(
-              techClientId,
-              superAdminRoleName,
-              AppRoleType.SUPER_ADMIN.name(),
-              "Super Administrator role for Access Sphere",
-              List.of(SystemPermission.ALL.getValue())));
-      LOG.info(
-          "🔧 Default role [{}] seeded in ROLE_DEFINITIONS for client [{}]",
-          superAdminRoleName,
-          techClientId);
-    }
+    // 1. Super Admin: Accesso globale e totale senza alcuna limitazione
+    final String superAdminRoleName = rolePrefix + AppRoleType.SUPER_ADMIN.name();
+    seedRoleDefinition(
+        techClientId,
+        superAdminRoleName,
+        AppRoleType.SUPER_ADMIN.name(),
+        "Super Administrator role for Access Sphere with unrestricted full access",
+        List.of(SystemPermission.ALL.getValue()));
 
-    // 2. Admin
-    final String adminRoleName = UserRole.ADMIN.name();
-    Optional<RoleDefinitionEntity> adminRoleOpt =
-        roleDefinitionDAO.findByClientIdAndRole(techClientId, superAdminRoleName);
-    if (adminRoleOpt.isEmpty()) {
-      roleDefinitionDAO.save(
-          new RoleDefinitionEntity(
-              techClientId,
-              adminRoleName,
-              AppRoleType.ADMIN.name(),
-              "Administrator role for Access Sphere",
-              List.of(
-                  SystemPermission.USERS_READ.getValue(),
-                  SystemPermission.USERS_WRITE.getValue(),
-                  SystemPermission.USERS_READ.getValue())));
-      LOG.info(
-          "🔧 Default role [{}] seeded in ROLE_DEFINITIONS for client [{}]",
-          superAdminRoleName,
-          techClientId);
-    }
+    // 2. Admin: Gestione completa dell'IAM (utenti, ruoli, client, email, impostazioni) eccetto il
+    // backup di sistema
+    final String adminRoleName = rolePrefix + AppRoleType.ADMIN.name();
+    List<String> adminPermissions =
+        List.of(
+            SystemPermission.USERS_READ.getValue(),
+            SystemPermission.USERS_WRITE.getValue(),
+            SystemPermission.USERS_DELETE.getValue(),
+            SystemPermission.USERS_LOCK.getValue(),
+            SystemPermission.USERS_ROLES.getValue(),
+            SystemPermission.CLIENTS_READ.getValue(),
+            SystemPermission.CLIENTS_WRITE.getValue(),
+            SystemPermission.CLIENTS_DELETE.getValue(),
+            SystemPermission.SETTINGS_READ.getValue(),
+            SystemPermission.SETTINGS_WRITE.getValue(),
+            SystemPermission.EMAILS_MANAGE.getValue());
+    seedRoleDefinition(
+        techClientId,
+        adminRoleName,
+        AppRoleType.ADMIN.name(),
+        "Administrator role for Access Sphere with full management except system backup",
+        adminPermissions);
 
-    Optional<RoleDefinitionEntity> techRoleOpt =
-        roleDefinitionDAO.findByClientIdAndRole(techClientId, "ROLE_TECH");
-    if (techRoleOpt.isEmpty()) {
-      roleDefinitionDAO.save(
-          new RoleDefinitionEntity(
-              techClientId,
-              "ROLE_TECH",
-              "TECHNICAL",
-              "Technical service role for Access Sphere",
-              List.of("*")));
-      LOG.info(
-          "🔧 Default role [ROLE_TECH] seeded in ROLE_DEFINITIONS for client [{}]", techClientId);
-    }
+    // 3. Manager: Gestione utenti delegata, assegnazione ruoli e ispezione configurazioni
+    final String managerRoleName = rolePrefix + AppRoleType.MANAGER.name();
+    List<String> managerPermissions =
+        List.of(
+            SystemPermission.USERS_READ.getValue(),
+            SystemPermission.USERS_WRITE.getValue(),
+            SystemPermission.USERS_LOCK.getValue(),
+            SystemPermission.USERS_ROLES.getValue(),
+            SystemPermission.CLIENTS_READ.getValue(),
+            SystemPermission.SETTINGS_READ.getValue());
+    seedRoleDefinition(
+        techClientId,
+        managerRoleName,
+        AppRoleType.MANAGER.name(),
+        "Manager role with delegated user administration, role assignment, and client inspection capabilities",
+        managerPermissions);
 
-    // 2. Controllo e ripristino automatico permessi: per qualsiasi ruolo a DB privo di permessi
+    // 4. Operator: Monitoraggio utenze, blocco account e sola consultazione
+    final String operatorRoleName = rolePrefix + AppRoleType.OPERATOR.name();
+    List<String> operatorPermissions =
+        List.of(
+            SystemPermission.USERS_READ.getValue(),
+            SystemPermission.USERS_LOCK.getValue(),
+            SystemPermission.CLIENTS_READ.getValue(),
+            SystemPermission.SETTINGS_READ.getValue());
+    seedRoleDefinition(
+        techClientId,
+        operatorRoleName,
+        AppRoleType.OPERATOR.name(),
+        "Operator role with user monitoring, account locking, and read-only inspection access",
+        operatorPermissions);
+
+    // 5. Auditor: Audit di conformità, reportistica e consultazione avanzata
+    final String auditorRoleName = rolePrefix + AppRoleType.AUDITOR.name();
+    List<String> auditorPermissions =
+        List.of(
+            SystemPermission.USERS_READ.getValue(),
+            SystemPermission.CLIENTS_READ.getValue(),
+            SystemPermission.SETTINGS_READ.getValue());
+    seedRoleDefinition(
+        techClientId,
+        auditorRoleName,
+        AppRoleType.AUDITOR.name(),
+        "Auditor role for compliance, logging, and security inspection in read-only mode",
+        auditorPermissions);
+
+    // 6. User: Utente finale standard con abilitazioni self-service (nessun privilegio backoffice)
+    final String userRoleName = rolePrefix + AppRoleType.USER.name();
+    seedRoleDefinition(
+        techClientId,
+        userRoleName,
+        AppRoleType.USER.name(),
+        "Standard user role for regular authenticated users with self-service capabilities",
+        List.of());
+
+    // 7. Guest: Utente ospite con privilegi minimi di accesso e sola lettura
+    final String guestRoleName = rolePrefix + AppRoleType.GUEST.name();
+    seedRoleDefinition(
+        techClientId,
+        guestRoleName,
+        AppRoleType.GUEST.name(),
+        "Guest role with minimal read-only guest privileges and restricted access",
+        List.of());
+
+    // 8. Technical Service Role: Servizi M2M e chiamate interne infrastrutturali
+    final String technicalRoleName = rolePrefix + AppRoleType.TECHNICAL.name();
+    seedRoleDefinition(
+        techClientId,
+        technicalRoleName,
+        AppRoleType.TECHNICAL.name(),
+        "Technical service role for Access Sphere internal integrations and M2M operations",
+        List.of(SystemPermission.ALL.getValue()));
+
+    seedRoleDefinition(
+        techClientId,
+        "ROLE_TECH",
+        AppRoleType.TECHNICAL.name(),
+        "Technical service role for Access Sphere internal integrations (legacy alias)",
+        List.of(SystemPermission.ALL.getValue()));
+
+    // 8. Controllo integrità: ripristina la lista permessi per eventuali record a DB con
+    // permissions = null
     List<RoleDefinitionEntity> allRoles = roleDefinitionDAO.findAll();
     if (allRoles != null) {
       for (RoleDefinitionEntity r : allRoles) {
-        if (r.getPermissions() == null || r.getPermissions().isEmpty()) {
-          r.setPermissions(List.of("*"));
+        if (r.getPermissions() == null) {
+          if (AppRoleType.SUPER_ADMIN.name().equalsIgnoreCase(r.getType())
+              || "ROLE_TECH".equalsIgnoreCase(r.getRole())) {
+            r.setPermissions(List.of(SystemPermission.ALL.getValue()));
+          } else {
+            r.setPermissions(new ArrayList<>());
+          }
           roleDefinitionDAO.save(r);
           LOG.info(
-              "🔄 Initialized missing default permissions [*] for role [{}] on client [{}]",
+              "🔄 Initialized null permissions for role [{}] on client [{}]",
               r.getRole(),
               r.getClientId());
         }
@@ -282,6 +352,32 @@ public class ProjectInitializerService implements ApplicationRunner {
           allRoles.size());
     } else {
       LOG.info("✅ Role Definitions and Permissions initialization completed successfully.");
+    }
+  }
+
+  /**
+   * Registra una nuova definizione di ruolo per il client specificato solo se non già presente a
+   * database.
+   *
+   * @param clientId Identificativo univoco del client OAuth2
+   * @param roleName Nome canonico del ruolo (es. SUPER_ADMIN, ADMIN, USER)
+   * @param roleType Tipologia funzionale del ruolo (es. SUPER_ADMIN, ADMIN, USER, OPERATOR)
+   * @param description Descrizione esplicativa dei privilegi e dell'ambito del ruolo
+   * @param permissions Lista di stringhe dei permessi 'risorsa:azione' o wildcard '*'
+   */
+  private void seedRoleDefinition(
+      String clientId,
+      String roleName,
+      String roleType,
+      String description,
+      List<String> permissions) {
+    Optional<RoleDefinitionEntity> existingOpt =
+        roleDefinitionDAO.findByClientIdAndRole(clientId, roleName);
+    if (existingOpt.isEmpty()) {
+      roleDefinitionDAO.save(
+          new RoleDefinitionEntity(clientId, roleName, roleType, description, permissions));
+      LOG.info(
+          "🔧 Default role [{}] seeded in ROLE_DEFINITIONS for client [{}]", roleName, clientId);
     }
   }
 

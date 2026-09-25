@@ -288,18 +288,7 @@ public class UserService {
                     return dto;
                   })
               .toList();
-      user.setClientRoles(clientRoleDTOs);
-
-      // Sincronizza per retrocompatibilita i ruoli flat legacy
-      Set<String> allRoles = new LinkedHashSet<>();
-      if (user.getRoles() != null) {
-        allRoles.addAll(user.getRoles());
-      }
-      clientRoleDTOs.forEach(
-          cr -> {
-            if (cr.getRole() != null) allRoles.add(cr.getRole());
-          });
-      user.setRoles(new ArrayList<>(allRoles));
+      user.setRoles(clientRoleDTOs);
     }
     return user;
   }
@@ -360,17 +349,7 @@ public class UserService {
                       return dto;
                     })
                 .toList();
-        user.setClientRoles(clientRoleDTOs);
-
-        Set<String> allRoles = new LinkedHashSet<>();
-        if (user.getRoles() != null) {
-          allRoles.addAll(user.getRoles());
-        }
-        clientRoleDTOs.forEach(
-            cr -> {
-              if (cr.getRole() != null) allRoles.add(cr.getRole());
-            });
-        user.setRoles(new ArrayList<>(allRoles));
+        user.setRoles(clientRoleDTOs);
       }
     }
     return users;

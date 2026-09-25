@@ -30,8 +30,7 @@ class JWTDataTest {
             "linkatutto", "LINKATUTTO_EDITOR", "USER", List.of("links:read", "links:write"));
     UserClientRoleDTO accessSphereRole =
         new UserClientRoleDTO("ACCESS-SPHERE-TECH", "ROLE_ADMIN", "DEFAULT", List.of("*"));
-    user.setClientRoles(List.of(linkatuttoRole, accessSphereRole));
-    user.setRoles(List.of("LINKATUTTO_EDITOR", "ROLE_ADMIN"));
+    user.setRoles(List.of(linkatuttoRole, accessSphereRole));
 
     OAuth2Client linkatuttoClient = new OAuth2Client();
     linkatuttoClient.setClientId("linkatutto");
@@ -65,7 +64,7 @@ class JWTDataTest {
     User user = new User();
     user.setIdentifier("user-uuid-2");
     user.setUsername("luigi_verdi");
-    user.setRoles(List.of("ROLE_ADMIN"));
+    user.setRoles(List.of(new UserClientRoleDTO("ROLE_ADMIN")));
 
     OAuth2Client client = new OAuth2Client();
     client.setClientId("ACCESS-SPHERE-TECH");

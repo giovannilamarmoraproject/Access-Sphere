@@ -1113,8 +1113,15 @@ const AccessControl = {
 
     getRoles() {
         const u = this.getUser();
-        if (!u || !Array.isArray(u.roles)) return [];
-        return u.roles.map((r) => String(r).toUpperCase());
+        if (!u) return [];
+        const raw = u.roles || u.clientRoles;
+        if (!Array.isArray(raw)) return [];
+        return raw.map((r) => {
+            if (typeof r === "object" && r !== null && r.role) {
+                return String(r.role).toUpperCase();
+            }
+            return String(r).toUpperCase();
+        });
     },
 
     getPermissions() {
@@ -1124,13 +1131,12 @@ const AccessControl = {
         if (Array.isArray(u.permissions)) {
             u.permissions.forEach((p) => set.add(String(p).trim().toLowerCase()));
         }
-        if (Array.isArray(u.clientRoles)) {
-            u.clientRoles.forEach((cr) => {
-                if (cr && Array.isArray(cr.permissions)) {
-                    cr.permissions.forEach((p) => set.add(String(p).trim().toLowerCase()));
-                }
-            });
-        }
+        const rolesList = Array.isArray(u.roles) ? u.roles : (Array.isArray(u.clientRoles) ? u.clientRoles : []);
+        rolesList.forEach((cr) => {
+            if (cr && typeof cr === "object" && Array.isArray(cr.permissions)) {
+                cr.permissions.forEach((p) => set.add(String(p).trim().toLowerCase()));
+            }
+        });
         return Array.from(set);
     },
 
@@ -1140,9 +1146,13 @@ const AccessControl = {
         const userType = u && u.type ? String(u.type).toUpperCase() : "";
         return roleNames.some((target) => {
             const upper = String(target).toUpperCase();
-            const stripped = upper.replace(/^ROLE_/, "");
+            const stripped = upper.replace(/^(ROLE_|ACCESS-SPHERE_)/, "");
             return (
-                roles.some((r) => r === upper || r.replace(/^ROLE_/, "") === stripped) ||
+                roles.some((r) => {
+                    const rUpper = String(r).toUpperCase();
+                    const rStripped = rUpper.replace(/^(ROLE_|ACCESS-SPHERE_)/, "");
+                    return rUpper === upper || rStripped === stripped;
+                }) ||
                 userType === stripped ||
                 userType === upper
             );

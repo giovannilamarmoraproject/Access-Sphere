@@ -8,6 +8,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -209,14 +210,19 @@ class UserServiceTest {
     User updateDto = new User();
     updateDto.setUsername("original");
     updateDto.setEmail("orig@example.com");
-    updateDto.setRoles(List.of("ACCESS_SPHERE_ADMIN", "SUPER_ADMIN"));
+    updateDto.setRoles(
+        List.of(
+            new UserClientRoleDTO("access_sphere", "ACCESS_SPHERE_ADMIN"),
+            new UserClientRoleDTO("access_sphere", "SUPER_ADMIN")));
 
     StepVerifier.create(userService.updateUser("uuid-99", updateDto))
         .assertNext(
             updated -> {
               assertEquals("uuid-99", updated.getIdentifier());
               assertNotNull(updated.getRoles());
-              assertEquals(List.of("ACCESS_SPHERE_ADMIN", "SUPER_ADMIN"), updated.getRoles());
+              List<String> roleNames =
+                  updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
+              assertEquals(List.of("ACCESS_SPHERE_ADMIN", "SUPER_ADMIN"), roleNames);
             })
         .verifyComplete();
   }

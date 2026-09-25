@@ -122,8 +122,13 @@ public class JWTData {
     }
 
     // Fallback retrocompatibile su user.getRoles()
-    if (ObjectToolkit.isNullOrEmpty(effectiveRoles) && user != null) {
-      effectiveRoles = ObjectToolkit.isNullOrEmpty(user.getRoles()) ? null : user.getRoles();
+    if (ObjectToolkit.isNullOrEmpty(effectiveRoles) && user != null && user.getRoles() != null) {
+      effectiveRoles =
+          user.getRoles().stream()
+              .map(io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO::getRole)
+              .filter(java.util.Objects::nonNull)
+              .distinct()
+              .toList();
     }
 
     // Risoluzione permessi da clientCredential.appRoles se non definiti a livello di UserClientRole

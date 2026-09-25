@@ -16,6 +16,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2Author
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.RoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -221,7 +222,9 @@ public class UserAdminService {
             clientRoles.stream()
                 .filter(
                     appRole ->
-                        appRole != null && user.getRoles().stream().anyMatch(appRole::matches))
+                        appRole != null
+                            && user.getRoles().stream()
+                                .anyMatch(r -> r != null && appRole.matches(r.getRole())))
                 .toList();
       }
     }
@@ -240,7 +243,17 @@ public class UserAdminService {
         throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
       }
     }
-    user.setRoles(userRoles.stream().map(AppRole::getRole).toList());
+    user.setRoles(
+        userRoles.stream()
+            .map(
+                ar ->
+                    new UserClientRoleDTO(
+                        oAuth2Client.getClientId(),
+                        ar.getRole(),
+                        ar.getType(),
+                        ar.getDescription(),
+                        ar.getPermissions()))
+            .toList());
 
     UserEntity userEntity = UserMapper.toEntity(user);
     if (!ObjectToolkit.isNullOrEmpty(user.getPassword()))

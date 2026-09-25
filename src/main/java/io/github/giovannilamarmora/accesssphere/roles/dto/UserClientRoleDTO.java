@@ -25,6 +25,10 @@ public class UserClientRoleDTO extends GenericDTO {
   private String description;
   private List<String> permissions;
 
+  public UserClientRoleDTO(String role) {
+    this.role = role;
+  }
+
   public UserClientRoleDTO(String clientId, String role) {
     this.clientId = clientId;
     this.role = role;

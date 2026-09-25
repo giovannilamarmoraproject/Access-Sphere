@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.roles.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import jakarta.validation.constraints.NotNull;
@@ -17,18 +18,24 @@ import lombok.NoArgsConstructor;
 public class UserRoles extends GenericDTO {
 
   /**
-   * @deprecated TODO: Scheduled for removal in future major release. Use clientRoles instead.
-   * Lista legacy di ruoli flat conservata per il 100% di retrocompatibilita con i client e consumer esistenti.
-   */
-  @Deprecated
-  private List<String> roles;
-
-  /**
    * Ruoli contestualizzati per Client OAuth2 con tipologia applicativa e permessi granulari aggregati.
    */
-  private List<UserClientRoleDTO> clientRoles;
+  @JsonAlias({"clientRoles", "client_roles"})
+  private List<UserClientRoleDTO> roles;
 
-  public UserRoles(List<String> roles) {
-    this.roles = roles;
+  public List<UserClientRoleDTO> getClientRoles() {
+    return this.roles;
+  }
+
+  public void setClientRoles(List<UserClientRoleDTO> clientRoles) {
+    this.roles = clientRoles;
+  }
+
+  public static UserRoles fromLegacyRoles(List<String> roleNames) {
+    UserRoles ur = new UserRoles();
+    if (roleNames != null) {
+      ur.setRoles(roleNames.stream().map(r -> new UserClientRoleDTO(null, r)).toList());
+    }
+    return ur;
   }
 }

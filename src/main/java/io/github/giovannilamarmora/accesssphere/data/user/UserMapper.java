@@ -31,9 +31,13 @@ public class UserMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static UserEntity toEntity(User user) {
     UserEntity userEntity = new UserEntity();
-    BeanUtils.copyProperties(user, userEntity);
+    BeanUtils.copyProperties(user, userEntity, "roles");
     if (!ObjectUtils.isEmpty(user.getRoles()))
-      userEntity.setRoles(String.join(" ", user.getRoles()));
+      userEntity.setRoles(
+          user.getRoles().stream()
+              .map(io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO::getRole)
+              .filter(java.util.Objects::nonNull)
+              .collect(java.util.stream.Collectors.joining(" ")));
 
     if (!ObjectToolkit.isNullOrEmpty(user.getAttributes()))
       userEntity.setAttributes(Mapper.writeObjectToString(user.getAttributes()));
@@ -55,10 +59,17 @@ public class UserMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static User toDTO(UserEntity userEntity) {
     User user = new User();
-    BeanUtils.copyProperties(userEntity, user);
+    BeanUtils.copyProperties(userEntity, user, "roles");
     user.setPassword(null);
     if (!ObjectUtils.isEmpty(userEntity.getRoles()))
-      user.setRoles(Arrays.stream(userEntity.getRoles().split(" ")).toList());
+      user.setRoles(
+          Arrays.stream(userEntity.getRoles().split(" "))
+              .filter(r -> !r.isBlank())
+              .map(
+                  r ->
+                      new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                          null, r))
+              .toList());
 
     if (!ObjectToolkit.isNullOrEmpty(userEntity.getAttributes()))
       user.setAttributes(Mapper.readObject(userEntity.getAttributes(), new TypeReference<>() {}));
@@ -96,7 +107,12 @@ public class UserMapper {
     existingUser.setEmail(user.getEmail());
     existingUser.setUsername(user.getUsername());
     existingUser.setRoles(
-        ObjectUtils.isEmpty(user.getRoles()) ? null : Joiner.on(" ").join(user.getRoles()));
+        ObjectUtils.isEmpty(user.getRoles())
+            ? null
+            : user.getRoles().stream()
+                .map(io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO::getRole)
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.joining(" ")));
     existingUser.setProfilePhoto(user.getProfilePhoto());
     existingUser.setPhoneNumber(user.getPhoneNumber());
     existingUser.setBirthDate(user.getBirthDate());
@@ -131,7 +147,12 @@ public class UserMapper {
     user.setRoles(
         oAuth2Client.getAppRoles() == null
             ? null
-            : oAuth2Client.getAppRoles().stream().map(AppRole::getRole).toList());
+            : oAuth2Client.getAppRoles().stream()
+                .map(
+                    ar ->
+                        new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                            oAuth2Client.getClientId(), ar.getRole(), ar.getType(), null, null))
+                .toList());
     return user;
   }
 
@@ -150,7 +171,15 @@ public class UserMapper {
     user.setName(jwtData.getGiven_name());
     user.setSurname(jwtData.getFamily_name());
     user.setEmail(jwtData.getEmail());
-    user.setRoles(jwtData.getRoles());
+    user.setRoles(
+        jwtData.getRoles() != null
+            ? jwtData.getRoles().stream()
+                .map(
+                    r ->
+                        new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                            jwtData.getClient_id(), r))
+                .toList()
+            : null);
     user.setAttributes(jwtData.getAttributes());
     return user;
   }

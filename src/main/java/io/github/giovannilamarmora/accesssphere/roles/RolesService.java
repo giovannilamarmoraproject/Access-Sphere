@@ -16,7 +16,6 @@ import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDA
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
@@ -122,95 +121,50 @@ public class RolesService {
                     });
               }
 
-              // 2. Raccoglie i ruoli canonici/di sistema definiti a livello di piattaforma
-              // (UserRole e AppRoleType)
-              Arrays.stream(UserRole.values())
-                  .forEach(
-                      ur -> {
-                        allowedRoles.add(ur.name().toUpperCase());
-                        allowedRoles.add("ROLE_" + ur.name().toUpperCase());
-                      });
+              // 2. Raccoglie i ruoli canonici/di sistema definiti a livello di piattaforma (AppRoleType)
               Arrays.stream(AppRoleType.values())
-                  .forEach(art -> allowedRoles.add(art.getValue().toUpperCase()));
+                  .forEach(
+                      art -> {
+                        String name = art.getValue().toUpperCase();
+                        allowedRoles.add(name);
+                        allowedRoles.add("ROLE_" + name);
+                        allowedRoles.add("ACCESS-SPHERE_" + name);
+                      });
               allowedRoles.add("ROLE_TECH");
 
               List<UserClientRoleEntity> entitiesToSave = new ArrayList<>();
               List<String> distinctRoleNames = new ArrayList<>();
 
-              // CASO A: Ricevuto formato moderno 'clientRoles'
+              // 2. Elaborazione ruoli ricevuti
               if (roles != null
-                  && roles.getClientRoles() != null
-                  && !roles.getClientRoles().isEmpty()) {
+                  && roles.getRoles() != null
+                  && !roles.getRoles().isEmpty()) {
                 LOG.info(
-                    "👥 [ROLES] Processing modern clientRoles payload with {} entries",
-                    roles.getClientRoles().size());
-                for (UserClientRoleDTO cr : roles.getClientRoles()) {
+                    "👥 [ROLES] Processing roles payload with {} entries",
+                    roles.getRoles().size());
+                for (UserClientRoleDTO cr : roles.getRoles()) {
                   if (cr == null || cr.getRole() == null || cr.getRole().isBlank()) continue;
-                  String targetClientId =
-                      (cr.getClientId() != null && !cr.getClientId().isBlank())
-                          ? cr.getClientId().trim()
-                          : techClientId;
                   String roleName = cr.getRole().trim().toUpperCase();
 
                   boolean valid =
                       allowedRoles.stream().anyMatch(ar -> ar.equalsIgnoreCase(roleName));
                   if (!valid) {
                     LOG.warn(
-                        "⚠️ [ROLES] Discarding unrecognized client-scoped role [{}] for client [{}]",
+                        "⚠️ [ROLES] Discarding unrecognized client-scoped role [{}] for user [{}]",
                         roleName,
-                        targetClientId);
+                        identifier);
                     continue;
                   }
 
-                  boolean alreadyAdded =
-                      entitiesToSave.stream()
-                          .anyMatch(
-                              e ->
-                                  e.getClientId().equalsIgnoreCase(targetClientId)
-                                      && e.getRole().equalsIgnoreCase(roleName));
-                  if (!alreadyAdded) {
-                    entitiesToSave.add(
-                        new UserClientRoleEntity(identifier, targetClientId, roleName));
-                  }
-                  if (!distinctRoleNames.contains(roleName)) {
-                    distinctRoleNames.add(roleName);
-                  }
-                }
-              }
-              // CASO B: Ricevuto formato legacy 'roles' (array flat di stringhe)
-              else if (roles != null && roles.getRoles() != null && !roles.getRoles().isEmpty()) {
-                LOG.info(
-                    "👥 [ROLES] Processing legacy roles payload with {} entries",
-                    roles.getRoles().size());
-                List<String> validLegacyRoles =
-                    roles.getRoles().stream()
-                        .filter(Objects::nonNull)
-                        .map(String::trim)
-                        .filter(r -> !r.isBlank())
-                        .filter(
-                            r -> {
-                              boolean valid =
-                                  allowedRoles.stream().anyMatch(ar -> ar.equalsIgnoreCase(r));
-                              if (!valid) {
-                                LOG.warn(
-                                    "⚠️ [ROLES] Discarding unrecognized role [{}] for user {}",
-                                    r,
-                                    identifier);
-                              }
-                              return valid;
-                            })
-                        .map(String::toUpperCase)
-                        .distinct()
-                        .toList();
-
-                for (String r : validLegacyRoles) {
-                  // Determina a quale client appartiene il ruolo
-                  String targetClientId = techClientId;
-                  if (clientCredentials != null) {
+                  String targetClientId =
+                      (cr.getClientId() != null && !cr.getClientId().isBlank())
+                          ? cr.getClientId().trim()
+                          : null;
+                  if (targetClientId == null && clientCredentials != null) {
                     for (OAuth2Client cc : clientCredentials) {
                       if (cc.getAppRoles() != null) {
                         boolean match =
-                            cc.getAppRoles().stream().anyMatch(ar -> ar != null && ar.matches(r));
+                            cc.getAppRoles().stream().anyMatch(ar -> ar != null && ar.matches(roleName));
                         if (match) {
                           targetClientId = cc.getClientId();
                           break;
@@ -218,9 +172,24 @@ public class RolesService {
                       }
                     }
                   }
+                  if (targetClientId == null) {
+                    targetClientId = techClientId;
+                  }
 
-                  entitiesToSave.add(new UserClientRoleEntity(identifier, targetClientId, r));
-                  distinctRoleNames.add(r);
+                  final String finalTargetClientId = targetClientId;
+                  boolean alreadyAdded =
+                      entitiesToSave.stream()
+                          .anyMatch(
+                              e ->
+                                  e.getClientId().equalsIgnoreCase(finalTargetClientId)
+                                      && e.getRole().equalsIgnoreCase(roleName));
+                  if (!alreadyAdded) {
+                    entitiesToSave.add(
+                        new UserClientRoleEntity(identifier, finalTargetClientId, roleName));
+                  }
+                  if (!distinctRoleNames.contains(roleName)) {
+                    distinctRoleNames.add(roleName);
+                  }
                 }
               }
 
@@ -235,11 +204,15 @@ public class RolesService {
               }
 
               // 4. Sincronizzazione per retrocompatibilita su USERS.ROLES
+              List<UserClientRoleDTO> assignedRoleDTOs =
+                  entitiesToSave.stream()
+                      .map(e -> new UserClientRoleDTO(e.getClientId(), e.getRole()))
+                      .toList();
               return userService
                   .getUserByIdentifier(identifier)
                   .flatMap(
                       user -> {
-                        user.setRoles(distinctRoleNames);
+                        user.setRoles(assignedRoleDTOs);
                         return userService
                             .updateUser(identifier, user)
                             .map(
@@ -301,12 +274,21 @@ public class RolesService {
                     normalizedRole);
               }
 
-              // Sincronizza campo flat legacy
-              List<String> currentRoles =
-                  new ArrayList<>(user.getRoles() != null ? user.getRoles() : List.of());
-              if (!currentRoles.contains(normalizedRole)) {
-                currentRoles.add(normalizedRole);
-                user.setRoles(currentRoles);
+              // Sincronizza ruoli utente
+              if (user.getRoles() == null) {
+                user.setRoles(new ArrayList<>());
+              }
+              boolean hasRole =
+                  user.getRoles().stream()
+                      .anyMatch(
+                          r ->
+                              r != null
+                                  && r.getRole() != null
+                                  && r.getRole().equalsIgnoreCase(normalizedRole)
+                                  && (r.getClientId() == null
+                                      || r.getClientId().equalsIgnoreCase(normalizedClientId)));
+              if (!hasRole) {
+                user.getRoles().add(new UserClientRoleDTO(normalizedClientId, normalizedRole));
               }
 
               return userService
@@ -361,19 +343,16 @@ public class RolesService {
         .getUserByIdentifier(identifier)
         .flatMap(
             user -> {
-              // Verifica se il ruolo rimosso e ancora assegnato a un altro client per questo utente
-              List<UserClientRoleEntity> remainingUserRoles =
-                  userClientRoleDAO.findByUserIdentifier(identifier);
-              boolean roleStillPresentInOtherClient =
-                  remainingUserRoles.stream()
-                      .anyMatch(r -> r.getRole().equalsIgnoreCase(normalizedRole));
-
-              if (!roleStillPresentInOtherClient && user.getRoles() != null) {
-                List<String> updatedLegacyRoles =
+              if (user.getRoles() != null) {
+                List<UserClientRoleDTO> updatedRoles =
                     user.getRoles().stream()
-                        .filter(r -> !r.equalsIgnoreCase(normalizedRole))
+                        .filter(
+                            r ->
+                                r != null
+                                    && !(normalizedClientId.equalsIgnoreCase(r.getClientId())
+                                        && normalizedRole.equalsIgnoreCase(r.getRole())))
                         .toList();
-                user.setRoles(updatedLegacyRoles);
+                user.setRoles(new ArrayList<>(updatedRoles));
               }
 
               return userService

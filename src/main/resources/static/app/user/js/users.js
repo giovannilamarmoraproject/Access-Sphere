@@ -21,7 +21,10 @@ function loadCachedUsers() {
             const loggedUser = JSON.parse(loggedUserRaw);
             if ((loggedUser.username && loggedUser.username.toLowerCase() === techUsername.toLowerCase()) ||
                 (loggedUser.email && loggedUser.email.toLowerCase() === techEmail.toLowerCase()) ||
-                (Array.isArray(loggedUser.roles) && loggedUser.roles.includes("ROLE_TECH"))) {
+                (Array.isArray(loggedUser.roles) && loggedUser.roles.some(r => {
+                  const rName = (typeof r === 'object' && r !== null && r.role) ? r.role : String(r);
+                  return rName.toUpperCase() === "ROLE_TECH" || rName.toUpperCase() === "ACCESS-SPHERE_TECHNICAL";
+                }))) {
               isTech = true;
             }
           } catch (e) {}

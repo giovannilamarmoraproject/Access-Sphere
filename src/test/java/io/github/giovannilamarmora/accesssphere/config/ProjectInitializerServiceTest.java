@@ -81,7 +81,7 @@ class ProjectInitializerServiceTest {
     verify(clientDAO, times(1)).save(clientCaptor.capture());
     OAuth2ClientEntity savedClient = clientCaptor.getValue();
     assertEquals("ACCESS-SPHERE-TECH", savedClient.getClientId());
-    verify(roleDefinitionDAO, times(2)).save(any());
+    verify(roleDefinitionDAO, times(9)).save(any());
 
     // Verify User Seed
     ArgumentCaptor<UserEntity> userCaptor = ArgumentCaptor.forClass(UserEntity.class);

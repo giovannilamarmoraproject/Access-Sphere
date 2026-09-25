@@ -22,7 +22,14 @@ public class GoogleGrpcMapper {
         googleModel.getJwtData().getEmail(),
         googleModel.getJwtData().getSub(),
         null,
-        googleModel.getJwtData().getRoles(),
+        googleModel.getJwtData().getRoles() != null
+            ? googleModel.getJwtData().getRoles().stream()
+                .map(
+                    r ->
+                        new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                            googleModel.getJwtData().getClient_id(), r))
+                .toList()
+            : null,
         getUserInfoValue(googleModel.getUserInfo(), "picture"),
         getUserInfoValue(googleModel.getUserInfo(), "phone_number"),
         null,

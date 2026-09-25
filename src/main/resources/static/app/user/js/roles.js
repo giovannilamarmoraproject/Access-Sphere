@@ -527,18 +527,32 @@ function displayUserData(user) {
     }
   }
 
-  // Popolazione dello stato currentClientRoles: priorità a clientRoles, fallback su roles legacy
-  if (user && user.clientRoles && Array.isArray(user.clientRoles) && user.clientRoles.length > 0) {
-    currentClientRoles = JSON.parse(JSON.stringify(user.clientRoles));
-  } else if (user && user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
-    // Trasformazione del set legacy flat di ruoli in elementi client-scoped con clientId di default
-    currentClientRoles = user.roles.map((r) => ({
-      clientId: "ACCESS_SPHERE_DEFAULT_CLIENT",
-      role: r,
-      type: "DEFAULT",
-      description: null,
-      permissions: []
-    }));
+  // Popolazione dello stato currentClientRoles: priorità a clientRoles o roles (oggetti UserClientRoleDTO)
+  const rawRoles = (user && user.clientRoles && Array.isArray(user.clientRoles) && user.clientRoles.length > 0)
+    ? user.clientRoles
+    : (user && user.roles && Array.isArray(user.roles))
+      ? user.roles
+      : [];
+
+  if (rawRoles.length > 0) {
+    currentClientRoles = rawRoles.map((r) => {
+      if (typeof r === "object" && r !== null) {
+        return {
+          clientId: r.clientId || "ACCESS_SPHERE_DEFAULT_CLIENT",
+          role: r.role || "",
+          type: r.type || "DEFAULT",
+          description: r.description || null,
+          permissions: Array.isArray(r.permissions) ? r.permissions : []
+        };
+      }
+      return {
+        clientId: "ACCESS_SPHERE_DEFAULT_CLIENT",
+        role: String(r),
+        type: "DEFAULT",
+        description: null,
+        permissions: []
+      };
+    }).filter((cr) => cr.role && cr.role.trim().length > 0);
   } else {
     currentClientRoles = [];
   }
@@ -549,7 +563,7 @@ function displayUserData(user) {
 /**
  * Invia le modifiche dei ruoli al server tramite chiamata HTTP PUT atomica a `/v1/users/{identifier}/roles`.
  * Costruisce un payload unificato che sincronizza sia la collezione moderna `clientRoles` sia
- * la lista flat `roles` per garantire la piena retrocompatibilità con i servizi legacy.
+ * la lista `roles` per garantire la piena retrocompatibilità con i servizi legacy.
  */
 function changeRoles() {
   if (typeof AccessControl !== "undefined" && !AccessControl.canManageRoles()) {
@@ -576,16 +590,17 @@ function changeRoles() {
   const url = config.users_url + "/" + encodeURIComponent(identifier) + "/roles";
   const token = getCookieOrStorage(config.access_token);
 
-  // Sincronizzazione atomica sia del campo legacy 'roles' che del campo moderno 'clientRoles'
+  // Sincronizzazione atomica sia del campo 'roles' che dell'alias 'clientRoles'
+  const clientRolesList = currentClientRoles.map((cr) => ({
+    clientId: cr.clientId,
+    role: cr.role,
+    type: cr.type || "DEFAULT",
+    description: cr.description || null,
+    permissions: cr.permissions || []
+  }));
   const payload = {
-    roles: Array.from(new Set(currentClientRoles.map((cr) => cr.role))),
-    clientRoles: currentClientRoles.map((cr) => ({
-      clientId: cr.clientId,
-      role: cr.role,
-      type: cr.type || "DEFAULT",
-      description: cr.description || null,
-      permissions: cr.permissions || []
-    }))
+    roles: clientRolesList,
+    clientRoles: clientRolesList
   };
 
   fetch(url, {

@@ -289,36 +289,44 @@ function displayUserData(user) {
     : `<span class="px-3.5 py-1 text-xs font-semibold" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 9999px;">${typeof t === 'function' ? t("user_detail_active", "ATTIVO") : "ATTIVO"}</span>`;
 
   let rolesHtml = `<span class="text-xs text-gray-400">${typeof t === 'function' ? t("user_detail_no_roles", "Nessun ruolo assegnato") : "Nessun ruolo assegnato"}</span>`;
-  if (user.clientRoles && Array.isArray(user.clientRoles) && user.clientRoles.length > 0) {
-    rolesHtml = user.clientRoles.map(cr => {
-      const isWildcard = cr.permissions && cr.permissions.includes("*");
-      const permsHtml = isWildcard
-        ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold" style="background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-wand-magic-sparkles text-[8px] mr-0.5"></i>*</span>`
-        : (cr.permissions && cr.permissions.length > 0)
-          ? cr.permissions.map(p => `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono" style="background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1); color: var(--theme-accent, #D0BCFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">${p}</span>`).join("")
-          : "";
-      return `
-        <div class="inline-flex flex-col gap-1 p-2.5 rounded-xl mr-2 mb-2 shadow-sm transition-all" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.14); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);">
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold" style="background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18); color: var(--theme-accent, #EADDFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);">
-              <i class="fa-solid fa-cube text-[8px] mr-1"></i>${cr.clientId}
-            </span>
-            <span class="text-xs font-mono font-bold text-white flex items-center gap-1">
-              <i class="fa-solid fa-shield-halved text-[10px]" style="color: var(--theme-accent, #A855F7);"></i> ${cr.role}
-            </span>
-            ${cr.type ? `<span class="px-1.5 py-0.5 rounded-full text-[9px] font-mono" style="background: rgba(255, 255, 255, 0.08); color: #D1D5DB; border: 1px solid rgba(255, 255, 255, 0.12);">${cr.type}</span>` : ''}
+  const rawUserRoles = (user.clientRoles && Array.isArray(user.clientRoles) && user.clientRoles.length > 0)
+    ? user.clientRoles
+    : (user.roles && Array.isArray(user.roles))
+      ? user.roles
+      : [];
+
+  if (rawUserRoles.length > 0) {
+    if (typeof rawUserRoles[0] === 'object' && rawUserRoles[0] !== null) {
+      rolesHtml = rawUserRoles.map(cr => {
+        const isWildcard = cr.permissions && cr.permissions.includes("*");
+        const permsHtml = isWildcard
+          ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold" style="background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-wand-magic-sparkles text-[8px] mr-0.5"></i>*</span>`
+          : (cr.permissions && cr.permissions.length > 0)
+            ? cr.permissions.map(p => `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono" style="background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1); color: var(--theme-accent, #D0BCFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">${p}</span>`).join("")
+            : "";
+        return `
+          <div class="inline-flex flex-col gap-1 p-2.5 rounded-xl mr-2 mb-2 shadow-sm transition-all" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.14); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              ${cr.clientId ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold" style="background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18); color: var(--theme-accent, #EADDFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);">
+                <i class="fa-solid fa-cube text-[8px] mr-1"></i>${cr.clientId}
+              </span>` : ''}
+              <span class="text-xs font-mono font-bold text-white flex items-center gap-1">
+                <i class="fa-solid fa-shield-halved text-[10px]" style="color: var(--theme-accent, #A855F7);"></i> ${cr.role}
+              </span>
+              ${cr.type ? `<span class="px-1.5 py-0.5 rounded-full text-[9px] font-mono" style="background: rgba(255, 255, 255, 0.08); color: #D1D5DB; border: 1px solid rgba(255, 255, 255, 0.12);">${cr.type}</span>` : ''}
+            </div>
+            ${permsHtml ? `<div class="flex flex-wrap gap-1 mt-0.5">${permsHtml}</div>` : ''}
           </div>
-          ${permsHtml ? `<div class="flex flex-wrap gap-1 mt-0.5">${permsHtml}</div>` : ''}
-        </div>
-      `;
-    }).join("");
-  } else if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
-    rolesHtml = user.roles.map(r => `
-      <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-mono font-semibold mr-2 mb-2 shadow-sm" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18); color: var(--theme-accent, #EADDFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); border-radius: 9999px;">
-        <i class="fa-solid fa-shield-halved text-[11px]" style="color: var(--theme-accent, #A855F7);"></i>
-        ${r}
-      </span>
-    `).join("");
+        `;
+      }).join("");
+    } else {
+      rolesHtml = rawUserRoles.map(r => `
+        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-mono font-semibold mr-2 mb-2 shadow-sm" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18); color: var(--theme-accent, #EADDFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); border-radius: 9999px;">
+          <i class="fa-solid fa-shield-halved text-[11px]" style="color: var(--theme-accent, #A855F7);"></i>
+          ${r}
+        </span>
+      `).join("");
+    }
   }
 
   const attributesHtml = renderCustomAttributesData(user.attributes);
