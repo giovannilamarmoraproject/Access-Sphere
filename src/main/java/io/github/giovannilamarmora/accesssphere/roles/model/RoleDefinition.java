@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,11 +21,15 @@ import lombok.NoArgsConstructor;
  * mappando direttamente la tabella relazionale {@code ROLE_DEFINITIONS}.
  *
  * <p>Interconnessioni:
+ *
  * <ul>
- *   <li>Mappato 1:1 con l'entita relazionale {@code RoleDefinitionEntity}.</li>
- *   <li>Utilizzato da {@code OAuth2Client.appRoles} per la configurazione dei ruoli per singolo client.</li>
- *   <li>Utilizzato da {@code RolesController} e {@code RolesService} per il catalogo centralizzato {@code /v1/roles}.</li>
- *   <li>Supporta la deserializzazione resiliente da stringa singola o da oggetto JSON tramite {@link RoleDefinitionDeserializer}.</li>
+ *   <li>Mappato 1:1 con l'entita relazionale {@code RoleDefinitionEntity}.
+ *   <li>Utilizzato da {@code OAuth2Client.appRoles} per la configurazione dei ruoli per singolo
+ *       client.
+ *   <li>Utilizzato da {@code RolesController} e {@code RolesService} per il catalogo centralizzato
+ *       {@code /v1/roles}.
+ *   <li>Supporta la deserializzazione resiliente da stringa singola o da oggetto JSON tramite
+ *       {@link RoleDefinitionDeserializer}.
  * </ul>
  */
 @EqualsAndHashCode(callSuper = true)
@@ -43,26 +46,37 @@ public class RoleDefinition extends GenericDTO {
   private Long id;
 
   @NotBlank(message = "Client ID is required")
-  @Schema(description = "Identificativo del Client OAuth2 proprietario del ruolo", example = "CLIENT-SAMPLE-001")
+  @Schema(
+      description = "Identificativo del Client OAuth2 proprietario del ruolo",
+      example = "CLIENT-SAMPLE-001")
   private String clientId;
 
   @NotBlank(message = "Role name is required")
   @JsonAlias({"name", "roleName", "value"})
-  @Schema(description = "Nome identificativo univoco del ruolo per il client", example = "ROLE_USER")
+  @Schema(
+      description = "Nome identificativo univoco del ruolo per il client",
+      example = "ROLE_USER")
   private String role;
 
-  @Schema(description = "Tipologia di ruolo (USER, ADMIN, TECHNICAL, MANAGER, etc.)", example = "USER")
+  @Schema(
+      description = "Tipologia di ruolo (USER, ADMIN, TECHNICAL, MANAGER, etc.)",
+      example = "USER")
   private String type = AppRoleType.USER.getValue();
 
-  @Schema(description = "Descrizione testuale delle responsabilita del ruolo", example = "Ruolo standard utente applicativo")
+  @Schema(
+      description = "Descrizione testuale delle responsabilita del ruolo",
+      example = "Ruolo standard utente applicativo")
   private String description;
 
   @Schema(
-      description = "Lista dei permessi granulari associati al ruolo (es. [\"users:read\", \"users:write\"])",
+      description =
+          "Lista dei permessi granulari associati al ruolo (es. [\"users:read\", \"users:write\"])",
       example = "[\"users:read\", \"users:write\"]")
   private List<String> permissions = new ArrayList<>();
 
-  @Schema(description = "Conteggio degli utenti a cui e attualmente assegnato il ruolo", example = "5")
+  @Schema(
+      description = "Conteggio degli utenti a cui e attualmente assegnato il ruolo",
+      example = "5")
   private Integer assignedUsersCount;
 
   @Schema(description = "Elenco sintetico degli utenti a cui e attualmente assegnato il ruolo")
@@ -88,7 +102,9 @@ public class RoleDefinition extends GenericDTO {
     this.role = role != null ? role.trim().toUpperCase() : null;
     this.type =
         (type != null && !type.isBlank())
-            ? ("DEFAULT".equalsIgnoreCase(type.trim()) ? AppRoleType.USER.getValue() : type.trim().toUpperCase())
+            ? ("DEFAULT".equalsIgnoreCase(type.trim())
+                ? AppRoleType.USER.getValue()
+                : type.trim().toUpperCase())
             : AppRoleType.USER.getValue();
   }
 
@@ -126,14 +142,13 @@ public class RoleDefinition extends GenericDTO {
    * @param description Descrizione.
    * @param permissions Permessi granulari.
    */
-  public RoleDefinition(String clientId, String role, String type, String description, List<String> permissions) {
+  public RoleDefinition(
+      String clientId, String role, String type, String description, List<String> permissions) {
     this(role, type, description, permissions);
     this.clientId = clientId != null ? clientId.trim().toUpperCase() : null;
   }
 
-  /**
-   * Costruttore completo comprensivo di clientId e conteggio utenti assegnati.
-   */
+  /** Costruttore completo comprensivo di clientId e conteggio utenti assegnati. */
   public RoleDefinition(
       String clientId,
       String role,
@@ -147,9 +162,7 @@ public class RoleDefinition extends GenericDTO {
     this.assignedUsers = assignedUsers;
   }
 
-  /**
-   * Costruttore con id, ruolo, tipo e descrizione.
-   */
+  /** Costruttore con id, ruolo, tipo e descrizione. */
   public RoleDefinition(Long id, String role, String type, String description) {
     this(role, type, description);
     this.id = id;
@@ -164,7 +177,8 @@ public class RoleDefinition extends GenericDTO {
    * @param description Descrizione testuale.
    * @param permissions Permessi granulari associati.
    */
-  public RoleDefinition(Long id, String role, String type, String description, List<String> permissions) {
+  public RoleDefinition(
+      Long id, String role, String type, String description, List<String> permissions) {
     this(role, type, description, permissions);
     this.id = id;
   }

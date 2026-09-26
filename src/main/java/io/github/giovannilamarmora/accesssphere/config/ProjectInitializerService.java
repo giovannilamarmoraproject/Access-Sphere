@@ -14,10 +14,10 @@ import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategor
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
-import io.github.giovannilamarmora.accesssphere.roles.dto.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
+import io.github.giovannilamarmora.accesssphere.roles.model.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.settings.IAppSettingsDAO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
 import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;

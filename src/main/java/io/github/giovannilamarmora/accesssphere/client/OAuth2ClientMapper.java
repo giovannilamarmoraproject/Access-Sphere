@@ -9,7 +9,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.model.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -178,7 +178,8 @@ public class OAuth2ClientMapper {
     String trimmed = raw.trim();
     if (trimmed.startsWith("[")) {
       try {
-        List<RoleDefinition> roles = mapper.readValue(trimmed, new TypeReference<List<RoleDefinition>>() {});
+        List<RoleDefinition> roles =
+            mapper.readValue(trimmed, new TypeReference<List<RoleDefinition>>() {});
         return normalizeAppRoles(roles);
       } catch (Exception ignored) {
         // Fallback in caso di parse JSON non conforme

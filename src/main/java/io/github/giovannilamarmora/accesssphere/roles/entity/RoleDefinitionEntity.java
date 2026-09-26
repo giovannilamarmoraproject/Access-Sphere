@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.roles.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.model.AppRoleType;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -12,15 +12,20 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * Entità relazionale enterprise che definisce un Ruolo applicativo all'interno del catalogo di un Client OAuth2.
- * Sostituisce la serializzazione JSON nei client memorizzando ciascun ruolo applicativo nella tabella dedicata {@code ROLE_DEFINITIONS}.
- * I permessi granulari associati a ciascun ruolo sono memorizzati direttamente nella colonna {@code PERMISSIONS} tramite {@link JsonStringListConverter}.
+ * Entità relazionale enterprise che definisce un Ruolo applicativo all'interno del catalogo di un
+ * Client OAuth2. Sostituisce la serializzazione JSON nei client memorizzando ciascun ruolo
+ * applicativo nella tabella dedicata {@code ROLE_DEFINITIONS}. I permessi granulari associati a
+ * ciascun ruolo sono memorizzati direttamente nella colonna {@code PERMISSIONS} tramite {@link
+ * JsonStringListConverter}.
  *
  * <p>Interconnessioni:
+ *
  * <ul>
- *   <li>Mappato per Client ID ({@code CLIENT_ID}) e nome ruolo ({@code ROLE_NAME}).</li>
- *   <li>I permessi in {@link #permissions} sono serializzati in formato JSON nella colonna {@code PERMISSIONS} della stessa tabella.</li>
- *   <li>Utilizzato da {@code RolesService} per il catalogo, da {@code ClientService} e da {@code UserService} per l'arricchimento RBAC.</li>
+ *   <li>Mappato per Client ID ({@code CLIENT_ID}) e nome ruolo ({@code ROLE_NAME}).
+ *   <li>I permessi in {@link #permissions} sono serializzati in formato JSON nella colonna {@code
+ *       PERMISSIONS} della stessa tabella.
+ *   <li>Utilizzato da {@code RolesService} per il catalogo, da {@code ClientService} e da {@code
+ *       UserService} per l'arricchimento RBAC.
  * </ul>
  */
 @EqualsAndHashCode(callSuper = true)

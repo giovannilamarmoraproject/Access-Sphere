@@ -12,7 +12,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2Author
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.model.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
@@ -47,7 +47,8 @@ class OAuthServiceTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(oAuthService, "oAuth2ClientService", oAuth2ClientService);
-    ReflectionTestUtils.setField(oAuthService, "oAuth2AuthorizationService", oAuth2AuthorizationService);
+    ReflectionTestUtils.setField(
+        oAuthService, "oAuth2AuthorizationService", oAuth2AuthorizationService);
     ReflectionTestUtils.setField(oAuthService, "userService", userService);
 
     oAuth2Client = new OAuth2Client();

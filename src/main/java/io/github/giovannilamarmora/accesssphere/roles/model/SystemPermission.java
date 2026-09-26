@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.roles.dto;
+package io.github.giovannilamarmora.accesssphere.roles.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -7,8 +7,8 @@ import java.util.List;
 import lombok.Getter;
 
 /**
- * Catalogo canonico dei permessi di sistema per il backoffice IAM di Access-Sphere.
- * Modella i privilegi atomici 'risorsa:azione' necessari per autorizzare chiamate amministrative.
+ * Catalogo canonico dei permessi di sistema per il backoffice IAM di Access-Sphere. Modella i
+ * privilegi atomici 'risorsa:azione' necessari per autorizzare chiamate amministrative.
  */
 @Getter
 public enum SystemPermission {
@@ -68,9 +68,6 @@ public enum SystemPermission {
    * @return Lista di permessi stringa.
    */
   public static List<String> getAllStandardPermissions() {
-    return Arrays.stream(values())
-        .filter(p -> p != ALL)
-        .map(SystemPermission::getValue)
-        .toList();
+    return Arrays.stream(values()).filter(p -> p != ALL).map(SystemPermission::getValue).toList();
   }
 }

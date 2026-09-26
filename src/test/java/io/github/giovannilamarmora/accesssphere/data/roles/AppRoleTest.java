@@ -8,7 +8,7 @@ import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientMapper;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.model.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import java.util.List;

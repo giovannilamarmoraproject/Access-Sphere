@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +14,11 @@ import java.util.List;
  * Gestisce in modo polimorfico e resiliente diversi formati in ingresso:
  *
  * <ul>
- *   <li>Oggetto JSON completo (es. {"clientId": "...", "role": "ADMIN", "type": "ADMIN", "permissions": [...]})</li>
- *   <li>Valore testuale semplice (es. "ROLE_USER"), convertito in RoleDefinition con tipo USER</li>
- *   <li>Oggetti con alias per il nome ruolo (es. {"name": "ADMIN"} o {"roleName": "ADMIN"} o {"value": "ADMIN"})</li>
+ *   <li>Oggetto JSON completo (es. {"clientId": "...", "role": "ADMIN", "type": "ADMIN",
+ *       "permissions": [...]})
+ *   <li>Valore testuale semplice (es. "ROLE_USER"), convertito in RoleDefinition con tipo USER
+ *   <li>Oggetti con alias per il nome ruolo (es. {"name": "ADMIN"} o {"roleName": "ADMIN"} o
+ *       {"value": "ADMIN"})
  * </ul>
  */
 public class RoleDefinitionDeserializer extends JsonDeserializer<RoleDefinition> {
