@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientMapper;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import java.io.IOException;
 import java.util.List;
 
@@ -15,19 +15,19 @@ import java.util.List;
  * OAuth2Client}. Supporta in ingresso molteplici formati:
  *
  * <ul>
- *   <li>Array nativo JSON di oggetti {@link AppRole} o di stringhe
+ *   <li>Array nativo JSON di oggetti {@link RoleDefinition} o di stringhe
  *   <li>Stringa JSON serializzata (es. "[{\"role\": \"...\"}]")
  *   <li>Stringa delimitata da virgole o spazi (es. "ROLE_ADMIN, ROLE_TECH")
  * </ul>
  */
-public class AppRolesDeserializer extends JsonDeserializer<List<AppRole>> {
+public class AppRolesDeserializer extends JsonDeserializer<List<RoleDefinition>> {
 
   @Override
-  public List<AppRole> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+  public List<RoleDefinition> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
     JsonToken token = p.currentToken();
 
     if (token == JsonToken.START_ARRAY) {
-      return p.readValueAs(new TypeReference<List<AppRole>>() {});
+      return p.readValueAs(new TypeReference<List<RoleDefinition>>() {});
     }
 
     if (token == JsonToken.VALUE_STRING) {

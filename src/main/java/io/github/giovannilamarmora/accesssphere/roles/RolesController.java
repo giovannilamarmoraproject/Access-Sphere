@@ -1,9 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -192,7 +192,7 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = RoleDefinitionDTO.class))),
+                    schema = @Schema(implementation = RoleDefinition.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -279,7 +279,7 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = RoleDefinitionDTO.class))),
+                    schema = @Schema(implementation = RoleDefinition.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request - duplicate role or missing required fields",
@@ -310,7 +310,7 @@ public interface RolesController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @RequestBody @Valid @NotNull(message = "Role definition is required") RoleDefinitionDTO dto);
+      @RequestBody @Valid @NotNull(message = "Role definition is required") RoleDefinition dto);
 
   @PutMapping(value = "/roles/{role}")
   @Operation(
@@ -326,7 +326,7 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = RoleDefinitionDTO.class))),
+                    schema = @Schema(implementation = RoleDefinition.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -370,7 +370,7 @@ public interface RolesController {
       @RequestParam(value = "clientId")
           @Schema(description = "OAuth2 Client ID")
           String clientId,
-      @RequestBody @Valid @NotNull(message = "Role definition is required") RoleDefinitionDTO dto);
+      @RequestBody @Valid @NotNull(message = "Role definition is required") RoleDefinition dto);
 
   @DeleteMapping(value = "/roles/{role}")
   @Operation(

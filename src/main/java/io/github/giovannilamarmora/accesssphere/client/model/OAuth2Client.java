@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
@@ -117,8 +117,8 @@ public class OAuth2Client extends GenericDTO {
 
   @JsonDeserialize(using = AppRolesDeserializer.class)
   @JsonAlias({"appRoles", "app_roles"})
-  @Schema(description = "Catalogo dei ruoli applicativi (AppRole) e permessi definiti per questo specifico client")
-  private List<AppRole> appRoles;
+  @Schema(description = "Catalogo dei ruoli applicativi e permessi definiti per questo specifico client")
+  private List<RoleDefinition> appRoles;
 
   @JsonAlias({"idToken", "id_token"})
   @Schema(

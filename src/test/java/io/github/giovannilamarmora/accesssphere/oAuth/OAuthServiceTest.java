@@ -12,8 +12,8 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2Author
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,7 @@ class OAuthServiceTest {
     oAuth2Client.setClientId("TEST-CLIENT");
     oAuth2Client.setAuthType(OAuthType.BEARER);
     oAuth2Client.setAppRoles(
-        List.of(new AppRole("ROLE_USER", AppRoleType.USER.getValue(), "Default user role")));
+        List.of(new RoleDefinition("ROLE_USER", AppRoleType.USER.getValue(), "Default user role")));
 
     oAuth2Authorization = new OAuth2Authorization();
     oAuth2Authorization.setClientId("TEST-CLIENT");

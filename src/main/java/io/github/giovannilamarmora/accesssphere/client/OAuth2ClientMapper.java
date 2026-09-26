@@ -9,8 +9,8 @@ import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
@@ -171,25 +171,25 @@ public class OAuth2ClientMapper {
    * @param raw Stringa grezza della colonna APP_ROLES.
    * @return Lista di {@link AppRole} normalizzati, oppure null se raw e' vuoto.
    */
-  public static List<AppRole> parseAppRoles(String raw) {
+  public static List<RoleDefinition> parseAppRoles(String raw) {
     if (ObjectUtils.isEmpty(raw)) {
       return null;
     }
     String trimmed = raw.trim();
     if (trimmed.startsWith("[")) {
       try {
-        List<AppRole> roles = mapper.readValue(trimmed, new TypeReference<List<AppRole>>() {});
+        List<RoleDefinition> roles = mapper.readValue(trimmed, new TypeReference<List<RoleDefinition>>() {});
         return normalizeAppRoles(roles);
       } catch (Exception ignored) {
         // Fallback in caso di parse JSON non conforme
       }
     }
     String[] tokens = trimmed.split("[,\\s]+");
-    List<AppRole> fallbackList = new ArrayList<>();
+    List<RoleDefinition> fallbackList = new ArrayList<>();
     for (String token : tokens) {
       if (!token.isBlank()) {
         fallbackList.add(
-            new AppRole(token.trim().toUpperCase(), AppRoleType.USER.getValue(), null));
+            new RoleDefinition(token.trim().toUpperCase(), AppRoleType.USER.getValue(), null));
       }
     }
     return fallbackList.isEmpty() ? null : fallbackList;
@@ -202,12 +202,12 @@ public class OAuth2ClientMapper {
    * @param roles Lista ruoli da normalizzare.
    * @return Lista di ruoli normalizzati, oppure null se la lista in ingresso e' vuota.
    */
-  public static List<AppRole> normalizeAppRoles(List<AppRole> roles) {
+  public static List<RoleDefinition> normalizeAppRoles(List<RoleDefinition> roles) {
     if (ObjectUtils.isEmpty(roles)) {
       return null;
     }
-    List<AppRole> normalized = new ArrayList<>();
-    for (AppRole r : roles) {
+    List<RoleDefinition> normalized = new ArrayList<>();
+    for (RoleDefinition r : roles) {
       if (r != null && !ObjectUtils.isEmpty(r.getRole())) {
         String roleName = r.getRole().trim().toUpperCase();
         String rawType = r.getType();
@@ -218,7 +218,7 @@ public class OAuth2ClientMapper {
                     : rawType.trim().toUpperCase())
                 : AppRoleType.USER.getValue();
         normalized.add(
-            new AppRole(r.getId(), roleName, type, r.getDescription(), r.getPermissions()));
+            new RoleDefinition(r.getId(), roleName, type, r.getDescription(), r.getPermissions()));
       }
     }
     return normalized.isEmpty() ? null : normalized;

@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import java.util.List;
@@ -69,8 +69,8 @@ class JWTDataTest {
     OAuth2Client client = new OAuth2Client();
     client.setClientId("ACCESS-SPHERE-AUTH");
     client.setJwtExpiration(3600000L);
-    AppRole adminRole =
-        new AppRole("ROLE_ADMIN", "DEFAULT", "Admin", List.of("users:read", "users:write", "*"));
+    RoleDefinition adminRole =
+        new RoleDefinition("ROLE_ADMIN", "DEFAULT", "Admin", List.of("users:read", "users:write", "*"));
     client.setAppRoles(List.of(adminRole));
 
     MockServerHttpRequest request = MockServerHttpRequest.get("/v1/oauth2/token").build();

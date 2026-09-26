@@ -14,10 +14,10 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
-import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -394,7 +394,7 @@ public class RolesService {
       roleEntities = roleDefinitionDAO.findAll();
     }
 
-    List<RoleDefinitionDTO> catalog = new ArrayList<>();
+    List<RoleDefinition> catalog = new ArrayList<>();
     if (roleEntities != null) {
       for (RoleDefinitionEntity roleDef : roleEntities) {
         if (roleDef == null || roleDef.getRole() == null) continue;
@@ -424,8 +424,8 @@ public class RolesService {
           }
         }
 
-        RoleDefinitionDTO def =
-            new RoleDefinitionDTO(
+        RoleDefinition def =
+            new RoleDefinition(
                 cId,
                 roleName,
                 roleDef.getType(),
@@ -507,7 +507,7 @@ public class RolesService {
    */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> createRole(RoleDefinitionDTO dto) {
+  public Mono<ResponseEntity<Response>> createRole(RoleDefinition dto) {
     LOG.info("✨ [ROLES] Creating new role [{}] for client [{}]", dto.getRole(), dto.getClientId());
     if (!techUserService.isTechUser()) {
       LOG.error("❌ Only a tech user can create roles");
@@ -548,8 +548,8 @@ public class RolesService {
             dto.getPermissions() != null ? dto.getPermissions() : List.of());
     roleDefinitionDAO.save(newRoleEntity);
 
-    RoleDefinitionDTO result =
-        new RoleDefinitionDTO(
+    RoleDefinition result =
+        new RoleDefinition(
             clientId,
             roleName,
             type,
@@ -579,7 +579,7 @@ public class RolesService {
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> updateRole(
-      String clientId, String role, RoleDefinitionDTO dto) {
+      String clientId, String role, RoleDefinition dto) {
     LOG.info("🔄 [ROLES] Updating role [{}] for client [{}]", role, clientId);
     if (!techUserService.isTechUser()) {
       LOG.error("❌ Only a tech user can update roles");
@@ -662,8 +662,8 @@ public class RolesService {
       }
     }
 
-    RoleDefinitionDTO result =
-        new RoleDefinitionDTO(
+    RoleDefinition result =
+        new RoleDefinition(
             normalizedClientId,
             newRoleName,
             targetRoleEntity.getType(),

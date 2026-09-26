@@ -5,7 +5,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -121,7 +121,7 @@ public class AdminUserService extends AdminUserConfig {
         .map(
             clientCredential ->
                 clientCredential.getAppRoles().stream()
-                    .map(AppRole::getRole)
+                    .map(RoleDefinition::getRole)
                     .anyMatch(oAuth2Authorization.getRoles()::contains))
         .doOnSuccess(
             aBoolean -> {
@@ -138,7 +138,7 @@ public class AdminUserService extends AdminUserConfig {
     }
     boolean hasTechRole =
         oAuth2Client.getAppRoles().stream()
-            .map(AppRole::getRole)
+            .map(RoleDefinition::getRole)
             .anyMatch(oAuth2Authorization.getRoles()::contains);
     if (hasTechRole) logTechRole(oAuth2Authorization.getSubject());
     return hasTechRole;

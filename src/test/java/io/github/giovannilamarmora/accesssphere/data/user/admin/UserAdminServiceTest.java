@@ -8,12 +8,14 @@ import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
+import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleRequest;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import java.util.List;
@@ -102,7 +104,7 @@ class UserAdminServiceTest {
 
     OAuth2Client credential = new OAuth2Client();
     credential.setClientId("CLIENT-TECH");
-    AppRole appRole = new AppRole();
+    RoleDefinition appRole = new RoleDefinition();
     appRole.setRole("ROLE_ADMIN");
     credential.setAppRoles(List.of(appRole));
     when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-TECH"))
@@ -156,7 +158,7 @@ class UserAdminServiceTest {
 
     OAuth2Client credential = new OAuth2Client();
     credential.setClientId("CLIENT-TECH");
-    AppRole appRole = new AppRole();
+    RoleDefinition appRole = new RoleDefinition();
     appRole.setRole("ROLE_ADMIN");
     credential.setAppRoles(List.of(appRole));
     when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-TECH"))
@@ -232,7 +234,7 @@ class UserAdminServiceTest {
 
     OAuth2Client credential = new OAuth2Client();
     credential.setClientId("CLIENT-TECH");
-    AppRole appRole = new AppRole();
+    RoleDefinition appRole = new RoleDefinition();
     appRole.setRole("ROLE_ADMIN");
     credential.setAppRoles(List.of(appRole));
     when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-TECH"))
@@ -280,11 +282,11 @@ class UserAdminServiceTest {
   @Test
   @DisplayName("register should succeed when user is valid and role exists for client")
   void register_success() {
-    User user = new User();
+    AddUserRequest user = new AddUserRequest();
     user.setUsername("john_doe");
     user.setEmail("john.doe@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(List.of(new UserClientRole("CLIENT-APP", "ACCESS-SPHERE_USER")));
+    user.setRoles(List.of(new UserClientRoleRequest("CLIENT-APP", "ACCESS-SPHERE_USER")));
 
     when(userService.existsByUsername("john_doe")).thenReturn(false);
     when(userService.existsByEmail("john.doe@example.com")).thenReturn(false);
@@ -292,7 +294,7 @@ class UserAdminServiceTest {
     OAuth2Client client = new OAuth2Client();
     client.setClientId("CLIENT-APP");
     client.setEnableRegistration(true);
-    AppRole role = new AppRole("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
+    RoleDefinition role = new RoleDefinition("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
     client.setAppRoles(List.of(role));
 
     when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-APP"))
@@ -328,11 +330,11 @@ class UserAdminServiceTest {
   @Test
   @DisplayName("register should throw BAD_REQUEST when username already exists")
   void register_usernameExists_throwsBadRequest() {
-    User user = new User();
+    AddUserRequest user = new AddUserRequest();
     user.setUsername("existing_user");
     user.setEmail("existing@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(List.of(new UserClientRole("CLIENT-APP", "ACCESS-SPHERE_USER")));
+    user.setRoles(List.of(new UserClientRoleRequest("CLIENT-APP", "ACCESS-SPHERE_USER")));
 
     when(userService.existsByUsername("existing_user")).thenReturn(true);
 
@@ -349,7 +351,7 @@ class UserAdminServiceTest {
   @Test
   @DisplayName("register should throw BAD_REQUEST when roles are null or empty")
   void register_emptyRoles_throwsBadRequest() {
-    User user = new User();
+    AddUserRequest user = new AddUserRequest();
     user.setUsername("john_doe");
     user.setEmail("john.doe@example.com");
     user.setPassword("Strong1Password!");
@@ -368,11 +370,11 @@ class UserAdminServiceTest {
   @Test
   @DisplayName("register should throw FORBIDDEN when client has registration disabled")
   void register_clientRegistrationDisabled_throwsForbidden() {
-    User user = new User();
+    AddUserRequest user = new AddUserRequest();
     user.setUsername("john_doe");
     user.setEmail("john.doe@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(List.of(new UserClientRole("CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
+    user.setRoles(List.of(new UserClientRoleRequest("CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
 
     when(userService.existsByUsername("john_doe")).thenReturn(false);
     when(userService.existsByEmail("john.doe@example.com")).thenReturn(false);
@@ -395,11 +397,11 @@ class UserAdminServiceTest {
   @Test
   @DisplayName("register should throw BAD_REQUEST when requested role does not exist on client")
   void register_roleNotFoundOnClient_throwsBadRequest() {
-    User user = new User();
+    AddUserRequest user = new AddUserRequest();
     user.setUsername("john_doe");
     user.setEmail("john.doe@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(List.of(new UserClientRole("CLIENT-APP", "NON_EXISTING_ROLE")));
+    user.setRoles(List.of(new UserClientRoleRequest("CLIENT-APP", "NON_EXISTING_ROLE")));
 
     when(userService.existsByUsername("john_doe")).thenReturn(false);
     when(userService.existsByEmail("john.doe@example.com")).thenReturn(false);
@@ -407,7 +409,7 @@ class UserAdminServiceTest {
     OAuth2Client client = new OAuth2Client();
     client.setClientId("CLIENT-APP");
     client.setEnableRegistration(true);
-    client.setAppRoles(List.of(new AppRole("ACCESS-SPHERE_USER")));
+    client.setAppRoles(List.of(new RoleDefinition("ACCESS-SPHERE_USER")));
 
     when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-APP"))
         .thenReturn(Mono.just(client));
@@ -445,11 +447,11 @@ class UserAdminServiceTest {
   @DisplayName(
       "register should succeed when client registration is disabled but caller has users:write permission")
   void register_clientRegistrationDisabled_withAdminBearer_bypassesCheckAndSucceeds() {
-    User user = new User();
+    AddUserRequest user = new AddUserRequest();
     user.setUsername("provisioned_user");
     user.setEmail("prov@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(List.of(new UserClientRole("CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
+    user.setRoles(List.of(new UserClientRoleRequest("CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
 
     when(userService.existsByUsername("provisioned_user")).thenReturn(false);
     when(userService.existsByEmail("prov@example.com")).thenReturn(false);
@@ -457,7 +459,7 @@ class UserAdminServiceTest {
     OAuth2Client client = new OAuth2Client();
     client.setClientId("CLIENT-BLOCKED");
     client.setEnableRegistration(false);
-    AppRole role = new AppRole("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
+    RoleDefinition role = new RoleDefinition("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
     client.setAppRoles(List.of(role));
 
     when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-BLOCKED"))
@@ -505,7 +507,7 @@ class UserAdminServiceTest {
     OAuth2Client client = new OAuth2Client();
     client.setClientId("CLIENT-LOCKED");
     client.setEnableRegistration(false);
-    client.setAppRoles(List.of(new AppRole("ACCESS-SPHERE_USER", "USER", "desc", List.of())));
+    client.setAppRoles(List.of(new RoleDefinition("ACCESS-SPHERE_USER", "USER", "desc", List.of())));
 
     OAuth2Authorization adminAuth = new OAuth2Authorization();
     adminAuth.setSubject("admin");

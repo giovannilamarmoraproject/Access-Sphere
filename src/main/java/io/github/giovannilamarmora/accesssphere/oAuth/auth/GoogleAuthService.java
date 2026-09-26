@@ -15,8 +15,8 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
@@ -162,7 +162,7 @@ public class GoogleAuthService {
                     .registerUser(null, userGoogle, oAuth2Client, true)
                     .map(
                         user1 -> {
-                          AppRole defaultRole =
+                          RoleDefinition defaultRole =
                               (oAuth2Client.getAppRoles() == null)
                                   ? null
                                   : oAuth2Client.getAppRoles().stream()

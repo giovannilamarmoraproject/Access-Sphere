@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.roles.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import java.util.List;
 import lombok.AllArgsConstructor;

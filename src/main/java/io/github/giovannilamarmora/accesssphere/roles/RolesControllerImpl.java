@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
-import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -49,13 +49,13 @@ public class RolesControllerImpl implements RolesController {
   }
 
   @Override
-  public Mono<ResponseEntity<Response>> createRole(String bearer, RoleDefinitionDTO dto) {
+  public Mono<ResponseEntity<Response>> createRole(String bearer, RoleDefinition dto) {
     return rolesService.createRole(dto);
   }
 
   @Override
   public Mono<ResponseEntity<Response>> updateRole(
-      String bearer, String role, String clientId, RoleDefinitionDTO dto) {
+      String bearer, String role, String clientId, RoleDefinition dto) {
     return rolesService.updateRole(clientId, role, dto);
   }
 

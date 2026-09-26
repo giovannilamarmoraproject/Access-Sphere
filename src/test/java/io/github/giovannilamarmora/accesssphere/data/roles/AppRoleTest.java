@@ -8,8 +8,8 @@ import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientMapper;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -20,10 +20,10 @@ class AppRoleTest {
   private final ObjectMapper mapper = MapperUtils.mapper().build();
 
   @Test
-  @DisplayName("Should deserialize AppRole from plain string with USER type as default")
+  @DisplayName("Should deserialize RoleDefinition from plain string with USER type as default")
   void shouldDeserializeAppRoleFromString() throws JsonProcessingException {
     String json = "\"ROLE_USER\"";
-    AppRole role = mapper.readValue(json, AppRole.class);
+    RoleDefinition role = mapper.readValue(json, RoleDefinition.class);
 
     assertNotNull(role);
     assertEquals("ROLE_USER", role.getRole());
@@ -32,11 +32,11 @@ class AppRoleTest {
   }
 
   @Test
-  @DisplayName("Should deserialize AppRole from full JSON object")
+  @DisplayName("Should deserialize RoleDefinition from full JSON object")
   void shouldDeserializeAppRoleFromObject() throws JsonProcessingException {
     String json =
         "{\"role\":\"ACCESS_SPHERE_ADMIN\",\"type\":\"ADMIN\",\"description\":\"Administrator Type\"}";
-    AppRole role = mapper.readValue(json, AppRole.class);
+    RoleDefinition role = mapper.readValue(json, RoleDefinition.class);
 
     assertNotNull(role);
     assertEquals("ACCESS_SPHERE_ADMIN", role.getRole());
@@ -47,11 +47,11 @@ class AppRoleTest {
   }
 
   @Test
-  @DisplayName("Should deserialize AppRole with alias name and technical type")
+  @DisplayName("Should deserialize RoleDefinition with alias name and technical type")
   void shouldDeserializeAppRoleWithAlias() throws JsonProcessingException {
     String json =
         "{\"name\":\"ROLE_TECH\",\"type\":\"technical\",\"description\":\"Technical role\"}";
-    AppRole role = mapper.readValue(json, AppRole.class);
+    RoleDefinition role = mapper.readValue(json, RoleDefinition.class);
 
     assertNotNull(role);
     assertEquals("ROLE_TECH", role.getRole());
@@ -60,7 +60,7 @@ class AppRoleTest {
   }
 
   @Test
-  @DisplayName("Should deserialize List of AppRoles with mixed formats in ClientCredential")
+  @DisplayName("Should deserialize List of RoleDefinitions with mixed formats in ClientCredential")
   void shouldDeserializeMixedAppRolesList() throws JsonProcessingException {
     String json =
         "{\"clientId\":\"TEST-CLIENT\",\"appRoles\":[\"ROLE_USER\",{\"role\":\"ROLE_TECH\",\"type\":\"TECHNICAL\"}]}";
@@ -82,7 +82,7 @@ class AppRoleTest {
     assertNull(OAuth2ClientMapper.parseAppRoles(""));
 
     // JSON array
-    List<AppRole> parsedJson =
+    List<RoleDefinition> parsedJson =
         OAuth2ClientMapper.parseAppRoles(
             "[{\"role\":\"ROLE_USER\"},{\"role\":\"ROLE_ADMIN\",\"type\":\"ADMIN\"}]");
     assertNotNull(parsedJson);
@@ -91,7 +91,7 @@ class AppRoleTest {
     assertEquals("USER", parsedJson.get(0).getType());
 
     // Legacy space/comma separated strings
-    List<AppRole> parsedDelimited =
+    List<RoleDefinition> parsedDelimited =
         OAuth2ClientMapper.parseAppRoles("ROLE_ADMIN, ROLE_TECH ROLE_USER");
     assertNotNull(parsedDelimited);
     assertEquals(3, parsedDelimited.size());
@@ -108,7 +108,7 @@ class AppRoleTest {
         OAuthException.class, () -> OAuthValidator.validateClientRoles(clientWithoutRoles));
 
     OAuth2Client clientWithUserRole = new OAuth2Client();
-    clientWithUserRole.setAppRoles(List.of(new AppRole("ROLE_USER", "USER", "User role")));
+    clientWithUserRole.setAppRoles(List.of(new RoleDefinition("ROLE_USER", "USER", "User role")));
     assertDoesNotThrow(() -> OAuthValidator.validateClientRoles(clientWithUserRole));
   }
 }

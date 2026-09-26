@@ -18,8 +18,8 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2
 import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.RoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
@@ -159,19 +159,18 @@ public class UserAdminService {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> register(String bearer, AddUserRequest addUserRequest) {
-    UserClientRole userClientRole = new UserClientRole();
     LOG.info(
         "👤 [USER ADMIN] Starting user registration for username: {}, email: {}",
-        addUserRequest.getUsername(),
-        addUserRequest.getEmail());
+        addUserRequest != null ? addUserRequest.getUsername() : "null",
+        addUserRequest != null ? addUserRequest.getEmail() : "null");
 
-    UserValidator.validateUserData(addUserRequest);
     // TODO: Controllo se l'utente ha i permessi di registrarsi, controllando prima se l'utente è
     // loggato e sta cercando di registrare un nuovo utente tramite il permesso user:write o se il
     // client ha la registrazione abilitata
 
     return Mono.defer(
         () -> {
+          UserValidator.validateUserData(addUserRequest);
           User user = UserMapper.toModel(addUserRequest);
 
           return Mono.fromCallable(
@@ -313,9 +312,9 @@ public class UserAdminService {
                   UserValidator.validateClientRegistrationEnabled(client);
                 }
 
-                List<AppRole> clientAppRoles =
+                List<RoleDefinition> clientAppRoles =
                     client.getAppRoles() != null ? client.getAppRoles() : List.of();
-                AppRole matched =
+                RoleDefinition matched =
                     clientAppRoles.stream()
                         .filter(ar -> ar != null && ar.matches(r.getRole()))
                         .findFirst()
@@ -371,9 +370,9 @@ public class UserAdminService {
             UserValidator.validateClientRegistrationEnabled(oAuth2Client);
           }
 
-          List<AppRole> clientRoles =
+          List<RoleDefinition> clientRoles =
               oAuth2Client.getAppRoles() != null ? oAuth2Client.getAppRoles() : List.of();
-          List<AppRole> userRoles =
+          List<RoleDefinition> userRoles =
               clientRoles.stream().filter(appRole -> appRole != null && appRole.isUser()).toList();
 
           if (!ObjectToolkit.isNullOrEmpty(bearer)) {

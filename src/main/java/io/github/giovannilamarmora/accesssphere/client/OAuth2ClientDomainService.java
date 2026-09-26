@@ -7,7 +7,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -85,7 +85,7 @@ public class OAuth2ClientDomainService {
       return Mono.error(new OAuthException(ExceptionMap.ERR_OAUTH_404, "Clients not found!"));
     }
     List<RoleDefinitionEntity> allRoles = roleDefinitionDAO.findAll();
-    Map<String, List<AppRole>> rolesByClient =
+    Map<String, List<RoleDefinition>> rolesByClient =
         allRoles != null
             ? allRoles.stream()
                 .filter(r -> r.getClientId() != null)
@@ -94,7 +94,7 @@ public class OAuth2ClientDomainService {
                         r -> r.getClientId().toUpperCase(),
                         Collectors.mapping(
                             r ->
-                                new AppRole(
+                                new RoleDefinition(
                                     r.getRole(),
                                     r.getType(),
                                     r.getDescription(),
@@ -130,7 +130,7 @@ public class OAuth2ClientDomainService {
 
     // Persiste le definizioni ruoli su ROLE_DEFINITIONS
     if (oAuth2Client.getAppRoles() != null) {
-      for (AppRole appRole : oAuth2Client.getAppRoles()) {
+      for (RoleDefinition appRole : oAuth2Client.getAppRoles()) {
         if (appRole != null && appRole.getRole() != null) {
           String rName = appRole.getRole().trim().toUpperCase();
           if (!roleDefinitionDAO.existsByClientIdAndRole(oAuth2Client.getClientId(), rName)) {
@@ -169,7 +169,7 @@ public class OAuth2ClientDomainService {
 
       // Sincronizza i ruoli nella tabella relazionale ROLE_DEFINITIONS
       if (oAuth2Client.getAppRoles() != null) {
-        for (AppRole appRole : oAuth2Client.getAppRoles()) {
+        for (RoleDefinition appRole : oAuth2Client.getAppRoles()) {
           if (appRole != null && appRole.getRole() != null) {
             String rName = appRole.getRole().trim().toUpperCase();
             Optional<RoleDefinitionEntity> existingRole =
@@ -238,7 +238,7 @@ public class OAuth2ClientDomainService {
           roles.stream()
               .map(
                   r ->
-                      new AppRole(r.getRole(), r.getType(), r.getDescription(), r.getPermissions()))
+                      new RoleDefinition(r.getRole(), r.getType(), r.getDescription(), r.getPermissions()))
               .toList());
     }
   }

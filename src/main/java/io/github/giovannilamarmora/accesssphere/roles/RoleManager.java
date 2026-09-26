@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.roles;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -29,7 +29,7 @@ public class RoleManager {
     boolean hasTechRole =
         oAuth2Client.getAppRoles().stream()
             .filter(ar -> ar != null && ar.getRole() != null)
-            .map(AppRole::getRole)
+            .map(RoleDefinition::getRole)
             .anyMatch(oAuth2Authorization.getRoles()::contains);
     if (hasTechRole)
       LOG.info("The subject {} has the correct Roles", oAuth2Authorization.getSubjectType());

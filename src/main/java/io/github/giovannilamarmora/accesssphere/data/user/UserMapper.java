@@ -5,7 +5,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -75,8 +75,17 @@ public class UserMapper {
   }
 
   public static User toModel(AddUserRequest addUserRequest) {
+    if (addUserRequest == null) {
+      return null;
+    }
     User user = new User();
-    BeanUtils.copyProperties(addUserRequest, user);
+    BeanUtils.copyProperties(addUserRequest, user, "roles");
+    if (addUserRequest.getRoles() != null) {
+      user.setRoles(
+          addUserRequest.getRoles().stream()
+              .map(r -> new UserClientRole(r.getClientId(), r.getRole()))
+              .toList());
+    }
     return user;
   }
 

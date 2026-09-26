@@ -3,7 +3,7 @@ package io.github.giovannilamarmora.accesssphere.grpc;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -18,7 +18,7 @@ public class GrpcMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static JWTData fromGoogleDataToJWTData(
       GoogleIdToken.Payload payload, OAuth2Client oAuth2Client) {
-    AppRole defaultRole =
+    RoleDefinition defaultRole =
         (oAuth2Client.getAppRoles() == null)
             ? null
             : oAuth2Client.getAppRoles().stream()
