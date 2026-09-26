@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -8,8 +9,10 @@ import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDA
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.util.List;
 import java.util.Objects;
@@ -45,8 +48,33 @@ public class PermissionRoleManager {
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
 
-  public UserClientRole validateAndEnrichRoles() {
-    return null;
+  /**
+   * Verifica se l'autorizzazione dell'operatore possiede i ruoli o i privilegi tecnici per operare sul client specificato.
+   *
+   * @param auth Dati del token di autorizzazione dell'operatore.
+   * @param client Configurazione del Client OAuth2 target.
+   * @return true se l'operatore e autorizzato, false altrimenti.
+   */
+  public boolean hasPermissionRoles(OAuth2Authorization auth, OAuth2Client client) {
+    if (auth == null) {
+      return false;
+    }
+    if (SubjectType.TECHNICAL.equals(auth.getSubjectType()) || isSuperAdmin(auth)) {
+      LOG.info("🛡️ [SECURITY] The subject {} has Technical/SuperAdmin roles", auth.getSubjectType());
+      return true;
+    }
+    if (client == null || client.getAppRoles() == null || auth.getRoles() == null) {
+      return false;
+    }
+    boolean hasTechRole =
+        client.getAppRoles().stream()
+            .filter(ar -> ar != null && ar.getRole() != null)
+            .map(RoleDefinition::getRole)
+            .anyMatch(auth.getRoles()::contains);
+    if (hasTechRole) {
+      LOG.info("🛡️ [SECURITY] The subject {} has the required roles for client {}", auth.getSubjectType(), client.getClientId());
+    }
+    return hasTechRole;
   }
 
   /**

@@ -13,7 +13,6 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
@@ -86,7 +85,7 @@ public class RolesService {
    */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> changeRoles(String identifier, UserRoles roles) {
+  public Mono<ResponseEntity<Response>> changeRoles(String identifier, List<UserClientRole> roles) {
     LOG.info("👥 [ROLES] Changing user roles process started, identifier: {}", identifier);
     if (!techUserService.isTechUser()) {
       LOG.error("❌ Only a tech user can change the user roles {}", identifier);
@@ -136,10 +135,10 @@ public class RolesService {
               List<String> distinctRoleNames = new ArrayList<>();
 
               // 2. Elaborazione ruoli ricevuti
-              if (roles != null && roles.getRoles() != null && !roles.getRoles().isEmpty()) {
+              if (roles != null && !roles.isEmpty()) {
                 LOG.info(
-                    "👥 [ROLES] Processing roles payload with {} entries", roles.getRoles().size());
-                for (UserClientRole cr : roles.getRoles()) {
+                    "👥 [ROLES] Processing roles payload with {} entries", roles.size());
+                for (UserClientRole cr : roles) {
                   if (cr == null || cr.getRole() == null || cr.getRole().isBlank()) continue;
                   String roleName = cr.getRole().trim().toUpperCase();
 

@@ -16,7 +16,6 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.RolesService;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,7 +71,7 @@ class RolesServiceTest {
   void changeRoles_notTechUser_throwsForbidden() {
     when(techUserService.isTechUser()).thenReturn(false);
 
-    UserRoles userRoles = new UserRoles(List.of(new UserClientRole("ROLE_ADMIN")));
+    List<UserClientRole> userRoles = List.of(new UserClientRole("ROLE_ADMIN"));
     assertThrows(OAuthException.class, () -> rolesService.changeRoles("user-123", userRoles));
   }
 
@@ -103,15 +102,14 @@ class RolesServiceTest {
     when(userService.updateUser(eq("user-123"), userCaptor.capture()))
         .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
 
-    UserRoles payload =
-        new UserRoles(
-            List.of(
-                new UserClientRole("linkatutto", "LINKATUTTO_ADMIN"),
-                new UserClientRole("linkatutto", "LINKATUTTO_ADMIN"), // duplicato intenzionale
-                new UserClientRole("access_sphere", "ACCESS_SPHERE_ADMIN"),
-                new UserClientRole("SUPER_ADMIN"), // ruolo di sistema
-                new UserClientRole("UNKNOWN_RANDOM_ROLE") // non valido, deve essere scartato
-                ));
+    List<UserClientRole> payload =
+        List.of(
+            new UserClientRole("linkatutto", "LINKATUTTO_ADMIN"),
+            new UserClientRole("linkatutto", "LINKATUTTO_ADMIN"), // duplicato intenzionale
+            new UserClientRole("access_sphere", "ACCESS_SPHERE_ADMIN"),
+            new UserClientRole("SUPER_ADMIN"), // ruolo di sistema
+            new UserClientRole("UNKNOWN_RANDOM_ROLE") // non valido, deve essere scartato
+        );
 
     StepVerifier.create(rolesService.changeRoles("user-123", payload))
         .assertNext(
@@ -158,11 +156,10 @@ class RolesServiceTest {
     when(userService.updateUser(eq("user-456"), any(User.class)))
         .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
 
-    UserRoles payload = new UserRoles();
-    payload.setClientRoles(
+    List<UserClientRole> payload =
         List.of(
             new UserClientRole("linkatutto", "LINKATUTTO_ADMIN"),
-            new UserClientRole("ACCESS-SPHERE-AUTH", "ROLE_ADMIN")));
+            new UserClientRole("ACCESS-SPHERE-AUTH", "ROLE_ADMIN"));
 
     StepVerifier.create(rolesService.changeRoles("user-456", payload))
         .assertNext(

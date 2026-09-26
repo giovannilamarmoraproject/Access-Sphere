@@ -16,7 +16,6 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
-import io.github.giovannilamarmora.accesssphere.roles.RoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
@@ -380,7 +379,7 @@ public class UserAdminService {
             OAuth2Authorization tokenData =
                 oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
 
-            if (RoleManager.hasPermissionRoles(tokenData, oAuth2Client)
+            if (permissionRoleManager.hasPermissionRoles(tokenData, oAuth2Client)
                 && !ObjectToolkit.isNullOrEmpty(user.getRoles())) {
               userRoles =
                   clientRoles.stream()

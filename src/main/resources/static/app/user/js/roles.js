@@ -590,7 +590,7 @@ function changeRoles() {
   const url = config.users_url + "/" + encodeURIComponent(identifier) + "/roles";
   const token = getCookieOrStorage(config.access_token);
 
-  // Sincronizzazione atomica sia del campo 'roles' che dell'alias 'clientRoles'
+  // Invio diretto della lista dei ruoli client-scoped
   const clientRolesList = currentClientRoles.map((cr) => ({
     clientId: cr.clientId,
     role: cr.role,
@@ -598,10 +598,7 @@ function changeRoles() {
     description: cr.description || null,
     permissions: cr.permissions || []
   }));
-  const payload = {
-    roles: clientRolesList,
-    clientRoles: clientRolesList
-  };
+  const payload = clientRolesList;
 
   fetch(url, {
     method: "PUT",

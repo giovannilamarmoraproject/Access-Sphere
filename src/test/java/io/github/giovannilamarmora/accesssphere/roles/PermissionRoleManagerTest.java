@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.roles;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
@@ -10,6 +11,8 @@ import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDA
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -146,5 +149,35 @@ class PermissionRoleManagerTest {
     assertFalse(permissionRoleManager.canWriteUsers(guestAuth, "LINKATUTTO-ADMIN"));
 
     assertFalse(permissionRoleManager.canWriteUsers(null, "LINKATUTTO-ADMIN"));
+  }
+
+  @Test
+  @DisplayName("hasPermissionRoles should return true for technical or matching roles, false otherwise")
+  void testHasPermissionRoles() {
+    OAuth2Client client = new OAuth2Client();
+    client.setClientId("CLIENT-TEST");
+    client.setAppRoles(List.of(new RoleDefinition("ROLE_ADMIN", "ADMIN", "desc", List.of())));
+
+    // null auth
+    assertFalse(permissionRoleManager.hasPermissionRoles(null, client));
+
+    // technical auth
+    OAuth2Authorization tech = new OAuth2Authorization();
+    tech.setSubjectType(SubjectType.TECHNICAL);
+    assertTrue(permissionRoleManager.hasPermissionRoles(tech, client));
+
+    // matching role
+    OAuth2Authorization matchingAuth = new OAuth2Authorization();
+    matchingAuth.setRoles(List.of("ROLE_ADMIN"));
+    assertTrue(permissionRoleManager.hasPermissionRoles(matchingAuth, client));
+
+    // non-matching role
+    OAuth2Authorization nonMatchingAuth = new OAuth2Authorization();
+    nonMatchingAuth.setRoles(List.of("ROLE_USER"));
+    assertFalse(permissionRoleManager.hasPermissionRoles(nonMatchingAuth, client));
+
+    // client with null appRoles
+    client.setAppRoles(null);
+    assertFalse(permissionRoleManager.hasPermissionRoles(matchingAuth, client));
   }
 }
