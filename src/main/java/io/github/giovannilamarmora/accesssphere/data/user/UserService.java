@@ -8,7 +8,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
@@ -275,8 +275,8 @@ public class UserService {
 
   /**
    * Arricchisce il DTO {@link User} con i ruoli contestualizzati per Client OAuth2 ({@link
-   * UserClientRoleDTO}) recuperati dalla tabella USER_CLIENT_ROLE, estraendo tipologia, descrizione
-   * e permessi granulari dalla tabella relazionale ROLE_DEFINITIONS (con fallback su configurazione
+   * UserClientRole}) recuperati dalla tabella USER_CLIENT_ROLE, estraendo tipologia, descrizione e
+   * permessi granulari dalla tabella relazionale ROLE_DEFINITIONS (con fallback su configurazione
    * legacy del client). Sincronizza inoltre la lista legacy flat {@code roles}.
    *
    * @param user Oggetto utente da arricchire.
@@ -287,11 +287,11 @@ public class UserService {
     List<UserClientRoleEntity> ucrEntities =
         userClientRoleDAO.findByUserIdentifier(user.getIdentifier());
     if (ucrEntities != null && !ucrEntities.isEmpty()) {
-      List<UserClientRoleDTO> clientRoleDTOs =
+      List<UserClientRole> clientRoleDTOs =
           ucrEntities.stream()
               .map(
                   ucr -> {
-                    UserClientRoleDTO dto = new UserClientRoleDTO(ucr.getClientId(), ucr.getRole());
+                    UserClientRole dto = new UserClientRole(ucr.getClientId(), ucr.getRole());
                     Optional<RoleDefinitionEntity> roleDef =
                         roleDefinitionDAO.findByClientIdAndRole(ucr.getClientId(), ucr.getRole());
                     if (roleDef.isPresent()) {
@@ -345,12 +345,11 @@ public class UserService {
       if (user == null || user.getIdentifier() == null) continue;
       List<UserClientRoleEntity> ucrEntities = ucrByUser.get(user.getIdentifier());
       if (ucrEntities != null && !ucrEntities.isEmpty()) {
-        List<UserClientRoleDTO> clientRoleDTOs =
+        List<UserClientRole> clientRoleDTOs =
             ucrEntities.stream()
                 .map(
                     ucr -> {
-                      UserClientRoleDTO dto =
-                          new UserClientRoleDTO(ucr.getClientId(), ucr.getRole());
+                      UserClientRole dto = new UserClientRole(ucr.getClientId(), ucr.getRole());
                       String key =
                           (ucr.getClientId() != null ? ucr.getClientId().trim().toUpperCase() : "")
                               + ":"

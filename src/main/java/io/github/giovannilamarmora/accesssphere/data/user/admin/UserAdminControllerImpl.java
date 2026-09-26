@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.user.admin;
 
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -42,9 +42,9 @@ public class UserAdminControllerImpl implements UserAdminController {
   @Autowired private UserAdminService userAdminService;
 
   /**
-   * Endpoint per ottenere l'elenco degli utenti registrati nel sistema IAM.
-   * L'operatore tecnico riceve l'elenco completo, mentre per gli utenti normali
-   * l'utenza tecnica di sistema viene automaticamente filtrata a livello di backend.
+   * Endpoint per ottenere l'elenco degli utenti registrati nel sistema IAM. L'operatore tecnico
+   * riceve l'elenco completo, mentre per gli utenti normali l'utenza tecnica di sistema viene
+   * automaticamente filtrata a livello di backend.
    *
    * @param bearer Token di autorizzazione opzionale dell'operatore.
    * @param request Richiesta HTTP server reattiva.
@@ -75,7 +75,7 @@ public class UserAdminControllerImpl implements UserAdminController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> registerUser(String bearer, User user) {
+  public Mono<ResponseEntity<Response>> registerUser(String bearer, AddUserRequest user) {
     LOG.info(
         "🌐 [ADMIN CONTROLLER] Invoking RegisterUser endpoint for username: {}",
         user.getUsername());
@@ -91,20 +91,6 @@ public class UserAdminControllerImpl implements UserAdminController {
                       registeredUser);
               return ResponseEntity.status(HttpStatus.CREATED).body(response);
             });
-  }
-
-  @Override
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> registerUserLegacy(
-      String bearer,
-      User user,
-      String clientId,
-      String registration_token,
-      Boolean assignNewClient) {
-    LOG.info(
-        "🌐 [ADMIN CONTROLLER] Invoking RegisterUser (Deprecated /users/register) for username: {}",
-        user.getUsername());
-    return registerUser(bearer, user);
   }
 
   /**

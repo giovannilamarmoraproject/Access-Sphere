@@ -15,7 +15,7 @@ import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
@@ -174,7 +174,7 @@ public class MFAAuthenticationService {
                     jwtData.setRoles(
                         user1.getRoles() != null
                             ? user1.getRoles().stream()
-                                .map(UserClientRoleDTO::getRole)
+                                .map(UserClientRole::getRole)
                                 .filter(Objects::nonNull)
                                 .toList()
                             : null);

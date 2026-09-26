@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.web.WebManager;
@@ -92,21 +93,20 @@ public class JWTData {
 
     if (user != null && user.getRoles() != null && !user.getRoles().isEmpty()) {
       String targetClientId = oAuth2Client != null ? oAuth2Client.getClientId() : null;
-      List<io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO>
-          matchingClientRoles =
-              targetClientId == null
-                  ? List.of()
-                  : user.getRoles().stream()
-                      .filter(
-                          cr ->
-                              cr.getClientId() != null
-                                  && cr.getClientId().equalsIgnoreCase(targetClientId))
-                      .toList();
+      List<UserClientRole> matchingClientRoles =
+          targetClientId == null
+              ? List.of()
+              : user.getRoles().stream()
+                  .filter(
+                      cr ->
+                          cr.getClientId() != null
+                              && cr.getClientId().equalsIgnoreCase(targetClientId))
+                  .toList();
 
       if (!matchingClientRoles.isEmpty()) {
         effectiveRoles =
             matchingClientRoles.stream()
-                .map(io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO::getRole)
+                .map(UserClientRole::getRole)
                 .filter(java.util.Objects::nonNull)
                 .distinct()
                 .toList();
@@ -125,7 +125,7 @@ public class JWTData {
     if (ObjectToolkit.isNullOrEmpty(effectiveRoles) && user != null && user.getRoles() != null) {
       effectiveRoles =
           user.getRoles().stream()
-              .map(io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO::getRole)
+              .map(UserClientRole::getRole)
               .filter(java.util.Objects::nonNull)
               .distinct()
               .toList();

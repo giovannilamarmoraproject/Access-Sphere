@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.user.admin;
 
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.UserListResponse;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.UserResponse;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
@@ -111,61 +111,7 @@ public interface UserAdminController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @RequestBody @Valid @NotNull(message = "User cannot be null") User user);
-
-  @Deprecated(since = "2.0.0")
-  @PostMapping("/users/register")
-  @Operation(
-      description = "Deprecated: use POST /v1/users instead. Register a new user into IAM system",
-      summary = "User Registration (Deprecated)",
-      tags = OpenAPI.Tag.USERS,
-      deprecated = true)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "201",
-            description = "User registered successfully",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = UserResponse.class))),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Bad Request",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class))),
-        @ApiResponse(
-            responseCode = "409",
-            description = "Conflict, user already exists",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class)))
-      })
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> registerUserLegacy(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
-          @Valid
-          @Schema(
-              description = OpenAPI.Params.Description.BEARER,
-              example = OpenAPI.Params.Example.BEARER)
-          String bearer,
-      @RequestBody @Valid @NotNull(message = "User cannot be null") User user,
-      @RequestParam(value = "client_id", required = false)
-          @Schema(
-              description = OpenAPI.Params.Description.CLIENT_ID,
-              example = OpenAPI.Params.Example.CLIENT_ID)
-          String clientId,
-      @RequestParam(value = "registration_token", required = false)
-          @Schema(
-              description = OpenAPI.Params.Description.REGISTRATION_TOKEN,
-              example = OpenAPI.Params.Example.REGISTRATION_TOKEN)
-          String registration_token,
-      @RequestParam(value = "assign_new_client", defaultValue = "false", required = false)
-          @Schema(description = OpenAPI.Params.Description.ASSIGN_NEW_CLIENT, example = "false")
-          Boolean assignNewClient);
+      @RequestBody @Valid @NotNull(message = "User cannot be null") AddUserRequest user);
 
   @DeleteMapping("/users/{identifier}")
   @Operation(

@@ -8,6 +8,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
+import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -18,7 +19,7 @@ import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.RoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
@@ -149,84 +150,97 @@ public class UserAdminService {
 
   /**
    * Registra un nuovo utente nel sistema IAM validando anagrafica, regex, ruoli applicativi
-   * configurati per ciascun client specificato e applicando il blocco preventivo qualora
-   * la registrazione sia disabilitata sul client.
+   * configurati per ciascun client specificato e applicando il blocco preventivo qualora la
+   * registrazione sia disabilitata sul client.
    *
    * @param bearer Token Bearer opzionale per operazioni privilegiate da operatore tecnico.
-   * @param user DTO contenente i dati anagrafici, credenziali e ruoli del nuovo utente.
+   * @param addUserRequest DTO contenente i dati anagrafici, credenziali e ruoli del nuovo utente.
    * @return Mono contenente il DTO {@link User} registrato e salvato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> register(String bearer, User user) {
-    return Mono.defer(() -> {
-      LOG.info(
-          "👤 [USER ADMIN] Starting user registration for username: {}, email: {}",
-          user != null ? user.getUsername() : "null",
-          user != null ? user.getEmail() : "null");
+  public Mono<User> register(String bearer, AddUserRequest addUserRequest) {
+    UserClientRole userClientRole = new UserClientRole();
+    LOG.info(
+        "👤 [USER ADMIN] Starting user registration for username: {}, email: {}",
+        addUserRequest.getUsername(),
+        addUserRequest.getEmail());
 
-      UserValidator.validateUserData(user);
+    UserValidator.validateUserData(addUserRequest);
+    // TODO: Controllo se l'utente ha i permessi di registrarsi, controllando prima se l'utente è
+    // loggato e sta cercando di registrare un nuovo utente tramite il permesso user:write o se il
+    // client ha la registrazione abilitata
 
-      if (ObjectToolkit.isNullOrEmpty(user.getRoles())) {
-        LOG.error("❌ Registration rejected: user roles are required");
-        return Mono.error(new UserException(ExceptionMap.ERR_USER_400, "User roles must be provided!"));
-      }
+    return Mono.defer(
+        () -> {
+          User user = UserMapper.toModel(addUserRequest);
 
-      return Mono.fromCallable(() -> {
-            if (userService.existsByUsername(user.getUsername())) {
-              LOG.error("👤 The user already exists for username: {}", user.getUsername());
-              throw new UserException(
-                  ExceptionMap.ERR_USER_400, "User %s already exists".formatted(user.getUsername()));
-            }
-            if (userService.existsByEmail(user.getEmail())) {
-              LOG.error("👤 The user already exists for email: {}", user.getEmail());
-              throw new UserException(
-                  ExceptionMap.ERR_USER_400, "Email %s already exists".formatted(user.getEmail()));
-            }
-            return true;
-          })
-          .subscribeOn(Schedulers.boundedElastic())
-          .flatMap(ignored -> validateAndEnrichRoles(user.getRoles(), bearer))
-          .flatMap(enrichedRoles -> {
-            user.setRoles(enrichedRoles);
-            return Mono.fromCallable(() -> {
-                  UserEntity userEntity = UserMapper.toEntity(user);
-                  if (!ObjectToolkit.isNullOrEmpty(user.getPassword())) {
-                    userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-                  }
-                  String identifier = UUID.randomUUID().toString();
-                  user.setIdentifier(identifier);
-                  userEntity.setIdentifier(identifier);
-                  user.setBlocked(false);
-                  user.setConfirmed(false);
+          return Mono.fromCallable(
+                  () -> {
+                    if (userService.existsByUsername(user.getUsername())) {
+                      LOG.error("👤 The user already exists for username: {}", user.getUsername());
+                      throw new UserException(
+                          ExceptionMap.ERR_USER_400,
+                          "User %s already exists".formatted(user.getUsername()));
+                    }
+                    if (userService.existsByEmail(user.getEmail())) {
+                      LOG.error("👤 The user already exists for email: {}", user.getEmail());
+                      throw new UserException(
+                          ExceptionMap.ERR_USER_400,
+                          "Email %s already exists".formatted(user.getEmail()));
+                    }
+                    return true;
+                  })
+              .subscribeOn(Schedulers.boundedElastic())
+              .flatMap(ignored -> validateAndEnrichRoles(user.getRoles(), bearer))
+              .flatMap(
+                  enrichedRoles -> {
+                    user.setRoles(enrichedRoles);
+                    return Mono.fromCallable(
+                            () -> {
+                              UserEntity userEntity = UserMapper.toEntity(user);
+                              if (!ObjectToolkit.isNullOrEmpty(user.getPassword())) {
+                                userEntity.setPassword(
+                                    bCryptPasswordEncoder.encode(user.getPassword()));
+                              }
+                              String identifier = UUID.randomUUID().toString();
+                              user.setIdentifier(identifier);
+                              userEntity.setIdentifier(identifier);
+                              user.setBlocked(false);
+                              user.setConfirmed(false);
 
-                  userService.saveUserEntityIntoDatabase(userEntity);
+                              userService.saveUserEntityIntoDatabase(userEntity);
 
-                  List<UserClientRoleEntity> ucrEntities = enrichedRoles.stream()
-                      .map(r -> new UserClientRoleEntity(identifier, r.getClientId(), r.getRole()))
-                      .toList();
-                  userClientRoleDAO.saveAll(ucrEntities);
+                              List<UserClientRoleEntity> ucrEntities =
+                                  enrichedRoles.stream()
+                                      .map(
+                                          r ->
+                                              new UserClientRoleEntity(
+                                                  identifier, r.getClientId(), r.getRole()))
+                                      .toList();
+                              userClientRoleDAO.saveAll(ucrEntities);
 
-                  return user;
-                })
-                .subscribeOn(Schedulers.boundedElastic());
-          })
-          .doOnSuccess(
-              registeredUser ->
-                  LOG.info(
-                      "✅ [USER ADMIN] Registration successfully completed for username: {}, email: {}",
-                      registeredUser.getUsername(),
-                      registeredUser.getEmail()));
-    });
+                              return user;
+                            })
+                        .subscribeOn(Schedulers.boundedElastic());
+                  })
+              .doOnSuccess(
+                  registeredUser ->
+                      LOG.info(
+                          "✅ [USER ADMIN] Registration successfully completed for username: {}, email: {}",
+                          registeredUser.getUsername(),
+                          registeredUser.getEmail()));
+        });
   }
 
   /**
-   * Determina se l'operatore chiamante possiede i privilegi amministrativi per bypassare il
-   * blocco preventivo della registrazione autonoma (Super Admin, utente tecnico o utente dotato
-   * del permesso 'users:write' / '*').
+   * Determina se l'operatore chiamante possiede i privilegi amministrativi per bypassare il blocco
+   * preventivo della registrazione autonoma (Super Admin, utente tecnico o utente dotato del
+   * permesso 'users:write' / '*').
    *
    * @param bearer Token di autorizzazione opzionale dell'operatore.
    * @param targetClientId Identificativo del client OAuth2 bersaglio.
-   * @return true se l'operatore e autorizzato ad aggiungere utenti anche con registrazione disattivata.
+   * @return true se l'operatore e autorizzato ad aggiungere utenti anche con registrazione
+   *     disattivata.
    */
   public boolean canBypassRegistrationCheck(String bearer, String targetClientId) {
     if (techUserService.isTechUser()) {
@@ -242,96 +256,98 @@ public class UserAdminService {
       }
       return permissionRoleManager.canWriteUsers(tokenData, targetClientId);
     } catch (Exception e) {
-      LOG.debug("Bearer token is not an authorized operator token for registration bypass: {}", e.getMessage());
+      LOG.debug(
+          "Bearer token is not an authorized operator token for registration bypass: {}",
+          e.getMessage());
       return false;
     }
   }
 
   /**
-   * Convalida che ciascun ruolo passato nel payload appartenga a un client esistente con registrazione
-   * abilitata (o bypassata se l'operatore ha permessi users:write/admin), e che il ruolo sia
-   * effettivamente presente nel catalogo ruoli del client.
+   * Convalida che ciascun ruolo passato nel payload appartenga a un client esistente con
+   * registrazione abilitata (o bypassata se l'operatore ha permessi users:write/admin), e che il
+   * ruolo sia effettivamente presente nel catalogo ruoli del client.
    *
    * @param requestedRoles Lista di ruoli richiesti con associazione client.
    * @param bearer Token di autorizzazione opzionale dell'operatore.
    * @return Mono con la lista dei ruoli arricchiti con tipologia, descrizione e permessi.
    */
-  private Mono<List<UserClientRoleDTO>> validateAndEnrichRoles(
-      List<UserClientRoleDTO> requestedRoles, String bearer) {
-    List<String> clientIds = requestedRoles.stream()
-        .map(r -> {
-          if (r == null || !StringUtils.hasText(r.getClientId())) {
-            LOG.error("❌ Registration rejected: clientId missing on role");
-            throw new UserException(ExceptionMap.ERR_USER_400, "Client ID is required for each role!");
-          }
-          if (!StringUtils.hasText(r.getRole())) {
-            LOG.error("❌ Registration rejected: role name missing");
-            throw new UserException(ExceptionMap.ERR_USER_400, "Role name is required for each role!");
-          }
-          return r.getClientId().trim().toUpperCase();
-        })
-        .distinct()
-        .toList();
+  private Mono<List<UserClientRole>> validateAndEnrichRoles(
+      List<UserClientRole> requestedRoles, String bearer) {
+    List<String> clientIds =
+        requestedRoles.stream()
+            .map(
+                r -> {
+                  if (r == null || !StringUtils.hasText(r.getClientId())) {
+                    LOG.error("❌ Registration rejected: clientId missing on role");
+                    throw new UserException(
+                        ExceptionMap.ERR_USER_400, "Client ID is required for each role!");
+                  }
+                  if (!StringUtils.hasText(r.getRole())) {
+                    LOG.error("❌ Registration rejected: role name missing");
+                    throw new UserException(
+                        ExceptionMap.ERR_USER_400, "Role name is required for each role!");
+                  }
+                  return r.getClientId().trim().toUpperCase();
+                })
+            .distinct()
+            .toList();
 
     return Flux.fromIterable(clientIds)
         .flatMap(clientId -> oAuth2ClientService.getClientCredentialByClientID(clientId))
         .collectMap(client -> client.getClientId().toUpperCase())
-        .map(clientMap -> {
-          List<UserClientRoleDTO> enriched = new ArrayList<>();
-          for (UserClientRoleDTO r : requestedRoles) {
-            String cId = r.getClientId().trim().toUpperCase();
-            OAuth2Client client = clientMap.get(cId);
-            if (client == null) {
-              LOG.error("❌ Client {} not found", cId);
-              throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + cId);
-            }
+        .map(
+            clientMap -> {
+              List<UserClientRole> enriched = new ArrayList<>();
+              for (UserClientRole r : requestedRoles) {
+                String cId = r.getClientId().trim().toUpperCase();
+                OAuth2Client client = clientMap.get(cId);
+                if (client == null) {
+                  LOG.error("❌ Client {} not found", cId);
+                  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + cId);
+                }
 
-            // Gli utenti admin o con permesso users:write possono registrare utenti anche se enableRegistration e disattivato
-            if (!canBypassRegistrationCheck(bearer, client.getClientId())) {
-              UserValidator.validateClientRegistrationEnabled(client);
-            }
+                // Gli utenti admin o con permesso users:write possono registrare utenti anche se
+                // enableRegistration e disattivato
+                if (!canBypassRegistrationCheck(bearer, client.getClientId())) {
+                  UserValidator.validateClientRegistrationEnabled(client);
+                }
 
-            List<AppRole> clientAppRoles = client.getAppRoles() != null ? client.getAppRoles() : List.of();
-            AppRole matched = clientAppRoles.stream()
-                .filter(ar -> ar != null && ar.matches(r.getRole()))
-                .findFirst()
-                .orElse(null);
+                List<AppRole> clientAppRoles =
+                    client.getAppRoles() != null ? client.getAppRoles() : List.of();
+                AppRole matched =
+                    clientAppRoles.stream()
+                        .filter(ar -> ar != null && ar.matches(r.getRole()))
+                        .findFirst()
+                        .orElse(null);
 
-            if (matched == null) {
-              LOG.error("❌ Role '{}' does not exist for client '{}'", r.getRole(), client.getClientId());
-              throw new UserException(
-                  ExceptionMap.ERR_USER_400,
-                  "Role '%s' does not exist for client '%s'".formatted(r.getRole(), client.getClientId()));
-            }
+                if (matched == null) {
+                  LOG.error(
+                      "❌ Role '{}' does not exist for client '{}'",
+                      r.getRole(),
+                      client.getClientId());
+                  throw new UserException(
+                      ExceptionMap.ERR_USER_400,
+                      "Role '%s' does not exist for client '%s'"
+                          .formatted(r.getRole(), client.getClientId()));
+                }
 
-            enriched.add(new UserClientRoleDTO(
-                client.getClientId(),
-                matched.getRole(),
-                matched.getType(),
-                matched.getDescription(),
-                matched.getPermissions()));
-          }
-          return enriched;
-        });
-  }
-
-  @Deprecated(since = "2.0.0")
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> register(
-      String bearer,
-      User user,
-      String clientId,
-      String registration_token,
-      Boolean assignNewClient) {
-    if (user != null && ObjectToolkit.isNullOrEmpty(user.getRoles()) && StringUtils.hasText(clientId)) {
-      user.setRoles(List.of(new UserClientRoleDTO(clientId, "USER")));
-    }
-    return register(bearer, user);
+                enriched.add(
+                    new UserClientRole(
+                        client.getClientId(),
+                        matched.getRole(),
+                        matched.getType(),
+                        matched.getDescription(),
+                        matched.getPermissions()));
+              }
+              return enriched;
+            });
   }
 
   /**
-   * Registra un nuovo utente (utilizzato anche dal flusso di federazione Google) validando il client,
-   * verificando il blocco preventivo di registrazione e persistendo l'utente e il ruolo su USER_CLIENT_ROLE.
+   * Registra un nuovo utente (utilizzato anche dal flusso di federazione Google) validando il
+   * client, verificando il blocco preventivo di registrazione e persistendo l'utente e il ruolo su
+   * USER_CLIENT_ROLE.
    *
    * @param bearer Token di autorizzazione opzionale dell'utente chiamante.
    * @param user DTO con i dati del nuovo utente.
@@ -342,85 +358,96 @@ public class UserAdminService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> registerUser(
       String bearer, User user, OAuth2Client oAuth2Client, Boolean assignNewClient) {
-    return Mono.defer(() -> {
-      LOG.info(
-          "👤 [USER ADMIN] Registering user: {}, email: {}", user.getUsername(), user.getEmail());
+    return Mono.defer(
+        () -> {
+          LOG.info(
+              "👤 [USER ADMIN] Registering user: {}, email: {}",
+              user.getUsername(),
+              user.getEmail());
 
-      // Gli utenti admin o con permesso users:write possono registrare utenti anche se enableRegistration e disattivato
-      if (!canBypassRegistrationCheck(bearer, oAuth2Client.getClientId())) {
-        UserValidator.validateClientRegistrationEnabled(oAuth2Client);
-      }
+          // Gli utenti admin o con permesso users:write possono registrare utenti anche se
+          // enableRegistration e disattivato
+          if (!canBypassRegistrationCheck(bearer, oAuth2Client.getClientId())) {
+            UserValidator.validateClientRegistrationEnabled(oAuth2Client);
+          }
 
-      List<AppRole> clientRoles =
-          oAuth2Client.getAppRoles() != null ? oAuth2Client.getAppRoles() : List.of();
-      List<AppRole> userRoles =
-          clientRoles.stream().filter(appRole -> appRole != null && appRole.isUser()).toList();
+          List<AppRole> clientRoles =
+              oAuth2Client.getAppRoles() != null ? oAuth2Client.getAppRoles() : List.of();
+          List<AppRole> userRoles =
+              clientRoles.stream().filter(appRole -> appRole != null && appRole.isUser()).toList();
 
-      if (!ObjectToolkit.isNullOrEmpty(bearer)) {
-        LOG.info("🛡️ Bearer token present, checking technical roles");
-        OAuth2Authorization tokenData = oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
+          if (!ObjectToolkit.isNullOrEmpty(bearer)) {
+            LOG.info("🛡️ Bearer token present, checking technical roles");
+            OAuth2Authorization tokenData =
+                oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
 
-        if (RoleManager.hasPermissionRoles(tokenData, oAuth2Client)
-            && !ObjectToolkit.isNullOrEmpty(user.getRoles())) {
-          userRoles =
-              clientRoles.stream()
-                  .filter(
-                      appRole ->
-                          appRole != null
-                              && user.getRoles().stream()
-                                  .anyMatch(r -> r != null && appRole.matches(r.getRole())))
-                  .toList();
-        }
-      }
-
-      if (ObjectUtils.isEmpty(userRoles)) {
-        if (!clientRoles.isEmpty()) {
-          userRoles = List.of(clientRoles.getFirst());
-          LOG.warn(
-              "⚠️ No USER role explicitly found on client {}; falling back to first available role [{}]",
-              oAuth2Client.getClientId(),
-              userRoles.getFirst().getRole());
-        } else {
-          LOG.error(
-              "❌ Roles not present on client configuration for client_id {}",
-              oAuth2Client.getClientId());
-          throw new UserException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
-        }
-      }
-      user.setRoles(
-          userRoles.stream()
-              .map(
-                  ar ->
-                      new UserClientRoleDTO(
-                          oAuth2Client.getClientId(),
-                          ar.getRole(),
-                          ar.getType(),
-                          ar.getDescription(),
-                          ar.getPermissions()))
-              .toList());
-
-      return Mono.fromCallable(() -> {
-            UserEntity userEntity = UserMapper.toEntity(user);
-            if (!ObjectToolkit.isNullOrEmpty(user.getPassword())) {
-              userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+            if (RoleManager.hasPermissionRoles(tokenData, oAuth2Client)
+                && !ObjectToolkit.isNullOrEmpty(user.getRoles())) {
+              userRoles =
+                  clientRoles.stream()
+                      .filter(
+                          appRole ->
+                              appRole != null
+                                  && user.getRoles().stream()
+                                      .anyMatch(r -> r != null && appRole.matches(r.getRole())))
+                      .toList();
             }
-            String identifier = UUID.randomUUID().toString();
-            user.setIdentifier(identifier);
-            userEntity.setIdentifier(identifier);
-            user.setBlocked(false);
-            user.setConfirmed(false);
+          }
 
-            userService.saveUserEntityIntoDatabase(userEntity);
+          if (ObjectUtils.isEmpty(userRoles)) {
+            if (!clientRoles.isEmpty()) {
+              userRoles = List.of(clientRoles.getFirst());
+              LOG.warn(
+                  "⚠️ No USER role explicitly found on client {}; falling back to first available role [{}]",
+                  oAuth2Client.getClientId(),
+                  userRoles.getFirst().getRole());
+            } else {
+              LOG.error(
+                  "❌ Roles not present on client configuration for client_id {}",
+                  oAuth2Client.getClientId());
+              throw new UserException(
+                  ExceptionMap.ERR_OAUTH_400, "Invalid client_id configurations!");
+            }
+          }
+          user.setRoles(
+              userRoles.stream()
+                  .map(
+                      ar ->
+                          new UserClientRole(
+                              oAuth2Client.getClientId(),
+                              ar.getRole(),
+                              ar.getType(),
+                              ar.getDescription(),
+                              ar.getPermissions()))
+                  .toList());
 
-            List<UserClientRoleEntity> ucrEntities = user.getRoles().stream()
-                .map(r -> new UserClientRoleEntity(identifier, r.getClientId(), r.getRole()))
-                .toList();
-            userClientRoleDAO.saveAll(ucrEntities);
+          return Mono.fromCallable(
+                  () -> {
+                    UserEntity userEntity = UserMapper.toEntity(user);
+                    if (!ObjectToolkit.isNullOrEmpty(user.getPassword())) {
+                      userEntity.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+                    }
+                    String identifier = UUID.randomUUID().toString();
+                    user.setIdentifier(identifier);
+                    userEntity.setIdentifier(identifier);
+                    user.setBlocked(false);
+                    user.setConfirmed(false);
 
-            return user;
-          })
-          .subscribeOn(Schedulers.boundedElastic());
-    });
+                    userService.saveUserEntityIntoDatabase(userEntity);
+
+                    List<UserClientRoleEntity> ucrEntities =
+                        user.getRoles().stream()
+                            .map(
+                                r ->
+                                    new UserClientRoleEntity(
+                                        identifier, r.getClientId(), r.getRole()))
+                            .toList();
+                    userClientRoleDAO.saveAll(ucrEntities);
+
+                    return user;
+                  })
+              .subscribeOn(Schedulers.boundedElastic());
+        });
   }
 
   /**

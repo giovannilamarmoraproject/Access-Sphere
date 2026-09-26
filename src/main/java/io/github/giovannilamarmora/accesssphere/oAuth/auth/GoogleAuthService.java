@@ -16,7 +16,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
@@ -90,13 +90,15 @@ public class GoogleAuthService {
               OAuthValidator.validateUserRoles(oAuth2Client, user.getRoles());
               googleModel.setJwtData(
                   GrpcMapper.setIdentifier(googleModel.getJwtData(), user.getIdentifier()));
-              googleModel.getJwtData().setRoles(
-                  user.getRoles() != null
-                      ? user.getRoles().stream()
-                          .map(UserClientRoleDTO::getRole)
-                          .filter(java.util.Objects::nonNull)
-                          .toList()
-                      : null);
+              googleModel
+                  .getJwtData()
+                  .setRoles(
+                      user.getRoles() != null
+                          ? user.getRoles().stream()
+                              .map(UserClientRole::getRole)
+                              .filter(java.util.Objects::nonNull)
+                              .toList()
+                          : null);
               googleModel.getJwtData().setSub(user.getUsername());
 
               AuthToken token =
@@ -247,13 +249,15 @@ public class GoogleAuthService {
         .map(
             user -> {
               googleModel.getJwtData().setIdentifier(user.getIdentifier());
-              googleModel.getJwtData().setRoles(
-                  user.getRoles() != null
-                      ? user.getRoles().stream()
-                          .map(UserClientRoleDTO::getRole)
-                          .filter(java.util.Objects::nonNull)
-                          .toList()
-                      : null);
+              googleModel
+                  .getJwtData()
+                  .setRoles(
+                      user.getRoles() != null
+                          ? user.getRoles().stream()
+                              .map(UserClientRole::getRole)
+                              .filter(java.util.Objects::nonNull)
+                              .toList()
+                          : null);
               googleModel.getJwtData().setSub(user.getUsername());
               AuthToken authToken =
                   tokenService.generateToken(

@@ -13,6 +13,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import java.util.List;
@@ -33,10 +34,21 @@ class UserAdminServiceTest {
   @Mock private AdminUserService techUserService;
   @Mock private OAuth2ClientService oAuth2ClientService;
   @Mock private UserService userService;
-  @Mock private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO userClientRoleDAO;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO
+      userClientRoleDAO;
+
   @Mock private OAuth2Authorization oAuth2Authorization;
-  @Mock private io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService oAuth2AuthorizationService;
-  @Mock private io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager permissionRoleManager;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService
+      oAuth2AuthorizationService;
+
+  @Mock
+  private io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager
+      permissionRoleManager;
+
   @Mock private WebhookService webhookService;
 
   @InjectMocks private UserAdminService userAdminService;
@@ -48,7 +60,8 @@ class UserAdminServiceTest {
     ReflectionTestUtils.setField(userAdminService, "userService", userService);
     ReflectionTestUtils.setField(userAdminService, "userClientRoleDAO", userClientRoleDAO);
     ReflectionTestUtils.setField(userAdminService, "oAuth2Authorization", oAuth2Authorization);
-    ReflectionTestUtils.setField(userAdminService, "oAuth2AuthorizationService", oAuth2AuthorizationService);
+    ReflectionTestUtils.setField(
+        userAdminService, "oAuth2AuthorizationService", oAuth2AuthorizationService);
     ReflectionTestUtils.setField(userAdminService, "permissionRoleManager", permissionRoleManager);
     ReflectionTestUtils.setField(userAdminService, "webhookService", webhookService);
   }
@@ -271,10 +284,7 @@ class UserAdminServiceTest {
     user.setUsername("john_doe");
     user.setEmail("john.doe@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(
-        List.of(
-            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
-                "CLIENT-APP", "ACCESS-SPHERE_USER")));
+    user.setRoles(List.of(new UserClientRole("CLIENT-APP", "ACCESS-SPHERE_USER")));
 
     when(userService.existsByUsername("john_doe")).thenReturn(false);
     when(userService.existsByEmail("john.doe@example.com")).thenReturn(false);
@@ -322,10 +332,7 @@ class UserAdminServiceTest {
     user.setUsername("existing_user");
     user.setEmail("existing@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(
-        List.of(
-            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
-                "CLIENT-APP", "ACCESS-SPHERE_USER")));
+    user.setRoles(List.of(new UserClientRole("CLIENT-APP", "ACCESS-SPHERE_USER")));
 
     when(userService.existsByUsername("existing_user")).thenReturn(true);
 
@@ -365,10 +372,7 @@ class UserAdminServiceTest {
     user.setUsername("john_doe");
     user.setEmail("john.doe@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(
-        List.of(
-            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
-                "CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
+    user.setRoles(List.of(new UserClientRole("CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
 
     when(userService.existsByUsername("john_doe")).thenReturn(false);
     when(userService.existsByEmail("john.doe@example.com")).thenReturn(false);
@@ -395,10 +399,7 @@ class UserAdminServiceTest {
     user.setUsername("john_doe");
     user.setEmail("john.doe@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(
-        List.of(
-            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
-                "CLIENT-APP", "NON_EXISTING_ROLE")));
+    user.setRoles(List.of(new UserClientRole("CLIENT-APP", "NON_EXISTING_ROLE")));
 
     when(userService.existsByUsername("john_doe")).thenReturn(false);
     when(userService.existsByEmail("john.doe@example.com")).thenReturn(false);
@@ -441,16 +442,14 @@ class UserAdminServiceTest {
   }
 
   @Test
-  @DisplayName("register should succeed when client registration is disabled but caller has users:write permission")
+  @DisplayName(
+      "register should succeed when client registration is disabled but caller has users:write permission")
   void register_clientRegistrationDisabled_withAdminBearer_bypassesCheckAndSucceeds() {
     User user = new User();
     user.setUsername("provisioned_user");
     user.setEmail("prov@example.com");
     user.setPassword("Strong1Password!");
-    user.setRoles(
-        List.of(
-            new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
-                "CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
+    user.setRoles(List.of(new UserClientRole("CLIENT-BLOCKED", "ACCESS-SPHERE_USER")));
 
     when(userService.existsByUsername("provisioned_user")).thenReturn(false);
     when(userService.existsByEmail("prov@example.com")).thenReturn(false);
@@ -496,7 +495,8 @@ class UserAdminServiceTest {
   }
 
   @Test
-  @DisplayName("registerUser should succeed when client registration is disabled but caller has admin bearer")
+  @DisplayName(
+      "registerUser should succeed when client registration is disabled but caller has admin bearer")
   void registerUser_clientRegistrationDisabled_withAdminBearer_bypassesCheckAndSucceeds() {
     User user = new User();
     user.setUsername("admin_created_user");

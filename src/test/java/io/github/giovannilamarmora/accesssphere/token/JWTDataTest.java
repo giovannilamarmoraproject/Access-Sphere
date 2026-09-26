@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRole;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import java.util.List;
@@ -25,11 +25,11 @@ class JWTDataTest {
     user.setSurname("Rossi");
     user.setEmail("mario@example.com");
 
-    UserClientRoleDTO linkatuttoRole =
-        new UserClientRoleDTO(
+    UserClientRole linkatuttoRole =
+        new UserClientRole(
             "linkatutto", "LINKATUTTO_EDITOR", "USER", List.of("links:read", "links:write"));
-    UserClientRoleDTO accessSphereRole =
-        new UserClientRoleDTO("ACCESS-SPHERE-AUTH", "ROLE_ADMIN", "DEFAULT", List.of("*"));
+    UserClientRole accessSphereRole =
+        new UserClientRole("ACCESS-SPHERE-AUTH", "ROLE_ADMIN", "DEFAULT", List.of("*"));
     user.setRoles(List.of(linkatuttoRole, accessSphereRole));
 
     OAuth2Client linkatuttoClient = new OAuth2Client();
@@ -64,7 +64,7 @@ class JWTDataTest {
     User user = new User();
     user.setIdentifier("user-uuid-2");
     user.setUsername("luigi_verdi");
-    user.setRoles(List.of(new UserClientRoleDTO("ROLE_ADMIN")));
+    user.setRoles(List.of(new UserClientRole("ROLE_ADMIN")));
 
     OAuth2Client client = new OAuth2Client();
     client.setClientId("ACCESS-SPHERE-AUTH");

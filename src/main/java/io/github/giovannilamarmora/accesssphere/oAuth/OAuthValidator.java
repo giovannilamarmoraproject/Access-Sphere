@@ -7,7 +7,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -61,7 +61,7 @@ public class OAuthValidator {
         userRoles.stream()
             .map(
                 r -> {
-                  if (r instanceof UserClientRoleDTO ucr) {
+                  if (r instanceof UserClientRole ucr) {
                     return ucr.getRole();
                   } else if (r instanceof String s) {
                     return s;

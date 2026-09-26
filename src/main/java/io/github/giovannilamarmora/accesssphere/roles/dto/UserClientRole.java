@@ -9,15 +9,15 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO che rappresenta un ruolo contestualizzato assegnato a un utente per uno specifico Client OAuth2,
- * corredato di tipologia applicativa e lista di permessi granulari aggregati.
+ * DTO che rappresenta un ruolo contestualizzato assegnato a un utente per uno specifico Client
+ * OAuth2, corredato di tipologia applicativa e lista di permessi granulari aggregati.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserClientRoleDTO extends GenericDTO {
+public class UserClientRole extends GenericDTO {
 
   private String clientId;
   private String role;
@@ -25,16 +25,16 @@ public class UserClientRoleDTO extends GenericDTO {
   private String description;
   private List<String> permissions;
 
-  public UserClientRoleDTO(String role) {
+  public UserClientRole(String role) {
     this.role = role;
   }
 
-  public UserClientRoleDTO(String clientId, String role) {
+  public UserClientRole(String clientId, String role) {
     this.clientId = clientId;
     this.role = role;
   }
 
-  public UserClientRoleDTO(String clientId, String role, String type, List<String> permissions) {
+  public UserClientRole(String clientId, String role, String type, List<String> permissions) {
     this.clientId = clientId;
     this.role = role;
     this.type = type;

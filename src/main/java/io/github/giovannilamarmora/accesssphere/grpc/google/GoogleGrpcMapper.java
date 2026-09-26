@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.grpc.google;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -24,10 +25,7 @@ public class GoogleGrpcMapper {
         null,
         googleModel.getJwtData().getRoles() != null
             ? googleModel.getJwtData().getRoles().stream()
-                .map(
-                    r ->
-                        new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
-                            googleModel.getJwtData().getClient_id(), r))
+                .map(r -> new UserClientRole(googleModel.getJwtData().getClient_id(), r))
                 .toList()
             : null,
         getUserInfoValue(googleModel.getUserInfo(), "picture"),

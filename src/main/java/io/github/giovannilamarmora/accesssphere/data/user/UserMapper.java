@@ -2,8 +2,10 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
+import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -72,6 +74,12 @@ public class UserMapper {
     return userEntities.stream().map(UserMapper::toDTO).toList();
   }
 
+  public static User toModel(AddUserRequest addUserRequest) {
+    User user = new User();
+    BeanUtils.copyProperties(addUserRequest, user);
+    return user;
+  }
+
   /**
    * Aggiorna lo stato di un'entità esistente {@link UserEntity} con i nuovi valori presenti nel DTO
    * {@link User}. Mantiene invariati i dati strutturali o di audit e serializza opportunamente
@@ -125,7 +133,7 @@ public class UserMapper {
             : oAuth2Client.getAppRoles().stream()
                 .map(
                     ar ->
-                        new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
+                        new UserClientRole(
                             oAuth2Client.getClientId(), ar.getRole(), ar.getType(), null, null))
                 .toList());
     return user;
@@ -149,10 +157,7 @@ public class UserMapper {
     user.setRoles(
         jwtData.getRoles() != null
             ? jwtData.getRoles().stream()
-                .map(
-                    r ->
-                        new io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO(
-                            jwtData.getClient_id(), r))
+                .map(r -> new UserClientRole(jwtData.getClient_id(), r))
                 .toList()
             : null);
     user.setAttributes(jwtData.getAttributes());

@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.SystemPermission;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -43,6 +44,10 @@ public class PermissionRoleManager {
   @Autowired private AdminUserService techUserService;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
+
+  public UserClientRole validateAndEnrichRoles() {
+    return null;
+  }
 
   /**
    * Verifica se l'operatore corrente corrisponde al Super Admin / Utenza Tecnica di sistema.
@@ -237,7 +242,8 @@ public class PermissionRoleManager {
       if (match) return true;
     }
 
-    // 2. Verifica se l'operatore possiede ruoli con permessi di scrittura utenti sulla Console (ACCESS-SPHERE-AUTH)
+    // 2. Verifica se l'operatore possiede ruoli con permessi di scrittura utenti sulla Console
+    // (ACCESS-SPHERE-AUTH)
     String adminClientId = techUserService.getAdminClientId();
     if (auth.getIdentifier() != null) {
       List<UserClientRoleEntity> consoleRoles =

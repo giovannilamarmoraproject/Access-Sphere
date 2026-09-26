@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.data.user;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
+import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
@@ -12,6 +13,7 @@ import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -65,12 +67,12 @@ public class UserValidator {
    * @param user DTO utente da validare.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateUserData(User user) {
-    if (user == null) {
+  public static void validateUserData(AddUserRequest user) {
+    if (ObjectToolkit.isNullOrEmpty(user)) {
       LOG.error("User payload is null");
       throw new UserException(ExceptionMap.ERR_USER_400, "User data is required!");
     }
-    if (ObjectUtils.isEmpty(user.getUsername())) {
+    if (ObjectToolkit.isNullOrEmpty(user.getUsername())) {
       LOG.error("Username is empty");
       throw new UserException(ExceptionMap.ERR_USER_400, "Username is required!");
     }
@@ -81,6 +83,10 @@ public class UserValidator {
     if (!Utilities.isCharacterAndRegexValid(user.getEmail(), RegEx.EMAIL.getValue())) {
       LOG.error("Invalid regex for field email for user {}", user.getUsername());
       throw new UserException(ExceptionMap.ERR_USER_400, "Invalid email provided!");
+    }
+    if (ObjectToolkit.isNullOrEmpty(user.getRoles())) {
+      LOG.error("❌ Registration rejected: user roles are required");
+      throw new UserException(ExceptionMap.ERR_USER_400, "User roles must be provided!");
     }
   }
 
@@ -101,14 +107,6 @@ public class UserValidator {
           ExceptionMap.ERR_OAUTH_403,
           "User registration is disabled for client " + oAuth2Client.getClientId());
     }
-  }
-
-  @Deprecated(since = "2.0.0")
-  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateRegistration(
-      String registration_token, OAuth2Client oAuth2Client, User user) {
-    validateUserData(user);
-    validateClientRegistrationEnabled(oAuth2Client);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)

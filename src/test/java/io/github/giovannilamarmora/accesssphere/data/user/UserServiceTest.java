@@ -8,7 +8,7 @@ import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -165,8 +165,7 @@ class UserServiceTest {
   }
 
   @Test
-  @DisplayName(
-      "updateUser should update user and preserve existing mfaSettings and tokenReset")
+  @DisplayName("updateUser should update user and preserve existing mfaSettings and tokenReset")
   void updateUser_success() {
     UserEntity existing = new UserEntity();
     existing.setId(99L);
@@ -222,8 +221,8 @@ class UserServiceTest {
     updateDto.setEmail("orig@example.com");
     updateDto.setRoles(
         List.of(
-            new UserClientRoleDTO("access_sphere", "ACCESS_SPHERE_ADMIN"),
-            new UserClientRoleDTO("access_sphere", "SUPER_ADMIN")));
+            new UserClientRole("access_sphere", "ACCESS_SPHERE_ADMIN"),
+            new UserClientRole("access_sphere", "SUPER_ADMIN")));
 
     StepVerifier.create(userService.updateUser("uuid-99", updateDto))
         .assertNext(
@@ -231,7 +230,7 @@ class UserServiceTest {
               assertEquals("uuid-99", updated.getIdentifier());
               assertNotNull(updated.getRoles());
               List<String> roleNames =
-                  updated.getRoles().stream().map(UserClientRoleDTO::getRole).toList();
+                  updated.getRoles().stream().map(UserClientRole::getRole).toList();
               assertEquals(List.of("ACCESS_SPHERE_ADMIN", "SUPER_ADMIN"), roleNames);
             })
         .verifyComplete();

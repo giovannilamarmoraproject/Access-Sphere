@@ -15,7 +15,7 @@ import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDA
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.dto.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionDTO;
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleDTO;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserRoles;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
@@ -139,7 +139,7 @@ public class RolesService {
               if (roles != null && roles.getRoles() != null && !roles.getRoles().isEmpty()) {
                 LOG.info(
                     "👥 [ROLES] Processing roles payload with {} entries", roles.getRoles().size());
-                for (UserClientRoleDTO cr : roles.getRoles()) {
+                for (UserClientRole cr : roles.getRoles()) {
                   if (cr == null || cr.getRole() == null || cr.getRole().isBlank()) continue;
                   String roleName = cr.getRole().trim().toUpperCase();
 
@@ -202,9 +202,9 @@ public class RolesService {
               }
 
               // 4. Sincronizzazione per retrocompatibilita su USERS.ROLES
-              List<UserClientRoleDTO> assignedRoleDTOs =
+              List<UserClientRole> assignedRoleDTOs =
                   entitiesToSave.stream()
-                      .map(e -> new UserClientRoleDTO(e.getClientId(), e.getRole()))
+                      .map(e -> new UserClientRole(e.getClientId(), e.getRole()))
                       .toList();
               return userService
                   .getUserByIdentifier(identifier)
@@ -286,7 +286,7 @@ public class RolesService {
                                   && (r.getClientId() == null
                                       || r.getClientId().equalsIgnoreCase(normalizedClientId)));
               if (!hasRole) {
-                user.getRoles().add(new UserClientRoleDTO(normalizedClientId, normalizedRole));
+                user.getRoles().add(new UserClientRole(normalizedClientId, normalizedRole));
               }
 
               return userService
@@ -342,7 +342,7 @@ public class RolesService {
         .flatMap(
             user -> {
               if (user.getRoles() != null) {
-                List<UserClientRoleDTO> updatedRoles =
+                List<UserClientRole> updatedRoles =
                     user.getRoles().stream()
                         .filter(
                             r ->
