@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.tech;
 
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
-import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
@@ -16,13 +15,6 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class AdminUserService extends AdminUserConfig {
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public boolean checkIfTechUser(String username, String password, String clientId) {
-    return username.equalsIgnoreCase(adminUsername)
-        && password.equalsIgnoreCase(adminPassword)
-        && clientId.equalsIgnoreCase(adminClientId);
-  }
 
   /**
    * Verifica se l'utente specificato corrisponde all'utenza tecnica di sistema censita.
@@ -128,21 +120,6 @@ public class AdminUserService extends AdminUserConfig {
             aBoolean -> {
               if (aBoolean) logTechRole(oAuth2Authorization.getSubject());
             });
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Boolean hasTechUserRoles(
-      OAuth2Authorization oAuth2Authorization, OAuth2Client oAuth2Client) {
-    if (oAuth2Authorization.getSubjectType().equals(SubjectType.TECHNICAL)) {
-      logTechRole(oAuth2Authorization.getSubject());
-      return true;
-    }
-    boolean hasTechRole =
-        oAuth2Client.getAppRoles().stream()
-            .map(RoleDefinition::getRole)
-            .anyMatch(oAuth2Authorization.getRoles()::contains);
-    if (hasTechRole) logTechRole(oAuth2Authorization.getSubject());
-    return hasTechRole;
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

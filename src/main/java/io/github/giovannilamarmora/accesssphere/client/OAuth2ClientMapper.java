@@ -1,14 +1,11 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
-import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.model.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -47,44 +44,6 @@ public class OAuth2ClientMapper {
           Mapper.readObject(oAuth2ClientEntity.getWebhooks(), new TypeReference<>() {}));
     }
     return oAuth2Client;
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static OAuth2Client toDTO(OAuth2ClientEntity oAuth2ClientEntity) {
-    try {
-      OAuth2Client oAuth2Client =
-          new OAuth2Client(
-              oAuth2ClientEntity.getClientId(),
-              oAuth2ClientEntity.getExternalClientId(),
-              oAuth2ClientEntity.getClientSecret(),
-              ObjectUtils.isEmpty(oAuth2ClientEntity.getScopes())
-                  ? null
-                  : List.of(oAuth2ClientEntity.getScopes().split(" ")),
-              ObjectUtils.isEmpty(oAuth2ClientEntity.getRedirect_uri())
-                  ? null
-                  : parseRedirectUri(oAuth2ClientEntity.getRedirect_uri()),
-              oAuth2ClientEntity.getAccessType(),
-              oAuth2ClientEntity.getAuthType(),
-              oAuth2ClientEntity.getTokenType(),
-              oAuth2ClientEntity.getJwtSecret(),
-              oAuth2ClientEntity.getJwtExpiration(),
-              oAuth2ClientEntity.getJweSecret(),
-              oAuth2ClientEntity.getJweExpiration(),
-              oAuth2ClientEntity.getRegistrationToken(),
-              null, // appRoles popolati da ROLE_DEFINITIONS a livello di ClientService
-              oAuth2ClientEntity.getIdToken(),
-              oAuth2ClientEntity.getAccessToken(),
-              oAuth2ClientEntity.getAuthorize_redirect_status(),
-              oAuth2ClientEntity.getMfaEnabled(),
-              oAuth2ClientEntity.getEnableRegistration(),
-              ObjectUtils.isEmpty(oAuth2ClientEntity.getWebhooks())
-                  ? null
-                  : mapper.readValue(oAuth2ClientEntity.getWebhooks(), new TypeReference<>() {}));
-      oAuth2Client.setId(oAuth2ClientEntity.getId());
-      return oAuth2Client;
-    } catch (JsonProcessingException e) {
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_500, ExceptionMap.ERR_OAUTH_500.getMessage());
-    }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
@@ -153,7 +112,7 @@ public class OAuth2ClientMapper {
   /**
    * Esegue il parsing resiliente del campo redirect_uri memorizzato a database. Supporta sia il
    * formato JSON (mappa con fallback_uri e redirect_uri), sia eventuali stringhe legacy plain-text
-   * per garantire piena retrocompatibilita.
+   * per garantire piena retro compatibilita.
    *
    * @param raw Stringa grezza proveniente dalla colonna REDIRECT_URI a DB
    * @return Mappa contenente i redirect URI configurati, oppure null se la stringa e vuota.
@@ -186,7 +145,7 @@ public class OAuth2ClientMapper {
    * </ul>
    *
    * @param raw Stringa grezza della colonna APP_ROLES.
-   * @return Lista di {@link RoleDefinition} normalizzati, oppure null se raw e' vuoto.
+   * @return Lista di {@link RoleDefinition} normalizzati, oppure null se raw e vuoto.
    */
   public static List<RoleDefinition> parseAppRoles(String raw) {
     if (ObjectUtils.isEmpty(raw)) {
@@ -195,8 +154,7 @@ public class OAuth2ClientMapper {
     String trimmed = raw.trim();
     if (trimmed.startsWith("[")) {
       try {
-        List<RoleDefinition> roles =
-            mapper.readValue(trimmed, new TypeReference<List<RoleDefinition>>() {});
+        List<RoleDefinition> roles = mapper.readValue(trimmed, new TypeReference<>() {});
         return normalizeAppRoles(roles);
       } catch (Exception ignored) {
         // Fallback in caso di parse JSON non conforme
@@ -218,7 +176,7 @@ public class OAuth2ClientMapper {
    * elementi nulli e che la tipologia sia valorizzata (con fallback su USER).
    *
    * @param roles Lista ruoli da normalizzare.
-   * @return Lista di ruoli normalizzati, oppure null se la lista in ingresso e' vuota.
+   * @return Lista di ruoli normalizzati, oppure null se la lista in ingresso e vuota.
    */
   public static List<RoleDefinition> normalizeAppRoles(List<RoleDefinition> roles) {
     if (ObjectUtils.isEmpty(roles)) {
