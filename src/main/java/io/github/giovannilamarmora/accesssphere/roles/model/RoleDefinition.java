@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * Modello di dominio primario che rappresenta la definizione completa di un Ruolo applicativo
@@ -39,48 +36,47 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(using = RoleDefinitionDeserializer.class)
-@Schema(description = "Definizione completa di un ruolo applicativo per un Client OAuth2")
+@Schema(description = "Complete definition of an application role for an OAuth2 Client")
 public class RoleDefinition extends GenericDTO {
 
-  @Schema(description = "Identificativo numerico del ruolo a database", example = "1")
+  @Schema(description = "Numeric identifier of the role in the database", example = "1")
   private Long id;
 
   @NotBlank(message = "Client ID is required")
   @Schema(
-      description = "Identificativo del Client OAuth2 proprietario del ruolo",
+      description = "Identifier of the OAuth2 Client that owns the role",
       example = "CLIENT-SAMPLE-001")
   private String clientId;
 
   @NotBlank(message = "Role name is required")
   @JsonAlias({"name", "roleName", "value"})
-  @Schema(
-      description = "Nome identificativo univoco del ruolo per il client",
-      example = "ROLE_USER")
+  @Schema(description = "Unique identifier name of the role for the client", example = "ROLE_USER")
   private String role;
 
-  @Schema(
-      description = "Tipologia di ruolo (USER, ADMIN, TECHNICAL, MANAGER, etc.)",
-      example = "USER")
-  private String type = AppRoleType.USER.getValue();
+  @Schema(description = "Role type (USER, ADMIN, TECHNICAL, MANAGER, etc.)", example = "USER")
+  private String type;
 
   @Schema(
-      description = "Descrizione testuale delle responsabilita del ruolo",
-      example = "Ruolo standard utente applicativo")
+      description = "Textual description of the role's responsibilities",
+      example = "Standard application user role")
   private String description;
 
   @Schema(
       description =
-          "Lista dei permessi granulari associati al ruolo (es. [\"users:read\", \"users:write\"])",
+          "List of granular permissions associated with the role (e.g. [\"users:read\", \"users:write\"])",
       example = "[\"users:read\", \"users:write\"]")
-  private List<String> permissions = new ArrayList<>();
+  private List<String> permissions;
 
-  @Schema(
-      description = "Conteggio degli utenti a cui e attualmente assegnato il ruolo",
-      example = "5")
+  @Schema(description = "Count of users currently assigned to this role", example = "5")
   private Integer assignedUsersCount;
 
-  @Schema(description = "Elenco sintetico degli utenti a cui e attualmente assegnato il ruolo")
+  @Schema(description = "Summary list of users currently assigned to this role")
   private List<UserSummaryDTO> assignedUsers;
+
+  public RoleDefinition(String clientId, List<String> permissions) {
+    this.clientId = clientId;
+    this.permissions = permissions;
+  }
 
   /**
    * Costruttore di convenienza dal solo nome ruolo.

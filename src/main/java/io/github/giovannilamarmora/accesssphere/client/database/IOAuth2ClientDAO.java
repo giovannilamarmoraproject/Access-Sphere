@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.client;
+package io.github.giovannilamarmora.accesssphere.client.database;
 
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

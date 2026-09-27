@@ -1,7 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
-import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.database.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
@@ -62,7 +63,7 @@ import reactor.core.publisher.Mono;
 public class RolesService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  @Autowired private OAuth2ClientService oAuth2ClientService;
+  @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private UserService userService;
   @Autowired private AdminUserService techUserService;
   @Autowired private AdminUserConfig adminUserConfig;
@@ -93,7 +94,7 @@ public class RolesService {
     }
 
     String techClientId = adminUserConfig.getAdminClientId();
-    Mono<List<OAuth2Client>> getClients = oAuth2ClientService.getClientCredentials();
+    Mono<List<OAuth2Client>> getClients = oAuth2ClientDomainService.getOAuth2Clients();
 
     return getClients
         .flatMap(
@@ -136,8 +137,7 @@ public class RolesService {
 
               // 2. Elaborazione ruoli ricevuti
               if (roles != null && !roles.isEmpty()) {
-                LOG.info(
-                    "👥 [ROLES] Processing roles payload with {} entries", roles.size());
+                LOG.info("👥 [ROLES] Processing roles payload with {} entries", roles.size());
                 for (UserClientRole cr : roles) {
                   if (cr == null || cr.getRole() == null || cr.getRole().isBlank()) continue;
                   String roleName = cr.getRole().trim().toUpperCase();

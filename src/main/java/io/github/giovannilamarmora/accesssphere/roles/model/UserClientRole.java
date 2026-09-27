@@ -10,15 +10,17 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * Modello di dominio primario che rappresenta un ruolo contestualizzato assegnato a un utente
- * per uno specifico Client OAuth2, arricchito con la tipologia applicativa e la lista dei permessi
- * granulari aggregati. Mappa direttamente a livello applicativo la tabella relazionale {@code USER_CLIENT_ROLE}.
+ * Modello di dominio primario che rappresenta un ruolo contestualizzato assegnato a un utente per
+ * uno specifico Client OAuth2, arricchito con la tipologia applicativa e la lista dei permessi
+ * granulari aggregati. Mappa direttamente a livello applicativo la tabella relazionale {@code
+ * USER_CLIENT_ROLE}.
  *
  * <p>Interconnessioni:
+ *
  * <ul>
- *   <li>Mappato 1:1 con l'entita relazionale {@code UserClientRoleEntity}.</li>
- *   <li>Utilizzato in {@code User.roles} per esporre i ruoli assegnati arricchiti all'utente.</li>
- *   <li>Popolato da {@code RolesService}, {@code UserService} e {@code UserAdminService}.</li>
+ *   <li>Mappato 1:1 con l'entita relazionale {@code UserClientRoleEntity}.
+ *   <li>Utilizzato in {@code User.roles} per esporre i ruoli assegnati arricchiti all'utente.
+ *   <li>Popolato da {@code RolesService}, {@code UserService} e {@code UserAdminService}.
  * </ul>
  */
 @EqualsAndHashCode(callSuper = true)
@@ -26,22 +28,28 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Ruolo applicativo contestualizzato assegnato a un utente per un Client OAuth2")
+@Schema(description = "Contextualized application role assigned to a user for an OAuth2 Client")
 public class UserClientRole extends GenericDTO {
 
-  @Schema(description = "Identificativo del Client OAuth2 associato al ruolo", example = "LINKATUTTO-ADMIN")
+  @Schema(
+      description = "Identifier of the OAuth2 Client associated with the role",
+      example = "LINKATUTTO-ADMIN")
   private String clientId;
 
-  @Schema(description = "Nome identificativo del ruolo assegnato", example = "ROLE_USER")
+  @Schema(description = "Identifier name of the assigned role", example = "ROLE_USER")
   private String role;
 
-  @Schema(description = "Tipologia applicativa del ruolo", example = "USER")
+  @Schema(description = "Application type of the role", example = "USER")
   private String type;
 
-  @Schema(description = "Descrizione testuale del ruolo assegnato", example = "Ruolo standard utente applicativo")
+  @Schema(
+      description = "Textual description of the assigned role",
+      example = "Standard application user role")
   private String description;
 
-  @Schema(description = "Lista dei permessi granulari aggregati concessi dal ruolo", example = "[\"users:read\"]")
+  @Schema(
+      description = "List of aggregated granular permissions granted by the role",
+      example = "[\"users:read\"]")
   private List<String> permissions;
 
   public UserClientRole(String role) {

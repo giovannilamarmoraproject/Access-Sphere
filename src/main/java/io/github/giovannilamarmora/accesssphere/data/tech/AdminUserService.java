@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.tech;
 
-import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
@@ -111,13 +111,14 @@ public class AdminUserService extends AdminUserConfig {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<Boolean> hasTechUserRoles(
-      OAuth2Authorization oAuth2Authorization, OAuth2ClientService oAuth2ClientService) {
+      OAuth2Authorization oAuth2Authorization,
+      OAuth2ClientDomainService oAuth2ClientDomainService) {
     if (oAuth2Authorization.getSubjectType().equals(SubjectType.TECHNICAL)) {
       logTechRole(oAuth2Authorization.getSubject());
       return Mono.just(true);
     }
-    return oAuth2ClientService
-        .getClientCredentialByClientID(adminClientId)
+    return oAuth2ClientDomainService
+        .getOAuth2ClientByClientID(adminClientId)
         .map(
             clientCredential ->
                 clientCredential.getAppRoles().stream()

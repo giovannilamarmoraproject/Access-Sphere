@@ -15,10 +15,12 @@ import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.MapperUtils;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -26,6 +28,26 @@ import org.springframework.util.ObjectUtils;
 public class OAuth2ClientMapper {
 
   private static final ObjectMapper mapper = MapperUtils.mapper().build();
+
+  public static List<OAuth2Client> toModelList(List<OAuth2ClientEntity> oAuth2ClientEntities) {
+    return oAuth2ClientEntities.stream().map(OAuth2ClientMapper::toModel).toList();
+  }
+
+  public static OAuth2Client toModel(OAuth2ClientEntity oAuth2ClientEntity) {
+    OAuth2Client oAuth2Client = new OAuth2Client();
+    BeanUtils.copyProperties(oAuth2ClientEntity, oAuth2Client);
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getScopes())) {
+      oAuth2Client.setScopes(List.of(oAuth2ClientEntity.getScopes().split(" ")));
+    }
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getRedirect_uri())) {
+      oAuth2Client.setRedirect_uri(parseRedirectUri(oAuth2ClientEntity.getRedirect_uri()));
+    }
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getWebhooks())) {
+      oAuth2Client.setWebhooks(
+          Mapper.readObject(oAuth2ClientEntity.getWebhooks(), new TypeReference<>() {}));
+    }
+    return oAuth2Client;
+  }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static OAuth2Client toDTO(OAuth2ClientEntity oAuth2ClientEntity) {
@@ -128,11 +150,6 @@ public class OAuth2ClientMapper {
             : Mapper.writeObjectToString(oAuth2Client.getWebhooks()));
   }
 
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static List<OAuth2Client> toDTOList(List<OAuth2ClientEntity> clientCredentialEntities) {
-    return clientCredentialEntities.stream().map(OAuth2ClientMapper::toDTO).toList();
-  }
-
   /**
    * Esegue il parsing resiliente del campo redirect_uri memorizzato a database. Supporta sia il
    * formato JSON (mappa con fallback_uri e redirect_uri), sia eventuali stringhe legacy plain-text
@@ -148,7 +165,7 @@ public class OAuth2ClientMapper {
     String trimmed = raw.trim();
     if (trimmed.startsWith("{")) {
       try {
-        return Mapper.readObject(trimmed, new TypeReference<Map<String, String>>() {});
+        return Mapper.readObject(trimmed, new TypeReference<>() {});
       } catch (Exception ignored) {
         // Fallback di sicurezza in caso di JSON non conforme
       }
@@ -169,7 +186,7 @@ public class OAuth2ClientMapper {
    * </ul>
    *
    * @param raw Stringa grezza della colonna APP_ROLES.
-   * @return Lista di {@link AppRole} normalizzati, oppure null se raw e' vuoto.
+   * @return Lista di {@link RoleDefinition} normalizzati, oppure null se raw e' vuoto.
    */
   public static List<RoleDefinition> parseAppRoles(String raw) {
     if (ObjectUtils.isEmpty(raw)) {

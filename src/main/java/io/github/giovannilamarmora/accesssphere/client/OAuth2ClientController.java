@@ -81,20 +81,6 @@ public interface OAuth2ClientController {
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "No clients found in Database",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal Server Error",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class)))
       })
   Mono<ResponseEntity<OAuth2ClientListResponse>> getOAuth2Clients(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
@@ -151,22 +137,8 @@ public interface OAuth2ClientController {
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Client not found in Database",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal Server Error",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class)))
       })
-  Mono<ResponseEntity<OAuth2ClientResponse>> getClientById(
+  Mono<ResponseEntity<OAuth2ClientResponse>> getOAuth2ClientByClientID(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(
@@ -225,15 +197,8 @@ public interface OAuth2ClientController {
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal Server Error",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class)))
       })
-  Mono<ResponseEntity<OAuth2ClientResponse>> createClient(
+  Mono<ResponseEntity<OAuth2ClientResponse>> createOAuth2Client(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(

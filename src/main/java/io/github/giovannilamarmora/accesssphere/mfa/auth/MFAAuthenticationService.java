@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.mfa.auth;
 
-import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
@@ -51,7 +51,8 @@ public class MFAAuthenticationService {
   private String cookieDomain;
 
   private static final Logger LOG = LoggerFilter.getLogger(MFAStrategyFactory.class);
-  @Autowired private OAuth2ClientService oAuth2ClientService;
+
+  @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private TokenService tokenService;
   @Autowired private MFASessionService mfaSessionService;
   @Autowired private AdminUserService techUserService;
@@ -152,7 +153,7 @@ public class MFAAuthenticationService {
             && Boolean.parseBoolean(request.getQueryParams().get("include_user_data").getFirst());
 
     Mono<OAuth2Client> clientCredentialMono =
-        oAuth2ClientService.getClientCredentialByClientID(mfaSession.getClientId());
+        oAuth2ClientDomainService.getOAuth2ClientByClientID(mfaSession.getClientId());
     return clientCredentialMono.flatMap(
         clientCredential -> {
           SubjectType subjectType =

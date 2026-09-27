@@ -4,6 +4,7 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderServi
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
@@ -66,6 +67,7 @@ public class UserAccountService {
   private static final Logger LOG = LoggerFilter.getLogger(UserAccountService.class);
 
   @Autowired private OAuth2ClientService oAuth2ClientService;
+  @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private TokenService tokenService;
   @Autowired private AdminUserService techUserService;
   @Autowired private EmailTemplateService emailTemplateService;
@@ -84,8 +86,8 @@ public class UserAccountService {
   public Mono<User> profile(String bearer, ServerHttpRequest request) {
     LOG.info("👤 [USER ACCOUNT] Starting user profile retrieval process");
 
-    return oAuth2ClientService
-        .getClientCredentialByClientID(oAuth2Authorization.getClientId())
+    return oAuth2ClientDomainService
+        .getOAuth2ClientByClientID(oAuth2Authorization.getClientId())
         .flatMap(
             clientCredential -> {
               UserValidator.validateAuthType(clientCredential, oAuth2Authorization);
@@ -137,7 +139,7 @@ public class UserAccountService {
         finalIdentifier);
 
     return techUserService
-        .hasTechUserRoles(oAuth2Authorization, oAuth2ClientService)
+        .hasTechUserRoles(oAuth2Authorization, oAuth2ClientDomainService)
         .flatMap(
             hasTechRoles -> {
               if (!hasTechRoles) {

@@ -8,11 +8,16 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2
 import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
+import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,27 +60,34 @@ public class OAuth2ClientService {
    * @return {@link Mono} con la lista di {@link OAuth2Client} autorizzati per l'operatore.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<OAuth2Client>> getClients() {
-    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
+  public Mono<List<OAuth2Client>> getOAuth2Clients() {
+    SystemPermission readClientPermission = SystemPermission.CLIENTS_READ;
+    List<RoleDefinition> hasCorrectRoles =
+        permissionRoleManager.checkPermissionAndReturnUserRoles(readClientPermission);
 
     LOG.info("🌐 Retrieving all authorized OAuth 2.0 clients");
 
     return oAuth2ClientDomainService
-        .getClientCredentials()
+        .getOAuth2Clients()
         .map(
             allClients -> {
-              if (permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
+              if (permissionRoleManager.hasAdminPermission(readClientPermission)) {
                 return allClients;
               }
-              List<String> managed = permissionRoleManager.getManagedClientIds(oAuth2Authorization);
+              // Estrae i clientId per i quali l'utente possiede almeno un ruolo abilitato
+              Set<String> authorizedClientIds =
+                  hasCorrectRoles.stream()
+                      .map(RoleDefinition::getClientId)
+                      .filter(clientId -> !ObjectToolkit.isNullOrEmpty(clientId))
+                      .map(String::toUpperCase)
+                      .collect(Collectors.toSet());
+
+              // Filtra la lista restituendo esclusivamente i client autorizzati
               return allClients.stream()
                   .filter(
-                      c ->
-                          c.getClientId() != null
-                              && managed != null
-                              && managed.contains(c.getClientId().toUpperCase())
-                              && permissionRoleManager.hasPermission(
-                                  oAuth2Authorization, c.getClientId(), "clients:read"))
+                      client ->
+                          client.getClientId() != null
+                              && authorizedClientIds.contains(client.getClientId().toUpperCase()))
                   .toList();
             });
   }
@@ -88,32 +100,14 @@ public class OAuth2ClientService {
    * @return {@link Mono} contenente il {@link OAuth2Client} richiesto.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<OAuth2Client> getClientById(String clientID) {
-    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
-    permissionRoleManager.assertPermission(oAuth2Authorization, clientID, "clients:read");
+  public Mono<OAuth2Client> getOAuth2ClientByClientID(String clientID) {
+    SystemPermission readClientPermission = SystemPermission.CLIENTS_READ;
 
-    return oAuth2ClientDomainService.getClientCredentialByClientID(clientID);
-  }
+    permissionRoleManager.checkPermissionAndReturnUserRoles(readClientPermission);
 
-  /**
-   * Metodo delegato di dominio per recuperare le credenziali di un Client.
-   *
-   * @param clientID Identificativo del client.
-   * @return Mono con il client.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<OAuth2Client> getClientCredentialByClientID(String clientID) {
-    return oAuth2ClientDomainService.getClientCredentialByClientID(clientID);
-  }
+    LOG.info("🌐 Retrieving client details for client ID: {}", clientID);
 
-  /**
-   * Metodo delegato per recuperare la lista dei client registrati.
-   *
-   * @return Mono con la lista completa dei client.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<OAuth2Client>> getClientCredentials() {
-    return oAuth2ClientDomainService.getClientCredentials();
+    return oAuth2ClientDomainService.getOAuth2ClientByClientID(clientID);
   }
 
   /**
@@ -122,8 +116,17 @@ public class OAuth2ClientService {
    * @param oAuth2Client DTO con la configurazione del nuovo client.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void addClientToDatabase(OAuth2Client oAuth2Client) {
-    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
+  public Mono<OAuth2Client> createOAuth2Client(OAuth2Client oAuth2Client) {
+    SystemPermission writeClientPermission = SystemPermission.CLIENTS_WRITE;
+    if (!permissionRoleManager.hasAdminPermission(writeClientPermission)) {
+      LOG.error(
+          "⛔ Access denied: missing permission [{}] on client [{}] for identifier [{}]",
+          writeClientPermission,
+          oAuth2Authorization.getClientId(),
+          oAuth2Authorization.getIdentifier());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
+    }
+    LOG.info("🌐 Registering new OAuth 2.0 client: {}", oAuth2Client.getClientId());
 
     if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
       if (oAuth2Client.getClientId() != null
@@ -147,6 +150,7 @@ public class OAuth2ClientService {
               oAuth2Client.getClientId().trim().toUpperCase(),
               "ROLE_ADMIN"));
     }
+    return Mono.just(oAuth2Client);
   }
 
   /**

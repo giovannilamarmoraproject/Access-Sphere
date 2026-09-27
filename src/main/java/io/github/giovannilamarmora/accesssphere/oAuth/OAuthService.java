@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
-import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
@@ -56,7 +56,7 @@ public class OAuthService {
   @Value("${cookie-domain:}")
   private String cookieDomain;
 
-  @Autowired private OAuth2ClientService oAuth2ClientService;
+  @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private AuthService authService;
   @Autowired private GoogleAuthService googleAuthService;
   @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
@@ -101,7 +101,7 @@ public class OAuthService {
         prompt);
 
     Mono<OAuth2Client> clientCredentialMono =
-        oAuth2ClientService.getClientCredentialByClientID(clientId);
+        oAuth2ClientDomainService.getOAuth2ClientByClientID(clientId);
     String finalRedirectUri = URLUtils.decodeURLValue(redirect_uri);
 
     return clientCredentialMono.flatMap(
@@ -207,10 +207,10 @@ public class OAuthService {
 
     // Recupera le credenziali del client target e del client sorgente
     Mono<OAuth2Client> clientCredentialMono =
-        oAuth2ClientService.getClientCredentialByClientID(tokenExchange.getClient_id());
+        oAuth2ClientDomainService.getOAuth2ClientByClientID(tokenExchange.getClient_id());
 
     Mono<OAuth2Client> clientCredentialToExchangeMono =
-        oAuth2ClientService.getClientCredentialByClientID(oAuth2Authorization.getClientId());
+        oAuth2ClientDomainService.getOAuth2ClientByClientID(oAuth2Authorization.getClientId());
 
     return clientCredentialMono
         .zipWith(clientCredentialToExchangeMono)
@@ -448,7 +448,7 @@ public class OAuthService {
     OAuthValidator.validateOAuthToken(clientId, grant_type);
     OAuthValidator.validatePrompt(prompt);
     Mono<OAuth2Client> clientCredentialMono =
-        oAuth2ClientService.getClientCredentialByClientID(clientId);
+        oAuth2ClientDomainService.getOAuth2ClientByClientID(clientId);
 
     return clientCredentialMono
         .flatMap(
@@ -527,7 +527,7 @@ public class OAuthService {
         grant_type);
     OAuthValidator.validateRefreshToken(refresh_token, grant_type);
     Mono<OAuth2Client> clientCredentialMono =
-        oAuth2ClientService.getClientCredentialByClientID(clientId);
+        oAuth2ClientDomainService.getOAuth2ClientByClientID(clientId);
 
     return clientCredentialMono
         .flatMap(
@@ -574,7 +574,7 @@ public class OAuthService {
       String clientId, String redirect_uri, String bearer, ServerHttpResponse response) {
     LOG.info("🚪 [OAUTH LOGOUT] Starting oAuth/2.0/logout endpoint for clientId: {}", clientId);
     Mono<OAuth2Client> clientCredentialMono =
-        oAuth2ClientService.getClientCredentialByClientID(clientId);
+        oAuth2ClientDomainService.getOAuth2ClientByClientID(clientId);
 
     if (isLogoutAlreadyDone()) {
       return createLogoutSuccessResponse(clientId, redirect_uri, response);

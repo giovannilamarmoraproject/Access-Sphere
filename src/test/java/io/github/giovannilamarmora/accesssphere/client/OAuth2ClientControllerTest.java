@@ -41,7 +41,7 @@ class OAuth2ClientControllerTest {
   @Test
   @DisplayName("getClientCredentials returns 200 OK with list of clients")
   void testGetClientCredentials() {
-    when(oAuth2ClientService.getClients()).thenReturn(Mono.just(List.of(sampleClient)));
+    when(oAuth2ClientService.getOAuth2Clients()).thenReturn(Mono.just(List.of(sampleClient)));
 
     Mono<ResponseEntity<OAuth2ClientListResponse>> result =
         oAuth2ClientController.getOAuth2Clients(
@@ -60,17 +60,17 @@ class OAuth2ClientControllerTest {
             })
         .verifyComplete();
 
-    verify(oAuth2ClientService, times(1)).getClients();
+    verify(oAuth2ClientService, times(1)).getOAuth2Clients();
   }
 
   @Test
   @DisplayName("getClientById returns 200 OK with single client")
   void testGetClientById() {
-    when(oAuth2ClientService.getClientById("TEST-CLIENT-001"))
+    when(oAuth2ClientService.getOAuth2ClientByClientID("TEST-CLIENT-001"))
         .thenReturn(Mono.just(sampleClient));
 
     Mono<ResponseEntity<OAuth2ClientResponse>> result =
-        oAuth2ClientController.getClientById(
+        oAuth2ClientController.getOAuth2ClientByClientID(
             "Bearer sample-token",
             "TEST-CLIENT-001",
             MockServerHttpRequest.get("/v1/clients/TEST-CLIENT-001").build());
@@ -86,16 +86,16 @@ class OAuth2ClientControllerTest {
             })
         .verifyComplete();
 
-    verify(oAuth2ClientService, times(1)).getClientById("TEST-CLIENT-001");
+    verify(oAuth2ClientService, times(1)).getOAuth2ClientByClientID("TEST-CLIENT-001");
   }
 
   @Test
   @DisplayName("createClient calls service and returns 201 CREATED")
   void testCreateClient() {
-    doNothing().when(oAuth2ClientService).addClientToDatabase(any(OAuth2Client.class));
+    doNothing().when(oAuth2ClientService).createOAuth2Client(any(OAuth2Client.class));
 
     Mono<ResponseEntity<OAuth2ClientResponse>> result =
-        oAuth2ClientController.createClient(
+        oAuth2ClientController.createOAuth2Client(
             "Bearer sample-token", sampleClient, MockServerHttpRequest.post("/v1/clients").build());
 
     StepVerifier.create(result)
@@ -109,7 +109,7 @@ class OAuth2ClientControllerTest {
             })
         .verifyComplete();
 
-    verify(oAuth2ClientService, times(1)).addClientToDatabase(sampleClient);
+    verify(oAuth2ClientService, times(1)).createOAuth2Client(sampleClient);
   }
 
   @Test

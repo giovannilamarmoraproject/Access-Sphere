@@ -57,7 +57,7 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
   public Mono<ResponseEntity<OAuth2ClientListResponse>> getOAuth2Clients(
       String bearer, ServerHttpRequest request) {
     return oAuth2ClientService
-        .getClients()
+        .getOAuth2Clients()
         .map(
             clients -> {
               String message =
@@ -80,16 +80,18 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<OAuth2ClientResponse>> getClientById(
+  public Mono<ResponseEntity<OAuth2ClientResponse>> getOAuth2ClientByClientID(
       String bearer, String clientId, ServerHttpRequest request) {
-    LOG.info("🌐 [CLIENT CONTROLLER] Retrieving client details for client ID: {}", clientId);
     return oAuth2ClientService
-        .getClientById(clientId)
+        .getOAuth2ClientByClientID(clientId)
         .map(
             client -> {
               OAuth2ClientResponse response =
                   new OAuth2ClientResponse(
-                      HttpStatus.OK.value(), "Client details", TraceUtils.getSpanID(), client);
+                      HttpStatus.OK.value(),
+                      "Successfully retrieved %s OAuth2 client.".formatted(clientId),
+                      TraceUtils.getSpanID(),
+                      client);
               return ResponseEntity.ok(response);
             });
   }
@@ -104,15 +106,21 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<OAuth2ClientResponse>> createClient(
+  public Mono<ResponseEntity<OAuth2ClientResponse>> createOAuth2Client(
       String bearer, OAuth2Client oAuth2Client, ServerHttpRequest request) {
-    LOG.info(
-        "🌐 [CLIENT CONTROLLER] Registering new OAuth 2.0 client: {}", oAuth2Client.getClientId());
-    oAuth2ClientService.addClientToDatabase(oAuth2Client);
-    OAuth2ClientResponse response =
-        new OAuth2ClientResponse(
-            HttpStatus.CREATED.value(), "Client created", TraceUtils.getSpanID(), oAuth2Client);
-    return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(response));
+
+    return oAuth2ClientService
+        .createOAuth2Client(oAuth2Client)
+        .map(
+            client -> {
+              OAuth2ClientResponse response =
+                  new OAuth2ClientResponse(
+                      HttpStatus.CREATED.value(),
+                      "Client %s created".formatted(oAuth2Client.getClientId()),
+                      TraceUtils.getSpanID(),
+                      client);
+              return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            });
   }
 
   /**

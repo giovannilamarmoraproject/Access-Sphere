@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.oidc;
 
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserService;
 import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
@@ -49,7 +50,7 @@ public class OIDCService {
 
   private static final Logger LOG = LoggerFilter.getLogger(OIDCService.class);
 
-  @Autowired private OAuth2ClientService oAuth2ClientService;
+  @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private TokenService tokenService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private UserService userService;
@@ -69,8 +70,8 @@ public class OIDCService {
     LOG.info(
         "👤 [OIDC USER INFO] Starting UserInfo retrieval (includeUserData: {})", includeUserData);
 
-    return oAuth2ClientService
-        .getClientCredentialByClientID(oAuth2Authorization.getClientId())
+    return oAuth2ClientDomainService
+        .getOAuth2ClientByClientID(oAuth2Authorization.getClientId())
         .flatMap(
             clientCredential -> {
               UserValidator.validateAuthType(clientCredential, oAuth2Authorization);

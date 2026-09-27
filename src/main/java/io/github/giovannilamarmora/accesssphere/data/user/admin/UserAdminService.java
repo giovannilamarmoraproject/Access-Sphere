@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.data.user.admin;
 
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
@@ -17,9 +18,9 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2Author
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
-import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -70,7 +71,7 @@ public class UserAdminService {
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
   @Autowired private AdminUserService techUserService;
-  @Autowired private OAuth2ClientService oAuth2ClientService;
+  @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private UserService userService;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private OAuth2Authorization oAuth2Authorization;
@@ -111,8 +112,8 @@ public class UserAdminService {
     }
 
     if (techUserService.isTechUser()) {
-      return oAuth2ClientService
-          .getClientCredentialByClientID(techUserService.getAdminClientId())
+      return oAuth2ClientDomainService
+          .getOAuth2ClientByClientID(techUserService.getAdminClientId())
           .flatMap(
               clientCredential -> {
                 TechUserValidator.validateTechRoles(
@@ -292,7 +293,7 @@ public class UserAdminService {
             .toList();
 
     return Flux.fromIterable(clientIds)
-        .flatMap(clientId -> oAuth2ClientService.getClientCredentialByClientID(clientId))
+        .flatMap(clientId -> oAuth2ClientDomainService.getOAuth2ClientByClientID(clientId))
         .collectMap(client -> client.getClientId().toUpperCase())
         .map(
             clientMap -> {
@@ -488,8 +489,8 @@ public class UserAdminService {
               }
 
               if (techUserService.isTechUser()) {
-                return oAuth2ClientService
-                    .getClientCredentialByClientID(techUserService.getAdminClientId())
+                return oAuth2ClientDomainService
+                    .getOAuth2ClientByClientID(techUserService.getAdminClientId())
                     .flatMap(
                         clientCredential -> {
                           TechUserValidator.validateTechRoles(
@@ -546,8 +547,8 @@ public class UserAdminService {
               }
 
               if (techUserService.isTechUser()) {
-                return oAuth2ClientService
-                    .getClientCredentialByClientID(techUserService.getAdminClientId())
+                return oAuth2ClientDomainService
+                    .getOAuth2ClientByClientID(techUserService.getAdminClientId())
                     .flatMap(
                         clientCredential -> {
                           TechUserValidator.validateTechRoles(

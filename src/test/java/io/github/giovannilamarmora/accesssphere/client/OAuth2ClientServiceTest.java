@@ -54,10 +54,10 @@ class OAuth2ClientServiceTest {
   void testGetClientsForSuperAdmin() {
     doNothing().when(permissionRoleManager).assertHasConsoleAccess(oAuth2Authorization);
     when(permissionRoleManager.isSuperAdmin(oAuth2Authorization)).thenReturn(true);
-    when(oAuth2ClientDomainService.getClientCredentials())
+    when(oAuth2ClientDomainService.getOAuth2Clients())
         .thenReturn(Mono.just(List.of(techClient, linkatuttoClient, otherClient)));
 
-    Mono<List<OAuth2Client>> result = oAuth2ClientService.getClients();
+    Mono<List<OAuth2Client>> result = oAuth2ClientService.getOAuth2Clients();
 
     StepVerifier.create(result)
         .assertNext(
@@ -78,10 +78,10 @@ class OAuth2ClientServiceTest {
     when(permissionRoleManager.hasPermission(
             oAuth2Authorization, "LINKATUTTO-ADMIN", "clients:read"))
         .thenReturn(true);
-    when(oAuth2ClientDomainService.getClientCredentials())
+    when(oAuth2ClientDomainService.getOAuth2Clients())
         .thenReturn(Mono.just(List.of(techClient, linkatuttoClient, otherClient)));
 
-    Mono<List<OAuth2Client>> result = oAuth2ClientService.getClients();
+    Mono<List<OAuth2Client>> result = oAuth2ClientService.getOAuth2Clients();
 
     StepVerifier.create(result)
         .assertNext(
@@ -100,10 +100,10 @@ class OAuth2ClientServiceTest {
     doNothing()
         .when(permissionRoleManager)
         .assertPermission(oAuth2Authorization, "LINKATUTTO-ADMIN", "clients:read");
-    when(oAuth2ClientDomainService.getClientCredentialByClientID("LINKATUTTO-ADMIN"))
+    when(oAuth2ClientDomainService.getOAuth2ClientByClientID("LINKATUTTO-ADMIN"))
         .thenReturn(Mono.just(linkatuttoClient));
 
-    Mono<OAuth2Client> result = oAuth2ClientService.getClientById("LINKATUTTO-ADMIN");
+    Mono<OAuth2Client> result = oAuth2ClientService.getOAuth2ClientByClientID("LINKATUTTO-ADMIN");
 
     StepVerifier.create(result)
         .assertNext(
@@ -125,7 +125,7 @@ class OAuth2ClientServiceTest {
         .assertPermission(oAuth2Authorization, "LINKATUTTO-ADMIN", "clients:write");
     doNothing().when(oAuth2ClientDomainService).addClientToDatabase(linkatuttoClient);
 
-    oAuth2ClientService.addClientToDatabase(linkatuttoClient);
+    oAuth2ClientService.createOAuth2Client(linkatuttoClient);
 
     verify(oAuth2ClientDomainService, times(1)).addClientToDatabase(linkatuttoClient);
     verify(userClientRoleDAO, times(1))

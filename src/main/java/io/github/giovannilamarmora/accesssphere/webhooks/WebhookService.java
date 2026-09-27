@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.webhooks;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.giovannilamarmora.accesssphere.api.webbook.WebhookClient;
-import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
@@ -29,7 +29,7 @@ import reactor.core.publisher.Mono;
 public class WebhookService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
-  @Autowired private OAuth2ClientService oAuth2ClientService;
+  @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private WebhookClient webhookClient;
   @Autowired @Lazy private OAuthService oAuthService;
 
@@ -38,8 +38,8 @@ public class WebhookService {
 
     LOG.info("🚀 Webhooks process check started for action: {}", action);
 
-    return oAuth2ClientService
-        .getClientCredentials()
+    return oAuth2ClientDomainService
+        .getOAuth2Clients()
         .flatMapMany(Flux::fromIterable)
         .filter(clientCredential -> !ObjectToolkit.isNullOrEmpty(clientCredential.getWebhooks()))
         .flatMap(

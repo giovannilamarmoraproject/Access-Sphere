@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import io.github.giovannilamarmora.accesssphere.client.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
+import io.github.giovannilamarmora.accesssphere.client.database.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
@@ -109,7 +109,7 @@ class RolesServiceTest {
             new UserClientRole("access_sphere", "ACCESS_SPHERE_ADMIN"),
             new UserClientRole("SUPER_ADMIN"), // ruolo di sistema
             new UserClientRole("UNKNOWN_RANDOM_ROLE") // non valido, deve essere scartato
-        );
+            );
 
     StepVerifier.create(rolesService.changeRoles("user-123", payload))
         .assertNext(
@@ -274,9 +274,7 @@ class RolesServiceTest {
               assertEquals(HttpStatus.OK, response.getStatusCode());
               List<?> catalog = (List<?>) response.getBody().getData();
               assertEquals(1, catalog.size());
-              RoleDefinition dto =
-                  (RoleDefinition)
-                      catalog.get(0);
+              RoleDefinition dto = (RoleDefinition) catalog.get(0);
               assertEquals("LINKATUTTO", dto.getClientId());
               assertEquals("ROLE_EDITOR", dto.getRole());
               assertEquals(1, dto.getAssignedUsersCount());
@@ -297,8 +295,7 @@ class RolesServiceTest {
     when(roleDefinitionDAO.existsByClientIdAndRole("LINKATUTTO", "ROLE_NEW")).thenReturn(false);
 
     RoleDefinition newRoleDTO =
-        new RoleDefinition(
-            "LINKATUTTO", "ROLE_NEW", "DEFAULT", "Desc", List.of("links:read"));
+        new RoleDefinition("LINKATUTTO", "ROLE_NEW", "DEFAULT", "Desc", List.of("links:read"));
 
     StepVerifier.create(rolesService.createRole(newRoleDTO))
         .assertNext(
