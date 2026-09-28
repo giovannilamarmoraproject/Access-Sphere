@@ -1,7 +1,7 @@
-package io.github.giovannilamarmora.accesssphere.data.user.account;
+package io.github.giovannilamarmora.accesssphere.user.account;
 
-import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.dto.ChangePassword;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -70,7 +70,8 @@ public interface UserAccountController {
   @Deprecated(since = "2.0.0")
   @PutMapping("/users/update")
   @Operation(
-      description = "Deprecated: use PUT /v1/users/{identifier} instead. Update an existing user profile",
+      description =
+          "Deprecated: use PUT /v1/users/{identifier} instead. Update an existing user profile",
       summary = "User Update (Deprecated)",
       tags = OpenAPI.Tag.ACCOUNT,
       deprecated = true)
@@ -172,7 +173,8 @@ public interface UserAccountController {
   @Deprecated(since = "2.0.0")
   @PostMapping("/users/change/password/request")
   @Operation(
-      description = "Deprecated: use POST /v1/users/password/reset-request instead. Send Email to change the user password (Step 1)",
+      description =
+          "Deprecated: use POST /v1/users/password/reset-request instead. Send Email to change the user password (Step 1)",
       summary = "Change Password Step 1 (Deprecated)",
       tags = OpenAPI.Tag.ACCOUNT,
       deprecated = true)
@@ -228,7 +230,8 @@ public interface UserAccountController {
   @Deprecated(since = "2.0.0")
   @PostMapping("/users/change/password")
   @Operation(
-      description = "Deprecated: use POST /v1/users/password/reset instead. Change the user password using reset token (Step 2)",
+      description =
+          "Deprecated: use POST /v1/users/password/reset instead. Change the user password using reset token (Step 2)",
       summary = "Change Password Step 2 (Deprecated)",
       tags = OpenAPI.Tag.ACCOUNT,
       deprecated = true)
@@ -250,5 +253,6 @@ public interface UserAccountController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> changePasswordLegacy(@RequestBody @Valid ChangePassword changePassword);
+  Mono<ResponseEntity<Response>> changePasswordLegacy(
+      @RequestBody @Valid ChangePassword changePassword);
 }

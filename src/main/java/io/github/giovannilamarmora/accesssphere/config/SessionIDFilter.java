@@ -1,6 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
-import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMessage;
@@ -9,6 +8,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2Author
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
+import io.github.giovannilamarmora.accesssphere.user.UserException;
 import io.github.giovannilamarmora.accesssphere.utilities.*;
 import io.github.giovannilamarmora.utils.logger.MDCUtils;
 import io.github.giovannilamarmora.utils.web.*;

@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.user.admin.dto;
+package io.github.giovannilamarmora.accesssphere.user.admin.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;

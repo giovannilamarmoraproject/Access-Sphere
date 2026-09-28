@@ -1,7 +1,7 @@
-package io.github.giovannilamarmora.accesssphere.data.user.account;
+package io.github.giovannilamarmora.accesssphere.user.account;
 
-import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.dto.ChangePassword;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -173,7 +173,8 @@ public class UserAccountControllerImpl implements UserAccountController {
   }
 
   /**
-   * Endpoint legacy per richiedere il reset della password tramite invio di email o generazione di token.
+   * Endpoint legacy per richiedere il reset della password tramite invio di email o generazione di
+   * token.
    *
    * @param changePassword DTO contenente email, templateId e parametri.
    * @param locale Lingua di localizzazione del template email.

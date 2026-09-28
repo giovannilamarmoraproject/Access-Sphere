@@ -10,12 +10,14 @@ import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserService;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.RolesService;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.user.UserService;
+import io.github.giovannilamarmora.accesssphere.user.database.IUserDAO;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +51,7 @@ class RolesServiceTest {
       roleDefinitionDAO;
 
   @Mock private IOAuth2ClientDAO clientDAO;
-  @Mock private io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO userDAO;
+  @Mock private IUserDAO userDAO;
 
   @InjectMocks private RolesService rolesService;
 
@@ -259,8 +261,7 @@ class RolesServiceTest {
     when(userClientRoleDAO.findByClientIdAndRole("LINKATUTTO", "ROLE_EDITOR"))
         .thenReturn(List.of(ucr));
 
-    io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity userEntity =
-        new io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity();
+    UserEntity userEntity = new UserEntity();
     userEntity.setIdentifier("u-1");
     userEntity.setUsername("mario");
     userEntity.setName("Mario");

@@ -1,9 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.mfa;
 
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.accesssphere.mfa.session.MFASessionService;
@@ -11,6 +8,9 @@ import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategy;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
+import io.github.giovannilamarmora.accesssphere.user.UserService;
+import io.github.giovannilamarmora.accesssphere.user.UserValidator;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;

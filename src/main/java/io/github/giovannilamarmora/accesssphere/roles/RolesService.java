@@ -7,9 +7,9 @@ import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserService;
-import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
-import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.user.UserService;
+import io.github.giovannilamarmora.accesssphere.user.database.IUserDAO;
+import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;

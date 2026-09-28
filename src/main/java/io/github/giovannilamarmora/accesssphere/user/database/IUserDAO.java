@@ -1,6 +1,6 @@
-package io.github.giovannilamarmora.accesssphere.data.user.database;
+package io.github.giovannilamarmora.accesssphere.user.database;
 
-import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

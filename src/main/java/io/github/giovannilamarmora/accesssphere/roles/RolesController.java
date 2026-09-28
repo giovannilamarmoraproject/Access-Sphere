@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
@@ -122,12 +122,8 @@ public interface RolesController {
               description = OpenAPI.Params.Description.IDENTIFIER,
               example = OpenAPI.Params.Example.IDENTIFIER)
           String identifier,
-      @PathVariable(value = "clientId")
-          @Schema(description = "OAuth2 Client ID")
-          String clientId,
-      @PathVariable(value = "role")
-          @Schema(description = "Role name to assign")
-          String role);
+      @PathVariable(value = "clientId") @Schema(description = "OAuth2 Client ID") String clientId,
+      @PathVariable(value = "role") @Schema(description = "Role name to assign") String role);
 
   @DeleteMapping(value = "/users/{identifier}/clients/{clientId}/roles/{role}")
   @Operation(
@@ -172,16 +168,13 @@ public interface RolesController {
               description = OpenAPI.Params.Description.IDENTIFIER,
               example = OpenAPI.Params.Example.IDENTIFIER)
           String identifier,
-      @PathVariable(value = "clientId")
-          @Schema(description = "OAuth2 Client ID")
-          String clientId,
-      @PathVariable(value = "role")
-          @Schema(description = "Role name to revoke")
-          String role);
+      @PathVariable(value = "clientId") @Schema(description = "OAuth2 Client ID") String clientId,
+      @PathVariable(value = "role") @Schema(description = "Role name to revoke") String role);
 
   @GetMapping(value = "/roles")
   @Operation(
-      description = "Get full catalog of defined roles across all OAuth2 clients or filtered by clientId, only Tech User",
+      description =
+          "Get full catalog of defined roles across all OAuth2 clients or filtered by clientId, only Tech User",
       summary = "Get roles catalog",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
@@ -259,12 +252,8 @@ public interface RolesController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @PathVariable(value = "role")
-          @Schema(description = "Role name")
-          String role,
-      @RequestParam(value = "clientId")
-          @Schema(description = "OAuth2 Client ID")
-          String clientId);
+      @PathVariable(value = "role") @Schema(description = "Role name") String role,
+      @RequestParam(value = "clientId") @Schema(description = "OAuth2 Client ID") String clientId);
 
   @PostMapping(value = "/roles")
   @Operation(
@@ -315,7 +304,8 @@ public interface RolesController {
 
   @PutMapping(value = "/roles/{role}")
   @Operation(
-      description = "Update an existing role definition for a specific OAuth2 client, only Tech User",
+      description =
+          "Update an existing role definition for a specific OAuth2 client, only Tech User",
       summary = "Update role definition",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
@@ -365,25 +355,20 @@ public interface RolesController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @PathVariable(value = "role")
-          @Schema(description = "Current role name")
-          String role,
-      @RequestParam(value = "clientId")
-          @Schema(description = "OAuth2 Client ID")
-          String clientId,
+      @PathVariable(value = "role") @Schema(description = "Current role name") String role,
+      @RequestParam(value = "clientId") @Schema(description = "OAuth2 Client ID") String clientId,
       @RequestBody @Valid @NotNull(message = "Role definition is required") RoleDefinition dto);
 
   @DeleteMapping(value = "/roles/{role}")
   @Operation(
-      description = "Delete a role from a client and revoke it from all assigned users, only Tech User",
+      description =
+          "Delete a role from a client and revoke it from all assigned users, only Tech User",
       summary = "Delete role definition and cascade revoke",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
       value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Role deleted and revoked successfully"),
+        @ApiResponse(responseCode = "200", description = "Role deleted and revoked successfully"),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -414,10 +399,6 @@ public interface RolesController {
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @PathVariable(value = "role")
-          @Schema(description = "Role name to delete")
-          String role,
-      @RequestParam(value = "clientId")
-          @Schema(description = "OAuth2 Client ID")
-          String clientId);
+      @PathVariable(value = "role") @Schema(description = "Role name to delete") String role,
+      @RequestParam(value = "clientId") @Schema(description = "OAuth2 Client ID") String clientId);
 }

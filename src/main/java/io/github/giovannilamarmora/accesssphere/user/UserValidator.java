@@ -1,14 +1,15 @@
-package io.github.giovannilamarmora.accesssphere.data.user;
+package io.github.giovannilamarmora.accesssphere.user;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -130,8 +131,7 @@ public class UserValidator {
    * @param userEntity L'entita' da verificare.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateUser(
-      io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity userEntity) {
+  public static void validateUser(UserEntity userEntity) {
     if (ObjectUtils.isEmpty(userEntity)) {
       LOG.error("❌ User not found into database");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());

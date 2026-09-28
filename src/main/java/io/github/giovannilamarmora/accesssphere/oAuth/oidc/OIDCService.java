@@ -2,8 +2,8 @@ package io.github.giovannilamarmora.accesssphere.oAuth.oidc;
 
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
+import io.github.giovannilamarmora.accesssphere.user.UserService;
+import io.github.giovannilamarmora.accesssphere.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;

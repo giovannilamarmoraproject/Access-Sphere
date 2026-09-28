@@ -2,9 +2,9 @@ package io.github.giovannilamarmora.accesssphere.config;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.giovannilamarmora.accesssphere.data.user.UserException;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.user.UserException;
 import java.time.Duration;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;

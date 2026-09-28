@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.user.dto;
+package io.github.giovannilamarmora.accesssphere.user.dto;
 
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -36,8 +36,7 @@ public class UserListResponse extends Response {
       example = "d18124b1-ba15-4b51-a344-78e5a6c0a205")
   private String spanId;
 
-  @ArraySchema(
-      schema = @Schema(description = "IAM User item", implementation = User.class))
+  @ArraySchema(schema = @Schema(description = "IAM User item", implementation = User.class))
   @Schema(description = "Complete list of registered IAM users in the catalog")
   private List<User> data;
 }

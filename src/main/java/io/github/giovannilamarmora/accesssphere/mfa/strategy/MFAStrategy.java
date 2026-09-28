@@ -1,8 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.mfa.strategy;
 
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import org.springframework.http.ResponseEntity;

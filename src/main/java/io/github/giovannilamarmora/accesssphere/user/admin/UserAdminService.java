@@ -1,17 +1,17 @@
-package io.github.giovannilamarmora.accesssphere.data.user.admin;
+package io.github.giovannilamarmora.accesssphere.user.admin;
 
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
-import io.github.giovannilamarmora.accesssphere.data.user.UserException;
-import io.github.giovannilamarmora.accesssphere.data.user.UserMapper;
-import io.github.giovannilamarmora.accesssphere.data.user.UserService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
-import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.user.UserException;
+import io.github.giovannilamarmora.accesssphere.user.UserMapper;
+import io.github.giovannilamarmora.accesssphere.user.UserService;
+import io.github.giovannilamarmora.accesssphere.user.UserValidator;
+import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;

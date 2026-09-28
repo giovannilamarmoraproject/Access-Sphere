@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.user.dto;
+package io.github.giovannilamarmora.accesssphere.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
@@ -22,11 +22,7 @@ public class ChangePassword extends GenericDTO {
   private Map<String, String> params;
 
   public ChangePassword(
-      String templateId,
-      String email,
-      String password,
-      String token,
-      Map<String, String> params) {
+      String templateId, String email, String password, String token, Map<String, String> params) {
     this.templateId = templateId;
     this.email = email;
     this.password = password;

@@ -1,6 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.api.emailSender.dto;
 
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;

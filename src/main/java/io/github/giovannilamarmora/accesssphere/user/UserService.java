@@ -1,9 +1,6 @@
-package io.github.giovannilamarmora.accesssphere.data.user;
+package io.github.giovannilamarmora.accesssphere.user;
 
 import io.github.giovannilamarmora.accesssphere.client.database.IOAuth2ClientDAO;
-import io.github.giovannilamarmora.accesssphere.data.user.database.IUserDAO;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
-import io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
@@ -11,6 +8,9 @@ import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDA
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.user.database.IUserDAO;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;

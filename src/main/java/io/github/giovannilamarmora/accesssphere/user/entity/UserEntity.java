@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.user.entity;
+package io.github.giovannilamarmora.accesssphere.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;

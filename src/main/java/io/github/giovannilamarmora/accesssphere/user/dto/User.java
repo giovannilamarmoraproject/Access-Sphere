@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.user.dto;
+package io.github.giovannilamarmora.accesssphere.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;

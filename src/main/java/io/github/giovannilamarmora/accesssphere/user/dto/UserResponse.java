@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.user.dto;
+package io.github.giovannilamarmora.accesssphere.user.dto;
 
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
  * Wrapper standard di risposta OpenAPI per la rappresentazione di un singolo Utente IAM.
  *
  * <p>Estende {@link Response} tipizzando esplicitamente il campo {@code data} con l'oggetto di
- * dominio {@link User}. Questo consente al motore di documentazione Swagger/OpenAPI di generare
- * un contratto JSON completo di schema e valori di esempio concreti per l'utenza IAM.
+ * dominio {@link User}. Questo consente al motore di documentazione Swagger/OpenAPI di generare un
+ * contratto JSON completo di schema e valori di esempio concreti per l'utenza IAM.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

@@ -1,6 +1,6 @@
-package io.github.giovannilamarmora.accesssphere.data.user.admin;
+package io.github.giovannilamarmora.accesssphere.user.admin;
 
-import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
+import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;

@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.user.account;
+package io.github.giovannilamarmora.accesssphere.user.account;
 
 import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderService;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
@@ -7,10 +7,6 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplatePara
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserValidator;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.ChangePassword;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.email.EmailTemplateService;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -20,6 +16,10 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.user.UserService;
+import io.github.giovannilamarmora.accesssphere.user.UserValidator;
+import io.github.giovannilamarmora.accesssphere.user.dto.ChangePassword;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;

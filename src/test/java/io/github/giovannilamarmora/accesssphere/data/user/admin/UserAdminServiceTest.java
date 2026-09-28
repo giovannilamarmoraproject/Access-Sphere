@@ -7,16 +7,18 @@ import static org.mockito.Mockito.*;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
-import io.github.giovannilamarmora.accesssphere.data.user.UserService;
-import io.github.giovannilamarmora.accesssphere.data.user.admin.dto.AddUserRequest;
-import io.github.giovannilamarmora.accesssphere.data.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleRequest;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
-import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
+import io.github.giovannilamarmora.accesssphere.user.UserException;
+import io.github.giovannilamarmora.accesssphere.user.UserService;
+import io.github.giovannilamarmora.accesssphere.user.admin.UserAdminService;
+import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -294,7 +296,8 @@ class UserAdminServiceTest {
     OAuth2Client client = new OAuth2Client();
     client.setClientId("CLIENT-APP");
     client.setEnableRegistration(true);
-    RoleDefinition role = new RoleDefinition("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
+    RoleDefinition role =
+        new RoleDefinition("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
     client.setAppRoles(List.of(role));
 
     when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-APP"))
@@ -302,8 +305,7 @@ class UserAdminServiceTest {
     when(userService.saveUserEntityIntoDatabase(any()))
         .thenAnswer(
             inv -> {
-              io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity entity =
-                  inv.getArgument(0);
+              UserEntity entity = inv.getArgument(0);
               User dto = new User();
               dto.setIdentifier(entity.getIdentifier());
               dto.setUsername(entity.getUsername());
@@ -341,10 +343,8 @@ class UserAdminServiceTest {
     StepVerifier.create(userAdminService.register(null, user))
         .expectErrorMatches(
             t ->
-                t instanceof io.github.giovannilamarmora.accesssphere.data.user.UserException
-                    && ((io.github.giovannilamarmora.accesssphere.data.user.UserException) t)
-                        .getExceptionCode()
-                        .equals(ExceptionMap.ERR_USER_400))
+                t instanceof UserException
+                    && ((UserException) t).getExceptionCode().equals(ExceptionMap.ERR_USER_400))
         .verify();
   }
 
@@ -360,10 +360,8 @@ class UserAdminServiceTest {
     StepVerifier.create(userAdminService.register(null, user))
         .expectErrorMatches(
             t ->
-                t instanceof io.github.giovannilamarmora.accesssphere.data.user.UserException
-                    && ((io.github.giovannilamarmora.accesssphere.data.user.UserException) t)
-                        .getExceptionCode()
-                        .equals(ExceptionMap.ERR_USER_400))
+                t instanceof UserException
+                    && ((UserException) t).getExceptionCode().equals(ExceptionMap.ERR_USER_400))
         .verify();
   }
 
@@ -417,10 +415,8 @@ class UserAdminServiceTest {
     StepVerifier.create(userAdminService.register(null, user))
         .expectErrorMatches(
             t ->
-                t instanceof io.github.giovannilamarmora.accesssphere.data.user.UserException
-                    && ((io.github.giovannilamarmora.accesssphere.data.user.UserException) t)
-                        .getExceptionCode()
-                        .equals(ExceptionMap.ERR_USER_400))
+                t instanceof UserException
+                    && ((UserException) t).getExceptionCode().equals(ExceptionMap.ERR_USER_400))
         .verify();
   }
 
@@ -459,7 +455,8 @@ class UserAdminServiceTest {
     OAuth2Client client = new OAuth2Client();
     client.setClientId("CLIENT-BLOCKED");
     client.setEnableRegistration(false);
-    RoleDefinition role = new RoleDefinition("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
+    RoleDefinition role =
+        new RoleDefinition("ACCESS-SPHERE_USER", "USER", "User role", List.of("users:read"));
     client.setAppRoles(List.of(role));
 
     when(oAuth2ClientService.getClientCredentialByClientID("CLIENT-BLOCKED"))
@@ -477,8 +474,7 @@ class UserAdminServiceTest {
     when(userService.saveUserEntityIntoDatabase(any()))
         .thenAnswer(
             inv -> {
-              io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity entity =
-                  inv.getArgument(0);
+              UserEntity entity = inv.getArgument(0);
               User dto = new User();
               dto.setIdentifier(entity.getIdentifier());
               dto.setUsername(entity.getUsername());
@@ -507,7 +503,8 @@ class UserAdminServiceTest {
     OAuth2Client client = new OAuth2Client();
     client.setClientId("CLIENT-LOCKED");
     client.setEnableRegistration(false);
-    client.setAppRoles(List.of(new RoleDefinition("ACCESS-SPHERE_USER", "USER", "desc", List.of())));
+    client.setAppRoles(
+        List.of(new RoleDefinition("ACCESS-SPHERE_USER", "USER", "desc", List.of())));
 
     OAuth2Authorization adminAuth = new OAuth2Authorization();
     adminAuth.setSubject("admin");
@@ -522,8 +519,7 @@ class UserAdminServiceTest {
     when(userService.saveUserEntityIntoDatabase(any()))
         .thenAnswer(
             inv -> {
-              io.github.giovannilamarmora.accesssphere.data.user.entity.UserEntity entity =
-                  inv.getArgument(0);
+              UserEntity entity = inv.getArgument(0);
               User dto = new User();
               dto.setIdentifier(entity.getIdentifier());
               dto.setUsername(entity.getUsername());

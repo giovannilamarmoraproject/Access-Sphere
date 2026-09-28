@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.data.user;
+package io.github.giovannilamarmora.accesssphere.user;
 
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.utils.exception.ExceptionCode;
