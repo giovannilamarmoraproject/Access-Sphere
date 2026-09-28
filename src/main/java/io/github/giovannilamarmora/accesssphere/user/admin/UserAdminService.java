@@ -218,6 +218,7 @@ public class UserAdminService {
                                       .toList();
                               userClientRoleDAO.saveAll(ucrEntities);
 
+                              user.setPassword(null);
                               return user;
                             })
                         .subscribeOn(Schedulers.boundedElastic());
@@ -443,6 +444,7 @@ public class UserAdminService {
                             .toList();
                     userClientRoleDAO.saveAll(ucrEntities);
 
+                    user.setPassword(null);
                     return user;
                   })
               .subscribeOn(Schedulers.boundedElastic());

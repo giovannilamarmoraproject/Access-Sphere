@@ -310,15 +310,20 @@ public class UserService {
   }
 
   /**
-   * Persiste un'entita' utente nel database locale dopo aver azzerato la password per sicurezza.
+   * Persiste un'entita' utente nel database locale e restituisce il corrispondente DTO {@link User}
+   * arricchito con i ruoli applicativi.
    *
-   * @param userEntity Entita' da salvare.
-   * @return DTO {@link User} corrispondente all'entita' salvata.
+   * <p>Nota di sicurezza e integrità dati: non azzerare MAI la password sull'istanza managed
+   * {@link UserEntity} all'interno del contesto transazionale, per evitare che il dirty checking
+   * di Hibernate propaghi un UPDATE con PASSWORD = NULL su database. La rimozione della password
+   * per la sicurezza del client viene già gestita a livello di DTO da {@link UserMapper#toDTO(UserEntity)}.
+   *
+   * @param userEntity Entita' da salvare con password cifrata (BCrypt).
+   * @return DTO {@link User} corrispondente all'entita' salvata (con password protetta a null).
    */
   @Transactional
   public User saveUserEntityIntoDatabase(UserEntity userEntity) {
     UserEntity userSaved = userDAO.saveAndFlush(userEntity);
-    userSaved.setPassword(null);
     UserValidator.validateUser(userSaved);
     return enrichUser(UserMapper.toDTO(userSaved));
   }

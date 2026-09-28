@@ -295,4 +295,24 @@ class UserServiceTest {
 
     assertThrows(OAuthException.class, () -> userService.updateUser("non-existent", updateDto));
   }
+
+  @Test
+  @DisplayName("saveUserEntityIntoDatabase should preserve password on entity and strip it on DTO")
+  void saveUserEntityIntoDatabase_shouldPreservePasswordOnEntity() {
+    UserEntity entity = new UserEntity();
+    entity.setId(10L);
+    entity.setIdentifier("uuid-10");
+    entity.setUsername("saved_user");
+    entity.setEmail("saved@example.com");
+    entity.setPassword("$2a$10$encodedPasswordHashHere");
+
+    when(userDAO.saveAndFlush(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    User savedUser = userService.saveUserEntityIntoDatabase(entity);
+
+    // Verify entity was saved with the password intact on the managed instance
+    assertEquals("$2a$10$encodedPasswordHashHere", entity.getPassword());
+    // Verify returned DTO has password stripped
+    assertNull(savedUser.getPassword());
+  }
 }
