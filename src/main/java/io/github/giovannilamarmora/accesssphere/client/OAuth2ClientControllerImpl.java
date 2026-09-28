@@ -1,9 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
 import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientDeleteResponse;
-import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientGetResponse;
 import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientListResponse;
-import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientRequest;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientResponse;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -30,9 +30,9 @@ import reactor.core.publisher.Mono;
  *   <li>Delega le verifiche di autorizzazione, scoping multi-tenant e logica applicativa a {@link
  *       OAuth2ClientService}.
  *   <li>Ha la responsabilita esclusiva di costruire le risposte HTTP {@link ResponseEntity}
- *       incapsulando i dati nei wrapper fortemente tipizzati {@link OAuth2ClientGetResponse},
- *       {@link OAuth2ClientListResponse} e {@link OAuth2ClientDeleteResponse} corredati di codice
- *       di stato HTTP e distributed tracing (Span ID).
+ *       incapsulando i dati nei wrapper fortemente tipizzati {@link OAuth2ClientResponse}, {@link
+ *       OAuth2ClientListResponse} e {@link OAuth2ClientDeleteResponse} corredati di codice di stato
+ *       HTTP e distributed tracing (Span ID).
  * </ul>
  */
 @Logged
@@ -76,18 +76,18 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
    * @param bearer Token Bearer di autenticazione.
    * @param clientId Identificativo univoco del client.
    * @param request Richiesta HTTP server.
-   * @return Mono con ResponseEntity contenente {@link OAuth2ClientGetResponse}.
+   * @return Mono con ResponseEntity contenente {@link OAuth2ClientResponse}.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<OAuth2ClientGetResponse>> getOAuth2ClientByClientID(
+  public Mono<ResponseEntity<OAuth2ClientResponse>> getOAuth2ClientByClientID(
       String bearer, String clientId, ServerHttpRequest request) {
     return oAuth2ClientService
         .getOAuth2ClientByClientID(clientId)
         .map(
             client -> {
-              OAuth2ClientGetResponse response =
-                  new OAuth2ClientGetResponse(
+              OAuth2ClientResponse response =
+                  new OAuth2ClientResponse(
                       HttpStatus.OK.value(),
                       "Successfully retrieved %s OAuth2 client.".formatted(clientId),
                       TraceUtils.getSpanID(),
@@ -102,18 +102,18 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
    * @param bearer Token Bearer di autenticazione.
    * @param oAuth2Client DTO con la configurazione del nuovo client.
    * @param request Richiesta HTTP server.
-   * @return Mono con ResponseEntity con stato 201 CREATED e {@link OAuth2ClientGetResponse}.
+   * @return Mono con ResponseEntity con stato 201 CREATED e {@link OAuth2ClientResponse}.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<OAuth2ClientGetResponse>> createOAuth2Client(
-      String bearer, OAuth2Client oAuth2Client, ServerHttpRequest request) {
+  public Mono<ResponseEntity<OAuth2ClientResponse>> createOAuth2Client(
+      String bearer, OAuth2ClientRequest oAuth2Client, ServerHttpRequest request) {
     return oAuth2ClientService
         .saveOAuth2Client(oAuth2Client)
         .map(
             client -> {
-              OAuth2ClientGetResponse response =
-                  new OAuth2ClientGetResponse(
+              OAuth2ClientResponse response =
+                  new OAuth2ClientResponse(
                       HttpStatus.CREATED.value(),
                       "Client %s created".formatted(oAuth2Client.getClientId()),
                       TraceUtils.getSpanID(),
@@ -129,18 +129,18 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
    * @param bearer Token Bearer di autenticazione.
    * @param oAuth2Client DTO con le configurazioni aggiornate.
    * @param request Richiesta HTTP server.
-   * @return Mono con ResponseEntity contenente {@link OAuth2ClientGetResponse}.
+   * @return Mono con ResponseEntity contenente {@link OAuth2ClientResponse}.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<OAuth2ClientGetResponse>> updateOAuth2ClientByClientId(
-      String clientId, String bearer, OAuth2Client oAuth2Client, ServerHttpRequest request) {
+  public Mono<ResponseEntity<OAuth2ClientResponse>> updateOAuth2ClientByClientId(
+      String clientId, String bearer, OAuth2ClientRequest oAuth2Client, ServerHttpRequest request) {
     return oAuth2ClientService
         .updateOAuth2ClientByClientId(oAuth2Client, clientId)
         .map(
             client -> {
-              OAuth2ClientGetResponse response =
-                  new OAuth2ClientGetResponse(
+              OAuth2ClientResponse response =
+                  new OAuth2ClientResponse(
                       HttpStatus.OK.value(),
                       "Client %s updated".formatted(oAuth2Client.getClientId()),
                       TraceUtils.getSpanID(),

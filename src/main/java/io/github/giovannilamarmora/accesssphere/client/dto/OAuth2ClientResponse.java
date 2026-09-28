@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Standard response wrapper containing full details of an OAuth 2.0 client")
-public class OAuth2ClientGetResponse extends Response {
+public class OAuth2ClientResponse extends Response {
 
   @Schema(description = "HTTP status code of the operation", example = "200")
   private Integer status;
@@ -37,5 +37,5 @@ public class OAuth2ClientGetResponse extends Response {
   private String spanId;
 
   @Schema(description = "Details of the OAuth 2.0 client configured in the system")
-  private OAuth2Client data;
+  private OAuth2ClientDataResponse data;
 }

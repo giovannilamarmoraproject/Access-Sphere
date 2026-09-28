@@ -41,5 +41,5 @@ public class OAuth2ClientListResponse extends Response {
   @ArraySchema(
       schema = @Schema(description = "OAuth2 Client item", implementation = OAuth2Client.class))
   @Schema(description = "Complete list of registered OAuth 2.0 clients in the catalog")
-  private List<OAuth2Client> data;
+  private List<OAuth2ClientDataResponse> data;
 }

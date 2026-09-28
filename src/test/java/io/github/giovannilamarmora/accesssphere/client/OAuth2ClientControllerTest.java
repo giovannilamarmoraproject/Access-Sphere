@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientDeleteResponse;
-import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientGetResponse;
 import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientListResponse;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientResponse;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +69,7 @@ class OAuth2ClientControllerTest {
     when(oAuth2ClientService.getOAuth2ClientByClientID("TEST-CLIENT-001"))
         .thenReturn(Mono.just(sampleClient));
 
-    Mono<ResponseEntity<OAuth2ClientGetResponse>> result =
+    Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.getOAuth2ClientByClientID(
             "Bearer sample-token",
             "TEST-CLIENT-001",
@@ -94,7 +94,7 @@ class OAuth2ClientControllerTest {
   void testCreateClient() {
     doNothing().when(oAuth2ClientService).saveOAuth2Client(any(OAuth2Client.class));
 
-    Mono<ResponseEntity<OAuth2ClientGetResponse>> result =
+    Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.createOAuth2Client(
             "Bearer sample-token", sampleClient, MockServerHttpRequest.post("/v1/clients").build());
 
@@ -119,7 +119,7 @@ class OAuth2ClientControllerTest {
     clientWithoutId.setClientSecret("updated-secret");
     doNothing().when(oAuth2ClientService).updateOAuth2ClientByClientId(any(OAuth2Client.class));
 
-    Mono<ResponseEntity<OAuth2ClientGetResponse>> result =
+    Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.updateOAuth2ClientByClientId(
             "PATH-CLIENT-ID",
             "Bearer sample-token",
@@ -145,7 +145,7 @@ class OAuth2ClientControllerTest {
   void testUpdateClient() {
     doNothing().when(oAuth2ClientService).updateOAuth2ClientByClientId(any(OAuth2Client.class));
 
-    Mono<ResponseEntity<OAuth2ClientGetResponse>> result =
+    Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.updateClient(
             "Bearer sample-token", sampleClient, MockServerHttpRequest.put("/v1/clients").build());
 

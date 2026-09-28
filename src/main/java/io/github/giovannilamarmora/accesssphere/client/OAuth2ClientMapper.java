@@ -2,9 +2,12 @@ package io.github.giovannilamarmora.accesssphere.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientDataResponse;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientRequest;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
+import io.github.giovannilamarmora.accesssphere.roles.mapper.RoleDefinitionMapper;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.LinkedHashMap;
@@ -16,6 +19,27 @@ import org.springframework.util.ObjectUtils;
 
 @Component
 public class OAuth2ClientMapper {
+
+  public static List<OAuth2ClientDataResponse> toResponseList(List<OAuth2Client> oAuth2Client) {
+    return oAuth2Client.stream().map(OAuth2ClientMapper::toResponse).toList();
+  }
+
+  public static OAuth2ClientDataResponse toResponse(OAuth2Client oAuth2Client) {
+    OAuth2ClientDataResponse oAuth2ClientResponse = new OAuth2ClientDataResponse();
+    BeanUtils.copyProperties(oAuth2Client, oAuth2ClientResponse);
+    oAuth2ClientResponse.setAppRoles(
+        RoleDefinitionMapper.toResponseList(oAuth2Client.getAppRoles()));
+    return oAuth2ClientResponse;
+  }
+
+  public static OAuth2Client toModel(OAuth2ClientRequest oAuth2ClientRequest) {
+    OAuth2Client oAuth2Client = new OAuth2Client();
+    BeanUtils.copyProperties(oAuth2ClientRequest, oAuth2Client);
+    oAuth2Client.setAppRoles(
+        RoleDefinitionMapper.requestsToModelList(
+            oAuth2ClientRequest.getAppRoles(), oAuth2ClientRequest.getClientId()));
+    return oAuth2Client;
+  }
 
   public static List<OAuth2Client> toModelList(List<OAuth2ClientEntity> oAuth2ClientEntities) {
     return oAuth2ClientEntities.stream().map(OAuth2ClientMapper::toModel).toList();

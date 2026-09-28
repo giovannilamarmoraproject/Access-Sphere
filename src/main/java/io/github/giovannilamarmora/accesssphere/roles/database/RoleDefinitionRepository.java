@@ -28,7 +28,7 @@ public class RoleDefinitionRepository {
     }
 
     LOG.debug("⚖️ Found {} RoleDefinition", getEntityList.size());
-    return Optional.of(RoleDefinitionMapper.toModelList(getEntityList));
+    return Optional.of(RoleDefinitionMapper.entitiesToModelList(getEntityList));
   }
 
   public Optional<List<RoleDefinition>> findByClientId(String clientId) {
@@ -41,7 +41,7 @@ public class RoleDefinitionRepository {
     }
 
     LOG.debug("⚖️ Found {} RoleDefinition for client {}", getEntityList.size(), clientId);
-    return Optional.of(RoleDefinitionMapper.toModelList(getEntityList));
+    return Optional.of(RoleDefinitionMapper.entitiesToModelList(getEntityList));
   }
 
   public Boolean existsByClientIdAndRole(String clientId, String role) {

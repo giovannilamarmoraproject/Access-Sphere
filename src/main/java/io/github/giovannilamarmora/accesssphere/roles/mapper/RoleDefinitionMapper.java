@@ -1,5 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.roles.mapper;
 
+import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionRequest;
+import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionResponse;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
@@ -23,6 +25,36 @@ import org.springframework.stereotype.Component;
 @Component
 public class RoleDefinitionMapper {
 
+  public static List<RoleDefinitionResponse> toResponseList(List<RoleDefinition> roleDefinitions) {
+    if (ObjectToolkit.isNullOrEmpty(roleDefinitions)) return List.of();
+    return roleDefinitions.stream().map(RoleDefinitionMapper::toResponse).toList();
+  }
+
+  public static RoleDefinitionResponse toResponse(RoleDefinition roleDefinition) {
+    if (ObjectToolkit.isNullOrEmpty(roleDefinition)) return null;
+    RoleDefinitionResponse roleDefinitionResponse = new RoleDefinitionResponse();
+    BeanUtils.copyProperties(roleDefinition, roleDefinitionResponse);
+    roleDefinitionResponse.setId(null);
+    return roleDefinitionResponse;
+  }
+
+  public static List<RoleDefinition> requestsToModelList(
+      List<RoleDefinitionRequest> roleDefinitionRequests, String clientId) {
+    if (ObjectToolkit.isNullOrEmpty(roleDefinitionRequests)) return List.of();
+    return roleDefinitionRequests.stream()
+        .map(roleDefinitionRequest -> RoleDefinitionMapper.toModel(roleDefinitionRequest, clientId))
+        .toList();
+  }
+
+  public static RoleDefinition toModel(
+      RoleDefinitionRequest roleDefinitionRequest, String clientId) {
+    if (ObjectToolkit.isNullOrEmpty(roleDefinitionRequest)) return null;
+    RoleDefinition roleDefinition = new RoleDefinition();
+    BeanUtils.copyProperties(roleDefinitionRequest, roleDefinition);
+    roleDefinition.setClientId(clientId);
+    return roleDefinition;
+  }
+
   /**
    * Converte una lista di entità {@link RoleDefinitionEntity} nella corrispondente lista di modelli
    * di dominio {@link RoleDefinition}.
@@ -30,7 +62,7 @@ public class RoleDefinitionMapper {
    * @param roleDefinitionEntities Lista di entità recuperate dal database.
    * @return Lista di modelli di dominio, oppure una lista vuota se l'input è null.
    */
-  public static List<RoleDefinition> toModelList(
+  public static List<RoleDefinition> entitiesToModelList(
       List<RoleDefinitionEntity> roleDefinitionEntities) {
     if (ObjectToolkit.isNullOrEmpty(roleDefinitionEntities)) return List.of();
     return roleDefinitionEntities.stream().map(RoleDefinitionMapper::toModel).toList();

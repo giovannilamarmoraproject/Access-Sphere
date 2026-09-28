@@ -1,8 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
 import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientDeleteResponse;
-import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientGetResponse;
 import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientListResponse;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientRequest;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientResponse;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
@@ -35,7 +36,7 @@ import reactor.core.publisher.Mono;
  * <ul>
  *   <li>Consumato dal controller di implementazione {@link OAuth2ClientControllerImpl}.
  *   <li>Inoltra la business logic a {@link OAuth2ClientService}.
- *   <li>Utilizza gli involucri di risposta tipizzati {@link OAuth2ClientGetResponse}, {@link
+ *   <li>Utilizza gli involucri di risposta tipizzati {@link OAuth2ClientResponse}, {@link
  *       OAuth2ClientListResponse} e {@link OAuth2ClientDeleteResponse} per garantire una resa
  *       dettagliata e completa dei modelli e degli esempi in Swagger UI.
  * </ul>
@@ -97,7 +98,7 @@ public interface OAuth2ClientController {
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param clientId Identificativo univoco del client desiderato.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link OAuth2ClientGetResponse}.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link OAuth2ClientResponse}.
    */
   @GetMapping("/clients/{clientId}")
   @Operation(
@@ -114,7 +115,7 @@ public interface OAuth2ClientController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = OAuth2ClientGetResponse.class))),
+                    schema = @Schema(implementation = OAuth2ClientResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request - Invalid client ID provided",
@@ -137,7 +138,7 @@ public interface OAuth2ClientController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class))),
       })
-  Mono<ResponseEntity<OAuth2ClientGetResponse>> getOAuth2ClientByClientID(
+  Mono<ResponseEntity<OAuth2ClientResponse>> getOAuth2ClientByClientID(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(
@@ -158,7 +159,7 @@ public interface OAuth2ClientController {
    * @param oAuth2Client DTO con la configurazione e le credenziali del nuovo client.
    * @param request Richiesta HTTP server reattiva.
    * @return {@link Mono} contenente {@link ResponseEntity} con stato 201 CREATED e {@link
-   *     OAuth2ClientGetResponse}.
+   *     OAuth2ClientResponse}.
    */
   @PostMapping("/clients")
   @Operation(
@@ -174,7 +175,7 @@ public interface OAuth2ClientController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = OAuth2ClientGetResponse.class))),
+                    schema = @Schema(implementation = OAuth2ClientResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request - Invalid client configuration or validation failure",
@@ -197,7 +198,7 @@ public interface OAuth2ClientController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class))),
       })
-  Mono<ResponseEntity<OAuth2ClientGetResponse>> createOAuth2Client(
+  Mono<ResponseEntity<OAuth2ClientResponse>> createOAuth2Client(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION)
           @Valid
           @Schema(
@@ -205,7 +206,7 @@ public interface OAuth2ClientController {
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
       @RequestBody @Valid @NotNull(message = "Client payload cannot be null")
-          OAuth2Client oAuth2Client,
+          OAuth2ClientRequest oAuth2Client,
       ServerHttpRequest request);
 
   /**
@@ -216,7 +217,7 @@ public interface OAuth2ClientController {
    * @param bearer Token JWT Bearer dell'operatore tecnico autorizzato.
    * @param oAuth2Client DTO contenente le nuove configurazioni del client.
    * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con {@link OAuth2ClientGetResponse}.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link OAuth2ClientResponse}.
    */
   @PutMapping("/clients/{clientId}")
   @Operation(
@@ -233,7 +234,7 @@ public interface OAuth2ClientController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = OAuth2ClientGetResponse.class))),
+                    schema = @Schema(implementation = OAuth2ClientResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request - Invalid client data or payload",
@@ -256,7 +257,7 @@ public interface OAuth2ClientController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class))),
       })
-  Mono<ResponseEntity<OAuth2ClientGetResponse>> updateOAuth2ClientByClientId(
+  Mono<ResponseEntity<OAuth2ClientResponse>> updateOAuth2ClientByClientId(
       @PathVariable(value = "clientId")
           @Schema(
               description = OpenAPI.Params.Description.CLIENT_ID,
@@ -269,7 +270,7 @@ public interface OAuth2ClientController {
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
       @RequestBody @Valid @NotNull(message = "Client payload cannot be null")
-          OAuth2Client oAuth2Client,
+          OAuth2ClientRequest oAuth2Client,
       ServerHttpRequest request);
 
   /**

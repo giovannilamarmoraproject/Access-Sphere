@@ -1,5 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.client;
 
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientDataResponse;
+import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientRequest;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
@@ -54,7 +56,7 @@ public class OAuth2ClientService {
    *
    * @return {@link Mono} con la lista di {@link OAuth2Client} autorizzati per l'operatore.
    */
-  public Mono<List<OAuth2Client>> getOAuth2Clients() {
+  public Mono<List<OAuth2ClientDataResponse>> getOAuth2Clients() {
     SystemPermission readClientPermission = SystemPermission.CLIENTS_READ;
     List<RoleDefinition> hasCorrectRoles =
         permissionRoleManager.checkPermissionAndReturnUserRoles(readClientPermission);
@@ -83,7 +85,8 @@ public class OAuth2ClientService {
                           client.getClientId() != null
                               && authorizedClientIds.contains(client.getClientId().toUpperCase()))
                   .toList();
-            });
+            })
+        .map(OAuth2ClientMapper::toResponseList);
   }
 
   /**
@@ -93,22 +96,24 @@ public class OAuth2ClientService {
    * @param clientID Identificativo univoco del client.
    * @return {@link Mono} contenente il {@link OAuth2Client} richiesto.
    */
-  public Mono<OAuth2Client> getOAuth2ClientByClientID(String clientID) {
+  public Mono<OAuth2ClientDataResponse> getOAuth2ClientByClientID(String clientID) {
     SystemPermission readClientPermission = SystemPermission.CLIENTS_READ;
 
     permissionRoleManager.checkPermissionAndReturnUserRoles(readClientPermission);
 
     LOG.info("🌐 Retrieving client details for client ID: {}", clientID);
 
-    return oAuth2ClientDomainService.getOAuth2ClientByClientID(clientID);
+    return oAuth2ClientDomainService
+        .getOAuth2ClientByClientID(clientID)
+        .map(OAuth2ClientMapper::toResponse);
   }
 
   /**
    * Registra un nuovo client OAuth2 nel sistema verificando le autorizzazioni dell'operatore.
    *
-   * @param oAuth2Client DTO con la configurazione del nuovo client.
+   * @param oAuth2ClientRequest DTO con la configurazione del nuovo client.
    */
-  public Mono<OAuth2Client> saveOAuth2Client(OAuth2Client oAuth2Client) {
+  public Mono<OAuth2ClientDataResponse> saveOAuth2Client(OAuth2ClientRequest oAuth2ClientRequest) {
     SystemPermission writeClientPermission = SystemPermission.CLIENTS_WRITE;
     if (!permissionRoleManager.hasAdminPermission(writeClientPermission)) {
       LOG.error(
@@ -118,19 +123,23 @@ public class OAuth2ClientService {
           oAuth2Authorization.getIdentifier());
       throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
-    LOG.info("🌐 Registering new OAuth 2.0 client: {}", oAuth2Client.getClientId());
+    LOG.info("🌐 Registering new OAuth 2.0 client: {}", oAuth2ClientRequest.getClientId());
 
-    return oAuth2ClientDomainService.saveOAuth2Client(oAuth2Client);
+    OAuth2Client oAuth2Client = OAuth2ClientMapper.toModel(oAuth2ClientRequest);
+
+    return oAuth2ClientDomainService
+        .saveOAuth2Client(oAuth2Client)
+        .map(OAuth2ClientMapper::toResponse);
   }
 
   /**
    * Aggiorna le configurazioni di un client garantendo che appartenga al perimetro dell'operatore e
    * che questi possieda il permesso {@code clients:write}.
    *
-   * @param oAuth2Client DTO con i parametri aggiornati.
+   * @param oAuth2ClientRequest DTO con i parametri aggiornati.
    */
-  public Mono<OAuth2Client> updateOAuth2ClientByClientId(
-      OAuth2Client oAuth2Client, String clientId) {
+  public Mono<OAuth2ClientDataResponse> updateOAuth2ClientByClientId(
+      OAuth2ClientRequest oAuth2ClientRequest, String clientId) {
     SystemPermission writeClientPermission = SystemPermission.CLIENTS_WRITE;
     if (!permissionRoleManager.hasAdminPermission(writeClientPermission)) {
       LOG.error(
@@ -143,7 +152,11 @@ public class OAuth2ClientService {
 
     LOG.info("🌐 Updating OAuth 2.0 client by path ID: {}", clientId);
 
-    return oAuth2ClientDomainService.updateOAuth2ClientByClientId(oAuth2Client, clientId);
+    OAuth2Client oAuth2Client = OAuth2ClientMapper.toModel(oAuth2ClientRequest);
+
+    return oAuth2ClientDomainService
+        .updateOAuth2ClientByClientId(oAuth2Client, clientId)
+        .map(OAuth2ClientMapper::toResponse);
   }
 
   /**
