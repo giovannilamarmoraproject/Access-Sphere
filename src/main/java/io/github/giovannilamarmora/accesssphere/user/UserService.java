@@ -1,14 +1,19 @@
 package io.github.giovannilamarmora.accesssphere.user;
 
-import io.github.giovannilamarmora.accesssphere.client.database.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.database.RoleDefinitionRepository;
+import io.github.giovannilamarmora.accesssphere.roles.database.UserClientRoleRepository;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
+import io.github.giovannilamarmora.accesssphere.roles.mapper.RoleDefinitionMapper;
+import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.user.database.IUserDAO;
+import io.github.giovannilamarmora.accesssphere.user.database.UserRepository;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
@@ -57,7 +62,74 @@ public class UserService {
   @Autowired private IUserDAO userDAO;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
-  @Autowired private IOAuth2ClientDAO clientDAO;
+  @Autowired private UserRepository userRepository;
+  @Autowired private UserClientRoleRepository userClientRoleRepository;
+  @Autowired private RoleDefinitionRepository roleDefinitionRepository;
+
+  /**
+   * Recupera un utente dal database locale a partire dal suo indirizzo email. Effettua la
+   * validazione di esistenza e la conversione in DTO {@link User}.
+   *
+   * @param email Indirizzo email dell'utente.
+   * @return Mono contenente il DTO {@link User}.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<User> getUserByEmail(String email) {
+    LOG.info("👤 Getting user by email: {}", email);
+    Optional<User> optionalUser = userRepository.getUserByEmail(email);
+
+    if (optionalUser.isEmpty()) {
+      LOG.error("❌ User: {} not found into database", email);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
+    }
+    User user = optionalUser.get();
+
+    Optional<List<UserClientRole>> optionalUserClientRoles =
+        userClientRoleRepository.findByUserIdentifier(user.getIdentifier());
+
+    if (optionalUserClientRoles.isEmpty()) {
+      LOG.warn("🔐 No Role found for user: {}", user.getIdentifier());
+      return Mono.just(user);
+    }
+
+    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
+
+    if (optionalRoleDefinitions.isEmpty()) {
+      LOG.warn("🔐 No Role Definition found for user: {}", user.getIdentifier());
+      return Mono.just(user);
+    }
+
+    List<RoleDefinition> roleDefinitions = optionalRoleDefinitions.get();
+
+    roleDefinitions.stream().map(roleDefinition -> {
+
+    })
+
+    if (user == null || user.getIdentifier() == null) return user;
+    List<UserClientRoleEntity> ucrEntities =
+        userClientRoleDAO.findByUserIdentifier(user.getIdentifier());
+    if (ucrEntities != null && !ucrEntities.isEmpty()) {
+      List<UserClientRole> clientRoleDTOs =
+          ucrEntities.stream()
+              .map(
+                  ucr -> {
+                    UserClientRole dto = new UserClientRole(ucr.getClientId(), ucr.getRole());
+                    Optional<RoleDefinitionEntity> roleDef =
+                        roleDefinitionDAO.findByClientIdAndRole(ucr.getClientId(), ucr.getRole());
+                    if (roleDef.isPresent()) {
+                      RoleDefinitionEntity rd = roleDef.get();
+                      if (rd.getType() != null) dto.setType(rd.getType());
+                      if (rd.getDescription() != null) dto.setDescription(rd.getDescription());
+                      if (rd.getPermissions() != null) dto.setPermissions(rd.getPermissions());
+                    }
+                    return dto;
+                  })
+              .toList();
+      user.setRoles(clientRoleDTOs);
+    }
+
+    return Mono.just(user);
+  }
 
   /**
    * Recupera un utente dal database locale tramite il suo identificatore univoco UUID. Valida la
@@ -71,21 +143,6 @@ public class UserService {
   public Mono<User> getUserByIdentifier(String identifier) {
     LOG.info("👤 Getting user by identifier: {}", identifier);
     UserEntity userEntity = userDAO.findUserEntityByIdentifier(identifier);
-    UserValidator.validateUser(userEntity);
-    return Mono.just(enrichUser(UserMapper.toDTO(userEntity)));
-  }
-
-  /**
-   * Recupera un utente dal database locale a partire dal suo indirizzo email. Effettua la
-   * validazione di esistenza e la conversione in DTO {@link User}.
-   *
-   * @param email Indirizzo email dell'utente.
-   * @return Mono contenente il DTO {@link User}.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> getUserByEmail(String email) {
-    LOG.info("👤 Getting user by email: {}", email);
-    UserEntity userEntity = userDAO.findUserEntityByEmail(email);
     UserValidator.validateUser(userEntity);
     return Mono.just(enrichUser(UserMapper.toDTO(userEntity)));
   }

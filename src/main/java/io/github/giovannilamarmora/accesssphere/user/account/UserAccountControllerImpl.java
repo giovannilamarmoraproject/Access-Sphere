@@ -51,7 +51,6 @@ public class UserAccountControllerImpl implements UserAccountController {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> profile(String bearer, ServerHttpRequest request) {
-    LOG.info("🌐 [ACCOUNT CONTROLLER] Invoking Profile endpoint");
     return userAccountService
         .profile(bearer, request)
         .map(
@@ -59,7 +58,7 @@ public class UserAccountControllerImpl implements UserAccountController {
               Response response =
                   new Response(
                       HttpStatus.OK.value(),
-                      "Profile Data for " + user.getUsername(),
+                      "Profile Data for %s".formatted(user.getUsername()),
                       TraceUtils.getSpanID(),
                       user);
               return ResponseEntity.ok(response);

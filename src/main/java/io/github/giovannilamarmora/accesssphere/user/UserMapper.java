@@ -52,7 +52,7 @@ public class UserMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static User toDTO(UserEntity userEntity) {
     User user = new User();
-    BeanUtils.copyProperties(userEntity, user, "roles");
+    BeanUtils.copyProperties(userEntity, user);
     user.setPassword(null);
 
     if (!ObjectToolkit.isNullOrEmpty(userEntity.getAttributes()))
