@@ -10,7 +10,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

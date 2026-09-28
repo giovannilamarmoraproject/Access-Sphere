@@ -8,8 +8,8 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;

@@ -8,7 +8,7 @@ import io.github.giovannilamarmora.accesssphere.mfa.MFAMapper;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAUtils;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.QRCodeUtils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;

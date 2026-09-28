@@ -13,7 +13,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.model.AppRoleType;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
 import java.util.Map;

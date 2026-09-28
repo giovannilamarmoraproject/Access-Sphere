@@ -9,8 +9,8 @@ import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntit
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.user.database.IUserDAO;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;

@@ -14,8 +14,8 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.account.UserAccountService;
-import io.github.giovannilamarmora.accesssphere.user.dto.ChangePassword;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

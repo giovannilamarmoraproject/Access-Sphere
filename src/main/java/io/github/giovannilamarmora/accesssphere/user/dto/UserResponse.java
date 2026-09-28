@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.user.dto;
 
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

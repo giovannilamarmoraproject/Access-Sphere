@@ -10,7 +10,7 @@ import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.UserValidator;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;

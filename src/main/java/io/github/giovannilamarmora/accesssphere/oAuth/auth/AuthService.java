@@ -16,7 +16,7 @@ import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.accesssphere.utilities.SessionID;
 import io.github.giovannilamarmora.utils.context.TraceUtils;

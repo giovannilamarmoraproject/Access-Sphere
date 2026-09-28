@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.user.account;
 
-import io.github.giovannilamarmora.accesssphere.user.dto.ChangePassword;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;

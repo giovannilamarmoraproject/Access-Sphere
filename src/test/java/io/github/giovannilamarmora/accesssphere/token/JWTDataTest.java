@@ -3,11 +3,11 @@ package io.github.giovannilamarmora.accesssphere.token;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

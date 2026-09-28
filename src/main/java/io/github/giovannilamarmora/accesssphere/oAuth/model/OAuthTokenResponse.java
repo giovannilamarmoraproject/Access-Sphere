@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
-import io.github.giovannilamarmora.accesssphere.user.dto.User;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
