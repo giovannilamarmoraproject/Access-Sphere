@@ -67,9 +67,6 @@ public class OAuth2ClientEntity extends GenericEntity {
   @Column(name = "JWE_EXPIRATION")
   private Long jweExpiration;
 
-  @Column(name = "REGISTRATION_TOKEN")
-  private String registrationToken;
-
   @Column(name = "ID_TOKEN")
   private Boolean idToken;
 

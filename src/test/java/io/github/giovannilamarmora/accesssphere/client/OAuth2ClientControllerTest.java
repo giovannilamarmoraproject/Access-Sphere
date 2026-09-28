@@ -92,7 +92,7 @@ class OAuth2ClientControllerTest {
   @Test
   @DisplayName("createClient calls service and returns 201 CREATED")
   void testCreateClient() {
-    doNothing().when(oAuth2ClientService).createOAuth2Client(any(OAuth2Client.class));
+    doNothing().when(oAuth2ClientService).saveOAuth2Client(any(OAuth2Client.class));
 
     Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.createOAuth2Client(
@@ -109,7 +109,7 @@ class OAuth2ClientControllerTest {
             })
         .verifyComplete();
 
-    verify(oAuth2ClientService, times(1)).createOAuth2Client(sampleClient);
+    verify(oAuth2ClientService, times(1)).saveOAuth2Client(sampleClient);
   }
 
   @Test
@@ -117,10 +117,10 @@ class OAuth2ClientControllerTest {
   void testUpdateClientById() {
     OAuth2Client clientWithoutId = new OAuth2Client();
     clientWithoutId.setClientSecret("updated-secret");
-    doNothing().when(oAuth2ClientService).updateClientInDatabase(any(OAuth2Client.class));
+    doNothing().when(oAuth2ClientService).updateOAuth2ClientByClientId(any(OAuth2Client.class));
 
     Mono<ResponseEntity<OAuth2ClientResponse>> result =
-        oAuth2ClientController.updateClientById(
+        oAuth2ClientController.updateOAuth2ClientByClientId(
             "PATH-CLIENT-ID",
             "Bearer sample-token",
             clientWithoutId,
@@ -137,13 +137,13 @@ class OAuth2ClientControllerTest {
             })
         .verifyComplete();
 
-    verify(oAuth2ClientService, times(1)).updateClientInDatabase(clientWithoutId);
+    verify(oAuth2ClientService, times(1)).updateOAuth2ClientByClientId(clientWithoutId);
   }
 
   @Test
   @DisplayName("updateClient calls service and returns 200 OK")
   void testUpdateClient() {
-    doNothing().when(oAuth2ClientService).updateClientInDatabase(any(OAuth2Client.class));
+    doNothing().when(oAuth2ClientService).updateOAuth2ClientByClientId(any(OAuth2Client.class));
 
     Mono<ResponseEntity<OAuth2ClientResponse>> result =
         oAuth2ClientController.updateClient(
@@ -160,13 +160,13 @@ class OAuth2ClientControllerTest {
             })
         .verifyComplete();
 
-    verify(oAuth2ClientService, times(1)).updateClientInDatabase(sampleClient);
+    verify(oAuth2ClientService, times(1)).updateOAuth2ClientByClientId(sampleClient);
   }
 
   @Test
   @DisplayName("deleteClient calls service and returns 200 OK with null data")
   void testDeleteClient() {
-    doNothing().when(oAuth2ClientService).deleteClientFromDatabase(any(OAuth2Client.class));
+    doNothing().when(oAuth2ClientService).deleteOAuth2ClientByClientId(any(OAuth2Client.class));
 
     Mono<ResponseEntity<OAuth2ClientDeleteResponse>> result =
         oAuth2ClientController.deleteClient(
@@ -184,6 +184,6 @@ class OAuth2ClientControllerTest {
             })
         .verifyComplete();
 
-    verify(oAuth2ClientService, times(1)).deleteClientFromDatabase(any(OAuth2Client.class));
+    verify(oAuth2ClientService, times(1)).deleteOAuth2ClientByClientId(any(OAuth2Client.class));
   }
 }

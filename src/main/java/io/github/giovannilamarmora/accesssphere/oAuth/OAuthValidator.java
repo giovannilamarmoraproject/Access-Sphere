@@ -46,6 +46,25 @@ public class OAuthValidator {
           ExceptionType.INVALID_ROLES,
           "Invalid Roles Configuration! At least one role is required.");
     }
+    oAuth2Client
+        .getAppRoles()
+        .forEach(
+            role -> {
+              if (ObjectToolkit.isNullOrEmpty(role.getRole())) {
+                LOG.error("❌ The Client must have a valid role configuration to proceed");
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_400,
+                    ExceptionType.INVALID_ROLES,
+                    "Invalid Roles Configuration! At least one role is required.");
+              }
+              if (ObjectToolkit.isNullOrEmpty(role.getType())) {
+                LOG.error("❌ The Client must have a valid role type configuration to proceed");
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_400,
+                    ExceptionType.INVALID_ROLES,
+                    "Invalid Roles Configuration! At least one role type is required.");
+              }
+            });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)

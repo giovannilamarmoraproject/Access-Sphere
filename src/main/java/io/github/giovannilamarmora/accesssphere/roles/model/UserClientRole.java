@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.roles.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;
+import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -31,14 +32,17 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Contextualized application role assigned to a user for an OAuth2 Client")
 public class UserClientRole extends GenericDTO {
 
+  @UpperCase
   @Schema(
       description = "Identifier of the OAuth2 Client associated with the role",
       example = "LINKATUTTO-ADMIN")
   private String clientId;
 
+  @UpperCase
   @Schema(description = "Identifier name of the assigned role", example = "ROLE_USER")
   private String role;
 
+  @UpperCase
   @Schema(description = "Application type of the role", example = "USER")
   private String type;
 
@@ -52,19 +56,8 @@ public class UserClientRole extends GenericDTO {
       example = "[\"users:read\"]")
   private List<String> permissions;
 
-  public UserClientRole(String role) {
-    this.role = role != null ? role.trim().toUpperCase() : null;
-  }
-
   public UserClientRole(String clientId, String role) {
     this.clientId = clientId != null ? clientId.trim().toUpperCase() : null;
     this.role = role != null ? role.trim().toUpperCase() : null;
-  }
-
-  public UserClientRole(String clientId, String role, String type, List<String> permissions) {
-    this.clientId = clientId != null ? clientId.trim().toUpperCase() : null;
-    this.role = role != null ? role.trim().toUpperCase() : null;
-    this.type = type;
-    this.permissions = permissions;
   }
 }

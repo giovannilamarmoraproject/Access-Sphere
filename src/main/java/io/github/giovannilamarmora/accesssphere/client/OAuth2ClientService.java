@@ -6,13 +6,10 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
-import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
@@ -41,7 +38,6 @@ import reactor.core.publisher.Mono;
  *       org.springframework.http.ResponseEntity} e delegata al Controller.
  * </ul>
  */
-@Logged
 @Service
 public class OAuth2ClientService {
 
@@ -51,7 +47,6 @@ public class OAuth2ClientService {
   @Autowired private PermissionRoleManager permissionRoleManager;
   @Autowired private AdminUserService techUserService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
-  @Autowired private IUserClientRoleDAO userClientRoleDAO;
 
   /**
    * Recupera la lista dei Client registrati applicando i vincoli di perimetro (Data Scoping)
@@ -59,7 +54,6 @@ public class OAuth2ClientService {
    *
    * @return {@link Mono} con la lista di {@link OAuth2Client} autorizzati per l'operatore.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<OAuth2Client>> getOAuth2Clients() {
     SystemPermission readClientPermission = SystemPermission.CLIENTS_READ;
     List<RoleDefinition> hasCorrectRoles =
@@ -99,7 +93,6 @@ public class OAuth2ClientService {
    * @param clientID Identificativo univoco del client.
    * @return {@link Mono} contenente il {@link OAuth2Client} richiesto.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<OAuth2Client> getOAuth2ClientByClientID(String clientID) {
     SystemPermission readClientPermission = SystemPermission.CLIENTS_READ;
 
@@ -115,12 +108,11 @@ public class OAuth2ClientService {
    *
    * @param oAuth2Client DTO con la configurazione del nuovo client.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<OAuth2Client> createOAuth2Client(OAuth2Client oAuth2Client) {
+  public Mono<OAuth2Client> saveOAuth2Client(OAuth2Client oAuth2Client) {
     SystemPermission writeClientPermission = SystemPermission.CLIENTS_WRITE;
     if (!permissionRoleManager.hasAdminPermission(writeClientPermission)) {
       LOG.error(
-          "⛔ Access denied: missing permission [{}] on client [{}] for identifier [{}]",
+          "⛔ Access denied: missing permission [{}] on create client [{}] for identifier [{}]",
           writeClientPermission,
           oAuth2Authorization.getClientId(),
           oAuth2Authorization.getIdentifier());
@@ -128,29 +120,7 @@ public class OAuth2ClientService {
     }
     LOG.info("🌐 Registering new OAuth 2.0 client: {}", oAuth2Client.getClientId());
 
-    if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
-      if (oAuth2Client.getClientId() != null
-          && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getAdminClientId())) {
-        throw new OAuthException(
-            ExceptionMap.ERR_TECH_403, "Non-technical users cannot register technical clients");
-      }
-      permissionRoleManager.assertPermission(
-          oAuth2Authorization, oAuth2Client.getClientId(), "clients:write");
-    }
-
-    oAuth2ClientDomainService.addClientToDatabase(oAuth2Client);
-
-    // Auto-associazione del creatore non-tech come amministratore del nuovo client
-    if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)
-        && oAuth2Authorization.getIdentifier() != null
-        && oAuth2Client.getClientId() != null) {
-      userClientRoleDAO.save(
-          new UserClientRoleEntity(
-              oAuth2Authorization.getIdentifier(),
-              oAuth2Client.getClientId().trim().toUpperCase(),
-              "ROLE_ADMIN"));
-    }
-    return Mono.just(oAuth2Client);
+    return oAuth2ClientDomainService.saveOAuth2Client(oAuth2Client);
   }
 
   /**
@@ -159,21 +129,21 @@ public class OAuth2ClientService {
    *
    * @param oAuth2Client DTO con i parametri aggiornati.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void updateClientInDatabase(OAuth2Client oAuth2Client) {
-    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
-
-    if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
-      if (oAuth2Client.getClientId() != null
-          && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getAdminClientId())) {
-        throw new OAuthException(
-            ExceptionMap.ERR_TECH_403, "Non-technical users cannot modify the technical client");
-      }
-      permissionRoleManager.assertPermission(
-          oAuth2Authorization, oAuth2Client.getClientId(), "clients:write");
+  public Mono<OAuth2Client> updateOAuth2ClientByClientId(
+      OAuth2Client oAuth2Client, String clientId) {
+    SystemPermission writeClientPermission = SystemPermission.CLIENTS_WRITE;
+    if (!permissionRoleManager.hasAdminPermission(writeClientPermission)) {
+      LOG.error(
+          "⛔ Access denied: missing permission [{}] on update client [{}] for identifier [{}]",
+          writeClientPermission,
+          oAuth2Authorization.getClientId(),
+          oAuth2Authorization.getIdentifier());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
-    oAuth2ClientDomainService.updateClientInDatabase(oAuth2Client);
+    LOG.info("🌐 Updating OAuth 2.0 client by path ID: {}", clientId);
+
+    return oAuth2ClientDomainService.updateOAuth2ClientByClientId(oAuth2Client, clientId);
   }
 
   /**
@@ -181,24 +151,29 @@ public class OAuth2ClientService {
    * clients:delete}. Il client tecnico di sistema {@code ACCESS-SPHERE-AUTH} non puo mai essere
    * eliminato.
    *
-   * @param oAuth2Client DTO del client da cancellare.
+   * @param clientId client da cancellare.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void deleteClientFromDatabase(OAuth2Client oAuth2Client) {
-    permissionRoleManager.assertHasConsoleAccess(oAuth2Authorization);
-
-    if (oAuth2Client.getClientId() != null
-        && oAuth2Client.getClientId().equalsIgnoreCase(techUserService.getAdminClientId())) {
-      throw new OAuthException(
-          ExceptionMap.ERR_TECH_403,
-          "The technical client cannot be deleted under any circumstance");
+  public void deleteOAuth2ClientByClientId(String clientId) {
+    SystemPermission writeClientPermission = SystemPermission.CLIENTS_DELETE;
+    if (!permissionRoleManager.hasAdminPermission(writeClientPermission)) {
+      LOG.error(
+          "⛔ Access denied: missing permission [{}] on delete client [{}] for identifier [{}]",
+          writeClientPermission,
+          oAuth2Authorization.getClientId(),
+          oAuth2Authorization.getIdentifier());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
-    if (!permissionRoleManager.isSuperAdmin(oAuth2Authorization)) {
-      permissionRoleManager.assertPermission(
-          oAuth2Authorization, oAuth2Client.getClientId(), "clients:delete");
+    LOG.info("🔐 Check if is an admin client: {}", oAuth2Authorization.getClientId());
+    if (permissionRoleManager.getAdminClientId().equalsIgnoreCase(clientId)) {
+      LOG.error(
+          "⛔ Access denied: cannot delete admin client [{}]", oAuth2Authorization.getClientId());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_403, ExceptionMap.ERR_OAUTH_403.getMessage());
     }
 
-    oAuth2ClientDomainService.deleteClientFromDatabase(oAuth2Client);
+    LOG.info("🌐 Deleting OAuth 2.0 client: {}", clientId);
+
+    oAuth2ClientDomainService.deleteOAuth2ClientByClientId(clientId);
   }
 }

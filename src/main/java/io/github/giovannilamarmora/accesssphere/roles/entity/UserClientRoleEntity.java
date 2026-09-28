@@ -2,6 +2,7 @@ package io.github.giovannilamarmora.accesssphere.roles.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericEntity;
+import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +10,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * Entità relazionale che mappa l'associazione esplicita e contestualizzata
- * tra un Utente IAM, uno specifico Client OAuth2 e un Ruolo applicativo assegnato.
- * Rappresenta la nuova architettura RBAC multi-tenant di Access-Sphere.
+ * Entità relazionale che mappa l'associazione esplicita e contestualizzata tra un Utente IAM, uno
+ * specifico Client OAuth2 e un Ruolo applicativo assegnato. Rappresenta la nuova architettura RBAC
+ * multi-tenant di Access-Sphere.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -41,9 +42,11 @@ public class UserClientRoleEntity extends GenericEntity {
   @Column(name = "USER_IDENTIFIER", nullable = false)
   private String userIdentifier;
 
+  @UpperCase
   @Column(name = "CLIENT_ID", nullable = false)
   private String clientId;
 
+  @UpperCase
   @Column(name = "ROLE", nullable = false)
   private String role;
 

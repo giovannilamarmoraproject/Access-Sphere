@@ -43,4 +43,25 @@ public class OAuth2ClientRepository {
     LOG.debug("⚖️ Found OAuth2 Client {} in Database", clientId);
     return Optional.of(OAuth2ClientMapper.toModel(getEntity));
   }
+
+  public Boolean existsByClientId(String clientId) {
+    LOG.debug("🔐 Checking if OAuth2 Client {} exist", clientId);
+    return oAuth2ClientDAO.existsByClientId(clientId);
+  }
+
+  public OAuth2Client save(OAuth2Client oAuth2Client) {
+    LOG.debug("🔐 Saving OAuth2 Client for client ID: {}", oAuth2Client.getClientId());
+    OAuth2ClientEntity mapEntity = OAuth2ClientMapper.toEntity(oAuth2Client);
+
+    OAuth2ClientEntity savedEntity = oAuth2ClientDAO.save(mapEntity);
+
+    LOG.debug("⚖️ Saved OAuth2 Client {} in Database", oAuth2Client.getClientId());
+    return OAuth2ClientMapper.toModel(savedEntity);
+  }
+
+  public void deleteByClientId(String clientId) {
+    LOG.debug("🔐 Deleting OAuth2 Client with clientId: {}", clientId);
+    oAuth2ClientDAO.deleteByClientId(clientId);
+    LOG.debug("⚖️ Deleted OAuth2 Client with clientId: {} in Database", clientId);
+  }
 }

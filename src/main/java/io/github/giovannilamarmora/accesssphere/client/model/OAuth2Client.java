@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.client.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
@@ -100,12 +99,6 @@ public class OAuth2Client extends GenericDTO {
       example = "86400000")
   private Long jweExpiration;
 
-  @Schema(
-      description = "Optional token for dynamic or federated user registration on the client",
-      example = "reg_tok_abc123xyz")
-  private String registrationToken;
-
-  @JsonDeserialize(using = AppRolesDeserializer.class)
   @Schema(
       description = "Catalog of application roles and permissions defined for this specific client")
   private List<RoleDefinition> appRoles;

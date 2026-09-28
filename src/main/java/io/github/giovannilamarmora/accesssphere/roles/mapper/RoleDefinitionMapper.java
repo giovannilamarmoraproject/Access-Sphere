@@ -19,4 +19,10 @@ public class RoleDefinitionMapper {
     BeanUtils.copyProperties(roleDefinitionEntity, roleDefinition);
     return roleDefinition;
   }
+
+  public static RoleDefinitionEntity toEntity(RoleDefinition roleDefinition) {
+    RoleDefinitionEntity roleDefinitionEntity = new RoleDefinitionEntity();
+    BeanUtils.copyProperties(roleDefinition, roleDefinitionEntity);
+    return roleDefinitionEntity;
+  }
 }

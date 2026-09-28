@@ -30,4 +30,22 @@ public class UserClientRoleRepository {
     LOG.debug("⚖️ Found {} UserClient Role for identifier{} ", getEntityList.size(), identifier);
     return Optional.of(UserClientRoleMapper.toModelList(getEntityList));
   }
+
+  public UserClientRole save(UserClientRole userClientRole, String identifier) {
+    LOG.debug("🔐 Saving UserClient Role with name: {}", userClientRole.getRole());
+    UserClientRoleEntity toEntity = UserClientRoleMapper.toEntity(userClientRole);
+
+    toEntity.setUserIdentifier(identifier);
+
+    UserClientRoleEntity savedEntity = userClientRoleDAO.save(toEntity);
+
+    LOG.debug("⚖️ Saved UserClient Role with name: {} in Database", userClientRole.getRole());
+    return UserClientRoleMapper.toModel(savedEntity);
+  }
+
+  public void deleteByClientId(String clientId) {
+    LOG.debug("🔐 Deleting UserClient Role with clientId: {}", clientId);
+    userClientRoleDAO.deleteByClientId(clientId);
+    LOG.debug("⚖️ Deleted UserClient Role with clientId: {} in Database", clientId);
+  }
 }

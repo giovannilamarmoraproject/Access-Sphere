@@ -43,4 +43,25 @@ public class RoleDefinitionRepository {
     LOG.debug("⚖️ Found {} RoleDefinition for client {}", getEntityList.size(), clientId);
     return Optional.of(RoleDefinitionMapper.toModelList(getEntityList));
   }
+
+  public Boolean existsByClientIdAndRole(String clientId, String role) {
+    LOG.debug("🔐 Checking if role {} exist with client ID {}", role, clientId);
+    return roleDefinitionDAO.existsByClientIdAndRole(clientId, role);
+  }
+
+  public RoleDefinition save(RoleDefinition roleDefinition) {
+    LOG.debug("🔐 Saving Role Definition with name: {}", roleDefinition.getRole());
+    RoleDefinitionEntity toEntity = RoleDefinitionMapper.toEntity(roleDefinition);
+
+    RoleDefinitionEntity savedEntity = roleDefinitionDAO.save(toEntity);
+
+    LOG.debug("⚖️ Saved Role Definition with name: {} in Database", roleDefinition.getRole());
+    return RoleDefinitionMapper.toModel(savedEntity);
+  }
+
+  public void deleteByClientId(String clientId) {
+    LOG.debug("🔐 Deleting Role Definition with clientId: {}", clientId);
+    roleDefinitionDAO.deleteByClientId(clientId);
+    LOG.debug("⚖️ Deleted Role Definition with clientId: {} in Database", clientId);
+  }
 }

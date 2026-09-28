@@ -123,11 +123,11 @@ class OAuth2ClientServiceTest {
     doNothing()
         .when(permissionRoleManager)
         .assertPermission(oAuth2Authorization, "LINKATUTTO-ADMIN", "clients:write");
-    doNothing().when(oAuth2ClientDomainService).addClientToDatabase(linkatuttoClient);
+    doNothing().when(oAuth2ClientDomainService).saveOAuth2Client(linkatuttoClient);
 
-    oAuth2ClientService.createOAuth2Client(linkatuttoClient);
+    oAuth2ClientService.saveOAuth2Client(linkatuttoClient);
 
-    verify(oAuth2ClientDomainService, times(1)).addClientToDatabase(linkatuttoClient);
+    verify(oAuth2ClientDomainService, times(1)).saveOAuth2Client(linkatuttoClient);
     verify(userClientRoleDAO, times(1))
         .save(
             argThat(
@@ -143,8 +143,8 @@ class OAuth2ClientServiceTest {
     when(permissionRoleManager.isSuperAdmin(oAuth2Authorization)).thenReturn(false);
 
     assertThrows(
-        OAuthException.class, () -> oAuth2ClientService.updateClientInDatabase(techClient));
-    verify(oAuth2ClientDomainService, never()).updateClientInDatabase(any());
+        OAuthException.class, () -> oAuth2ClientService.updateOAuth2ClientByClientId(techClient));
+    verify(oAuth2ClientDomainService, never()).updateOAuth2ClientByClientId(any());
   }
 
   @Test
@@ -153,7 +153,7 @@ class OAuth2ClientServiceTest {
     doNothing().when(permissionRoleManager).assertHasConsoleAccess(oAuth2Authorization);
 
     assertThrows(
-        OAuthException.class, () -> oAuth2ClientService.deleteClientFromDatabase(techClient));
-    verify(oAuth2ClientDomainService, never()).deleteClientFromDatabase(any());
+        OAuthException.class, () -> oAuth2ClientService.deleteOAuth2ClientByClientId(techClient));
+    verify(oAuth2ClientDomainService, never()).deleteOAuth2ClientByClientId(any());
   }
 }

@@ -108,9 +108,8 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<OAuth2ClientResponse>> createOAuth2Client(
       String bearer, OAuth2Client oAuth2Client, ServerHttpRequest request) {
-
     return oAuth2ClientService
-        .createOAuth2Client(oAuth2Client)
+        .saveOAuth2Client(oAuth2Client)
         .map(
             client -> {
               OAuth2ClientResponse response =
@@ -134,37 +133,20 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<OAuth2ClientResponse>> updateClientById(
+  public Mono<ResponseEntity<OAuth2ClientResponse>> updateOAuth2ClientByClientId(
       String clientId, String bearer, OAuth2Client oAuth2Client, ServerHttpRequest request) {
-    LOG.info("🌐 [CLIENT CONTROLLER] Updating OAuth 2.0 client by path ID: {}", clientId);
-    if (oAuth2Client.getClientId() == null) {
-      oAuth2Client.setClientId(clientId);
-    }
-    oAuth2ClientService.updateClientInDatabase(oAuth2Client);
-    OAuth2ClientResponse response =
-        new OAuth2ClientResponse(
-            HttpStatus.OK.value(), "Client updated", TraceUtils.getSpanID(), oAuth2Client);
-    return Mono.just(ResponseEntity.ok(response));
-  }
-
-  /**
-   * Aggiorna le configurazioni di un client specificato nel body della richiesta.
-   *
-   * @param bearer Token Bearer di autenticazione.
-   * @param oAuth2Client DTO con le configurazioni aggiornate.
-   * @param request Richiesta HTTP server.
-   * @return Mono con ResponseEntity contenente {@link OAuth2ClientResponse}.
-   */
-  @Override
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<OAuth2ClientResponse>> updateClient(
-      String bearer, OAuth2Client oAuth2Client, ServerHttpRequest request) {
-    LOG.info("🌐 [CLIENT CONTROLLER] Updating OAuth 2.0 client: {}", oAuth2Client.getClientId());
-    oAuth2ClientService.updateClientInDatabase(oAuth2Client);
-    OAuth2ClientResponse response =
-        new OAuth2ClientResponse(
-            HttpStatus.OK.value(), "Client updated", TraceUtils.getSpanID(), oAuth2Client);
-    return Mono.just(ResponseEntity.ok(response));
+    return oAuth2ClientService
+        .updateOAuth2ClientByClientId(oAuth2Client, clientId)
+        .map(
+            client -> {
+              OAuth2ClientResponse response =
+                  new OAuth2ClientResponse(
+                      HttpStatus.OK.value(),
+                      "Client %s updated".formatted(oAuth2Client.getClientId()),
+                      TraceUtils.getSpanID(),
+                      client);
+              return ResponseEntity.status(HttpStatus.OK).body(response);
+            });
   }
 
   /**
@@ -179,13 +161,13 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<OAuth2ClientDeleteResponse>> deleteClient(
       String bearer, String clientId, ServerHttpRequest request) {
-    LOG.info("🌐 [CLIENT CONTROLLER] Deleting OAuth 2.0 client: {}", clientId);
-    OAuth2Client cred = new OAuth2Client();
-    cred.setClientId(clientId);
-    oAuth2ClientService.deleteClientFromDatabase(cred);
+    oAuth2ClientService.deleteOAuth2ClientByClientId(clientId);
     OAuth2ClientDeleteResponse response =
         new OAuth2ClientDeleteResponse(
-            HttpStatus.OK.value(), "Client deleted", TraceUtils.getSpanID(), null);
-    return Mono.just(ResponseEntity.ok(response));
+            HttpStatus.ACCEPTED.value(),
+            "Successfully deleted Client %s".formatted(clientId),
+            TraceUtils.getSpanID(),
+            null);
+    return Mono.just(ResponseEntity.accepted().body(response));
   }
 }

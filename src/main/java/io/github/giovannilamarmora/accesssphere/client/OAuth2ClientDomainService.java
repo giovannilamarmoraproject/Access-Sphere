@@ -2,7 +2,6 @@ package io.github.giovannilamarmora.accesssphere.client;
 
 import io.github.giovannilamarmora.accesssphere.client.database.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.database.OAuth2ClientRepository;
-import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -10,7 +9,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.RoleDefinitionRepository;
-import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
+import io.github.giovannilamarmora.accesssphere.roles.database.UserClientRoleRepository;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -25,7 +24,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 /**
@@ -50,11 +48,9 @@ public class OAuth2ClientDomainService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   private static final String OAUTH2_DOMAIN_LOG = "Client Domain";
 
-  @Autowired private IOAuth2ClientDAO ioAuth2ClientDAO;
-  @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
-  @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private OAuth2ClientRepository oAuth2ClientRepository;
   @Autowired private RoleDefinitionRepository roleDefinitionRepository;
+  @Autowired private UserClientRoleRepository userClientRoleRepository;
 
   /**
    * Recupera la lista completa di tutti i Client registrati a database con i rispettivi ruoli
@@ -110,7 +106,6 @@ public class OAuth2ClientDomainService {
    * @return {@link Mono} contenente il {@link OAuth2Client}.
    * @throws OAuthException se il client non esiste a database.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<OAuth2Client> getOAuth2ClientByClientID(String clientID) {
     LOG.info("🔍 {} Searching for credentials for client ID: {}", OAUTH2_DOMAIN_LOG, clientID);
     Optional<OAuth2Client> optionalOAuth2Client = oAuth2ClientRepository.findByClientId(clientID);
@@ -146,32 +141,25 @@ public class OAuth2ClientDomainService {
    * @param oAuth2Client DTO con la configurazione del nuovo client.
    */
   @Transactional
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void addClientToDatabase(OAuth2Client oAuth2Client) {
+  public Mono<OAuth2Client> saveOAuth2Client(OAuth2Client oAuth2Client) {
     LOG.info(
-        "💾 [CLIENT DOMAIN] Inserting new client into Database: {}", oAuth2Client.getClientId());
+        "💾 {} Inserting new client into Database: {}",
+        OAUTH2_DOMAIN_LOG,
+        oAuth2Client.getClientId());
     OAuthValidator.validateClientRoles(oAuth2Client);
-    OAuth2ClientEntity clientEntity = OAuth2ClientMapper.toEntity(oAuth2Client);
-    ioAuth2ClientDAO.save(clientEntity);
 
-    // Persiste le definizioni ruoli su ROLE_DEFINITIONS
-    if (oAuth2Client.getAppRoles() != null) {
-      for (RoleDefinition appRole : oAuth2Client.getAppRoles()) {
-        if (appRole != null && appRole.getRole() != null) {
-          String rName = appRole.getRole().trim().toUpperCase();
-          if (!roleDefinitionDAO.existsByClientIdAndRole(oAuth2Client.getClientId(), rName)) {
-            roleDefinitionDAO.save(
-                new RoleDefinitionEntity(
-                    oAuth2Client.getClientId(),
-                    rName,
-                    appRole.getType(),
-                    appRole.getDescription(),
-                    appRole.getPermissions() != null ? appRole.getPermissions() : List.of("*")));
-          }
-        }
-      }
+    boolean alreadyExist = oAuth2ClientRepository.existsByClientId(oAuth2Client.getClientId());
+    if (alreadyExist) {
+      LOG.error(
+          "❌ {} The client with ID {} already exists",
+          OAUTH2_DOMAIN_LOG,
+          oAuth2Client.getClientId());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
-    LOG.debug("✅ [CLIENT DOMAIN] Client {} successfully inserted", oAuth2Client.getClientId());
+
+    OAuth2Client clientSaved = saveOrUpdateOAuth2Client(oAuth2Client);
+    LOG.info("✅ {} Client {} successfully inserted", OAUTH2_DOMAIN_LOG, oAuth2Client.getClientId());
+    return Mono.just(clientSaved);
   }
 
   /**
@@ -181,94 +169,77 @@ public class OAuth2ClientDomainService {
    * @throws IllegalArgumentException se il client non esiste.
    */
   @Transactional
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void updateClientInDatabase(OAuth2Client oAuth2Client) {
-    LOG.info("🔄 [CLIENT DOMAIN] Updating client in Database: {}", oAuth2Client.getClientId());
-    if (oAuth2Client.getAppRoles() != null) {
-      OAuthValidator.validateClientRoles(oAuth2Client);
-    }
-    OAuth2ClientEntity existingClientEntity =
-        ioAuth2ClientDAO.findByClientId(oAuth2Client.getClientId());
-    if (!ObjectUtils.isEmpty(existingClientEntity)) {
-      OAuth2ClientMapper.updateEntity(existingClientEntity, oAuth2Client);
-      ioAuth2ClientDAO.save(existingClientEntity);
+  public Mono<OAuth2Client> updateOAuth2ClientByClientId(
+      OAuth2Client oAuth2Client, String clientId) {
+    LOG.info("🔄 {} Updating client in Database: {}", OAUTH2_DOMAIN_LOG, clientId);
+    OAuthValidator.validateClientRoles(oAuth2Client);
 
-      // Sincronizza i ruoli nella tabella relazionale ROLE_DEFINITIONS
-      if (oAuth2Client.getAppRoles() != null) {
-        for (RoleDefinition appRole : oAuth2Client.getAppRoles()) {
-          if (appRole != null && appRole.getRole() != null) {
-            String rName = appRole.getRole().trim().toUpperCase();
-            Optional<RoleDefinitionEntity> existingRole =
-                roleDefinitionDAO.findByClientIdAndRole(oAuth2Client.getClientId(), rName);
-            if (existingRole.isPresent()) {
-              RoleDefinitionEntity roleEntity = existingRole.get();
-              roleEntity.setType(appRole.getType());
-              roleEntity.setDescription(appRole.getDescription());
-              roleEntity.setPermissions(
-                  appRole.getPermissions() != null ? appRole.getPermissions() : List.of("*"));
-              roleDefinitionDAO.save(roleEntity);
-            } else {
-              roleDefinitionDAO.save(
-                  new RoleDefinitionEntity(
-                      oAuth2Client.getClientId(),
-                      rName,
-                      appRole.getType(),
-                      appRole.getDescription(),
-                      appRole.getPermissions() != null ? appRole.getPermissions() : List.of("*")));
-            }
-          }
-        }
-      }
-      LOG.debug("✅ [CLIENT DOMAIN] Client {} successfully updated", oAuth2Client.getClientId());
-    } else {
-      LOG.error("❌ [CLIENT DOMAIN] Cannot update: Client {} not found", oAuth2Client.getClientId());
-      throw new IllegalArgumentException("Client not found: " + oAuth2Client.getClientId());
+    boolean alreadyExist = oAuth2ClientRepository.existsByClientId(clientId);
+    if (!alreadyExist) {
+      LOG.error(
+          "❌ {} The client with ID {} already does not exist",
+          OAUTH2_DOMAIN_LOG,
+          oAuth2Client.getClientId());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
+
+    oAuth2Client.setClientId(clientId);
+    OAuth2Client clientSaved = saveOrUpdateOAuth2Client(oAuth2Client);
+
+    LOG.debug("✅ {} Client {} successfully updated", OAUTH2_DOMAIN_LOG, clientId);
+
+    return Mono.just(clientSaved);
   }
 
   /**
    * Rimuove un ClientCredential dal database ripulendo a cascata definizioni ruoli e associazioni
    * utente collegate.
    *
-   * @param oAuth2Client DTO del client da rimuovere.
+   * @param clientId client da rimuovere.
    */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void deleteClientFromDatabase(OAuth2Client oAuth2Client) {
-    LOG.info("🗑️ [CLIENT DOMAIN] Removing client from Database: {}", oAuth2Client.getClientId());
-    OAuth2ClientEntity existingClientOptional =
-        ioAuth2ClientDAO.findByClientId(oAuth2Client.getClientId());
-    if (!ObjectUtils.isEmpty(existingClientOptional)) {
-      // Pulizia relazionale a cascata per ruoli e associazioni del client
-      roleDefinitionDAO.deleteByClientId(oAuth2Client.getClientId());
-      userClientRoleDAO.deleteByClientId(oAuth2Client.getClientId());
+  public void deleteOAuth2ClientByClientId(String clientId) {
+    LOG.info("🗑️ {} Removing client from Database: {}", OAUTH2_DOMAIN_LOG, clientId);
 
-      ioAuth2ClientDAO.delete(existingClientOptional);
-      LOG.debug("✅ [CLIENT DOMAIN] Client {} successfully removed", oAuth2Client.getClientId());
-    } else {
-      LOG.warn(
-          "⚠️ [CLIENT DOMAIN] No action taken: Client {} not found for removal",
-          oAuth2Client.getClientId());
+    boolean alreadyExist = oAuth2ClientRepository.existsByClientId(clientId);
+    if (!alreadyExist) {
+      LOG.error(
+          "❌ {} The client with ID {} does not exist, it cannot be removed",
+          OAUTH2_DOMAIN_LOG,
+          clientId);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
+
+    roleDefinitionRepository.deleteByClientId(clientId);
+    userClientRoleRepository.deleteByClientId(clientId);
+    oAuth2ClientRepository.deleteByClientId(clientId);
+
+    LOG.debug("✅ {} Client {} successfully removed", OAUTH2_DOMAIN_LOG, clientId);
   }
 
-  /**
-   * Popola l'elenco dei ruoli applicativi sul DTO leggendo direttamente dalla tabella relazionale
-   * {@code ROLE_DEFINITIONS}.
-   *
-   * @param dto DTO del client da arricchire.
-   */
-  public void populateAppRoles(OAuth2Client dto) {
-    if (dto == null || dto.getClientId() == null) return;
-    List<RoleDefinitionEntity> roles = roleDefinitionDAO.findByClientId(dto.getClientId());
-    if (roles != null) {
-      dto.setAppRoles(
-          roles.stream()
-              .map(
-                  r ->
-                      new RoleDefinition(
-                          r.getRole(), r.getType(), r.getDescription(), r.getPermissions()))
-              .toList());
-    }
+  private OAuth2Client saveOrUpdateOAuth2Client(OAuth2Client oAuth2Client) {
+    OAuth2Client clientSaved = oAuth2ClientRepository.save(oAuth2Client);
+
+    // Persiste le definizioni ruoli su ROLE_DEFINITIONS
+    clientSaved.setAppRoles(
+        oAuth2Client.getAppRoles().stream()
+            .map(
+                roleDefinition -> {
+                  String roleName = roleDefinition.getRole().trim().toUpperCase();
+                  Boolean roleExists =
+                      roleDefinitionRepository.existsByClientIdAndRole(
+                          oAuth2Client.getClientId(), roleName);
+                  if (roleExists) {
+                    LOG.warn(
+                        "❌ The role {} for client ID: {} already exists",
+                        roleName,
+                        oAuth2Client.getClientId());
+                    return roleDefinition;
+                  }
+                  return roleDefinitionRepository.save(roleDefinition);
+                })
+            .toList());
+    return clientSaved;
   }
 }

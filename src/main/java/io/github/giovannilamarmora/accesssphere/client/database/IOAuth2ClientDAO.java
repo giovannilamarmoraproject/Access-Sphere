@@ -10,4 +10,8 @@ public interface IOAuth2ClientDAO extends JpaRepository<OAuth2ClientEntity, Long
 
   // Mono<ClientCredentialEntity> findByClientId(String clientId);
   OAuth2ClientEntity findByClientId(String clientId);
+
+  boolean existsByClientId(String clientId);
+
+  void deleteByClientId(String clientId);
 }
