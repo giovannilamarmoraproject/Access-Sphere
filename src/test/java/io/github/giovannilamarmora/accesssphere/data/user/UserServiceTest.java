@@ -3,14 +3,20 @@ package io.github.giovannilamarmora.accesssphere.data.user;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import io.github.giovannilamarmora.accesssphere.client.database.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
+import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.database.RoleDefinitionRepository;
+import io.github.giovannilamarmora.accesssphere.roles.database.UserClientRoleRepository;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.database.IUserDAO;
+import io.github.giovannilamarmora.accesssphere.user.database.UserRepository;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,16 +32,11 @@ import reactor.test.StepVerifier;
 class UserServiceTest {
 
   @Mock private IUserDAO userDAO;
-
-  @Mock
-  private io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO
-      userClientRoleDAO;
-
-  @Mock
-  private io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO
-      roleDefinitionDAO;
-
-  @Mock private IOAuth2ClientDAO clientDAO;
+  @Mock private IUserClientRoleDAO userClientRoleDAO;
+  @Mock private IRoleDefinitionDAO roleDefinitionDAO;
+  @Mock private UserRepository userRepository;
+  @Mock private UserClientRoleRepository userClientRoleRepository;
+  @Mock private RoleDefinitionRepository roleDefinitionRepository;
 
   @InjectMocks private UserService userService;
 
@@ -46,7 +47,9 @@ class UserServiceTest {
     ReflectionTestUtils.setField(userService, "userDAO", userDAO);
     ReflectionTestUtils.setField(userService, "userClientRoleDAO", userClientRoleDAO);
     ReflectionTestUtils.setField(userService, "roleDefinitionDAO", roleDefinitionDAO);
-    ReflectionTestUtils.setField(userService, "clientDAO", clientDAO);
+    ReflectionTestUtils.setField(userService, "userRepository", userRepository);
+    ReflectionTestUtils.setField(userService, "userClientRoleRepository", userClientRoleRepository);
+    ReflectionTestUtils.setField(userService, "roleDefinitionRepository", roleDefinitionRepository);
   }
 
   @Test
@@ -81,21 +84,66 @@ class UserServiceTest {
   @Test
   @DisplayName("getUserByEmail should return user when found")
   void getUserByEmail_success() {
-    UserEntity entity = new UserEntity();
-    entity.setId(1L);
-    entity.setIdentifier("uuid-456");
-    entity.setUsername("emailuser");
-    entity.setEmail("user@example.com");
+    User user = new User();
+    user.setId(1L);
+    user.setIdentifier("uuid-456");
+    user.setUsername("emailuser");
+    user.setEmail("user@example.com");
 
-    when(userDAO.findUserEntityByEmail("user@example.com")).thenReturn(entity);
+    when(userRepository.getUserByEmail("user@example.com")).thenReturn(Optional.of(user));
+    when(userClientRoleRepository.findByUserIdentifier("uuid-456")).thenReturn(Optional.empty());
 
     StepVerifier.create(userService.getUserByEmail("user@example.com"))
         .assertNext(
-            user -> {
-              assertEquals("uuid-456", user.getIdentifier());
-              assertEquals("emailuser", user.getUsername());
+            result -> {
+              assertEquals("uuid-456", result.getIdentifier());
+              assertEquals("emailuser", result.getUsername());
             })
         .verifyComplete();
+  }
+
+  @Test
+  @DisplayName("getUserByEmail should return user with enriched roles when definitions exist")
+  void getUserByEmail_withEnrichedRoles() {
+    User user = new User();
+    user.setId(1L);
+    user.setIdentifier("uuid-456");
+    user.setUsername("emailuser");
+    user.setEmail("user@example.com");
+
+    UserClientRole ucr = new UserClientRole("LINKATUTTO", "ROLE_ADMIN");
+    RoleDefinition roleDef = new RoleDefinition();
+    roleDef.setClientId("LINKATUTTO");
+    roleDef.setRole("ROLE_ADMIN");
+    roleDef.setType("ADMIN");
+    roleDef.setDescription("Admin role");
+    roleDef.setPermissions(List.of("users:read", "users:write"));
+
+    when(userRepository.getUserByEmail("user@example.com")).thenReturn(Optional.of(user));
+    when(userClientRoleRepository.findByUserIdentifier("uuid-456"))
+        .thenReturn(Optional.of(List.of(ucr)));
+    when(roleDefinitionRepository.findAll()).thenReturn(Optional.of(List.of(roleDef)));
+
+    StepVerifier.create(userService.getUserByEmail("user@example.com"))
+        .assertNext(
+            result -> {
+              assertEquals("uuid-456", result.getIdentifier());
+              assertNotNull(result.getRoles());
+              assertEquals(1, result.getRoles().size());
+              UserClientRole enriched = result.getRoles().get(0);
+              assertEquals("ADMIN", enriched.getType());
+              assertEquals("Admin role", enriched.getDescription());
+              assertEquals(List.of("users:read", "users:write"), enriched.getPermissions());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  @DisplayName("getUserByEmail should throw OAuthException when user not found")
+  void getUserByEmail_notFound() {
+    when(userRepository.getUserByEmail("notfound@example.com")).thenReturn(Optional.empty());
+
+    assertThrows(OAuthException.class, () -> userService.getUserByEmail("notfound@example.com"));
   }
 
   @Test

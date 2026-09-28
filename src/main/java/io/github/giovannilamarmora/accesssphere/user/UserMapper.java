@@ -29,6 +29,7 @@ public class UserMapper {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static UserEntity toEntity(User user) {
+    if (user == null) return null;
     UserEntity userEntity = new UserEntity();
     BeanUtils.copyProperties(user, userEntity);
 
@@ -51,6 +52,7 @@ public class UserMapper {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static User toDTO(UserEntity userEntity) {
+    if (userEntity == null) return null;
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
     user.setPassword(null);
@@ -71,7 +73,32 @@ public class UserMapper {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<User> toDTOList(List<UserEntity> userEntities) {
+    if (userEntities == null) return List.of();
     return userEntities.stream().map(UserMapper::toDTO).toList();
+  }
+
+  /**
+   * Converte un'entità {@link UserEntity} nel modello di dominio {@link User}.
+   * Metodo alias che delega a {@link #toDTO(UserEntity)} per garantire uniformità di nomenclatura tra mapper.
+   *
+   * @param userEntity Entità persistita da convertire.
+   * @return Il modello {@link User} popolato, oppure null se l'entità è null.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static User toModel(UserEntity userEntity) {
+    return toDTO(userEntity);
+  }
+
+  /**
+   * Converte una lista di entità {@link UserEntity} in una lista di modelli {@link User}.
+   * Metodo alias che delega a {@link #toDTOList(List)} per garantire uniformità di nomenclatura tra mapper.
+   *
+   * @param userEntities Lista di entità dal database.
+   * @return Lista di modelli {@link User}.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static List<User> toModelList(List<UserEntity> userEntities) {
+    return toDTOList(userEntities);
   }
 
   public static User toModel(AddUserRequest addUserRequest) {

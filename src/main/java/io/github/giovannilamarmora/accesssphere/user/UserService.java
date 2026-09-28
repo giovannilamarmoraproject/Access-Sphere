@@ -8,7 +8,6 @@ import io.github.giovannilamarmora.accesssphere.roles.database.RoleDefinitionRep
 import io.github.giovannilamarmora.accesssphere.roles.database.UserClientRoleRepository;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
-import io.github.giovannilamarmora.accesssphere.roles.mapper.RoleDefinitionMapper;
 import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
@@ -92,42 +91,50 @@ public class UserService {
       return Mono.just(user);
     }
 
+    List<UserClientRole> userClientRoles = optionalUserClientRoles.get();
     Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
 
     if (optionalRoleDefinitions.isEmpty()) {
       LOG.warn("🔐 No Role Definition found for user: {}", user.getIdentifier());
+      user.setRoles(userClientRoles);
       return Mono.just(user);
     }
 
     List<RoleDefinition> roleDefinitions = optionalRoleDefinitions.get();
 
-    roleDefinitions.stream().map(roleDefinition -> {
+    Map<String, RoleDefinition> roleDefMap =
+        roleDefinitions.stream()
+            .filter(rd -> rd.getClientId() != null && rd.getRole() != null)
+            .collect(
+                Collectors.toMap(
+                    rd ->
+                        rd.getClientId().trim().toUpperCase()
+                            + ":"
+                            + rd.getRole().trim().toUpperCase(),
+                    rd -> rd,
+                    (existing, replacement) -> existing));
 
-    })
+    List<UserClientRole> clientRoleDTOs =
+        userClientRoles.stream()
+            .map(
+                userClientRole -> {
+                  String key =
+                      (!ObjectToolkit.isNullOrEmpty(userClientRole.getClientId())
+                              ? userClientRole.getClientId().trim().toUpperCase()
+                              : "")
+                          + ":"
+                          + (ObjectToolkit.isNullOrEmpty(userClientRole.getRole())
+                              ? userClientRole.getRole().trim().toUpperCase()
+                              : "");
+                  RoleDefinition roleDef = roleDefMap.get(key);
+                  if (roleDef != null) {
+                    return UserClientRoleMapper.toUserClientModel(roleDef);
+                  }
+                  return userClientRole;
+                })
+            .toList();
 
-    if (user == null || user.getIdentifier() == null) return user;
-    List<UserClientRoleEntity> ucrEntities =
-        userClientRoleDAO.findByUserIdentifier(user.getIdentifier());
-    if (ucrEntities != null && !ucrEntities.isEmpty()) {
-      List<UserClientRole> clientRoleDTOs =
-          ucrEntities.stream()
-              .map(
-                  ucr -> {
-                    UserClientRole dto = new UserClientRole(ucr.getClientId(), ucr.getRole());
-                    Optional<RoleDefinitionEntity> roleDef =
-                        roleDefinitionDAO.findByClientIdAndRole(ucr.getClientId(), ucr.getRole());
-                    if (roleDef.isPresent()) {
-                      RoleDefinitionEntity rd = roleDef.get();
-                      if (rd.getType() != null) dto.setType(rd.getType());
-                      if (rd.getDescription() != null) dto.setDescription(rd.getDescription());
-                      if (rd.getPermissions() != null) dto.setPermissions(rd.getPermissions());
-                    }
-                    return dto;
-                  })
-              .toList();
-      user.setRoles(clientRoleDTOs);
-    }
-
+    user.setRoles(clientRoleDTOs);
     return Mono.just(user);
   }
 

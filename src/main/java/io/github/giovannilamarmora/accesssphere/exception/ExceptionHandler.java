@@ -73,7 +73,11 @@ public class ExceptionHandler extends UtilsException {
                   .toList()
                   .getFirst();
     else if (e.getCause() != null && e.getCause() instanceof DecodingException) {
-      message = e.getCause().getCause().getCause().getMessage();
+      if (!ObjectToolkit.isNullOrEmpty(e.getCause().getCause().getCause()))
+        message = e.getCause().getCause().getCause().getMessage();
+      else if (!ObjectToolkit.isNullOrEmpty(e.getCause().getCause()))
+        message = e.getCause().getCause().getMessage();
+      message = e.getCause().getMessage();
     }
     ExceptionResponse response = getExceptionResponse(e, request, code);
     response.getError().setMessage(ObjectToolkit.getOrDefault(message, e.getMessage()));

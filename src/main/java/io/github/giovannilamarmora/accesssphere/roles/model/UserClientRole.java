@@ -56,8 +56,20 @@ public class UserClientRole extends GenericDTO {
       example = "[\"users:read\"]")
   private List<String> permissions;
 
+  public UserClientRole(String role) {
+    this.role = role != null ? role.trim().toUpperCase() : null;
+  }
+
   public UserClientRole(String clientId, String role) {
     this.clientId = clientId != null ? clientId.trim().toUpperCase() : null;
     this.role = role != null ? role.trim().toUpperCase() : null;
+  }
+
+  public UserClientRole(
+      String clientId, String role, String type, List<String> permissions) {
+    this.clientId = clientId != null ? clientId.trim().toUpperCase() : null;
+    this.role = role != null ? role.trim().toUpperCase() : null;
+    this.type = type != null ? type.trim().toUpperCase() : null;
+    this.permissions = permissions;
   }
 }
