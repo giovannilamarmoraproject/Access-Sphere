@@ -113,16 +113,63 @@ public class UserAdminService {
     return userService
         .getUsers()
         .map(
-            users ->
-                users.stream()
-                    .filter(user -> !permissionRoleManager.hasAdminPermission(readUserPermission))
-                    .toList())
+            users -> {
+              if (permissionRoleManager.hasAdminPermission(readUserPermission)) {
+                return users;
+              }
+              return users.stream()
+                  .filter(user -> hasMatchingRole(user, hasCorrectRoles))
+                  .toList();
+            })
         .map(UserMapper::toResponseList)
         .doOnSuccess(
             filteredUsers ->
                 LOG.info(
-                    "✅ [USER ADMIN] Successfully retrieved {} users (technical user excluded for normal operator)",
+                    "✅ [USER ADMIN] Successfully retrieved {} users",
                     filteredUsers.size()));
+  }
+
+  /**
+   * Verifica se l'utente specificato possiede almeno uno dei ruoli definiti nella lista autorizzata.
+   * Il confronto verifica la corrispondenza del ruolo applicativo e, se configurato, del relativo
+   * Client OAuth2 proprietario.
+   *
+   * @param user Utente da verificare con la lista dei suoi ruoli assegnati.
+   * @param authorizedRoles Lista dei ruoli ammessi derivati dai permessi dell'operatore.
+   * @return true se l'utente possiede almeno un ruolo corrispondente, false altrimenti.
+   */
+  private boolean hasMatchingRole(User user, List<RoleDefinition> authorizedRoles) {
+    if (user == null || ObjectToolkit.isNullOrEmpty(user.getRoles())) {
+      return false;
+    }
+    if (ObjectToolkit.isNullOrEmpty(authorizedRoles)) {
+      return false;
+    }
+    return user.getRoles().stream()
+        .anyMatch(
+            userRole ->
+                authorizedRoles.stream()
+                    .anyMatch(
+                        correctRole -> {
+                          if (userRole == null || correctRole == null) {
+                            return false;
+                          }
+                          boolean roleMatch =
+                              ObjectToolkit.isNullOrEmpty(correctRole.getRole())
+                                  || (userRole.getRole() != null
+                                      && userRole
+                                          .getRole()
+                                          .trim()
+                                          .equalsIgnoreCase(correctRole.getRole().trim()));
+                          boolean clientMatch =
+                              ObjectToolkit.isNullOrEmpty(correctRole.getClientId())
+                                  || ObjectToolkit.isNullOrEmpty(userRole.getClientId())
+                                  || correctRole
+                                      .getClientId()
+                                      .trim()
+                                      .equalsIgnoreCase(userRole.getClientId().trim());
+                          return roleMatch && clientMatch;
+                        }));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
