@@ -12,6 +12,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2
 import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
+import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
@@ -200,7 +201,7 @@ public class UserAdminService {
                                     c -> c,
                                     (existing, replacement) -> existing));
 
-                    List<UserClientRole> enforcedUserRoles = new ArrayList<>();
+                    List<RoleDefinition> enforcedRoleDefinitions = new ArrayList<>();
                     clientIds.forEach(
                         clientId -> {
                           OAuth2Client client = clientMap.get(clientId.trim().toUpperCase());
@@ -211,7 +212,8 @@ public class UserAdminService {
                           }
                           UserValidator.validateClientRegistrationEnabled(client);
 
-                          // Ricerca della definizione di ruolo applicativo con tipologia USER sul client target
+                          // Ricerca della definizione di ruolo applicativo con tipologia USER sul
+                          // client target
                           List<RoleDefinition> clientAppRoles =
                               !ObjectToolkit.isNullOrEmpty(client.getAppRoles())
                                   ? client.getAppRoles()
@@ -222,7 +224,8 @@ public class UserAdminService {
                                   .findFirst()
                                   .orElse(null);
 
-                          // Se il client non ha alcun ruolo censito di tipo USER, blocca la registrazione anonima
+                          // Se il client non ha alcun ruolo censito di tipo USER, blocca la
+                          // registrazione anonima
                           if (ObjectToolkit.isNullOrEmpty(userRoleDef)) {
                             LOG.error(
                                 "❌ Registration rejected: Client {} does not have a role configured with type USER",
@@ -233,18 +236,19 @@ public class UserAdminService {
                                     .formatted(client.getClientId()));
                           }
 
-                          // Assegnazione forzata dello specifico ruolo standard USER per prevenire privilege escalation
-                          enforcedUserRoles.add(
-                              new UserClientRole(
-                                  client.getClientId(),
-                                  userRoleDef.getRole(),
-                                  userRoleDef.getType(),
-                                  userRoleDef.getDescription(),
-                                  userRoleDef.getPermissions()));
+                          // Garantisce la presenza del clientId nella definizione del ruolo
+                          if (ObjectToolkit.isNullOrEmpty(userRoleDef.getClientId())) {
+                            userRoleDef.setClientId(client.getClientId());
+                          }
+
+                          enforcedRoleDefinitions.add(userRoleDef);
                         });
 
-                    // Sovrascrittura dei ruoli richiesti con quelli verificati e blindati con tipologia USER
-                    user.setRoles(enforcedUserRoles);
+                    // Conversione tramite mapper e sovrascrittura con ruoli verificati e blindati
+                    // con tipologia USER
+                    user.setRoles(
+                        UserClientRoleMapper.toUserClientModels(
+                            enforcedRoleDefinitions, user.getIdentifier()));
                     return Mono.empty();
                   });
     }
