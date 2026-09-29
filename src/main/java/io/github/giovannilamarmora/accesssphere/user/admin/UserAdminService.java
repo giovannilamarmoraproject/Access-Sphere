@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -161,46 +160,6 @@ public class UserAdminService {
                                   .trim()
                                   .equalsIgnoreCase(userRole.getClientId().trim());
                         }));
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getUsersOld(String bearer) {
-    LOG.info("👥 {} Starting retrieval of users list", USER_ADMIN_LOG);
-    if (StringUtils.hasText(bearer) && !techUserService.isTechUser()) {
-      try {
-        OAuth2Authorization tokenData =
-            oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer);
-        BeanUtils.copyProperties(tokenData, oAuth2Authorization);
-      } catch (Exception e) {
-        LOG.warn("Could not retrieve AccessTokenData from bearer: {}", e.getMessage());
-      }
-    }
-
-    if (techUserService.isTechUser()) {
-      return oAuth2ClientDomainService
-          .getOAuth2ClientByClientID(techUserService.getAdminClientId())
-          .flatMap(
-              clientCredential -> {
-                TechUserValidator.validateTechRoles(
-                    clientCredential, oAuth2Authorization.getRoles());
-                return userService.getUsers();
-              })
-          .doOnSuccess(
-              users ->
-                  LOG.info(
-                      "✅ [USER ADMIN] Successfully retrieved all {} users for technical operator",
-                      users.size()));
-    }
-
-    return userService
-        .getUsers()
-        .map(
-            users -> users.stream().filter(user -> !techUserService.isTechnicalUser(user)).toList())
-        .doOnSuccess(
-            filteredUsers ->
-                LOG.info(
-                    "✅ [USER ADMIN] Successfully retrieved {} users (technical user excluded for normal operator)",
-                    filteredUsers.size()));
   }
 
   /**
