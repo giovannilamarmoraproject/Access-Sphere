@@ -207,7 +207,13 @@ public class UserService {
         enrichRoles(userRoles, optionalRoleDefinitions.orElse(List.of()));
 
     List<UserClientRole> savedRoles = userClientRoleRepository.saveAll(userClientRoles, identifier);
-    userSaved.setRoles(savedRoles);
+
+    // Unione di tutti i campi presenti tra userClientRoles (arricchiti con tipologia, descrizione e
+    // permessi)
+    // e savedRoles (persistiti con id relazionale, date di audit e identificatore utente)
+    List<UserClientRole> mergedRoles =
+        UserClientRoleMapper.mergeUserClientRoles(savedRoles, userClientRoles);
+    userSaved.setRoles(mergedRoles);
     return userSaved;
   }
 
