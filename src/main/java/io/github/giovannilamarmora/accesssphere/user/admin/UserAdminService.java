@@ -122,17 +122,20 @@ public class UserAdminService {
         .map(UserMapper::toResponseList)
         .doOnSuccess(
             filteredUsers ->
-                LOG.info("✅ [USER ADMIN] Successfully retrieved {} users", filteredUsers.size()));
+                LOG.info(
+                    "✅ {} Successfully retrieved {} users", USER_ADMIN_LOG, filteredUsers.size()));
   }
 
   /**
-   * Verifica se l'utente specificato possiede almeno uno dei ruoli definiti nella lista
-   * autorizzata. Il confronto verifica la corrispondenza del ruolo applicativo e, se configurato,
-   * del relativo Client OAuth2 proprietario.
+   * Verifica se l'utente specificato appartiene ad almeno uno dei Client OAuth2 autorizzati per
+   * l'operatore. Il filtraggio agisce a livello di perimetro del client (clientId), includendo
+   * tutti gli utenti registrati sul client a prescindere dallo specifico ruolo assegnato.
    *
-   * @param user Utente da verificare con la lista dei suoi ruoli assegnati.
-   * @param authorizedRoles Lista dei ruoli ammessi derivati dai permessi dell'operatore.
-   * @return true se l'utente possiede almeno un ruolo corrispondente, false altrimenti.
+   * @param user Utente da verificare con i rispettivi ruoli assegnati.
+   * @param authorizedRoles Lista dei ruoli ammessi da cui estrarre i Client autorizzati per
+   *     l'operatore.
+   * @return true se l'utente possiede almeno un ruolo associato a uno dei client autorizzati, false
+   *     altrimenti.
    */
   private boolean hasMatchingRole(User user, List<RoleDefinition> authorizedRoles) {
     if (ObjectToolkit.isNullOrEmpty(user) || ObjectToolkit.isNullOrEmpty(user.getRoles())) {
@@ -151,21 +154,12 @@ public class UserAdminService {
                               || ObjectToolkit.isNullOrEmpty(correctRole)) {
                             return false;
                           }
-                          boolean roleMatch =
-                              ObjectToolkit.isNullOrEmpty(correctRole.getRole())
-                                  || (!ObjectToolkit.isNullOrEmpty(userRole.getRole())
-                                      && userRole
-                                          .getRole()
-                                          .trim()
-                                          .equalsIgnoreCase(correctRole.getRole().trim()));
-                          boolean clientMatch =
-                              ObjectToolkit.isNullOrEmpty(correctRole.getClientId())
-                                  || ObjectToolkit.isNullOrEmpty(userRole.getClientId())
-                                  || correctRole
-                                      .getClientId()
-                                      .trim()
-                                      .equalsIgnoreCase(userRole.getClientId().trim());
-                          return roleMatch && clientMatch;
+                          return !ObjectToolkit.isNullOrEmpty(userRole.getClientId())
+                              && !ObjectToolkit.isNullOrEmpty(correctRole.getClientId())
+                              && correctRole
+                                  .getClientId()
+                                  .trim()
+                                  .equalsIgnoreCase(userRole.getClientId().trim());
                         }));
   }
 
