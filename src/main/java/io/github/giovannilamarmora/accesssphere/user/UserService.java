@@ -96,57 +96,21 @@ public class UserService {
 
     if (optionalRoleDefinitions.isEmpty()) {
       LOG.warn("🔐 No Role Definition found for user: {}", user.getIdentifier());
-      user.setRoles(userClientRoles);
-      return Mono.just(user);
     }
 
-    List<RoleDefinition> roleDefinitions = optionalRoleDefinitions.get();
-
-    Map<String, RoleDefinition> roleDefMap =
-        roleDefinitions.stream()
-            .filter(rd -> rd.getClientId() != null && rd.getRole() != null)
-            .collect(
-                Collectors.toMap(
-                    rd ->
-                        rd.getClientId().trim().toUpperCase()
-                            + ":"
-                            + rd.getRole().trim().toUpperCase(),
-                    rd -> rd,
-                    (existing, replacement) -> existing));
-
-    List<UserClientRole> clientRoleDTOs =
-        userClientRoles.stream()
-            .map(
-                userClientRole -> {
-                  String key =
-                      (!ObjectToolkit.isNullOrEmpty(userClientRole.getClientId())
-                              ? userClientRole.getClientId().trim().toUpperCase()
-                              : "")
-                          + ":"
-                          + (!ObjectToolkit.isNullOrEmpty(userClientRole.getRole())
-                              ? userClientRole.getRole().trim().toUpperCase()
-                              : "");
-                  RoleDefinition roleDef = roleDefMap.get(key);
-                  if (roleDef != null) {
-                    LOG.debug(
-                        "🔍 Enriched role {} for client {}",
-                        roleDef.getRole(),
-                        roleDef.getClientId());
-                    return UserClientRoleMapper.toUserClientModel(roleDef);
-                  }
-                  return userClientRole;
-                })
-            .toList();
-
-    user.setRoles(clientRoleDTOs);
+    // Arricchimento dei ruoli associati all'utente con tipologia e permessi da ROLE_DEFINITIONS
+    user.setRoles(enrichRoles(userClientRoles, optionalRoleDefinitions.orElse(List.of())));
     return Mono.just(user);
   }
 
   /**
    * Recupera la lista completa di tutti gli utenti registrati nel database locale. Converte
-   * l'elenco delle entita' persistite nel corrispondente elenco di DTO {@link User}.
+   * l'elenco delle entita' persistite nel corrispondente elenco di DTO {@link User} e ne
+   * arricchisce massivamente i ruoli associati interrogando {@link UserClientRoleRepository} e
+   * {@link RoleDefinitionRepository} in batch, raggruppando per {@code userIdentifier} per
+   * eliminare le query N+1.
    *
-   * @return Mono contenente la lista di {@link User}.
+   * @return Mono contenente la lista di {@link User} arricchita con i ruoli client-scoped.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<User>> getUsers() {
@@ -160,6 +124,7 @@ public class UserService {
     }
     List<User> users = optionalUsers.get();
 
+    // Recupero massivo di tutti i ruoli client-scoped associati agli utenti
     Optional<List<UserClientRole>> optionalUserClientRoles = userClientRoleRepository.findAll();
 
     if (optionalUserClientRoles.isEmpty()) {
@@ -168,16 +133,50 @@ public class UserService {
     }
 
     List<UserClientRole> userClientRoles = optionalUserClientRoles.get();
+
+    // Recupero catalogo globale delle definizioni di ruolo (tipi, descrizioni, permessi)
     Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
 
     if (optionalRoleDefinitions.isEmpty()) {
-      LOG.warn("🔐 No Role Definition found for user: {}", user.getIdentifier());
-      user.setRoles(userClientRoles);
-      return Mono.just(user);
+      LOG.warn("🔐 No Role Definition found");
     }
 
-    List<RoleDefinition> roleDefinitions = optionalRoleDefinitions.get();
+    // Arricchimento preliminare massivo in memoria (la mappa viene creata 1 sola volta)
+    List<UserClientRole> enrichedRoles =
+        enrichRoles(userClientRoles, optionalRoleDefinitions.orElse(List.of()));
 
+    // Raggruppamento per userIdentifier dei ruoli già arricchiti per evitare lookup iterativi
+    Map<String, List<UserClientRole>> rolesByUser =
+        enrichedRoles.stream()
+            .filter(ucr -> !ObjectToolkit.isNullOrEmpty(ucr.getUserIdentifier()))
+            .collect(Collectors.groupingBy(UserClientRole::getUserIdentifier));
+
+    // Assegnazione dei rispettivi ruoli arricchiti a ciascun utente
+    users.forEach(
+        user -> {
+          if (user == null || user.getIdentifier() == null) return;
+          user.setRoles(rolesByUser.getOrDefault(user.getIdentifier(), List.of()));
+        });
+
+    return Mono.just(users);
+  }
+
+  /**
+   * Arricchisce una lista di {@link UserClientRole} associando tipo, descrizione e permessi
+   * granulari a partire dalle definizioni di ruolo recuperate da database. Indicizza le definizioni
+   * in una mappa con chiave composita "CLIENT_ID:ROLE" in tempo costante O(1) e preserva
+   * l'identificatore utente associato al ruolo.
+   *
+   * @param userClientRoles Lista di ruoli assegnati da arricchire.
+   * @param roleDefinitions Lista di definizioni globali dei ruoli da associare.
+   * @return Lista di ruoli arricchiti con tipologia, descrizione e permessi granulari.
+   */
+  private List<UserClientRole> enrichRoles(
+      List<UserClientRole> userClientRoles, List<RoleDefinition> roleDefinitions) {
+    if (ObjectToolkit.isNullOrEmpty(userClientRoles)) return List.of();
+    if (ObjectToolkit.isNullOrEmpty(roleDefinitions)) return userClientRoles;
+
+    // Costruzione della mappa indicizzata con chiave composita "CLIENT_ID:ROLE" normalizzata
     Map<String, RoleDefinition> roleDefMap =
         roleDefinitions.stream()
             .filter(rd -> rd.getClientId() != null && rd.getRole() != null)
@@ -190,31 +189,28 @@ public class UserService {
                     rd -> rd,
                     (existing, replacement) -> existing));
 
-    List<UserClientRole> clientRoleDTOs =
-        userClientRoles.stream()
-            .map(
-                userClientRole -> {
-                  String key =
-                      (!ObjectToolkit.isNullOrEmpty(userClientRole.getClientId())
-                              ? userClientRole.getClientId().trim().toUpperCase()
-                              : "")
-                          + ":"
-                          + (!ObjectToolkit.isNullOrEmpty(userClientRole.getRole())
-                              ? userClientRole.getRole().trim().toUpperCase()
-                              : "");
-                  RoleDefinition roleDef = roleDefMap.get(key);
-                  if (roleDef != null) {
-                    LOG.debug(
-                        "🔍 Enriched role {} for client {}",
-                        roleDef.getRole(),
-                        roleDef.getClientId());
-                    return UserClientRoleMapper.toUserClientModel(roleDef);
-                  }
-                  return userClientRole;
-                })
-            .toList();
-
-    return Mono.just(users);
+    // Mappatura ed arricchimento preservando l'identificatore utente
+    return userClientRoles.stream()
+        .map(
+            userClientRole -> {
+              String key =
+                  (!ObjectToolkit.isNullOrEmpty(userClientRole.getClientId())
+                          ? userClientRole.getClientId().trim().toUpperCase()
+                          : "")
+                      + ":"
+                      + (!ObjectToolkit.isNullOrEmpty(userClientRole.getRole())
+                          ? userClientRole.getRole().trim().toUpperCase()
+                          : "");
+              RoleDefinition roleDef = roleDefMap.get(key);
+              if (!ObjectToolkit.isNullOrEmpty(roleDef)) {
+                LOG.debug(
+                    "🔍 Enriched role {} for client {}", roleDef.getRole(), roleDef.getClientId());
+                return UserClientRoleMapper.toUserClientModel(
+                    roleDef, userClientRole.getUserIdentifier());
+              }
+              return userClientRole;
+            })
+        .toList();
   }
 
   /**
@@ -442,66 +438,5 @@ public class UserService {
       user.setRoles(clientRoleDTOs);
     }
     return user;
-  }
-
-  /**
-   * Arricchisce massivamente un elenco di DTO {@link User} con i rispettivi ruoli client-scoped,
-   * ottimizzando gli accessi a DB interrogando ROLE_DEFINITIONS con recupero preliminare in batch
-   * per evitare query N+1.
-   *
-   * @param users Lista di DTO utenti da arricchire.
-   * @return Lista di DTO utenti arricchita.
-   */
-  public List<User> enrichUsers(List<User> users) {
-    if (users == null || users.isEmpty()) return users;
-    List<UserClientRoleEntity> allUcr = userClientRoleDAO.findAll();
-    if (allUcr == null || allUcr.isEmpty()) return users;
-
-    Map<String, List<UserClientRoleEntity>> ucrByUser =
-        allUcr.stream()
-            .filter(u -> u.getUserIdentifier() != null)
-            .collect(Collectors.groupingBy(UserClientRoleEntity::getUserIdentifier));
-
-    List<RoleDefinitionEntity> allRoleDefs = roleDefinitionDAO.findAll();
-    Map<String, RoleDefinitionEntity> roleDefMap =
-        allRoleDefs != null
-            ? allRoleDefs.stream()
-                .filter(r -> r.getClientId() != null && r.getRole() != null)
-                .collect(
-                    Collectors.toMap(
-                        r ->
-                            r.getClientId().trim().toUpperCase()
-                                + ":"
-                                + r.getRole().trim().toUpperCase(),
-                        r -> r,
-                        (a, b) -> a))
-            : Map.of();
-
-    for (User user : users) {
-      if (user == null || user.getIdentifier() == null) continue;
-      List<UserClientRoleEntity> ucrEntities = ucrByUser.get(user.getIdentifier());
-      if (ucrEntities != null && !ucrEntities.isEmpty()) {
-        List<UserClientRole> clientRoleDTOs =
-            ucrEntities.stream()
-                .map(
-                    ucr -> {
-                      UserClientRole dto = new UserClientRole(ucr.getClientId(), ucr.getRole());
-                      String key =
-                          (ucr.getClientId() != null ? ucr.getClientId().trim().toUpperCase() : "")
-                              + ":"
-                              + (ucr.getRole() != null ? ucr.getRole().trim().toUpperCase() : "");
-                      RoleDefinitionEntity rd = roleDefMap.get(key);
-                      if (rd != null) {
-                        if (rd.getType() != null) dto.setType(rd.getType());
-                        if (rd.getDescription() != null) dto.setDescription(rd.getDescription());
-                        if (rd.getPermissions() != null) dto.setPermissions(rd.getPermissions());
-                      }
-                      return dto;
-                    })
-                .toList();
-        user.setRoles(clientRoleDTOs);
-      }
-    }
-    return users;
   }
 }

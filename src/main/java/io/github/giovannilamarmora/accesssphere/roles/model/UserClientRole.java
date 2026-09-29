@@ -32,6 +32,11 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Contextualized application role assigned to a user for an OAuth2 Client")
 public class UserClientRole extends GenericDTO {
 
+  @Schema(
+      description = "Identifier of the user associated with the role",
+      example = "550e8400-e29b-41d4-a716-446655440000")
+  private String userIdentifier;
+
   @UpperCase
   @Schema(
       description = "Identifier of the OAuth2 Client associated with the role",
@@ -65,11 +70,25 @@ public class UserClientRole extends GenericDTO {
     this.role = role != null ? role.trim().toUpperCase() : null;
   }
 
-  public UserClientRole(
-      String clientId, String role, String type, List<String> permissions) {
+  public UserClientRole(String userIdentifier, String clientId, String role) {
+    this.userIdentifier = userIdentifier;
+    this.clientId = clientId != null ? clientId.trim().toUpperCase() : null;
+    this.role = role != null ? role.trim().toUpperCase() : null;
+  }
+
+  public UserClientRole(String clientId, String role, String type, List<String> permissions) {
     this.clientId = clientId != null ? clientId.trim().toUpperCase() : null;
     this.role = role != null ? role.trim().toUpperCase() : null;
     this.type = type != null ? type.trim().toUpperCase() : null;
+    this.permissions = permissions;
+  }
+
+  public UserClientRole(
+      String clientId, String role, String type, String description, List<String> permissions) {
+    this.clientId = clientId != null ? clientId.trim().toUpperCase() : null;
+    this.role = role != null ? role.trim().toUpperCase() : null;
+    this.type = type != null ? type.trim().toUpperCase() : null;
+    this.description = description;
     this.permissions = permissions;
   }
 }

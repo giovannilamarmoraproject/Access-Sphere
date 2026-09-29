@@ -45,15 +45,19 @@ public class UserClientRoleMapper {
     return userClientRoleEntity;
   }
 
-  public static List<UserClientRole> toUserClientModels(List<RoleDefinition> roleDefinitions) {
+  public static List<UserClientRole> toUserClientModels(
+      List<RoleDefinition> roleDefinitions, String identifier) {
     if (ObjectToolkit.isNullOrEmpty(roleDefinitions)) return List.of();
-    return roleDefinitions.stream().map(UserClientRoleMapper::toUserClientModel).toList();
+    return roleDefinitions.stream()
+        .map(roleDefinition -> UserClientRoleMapper.toUserClientModel(roleDefinition, identifier))
+        .toList();
   }
 
-  public static UserClientRole toUserClientModel(RoleDefinition roleDefinition) {
+  public static UserClientRole toUserClientModel(RoleDefinition roleDefinition, String identifier) {
     if (ObjectToolkit.isNullOrEmpty(roleDefinition)) return null;
     UserClientRole userClientRole = new UserClientRole();
     BeanUtils.copyProperties(roleDefinition, userClientRole);
+    userClientRole.setUserIdentifier(identifier);
     return userClientRole;
   }
 }

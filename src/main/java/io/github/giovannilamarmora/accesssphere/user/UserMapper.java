@@ -53,6 +53,7 @@ public class UserMapper {
     if (ObjectToolkit.isNullOrEmpty(userEntity)) return null;
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
+    user.setId(null);
     user.setPassword(null);
 
     if (!ObjectToolkit.isNullOrEmpty(userEntity.getAttributes()))

@@ -191,26 +191,90 @@ class UserServiceTest {
   }
 
   @Test
-  @DisplayName("getUsersFromDatabase should return mapped DTO list")
-  void getUsersFromDatabase_success() {
-    UserEntity u1 = new UserEntity();
+  @DisplayName("getUsers should return user list with enriched client-scoped roles")
+  void getUsers_withEnrichedRoles() {
+    User u1 = new User();
     u1.setId(1L);
+    u1.setIdentifier("uuid-1");
     u1.setUsername("u1");
 
-    UserEntity u2 = new UserEntity();
+    User u2 = new User();
     u2.setId(2L);
+    u2.setIdentifier("uuid-2");
     u2.setUsername("u2");
 
-    when(userDAO.findAll()).thenReturn(List.of(u1, u2));
+    UserClientRole role1 = new UserClientRole("uuid-1", "LINKATUTTO", "ROLE_ADMIN");
+    UserClientRole role2 = new UserClientRole("uuid-2", "ACCESS-SPHERE-AUTH", "ROLE_USER");
+
+    RoleDefinition def1 = new RoleDefinition();
+    def1.setClientId("LINKATUTTO");
+    def1.setRole("ROLE_ADMIN");
+    def1.setType("ADMIN");
+    def1.setDescription("Admin role");
+    def1.setPermissions(List.of("users:read", "users:write"));
+
+    RoleDefinition def2 = new RoleDefinition();
+    def2.setClientId("ACCESS-SPHERE-AUTH");
+    def2.setRole("ROLE_USER");
+    def2.setType("USER");
+    def2.setDescription("User role");
+    def2.setPermissions(List.of("profile:read"));
+
+    when(userRepository.findAll()).thenReturn(Optional.of(List.of(u1, u2)));
+    when(userClientRoleRepository.findAll()).thenReturn(Optional.of(List.of(role1, role2)));
+    when(roleDefinitionRepository.findAll()).thenReturn(Optional.of(List.of(def1, def2)));
 
     StepVerifier.create(userService.getUsers())
         .assertNext(
             users -> {
               assertEquals(2, users.size());
-              assertEquals("u1", users.get(0).getUsername());
-              assertEquals("u2", users.get(1).getUsername());
+
+              User user1 = users.get(0);
+              assertEquals("uuid-1", user1.getIdentifier());
+              assertNotNull(user1.getRoles());
+              assertEquals(1, user1.getRoles().size());
+              assertEquals("ADMIN", user1.getRoles().get(0).getType());
+              assertEquals("Admin role", user1.getRoles().get(0).getDescription());
+              assertEquals(
+                  List.of("users:read", "users:write"), user1.getRoles().get(0).getPermissions());
+
+              User user2 = users.get(1);
+              assertEquals("uuid-2", user2.getIdentifier());
+              assertNotNull(user2.getRoles());
+              assertEquals(1, user2.getRoles().size());
+              assertEquals("USER", user2.getRoles().get(0).getType());
+              assertEquals("User role", user2.getRoles().get(0).getDescription());
+              assertEquals(List.of("profile:read"), user2.getRoles().get(0).getPermissions());
             })
         .verifyComplete();
+  }
+
+  @Test
+  @DisplayName("getUsers should return users when no roles are configured")
+  void getUsers_noRoles() {
+    User u1 = new User();
+    u1.setId(1L);
+    u1.setIdentifier("uuid-1");
+    u1.setUsername("u1");
+
+    when(userRepository.findAll()).thenReturn(Optional.of(List.of(u1)));
+    when(userClientRoleRepository.findAll()).thenReturn(Optional.empty());
+
+    StepVerifier.create(userService.getUsers())
+        .assertNext(
+            users -> {
+              assertEquals(1, users.size());
+              assertEquals("u1", users.get(0).getUsername());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  @DisplayName("getUsers should throw OAuthException when no users found")
+  void getUsers_notFound() {
+    when(userRepository.findAll()).thenReturn(Optional.empty());
+
+    assertThrows(OAuthException.class, () -> userService.getUsers());
   }
 
   @Test
