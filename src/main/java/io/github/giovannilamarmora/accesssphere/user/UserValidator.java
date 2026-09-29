@@ -98,6 +98,24 @@ public class UserValidator {
         });
   }
 
+  /**
+   * Convalida che il client specificato consenta la registrazione degli utenti (blocco preventivo).
+   *
+   * @param oAuth2Client Il client da verificare.
+   */
+  public static void validateClientRegistrationEnabled(OAuth2Client oAuth2Client) {
+    if (oAuth2Client == null) {
+      LOG.error("OAuth2Client is null");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
+    }
+    if (Boolean.FALSE.equals(oAuth2Client.getEnableRegistration())) {
+      LOG.error("❌ Registration is disabled for client {}", oAuth2Client.getClientId());
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_403,
+          "User registration is disabled for client " + oAuth2Client.getClientId());
+    }
+  }
+
   // TODO: OLD METHOD
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
@@ -134,25 +152,6 @@ public class UserValidator {
     LOG.error("❌ Authentication type mismatch on client configuration");
     return Mono.error(
         new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
-  }
-
-  /**
-   * Convalida che il client specificato consenta la registrazione degli utenti (blocco preventivo).
-   *
-   * @param oAuth2Client Il client da verificare.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateClientRegistrationEnabled(OAuth2Client oAuth2Client) {
-    if (oAuth2Client == null) {
-      LOG.error("OAuth2Client is null");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
-    }
-    if (Boolean.FALSE.equals(oAuth2Client.getEnableRegistration())) {
-      LOG.error("❌ Registration is disabled for client {}", oAuth2Client.getClientId());
-      throw new OAuthException(
-          ExceptionMap.ERR_OAUTH_403,
-          "User registration is disabled for client " + oAuth2Client.getClientId());
-    }
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)

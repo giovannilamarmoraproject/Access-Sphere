@@ -36,7 +36,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -127,40 +126,42 @@ public class UserAdminService {
   }
 
   /**
-   * Registra un nuovo utente nel sistema IAM validando anagrafica, regex, password e ruoli applicativi.
+   * Registra un nuovo utente nel sistema IAM validando anagrafica, regex, password e ruoli
+   * applicativi.
    *
    * <p>Interconnessioni logiche e controlli di sicurezza:
+   *
    * <ul>
-   *   <li>Se il token {@code bearer} e' fornito e l'istanza {@link OAuth2Authorization} non e' inizializzata,
-   *       sincronizza il contesto di autorizzazione tramite {@link OAuth2AuthorizationService#getByAccessTokenOrIdToken(String)}.</li>
-   *   <li><b>Operatore Autenticato</b>: se l'operatore e' loggato (token valido presente), verifica il possesso del
-   *       ruolo/permesso di registrazione delegata tramite {@link PermissionRoleManager#checkPermissionAndReturnUserRoles(SystemPermission)}
-   *       con {@link SystemPermission#USERS_WRITE}. Gli operatori con tale permesso possono creare utenti bypassando il blocco
-   *       preventivo di registrazione dei client.</li>
-   *   <li><b>Registrazione Pubblica (non autenticata)</b>: verifica che ciascun Client OAuth2 associato ai ruoli richiesti
-   *       sia censito e possieda la registrazione autonoma abilitata ({@link UserValidator#validateClientRegistrationEnabled(OAuth2Client)}),
-   *       sollevando altrimenti {@link OAuthException} con codice {@code ERR_OAUTH_403}.</li>
-   *   <li><b>Salvataggio ed Arricchimento</b>: delega interamente la creazione dell'utente a {@link UserService#saveUser(User)},
-   *       che gestisce in modo transazionale e sicuro la validazione dell'unicita di username ed email, l'hashing BCrypt
-   *       della password, la generazione dell'identificatore UUID e l'arricchimento con i permessi definiti in {@code ROLE_DEFINITIONS}.</li>
+   *   <li>Se il token {@code bearer} e' fornito e l'istanza {@link OAuth2Authorization} non e'
+   *       inizializzata, sincronizza il contesto di autorizzazione tramite {@link
+   *       OAuth2AuthorizationService#getByAccessTokenOrIdToken(String)}.
+   *   <li><b>Operatore Autenticato</b>: se l'operatore e' loggato (token valido presente), verifica
+   *       il possesso del ruolo/permesso di registrazione delegata tramite {@link
+   *       PermissionRoleManager#checkPermissionAndReturnUserRoles(SystemPermission)} con {@link
+   *       SystemPermission#USERS_WRITE}. Gli operatori con tale permesso possono creare utenti
+   *       bypassando il blocco preventivo di registrazione dei client.
+   *   <li><b>Registrazione Pubblica (non autenticata)</b>: verifica che ciascun Client OAuth2
+   *       associato ai ruoli richiesti sia censito e possieda la registrazione autonoma abilitata
+   *       ({@link UserValidator#validateClientRegistrationEnabled(OAuth2Client)}), sollevando
+   *       altrimenti {@link OAuthException} con codice {@code ERR_OAUTH_403}.
+   *   <li><b>Salvataggio ed Arricchimento</b>: delega interamente la creazione dell'utente a {@link
+   *       UserService#saveUser(User)}, che gestisce in modo transazionale e sicuro la validazione
+   *       dell'unicita di username ed email, l'hashing BCrypt della password, la generazione
+   *       dell'identificatore UUID e l'arricchimento con i permessi definiti in {@code
+   *       ROLE_DEFINITIONS}.
    * </ul>
    *
-   * @param bearer Token Bearer opzionale per operazioni privilegiate da operatore tecnico o amministratore.
+   * @param bearer Token Bearer opzionale per operazioni privilegiate da operatore tecnico o
+   *     amministratore.
    * @param userRequest DTO contenente i dati anagrafici, credenziali e ruoli del nuovo utente.
    * @return Mono contenente il DTO {@link UserDataResponse} registrato e salvato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<UserDataResponse> saveUser(String bearer, UserRequest userRequest) {
-    if (!ObjectToolkit.isNullOrEmpty(bearer)
-        && (ObjectToolkit.isNullOrEmpty(oAuth2Authorization)
-            || ObjectToolkit.fieldsNullOrEmpty(oAuth2Authorization))) {
-      BeanUtils.copyProperties(
-          oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer), oAuth2Authorization);
-    }
-
     boolean isAuthenticated =
-        !ObjectToolkit.isNullOrEmpty(oAuth2Authorization)
-            && !ObjectToolkit.fieldsNullOrEmpty(oAuth2Authorization);
+        !ObjectToolkit.isNullOrEmpty(bearer)
+            && (ObjectToolkit.isNullOrEmpty(oAuth2Authorization)
+                || ObjectToolkit.fieldsNullOrEmpty(oAuth2Authorization));
 
     if (isAuthenticated) {
       permissionRoleManager.checkPermissionAndReturnUserRoles(SystemPermission.USERS_WRITE);
@@ -198,16 +199,26 @@ public class UserAdminService {
                                     c -> c,
                                     (existing, replacement) -> existing));
 
-                    for (String clientId : clientIds) {
-                      OAuth2Client client = clientMap.get(clientId.trim().toUpperCase());
-                      if (client == null) {
-                        LOG.error("❌ Client {} not found", clientId);
-                        return Mono.error(
-                            new OAuthException(
-                                ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + clientId));
-                      }
-                      UserValidator.validateClientRegistrationEnabled(client);
-                    }
+                    clientIds.forEach(
+                        clientId -> {
+                          OAuth2Client client = clientMap.get(clientId.trim().toUpperCase());
+                          if (ObjectToolkit.isNullOrEmpty(client)) {
+                            LOG.error("❌ Client {} not found", clientId);
+                            throw new OAuthException(
+                                ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + clientId);
+                          }
+                          UserValidator.validateClientRegistrationEnabled(client);
+                        });
+                    // for (String clientId : clientIds) {
+                    //  OAuth2Client client = clientMap.get(clientId.trim().toUpperCase());
+                    //  if (client == null) {
+                    //    LOG.error("❌ Client {} not found", clientId);
+                    //    return Mono.error(
+                    //        new OAuthException(
+                    //            ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + clientId));
+                    //  }
+                    //  UserValidator.validateClientRegistrationEnabled(client);
+                    // }
                     return Mono.empty();
                   });
     }
@@ -292,7 +303,6 @@ public class UserAdminService {
       return false;
     }
   }
-
 
   /**
    * Registra un nuovo utente (utilizzato anche dal flusso di federazione Google) validando il
