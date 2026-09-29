@@ -65,14 +65,14 @@ public class OAuth2ClientMapper {
   public static OAuth2ClientEntity toEntity(OAuth2Client oAuth2Client) {
     OAuth2ClientEntity oAuth2ClientEntity = new OAuth2ClientEntity();
     BeanUtils.copyProperties(oAuth2Client, oAuth2ClientEntity);
-    if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getScopes())) {
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getScopes())) {
       oAuth2ClientEntity.setScopes(Joiner.on(" ").join(oAuth2Client.getScopes()));
     }
-    if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getRedirect_uri())) {
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getRedirect_uri())) {
       oAuth2ClientEntity.setRedirect_uri(
           Mapper.writeObjectToString(oAuth2Client.getRedirect_uri()));
     }
-    if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getWebhooks())) {
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getWebhooks())) {
       oAuth2ClientEntity.setWebhooks(Mapper.writeObjectToString(oAuth2Client.getWebhooks()));
     }
     return oAuth2ClientEntity;
