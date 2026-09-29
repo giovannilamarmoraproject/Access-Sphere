@@ -187,7 +187,7 @@ public class UserAdminService {
         addUserRequest != null ? addUserRequest.getEmail() : "null");
 
     // TODO: Controllo se l'utente ha i permessi di registrarsi, controllando prima se l'utente è
-    // loggato e sta cercando di registrare un nuovo utente tramite il permesso user:write o se il
+    // loggato e sta cercando di registrare un nuovo utente tramite il permesso users:write o se il
     // client ha la registrazione abilitata
 
     return Mono.defer(

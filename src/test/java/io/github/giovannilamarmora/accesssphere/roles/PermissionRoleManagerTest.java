@@ -53,6 +53,8 @@ class PermissionRoleManagerTest {
     delegatedAuth = new OAuth2Authorization();
     delegatedAuth.setSubject("mario");
     delegatedAuth.setIdentifier("mario-uuid");
+
+    permissionRoleManager.oAuth2Authorization = oAuth2Authorization;
   }
 
   @Test
@@ -204,8 +206,8 @@ class PermissionRoleManagerTest {
 
   @Test
   @DisplayName(
-      "checkPermissionAndReturnUserRoles matches singular DB permissions against plural SystemPermission enum")
-  void testCheckPermissionAndReturnUserRoles_SingularDBPermissionMatchesPluralEnum() {
+      "checkPermissionAndReturnUserRoles matches plural permissions against SystemPermission enum")
+  void testCheckPermissionAndReturnUserRoles_PluralPermissionMatchesEnum() {
     when(techUserService.isTechUser(oAuth2Authorization)).thenReturn(false);
     when(oAuth2Authorization.getIdentifier()).thenReturn("user-uuid");
     when(oAuth2Authorization.getClientId()).thenReturn("CLIENT-A");
@@ -216,9 +218,9 @@ class PermissionRoleManagerTest {
     when(userClientRoleRepository.findByUserIdentifier("user-uuid"))
         .thenReturn(Optional.of(List.of(ucr)));
 
-    // Stored with singular permission "user:read"
+    // Stored with plural permission "users:read"
     RoleDefinition rd =
-        new RoleDefinition("CLIENT-A", "ROLE_OPERATOR", "OPERATOR", "desc", List.of("user:read"));
+        new RoleDefinition("CLIENT-A", "ROLE_OPERATOR", "OPERATOR", "desc", List.of("users:read"));
     when(roleDefinitionRepository.findAll()).thenReturn(Optional.of(List.of(rd)));
 
     // Checking with plural SystemPermission.USERS_READ ("users:read")
@@ -243,9 +245,9 @@ class PermissionRoleManagerTest {
     when(userClientRoleRepository.findByUserIdentifier("user-uuid"))
         .thenReturn(Optional.of(List.of(ucr)));
 
-    // Role only has client:read, does not have users:read
+    // Role only has clients:read, does not have users:read
     RoleDefinition rd =
-        new RoleDefinition("CLIENT-A", "ROLE_OPERATOR", "OPERATOR", "desc", List.of("client:read"));
+        new RoleDefinition("CLIENT-A", "ROLE_OPERATOR", "OPERATOR", "desc", List.of("clients:read"));
     when(roleDefinitionRepository.findAll()).thenReturn(Optional.of(List.of(rd)));
 
     assertThrows(

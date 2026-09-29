@@ -50,8 +50,7 @@ public enum SystemPermission {
 
   /**
    * Converte una stringa di permesso nel corrispondente enum {@link SystemPermission}.
-   * Supporta il formato canonico plurale (es. "users:read"), la wildcard ("*" o "ALL")
-   * e le chiavi storiche singolari per retrocompatibilita'.
+   * Supporta il formato canonico plurale (es. "users:read") e la wildcard ("*" o "ALL").
    *
    * @param value Valore stringa del permesso.
    * @return Enum trovato o null se non riconosciuto.
@@ -70,22 +69,7 @@ public enum SystemPermission {
         return p;
       }
     }
-    // Mappatura esplicita di retrocompatibilita' per vecchi record singolari
-    return switch (val.toLowerCase()) {
-      case "user:read" -> USERS_READ;
-      case "user:write" -> USERS_WRITE;
-      case "user:delete" -> USERS_DELETE;
-      case "user:lock" -> USERS_LOCK;
-      case "user:roles", "user:role" -> USERS_ROLES;
-      case "client:read" -> CLIENTS_READ;
-      case "client:write" -> CLIENTS_WRITE;
-      case "client:delete" -> CLIENTS_DELETE;
-      case "role:manage" -> ROLES_MANAGE;
-      case "setting:read" -> SETTINGS_READ;
-      case "setting:write" -> SETTINGS_WRITE;
-      case "email:manage" -> EMAILS_MANAGE;
-      default -> null;
-    };
+    return null;
   }
 
   /**
@@ -98,40 +82,12 @@ public enum SystemPermission {
   }
 
   /**
-   * Mappa eventuali forme singolari storiche nel valore canonico plurale di sistema.
-   *
-   * @param perm Stringa del permesso da convertire.
-   * @return Valore canonico plurale standard.
-   */
-  public static String canonicalize(String perm) {
-    if (perm == null) return "";
-    String p = perm.trim().toLowerCase();
-    return switch (p) {
-      case "user:read" -> "users:read";
-      case "user:write" -> "users:write";
-      case "user:delete" -> "users:delete";
-      case "user:lock" -> "users:lock";
-      case "user:roles", "user:role" -> "users:roles";
-      case "client:read" -> "clients:read";
-      case "client:write" -> "clients:write";
-      case "client:delete" -> "clients:delete";
-      case "role:manage" -> "roles:manage";
-      case "setting:read" -> "settings:read";
-      case "setting:write" -> "settings:write";
-      case "email:manage" -> "emails:manage";
-      default -> p;
-    };
-  }
-
-  /**
-   * Verifica se un permesso concesso (es. da token o da ruolo su DB) soddisfa il permesso richiesto,
-   * supportando:
+   * Verifica se un permesso concesso soddisfa il permesso richiesto, supportando:
    * <ul>
    *   <li>Wildcard globale ('*' o 'ALL');</li>
    *   <li>Corrispondenza canonica plurale esatta (case-insensitive);</li>
    *   <li>Wildcard di risorsa (es. 'users:*' autorizza 'users:read', 'users:write', ecc.);</li>
-   *   <li>Privilegio atomico di gestione (es. 'roles:manage' o ':manage');</li>
-   *   <li>Retrocompatibilita' per formati singolari preesistenti a DB.</li>
+   *   <li>Privilegio atomico di gestione (es. 'roles:manage' o ':manage').</li>
    * </ul>
    *
    * @param grantedPermission Permesso posseduto dall'utente/ruolo.
@@ -152,7 +108,7 @@ public enum SystemPermission {
     if (granted.equals("*") || granted.equals("all")) {
       return true;
     }
-    // 2. Corrispondenza diretta esatta (case-insensitive)
+    // 2. Corrispondenza diretta esatta plurale (case-insensitive)
     if (granted.equalsIgnoreCase(required)) {
       return true;
     }
@@ -170,10 +126,6 @@ public enum SystemPermission {
           || (res.equals("roles") && required.equals("users:roles"))) {
         return true;
       }
-    }
-    // 5. Retrocompatibilita': se il DB ha ancora il vecchio formato singolare
-    if (canonicalize(granted).equalsIgnoreCase(canonicalize(required))) {
-      return true;
     }
     return false;
   }

@@ -56,7 +56,6 @@ public class PermissionRoleManager extends AdminUserConfig {
   @Autowired private AdminUserService techUserService;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
-  @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private UserClientRoleRepository userClientRoleRepository;
   @Autowired private RoleDefinitionRepository roleDefinitionRepository;
 
@@ -423,7 +422,7 @@ public class PermissionRoleManager extends AdminUserConfig {
     if (auth == null) return false;
     if (isSuperAdmin(auth)) return true;
 
-    // 1. Verifica se i permessi diretti presenti nel token contengono '*' o 'users:write' / 'user:write'
+    // 1. Verifica se i permessi diretti presenti nel token contengono '*' o 'users:write'
     if (auth.getPermissions() != null) {
       boolean match =
           auth.getPermissions().stream()

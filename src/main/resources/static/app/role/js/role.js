@@ -472,14 +472,8 @@ function openRoleModal(mode, roleData) {
                 roleData.permissions.forEach((p) => {
                     if (!p) return;
                     const key = String(p).trim().toLowerCase();
-                    const normalizedKey = key === "user:read" ? "users:read"
-                        : key === "user:write" ? "users:write"
-                        : key === "user:delete" ? "users:delete"
-                        : key === "client:read" ? "clients:read"
-                        : key === "client:write" ? "clients:write"
-                        : key;
-                    if (standardKeys.includes(normalizedKey)) {
-                        const cb = document.querySelector(`.iam-perm-checkbox[value="${normalizedKey}"]`);
+                    if (standardKeys.includes(key)) {
+                        const cb = document.querySelector(`.iam-perm-checkbox[value="${key}"]`);
                         if (cb) cb.checked = true;
                     } else {
                         customPermissions.push(p);

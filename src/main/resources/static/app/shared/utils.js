@@ -1165,8 +1165,7 @@ const AccessControl = {
     },
 
     /**
-     * Normalizza una stringa di permesso per confronto agnostico tra singolare e plurale.
-     * Es: "users:read" -> "user:read", "clients:write" -> "client:write", "roles:manage" -> "role:manage".
+     * Normalizza una stringa di permesso in minuscolo e formato canonico.
      * @param {string} perm
      * @returns {string}
      */
@@ -1174,24 +1173,12 @@ const AccessControl = {
         if (!perm) return "";
         let p = String(perm).trim().toLowerCase().replace(/_/g, ":");
         if (p === "*" || p === "all") return "*";
-        const colonIndex = p.indexOf(":");
-        if (colonIndex > 0) {
-            let resource = p.substring(0, colonIndex).trim();
-            let action = p.substring(colonIndex + 1).trim();
-            if (resource.endsWith("s")) {
-                resource = resource.substring(0, resource.length - 1);
-            }
-            if (action === "roles") {
-                action = "role";
-            }
-            return resource + ":" + action;
-        }
         return p;
     },
 
     /**
      * Verifica se una collezione di permessi posseduti soddisfa il permesso target richiesto.
-     * Supporta wildcard "*", wildcard per risorsa ("user:*"), privilegi ":manage" e singolare/plurale.
+     * Supporta wildcard "*", wildcard per risorsa ("users:*") e privilegi ":manage".
      * @param {string[]|Set<string>} grantedPerms
      * @param {string} targetPerm
      * @returns {boolean}
@@ -1214,9 +1201,6 @@ const AccessControl = {
             if (normGranted.endsWith(":manage")) {
                 const res = normGranted.substring(0, normGranted.length - 7);
                 if (normTarget.startsWith(res + ":")) return true;
-            }
-            if (normGranted === "role:manage" && normTarget === "user:role") {
-                return true;
             }
         }
         return false;
@@ -1309,7 +1293,7 @@ const AccessControl = {
     canViewClients() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("clients:read", "client:read", "clients:write", "client:write", "clients:manage", "client:manage") ||
+            this.hasPermission("clients:read", "clients:write", "clients:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
     },
@@ -1323,7 +1307,7 @@ const AccessControl = {
         if (this.isSuperAdmin()) return true;
         if (!clientId) return this.canViewClients();
         const target = String(clientId).trim().toUpperCase();
-        return this.hasClientPermission(target, "clients:read", "client:read", "clients:write", "client:write", "clients:manage");
+        return this.hasClientPermission(target, "clients:read", "clients:write", "clients:manage");
     },
 
     /**
@@ -1333,7 +1317,7 @@ const AccessControl = {
     canCreateClient() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("clients:write", "client:write", "clients:manage", "client:manage", "clients:create") ||
+            this.hasPermission("clients:write", "clients:manage", "clients:create") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
     },
@@ -1352,7 +1336,7 @@ const AccessControl = {
         }
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasClientPermission(target, "clients:write", "client:write", "clients:manage", "client:manage") ||
+            this.hasClientPermission(target, "clients:write", "clients:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
     },
@@ -1371,7 +1355,7 @@ const AccessControl = {
         }
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasClientPermission(target, "clients:delete", "client:delete", "clients:manage", "client:manage") ||
+            this.hasClientPermission(target, "clients:delete", "clients:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
     },
@@ -1379,7 +1363,7 @@ const AccessControl = {
     canManageClients() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("clients:write", "client:write", "clients:delete", "client:delete", "clients:manage", "client:manage") ||
+            this.hasPermission("clients:write", "clients:delete", "clients:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
     },
@@ -1414,7 +1398,7 @@ const AccessControl = {
     canViewUsers() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("users:read", "user:read", "users:write", "user:write", "users:manage", "user:manage") ||
+            this.hasPermission("users:read", "users:write", "users:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER", "OPERATOR", "ROLE_OPERATOR", "AUDITOR", "ROLE_AUDITOR")
         );
     },
@@ -1422,7 +1406,7 @@ const AccessControl = {
     canManageUsers() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("users:write", "user:write", "users:manage", "user:manage") ||
+            this.hasPermission("users:write", "users:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
         );
     },
@@ -1430,7 +1414,7 @@ const AccessControl = {
     canDeleteUsers() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("users:delete", "user:delete", "users:manage", "user:manage") ||
+            this.hasPermission("users:delete", "users:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
     },
@@ -1438,7 +1422,7 @@ const AccessControl = {
     canViewRoles() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("roles:read", "role:read", "roles:write", "role:write", "roles:manage", "role:manage") ||
+            this.hasPermission("roles:read", "roles:write", "roles:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
         );
     },
@@ -1446,7 +1430,7 @@ const AccessControl = {
     canManageRoles() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("roles:write", "role:write", "roles:manage", "role:manage") ||
+            this.hasPermission("roles:write", "roles:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
     },
@@ -1454,7 +1438,7 @@ const AccessControl = {
     canViewEmails() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("emails:read", "email:read", "emails:write", "email:write", "emails:manage", "email:manage") ||
+            this.hasPermission("emails:read", "emails:write", "emails:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
         );
     },
@@ -1462,7 +1446,7 @@ const AccessControl = {
     canManageEmails() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("emails:write", "email:write", "emails:manage", "email:manage") ||
+            this.hasPermission("emails:write", "emails:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
     },
