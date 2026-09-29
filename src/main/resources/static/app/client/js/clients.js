@@ -336,7 +336,9 @@ function saveClient() {
 
     const cfg = getConfig();
     const token = getCookieOrStorage(cfg.access_token);
-    const url = window.location.origin + "/v1/clients";
+    const url = isEditMode
+        ? (window.location.origin + `/v1/clients/${encodeURIComponent(clientId)}`)
+        : (window.location.origin + "/v1/clients");
     const method = isEditMode ? "PUT" : "POST";
 
     fetch(url, {
