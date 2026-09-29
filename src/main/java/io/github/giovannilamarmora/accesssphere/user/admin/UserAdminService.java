@@ -117,29 +117,25 @@ public class UserAdminService {
               if (permissionRoleManager.hasAdminPermission(readUserPermission)) {
                 return users;
               }
-              return users.stream()
-                  .filter(user -> hasMatchingRole(user, hasCorrectRoles))
-                  .toList();
+              return users.stream().filter(user -> hasMatchingRole(user, hasCorrectRoles)).toList();
             })
         .map(UserMapper::toResponseList)
         .doOnSuccess(
             filteredUsers ->
-                LOG.info(
-                    "✅ [USER ADMIN] Successfully retrieved {} users",
-                    filteredUsers.size()));
+                LOG.info("✅ [USER ADMIN] Successfully retrieved {} users", filteredUsers.size()));
   }
 
   /**
-   * Verifica se l'utente specificato possiede almeno uno dei ruoli definiti nella lista autorizzata.
-   * Il confronto verifica la corrispondenza del ruolo applicativo e, se configurato, del relativo
-   * Client OAuth2 proprietario.
+   * Verifica se l'utente specificato possiede almeno uno dei ruoli definiti nella lista
+   * autorizzata. Il confronto verifica la corrispondenza del ruolo applicativo e, se configurato,
+   * del relativo Client OAuth2 proprietario.
    *
    * @param user Utente da verificare con la lista dei suoi ruoli assegnati.
    * @param authorizedRoles Lista dei ruoli ammessi derivati dai permessi dell'operatore.
    * @return true se l'utente possiede almeno un ruolo corrispondente, false altrimenti.
    */
   private boolean hasMatchingRole(User user, List<RoleDefinition> authorizedRoles) {
-    if (user == null || ObjectToolkit.isNullOrEmpty(user.getRoles())) {
+    if (ObjectToolkit.isNullOrEmpty(user) || ObjectToolkit.isNullOrEmpty(user.getRoles())) {
       return false;
     }
     if (ObjectToolkit.isNullOrEmpty(authorizedRoles)) {
@@ -151,12 +147,13 @@ public class UserAdminService {
                 authorizedRoles.stream()
                     .anyMatch(
                         correctRole -> {
-                          if (userRole == null || correctRole == null) {
+                          if (ObjectToolkit.isNullOrEmpty(userRole)
+                              || ObjectToolkit.isNullOrEmpty(correctRole)) {
                             return false;
                           }
                           boolean roleMatch =
                               ObjectToolkit.isNullOrEmpty(correctRole.getRole())
-                                  || (userRole.getRole() != null
+                                  || (!ObjectToolkit.isNullOrEmpty(userRole.getRole())
                                       && userRole
                                           .getRole()
                                           .trim()
