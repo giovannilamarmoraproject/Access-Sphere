@@ -1,7 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.user.admin;
 
-import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserListResponse;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -76,16 +77,13 @@ public class UserAdminControllerImpl implements UserAdminController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> registerUser(String bearer, AddUserRequest user) {
-    LOG.info(
-        "🌐 [ADMIN CONTROLLER] Invoking RegisterUser endpoint for username: {}",
-        user.getUsername());
+  public Mono<ResponseEntity<UserResponse>> saveUser(String bearer, UserRequest user) {
     return userAdminService
-        .register(bearer, user)
+        .saveUser(bearer, user)
         .map(
             registeredUser -> {
-              Response response =
-                  new Response(
+              UserResponse response =
+                  new UserResponse(
                       HttpStatus.CREATED.value(),
                       "User " + registeredUser.getUsername() + " successfully registered!",
                       TraceUtils.getSpanID(),

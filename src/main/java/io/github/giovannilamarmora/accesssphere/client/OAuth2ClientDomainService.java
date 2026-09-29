@@ -5,7 +5,6 @@ import io.github.giovannilamarmora.accesssphere.client.database.OAuth2ClientRepo
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.RoleDefinitionRepository;
@@ -146,7 +145,7 @@ public class OAuth2ClientDomainService {
         "💾 {} Inserting new client into Database: {}",
         OAUTH2_DOMAIN_LOG,
         oAuth2Client.getClientId());
-    OAuthValidator.validateClientRoles(oAuth2Client);
+    OAuth2ClientValidator.validateClientRoles(oAuth2Client);
 
     boolean alreadyExist = oAuth2ClientRepository.existsByClientId(oAuth2Client.getClientId());
     if (alreadyExist) {
@@ -172,7 +171,7 @@ public class OAuth2ClientDomainService {
   public Mono<OAuth2Client> updateOAuth2ClientByClientId(
       OAuth2Client oAuth2Client, String clientId) {
     LOG.info("🔄 {} Updating client in Database: {}", OAUTH2_DOMAIN_LOG, clientId);
-    OAuthValidator.validateClientRoles(oAuth2Client);
+    OAuth2ClientValidator.validateClientRoles(oAuth2Client);
 
     boolean alreadyExist = oAuth2ClientRepository.existsByClientId(clientId);
     if (!alreadyExist) {

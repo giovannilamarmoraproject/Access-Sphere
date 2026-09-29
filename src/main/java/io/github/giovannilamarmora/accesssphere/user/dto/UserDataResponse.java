@@ -62,13 +62,6 @@ public class UserDataResponse extends GenericDTO {
 
   @Schema(
       description =
-          "Hashed user credentials (always stripped to null in responses for security reasons)",
-      example = "null",
-      accessMode = Schema.AccessMode.READ_ONLY)
-  private String password;
-
-  @Schema(
-      description =
           "List of contextualized application roles assigned to the user across OAuth2 clients")
   private List<UserClientRoleResponse> roles;
 

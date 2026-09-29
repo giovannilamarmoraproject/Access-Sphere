@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.user.admin;
 
-import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserListResponse;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
@@ -104,14 +104,14 @@ public interface UserAdminController {
                     schema = @Schema(implementation = Response.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> registerUser(
+  Mono<ResponseEntity<UserResponse>> saveUser(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @RequestBody @Valid @NotNull(message = "User cannot be null") AddUserRequest user);
+      @RequestBody @Valid @NotNull(message = "User cannot be null") UserRequest user);
 
   @DeleteMapping("/users/{identifier}")
   @Operation(

@@ -2,12 +2,14 @@ package io.github.giovannilamarmora.accesssphere.user;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleHolder;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
-import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
@@ -16,6 +18,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
+import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -25,6 +28,77 @@ import reactor.core.publisher.Mono;
 public class UserValidator {
 
   private static final Logger LOG = LoggerFilter.getLogger(UserValidator.class);
+
+  /**
+   * Convalida i dati anagrafici e il rispetto dei vincoli di regex per password ed email.
+   *
+   * @param user DTO utente da validare.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateUser(User user) {
+    validateUsername(user.getUsername());
+    validateEmail(user.getEmail());
+    validateRoles(user.getRoles());
+  }
+
+  /**
+   * Convalida i dati anagrafici e il rispetto dei vincoli di regex per password ed email.
+   *
+   * @param user DTO utente da validare.
+   */
+  public static void validateUserRequest(UserRequest user) {
+    validateUsername(user.getUsername());
+    validateEmail(user.getEmail());
+    validatePassword(user.getUsername(), user.getPassword());
+    validateRoles(user.getRoles());
+  }
+
+  private static void validateUsername(String username) {
+    if (ObjectToolkit.isNullOrEmpty(username)) {
+      LOG.error("Username is empty");
+      throw new UserException(ExceptionMap.ERR_USER_400, "Username is required!");
+    }
+  }
+
+  private static void validatePassword(String username, String password) {
+    if (!Utilities.isCharacterAndRegexValid(password, RegEx.PASSWORD_FULL.getValue())) {
+      LOG.error("Invalid regex for field password for user {}", username);
+      throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
+    }
+  }
+
+  private static void validateEmail(String email) {
+    if (!Utilities.isCharacterAndRegexValid(email, RegEx.EMAIL.getValue())) {
+      LOG.error("Invalid regex for field email for user {}", email);
+      throw new UserException(ExceptionMap.ERR_USER_400, "Invalid email provided!");
+    }
+  }
+
+  private static void validateRoles(List<? extends RoleHolder> roles) {
+    if (ObjectToolkit.isNullOrEmpty(roles)) {
+      LOG.error("❌ Registration rejected: user roles are required");
+      throw new UserException(ExceptionMap.ERR_USER_400, "User roles must be provided!");
+    }
+    roles.forEach(
+        role -> {
+          if (ObjectToolkit.isNullOrEmpty(role.getRole())) {
+            LOG.error("❌ The Client must have a valid role configuration to proceed");
+            throw new OAuthException(
+                ExceptionMap.ERR_USER_400,
+                ExceptionType.INVALID_ROLES,
+                "Invalid Roles Configuration! At least one role is required.");
+          }
+          if (ObjectToolkit.isNullOrEmpty(role.getClientId())) {
+            LOG.error("❌ The Client must have a valid client id configuration to proceed");
+            throw new OAuthException(
+                ExceptionMap.ERR_USER_400,
+                ExceptionType.INVALID_ROLES,
+                "Invalid Roles Configuration! Client id is required.");
+          }
+        });
+  }
+
+  // TODO: OLD METHOD
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateAuthType(
@@ -60,35 +134,6 @@ public class UserValidator {
     LOG.error("❌ Authentication type mismatch on client configuration");
     return Mono.error(
         new OAuthException(ExceptionMap.ERR_OAUTH_400, ExceptionMap.ERR_OAUTH_400.getMessage()));
-  }
-
-  /**
-   * Convalida i dati anagrafici e il rispetto dei vincoli di regex per password ed email.
-   *
-   * @param user DTO utente da validare.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
-  public static void validateUserData(AddUserRequest user) {
-    if (ObjectToolkit.isNullOrEmpty(user)) {
-      LOG.error("User payload is null");
-      throw new UserException(ExceptionMap.ERR_USER_400, "User data is required!");
-    }
-    if (ObjectToolkit.isNullOrEmpty(user.getUsername())) {
-      LOG.error("Username is empty");
-      throw new UserException(ExceptionMap.ERR_USER_400, "Username is required!");
-    }
-    if (!Utilities.isCharacterAndRegexValid(user.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
-      LOG.error("Invalid regex for field password for user {}", user.getUsername());
-      throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
-    }
-    if (!Utilities.isCharacterAndRegexValid(user.getEmail(), RegEx.EMAIL.getValue())) {
-      LOG.error("Invalid regex for field email for user {}", user.getUsername());
-      throw new UserException(ExceptionMap.ERR_USER_400, "Invalid email provided!");
-    }
-    if (ObjectToolkit.isNullOrEmpty(user.getRoles())) {
-      LOG.error("❌ Registration rejected: user roles are required");
-      throw new UserException(ExceptionMap.ERR_USER_400, "User roles must be provided!");
-    }
   }
 
   /**

@@ -46,14 +46,23 @@ public class UserClientRoleRepository {
 
   public UserClientRole save(UserClientRole userClientRole, String identifier) {
     LOG.debug("🔐 Saving UserClient Role with name: {}", userClientRole.getRole());
-    UserClientRoleEntity toEntity = UserClientRoleMapper.toEntity(userClientRole);
-
-    toEntity.setUserIdentifier(identifier);
+    UserClientRoleEntity toEntity = UserClientRoleMapper.toEntity(userClientRole, identifier);
 
     UserClientRoleEntity savedEntity = userClientRoleDAO.save(toEntity);
 
     LOG.debug("⚖️ Saved UserClient Role with name: {} in Database", userClientRole.getRole());
     return UserClientRoleMapper.toModel(savedEntity);
+  }
+
+  public List<UserClientRole> saveAll(List<UserClientRole> userClientRoles, String identifier) {
+    LOG.debug("🔐 Saving UserClient Role for identifier: {}", identifier);
+    List<UserClientRoleEntity> toEntities =
+        UserClientRoleMapper.toEntityList(userClientRoles, identifier);
+
+    List<UserClientRoleEntity> savedEntity = userClientRoleDAO.saveAllAndFlush(toEntities);
+
+    LOG.debug("⚖️ Saved UserClient Role for identifier: {} in Database", identifier);
+    return UserClientRoleMapper.toModelList(savedEntity);
   }
 
   public void deleteByClientId(String clientId) {

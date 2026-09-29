@@ -34,7 +34,7 @@ public class UserRepository {
     }
 
     LOG.debug("👤 Found User {} in Database", email);
-    return Optional.of(UserMapper.toModel(getEntity));
+    return Optional.ofNullable(UserMapper.toModel(getEntity));
   }
 
   public Optional<List<User>> findAll() {
@@ -48,5 +48,37 @@ public class UserRepository {
 
     LOG.debug("👤 Found {} User in Database", getEntities.size());
     return Optional.of(UserMapper.toModelList(getEntities));
+  }
+
+  public User saveAndFlush(User user) {
+    LOG.debug("👤 Saving User with username: {}", user.getUsername());
+    UserEntity mapEntity = UserMapper.toEntity(user);
+
+    UserEntity savedEntity = userDAO.saveAndFlush(mapEntity);
+
+    LOG.debug("👤 Saved User {} in Database", user.getUsername());
+    return UserMapper.toModel(savedEntity);
+  }
+
+  /**
+   * Verifica se esiste gia un utente registrato con lo username specificato.
+   *
+   * @param username Lo username da verificare.
+   * @return true se presente, false altrimenti.
+   */
+  public boolean existsByUsername(String username) {
+    LOG.debug("🔐 Checking if User with username {} exist", username);
+    return userDAO.existsByUsername(username);
+  }
+
+  /**
+   * Verifica se esiste gia un utente registrato con l'indirizzo email specificato.
+   *
+   * @param email L'indirizzo email da verificare.
+   * @return true se presente, false altrimenti.
+   */
+  public boolean existsByEmail(String email) {
+    LOG.debug("🔐 Checking if User with email {} exist", email);
+    return userDAO.existsByEmail(email);
   }
 }

@@ -25,6 +25,7 @@ import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -159,6 +160,55 @@ public class UserService {
         });
 
     return Mono.just(users);
+  }
+
+  /**
+   * Persiste un'entita' utente nel database locale e restituisce il corrispondente DTO {@link User}
+   * arricchito con i ruoli applicativi.
+   *
+   * <p>Nota di sicurezza e integrità dati: non azzerare MAI la password sull'istanza managed {@link
+   * UserEntity} all'interno del contesto transazionale, per evitare che il dirty checking di
+   * Hibernate propaghi un UPDATE con PASSWORD = NULL su database. La rimozione della password per
+   * la sicurezza del client viene già gestita a livello di DTO da {@link
+   * UserMapper#toModel(UserEntity)}.
+   *
+   * @param user model da salvare con password cifrata (BCrypt).
+   * @return DTO {@link User} corrispondente all'entita' salvata (con password protetta a null).
+   */
+  @Transactional
+  public User saveUser(User user) {
+    UserValidator.validateUser(user);
+
+    if (userRepository.existsByUsername(user.getUsername())) {
+      LOG.error("👤 The user already exists for username: {}", user.getUsername());
+      throw new UserException(
+          ExceptionMap.ERR_USER_400, "User %s already exists".formatted(user.getUsername()));
+    }
+    if (userRepository.existsByEmail(user.getEmail())) {
+      LOG.error("👤 The user already exists for email: {}", user.getEmail());
+      throw new UserException(
+          ExceptionMap.ERR_USER_400, "Email %s already exists".formatted(user.getEmail()));
+    }
+
+    if (!ObjectToolkit.isNullOrEmpty(user.getPassword())) {
+      user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+    }
+    String identifier = UUID.randomUUID().toString();
+    user.setIdentifier(identifier);
+    user.setBlocked(false);
+    user.setConfirmed(false);
+
+    User userSaved = userRepository.saveAndFlush(user);
+
+    List<UserClientRole> userRoles = user.getRoles();
+    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
+
+    List<UserClientRole> userClientRoles =
+        enrichRoles(userRoles, optionalRoleDefinitions.orElse(List.of()));
+
+    List<UserClientRole> savedRoles = userClientRoleRepository.saveAll(userClientRoles, identifier);
+    userSaved.setRoles(savedRoles);
+    return userSaved;
   }
 
   /**
@@ -354,7 +404,8 @@ public class UserService {
     UserEntity userFind = userDAO.findUserEntityByIdentifier(identifier);
     UserValidator.validateUser(userFind);
     setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
-    return Mono.just(saveUserEntityIntoDatabase(userEntity));
+    User user = UserMapper.toModel(userFind);
+    return Mono.just(saveUser(user));
   }
 
   private void setDataBeforeUpdate(
@@ -369,26 +420,6 @@ public class UserService {
     if (ObjectToolkit.isNullOrEmpty(userEntity.getTokenReset())) {
       userEntity.setTokenReset(userFind.getTokenReset());
     }
-  }
-
-  /**
-   * Persiste un'entita' utente nel database locale e restituisce il corrispondente DTO {@link User}
-   * arricchito con i ruoli applicativi.
-   *
-   * <p>Nota di sicurezza e integrità dati: non azzerare MAI la password sull'istanza managed {@link
-   * UserEntity} all'interno del contesto transazionale, per evitare che il dirty checking di
-   * Hibernate propaghi un UPDATE con PASSWORD = NULL su database. La rimozione della password per
-   * la sicurezza del client viene già gestita a livello di DTO da {@link
-   * UserMapper#toModel(UserEntity)}.
-   *
-   * @param userEntity Entita' da salvare con password cifrata (BCrypt).
-   * @return DTO {@link User} corrispondente all'entita' salvata (con password protetta a null).
-   */
-  @Transactional
-  public User saveUserEntityIntoDatabase(UserEntity userEntity) {
-    UserEntity userSaved = userDAO.saveAndFlush(userEntity);
-    UserValidator.validateUser(userSaved);
-    return enrichUser(UserMapper.toModel(userSaved));
   }
 
   /**

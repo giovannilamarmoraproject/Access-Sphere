@@ -2,9 +2,8 @@ package io.github.giovannilamarmora.accesssphere.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
-import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
-import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -69,6 +68,13 @@ public class UserMapper {
     return user;
   }
 
+  public static User toModel(UserRequest userRequest) {
+    User user = new User();
+    BeanUtils.copyProperties(userRequest, user);
+    user.setRoles(UserClientRoleMapper.requestToModelList(userRequest.getRoles()));
+    return user;
+  }
+
   /**
    * Converte il DTO {@link User} nella corrispondente entità di persistenza {@link UserEntity}.
    * Serializza le liste di ruoli in stringa separata da spazi e converte attributi e impostazioni
@@ -79,7 +85,6 @@ public class UserMapper {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static UserEntity toEntity(User user) {
-    if (user == null) return null;
     UserEntity userEntity = new UserEntity();
     BeanUtils.copyProperties(user, userEntity);
 
@@ -102,21 +107,6 @@ public class UserMapper {
   public static List<User> toDTOList(List<UserEntity> userEntities) {
     if (userEntities == null) return List.of();
     return userEntities.stream().map(UserMapper::toModel).toList();
-  }
-
-  public static User toModel(AddUserRequest addUserRequest) {
-    if (addUserRequest == null) {
-      return null;
-    }
-    User user = new User();
-    BeanUtils.copyProperties(addUserRequest, user, "roles");
-    if (addUserRequest.getRoles() != null) {
-      user.setRoles(
-          addUserRequest.getRoles().stream()
-              .map(r -> new UserClientRole(r.getClientId(), r.getRole()))
-              .toList());
-    }
-    return user;
   }
 
   /**

@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.roles.mapper;
 
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleRequest;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleResponse;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
@@ -20,8 +21,7 @@ public class UserClientRoleMapper {
   public static UserClientRoleResponse toResponse(UserClientRole userClientRole) {
     if (ObjectToolkit.isNullOrEmpty(userClientRole)) return null;
     UserClientRoleResponse userClientRoleResponse = new UserClientRoleResponse();
-    BeanUtils.copyProperties(userClientRole, userClientRoleResponse);
-    userClientRoleResponse.setId(null);
+    BeanUtils.copyProperties(userClientRole, userClientRoleResponse, "id");
     return userClientRoleResponse;
   }
 
@@ -38,10 +38,30 @@ public class UserClientRoleMapper {
     return userClientRole;
   }
 
-  public static UserClientRoleEntity toEntity(UserClientRole userClientRole) {
-    // if (ObjectToolkit.isNullOrEmpty(userClientRole)) return null;
+  public static List<UserClientRole> requestToModelList(
+      List<UserClientRoleRequest> userClientRoleRequests) {
+    if (ObjectToolkit.isNullOrEmpty(userClientRoleRequests)) return List.of();
+    return userClientRoleRequests.stream().map(UserClientRoleMapper::toModel).toList();
+  }
+
+  public static UserClientRole toModel(UserClientRoleRequest userClientRoleRequest) {
+    if (ObjectToolkit.isNullOrEmpty(userClientRoleRequest)) return null;
+    UserClientRole userClientRole = new UserClientRole();
+    BeanUtils.copyProperties(userClientRoleRequest, userClientRole);
+    return userClientRole;
+  }
+
+  public static List<UserClientRoleEntity> toEntityList(
+      List<UserClientRole> userClientRoles, String identifier) {
+    return userClientRoles.stream()
+        .map(userClientRole -> toEntity(userClientRole, identifier))
+        .toList();
+  }
+
+  public static UserClientRoleEntity toEntity(UserClientRole userClientRole, String identifier) {
     UserClientRoleEntity userClientRoleEntity = new UserClientRoleEntity();
     BeanUtils.copyProperties(userClientRole, userClientRoleEntity);
+    userClientRoleEntity.setUserIdentifier(identifier);
     return userClientRoleEntity;
   }
 
@@ -56,7 +76,7 @@ public class UserClientRoleMapper {
   public static UserClientRole toUserClientModel(RoleDefinition roleDefinition, String identifier) {
     if (ObjectToolkit.isNullOrEmpty(roleDefinition)) return null;
     UserClientRole userClientRole = new UserClientRole();
-    BeanUtils.copyProperties(roleDefinition, userClientRole);
+    BeanUtils.copyProperties(roleDefinition, userClientRole, "id", "creationDate", "updateDate");
     userClientRole.setUserIdentifier(identifier);
     return userClientRole;
   }

@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Contextualized application role assigned to a user for an OAuth2 Client")
-public class UserClientRole extends GenericDTO {
+public class UserClientRole extends GenericDTO implements RoleHolder {
 
   @Schema(
       description = "Identifier of the user associated with the role",
