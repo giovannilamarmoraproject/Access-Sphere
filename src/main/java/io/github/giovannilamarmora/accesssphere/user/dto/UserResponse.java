@@ -36,5 +36,5 @@ public class UserResponse extends Response {
   private String spanId;
 
   @Schema(description = "Details of the IAM user configured in the system")
-  private User data;
+  private UserDataResponse data;
 }

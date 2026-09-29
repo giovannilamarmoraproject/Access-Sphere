@@ -65,6 +65,7 @@ import reactor.core.publisher.Mono;
 public class UserAccountService {
 
   private static final Logger LOG = LoggerFilter.getLogger(UserAccountService.class);
+  private static final String USER_ACCOUNT_LOG = "User Account";
 
   @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
@@ -84,6 +85,22 @@ public class UserAccountService {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> profile(String bearer, ServerHttpRequest request) {
+    LOG.info("👤 {} Starting user profile retrieval process", USER_ACCOUNT_LOG);
+
+    String email = oAuth2Authorization.getEmail();
+
+    return userService
+        .getUserByEmail(email)
+        .doOnSuccess(
+            user ->
+                LOG.info(
+                    "✅ {} Profile retrieval completed successfully for user: {}",
+                    USER_ACCOUNT_LOG,
+                    user.getUsername()));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<User> profileOld(String bearer, ServerHttpRequest request) {
     LOG.info("👤 [USER ACCOUNT] Starting user profile retrieval process");
 
     return oAuth2ClientDomainService
