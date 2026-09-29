@@ -18,6 +18,7 @@ import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -96,7 +97,14 @@ public class PermissionRoleManager extends AdminUserConfig {
         oAuth2Authorization.getIdentifier(),
         oAuth2Authorization.getClientId());
 
-    SystemPermission allPermission = SystemPermission.ALL;
+    // Se l'operatore corrente e' Super Admin / Tech User, ha accesso globale immediato
+    if (isSuperAdmin(oAuth2Authorization)) {
+      LOG.info(
+          "🛡️ [SECURITY] Operator is Super Admin, granting unrestricted access for permission [{}]",
+          permissionToCheck);
+      Optional<List<RoleDefinition>> allRoles = roleDefinitionRepository.findAll();
+      return allRoles.orElseGet(List::of);
+    }
 
     /**
      * Se l'utente ha il clientId di Admin e i permessi per accedere, torno direttamente il ruolo
@@ -139,37 +147,40 @@ public class PermissionRoleManager extends AdminUserConfig {
 
     List<RoleDefinition> allRoleDefinitions = optionalRoleDefinitions.get();
 
-    // 1. Set delle chiavi univoche (clientId::role) assegnate all'utente
-    Set<String> userAssignedKeys =
-        userClientRoles.stream()
-            .filter(ucr -> ucr.getClientId() != null && ucr.getRole() != null)
-            .map(
-                ucr ->
-                    ucr.getClientId().trim().toUpperCase()
-                        + "::"
-                        + ucr.getRole().trim().toUpperCase())
-            .collect(Collectors.toSet());
+    // 1. Set delle chiavi univoche (clientId::role) assegnate all'utente con normalizzazione dei prefissi ROLE_
+    Set<String> userAssignedKeys = new HashSet<>();
+    for (UserClientRole ucr : userClientRoles) {
+      if (ucr.getClientId() == null || ucr.getRole() == null) continue;
+      String cid = ucr.getClientId().trim().toUpperCase();
+      String rawRole = ucr.getRole().trim().toUpperCase();
+      String cleanRole = rawRole.startsWith("ROLE_") ? rawRole.substring(5) : rawRole;
+      userAssignedKeys.add(cid + "::" + rawRole);
+      userAssignedKeys.add(cid + "::" + cleanRole);
+      userAssignedKeys.add(cid + "::ROLE_" + cleanRole);
+    }
 
-    // 2. Filtra i RoleDefinition assegnati all'utente CHE HANNO permissionToCheck o ALL
+    // 2. Filtra i RoleDefinition assegnati all'utente CHE HANNO permissionToCheck o ALL (con supporto singolare/plurale e wildcard)
     List<RoleDefinition> roles =
         allRoleDefinitions.stream()
             // Appartiene all'utente?
             .filter(
-                roleDefinition ->
-                    roleDefinition.getClientId() != null
-                        && roleDefinition.getRole() != null
-                        && userAssignedKeys.contains(
-                            roleDefinition.getClientId().trim().toUpperCase()
-                                + "::"
-                                + roleDefinition.getRole().trim().toUpperCase()))
-            // Ha il permesso richiesto o ALL?
+                roleDefinition -> {
+                  if (roleDefinition.getClientId() == null || roleDefinition.getRole() == null) {
+                    return false;
+                  }
+                  String cid = roleDefinition.getClientId().trim().toUpperCase();
+                  String rRole = roleDefinition.getRole().trim().toUpperCase();
+                  String cRole = rRole.startsWith("ROLE_") ? rRole.substring(5) : rRole;
+                  return userAssignedKeys.contains(cid + "::" + rRole)
+                      || userAssignedKeys.contains(cid + "::" + cRole)
+                      || userAssignedKeys.contains(cid + "::ROLE_" + cRole);
+                })
+            // Ha il permesso richiesto (supporto singolare/plurale, wildcard * e resource:*)
             .filter(
                 roleDefinition ->
                     !ObjectToolkit.isNullOrEmpty(roleDefinition.getPermissions())
-                        && (roleDefinition.getPermissions().contains(allPermission.getValue())
-                            || roleDefinition
-                                .getPermissions()
-                                .contains(permissionToCheck.getValue())))
+                        && roleDefinition.getPermissions().stream()
+                            .anyMatch(permissionToCheck::matches))
             .toList();
 
     // 3. Se nessun ruolo soddisfa i permessi, nega l'accesso
@@ -191,13 +202,17 @@ public class PermissionRoleManager extends AdminUserConfig {
         oAuth2Authorization.getIdentifier(),
         oAuth2Authorization.getClientId());
 
-    SystemPermission allPermission = SystemPermission.ALL;
+    if (isSuperAdmin(oAuth2Authorization)) {
+      return true;
+    }
+
     List<String> permissions = oAuth2Authorization.getPermissions();
+    if (ObjectToolkit.isNullOrEmpty(permissions)) {
+      return false;
+    }
 
     boolean hasAdminOrRequiredPermission =
-        !ObjectToolkit.isNullOrEmpty(permissions)
-            && (permissions.contains(allPermission.getValue())
-                || permissions.contains(permissionToCheck.getValue()));
+        permissions.stream().anyMatch(permissionToCheck::matches);
 
     return adminClientId.equalsIgnoreCase(oAuth2Authorization.getClientId())
         && hasAdminOrRequiredPermission;
@@ -362,14 +377,7 @@ public class PermissionRoleManager extends AdminUserConfig {
       if (def.isPresent() && def.get().getPermissions() != null) {
         boolean match =
             def.get().getPermissions().stream()
-                .anyMatch(
-                    p ->
-                        p.equals("*")
-                            || p.equalsIgnoreCase(requiredPermission)
-                            || (p.endsWith(":*")
-                                && requiredPermission
-                                    .toLowerCase()
-                                    .startsWith(p.substring(0, p.length() - 1).toLowerCase())));
+                .anyMatch(p -> SystemPermission.matches(p, requiredPermission));
         if (match) return true;
       }
     }
@@ -415,18 +423,12 @@ public class PermissionRoleManager extends AdminUserConfig {
     if (auth == null) return false;
     if (isSuperAdmin(auth)) return true;
 
-    // 1. Verifica se i permessi diretti presenti nel token contengono '*' o 'users:write'
+    // 1. Verifica se i permessi diretti presenti nel token contengono '*' o 'users:write' / 'user:write'
     if (auth.getPermissions() != null) {
       boolean match =
           auth.getPermissions().stream()
               .filter(Objects::nonNull)
-              .anyMatch(
-                  p ->
-                      p.equals("*")
-                          || p.equalsIgnoreCase(SystemPermission.ALL.getValue())
-                          || p.equalsIgnoreCase(SystemPermission.USERS_WRITE.getValue())
-                          || p.equalsIgnoreCase("users:*")
-                          || p.equalsIgnoreCase("users:write"));
+              .anyMatch(SystemPermission.USERS_WRITE::matches);
       if (match) return true;
     }
 
@@ -445,13 +447,7 @@ public class PermissionRoleManager extends AdminUserConfig {
             boolean match =
                 def.get().getPermissions().stream()
                     .filter(Objects::nonNull)
-                    .anyMatch(
-                        p ->
-                            p.equals("*")
-                                || p.equalsIgnoreCase(SystemPermission.ALL.getValue())
-                                || p.equalsIgnoreCase(SystemPermission.USERS_WRITE.getValue())
-                                || p.equalsIgnoreCase("users:*")
-                                || p.equalsIgnoreCase("users:write"));
+                    .anyMatch(SystemPermission.USERS_WRITE::matches);
             if (match) return true;
           }
         }
@@ -472,13 +468,7 @@ public class PermissionRoleManager extends AdminUserConfig {
               boolean match =
                   def.get().getPermissions().stream()
                       .filter(Objects::nonNull)
-                      .anyMatch(
-                          p ->
-                              p.equals("*")
-                                  || p.equalsIgnoreCase(SystemPermission.ALL.getValue())
-                                  || p.equalsIgnoreCase(SystemPermission.USERS_WRITE.getValue())
-                                  || p.equalsIgnoreCase("users:*")
-                                  || p.equalsIgnoreCase("users:write"));
+                      .anyMatch(SystemPermission.USERS_WRITE::matches);
               if (match) return true;
             }
           }

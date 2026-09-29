@@ -9,9 +9,13 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
+import io.github.giovannilamarmora.accesssphere.roles.database.RoleDefinitionRepository;
+import io.github.giovannilamarmora.accesssphere.roles.database.UserClientRoleRepository;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
+import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +33,9 @@ class PermissionRoleManagerTest {
   @Mock private AdminUserService techUserService;
   @Mock private IUserClientRoleDAO userClientRoleDAO;
   @Mock private IRoleDefinitionDAO roleDefinitionDAO;
+  @Mock private OAuth2Authorization oAuth2Authorization;
+  @Mock private UserClientRoleRepository userClientRoleRepository;
+  @Mock private RoleDefinitionRepository roleDefinitionRepository;
 
   @InjectMocks private PermissionRoleManager permissionRoleManager;
 
@@ -179,5 +186,70 @@ class PermissionRoleManagerTest {
     // client with null appRoles
     client.setAppRoles(null);
     assertFalse(permissionRoleManager.hasPermissionRoles(matchingAuth, client));
+  }
+
+  @Test
+  @DisplayName("checkPermissionAndReturnUserRoles returns all definitions for Super Admin")
+  void testCheckPermissionAndReturnUserRoles_SuperAdmin() {
+    when(techUserService.isTechUser(oAuth2Authorization)).thenReturn(true);
+    RoleDefinition rd = new RoleDefinition("CLIENT-A", List.of("*"));
+    when(roleDefinitionRepository.findAll()).thenReturn(Optional.of(List.of(rd)));
+
+    List<RoleDefinition> result =
+        permissionRoleManager.checkPermissionAndReturnUserRoles(SystemPermission.USERS_READ);
+
+    assertEquals(1, result.size());
+    assertEquals("CLIENT-A", result.get(0).getClientId());
+  }
+
+  @Test
+  @DisplayName(
+      "checkPermissionAndReturnUserRoles matches singular DB permissions against plural SystemPermission enum")
+  void testCheckPermissionAndReturnUserRoles_SingularDBPermissionMatchesPluralEnum() {
+    when(techUserService.isTechUser(oAuth2Authorization)).thenReturn(false);
+    when(oAuth2Authorization.getIdentifier()).thenReturn("user-uuid");
+    when(oAuth2Authorization.getClientId()).thenReturn("CLIENT-A");
+    when(oAuth2Authorization.getPermissions()).thenReturn(List.of());
+
+    UserClientRole ucr = new UserClientRole("CLIENT-A", "ROLE_OPERATOR");
+    ucr.setUserIdentifier("user-uuid");
+    when(userClientRoleRepository.findByUserIdentifier("user-uuid"))
+        .thenReturn(Optional.of(List.of(ucr)));
+
+    // Stored with singular permission "user:read"
+    RoleDefinition rd =
+        new RoleDefinition("CLIENT-A", "ROLE_OPERATOR", "OPERATOR", "desc", List.of("user:read"));
+    when(roleDefinitionRepository.findAll()).thenReturn(Optional.of(List.of(rd)));
+
+    // Checking with plural SystemPermission.USERS_READ ("users:read")
+    List<RoleDefinition> result =
+        permissionRoleManager.checkPermissionAndReturnUserRoles(SystemPermission.USERS_READ);
+
+    assertEquals(1, result.size());
+    assertEquals("CLIENT-A", result.get(0).getClientId());
+    assertEquals("ROLE_OPERATOR", result.get(0).getRole());
+  }
+
+  @Test
+  @DisplayName("checkPermissionAndReturnUserRoles throws 403 when user lacks required permission")
+  void testCheckPermissionAndReturnUserRoles_DeniedWhenMissingPermission() {
+    when(techUserService.isTechUser(oAuth2Authorization)).thenReturn(false);
+    when(oAuth2Authorization.getIdentifier()).thenReturn("user-uuid");
+    when(oAuth2Authorization.getClientId()).thenReturn("CLIENT-A");
+    when(oAuth2Authorization.getPermissions()).thenReturn(List.of());
+
+    UserClientRole ucr = new UserClientRole("CLIENT-A", "ROLE_OPERATOR");
+    ucr.setUserIdentifier("user-uuid");
+    when(userClientRoleRepository.findByUserIdentifier("user-uuid"))
+        .thenReturn(Optional.of(List.of(ucr)));
+
+    // Role only has client:read, does not have users:read
+    RoleDefinition rd =
+        new RoleDefinition("CLIENT-A", "ROLE_OPERATOR", "OPERATOR", "desc", List.of("client:read"));
+    when(roleDefinitionRepository.findAll()).thenReturn(Optional.of(List.of(rd)));
+
+    assertThrows(
+        OAuthException.class,
+        () -> permissionRoleManager.checkPermissionAndReturnUserRoles(SystemPermission.USERS_READ));
   }
 }

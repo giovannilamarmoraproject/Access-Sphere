@@ -1164,15 +1164,69 @@ const AccessControl = {
         });
     },
 
+    /**
+     * Normalizza una stringa di permesso per confronto agnostico tra singolare e plurale.
+     * Es: "users:read" -> "user:read", "clients:write" -> "client:write", "roles:manage" -> "role:manage".
+     * @param {string} perm
+     * @returns {string}
+     */
+    normalizePerm(perm) {
+        if (!perm) return "";
+        let p = String(perm).trim().toLowerCase().replace(/_/g, ":");
+        if (p === "*" || p === "all") return "*";
+        const colonIndex = p.indexOf(":");
+        if (colonIndex > 0) {
+            let resource = p.substring(0, colonIndex).trim();
+            let action = p.substring(colonIndex + 1).trim();
+            if (resource.endsWith("s")) {
+                resource = resource.substring(0, resource.length - 1);
+            }
+            if (action === "roles") {
+                action = "role";
+            }
+            return resource + ":" + action;
+        }
+        return p;
+    },
+
+    /**
+     * Verifica se una collezione di permessi posseduti soddisfa il permesso target richiesto.
+     * Supporta wildcard "*", wildcard per risorsa ("user:*"), privilegi ":manage" e singolare/plurale.
+     * @param {string[]|Set<string>} grantedPerms
+     * @param {string} targetPerm
+     * @returns {boolean}
+     */
+    checkPermMatch(grantedPerms, targetPerm) {
+        if (!grantedPerms || !targetPerm) return false;
+        const normTarget = this.normalizePerm(targetPerm);
+        if (!normTarget) return false;
+
+        const list = Array.isArray(grantedPerms) ? grantedPerms : Array.from(grantedPerms);
+        for (const granted of list) {
+            if (!granted) continue;
+            const normGranted = this.normalizePerm(granted);
+            if (normGranted === "*") return true;
+            if (normGranted === normTarget) return true;
+            if (normGranted.endsWith(":*")) {
+                const res = normGranted.substring(0, normGranted.length - 2);
+                if (normTarget.startsWith(res + ":")) return true;
+            }
+            if (normGranted.endsWith(":manage")) {
+                const res = normGranted.substring(0, normGranted.length - 7);
+                if (normTarget.startsWith(res + ":")) return true;
+            }
+            if (normGranted === "role:manage" && normTarget === "user:role") {
+                return true;
+            }
+        }
+        return false;
+    },
+
     hasPermission(...permNames) {
+        if (this.isSuperAdmin()) return true;
         const perms = this.getPermissions();
         if (perms.includes("*")) return true;
-        return permNames.some((target) => {
-            const lower = String(target).trim().toLowerCase();
-            const colon = lower.replace(/_/g, ":");
-            const underscore = lower.replace(/:/g, "_");
-            return perms.includes(lower) || perms.includes(colon) || perms.includes(underscore);
-        });
+        return permNames.some((target) => this.checkPermMatch(perms, target));
     },
 
     isSuperAdmin() {
@@ -1235,12 +1289,7 @@ const AccessControl = {
         if (this.isSuperAdmin()) return true;
         const perms = this.getClientPermissions(clientId);
         if (perms.includes("*")) return true;
-        return permNames.some((target) => {
-            const lower = String(target).trim().toLowerCase();
-            const colon = lower.replace(/_/g, ":");
-            const underscore = lower.replace(/:/g, "_");
-            return perms.includes(lower) || perms.includes(colon) || perms.includes(underscore);
-        });
+        return permNames.some((target) => this.checkPermMatch(perms, target));
     },
 
     /**
