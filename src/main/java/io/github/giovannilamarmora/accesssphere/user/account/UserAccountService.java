@@ -16,8 +16,10 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.UserValidator;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
@@ -84,19 +86,20 @@ public class UserAccountService {
    * @return Mono contenente il DTO {@link User} del profilo.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> profile(String bearer, ServerHttpRequest request) {
+  public Mono<UserDataResponse> profile(String bearer, ServerHttpRequest request) {
     LOG.info("👤 {} Starting user profile retrieval process", USER_ACCOUNT_LOG);
 
     String email = oAuth2Authorization.getEmail();
 
     return userService
         .getUserByEmail(email)
+        .map(UserMapper::toResponse)
         .doOnSuccess(
-            user ->
+            userDataResponse ->
                 LOG.info(
                     "✅ {} Profile retrieval completed successfully for user: {}",
                     USER_ACCOUNT_LOG,
-                    user.getUsername()));
+                    userDataResponse.getUsername()));
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

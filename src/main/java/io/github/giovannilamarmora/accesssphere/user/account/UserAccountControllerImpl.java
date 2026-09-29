@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.user.account;
 
+import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
 import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
@@ -50,13 +51,13 @@ public class UserAccountControllerImpl implements UserAccountController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> profile(String bearer, ServerHttpRequest request) {
+  public Mono<ResponseEntity<UserResponse>> profile(String bearer, ServerHttpRequest request) {
     return userAccountService
         .profile(bearer, request)
         .map(
             user -> {
-              Response response =
-                  new Response(
+              UserResponse response =
+                  new UserResponse(
                       HttpStatus.OK.value(),
                       "Profile Data for %s".formatted(user.getUsername()),
                       TraceUtils.getSpanID(),

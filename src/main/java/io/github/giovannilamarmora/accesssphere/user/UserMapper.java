@@ -5,6 +5,7 @@ import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -18,6 +19,13 @@ import org.springframework.util.ObjectUtils;
 
 @Component
 public class UserMapper {
+
+  public static UserDataResponse toResponse(User user) {
+    if (ObjectToolkit.isNullOrEmpty(user)) return null;
+    UserDataResponse userDataResponse = new UserDataResponse();
+    BeanUtils.copyProperties(user, userDataResponse);
+    return userDataResponse;
+  }
 
   /**
    * Converte il DTO {@link User} nella corrispondente entità di persistenza {@link UserEntity}.
@@ -78,8 +86,8 @@ public class UserMapper {
   }
 
   /**
-   * Converte un'entità {@link UserEntity} nel modello di dominio {@link User}.
-   * Metodo alias che delega a {@link #toDTO(UserEntity)} per garantire uniformità di nomenclatura tra mapper.
+   * Converte un'entità {@link UserEntity} nel modello di dominio {@link User}. Metodo alias che
+   * delega a {@link #toDTO(UserEntity)} per garantire uniformità di nomenclatura tra mapper.
    *
    * @param userEntity Entità persistita da convertire.
    * @return Il modello {@link User} popolato, oppure null se l'entità è null.
@@ -90,8 +98,9 @@ public class UserMapper {
   }
 
   /**
-   * Converte una lista di entità {@link UserEntity} in una lista di modelli {@link User}.
-   * Metodo alias che delega a {@link #toDTOList(List)} per garantire uniformità di nomenclatura tra mapper.
+   * Converte una lista di entità {@link UserEntity} in una lista di modelli {@link User}. Metodo
+   * alias che delega a {@link #toDTOList(List)} per garantire uniformità di nomenclatura tra
+   * mapper.
    *
    * @param userEntities Lista di entità dal database.
    * @return Lista di modelli {@link User}.

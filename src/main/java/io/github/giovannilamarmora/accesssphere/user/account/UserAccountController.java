@@ -59,7 +59,7 @@ public interface UserAccountController {
                     schema = @Schema(implementation = ExceptionResponse.class))),
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> profile(
+  Mono<ResponseEntity<UserResponse>> profile(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
