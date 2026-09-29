@@ -1055,25 +1055,19 @@
             } else {
                 if (wildCheck) wildCheck.checked = false;
                 handleClientRoleWildcard(false);
-                const standardKeyMap = {
-                    "user:read": "user:read", "users:read": "user:read",
-                    "user:write": "user:write", "users:write": "user:write",
-                    "user:delete": "user:delete", "users:delete": "user:delete",
-                    "client:read": "client:read", "clients:read": "client:read",
-                    "client:write": "client:write", "clients:write": "client:write",
-                    "roles:manage": "roles:manage", "role:manage": "roles:manage",
-                    "users:roles": "roles:manage", "user:roles": "roles:manage",
-                    "settings:read": "settings:read", "setting:read": "settings:read",
-                    "settings:write": "settings:write", "setting:write": "settings:write"
-                };
+                const standardKeys = ["users:read", "users:write", "users:delete", "clients:read", "clients:write", "roles:manage", "settings:read", "settings:write"];
                 perms.forEach(p => {
                     if (!p) return;
                     const key = String(p).trim().toLowerCase();
-                    const mapped = standardKeyMap[key];
-                    if (mapped) {
-                        const cb = document.querySelector(`.client-role-perm-checkbox[value="${mapped}"]`);
+                    const normalizedKey = key === "user:read" ? "users:read"
+                        : key === "user:write" ? "users:write"
+                        : key === "user:delete" ? "users:delete"
+                        : key === "client:read" ? "clients:read"
+                        : key === "client:write" ? "clients:write"
+                        : key;
+                    if (standardKeys.includes(normalizedKey)) {
+                        const cb = document.querySelector(`.client-role-perm-checkbox[value="${normalizedKey}"]`);
                         if (cb) cb.checked = true;
-                        else clientModalCustomPerms.push(p);
                     } else {
                         clientModalCustomPerms.push(p);
                     }
@@ -1985,15 +1979,15 @@
                             </span>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
 
-                                <!-- user:read -->
+                                <!-- users:read -->
                                 <div class="w-full min-w-0 flex flex-col">
-                                    <input type="checkbox" id="client-perm-user-read" value="user:read"
+                                    <input type="checkbox" id="client-perm-users-read" value="users:read"
                                            onchange="updateClientRoleLivePreview()"
                                            class="sr-only client-role-perm-checkbox m3-perm-input"/>
-                                    <label for="client-perm-user-read"
+                                    <label for="client-perm-users-read"
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
-                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">user:read</span>
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">users:read</span>
                                             <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Lettura profili utenti</span>
                                         </div>
                                         <div class="m3-radio-indicator">
@@ -2002,15 +1996,15 @@
                                     </label>
                                 </div>
 
-                                <!-- user:write -->
+                                <!-- users:write -->
                                 <div class="w-full min-w-0 flex flex-col">
-                                    <input type="checkbox" id="client-perm-user-write" value="user:write"
+                                    <input type="checkbox" id="client-perm-users-write" value="users:write"
                                            onchange="updateClientRoleLivePreview()"
                                            class="sr-only client-role-perm-checkbox m3-perm-input"/>
-                                    <label for="client-perm-user-write"
+                                    <label for="client-perm-users-write"
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
-                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">user:write</span>
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">users:write</span>
                                             <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Creazione e modifica utenti</span>
                                         </div>
                                         <div class="m3-radio-indicator">
@@ -2019,15 +2013,15 @@
                                     </label>
                                 </div>
 
-                                <!-- user:delete -->
+                                <!-- users:delete -->
                                 <div class="w-full min-w-0 flex flex-col">
-                                    <input type="checkbox" id="client-perm-user-delete" value="user:delete"
+                                    <input type="checkbox" id="client-perm-users-delete" value="users:delete"
                                            onchange="updateClientRoleLivePreview()"
                                            class="sr-only client-role-perm-checkbox m3-perm-input"/>
-                                    <label for="client-perm-user-delete"
+                                    <label for="client-perm-users-delete"
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
-                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">user:delete</span>
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">users:delete</span>
                                             <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Eliminazione e blocco utenti</span>
                                         </div>
                                         <div class="m3-radio-indicator">
@@ -2036,15 +2030,15 @@
                                     </label>
                                 </div>
 
-                                <!-- client:read -->
+                                <!-- clients:read -->
                                 <div class="w-full min-w-0 flex flex-col">
-                                    <input type="checkbox" id="client-perm-client-read" value="client:read"
+                                    <input type="checkbox" id="client-perm-clients-read" value="clients:read"
                                            onchange="updateClientRoleLivePreview()"
                                            class="sr-only client-role-perm-checkbox m3-perm-input"/>
-                                    <label for="client-perm-client-read"
+                                    <label for="client-perm-clients-read"
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
-                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">client:read</span>
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">clients:read</span>
                                             <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Consultazione parametri client</span>
                                         </div>
                                         <div class="m3-radio-indicator">
@@ -2053,15 +2047,15 @@
                                     </label>
                                 </div>
 
-                                <!-- client:write -->
+                                <!-- clients:write -->
                                 <div class="w-full min-w-0 flex flex-col">
-                                    <input type="checkbox" id="client-perm-client-write" value="client:write"
+                                    <input type="checkbox" id="client-perm-clients-write" value="clients:write"
                                            onchange="updateClientRoleLivePreview()"
                                            class="sr-only client-role-perm-checkbox m3-perm-input"/>
-                                    <label for="client-perm-client-write"
+                                    <label for="client-perm-clients-write"
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
-                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">client:write</span>
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">clients:write</span>
                                             <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Modifica credenziali e redirect</span>
                                         </div>
                                         <div class="m3-radio-indicator">

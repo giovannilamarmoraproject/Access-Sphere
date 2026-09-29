@@ -468,25 +468,19 @@ function openRoleModal(mode, roleData) {
                     handleWildcardToggle(true);
                 }
             } else {
-                const standardKeyMap = {
-                    "user:read": "user:read", "users:read": "user:read",
-                    "user:write": "user:write", "users:write": "user:write",
-                    "user:delete": "user:delete", "users:delete": "user:delete",
-                    "client:read": "client:read", "clients:read": "client:read",
-                    "client:write": "client:write", "clients:write": "client:write",
-                    "roles:manage": "roles:manage", "role:manage": "roles:manage",
-                    "users:roles": "roles:manage", "user:roles": "roles:manage",
-                    "settings:read": "settings:read", "setting:read": "settings:read",
-                    "settings:write": "settings:write", "setting:write": "settings:write"
-                };
+                const standardKeys = ["users:read", "users:write", "users:delete", "clients:read", "clients:write", "roles:manage", "settings:read", "settings:write"];
                 roleData.permissions.forEach((p) => {
                     if (!p) return;
                     const key = String(p).trim().toLowerCase();
-                    const mapped = standardKeyMap[key];
-                    if (mapped) {
-                        const cb = document.querySelector(`.iam-perm-checkbox[value="${mapped}"]`);
+                    const normalizedKey = key === "user:read" ? "users:read"
+                        : key === "user:write" ? "users:write"
+                        : key === "user:delete" ? "users:delete"
+                        : key === "client:read" ? "clients:read"
+                        : key === "client:write" ? "clients:write"
+                        : key;
+                    if (standardKeys.includes(normalizedKey)) {
+                        const cb = document.querySelector(`.iam-perm-checkbox[value="${normalizedKey}"]`);
                         if (cb) cb.checked = true;
-                        else customPermissions.push(p);
                     } else {
                         customPermissions.push(p);
                     }

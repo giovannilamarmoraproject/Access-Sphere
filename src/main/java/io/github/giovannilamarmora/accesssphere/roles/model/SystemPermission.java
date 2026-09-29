@@ -49,9 +49,9 @@ public enum SystemPermission {
   }
 
   /**
-   * Converte una stringa di permesso nel corrispondente enum {@link SystemPermission},
-   * supportando sia il formato plurale (es. "users:read") che singolare (es. "user:read"),
-   * oltre alla wildcard ("*" o "ALL").
+   * Converte una stringa di permesso nel corrispondente enum {@link SystemPermission}.
+   * Supporta il formato canonico plurale (es. "users:read"), la wildcard ("*" o "ALL")
+   * e le chiavi storiche singolari per retrocompatibilita'.
    *
    * @param value Valore stringa del permesso.
    * @return Enum trovato o null se non riconosciuto.
@@ -61,14 +61,31 @@ public enum SystemPermission {
     if (value == null || value.isBlank()) {
       return null;
     }
-    String normalized = normalizePermission(value);
-    if (normalized.equals("*")) {
+    String val = value.trim();
+    if (val.equals("*") || val.equalsIgnoreCase("ALL")) {
       return ALL;
     }
-    return Arrays.stream(values())
-        .filter(p -> normalizePermission(p.value).equalsIgnoreCase(normalized))
-        .findFirst()
-        .orElse(null);
+    for (SystemPermission p : values()) {
+      if (p.value.equalsIgnoreCase(val) || p.name().equalsIgnoreCase(val)) {
+        return p;
+      }
+    }
+    // Mappatura esplicita di retrocompatibilita' per vecchi record singolari
+    return switch (val.toLowerCase()) {
+      case "user:read" -> USERS_READ;
+      case "user:write" -> USERS_WRITE;
+      case "user:delete" -> USERS_DELETE;
+      case "user:lock" -> USERS_LOCK;
+      case "user:roles", "user:role" -> USERS_ROLES;
+      case "client:read" -> CLIENTS_READ;
+      case "client:write" -> CLIENTS_WRITE;
+      case "client:delete" -> CLIENTS_DELETE;
+      case "role:manage" -> ROLES_MANAGE;
+      case "setting:read" -> SETTINGS_READ;
+      case "setting:write" -> SETTINGS_WRITE;
+      case "email:manage" -> EMAILS_MANAGE;
+      default -> null;
+    };
   }
 
   /**
@@ -81,36 +98,29 @@ public enum SystemPermission {
   }
 
   /**
-   * Normalizza una stringa di permesso per consentire il confronto agnostico rispetto
-   * a singolare/plurale, maiuscole/minuscole e spazi.
-   * Riconduce ad esempio "users:read", "user:read", "USERS:READ" a "user:read",
-   * e "*" / "ALL" a "*".
+   * Mappa eventuali forme singolari storiche nel valore canonico plurale di sistema.
    *
-   * @param permission Stringa del permesso da normalizzare.
-   * @return Permesso normalizzato in formato canonico singolare minuscolo, oppure stringa vuota se nullo.
+   * @param perm Stringa del permesso da convertire.
+   * @return Valore canonico plurale standard.
    */
-  public static String normalizePermission(String permission) {
-    if (permission == null || permission.isBlank()) {
-      return "";
-    }
-    String p = permission.trim().toLowerCase();
-    if (p.equals("*") || p.equalsIgnoreCase("all")) {
-      return "*";
-    }
-    int colonIndex = p.indexOf(':');
-    if (colonIndex > 0) {
-      String resource = p.substring(0, colonIndex).trim();
-      String action = p.substring(colonIndex + 1).trim();
-      // Normalizza il plurale rimuovendo la 's' finale dalla risorsa (es. users -> user, clients -> client)
-      if (resource.endsWith("s")) {
-        resource = resource.substring(0, resource.length() - 1);
-      }
-      if (action.equals("roles")) {
-        action = "role";
-      }
-      return resource + ":" + action;
-    }
-    return p;
+  public static String canonicalize(String perm) {
+    if (perm == null) return "";
+    String p = perm.trim().toLowerCase();
+    return switch (p) {
+      case "user:read" -> "users:read";
+      case "user:write" -> "users:write";
+      case "user:delete" -> "users:delete";
+      case "user:lock" -> "users:lock";
+      case "user:roles", "user:role" -> "users:roles";
+      case "client:read" -> "clients:read";
+      case "client:write" -> "clients:write";
+      case "client:delete" -> "clients:delete";
+      case "role:manage" -> "roles:manage";
+      case "setting:read" -> "settings:read";
+      case "setting:write" -> "settings:write";
+      case "email:manage" -> "emails:manage";
+      default -> p;
+    };
   }
 
   /**
@@ -118,10 +128,10 @@ public enum SystemPermission {
    * supportando:
    * <ul>
    *   <li>Wildcard globale ('*' o 'ALL');</li>
-   *   <li>Equivalenza bidirezionale singolare/plurale (es. 'users:read' soddisfa 'user:read' e viceversa);</li>
-   *   <li>Wildcard di risorsa (es. 'users:*' o 'user:*' soddisfa qualsiasi azione sulla risorsa);</li>
-   *   <li>Privilegio di gestione atomico (es. 'users:manage' o 'roles:manage' soddisfa 'users:read', 'users:write', ecc.);</li>
-   *   <li>Case-insensitivity e tolleranza agli spazi.</li>
+   *   <li>Corrispondenza canonica plurale esatta (case-insensitive);</li>
+   *   <li>Wildcard di risorsa (es. 'users:*' autorizza 'users:read', 'users:write', ecc.);</li>
+   *   <li>Privilegio atomico di gestione (es. 'roles:manage' o ':manage');</li>
+   *   <li>Retrocompatibilita' per formati singolari preesistenti a DB.</li>
    * </ul>
    *
    * @param grantedPermission Permesso posseduto dall'utente/ruolo.
@@ -132,36 +142,37 @@ public enum SystemPermission {
     if (grantedPermission == null || requiredPermission == null) {
       return false;
     }
-    String normGranted = normalizePermission(grantedPermission);
-    String normRequired = normalizePermission(requiredPermission);
+    String granted = grantedPermission.trim().toLowerCase();
+    String required = requiredPermission.trim().toLowerCase();
 
-    if (normGranted.isEmpty() || normRequired.isEmpty()) {
+    if (granted.isEmpty() || required.isEmpty()) {
       return false;
     }
-    // 1. Wildcard globale: '*' garantisce accesso a qualsiasi risorsa
-    if (normGranted.equals("*")) {
+    // 1. Wildcard globale: '*' o 'ALL' garantisce accesso a qualsiasi risorsa
+    if (granted.equals("*") || granted.equals("all")) {
       return true;
     }
-    // 2. Corrispondenza diretta (dopo normalizzazione singolare/plurale)
-    if (normGranted.equalsIgnoreCase(normRequired)) {
+    // 2. Corrispondenza diretta esatta (case-insensitive)
+    if (granted.equalsIgnoreCase(required)) {
       return true;
     }
-    // 3. Wildcard per risorsa (es. 'user:*' autorizza 'user:read', 'user:write', ecc.)
-    if (normGranted.endsWith(":*")) {
-      String grantedResource = normGranted.substring(0, normGranted.length() - 2);
-      if (normRequired.startsWith(grantedResource + ":")) {
+    // 3. Wildcard per risorsa (es. 'users:*' autorizza 'users:read', 'users:write', ecc.)
+    if (granted.endsWith(":*")) {
+      String prefix = granted.substring(0, granted.length() - 1); // es. "users:"
+      if (required.startsWith(prefix)) {
         return true;
       }
     }
-    // 4. Privilegio 'manage' sulla risorsa (es. 'user:manage' autorizza qualsiasi azione su 'user:*')
-    if (normGranted.endsWith(":manage")) {
-      String grantedResource = normGranted.substring(0, normGranted.length() - 7);
-      if (normRequired.startsWith(grantedResource + ":")) {
+    // 4. Privilegio 'manage' sulla risorsa (es. 'roles:manage' autorizza azioni su 'roles:*')
+    if (granted.endsWith(":manage")) {
+      String res = granted.substring(0, granted.length() - 7); // es. "roles"
+      if (required.startsWith(res + ":")
+          || (res.equals("roles") && required.equals("users:roles"))) {
         return true;
       }
     }
-    // 5. Interconnessione: 'role:manage' copre anche l'assegnazione dei ruoli agli utenti ('user:role')
-    if (normGranted.equals("role:manage") && normRequired.equals("user:role")) {
+    // 5. Retrocompatibilita': se il DB ha ancora il vecchio formato singolare
+    if (canonicalize(granted).equalsIgnoreCase(canonicalize(required))) {
       return true;
     }
     return false;
@@ -176,8 +187,8 @@ public enum SystemPermission {
   public boolean matches(String grantedPermission) {
     if (this == ALL) {
       if (grantedPermission == null) return false;
-      String norm = normalizePermission(grantedPermission);
-      return norm.equals("*");
+      String g = grantedPermission.trim().toLowerCase();
+      return g.equals("*") || g.equals("all");
     }
     return matches(grantedPermission, this.value);
   }

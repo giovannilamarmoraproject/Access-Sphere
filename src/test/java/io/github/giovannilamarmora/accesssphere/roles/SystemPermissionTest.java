@@ -9,25 +9,21 @@ import org.junit.jupiter.api.Test;
 class SystemPermissionTest {
 
   @Test
-  @DisplayName("normalizePermission correctly standardizes singular, plural, and wildcards")
-  void testNormalizePermission() {
-    assertEquals("user:read", SystemPermission.normalizePermission("users:read"));
-    assertEquals("user:read", SystemPermission.normalizePermission("user:read"));
-    assertEquals("user:read", SystemPermission.normalizePermission("USERS:READ"));
-    assertEquals("client:read", SystemPermission.normalizePermission("clients:read"));
-    assertEquals("client:read", SystemPermission.normalizePermission("client:read"));
-    assertEquals("client:write", SystemPermission.normalizePermission("clients:write"));
-    assertEquals("role:manage", SystemPermission.normalizePermission("roles:manage"));
-    assertEquals("role:manage", SystemPermission.normalizePermission("role:manage"));
-    assertEquals("user:role", SystemPermission.normalizePermission("users:roles"));
-    assertEquals("user:role", SystemPermission.normalizePermission("user:roles"));
-    assertEquals("setting:read", SystemPermission.normalizePermission("settings:read"));
-    assertEquals("email:manage", SystemPermission.normalizePermission("emails:manage"));
-    assertEquals("*", SystemPermission.normalizePermission("*"));
-    assertEquals("*", SystemPermission.normalizePermission("ALL"));
-    assertEquals("*", SystemPermission.normalizePermission("all"));
-    assertEquals("", SystemPermission.normalizePermission(""));
-    assertEquals("", SystemPermission.normalizePermission(null));
+  @DisplayName("canonicalize correctly maps legacy singular to canonical plural format")
+  void testCanonicalize() {
+    assertEquals("users:read", SystemPermission.canonicalize("users:read"));
+    assertEquals("users:read", SystemPermission.canonicalize("user:read"));
+    assertEquals("users:read", SystemPermission.canonicalize("USERS:READ"));
+    assertEquals("clients:read", SystemPermission.canonicalize("clients:read"));
+    assertEquals("clients:read", SystemPermission.canonicalize("client:read"));
+    assertEquals("clients:write", SystemPermission.canonicalize("client:write"));
+    assertEquals("clients:delete", SystemPermission.canonicalize("client:delete"));
+    assertEquals("roles:manage", SystemPermission.canonicalize("role:manage"));
+    assertEquals("users:roles", SystemPermission.canonicalize("user:role"));
+    assertEquals("settings:read", SystemPermission.canonicalize("setting:read"));
+    assertEquals("emails:manage", SystemPermission.canonicalize("email:manage"));
+    assertEquals("", SystemPermission.canonicalize(""));
+    assertEquals("", SystemPermission.canonicalize(null));
   }
 
   @Test
