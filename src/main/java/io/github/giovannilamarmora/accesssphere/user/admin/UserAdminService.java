@@ -30,6 +30,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -199,6 +200,7 @@ public class UserAdminService {
                                     c -> c,
                                     (existing, replacement) -> existing));
 
+                    List<UserClientRole> enforcedUserRoles = new ArrayList<>();
                     clientIds.forEach(
                         clientId -> {
                           OAuth2Client client = clientMap.get(clientId.trim().toUpperCase());
@@ -208,17 +210,41 @@ public class UserAdminService {
                                 ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + clientId);
                           }
                           UserValidator.validateClientRegistrationEnabled(client);
+
+                          // Ricerca della definizione di ruolo applicativo con tipologia USER sul client target
+                          List<RoleDefinition> clientAppRoles =
+                              !ObjectToolkit.isNullOrEmpty(client.getAppRoles())
+                                  ? client.getAppRoles()
+                                  : List.of();
+                          RoleDefinition userRoleDef =
+                              clientAppRoles.stream()
+                                  .filter(ar -> !ObjectToolkit.isNullOrEmpty(ar) && ar.isUser())
+                                  .findFirst()
+                                  .orElse(null);
+
+                          // Se il client non ha alcun ruolo censito di tipo USER, blocca la registrazione anonima
+                          if (ObjectToolkit.isNullOrEmpty(userRoleDef)) {
+                            LOG.error(
+                                "❌ Registration rejected: Client {} does not have a role configured with type USER",
+                                client.getClientId());
+                            throw new OAuthException(
+                                ExceptionMap.ERR_OAUTH_403,
+                                "Registration blocked: Client %s does not have a role configured with type USER"
+                                    .formatted(client.getClientId()));
+                          }
+
+                          // Assegnazione forzata dello specifico ruolo standard USER per prevenire privilege escalation
+                          enforcedUserRoles.add(
+                              new UserClientRole(
+                                  client.getClientId(),
+                                  userRoleDef.getRole(),
+                                  userRoleDef.getType(),
+                                  userRoleDef.getDescription(),
+                                  userRoleDef.getPermissions()));
                         });
-                    // for (String clientId : clientIds) {
-                    //  OAuth2Client client = clientMap.get(clientId.trim().toUpperCase());
-                    //  if (client == null) {
-                    //    LOG.error("❌ Client {} not found", clientId);
-                    //    return Mono.error(
-                    //        new OAuthException(
-                    //            ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + clientId));
-                    //  }
-                    //  UserValidator.validateClientRegistrationEnabled(client);
-                    // }
+
+                    // Sovrascrittura dei ruoli richiesti con quelli verificati e blindati con tipologia USER
+                    user.setRoles(enforcedUserRoles);
                     return Mono.empty();
                   });
     }
@@ -231,7 +257,8 @@ public class UserAdminService {
         .doOnSuccess(
             registeredUser ->
                 LOG.info(
-                    "✅ [USER ADMIN] Registration successfully completed for username: {}, email: {}",
+                    "✅ {} Registration successfully completed for username: {}, email: {}",
+                    USER_ADMIN_LOG,
                     registeredUser.getUsername(),
                     registeredUser.getEmail()));
   }
