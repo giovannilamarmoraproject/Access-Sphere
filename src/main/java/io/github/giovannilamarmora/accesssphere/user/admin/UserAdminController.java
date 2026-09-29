@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.user.admin;
 
+import io.github.giovannilamarmora.accesssphere.user.dto.UserDeleteResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserListResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
@@ -126,7 +127,7 @@ public interface UserAdminController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
+                    schema = @Schema(implementation = UserDeleteResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -143,7 +144,7 @@ public interface UserAdminController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> deleteUser(
+  Mono<ResponseEntity<UserDeleteResponse>> deleteUser(
       @PathVariable(value = "identifier")
           @Schema(
               description = OpenAPI.Params.Description.IDENTIFIER,

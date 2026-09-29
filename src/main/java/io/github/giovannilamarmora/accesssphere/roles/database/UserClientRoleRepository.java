@@ -70,4 +70,10 @@ public class UserClientRoleRepository {
     userClientRoleDAO.deleteByClientId(clientId);
     LOG.debug("⚖️ Deleted UserClient Role with clientId: {} in Database", clientId);
   }
+
+  public void deleteByIdentifier(String identifier) {
+    LOG.debug("🔐 Deleting UserClient Role with identifier: {}", identifier);
+    userClientRoleDAO.deleteByUserIdentifier(identifier);
+    LOG.debug("⚖️ Deleted UserClient Role with identifier: {} in Database", identifier);
+  }
 }

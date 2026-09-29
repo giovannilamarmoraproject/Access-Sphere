@@ -37,6 +37,19 @@ public class UserRepository {
     return Optional.ofNullable(UserMapper.toModel(getEntity));
   }
 
+  public Optional<User> findUserByIdentifier(String identifier) {
+    LOG.debug("👤 Getting user by identifier: {}", identifier);
+    UserEntity getEntity = userDAO.findUserEntityByIdentifier(identifier);
+
+    if (ObjectToolkit.isNullOrEmpty(getEntity)) {
+      LOG.warn("❌ User with identifier: {} not found in Database", identifier);
+      return Optional.empty();
+    }
+
+    LOG.debug("👤 Found User with identifier: {} in Database", identifier);
+    return Optional.ofNullable(UserMapper.toModel(getEntity));
+  }
+
   public Optional<List<User>> findAll() {
     LOG.debug("👤 Getting all user into the database");
     List<UserEntity> getEntities = userDAO.findAll();
@@ -80,5 +93,11 @@ public class UserRepository {
   public boolean existsByEmail(String email) {
     LOG.debug("🔐 Checking if User with email {} exist", email);
     return userDAO.existsByEmail(email);
+  }
+
+  public void deleteByIdentifier(String identifier) {
+    LOG.debug("🔐 Deleting User with identifier: {}", identifier);
+    userDAO.deleteUserEntityByIdentifier(identifier);
+    LOG.debug("⚖️ Deleted User with identifier: {} in Database", identifier);
   }
 }

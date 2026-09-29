@@ -17,6 +17,8 @@ import io.github.giovannilamarmora.accesssphere.user.database.UserRepository;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
+import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
+import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -32,6 +34,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
@@ -63,6 +66,7 @@ public class UserService {
   @Autowired private UserRepository userRepository;
   @Autowired private UserClientRoleRepository userClientRoleRepository;
   @Autowired private RoleDefinitionRepository roleDefinitionRepository;
+  @Autowired private WebhookService webhookService;
 
   /**
    * Recupera un utente dal database locale a partire dal suo indirizzo email. Effettua la
@@ -221,7 +225,85 @@ public class UserService {
     List<UserClientRole> mergedRoles =
         UserClientRoleMapper.mergeUserClientRoles(savedRoles, userClientRoles);
     userSaved.setRoles(mergedRoles);
+    // TODO: Da sviluppare il Webhook per il Salvataggio
     return userSaved;
+  }
+
+  /**
+   * Recupera un utente dal database locale tramite il suo identificatore univoco UUID. Valida la
+   * presenza dell'entita' tramite {@link UserValidator#validateUser(UserEntity)} e la mappa in DTO
+   * {@link User}.
+   *
+   * @param identifier Identificatore univoco UUID dell'utente.
+   * @return Mono contenente il DTO {@link User}.
+   */
+  public Mono<User> getUserByIdentifier(String identifier) {
+    LOG.info("👤 Getting user by identifier: {}", identifier);
+
+    Optional<User> optionalUser = userRepository.findUserByIdentifier(identifier);
+
+    if (optionalUser.isEmpty()) {
+      LOG.error("❌ User {} not found into database", identifier);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
+    }
+
+    User user = optionalUser.get();
+
+    // Recupero massivo di tutti i ruoli client-scoped associati agli utenti
+    Optional<List<UserClientRole>> optionalUserClientRoles = userClientRoleRepository.findAll();
+
+    if (optionalUserClientRoles.isEmpty()) {
+      LOG.warn("🔐 No Role found for user with identifier: {}", identifier);
+      return Mono.just(user);
+    }
+
+    List<UserClientRole> userClientRoles = optionalUserClientRoles.get();
+
+    // Recupero catalogo globale delle definizioni di ruolo (tipi, descrizioni, permessi)
+    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
+
+    if (optionalRoleDefinitions.isEmpty()) {
+      LOG.warn("🔐 No Roles Definition found");
+    }
+
+    // Arricchimento preliminare massivo in memoria (la mappa viene creata 1 sola volta)
+    List<UserClientRole> enrichedRoles =
+        enrichRoles(userClientRoles, optionalRoleDefinitions.orElse(List.of()));
+
+    List<UserClientRole> mergedRoles =
+        UserClientRoleMapper.mergeUserClientRoles(userClientRoles, enrichedRoles);
+
+    // Raggruppamento per userIdentifier dei ruoli già arricchiti per evitare lookup iterativi
+    Map<String, List<UserClientRole>> rolesByUser =
+        mergedRoles.stream()
+            .filter(
+                userClientRole -> !ObjectToolkit.isNullOrEmpty(userClientRole.getUserIdentifier()))
+            .collect(Collectors.groupingBy(UserClientRole::getUserIdentifier));
+
+    // Assegnazione dei rispettivi ruoli arricchiti a ciascun utente
+    user.setRoles(rolesByUser.getOrDefault(user.getIdentifier(), List.of()));
+
+    return Mono.just(user);
+  }
+
+  /**
+   * Cancella fisicamente un utente dal database locale tramite il suo identificatore univoco,
+   * rimuovendo a cascata anche le associazioni relazionali di ruoli in USER_CLIENT_ROLE.
+   *
+   * @param identifier Identificatore univoco UUID dell'utente.
+   */
+  @Transactional
+  public void deleteUserByIdentifier(String identifier, String bearer, ServerWebExchange exchange) {
+    LOG.info("🗑️ Deleting user and client roles from database, identifier: {}", identifier);
+
+    userClientRoleRepository.deleteByIdentifier(identifier);
+
+    userRepository.deleteByIdentifier(identifier);
+
+    LOG.info("🗑️ Deleted user and client roles from database, identifier: {}", identifier);
+
+    // TODO: Da sistemare il Webhook
+    webhookService.checkAndExecuteWebhook(WebhookAction.DELETE_USER, bearer, identifier, exchange);
   }
 
   /**
@@ -314,57 +396,6 @@ public class UserService {
                   roleDef, userClientRole.getUserIdentifier());
             })
         .toList();
-  }
-
-  /**
-   * Recupera un utente dal database locale tramite il suo identificatore univoco UUID. Valida la
-   * presenza dell'entita' tramite {@link UserValidator#validateUser(UserEntity)} e la mappa in DTO
-   * {@link User}.
-   *
-   * @param identifier Identificatore univoco UUID dell'utente.
-   * @return Mono contenente il DTO {@link User}.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> getUserByIdentifier(String identifier) {
-    LOG.info("👤 Getting user by identifier: {}", identifier);
-    UserEntity userEntity = userDAO.findUserEntityByIdentifier(identifier);
-    UserValidator.validateUser(userEntity);
-    return Mono.just(enrichUser(UserMapper.toModel(userEntity)));
-  }
-
-  /**
-   * Recupera un utente dal database locale a partire dallo username o dall'email.
-   *
-   * @param username Username dell'utente (opzionale).
-   * @param email Indirizzo email dell'utente (opzionale).
-   * @return Entita' {@link UserEntity} trovata o null se non presente.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public UserEntity getUserByUsernameOrEmail(String username, String email) {
-    LOG.info("👤 Finding user entity by username: {} or email: {}", username, email);
-    return userDAO.findUserEntityByUsernameOrEmail(username, email);
-  }
-
-  /**
-   * Verifica se esiste gia un utente registrato con lo username specificato.
-   *
-   * @param username Lo username da verificare.
-   * @return true se presente, false altrimenti.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public boolean existsByUsername(String username) {
-    return userDAO.existsByUsername(username);
-  }
-
-  /**
-   * Verifica se esiste gia un utente registrato con l'indirizzo email specificato.
-   *
-   * @param email L'indirizzo email da verificare.
-   * @return true se presente, false altrimenti.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public boolean existsByEmail(String email) {
-    return userDAO.existsByEmail(email);
   }
 
   /**
@@ -473,20 +504,6 @@ public class UserService {
     if (ObjectToolkit.isNullOrEmpty(userEntity.getTokenReset())) {
       userEntity.setTokenReset(userFind.getTokenReset());
     }
-  }
-
-  /**
-   * Cancella fisicamente un utente dal database locale tramite il suo identificatore univoco,
-   * rimuovendo a cascata anche le associazioni relazionali di ruoli in USER_CLIENT_ROLE.
-   *
-   * @param identifier Identificatore univoco UUID dell'utente.
-   */
-  @Transactional
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public void deleteUserEntityByIdentifier(String identifier) {
-    LOG.info("🗑️ Deleting user entity and client roles from database, identifier: {}", identifier);
-    userClientRoleDAO.deleteByUserIdentifier(identifier);
-    userDAO.deleteUserEntityByIdentifier(identifier);
   }
 
   /**

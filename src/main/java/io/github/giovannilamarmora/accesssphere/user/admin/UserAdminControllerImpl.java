@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.user.admin;
 
+import io.github.giovannilamarmora.accesssphere.user.dto.UserDeleteResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserListResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
@@ -102,14 +103,13 @@ public class UserAdminControllerImpl implements UserAdminController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> deleteUser(
+  public Mono<ResponseEntity<UserDeleteResponse>> deleteUser(
       String identifier, String bearer, ServerWebExchange exchange) {
-    LOG.info("🌐 [ADMIN CONTROLLER] Invoking DeleteUser endpoint for identifier: {}", identifier);
     return userAdminService
         .deleteUser(identifier, bearer, exchange)
         .thenReturn(
             ResponseEntity.ok(
-                new Response(
+                new UserDeleteResponse(
                     HttpStatus.OK.value(),
                     "User " + identifier + " successfully deleted",
                     TraceUtils.getSpanID(),

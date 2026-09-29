@@ -12,6 +12,7 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthMapper;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthValidator;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
+import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
@@ -157,9 +158,12 @@ public class GoogleAuthService {
                       "User registration is disabled for client " + oAuth2Client.getClientId());
                 }
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
+                List<UserClientRole> userClientRoles =
+                    UserClientRoleMapper.toUserClientModels(
+                        oAuth2Client.getAppRoles(), userGoogle.getIdentifier());
+                userGoogle.setRoles(userClientRoles);
                 userGoogle.setPassword(UUID.randomUUID().toString());
-                return userAdminService
-                    .registerUser(null, userGoogle, oAuth2Client, true)
+                return Mono.just(userService.saveUser(userGoogle))
                     .map(
                         user1 -> {
                           RoleDefinition defaultRole =
