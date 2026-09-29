@@ -21,7 +21,6 @@ import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
-import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
@@ -31,11 +30,13 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -43,7 +44,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -127,17 +127,42 @@ public class UserAdminService {
   }
 
   /**
-   * Registra un nuovo utente nel sistema IAM validando anagrafica, regex, ruoli applicativi
-   * configurati per ciascun client specificato e applicando il blocco preventivo qualora la
-   * registrazione sia disabilitata sul client.
+   * Registra un nuovo utente nel sistema IAM validando anagrafica, regex, password e ruoli applicativi.
    *
-   * @param bearer Token Bearer opzionale per operazioni privilegiate da operatore tecnico.
+   * <p>Interconnessioni logiche e controlli di sicurezza:
+   * <ul>
+   *   <li>Se il token {@code bearer} e' fornito e l'istanza {@link OAuth2Authorization} non e' inizializzata,
+   *       sincronizza il contesto di autorizzazione tramite {@link OAuth2AuthorizationService#getByAccessTokenOrIdToken(String)}.</li>
+   *   <li><b>Operatore Autenticato</b>: se l'operatore e' loggato (token valido presente), verifica il possesso del
+   *       ruolo/permesso di registrazione delegata tramite {@link PermissionRoleManager#checkPermissionAndReturnUserRoles(SystemPermission)}
+   *       con {@link SystemPermission#USERS_WRITE}. Gli operatori con tale permesso possono creare utenti bypassando il blocco
+   *       preventivo di registrazione dei client.</li>
+   *   <li><b>Registrazione Pubblica (non autenticata)</b>: verifica che ciascun Client OAuth2 associato ai ruoli richiesti
+   *       sia censito e possieda la registrazione autonoma abilitata ({@link UserValidator#validateClientRegistrationEnabled(OAuth2Client)}),
+   *       sollevando altrimenti {@link OAuthException} con codice {@code ERR_OAUTH_403}.</li>
+   *   <li><b>Salvataggio ed Arricchimento</b>: delega interamente la creazione dell'utente a {@link UserService#saveUser(User)},
+   *       che gestisce in modo transazionale e sicuro la validazione dell'unicita di username ed email, l'hashing BCrypt
+   *       della password, la generazione dell'identificatore UUID e l'arricchimento con i permessi definiti in {@code ROLE_DEFINITIONS}.</li>
+   * </ul>
+   *
+   * @param bearer Token Bearer opzionale per operazioni privilegiate da operatore tecnico o amministratore.
    * @param userRequest DTO contenente i dati anagrafici, credenziali e ruoli del nuovo utente.
-   * @return Mono contenente il DTO {@link UserResponse} registrato e salvato.
+   * @return Mono contenente il DTO {@link UserDataResponse} registrato e salvato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<UserDataResponse> saveUser(String bearer, UserRequest userRequest) {
-    if (!ObjectToolkit.isNullOrEmpty(oAuth2Authorization)) {
+    if (!ObjectToolkit.isNullOrEmpty(bearer)
+        && (ObjectToolkit.isNullOrEmpty(oAuth2Authorization)
+            || ObjectToolkit.fieldsNullOrEmpty(oAuth2Authorization))) {
+      BeanUtils.copyProperties(
+          oAuth2AuthorizationService.getByAccessTokenOrIdToken(bearer), oAuth2Authorization);
+    }
+
+    boolean isAuthenticated =
+        !ObjectToolkit.isNullOrEmpty(oAuth2Authorization)
+            && !ObjectToolkit.fieldsNullOrEmpty(oAuth2Authorization);
+
+    if (isAuthenticated) {
       permissionRoleManager.checkPermissionAndReturnUserRoles(SystemPermission.USERS_WRITE);
     }
 
@@ -150,150 +175,54 @@ public class UserAdminService {
     UserValidator.validateUserRequest(userRequest);
     User user = UserMapper.toModel(userRequest);
 
-    List<String> clientIds =
-        user.getRoles().stream().map(UserClientRole::getClientId).distinct().toList();
+    Mono<Void> registrationValidationMono = Mono.empty();
+    if (!isAuthenticated) {
+      List<String> clientIds =
+          user.getRoles().stream()
+              .map(UserClientRole::getClientId)
+              .filter(StringUtils::hasText)
+              .distinct()
+              .toList();
 
-    return oAuth2ClientDomainService.getOAuth2Clients().map(oAuth2Clients -> {
-        return oAuth2Clients.stream().filter(oAuth2Client -> clientIds.contains(oAuth2Client.getClientId())).map(oAuth2Client -> {
-
-        });
-    })
-
-    return Mono.defer(
-        () -> {
-          return Mono.fromCallable(
-                  () -> {
-                    if (userService.existsByUsername(user.getUsername())) {
-                      LOG.error("👤 The user already exists for username: {}", user.getUsername());
-                      throw new UserException(
-                          ExceptionMap.ERR_USER_400,
-                          "User %s already exists".formatted(user.getUsername()));
-                    }
-                    if (userService.existsByEmail(user.getEmail())) {
-                      LOG.error("👤 The user already exists for email: {}", user.getEmail());
-                      throw new UserException(
-                          ExceptionMap.ERR_USER_400,
-                          "Email %s already exists".formatted(user.getEmail()));
-                    }
-                    return true;
-                  })
-              .subscribeOn(Schedulers.boundedElastic())
-              .flatMap(ignored -> validateAndEnrichRoles(user.getRoles(), bearer))
+      registrationValidationMono =
+          oAuth2ClientDomainService
+              .getOAuth2Clients()
               .flatMap(
-                  enrichedRoles -> {
-                    user.setRoles(enrichedRoles);
-                    return Mono.fromCallable(
-                            () -> {
-                              UserEntity userEntity = UserMapper.toEntity(user);
-                              if (!ObjectToolkit.isNullOrEmpty(user.getPassword())) {
-                                userEntity.setPassword(
-                                    bCryptPasswordEncoder.encode(user.getPassword()));
-                              }
-                              String identifier = UUID.randomUUID().toString();
-                              user.setIdentifier(identifier);
-                              userEntity.setIdentifier(identifier);
-                              user.setBlocked(false);
-                              user.setConfirmed(false);
+                  oAuth2Clients -> {
+                    Map<String, OAuth2Client> clientMap =
+                        oAuth2Clients.stream()
+                            .filter(c -> !ObjectToolkit.isNullOrEmpty(c.getClientId()))
+                            .collect(
+                                Collectors.toMap(
+                                    c -> c.getClientId().trim().toUpperCase(),
+                                    c -> c,
+                                    (existing, replacement) -> existing));
 
-                              userService.saveUser(user);
-
-                              List<UserClientRoleEntity> ucrEntities =
-                                  enrichedRoles.stream()
-                                      .map(
-                                          r ->
-                                              new UserClientRoleEntity(
-                                                  identifier, r.getClientId(), r.getRole()))
-                                      .toList();
-                              userClientRoleDAO.saveAll(ucrEntities);
-
-                              user.setPassword(null);
-                              return UserMapper.toResponse(user);
-                            })
-                        .subscribeOn(Schedulers.boundedElastic());
-                  })
-              .doOnSuccess(
-                  registeredUser ->
-                      LOG.info(
-                          "✅ [USER ADMIN] Registration successfully completed for username: {}, email: {}",
-                          registeredUser.getUsername(),
-                          registeredUser.getEmail()));
-        });
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<UserDataResponse> saveUserOld(String bearer, UserRequest userRequest) {
-    LOG.info(
-        "👤 {} Starting user registration for username: {}, email: {}",
-        USER_ADMIN_LOG,
-        userRequest.getUsername(),
-        userRequest.getEmail());
-
-    // TODO: Controllo se l'utente ha i permessi di registrarsi, controllando prima se l'utente è
-    // loggato e sta cercando di registrare un nuovo utente tramite il permesso users:write o se il
-    // client ha la registrazione abilitata
-
-    return Mono.defer(
-        () -> {
-          UserValidator.validateUserRequest(userRequest);
-          User user = UserMapper.toModel(userRequest);
-
-          return Mono.fromCallable(
-                  () -> {
-                    if (userService.existsByUsername(user.getUsername())) {
-                      LOG.error("👤 The user already exists for username: {}", user.getUsername());
-                      throw new UserException(
-                          ExceptionMap.ERR_USER_400,
-                          "User %s already exists".formatted(user.getUsername()));
+                    for (String clientId : clientIds) {
+                      OAuth2Client client = clientMap.get(clientId.trim().toUpperCase());
+                      if (client == null) {
+                        LOG.error("❌ Client {} not found", clientId);
+                        return Mono.error(
+                            new OAuthException(
+                                ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + clientId));
+                      }
+                      UserValidator.validateClientRegistrationEnabled(client);
                     }
-                    if (userService.existsByEmail(user.getEmail())) {
-                      LOG.error("👤 The user already exists for email: {}", user.getEmail());
-                      throw new UserException(
-                          ExceptionMap.ERR_USER_400,
-                          "Email %s already exists".formatted(user.getEmail()));
-                    }
-                    return true;
-                  })
-              .subscribeOn(Schedulers.boundedElastic())
-              .flatMap(ignored -> validateAndEnrichRoles(user.getRoles(), bearer))
-              .flatMap(
-                  enrichedRoles -> {
-                    user.setRoles(enrichedRoles);
-                    return Mono.fromCallable(
-                            () -> {
-                              UserEntity userEntity = UserMapper.toEntity(user);
-                              if (!ObjectToolkit.isNullOrEmpty(user.getPassword())) {
-                                userEntity.setPassword(
-                                    bCryptPasswordEncoder.encode(user.getPassword()));
-                              }
-                              String identifier = UUID.randomUUID().toString();
-                              user.setIdentifier(identifier);
-                              userEntity.setIdentifier(identifier);
-                              user.setBlocked(false);
-                              user.setConfirmed(false);
+                    return Mono.empty();
+                  });
+    }
 
-                              userService.saveUser(user);
-
-                              List<UserClientRoleEntity> ucrEntities =
-                                  enrichedRoles.stream()
-                                      .map(
-                                          r ->
-                                              new UserClientRoleEntity(
-                                                  identifier, r.getClientId(), r.getRole()))
-                                      .toList();
-                              userClientRoleDAO.saveAll(ucrEntities);
-
-                              user.setPassword(null);
-                              return UserMapper.toResponse(user);
-                            })
-                        .subscribeOn(Schedulers.boundedElastic());
-                  })
-              .doOnSuccess(
-                  registeredUser ->
-                      LOG.info(
-                          "✅ [USER ADMIN] Registration successfully completed for username: {}, email: {}",
-                          registeredUser.getUsername(),
-                          registeredUser.getEmail()));
-        });
+    return registrationValidationMono
+        .then(
+            Mono.fromCallable(() -> userService.saveUser(user))
+                .subscribeOn(Schedulers.boundedElastic()))
+        .map(UserMapper::toResponse)
+        .doOnSuccess(
+            registeredUser ->
+                LOG.info(
+                    "✅ [USER ADMIN] Registration successfully completed for username: {}, email: {}",
+                    registeredUser.getUsername(),
+                    registeredUser.getEmail()));
   }
 
   /**
@@ -364,86 +293,6 @@ public class UserAdminService {
     }
   }
 
-  /**
-   * Convalida che ciascun ruolo passato nel payload appartenga a un client esistente con
-   * registrazione abilitata (o bypassata se l'operatore ha permessi users:write/admin), e che il
-   * ruolo sia effettivamente presente nel catalogo ruoli del client.
-   *
-   * @param requestedRoles Lista di ruoli richiesti con associazione client.
-   * @param bearer Token di autorizzazione opzionale dell'operatore.
-   * @return Mono con la lista dei ruoli arricchiti con tipologia, descrizione e permessi.
-   */
-  private Mono<List<UserClientRole>> validateAndEnrichRoles(
-      List<UserClientRole> requestedRoles, String bearer) {
-    List<String> clientIds =
-        requestedRoles.stream()
-            .map(
-                r -> {
-                  if (r == null || !StringUtils.hasText(r.getClientId())) {
-                    LOG.error("❌ Registration rejected: clientId missing on role");
-                    throw new UserException(
-                        ExceptionMap.ERR_USER_400, "Client ID is required for each role!");
-                  }
-                  if (!StringUtils.hasText(r.getRole())) {
-                    LOG.error("❌ Registration rejected: role name missing");
-                    throw new UserException(
-                        ExceptionMap.ERR_USER_400, "Role name is required for each role!");
-                  }
-                  return r.getClientId().trim().toUpperCase();
-                })
-            .distinct()
-            .toList();
-
-    return Flux.fromIterable(clientIds)
-        .flatMap(clientId -> oAuth2ClientDomainService.getOAuth2ClientByClientID(clientId))
-        .collectMap(client -> client.getClientId().toUpperCase())
-        .map(
-            clientMap -> {
-              List<UserClientRole> enriched = new ArrayList<>();
-              for (UserClientRole r : requestedRoles) {
-                String cId = r.getClientId().trim().toUpperCase();
-                OAuth2Client client = clientMap.get(cId);
-                if (client == null) {
-                  LOG.error("❌ Client {} not found", cId);
-                  throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id: " + cId);
-                }
-
-                // Gli utenti admin o con permesso users:write possono registrare utenti anche se
-                // enableRegistration e disattivato
-                if (!canBypassRegistrationCheck(bearer, client.getClientId())) {
-                  UserValidator.validateClientRegistrationEnabled(client);
-                }
-
-                List<RoleDefinition> clientAppRoles =
-                    client.getAppRoles() != null ? client.getAppRoles() : List.of();
-                RoleDefinition matched =
-                    clientAppRoles.stream()
-                        .filter(ar -> ar != null && ar.matches(r.getRole()))
-                        .findFirst()
-                        .orElse(null);
-
-                if (matched == null) {
-                  LOG.error(
-                      "❌ Role '{}' does not exist for client '{}'",
-                      r.getRole(),
-                      client.getClientId());
-                  throw new UserException(
-                      ExceptionMap.ERR_USER_400,
-                      "Role '%s' does not exist for client '%s'"
-                          .formatted(r.getRole(), client.getClientId()));
-                }
-
-                enriched.add(
-                    new UserClientRole(
-                        client.getClientId(),
-                        matched.getRole(),
-                        matched.getType(),
-                        matched.getDescription(),
-                        matched.getPermissions()));
-              }
-              return enriched;
-            });
-  }
 
   /**
    * Registra un nuovo utente (utilizzato anche dal flusso di federazione Google) validando il
