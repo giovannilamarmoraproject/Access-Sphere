@@ -98,18 +98,6 @@ public class UserMapper {
   }
 
   /**
-   * Converte una lista di entità {@link UserEntity} in una lista di DTO {@link User}.
-   *
-   * @param userEntities Lista di entità recuperate dal database.
-   * @return Lista di DTO mappati.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static List<User> toDTOList(List<UserEntity> userEntities) {
-    if (userEntities == null) return List.of();
-    return userEntities.stream().map(UserMapper::toModel).toList();
-  }
-
-  /**
    * Aggiorna lo stato di un'entità esistente {@link UserEntity} con i nuovi valori presenti nel DTO
    * {@link User}. Mantiene invariati i dati strutturali o di audit e serializza opportunamente
    * attributi e impostazioni MFA.

@@ -10,7 +10,6 @@ import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
-import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
@@ -34,8 +33,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -65,18 +62,14 @@ import reactor.core.scheduler.Schedulers;
 public class UserAdminService {
 
   private static final Logger LOG = LoggerFilter.getLogger(UserAdminService.class);
-  private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
   private static final String USER_ADMIN_LOG = "User Admin";
 
   @Autowired private AdminUserService techUserService;
   @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private UserService userService;
-  @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private OAuth2Authorization oAuth2Authorization;
-  @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
   @Autowired private PermissionRoleManager permissionRoleManager;
-  @Autowired @Lazy private WebhookService webhookService;
 
   /**
    * Recupera la lista degli utenti registrati nel sistema IAM.

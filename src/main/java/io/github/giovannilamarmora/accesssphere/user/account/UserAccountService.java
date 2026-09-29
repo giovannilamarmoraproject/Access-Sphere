@@ -11,11 +11,9 @@ import io.github.giovannilamarmora.accesssphere.email.EmailTemplateService;
 import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
-import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.UserValidator;
@@ -69,7 +67,6 @@ public class UserAccountService {
   private static final Logger LOG = LoggerFilter.getLogger(UserAccountService.class);
   private static final String USER_ACCOUNT_LOG = "User Account";
 
-  @Autowired private OAuth2ClientService oAuth2ClientService;
   @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private TokenService tokenService;
   @Autowired private AdminUserService techUserService;
@@ -100,40 +97,6 @@ public class UserAccountService {
                     "✅ {} Profile retrieval completed successfully for user: {}",
                     USER_ACCOUNT_LOG,
                     userDataResponse.getUsername()));
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> profileOld(String bearer, ServerHttpRequest request) {
-    LOG.info("👤 [USER ACCOUNT] Starting user profile retrieval process");
-
-    return oAuth2ClientDomainService
-        .getOAuth2ClientByClientID(oAuth2Authorization.getClientId())
-        .flatMap(
-            clientCredential -> {
-              UserValidator.validateAuthType(clientCredential, oAuth2Authorization);
-              JWTData decryptToken = tokenService.parseToken(bearer, clientCredential);
-              switch (decryptToken.getType()) {
-                case BEARER -> {
-                  return userService.getUserByEmail(decryptToken.getEmail());
-                }
-                case GOOGLE -> {
-                  GoogleModel userInfo =
-                      GrpcService.userInfo(
-                          oAuth2Authorization.getPayload().get("id_token").textValue(),
-                          clientCredential);
-                  UserValidator.validateGoogleUserInfo(userInfo, decryptToken);
-                  return userService.getUserByEmail(decryptToken.getEmail());
-                }
-                default -> {
-                  return UserValidator.defaultErrorOnType();
-                }
-              }
-            })
-        .doOnSuccess(
-            user ->
-                LOG.info(
-                    "✅ [USER ACCOUNT] Profile retrieval completed successfully for user: {}",
-                    user.getUsername()));
   }
 
   /**
