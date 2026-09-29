@@ -160,7 +160,7 @@ public class UserAdminService {
   public Mono<UserDataResponse> saveUser(String bearer, UserRequest userRequest) {
     boolean isAuthenticated =
         !ObjectToolkit.isNullOrEmpty(bearer)
-            && (ObjectToolkit.isNullOrEmpty(oAuth2Authorization)
+            && !(ObjectToolkit.isNullOrEmpty(oAuth2Authorization)
                 || ObjectToolkit.fieldsNullOrEmpty(oAuth2Authorization));
 
     if (isAuthenticated) {

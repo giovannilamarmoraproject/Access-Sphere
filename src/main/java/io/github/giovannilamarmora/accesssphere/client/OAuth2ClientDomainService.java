@@ -173,8 +173,8 @@ public class OAuth2ClientDomainService {
     LOG.info("🔄 {} Updating client in Database: {}", OAUTH2_DOMAIN_LOG, clientId);
     OAuth2ClientValidator.validateClientRoles(oAuth2Client);
 
-    boolean alreadyExist = oAuth2ClientRepository.existsByClientId(clientId);
-    if (!alreadyExist) {
+    Optional<OAuth2Client> existingClient = oAuth2ClientRepository.findByClientId(clientId);
+    if (existingClient.isEmpty()) {
       LOG.error(
           "❌ {} The client with ID {} already does not exist",
           OAUTH2_DOMAIN_LOG,
@@ -182,7 +182,9 @@ public class OAuth2ClientDomainService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
 
+    oAuth2Client.setId(existingClient.get().getId());
     oAuth2Client.setClientId(clientId);
+
     OAuth2Client clientSaved = saveOrUpdateOAuth2Client(oAuth2Client);
 
     LOG.debug("✅ {} Client {} successfully updated", OAUTH2_DOMAIN_LOG, clientId);
