@@ -39,5 +39,5 @@ public class UserListResponse extends Response {
 
   @ArraySchema(schema = @Schema(description = "IAM User item", implementation = User.class))
   @Schema(description = "Complete list of registered IAM users in the catalog")
-  private List<User> data;
+  private List<UserDataResponse> data;
 }

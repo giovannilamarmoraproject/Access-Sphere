@@ -20,6 +20,7 @@ import io.github.giovannilamarmora.accesssphere.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
@@ -102,17 +103,21 @@ public class UserAdminService {
    *     dell'operatore.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getUsers(String bearer) {
-    SystemPermission readClientPermission = SystemPermission.USERS_READ;
+  public Mono<List<UserDataResponse>> getUsers(String bearer) {
+    SystemPermission readUserPermission = SystemPermission.USERS_READ;
     List<RoleDefinition> hasCorrectRoles =
-        permissionRoleManager.checkPermissionAndReturnUserRoles(readClientPermission);
+        permissionRoleManager.checkPermissionAndReturnUserRoles(readUserPermission);
 
     LOG.info("👥 {} Starting retrieval of users list", USER_ADMIN_LOG);
 
     return userService
         .getUsers()
         .map(
-            users -> users.stream().filter(user -> !techUserService.isTechnicalUser(user)).toList())
+            users ->
+                users.stream()
+                    .filter(user -> !permissionRoleManager.hasAdminPermission(readUserPermission))
+                    .toList())
+        .map(UserMapper::toResponseList)
         .doOnSuccess(
             filteredUsers ->
                 LOG.info(
@@ -158,16 +163,6 @@ public class UserAdminService {
                 LOG.info(
                     "✅ [USER ADMIN] Successfully retrieved {} users (technical user excluded for normal operator)",
                     filteredUsers.size()));
-  }
-
-  /**
-   * Recupera la lista di tutti gli utenti registrati delegando a {@link #getUsers(String)}.
-   *
-   * @return Mono contenente la lista di tutti i DTO {@link User}.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getUsers() {
-    return getUsers(null);
   }
 
   /**

@@ -19,6 +19,11 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class UserMapper {
 
+  public static List<UserDataResponse> toResponseList(List<User> users) {
+    if (ObjectToolkit.isNullOrEmpty(users)) return List.of();
+    return users.stream().map(UserMapper::toResponse).toList();
+  }
+
   public static UserDataResponse toResponse(User user) {
     if (ObjectToolkit.isNullOrEmpty(user)) return null;
     UserDataResponse userDataResponse = new UserDataResponse();
