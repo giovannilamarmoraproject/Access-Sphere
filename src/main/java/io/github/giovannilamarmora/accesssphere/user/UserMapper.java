@@ -1,9 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
+import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
-import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
 import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
@@ -24,7 +23,44 @@ public class UserMapper {
     if (ObjectToolkit.isNullOrEmpty(user)) return null;
     UserDataResponse userDataResponse = new UserDataResponse();
     BeanUtils.copyProperties(user, userDataResponse);
+    userDataResponse.setId(null);
+    userDataResponse.setRoles(UserClientRoleMapper.toResponseList(user.getRoles()));
     return userDataResponse;
+  }
+
+  /**
+   * Converte una lista di entità {@link UserEntity} in una lista di modelli {@link User}. Metodo
+   * alias che delega a {@link #toDTOList(List)} per garantire uniformità di nomenclatura tra
+   * mapper.
+   *
+   * @param userEntities Lista di entità dal database.
+   * @return Lista di modelli {@link User}.
+   */
+  public static List<User> toModelList(List<UserEntity> userEntities) {
+    if (ObjectToolkit.isNullOrEmpty(userEntities)) return List.of();
+    return userEntities.stream().map(UserMapper::toModel).toList();
+  }
+
+  /**
+   * Converte un'entità di persistenza {@link UserEntity} nel DTO {@link User}. Deserializza la
+   * stringa dei ruoli in una lista e riconverte le stringhe JSON di attributi e MFA nei rispettivi
+   * oggetti.
+   *
+   * @param userEntity Entità del database da convertire.
+   * @return Il DTO {@link User} popolato per i layer di servizio e controller.
+   */
+  public static User toModel(UserEntity userEntity) {
+    if (ObjectToolkit.isNullOrEmpty(userEntity)) return null;
+    User user = new User();
+    BeanUtils.copyProperties(userEntity, user);
+    user.setPassword(null);
+
+    if (!ObjectToolkit.isNullOrEmpty(userEntity.getAttributes()))
+      user.setAttributes(Mapper.readObject(userEntity.getAttributes(), new TypeReference<>() {}));
+
+    if (!ObjectToolkit.isNullOrEmpty(userEntity.getMfaSettings()))
+      user.setMfaSettings(Mapper.readObject(userEntity.getMfaSettings(), new TypeReference<>() {}));
+    return user;
   }
 
   /**
@@ -51,29 +87,6 @@ public class UserMapper {
   }
 
   /**
-   * Converte un'entità di persistenza {@link UserEntity} nel DTO {@link User}. Deserializza la
-   * stringa dei ruoli in una lista e riconverte le stringhe JSON di attributi e MFA nei rispettivi
-   * oggetti.
-   *
-   * @param userEntity Entità del database da convertire.
-   * @return Il DTO {@link User} popolato per i layer di servizio e controller.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static User toDTO(UserEntity userEntity) {
-    if (userEntity == null) return null;
-    User user = new User();
-    BeanUtils.copyProperties(userEntity, user);
-    user.setPassword(null);
-
-    if (!ObjectToolkit.isNullOrEmpty(userEntity.getAttributes()))
-      user.setAttributes(Mapper.readObject(userEntity.getAttributes(), new TypeReference<>() {}));
-
-    if (!ObjectToolkit.isNullOrEmpty(userEntity.getMfaSettings()))
-      user.setMfaSettings(Mapper.readObject(userEntity.getMfaSettings(), new TypeReference<>() {}));
-    return user;
-  }
-
-  /**
    * Converte una lista di entità {@link UserEntity} in una lista di DTO {@link User}.
    *
    * @param userEntities Lista di entità recuperate dal database.
@@ -82,32 +95,7 @@ public class UserMapper {
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
   public static List<User> toDTOList(List<UserEntity> userEntities) {
     if (userEntities == null) return List.of();
-    return userEntities.stream().map(UserMapper::toDTO).toList();
-  }
-
-  /**
-   * Converte un'entità {@link UserEntity} nel modello di dominio {@link User}. Metodo alias che
-   * delega a {@link #toDTO(UserEntity)} per garantire uniformità di nomenclatura tra mapper.
-   *
-   * @param userEntity Entità persistita da convertire.
-   * @return Il modello {@link User} popolato, oppure null se l'entità è null.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static User toModel(UserEntity userEntity) {
-    return toDTO(userEntity);
-  }
-
-  /**
-   * Converte una lista di entità {@link UserEntity} in una lista di modelli {@link User}. Metodo
-   * alias che delega a {@link #toDTOList(List)} per garantire uniformità di nomenclatura tra
-   * mapper.
-   *
-   * @param userEntities Lista di entità dal database.
-   * @return Lista di modelli {@link User}.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static List<User> toModelList(List<UserEntity> userEntities) {
-    return toDTOList(userEntities);
+    return userEntities.stream().map(UserMapper::toModel).toList();
   }
 
   public static User toModel(AddUserRequest addUserRequest) {
@@ -158,54 +146,5 @@ public class UserMapper {
         ObjectUtils.isEmpty(user.getMfaSettings())
             ? null
             : Mapper.writeObjectToString(user.getMfaSettings()));
-  }
-
-  /**
-   * Crea un'istanza di {@link User} per un utente tecnico autenticato, associandovi i ruoli
-   * definiti nel client.
-   *
-   * @param username Username dell'utente tecnico.
-   * @param oAuth2Client Credenziali del client OAuth che definiscono gli AppRole concessi.
-   * @return DTO {@link User} configurato per l'utente tecnico.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static User getTechUser(String username, OAuth2Client oAuth2Client) {
-    User user = new User();
-    user.setUsername(username);
-    user.setRoles(
-        oAuth2Client.getAppRoles() == null
-            ? null
-            : oAuth2Client.getAppRoles().stream()
-                .map(
-                    ar ->
-                        new UserClientRole(
-                            oAuth2Client.getClientId(), ar.getRole(), ar.getType(), null, null))
-                .toList());
-    return user;
-  }
-
-  /**
-   * Ricostruisce un DTO {@link User} a partire dai claim presenti nei dati del JWT decifrato.
-   * Utilizzato nei flussi di introspezione token e autenticazione stateless.
-   *
-   * @param jwtData Dati estratti dal token JWT.
-   * @return DTO {@link User} popolato con i claim del token.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static User getTechUser(JWTData jwtData) {
-    User user = new User();
-    user.setIdentifier(jwtData.getIdentifier());
-    user.setUsername(jwtData.getSub());
-    user.setName(jwtData.getGiven_name());
-    user.setSurname(jwtData.getFamily_name());
-    user.setEmail(jwtData.getEmail());
-    user.setRoles(
-        jwtData.getRoles() != null
-            ? jwtData.getRoles().stream()
-                .map(r -> new UserClientRole(jwtData.getClient_id(), r))
-                .toList()
-            : null);
-    user.setAttributes(jwtData.getAttributes());
-    return user;
   }
 }

@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.user.admin;
 
 import io.github.giovannilamarmora.accesssphere.user.admin.dto.AddUserRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserListResponse;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -53,14 +54,14 @@ public class UserAdminControllerImpl implements UserAdminController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> userList(String bearer, ServerHttpRequest request) {
-    LOG.info("🌐 [ADMIN CONTROLLER] Invoking UserList endpoint");
+  public Mono<ResponseEntity<UserListResponse>> userList(String bearer, ServerHttpRequest request) {
     return userAdminService
         .getUsers(bearer)
         .map(
             users -> {
-              Response response =
-                  new Response(HttpStatus.OK.value(), "Users list", TraceUtils.getSpanID(), users);
+              UserListResponse response =
+                  new UserListResponse(
+                      HttpStatus.OK.value(), "Users list", TraceUtils.getSpanID(), users);
               return ResponseEntity.ok(response);
             });
   }

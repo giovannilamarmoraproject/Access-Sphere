@@ -18,6 +18,19 @@ public class UserClientRoleRepository {
 
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
 
+  public Optional<List<UserClientRole>> findAll() {
+    LOG.debug("🔐 Getting all UserClient Role");
+    List<UserClientRoleEntity> getEntityList = userClientRoleDAO.findAll();
+
+    if (ObjectToolkit.isNullOrEmpty(getEntityList)) {
+      LOG.warn("⚖️ UserClient Role not found");
+      return Optional.empty();
+    }
+
+    LOG.debug("⚖️ Found {} UserClient Role", getEntityList.size());
+    return Optional.of(UserClientRoleMapper.toModelList(getEntityList));
+  }
+
   public Optional<List<UserClientRole>> findByUserIdentifier(String identifier) {
     LOG.debug("🔐 Getting all UserClient Role for identifier{} ", identifier);
     List<UserClientRoleEntity> getEntityList = userClientRoleDAO.findByUserIdentifier(identifier);

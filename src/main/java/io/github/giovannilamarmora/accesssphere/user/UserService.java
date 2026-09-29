@@ -123,12 +123,15 @@ public class UserService {
                               ? userClientRole.getClientId().trim().toUpperCase()
                               : "")
                           + ":"
-                          + (ObjectToolkit.isNullOrEmpty(userClientRole.getRole())
+                          + (!ObjectToolkit.isNullOrEmpty(userClientRole.getRole())
                               ? userClientRole.getRole().trim().toUpperCase()
                               : "");
                   RoleDefinition roleDef = roleDefMap.get(key);
                   if (roleDef != null) {
-                    LOG.info("SONO DENTROOOOO");
+                    LOG.debug(
+                        "🔍 Enriched role {} for client {}",
+                        roleDef.getRole(),
+                        roleDef.getClientId());
                     return UserClientRoleMapper.toUserClientModel(roleDef);
                   }
                   return userClientRole;
@@ -137,6 +140,81 @@ public class UserService {
 
     user.setRoles(clientRoleDTOs);
     return Mono.just(user);
+  }
+
+  /**
+   * Recupera la lista completa di tutti gli utenti registrati nel database locale. Converte
+   * l'elenco delle entita' persistite nel corrispondente elenco di DTO {@link User}.
+   *
+   * @return Mono contenente la lista di {@link User}.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<User>> getUsers() {
+    LOG.info("👥 Getting all users from database");
+
+    Optional<List<User>> optionalUsers = userRepository.findAll();
+
+    if (optionalUsers.isEmpty() || optionalUsers.get().isEmpty()) {
+      LOG.error("❌ Users not found into database");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
+    }
+    List<User> users = optionalUsers.get();
+
+    Optional<List<UserClientRole>> optionalUserClientRoles = userClientRoleRepository.findAll();
+
+    if (optionalUserClientRoles.isEmpty()) {
+      LOG.warn("🔐 No Role found");
+      return Mono.just(users);
+    }
+
+    List<UserClientRole> userClientRoles = optionalUserClientRoles.get();
+    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
+
+    if (optionalRoleDefinitions.isEmpty()) {
+      LOG.warn("🔐 No Role Definition found for user: {}", user.getIdentifier());
+      user.setRoles(userClientRoles);
+      return Mono.just(user);
+    }
+
+    List<RoleDefinition> roleDefinitions = optionalRoleDefinitions.get();
+
+    Map<String, RoleDefinition> roleDefMap =
+        roleDefinitions.stream()
+            .filter(rd -> rd.getClientId() != null && rd.getRole() != null)
+            .collect(
+                Collectors.toMap(
+                    rd ->
+                        rd.getClientId().trim().toUpperCase()
+                            + ":"
+                            + rd.getRole().trim().toUpperCase(),
+                    rd -> rd,
+                    (existing, replacement) -> existing));
+
+    List<UserClientRole> clientRoleDTOs =
+        userClientRoles.stream()
+            .map(
+                userClientRole -> {
+                  String key =
+                      (!ObjectToolkit.isNullOrEmpty(userClientRole.getClientId())
+                              ? userClientRole.getClientId().trim().toUpperCase()
+                              : "")
+                          + ":"
+                          + (!ObjectToolkit.isNullOrEmpty(userClientRole.getRole())
+                              ? userClientRole.getRole().trim().toUpperCase()
+                              : "");
+                  RoleDefinition roleDef = roleDefMap.get(key);
+                  if (roleDef != null) {
+                    LOG.debug(
+                        "🔍 Enriched role {} for client {}",
+                        roleDef.getRole(),
+                        roleDef.getClientId());
+                    return UserClientRoleMapper.toUserClientModel(roleDef);
+                  }
+                  return userClientRole;
+                })
+            .toList();
+
+    return Mono.just(users);
   }
 
   /**
@@ -152,7 +230,7 @@ public class UserService {
     LOG.info("👤 Getting user by identifier: {}", identifier);
     UserEntity userEntity = userDAO.findUserEntityByIdentifier(identifier);
     UserValidator.validateUser(userEntity);
-    return Mono.just(enrichUser(UserMapper.toDTO(userEntity)));
+    return Mono.just(enrichUser(UserMapper.toModel(userEntity)));
   }
 
   /**
@@ -202,20 +280,7 @@ public class UserService {
     UserEntity userEntity = userDAO.findUserEntityByTokenReset(tokenReset);
     UserValidator.validateUser(userEntity);
     UserValidator.validateResetToken(userEntity.getUpdateDate());
-    return Mono.just(enrichUser(UserMapper.toDTO(userEntity)));
-  }
-
-  /**
-   * Recupera la lista completa di tutti gli utenti registrati nel database locale. Converte
-   * l'elenco delle entita' persistite nel corrispondente elenco di DTO {@link User}.
-   *
-   * @return Mono contenente la lista di {@link User}.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<User>> getUsers() {
-    LOG.info("👥 Getting all users from database");
-    List<UserEntity> userEntities = userDAO.findAll();
-    return Mono.just(enrichUsers(UserMapper.toDTOList(userEntities)));
+    return Mono.just(enrichUser(UserMapper.toModel(userEntity)));
   }
 
   /**
@@ -245,7 +310,7 @@ public class UserService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    User userDTO = UserMapper.toDTO(userEntity);
+    User userDTO = UserMapper.toModel(userEntity);
     userDTO.setPassword(null);
     enrichUser(userDTO);
     LOG.debug("✅ Credentials successfully validated for user: {}", userDTO.getUsername());
@@ -318,7 +383,7 @@ public class UserService {
    * UserEntity} all'interno del contesto transazionale, per evitare che il dirty checking di
    * Hibernate propaghi un UPDATE con PASSWORD = NULL su database. La rimozione della password per
    * la sicurezza del client viene già gestita a livello di DTO da {@link
-   * UserMapper#toDTO(UserEntity)}.
+   * UserMapper#toModel(UserEntity)}.
    *
    * @param userEntity Entita' da salvare con password cifrata (BCrypt).
    * @return DTO {@link User} corrispondente all'entita' salvata (con password protetta a null).
@@ -327,7 +392,7 @@ public class UserService {
   public User saveUserEntityIntoDatabase(UserEntity userEntity) {
     UserEntity userSaved = userDAO.saveAndFlush(userEntity);
     UserValidator.validateUser(userSaved);
-    return enrichUser(UserMapper.toDTO(userSaved));
+    return enrichUser(UserMapper.toModel(userSaved));
   }
 
   /**

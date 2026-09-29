@@ -13,6 +13,7 @@ import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.user.UserException;
 import io.github.giovannilamarmora.accesssphere.user.UserMapper;
@@ -70,6 +71,8 @@ public class UserAdminService {
   private static final Logger LOG = LoggerFilter.getLogger(UserAdminService.class);
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
+  private static final String USER_ADMIN_LOG = "User Admin";
+
   @Autowired private AdminUserService techUserService;
   @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private UserService userService;
@@ -100,7 +103,26 @@ public class UserAdminService {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<User>> getUsers(String bearer) {
-    LOG.info("👥 [USER ADMIN] Starting retrieval of users list");
+    SystemPermission readClientPermission = SystemPermission.USERS_READ;
+    List<RoleDefinition> hasCorrectRoles =
+        permissionRoleManager.checkPermissionAndReturnUserRoles(readClientPermission);
+
+    LOG.info("👥 {} Starting retrieval of users list", USER_ADMIN_LOG);
+
+    return userService
+        .getUsers()
+        .map(
+            users -> users.stream().filter(user -> !techUserService.isTechnicalUser(user)).toList())
+        .doOnSuccess(
+            filteredUsers ->
+                LOG.info(
+                    "✅ [USER ADMIN] Successfully retrieved {} users (technical user excluded for normal operator)",
+                    filteredUsers.size()));
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<List<User>> getUsersOld(String bearer) {
+    LOG.info("👥 {} Starting retrieval of users list", USER_ADMIN_LOG);
     if (StringUtils.hasText(bearer) && !techUserService.isTechUser()) {
       try {
         OAuth2Authorization tokenData =

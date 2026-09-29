@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.roles.mapper;
 
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleResponse;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
@@ -10,6 +11,19 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserClientRoleMapper {
+
+  public static List<UserClientRoleResponse> toResponseList(List<UserClientRole> userClientRoles) {
+    if (ObjectToolkit.isNullOrEmpty(userClientRoles)) return List.of();
+    return userClientRoles.stream().map(UserClientRoleMapper::toResponse).toList();
+  }
+
+  public static UserClientRoleResponse toResponse(UserClientRole userClientRole) {
+    if (ObjectToolkit.isNullOrEmpty(userClientRole)) return null;
+    UserClientRoleResponse userClientRoleResponse = new UserClientRoleResponse();
+    BeanUtils.copyProperties(userClientRole, userClientRoleResponse);
+    userClientRoleResponse.setId(null);
+    return userClientRoleResponse;
+  }
 
   public static List<UserClientRole> toModelList(
       List<UserClientRoleEntity> userClientRoleEntities) {
@@ -25,7 +39,7 @@ public class UserClientRoleMapper {
   }
 
   public static UserClientRoleEntity toEntity(UserClientRole userClientRole) {
-    if (ObjectToolkit.isNullOrEmpty(userClientRole)) return null;
+    // if (ObjectToolkit.isNullOrEmpty(userClientRole)) return null;
     UserClientRoleEntity userClientRoleEntity = new UserClientRoleEntity();
     BeanUtils.copyProperties(userClientRole, userClientRoleEntity);
     return userClientRoleEntity;
