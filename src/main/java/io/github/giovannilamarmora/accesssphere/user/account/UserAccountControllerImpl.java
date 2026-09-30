@@ -50,7 +50,6 @@ public class UserAccountControllerImpl implements UserAccountController {
    * @return Mono contenente ResponseEntity con stato 200 OK e i dati del profilo.
    */
   @Override
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<UserResponse>> profile(String bearer, ServerHttpRequest request) {
     return userAccountService
         .profile(bearer, request)
@@ -76,7 +75,7 @@ public class UserAccountControllerImpl implements UserAccountController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> updateUser(
+  public Mono<ResponseEntity<UserResponse>> updateUser(
       String identifier, User user, String bearer, ServerHttpRequest request) {
     LOG.info(
         "🌐 [ACCOUNT CONTROLLER] Invoking UpdateUser endpoint for username: {} and identifier: {}",
@@ -86,8 +85,8 @@ public class UserAccountControllerImpl implements UserAccountController {
         .updateUser(identifier, user, bearer, request)
         .map(
             updatedUser -> {
-              Response response =
-                  new Response(
+              UserResponse response =
+                  new UserResponse(
                       HttpStatus.OK.value(),
                       "User " + updatedUser.getUsername() + " successfully updated!",
                       TraceUtils.getSpanID(),

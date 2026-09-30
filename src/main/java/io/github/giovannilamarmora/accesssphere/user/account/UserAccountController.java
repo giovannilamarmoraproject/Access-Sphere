@@ -159,16 +159,9 @@ public interface UserAccountController {
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal Server Error",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> updateUser(
+  Mono<ResponseEntity<UserResponse>> updateUser(
       @PathVariable(value = "identifier")
           @Schema(
               description = OpenAPI.Params.Description.IDENTIFIER,
@@ -189,7 +182,8 @@ public interface UserAccountController {
    *
    * @param changePassword DTO con email del destinatario, clientId e templateId opzionale.
    * @param locale Lingua di localizzazione per il template di posta (es. it-IT, en-GB).
-   * @param sendEmail Flag per abilitare l'invio dell'email (true) o restituire il token direttamente (false).
+   * @param sendEmail Flag per abilitare l'invio dell'email (true) o restituire il token
+   *     direttamente (false).
    * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response}.
    */
   @PostMapping("/users/password/reset-request")
@@ -248,7 +242,8 @@ public interface UserAccountController {
           boolean sendEmail);
 
   /**
-   * Completa la procedura di reset password (Step 2) verificando il token e aggiornando la password.
+   * Completa la procedura di reset password (Step 2) verificando il token e aggiornando la
+   * password.
    *
    * @param changePassword DTO contenente token di recupero e nuova password codificata in Base64.
    * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response}.

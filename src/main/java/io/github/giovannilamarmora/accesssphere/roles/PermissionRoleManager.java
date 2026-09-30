@@ -199,4 +199,14 @@ public class PermissionRoleManager extends AdminUserConfig {
     LOG.info("🔐 Check if the action to perform for user: {} is the current user", identifier);
     return oAuth2Authorization.getIdentifier().equalsIgnoreCase(identifier);
   }
+
+  public boolean checkIfCanUpdate(String identifier, SystemPermission permission) {
+    LOG.info("🔐 Check if the user: {} can perform the action {}", identifier, permission);
+
+    if (isCurrentUser(identifier)) {
+      return true;
+    }
+
+    return !checkPermissionAndReturnUserRoles(permission).isEmpty();
+  }
 }

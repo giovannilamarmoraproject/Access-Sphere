@@ -13,6 +13,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
+import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
@@ -109,9 +110,15 @@ public class UserAccountService {
    * @return Mono contenente il DTO {@link User} aggiornato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(
+  public Mono<UserDataResponse> updateUser(
       String identifier, User userToUpdate, String bearer, ServerHttpRequest request) {
-    String finalIdentifier = identifier != null ? identifier : userToUpdate.getIdentifier();
+    SystemPermission lockUserPermission = SystemPermission.USERS_WRITE;
+    permissionRoleManager.checkPermissionAndReturnUserRoles(lockUserPermission);
+
+
+
+
+
     if (userToUpdate.getIdentifier() == null && finalIdentifier != null) {
       userToUpdate.setIdentifier(finalIdentifier);
     }

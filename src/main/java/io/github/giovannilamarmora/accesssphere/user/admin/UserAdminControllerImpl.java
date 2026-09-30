@@ -10,9 +10,7 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +37,6 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1")
 @Tag(name = OpenAPI.Tag.USERS, description = OpenAPI.Description.USERS)
 public class UserAdminControllerImpl implements UserAdminController {
-
-  private static final Logger LOG = LoggerFilter.getLogger(UserAdminControllerImpl.class);
 
   @Autowired private UserAdminService userAdminService;
 
