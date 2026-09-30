@@ -185,7 +185,7 @@ public interface UserAdminController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<UserDataResponse>> unlockUser(
+  Mono<ResponseEntity<UserResponse>> unlockUser(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
