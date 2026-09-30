@@ -77,35 +77,6 @@ public class UserAccountControllerImpl implements UserAccountController {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> updateUser(
-      User user, String bearer, ServerHttpRequest request) {
-    LOG.info(
-        "🌐 [ACCOUNT CONTROLLER] Invoking UpdateUser endpoint for username: {}",
-        user.getUsername());
-    return userAccountService
-        .updateUser(user.getIdentifier(), user, bearer, request)
-        .map(
-            updatedUser -> {
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "User " + updatedUser.getUsername() + " successfully updated!",
-                      TraceUtils.getSpanID(),
-                      updatedUser);
-              return ResponseEntity.ok(response);
-            });
-  }
-
-  /**
-   * Endpoint per l'aggiornamento dei dati anagrafici del profilo utente.
-   *
-   * @param user DTO contenente i dati anagrafici aggiornati.
-   * @param bearer Token Bearer della sessione.
-   * @param request Richiesta HTTP server.
-   * @return Mono contenente ResponseEntity con stato 200 OK e i dati aggiornati.
-   */
-  @Override
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> updateUser(
       String identifier, User user, String bearer, ServerHttpRequest request) {
     LOG.info(
         "🌐 [ACCOUNT CONTROLLER] Invoking UpdateUser endpoint for username: {} and identifier: {}",
@@ -170,37 +141,5 @@ public class UserAccountControllerImpl implements UserAccountController {
             ResponseEntity.ok(
                 new Response(
                     HttpStatus.OK.value(), "Password Updated!", TraceUtils.getSpanID(), null)));
-  }
-
-  /**
-   * Endpoint legacy per richiedere il reset della password tramite invio di email o generazione di
-   * token.
-   *
-   * @param changePassword DTO contenente email, templateId e parametri.
-   * @param locale Lingua di localizzazione del template email.
-   * @param sendEmail Flag per abilitare l'invio dell'email.
-   * @return Mono contenente ResponseEntity con stato 200 OK e l'esito della notifica.
-   */
-  @Override
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> changePasswordRequestLegacy(
-      ChangePassword changePassword, String locale, boolean sendEmail) {
-    LOG.warn(
-        "⚠️ [ACCOUNT CONTROLLER] Invoking DEPRECATED endpoint POST /v1/users/change/password/request - migrate to POST /v1/users/password/reset-request");
-    return changePasswordRequest(changePassword, locale, sendEmail);
-  }
-
-  /**
-   * Endpoint legacy per l'applicazione della nuova password a fronte del token di recupero.
-   *
-   * @param changePassword DTO contenente token di recupero e nuova password in Base64.
-   * @return Mono contenente ResponseEntity con stato 200 OK di avvenuto aggiornamento.
-   */
-  @Override
-  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> changePasswordLegacy(ChangePassword changePassword) {
-    LOG.warn(
-        "⚠️ [ACCOUNT CONTROLLER] Invoking DEPRECATED endpoint POST /v1/users/change/password - migrate to POST /v1/users/password/reset");
-    return changePassword(changePassword);
   }
 }
