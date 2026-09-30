@@ -127,18 +127,14 @@ public class UserAdminControllerImpl implements UserAdminController {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> unlockUser(
+  public Mono<ResponseEntity<UserResponse>> unlockUser(
       String bearer, String identifier, Boolean block) {
-    LOG.info(
-        "🌐 [ADMIN CONTROLLER] Invoking UnlockUser/Lock endpoint for identifier: {}, block: {}",
-        identifier,
-        block);
     return userAdminService
         .unlockUser(identifier, block)
         .map(
             updatedUser -> {
-              Response response =
-                  new Response(
+              UserResponse response =
+                  new UserResponse(
                       HttpStatus.OK.value(),
                       "User "
                           + updatedUser.getUsername()

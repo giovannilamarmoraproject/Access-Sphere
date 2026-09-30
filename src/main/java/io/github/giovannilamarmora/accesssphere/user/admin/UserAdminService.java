@@ -21,9 +21,6 @@ import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
-import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
-import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
-import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.ArrayList;
@@ -57,7 +54,6 @@ import reactor.core.scheduler.Schedulers;
  * </ul>
  */
 @Service
-@Logged
 @RequiredArgsConstructor
 public class UserAdminService {
 
@@ -65,7 +61,6 @@ public class UserAdminService {
 
   private static final String USER_ADMIN_LOG = "User Admin";
 
-  @Autowired private AdminUserService techUserService;
   @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private UserService userService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
@@ -90,7 +85,6 @@ public class UserAdminService {
    * @return Mono contenente la lista dei DTO {@link User} scoped in base all'identita'
    *     dell'operatore.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<UserDataResponse>> getUsers(String bearer) {
     SystemPermission readUserPermission = SystemPermission.USERS_READ;
     List<RoleDefinition> hasCorrectRoles =
@@ -145,7 +139,6 @@ public class UserAdminService {
    * @param userRequest DTO contenente i dati anagrafici, credenziali e ruoli del nuovo utente.
    * @return Mono contenente il DTO {@link UserDataResponse} registrato e salvato.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<UserDataResponse> saveUser(String bearer, UserRequest userRequest) {
     boolean isAuthenticated =
         !ObjectToolkit.isNullOrEmpty(bearer)
@@ -241,9 +234,7 @@ public class UserAdminService {
     }
 
     return registrationValidationMono
-        .then(
-            Mono.fromCallable(() -> userService.saveUser(user))
-                .subscribeOn(Schedulers.boundedElastic()))
+        .then(Mono.defer(() -> userService.saveUser(user)).subscribeOn(Schedulers.boundedElastic()))
         .map(UserMapper::toResponse)
         .doOnSuccess(
             registeredUser ->
@@ -273,8 +264,7 @@ public class UserAdminService {
    * @param block True per bloccare l'accesso, false per sbloccarlo.
    * @return Mono contenente il DTO {@link User} aggiornato con il nuovo stato.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> unlockUser(String identifier, Boolean block) {
+  public Mono<UserDataResponse> unlockUser(String identifier, Boolean block) {
     SystemPermission lockUserPermission = SystemPermission.USERS_LOCK;
     permissionRoleManager.checkPermissionAndReturnUserRoles(lockUserPermission);
 
@@ -306,7 +296,7 @@ public class UserAdminService {
 
               targetUser.setPassword(null);
               targetUser.setBlocked(block);
-              return userService.updateUser(identifier, targetUser);
+              return userService.updateUser(identifier, targetUser).map(UserMapper::toResponse);
             })
         .doOnSuccess(
             updatedUser ->

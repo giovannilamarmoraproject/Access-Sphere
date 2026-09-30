@@ -163,7 +163,8 @@ public class GoogleAuthService {
                         oAuth2Client.getAppRoles(), userGoogle.getIdentifier());
                 userGoogle.setRoles(userClientRoles);
                 userGoogle.setPassword(UUID.randomUUID().toString());
-                return Mono.just(userService.saveUser(userGoogle))
+                return userService
+                    .saveUser(userGoogle)
                     .map(
                         user1 -> {
                           RoleDefinition defaultRole =

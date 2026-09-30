@@ -1,9 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.user.admin;
 
-import io.github.giovannilamarmora.accesssphere.user.dto.UserDeleteResponse;
-import io.github.giovannilamarmora.accesssphere.user.dto.UserListResponse;
-import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
-import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
+import io.github.giovannilamarmora.accesssphere.user.dto.*;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -188,7 +185,7 @@ public interface UserAdminController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> unlockUser(
+  Mono<ResponseEntity<UserDataResponse>> unlockUser(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
