@@ -13,12 +13,16 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
+import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
+import io.github.giovannilamarmora.accesssphere.user.UserException;
 import io.github.giovannilamarmora.accesssphere.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserUpdateRequest;
 import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
@@ -30,6 +34,7 @@ import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -75,6 +80,7 @@ public class UserAccountService {
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private UserService userService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
+  @Autowired private PermissionRoleManager permissionRoleManager;
 
   /**
    * Recupera il profilo dell'utente attualmente autenticato nella sessione corrente.
@@ -104,48 +110,125 @@ public class UserAccountService {
    * Aggiorna i dati di profilo dell'utente nel database locale, verificando l'identita' o i
    * privilegi tecnici.
    *
-   * @param userToUpdate DTO contenente i dati anagrafici da aggiornare.
+   * @param userUpdateRequest DTO contenente i dati anagrafici da aggiornare.
    * @param bearer Token Bearer della sessione.
    * @param request Richiesta HTTP server.
    * @return Mono contenente il DTO {@link User} aggiornato.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<UserDataResponse> updateUser(
-      String identifier, User userToUpdate, String bearer, ServerHttpRequest request) {
-    SystemPermission lockUserPermission = SystemPermission.USERS_WRITE;
-    permissionRoleManager.checkPermissionAndReturnUserRoles(lockUserPermission);
-
-
-
-
-
-    if (userToUpdate.getIdentifier() == null && finalIdentifier != null) {
-      userToUpdate.setIdentifier(finalIdentifier);
+      String identifier,
+      UserUpdateRequest userUpdateRequest,
+      String bearer,
+      ServerHttpRequest request) {
+    if (ObjectToolkit.isNullOrEmpty(identifier)) {
+      LOG.error("❌ {} Target user identifier is missing", USER_ACCOUNT_LOG);
+      throw new UserException(ExceptionMap.ERR_USER_400, "Identifier is required!");
     }
-    userToUpdate.setPassword(null);
-    LOG.info(
-        "👤 [USER ACCOUNT] Starting profile update for username: {}, identifier: {}",
-        userToUpdate.getUsername(),
-        finalIdentifier);
 
-    return techUserService
-        .hasTechUserRoles(oAuth2Authorization, oAuth2ClientDomainService)
+    User userToUpdate = UserMapper.toModel(userUpdateRequest);
+    userToUpdate.setIdentifier(identifier);
+
+    LOG.info("👤 {} Starting profile update for identifier: {}", USER_ACCOUNT_LOG, identifier);
+
+    return userService
+        .getUserByIdentifier(identifier)
         .flatMap(
-            hasTechRoles -> {
-              if (!hasTechRoles) {
-                UserValidator.validateUpdate(oAuth2Authorization, userToUpdate);
-                // Impedisce a utenti non tecnici di alterare i propri ruoli tramite l'endpoint di
-                // aggiornamento profilo
-                userToUpdate.setRoles(null);
+            targetUser -> {
+              boolean isAdmin =
+                  permissionRoleManager.hasAdminPermission(SystemPermission.USERS_WRITE);
+
+              if (isAdmin) {
+                // Utente Admin: puo aggiornare qualsiasi utente senza vincoli di perimetro client.
+                // Se non ha specificato ruoli, preserva quelli esistenti dell'utente target.
+                if (ObjectToolkit.isNullOrEmpty(userToUpdate.getRoles())) {
+                  userToUpdate.setRoles(targetUser.getRoles());
+                }
+              } else {
+                // Utente Non-Admin: non puo mai modificare l'utenza Admin di sistema
+                if (permissionRoleManager.isAdminUser(targetUser.getUsername())) {
+                  LOG.error(
+                      "⛔ {} Forbidden: User cannot alter the admin user {}",
+                      USER_ACCOUNT_LOG,
+                      identifier);
+                  return Mono.error(
+                      new OAuthException(ExceptionMap.ERR_OAUTH_403, "Cannot alter admin user"));
+                }
+
+                boolean isSelf = permissionRoleManager.isCurrentUser(targetUser.getIdentifier());
+
+                if (isSelf) {
+                  // Utente che modifica il proprio profilo (self-service):
+                  // puo modificare i propri dati anagrafici, ma non puo alterare i propri ruoli.
+                  userToUpdate.setRoles(targetUser.getRoles());
+                } else {
+                  // Utente 1 che vuole modificare Utente 2:
+                  // puo farlo se e solo se ha il permesso USERS_WRITE e se entrambi appartengono
+                  // allo stesso client.
+                  List<RoleDefinition> authorizedRoles =
+                      permissionRoleManager.checkPermissionAndReturnUserRoles(
+                          SystemPermission.USERS_WRITE);
+
+                  boolean sameClient = hasMatchingClient(targetUser, authorizedRoles);
+                  if (!sameClient) {
+                    LOG.error(
+                        "⛔ {} Access denied: Operator {} and target user {} do not belong to the same client with USERS_WRITE permission",
+                        USER_ACCOUNT_LOG,
+                        oAuth2Authorization.getIdentifier(),
+                        identifier);
+                    return Mono.error(
+                        new OAuthException(
+                            ExceptionMap.ERR_OAUTH_403,
+                            "Forbidden: Client mismatch between operator and target user"));
+                  }
+
+                  // Preserva i ruoli dell'utente target (modificabili solo tramite RolesController)
+                  userToUpdate.setRoles(targetUser.getRoles());
+                }
               }
-              return userService.updateUser(finalIdentifier, userToUpdate);
+
+              userToUpdate = UserMapper.updateUser(targetUser, userToUpdate);
+
+              return userService.updateUser(identifier, userToUpdate);
             })
+        .map(UserMapper::toResponse)
         .doOnSuccess(
             updatedUser ->
                 LOG.info(
-                    "✅ [USER ACCOUNT] Profile update successfully completed for username: {}, identifier: {}",
+                    "✅ {} Profile update successfully completed for username: {}, identifier: {}",
+                    USER_ACCOUNT_LOG,
                     updatedUser.getUsername(),
-                    finalIdentifier));
+                    identifier));
+  }
+
+  /**
+   * Verifica se l'utente target appartiene ad almeno uno dei Client OAuth2 per cui l'operatore
+   * possiede ruoli con il permesso richiesto.
+   *
+   * @param targetUser Utente target recuperato dal database con i rispettivi ruoli assegnati.
+   * @param authorizedRoles Ruoli dell'operatore che concedono il permesso richiesto.
+   * @return true se targetUser possiede almeno un ruolo associato a uno dei client autorizzati
+   *     dell'operatore, false altrimenti.
+   */
+  private boolean hasMatchingClient(User targetUser, List<RoleDefinition> authorizedRoles) {
+    if (ObjectToolkit.isNullOrEmpty(targetUser)
+        || ObjectToolkit.isNullOrEmpty(targetUser.getRoles())
+        || ObjectToolkit.isNullOrEmpty(authorizedRoles)) {
+      return false;
+    }
+
+    return targetUser.getRoles().stream()
+        .anyMatch(
+            userRole ->
+                authorizedRoles.stream()
+                    .anyMatch(
+                        correctRole ->
+                            !ObjectToolkit.isNullOrEmpty(userRole.getClientId())
+                                && !ObjectToolkit.isNullOrEmpty(correctRole.getClientId())
+                                && correctRole
+                                    .getClientId()
+                                    .trim()
+                                    .equalsIgnoreCase(userRole.getClientId().trim())));
   }
 
   /**

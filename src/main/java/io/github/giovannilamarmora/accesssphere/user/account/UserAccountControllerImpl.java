@@ -1,8 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.user.account;
 
 import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserUpdateRequest;
 import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
-import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -76,7 +76,7 @@ public class UserAccountControllerImpl implements UserAccountController {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<UserResponse>> updateUser(
-      String identifier, User user, String bearer, ServerHttpRequest request) {
+      String identifier, UserUpdateRequest user, String bearer, ServerHttpRequest request) {
     LOG.info(
         "🌐 [ACCOUNT CONTROLLER] Invoking UpdateUser endpoint for username: {} and identifier: {}",
         user.getUsername(),

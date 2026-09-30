@@ -315,6 +315,8 @@ public class UserService {
         throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
       }
       userToUpdate.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
+    } else {
+      userToUpdate.setPassword(existingUser.get().getPassword());
     }
 
     User userUpdated = userRepository.saveAndFlush(userToUpdate);

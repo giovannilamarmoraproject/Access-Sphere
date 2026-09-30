@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserUpdateRequest;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -13,7 +14,6 @@ import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 
 @Component
 public class UserMapper {
@@ -34,7 +34,7 @@ public class UserMapper {
 
   /**
    * Converte una lista di entità {@link UserEntity} in una lista di modelli {@link User}. Metodo
-   * alias che delega a {@link #toDTOList(List)} per garantire uniformità di nomenclatura tra
+   * alias che delega a {@link #toModelList(List)} per garantire uniformità di nomenclatura tra
    * mapper.
    *
    * @param userEntities Lista di entità dal database.
@@ -75,6 +75,12 @@ public class UserMapper {
     return user;
   }
 
+  public static User toModel(UserUpdateRequest userUpdateRequest) {
+    User user = new User();
+    BeanUtils.copyProperties(userUpdateRequest, user);
+    return user;
+  }
+
   /**
    * Converte il DTO {@link User} nella corrispondente entità di persistenza {@link UserEntity}.
    * Serializza le liste di ruoli in stringa separata da spazi e converte attributi e impostazioni
@@ -103,32 +109,14 @@ public class UserMapper {
    * attributi e impostazioni MFA.
    *
    * @param existingUser Entità persistita esistente da aggiornare.
-   * @param user DTO contenente i valori aggiornati forniti dall'utente o dal sistema.
+   * @param userToUpdate DTO contenente i valori aggiornati forniti dall'utente o dal sistema.
    */
-  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static void updateEntity(UserEntity existingUser, User user) {
-    // Aggiorna i campi dell'entita' esistente con i valori del User
-    existingUser.setIdentifier(user.getIdentifier());
-    existingUser.setName(user.getName());
-    existingUser.setSurname(user.getSurname());
-    existingUser.setEmail(user.getEmail());
-    existingUser.setUsername(user.getUsername());
-    existingUser.setProfilePhoto(user.getProfilePhoto());
-    existingUser.setPhoneNumber(user.getPhoneNumber());
-    existingUser.setBirthDate(user.getBirthDate());
-    existingUser.setGender(user.getGender());
-    existingUser.setOccupation(user.getOccupation());
-    existingUser.setEducation(user.getEducation());
-    existingUser.setNationality(user.getNationality());
-    existingUser.setSsn(user.getSsn());
-    existingUser.setTokenReset(user.getTokenReset());
-    existingUser.setAttributes(
-        ObjectUtils.isEmpty(user.getAttributes())
-            ? null
-            : Mapper.writeObjectToString(user.getAttributes()));
-    existingUser.setMfaSettings(
-        ObjectUtils.isEmpty(user.getMfaSettings())
-            ? null
-            : Mapper.writeObjectToString(user.getMfaSettings()));
+  public static User updateUser(User existingUser, User userToUpdate) {
+    userToUpdate.setUsername(existingUser.getUsername());
+    userToUpdate.setPassword(existingUser.getPassword());
+    userToUpdate.setConfirmed(existingUser.getConfirmed());
+    userToUpdate.setBlocked(existingUser.getBlocked());
+    userToUpdate.setRoles(existingUser.getRoles());
+    return userToUpdate;
   }
 }

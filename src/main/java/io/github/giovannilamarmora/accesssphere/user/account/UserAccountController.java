@@ -1,8 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.user.account;
 
 import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserUpdateRequest;
 import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
-import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -167,7 +167,7 @@ public interface UserAccountController {
               description = OpenAPI.Params.Description.IDENTIFIER,
               example = OpenAPI.Params.Example.IDENTIFIER)
           String identifier,
-      @RequestBody @Valid @NotNull(message = "User cannot be null") User user,
+      @RequestBody @Valid @NotNull(message = "User cannot be null") UserUpdateRequest user,
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
