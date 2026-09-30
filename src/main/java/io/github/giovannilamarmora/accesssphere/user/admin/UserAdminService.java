@@ -275,8 +275,12 @@ public class UserAdminService {
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> unlockUser(String identifier, Boolean block) {
+    SystemPermission lockUserPermission = SystemPermission.USERS_LOCK;
+    permissionRoleManager.checkPermissionAndReturnUserRoles(lockUserPermission);
+
     LOG.info(
-        "🛡️ [USER ADMIN] Starting user {} process for identifier: {}",
+        "🛡️ {} Starting user {} process for identifier: {}",
+        USER_ADMIN_LOG,
         block ? "lock" : "unlock",
         identifier);
 
@@ -284,34 +288,31 @@ public class UserAdminService {
         .getUserByIdentifier(identifier)
         .flatMap(
             targetUser -> {
-              if (techUserService.isTechnicalUser(targetUser) && !techUserService.isTechUser()) {
+              if (permissionRoleManager.isAdminUser(targetUser.getIdentifier())) {
                 LOG.error(
-                    "❌ Forbidden: Non-tech user cannot change lock status of technical user {}",
+                    "❌ Forbidden: User cannot change lock status of admin user {}", identifier);
+                return Mono.error(
+                    new OAuthException(
+                        ExceptionMap.ERR_OAUTH_403, "Cannot alter admin user status"));
+              }
+              if (permissionRoleManager.isCurrentUser(targetUser.getIdentifier())) {
+                LOG.error(
+                    "❌ Forbidden: User cannot change lock status of the current user {}",
                     identifier);
                 return Mono.error(
                     new OAuthException(
-                        ExceptionMap.ERR_TECH_403, "Cannot alter technical user status"));
+                        ExceptionMap.ERR_OAUTH_403, "Cannot alter current user status"));
               }
 
-              if (techUserService.isTechUser()) {
-                return oAuth2ClientDomainService
-                    .getOAuth2ClientByClientID(techUserService.getAdminClientId())
-                    .flatMap(
-                        clientCredential -> {
-                          TechUserValidator.validateTechRoles(
-                              clientCredential, oAuth2Authorization.getRoles());
-                          targetUser.setBlocked(block);
-                          return userService.updateUser(identifier, targetUser);
-                        });
-              } else {
-                targetUser.setBlocked(block);
-                return userService.updateUser(identifier, targetUser);
-              }
+              targetUser.setPassword(null);
+              targetUser.setBlocked(block);
+              return userService.updateUser(identifier, targetUser);
             })
         .doOnSuccess(
             updatedUser ->
                 LOG.info(
-                    "✅ [USER ADMIN] User {} process completed successfully for identifier: {}",
+                    "✅ {} User {} process completed successfully for identifier: {}",
+                    USER_ADMIN_LOG,
                     block ? "lock" : "unlock",
                     identifier));
   }
@@ -346,9 +347,23 @@ public class UserAdminService {
         .flatMap(
             targetUser ->
                 Mono.<Void>fromRunnable(
-                        () ->
-                            userService.deleteUserByIdentifier(
-                                targetUser.getIdentifier(), bearer, exchange))
+                        () -> {
+                          if (permissionRoleManager.isAdminUser(targetUser.getUsername())) {
+                            LOG.error(
+                                "❌ Forbidden: User cannot delete the admin user {}", identifier);
+                            throw new OAuthException(
+                                ExceptionMap.ERR_OAUTH_403, "Cannot alter admin user");
+                          }
+                          if (permissionRoleManager.isCurrentUser(targetUser.getIdentifier())) {
+                            LOG.error(
+                                "❌ Forbidden: User cannot delete the current user {}", identifier);
+                            throw new OAuthException(
+                                ExceptionMap.ERR_OAUTH_403, "Cannot alter current user status");
+                          }
+
+                          userService.deleteUserByIdentifier(
+                              targetUser.getIdentifier(), bearer, exchange);
+                        })
                     .subscribeOn(Schedulers.boundedElastic()))
         .doOnSuccess(
             unused ->

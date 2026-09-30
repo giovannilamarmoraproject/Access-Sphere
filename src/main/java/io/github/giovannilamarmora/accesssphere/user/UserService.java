@@ -187,7 +187,7 @@ public class UserService {
    * @return DTO {@link User} corrispondente all'entita' salvata (con password protetta a null).
    */
   @Transactional
-  public User saveUser(User user) {
+  public Mono<User> saveUser(User user) {
     UserValidator.validateUser(user);
 
     if (userRepository.existsByUsername(user.getUsername())) {
@@ -226,7 +226,7 @@ public class UserService {
         UserClientRoleMapper.mergeUserClientRoles(savedRoles, userClientRoles);
     userSaved.setRoles(mergedRoles);
     // TODO: Da sviluppare il Webhook per il Salvataggio
-    return userSaved;
+    return Mono.justOrEmpty(userSaved);
   }
 
   /**
@@ -284,6 +284,56 @@ public class UserService {
     user.setRoles(rolesByUser.getOrDefault(user.getIdentifier(), List.of()));
 
     return Mono.just(user);
+  }
+
+  /**
+   * Aggiorna i dati di un utente nel database locale, gestendo opzionalmente la cifratura e
+   * l'aggiornamento della password con validazione tramite regex.
+   *
+   * @param userToUpdate DTO contenente i nuovi valori dei campi.
+   * @return Mono contenente il DTO {@link User} aggiornato e persistito.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<User> updateUser(String identifier, User userToUpdate) {
+    LOG.info("👤 Updating user in database, identifier: {}", identifier);
+
+    Optional<User> existingUser = userRepository.findUserByIdentifier(identifier);
+
+    if (existingUser.isEmpty()) {
+      LOG.error("❌ The User with identifier {} already does not exist", identifier);
+      throw new OAuthException(ExceptionMap.ERR_USER_400, "Invalid user provided!");
+    }
+
+    userToUpdate.setId(existingUser.get().getId());
+
+    boolean isUpdatePassword = !ObjectToolkit.isNullOrEmpty(userToUpdate.getPassword());
+
+    if (isUpdatePassword) {
+      if (!Utilities.isCharacterAndRegexValid(
+          userToUpdate.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
+        LOG.error("❌ Invalid regex for password for user: {}", userToUpdate.getUsername());
+        throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
+      }
+      userToUpdate.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
+    }
+
+    User userUpdated = userRepository.saveAndFlush(userToUpdate);
+
+    List<UserClientRole> userRoles = userToUpdate.getRoles();
+    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
+
+    List<UserClientRole> userClientRoles =
+        enrichRoles(userRoles, optionalRoleDefinitions.orElse(List.of()));
+
+    List<UserClientRole> savedRoles = userClientRoleRepository.saveAll(userClientRoles, identifier);
+
+    // Unione di tutti i campi presenti tra userClientRoles (arricchiti con tipologia, descrizione e
+    // permessi)
+    // e savedRoles (persistiti con id relazionale, date di audit e identificatore utente)
+    List<UserClientRole> mergedRoles =
+        UserClientRoleMapper.mergeUserClientRoles(savedRoles, userClientRoles);
+    userUpdated.setRoles(mergedRoles);
+    return Mono.justOrEmpty(userUpdated);
   }
 
   /**
@@ -448,17 +498,6 @@ public class UserService {
   }
 
   /**
-   * Aggiorna un utente nel database locale senza modificare la password.
-   *
-   * @param userToUpdate DTO dell'utente con i campi aggiornati.
-   * @return Mono contenente il DTO {@link User} aggiornato.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(String identifier, User userToUpdate) {
-    return updateUser(identifier, userToUpdate, false);
-  }
-
-  /**
    * Aggiorna i dati di un utente nel database locale, gestendo opzionalmente la cifratura e
    * l'aggiornamento della password con validazione tramite regex.
    *
@@ -489,7 +528,7 @@ public class UserService {
     UserValidator.validateUser(userFind);
     setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
     User user = UserMapper.toModel(userFind);
-    return Mono.just(saveUser(user));
+    return saveUser(user);
   }
 
   private void setDataBeforeUpdate(

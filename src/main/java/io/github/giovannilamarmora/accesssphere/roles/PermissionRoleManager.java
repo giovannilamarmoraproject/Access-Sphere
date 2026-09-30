@@ -189,4 +189,14 @@ public class PermissionRoleManager extends AdminUserConfig {
     return adminClientId.equalsIgnoreCase(oAuth2Authorization.getClientId())
         && hasAdminOrRequiredPermission;
   }
+
+  public boolean isAdminUser(String username) {
+    LOG.info("🔐 Check if user: {} is the admin user", username);
+    return adminUsername.equalsIgnoreCase(username);
+  }
+
+  public boolean isCurrentUser(String identifier) {
+    LOG.info("🔐 Check if the action to perform for user: {} is the current user", identifier);
+    return oAuth2Authorization.getIdentifier().equalsIgnoreCase(identifier);
+  }
 }
