@@ -174,29 +174,27 @@ public class UserService {
   }
 
   /**
-   * Aggiorna i dati di un utente nel database locale, gestendo opzionalmente la cifratura e
-   * l'aggiornamento della password con validazione tramite regex.
+   * Aggiorna un utente quando l'entità persistita è già stata precedentemente recuperata (ad
+   * esempio da UserAccountService o UserAdminService per controlli di sicurezza/scoping), azzerando
+   * le query duplicate di lookup.
    *
-   * @param userToUpdate DTO contenente i nuovi valori dei campi.
-   * @return Mono contenente il DTO {@link User} aggiornato e persistito.
+   * @param existingUser Utente attualmente persistito a database.
+   * @param userToUpdate DTO con i nuovi campi da aggiornare.
+   * @return Mono con l'utente aggiornato e persistito.
    */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(String identifier, User userToUpdate) {
-    LOG.info("👤 Updating user in database, identifier: {}", identifier);
-
-    Optional<User> existingUser = userRepository.findUserByIdentifier(identifier);
-
-    if (existingUser.isEmpty()) {
-      LOG.error("❌ The User with identifier {} already does not exist", identifier);
+  public Mono<User> updateUser(User existingUser, User userToUpdate) {
+    if (existingUser == null || userToUpdate == null) {
       throw new OAuthException(ExceptionMap.ERR_USER_400, "Invalid user provided!");
     }
+    LOG.info("👤 Updating user in database, identifier: {}", existingUser.getIdentifier());
 
-    userToUpdate.setId(existingUser.get().getId());
+    userToUpdate.setId(existingUser.getId());
 
     boolean isUpdatePassword =
         !ObjectToolkit.isNullOrEmpty(userToUpdate.getPassword())
-            && !userToUpdate.getPassword().equals(existingUser.get().getPassword());
+            && !userToUpdate.getPassword().equals(existingUser.getPassword());
 
     if (isUpdatePassword) {
       if (!Utilities.isCharacterAndRegexValid(
@@ -206,7 +204,7 @@ public class UserService {
       }
       userToUpdate.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
     } else {
-      userToUpdate.setPassword(existingUser.get().getPassword());
+      userToUpdate.setPassword(existingUser.getPassword());
     }
 
     User userUpdated = userRepository.saveAndFlush(userToUpdate);
@@ -216,6 +214,21 @@ public class UserService {
       userUpdated.setRoles(userRoleDomainService.getUserRoles(userUpdated.getIdentifier()));
     }
     return Mono.justOrEmpty(userUpdated);
+  }
+
+  /** Aggiorna un utente ricercandolo preventivamente per identificatore. */
+  @Transactional
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<User> updateUser(String identifier, User userToUpdate) {
+    LOG.info("👤 Checking and updating user in database, identifier: {}", identifier);
+
+    Optional<User> existingUser = userRepository.findUserByIdentifier(identifier);
+    if (existingUser.isEmpty()) {
+      LOG.error("❌ The User with identifier {} does not exist", identifier);
+      throw new OAuthException(ExceptionMap.ERR_USER_400, "Invalid user provided!");
+    }
+
+    return updateUser(existingUser.get(), userToUpdate);
   }
 
   /**

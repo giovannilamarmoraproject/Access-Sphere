@@ -4,7 +4,6 @@ import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderServi
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
-import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.email.EmailTemplateService;
@@ -17,10 +16,7 @@ import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
-import io.github.giovannilamarmora.accesssphere.user.UserException;
-import io.github.giovannilamarmora.accesssphere.user.UserMapper;
-import io.github.giovannilamarmora.accesssphere.user.UserService;
-import io.github.giovannilamarmora.accesssphere.user.UserValidator;
+import io.github.giovannilamarmora.accesssphere.user.*;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserUpdateRequest;
 import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
@@ -73,9 +69,6 @@ public class UserAccountService {
   private static final Logger LOG = LoggerFilter.getLogger(UserAccountService.class);
   private static final String USER_ACCOUNT_LOG = "User Account";
 
-  @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
-  @Autowired private TokenService tokenService;
-  @Autowired private AdminUserService techUserService;
   @Autowired private EmailTemplateService emailTemplateService;
   @Autowired private EmailSenderService emailSenderService;
   @Autowired private UserService userService;
@@ -159,7 +152,7 @@ public class UserAccountService {
                       permissionRoleManager.checkPermissionAndReturnUserRoles(
                           SystemPermission.USERS_WRITE);
 
-                  boolean sameClient = hasMatchingClient(targetUser, authorizedRoles);
+                  boolean sameClient = UserUtils.hasMatchingClient(targetUser, authorizedRoles);
                   if (!sameClient) {
                     LOG.error(
                         "⛔ {} Access denied: Operator {} and target user {} do not belong to the same client with USERS_WRITE permission",
@@ -177,7 +170,7 @@ public class UserAccountService {
               // Preserva credenziali, ruoli e configurazioni sensibili tramite il mapper
               User finalUserToUpdate = UserMapper.updateUser(targetUser, userToUpdate);
 
-              return userService.updateUser(identifier, finalUserToUpdate);
+              return userService.updateUser(targetUser, finalUserToUpdate);
             })
         .map(UserMapper::toResponse)
         .doOnSuccess(
@@ -187,36 +180,6 @@ public class UserAccountService {
                     USER_ACCOUNT_LOG,
                     updatedUser.getUsername(),
                     identifier));
-  }
-
-  /**
-   * Verifica se l'utente target appartiene ad almeno uno dei Client OAuth2 per cui l'operatore
-   * possiede ruoli con il permesso richiesto.
-   *
-   * @param targetUser Utente target recuperato dal database con i rispettivi ruoli assegnati.
-   * @param authorizedRoles Ruoli dell'operatore che concedono il permesso richiesto.
-   * @return true se targetUser possiede almeno un ruolo associato a uno dei client autorizzati
-   *     dell'operatore, false altrimenti.
-   */
-  private boolean hasMatchingClient(User targetUser, List<RoleDefinition> authorizedRoles) {
-    if (ObjectToolkit.isNullOrEmpty(targetUser)
-        || ObjectToolkit.isNullOrEmpty(targetUser.getRoles())
-        || ObjectToolkit.isNullOrEmpty(authorizedRoles)) {
-      return false;
-    }
-
-    return targetUser.getRoles().stream()
-        .anyMatch(
-            userRole ->
-                authorizedRoles.stream()
-                    .anyMatch(
-                        correctRole ->
-                            !ObjectToolkit.isNullOrEmpty(userRole.getClientId())
-                                && !ObjectToolkit.isNullOrEmpty(correctRole.getClientId())
-                                && correctRole
-                                    .getClientId()
-                                    .trim()
-                                    .equalsIgnoreCase(userRole.getClientId().trim())));
   }
 
   /**
