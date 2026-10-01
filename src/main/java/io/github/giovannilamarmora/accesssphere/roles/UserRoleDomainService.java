@@ -84,7 +84,7 @@ public class UserRoleDomainService {
                           userClientRole.getClientId(), userClientRole.getRole());
                   RoleDefinition roleDef = roleDefMap.get(key);
 
-                  if (roleDef != null) {
+                  if (ObjectToolkit.isNullOrEmpty(roleDef)) {
                     UserClientRole dto =
                         UserClientRoleMapper.toUserClientModel(roleDef, userIdentifier);
                     dto.setId(userClientRole.getId());
@@ -242,6 +242,7 @@ public class UserRoleDomainService {
     UserClientRole toSave = new UserClientRole(userIdentifier, normClientId, normRole);
     UserClientRole saved = userClientRoleRepository.save(toSave, userIdentifier);
 
+    if (ObjectToolkit.isNullOrEmpty(roleDef)) return saved;
     // 4. Arricchisce il ruolo salvato con tipo e permessi
     UserClientRole enriched = UserClientRoleMapper.toUserClientModel(roleDef, userIdentifier);
     enriched.setId(saved.getId());

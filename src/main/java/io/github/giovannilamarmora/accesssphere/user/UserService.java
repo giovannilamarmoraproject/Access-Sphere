@@ -439,6 +439,7 @@ public class UserService {
 
               LOG.debug(
                   "🔍 Enriched role {} for client {}", roleDef.getRole(), roleDef.getClientId());
+              if (ObjectToolkit.isNullOrEmpty(roleDef)) return userClientRole;
               return UserClientRoleMapper.toUserClientModel(
                   roleDef, userClientRole.getUserIdentifier());
             })

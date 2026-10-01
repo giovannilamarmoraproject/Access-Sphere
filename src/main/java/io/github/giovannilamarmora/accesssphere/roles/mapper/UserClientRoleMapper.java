@@ -76,7 +76,6 @@ public class UserClientRoleMapper {
   }
 
   public static UserClientRole toUserClientModel(RoleDefinition roleDefinition, String identifier) {
-    if (ObjectToolkit.isNullOrEmpty(roleDefinition)) return null;
     UserClientRole userClientRole = new UserClientRole();
     BeanUtils.copyProperties(roleDefinition, userClientRole, "id", "creationDate", "updateDate");
     userClientRole.setUserIdentifier(identifier);

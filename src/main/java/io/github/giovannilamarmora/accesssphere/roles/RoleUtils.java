@@ -144,6 +144,7 @@ public final class RoleUtils {
             userClientRole -> {
               String key = buildRoleKey(userClientRole.getClientId(), userClientRole.getRole());
               RoleDefinition roleDef = roleDefMap.get(key);
+              if (ObjectToolkit.isNullOrEmpty(roleDef)) return userClientRole;
               String targetIdentifier =
                   !ObjectToolkit.isNullOrEmpty(userClientRole.getUserIdentifier())
                       ? userClientRole.getUserIdentifier()
