@@ -1,15 +1,12 @@
 package io.github.giovannilamarmora.accesssphere.data.tech;
 
-import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
-import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 @Service
 public class AdminUserService extends AdminUserConfig {
@@ -97,31 +94,5 @@ public class AdminUserService extends AdminUserConfig {
     }
 
     return false;
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<Boolean> hasTechUserRoles(
-      OAuth2Authorization oAuth2Authorization,
-      OAuth2ClientDomainService oAuth2ClientDomainService) {
-    if (oAuth2Authorization.getSubjectType().equals(SubjectType.TECHNICAL)) {
-      logTechRole(oAuth2Authorization.getSubject());
-      return Mono.just(true);
-    }
-    return oAuth2ClientDomainService
-        .getOAuth2ClientByClientID(adminClientId)
-        .map(
-            clientCredential ->
-                clientCredential.getAppRoles().stream()
-                    .map(RoleDefinition::getRole)
-                    .anyMatch(oAuth2Authorization.getRoles()::contains))
-        .doOnSuccess(
-            aBoolean -> {
-              if (aBoolean) logTechRole(oAuth2Authorization.getSubject());
-            });
-  }
-
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  private void logTechRole(String subject) {
-    LOG.info("TECH_ROLE_LOG", subject);
   }
 }
