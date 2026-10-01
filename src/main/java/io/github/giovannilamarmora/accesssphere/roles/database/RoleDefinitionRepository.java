@@ -44,6 +44,20 @@ public class RoleDefinitionRepository {
     return Optional.of(RoleDefinitionMapper.entitiesToModelList(getEntityList));
   }
 
+  public Optional<RoleDefinition> findByClientIdAndRole(String clientId, String role) {
+    LOG.debug("🔐 Getting Role Definition for client ID {} and role {}", clientId, role);
+    Optional<RoleDefinitionEntity> getEntity =
+        roleDefinitionDAO.findByClientIdAndRole(clientId, role);
+
+    if (getEntity.isEmpty()) {
+      LOG.warn("⚖️ Role Definition for client {} and role {} not found", clientId, role);
+      return Optional.empty();
+    }
+
+    LOG.debug("⚖️ Found Role Definition for client {} and role {}", clientId, role);
+    return Optional.of(RoleDefinitionMapper.toModel(getEntity.get()));
+  }
+
   public Boolean existsByClientIdAndRole(String clientId, String role) {
     LOG.debug("🔐 Checking if role {} exist with client ID {}", role, clientId);
     return roleDefinitionDAO.existsByClientIdAndRole(clientId, role);
