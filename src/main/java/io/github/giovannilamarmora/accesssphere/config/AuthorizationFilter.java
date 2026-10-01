@@ -1,9 +1,10 @@
 package io.github.giovannilamarmora.accesssphere.config;
 
-import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.data.tech.TechnicalException;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionHandler;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
+import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.utils.web.WebManager;
 import java.util.List;
@@ -29,7 +30,8 @@ public class AuthorizationFilter implements WebFilter {
   @Value(value = "${filter.authorization.shouldFilter}")
   private List<String> shouldFilter;
 
-  @Autowired private AdminUserService techUserService;
+  @Autowired public OAuth2Authorization oAuth2Authorization;
+  @Autowired private PermissionRoleManager permissionRoleManager;
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -42,7 +44,7 @@ public class AuthorizationFilter implements WebFilter {
         exchange.getRequest().getPath().value(),
         exchange.getRequest().getMethod());
 
-    if (techUserService.isTechUser()) {
+    if (permissionRoleManager.isAdminUser(oAuth2Authorization.getSubject())) {
       LOG.error("The subject type {} cannot make this request", SubjectType.TECHNICAL);
       return ExceptionHandler.handleFilterException(
           new TechnicalException(ExceptionMap.ERR_TECH_403, ExceptionMap.ERR_TECH_403.getMessage()),

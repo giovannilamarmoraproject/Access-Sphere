@@ -54,7 +54,6 @@ public class UserMapper {
    * @return Il DTO {@link User} popolato per i layer di servizio e controller.
    */
   public static User toModel(UserEntity userEntity) {
-    if (ObjectToolkit.isNullOrEmpty(userEntity)) return null;
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
 

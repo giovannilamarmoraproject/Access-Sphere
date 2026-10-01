@@ -3,10 +3,6 @@ package io.github.giovannilamarmora.accesssphere.user;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.UserRoleDomainService;
-import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
-import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
-import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.user.database.UserRepository;
@@ -56,8 +52,6 @@ public class UserService {
   private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
   @Autowired private IUserDAO userDAO;
-  @Autowired private IUserClientRoleDAO userClientRoleDAO;
-  @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private UserRepository userRepository;
   @Autowired private UserRoleDomainService userRoleDomainService;
   @Autowired private WebhookService webhookService;
@@ -262,7 +256,9 @@ public class UserService {
     UserEntity userEntity = userDAO.findUserEntityByTokenReset(tokenReset);
     UserValidator.validateUser(userEntity);
     UserValidator.validateResetToken(userEntity.getUpdateDate());
-    return Mono.just(enrichUser(UserMapper.toModel(userEntity)));
+    User user = UserMapper.toModel(userEntity);
+    user.setRoles(userRoleDomainService.getUserRoles(user.getIdentifier()));
+    return Mono.just(user);
   }
 
   /**
@@ -294,91 +290,8 @@ public class UserService {
 
     User userDTO = UserMapper.toModel(userEntity);
     userDTO.setPassword(null);
-    enrichUser(userDTO);
+    userDTO.setRoles(userRoleDomainService.getUserRoles(userDTO.getIdentifier()));
     LOG.debug("✅ Credentials successfully validated for user: {}", userDTO.getUsername());
     return Mono.just(userDTO);
-  }
-
-  /**
-   * Aggiorna i dati di un utente nel database locale, gestendo opzionalmente la cifratura e
-   * l'aggiornamento della password con validazione tramite regex.
-   *
-   * @param userToUpdate DTO contenente i nuovi valori dei campi.
-   * @param isUpdatePassword Flag che indica se procedere all'aggiornamento della password.
-   * @return Mono contenente il DTO {@link User} aggiornato e persistito.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<User> updateUser(String identifier, User userToUpdate, boolean isUpdatePassword) {
-    LOG.info(
-        "👤 Updating user in database, identifier: {}, updatePassword: {}",
-        identifier,
-        isUpdatePassword);
-    UserEntity userEntity = UserMapper.toEntity(userToUpdate);
-
-    if (isUpdatePassword) {
-      if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isBlank()) {
-        if (!Utilities.isCharacterAndRegexValid(
-            userToUpdate.getPassword(), RegEx.PASSWORD_FULL.getValue())) {
-          LOG.error("❌ Invalid regex for password for user: {}", userToUpdate.getUsername());
-          throw new UserException(ExceptionMap.ERR_USER_400, "Invalid password pattern!");
-        }
-        userEntity.setPassword(bCryptPasswordEncoder.encode(userToUpdate.getPassword()));
-      }
-    }
-
-    UserEntity userFind = userDAO.findUserEntityByIdentifier(identifier);
-    UserValidator.validateUser(userFind);
-    setDataBeforeUpdate(userEntity, userFind, isUpdatePassword);
-    User user = UserMapper.toModel(userFind);
-    return saveUser(user);
-  }
-
-  private void setDataBeforeUpdate(
-      UserEntity userEntity, UserEntity userFind, boolean isUpdatePassword) {
-    if (ObjectToolkit.isNullOrEmpty(userFind)) return;
-    if (!ObjectToolkit.isNullOrEmpty(userFind.getId())) userEntity.setId(userFind.getId());
-    userEntity.setIdentifier(userFind.getIdentifier());
-    if (!isUpdatePassword) userEntity.setPassword(userFind.getPassword());
-    if (ObjectToolkit.isNullOrEmpty(userEntity.getMfaSettings())) {
-      userEntity.setMfaSettings(userFind.getMfaSettings());
-    }
-    if (ObjectToolkit.isNullOrEmpty(userEntity.getTokenReset())) {
-      userEntity.setTokenReset(userFind.getTokenReset());
-    }
-  }
-
-  /**
-   * Arricchisce il DTO {@link User} con i ruoli contestualizzati per Client OAuth2 ({@link
-   * UserClientRole}) recuperati dalla tabella USER_CLIENT_ROLE, estraendo tipologia, descrizione e
-   * permessi granulari dalla tabella relazionale ROLE_DEFINITIONS (con fallback su configurazione
-   * legacy del client). Sincronizza inoltre la lista legacy flat {@code roles}.
-   *
-   * @param user Oggetto utente da arricchire.
-   * @return DTO utente arricchito.
-   */
-  public User enrichUser(User user) {
-    if (user == null || user.getIdentifier() == null) return user;
-    List<UserClientRoleEntity> ucrEntities =
-        userClientRoleDAO.findByUserIdentifier(user.getIdentifier());
-    if (ucrEntities != null && !ucrEntities.isEmpty()) {
-      List<UserClientRole> clientRoleDTOs =
-          ucrEntities.stream()
-              .map(
-                  ucr -> {
-                    UserClientRole dto = new UserClientRole(ucr.getClientId(), ucr.getRole());
-                    Optional<RoleDefinitionEntity> roleDef =
-                        roleDefinitionDAO.findByClientIdAndRole(ucr.getClientId(), ucr.getRole());
-                    if (roleDef.isPresent()) {
-                      RoleDefinitionEntity rd = roleDef.get();
-                      if (rd.getType() != null) dto.setType(rd.getType());
-                      if (rd.getDescription() != null) dto.setDescription(rd.getDescription());
-                      if (rd.getPermissions() != null) dto.setPermissions(rd.getPermissions());
-                    }
-                    return dto;
-                  })
-              .toList();
-      user.setRoles(clientRoleDTOs);
-    }
-    return user;
   }
 }

@@ -290,7 +290,7 @@ public class UserAccountService {
             user -> {
               user.setPassword(finalPassword);
               user.setTokenReset(null);
-              return userService.updateUser(user.getIdentifier(), user, true);
+              return userService.updateUser(user.getIdentifier(), user);
             })
         .doOnSuccess(
             user ->

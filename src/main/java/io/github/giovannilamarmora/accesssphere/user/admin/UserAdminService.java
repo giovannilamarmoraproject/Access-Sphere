@@ -69,18 +69,6 @@ public class UserAdminService {
   /**
    * Recupera la lista degli utenti registrati nel sistema IAM.
    *
-   * <p>Interconnessioni logiche:
-   *
-   * <ul>
-   *   <li>Se l'operatore autenticato e' l'utente tecnico ({@link AdminUserService#isTechUser()}),
-   *       valida i ruoli tecnici su {@link OAuth2ClientService} e restituisce l'elenco completo di
-   *       tutti gli utenti da {@link UserService}.
-   *   <li>Se l'operatore autenticato e' un utente normale/amministratore delegato, restituisce
-   *       l'elenco filtrato escludendo l'utenza tecnica di sistema ({@link
-   *       AdminUserService#isTechnicalUser(User)}), garantendone l'invisibilita' e la protezione da
-   *       manomissioni o lockout accidentali.
-   * </ul>
-   *
    * @param bearer Token di autorizzazione opzionale dell'operatore per recupero contesto.
    * @return Mono contenente la lista dei DTO {@link User} scoped in base all'identita'
    *     dell'operatore.
@@ -248,18 +236,6 @@ public class UserAdminService {
   /**
    * Blocca o sblocca lo stato di accesso di un utente.
    *
-   * <p>Interconnessioni logiche:
-   *
-   * <ul>
-   *   <li>Risolve l'utente target da {@link UserService#getUserByIdentifier(String)}.
-   *   <li>Verifica tramite {@link AdminUserService#isTechnicalUser(User)} che un utente non tecnico
-   *       non possa mai bloccare o sbloccare l'utenza tecnica di sistema (genera {@link
-   *       ExceptionMap#ERR_TECH_403}).
-   *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link
-   *       TechUserValidator#validateTechRoles}.
-   *   <li>Aggiorna lo stato sul database tramite {@link UserService#updateUser(String, User)}.
-   * </ul>
-   *
    * @param identifier UUID univoco dell'utente da bloccare o sbloccare.
    * @param block True per bloccare l'accesso, false per sbloccarlo.
    * @return Mono contenente il DTO {@link User} aggiornato con il nuovo stato.
@@ -309,16 +285,6 @@ public class UserAdminService {
 
   /**
    * Cancella definitivamente un utente dal sistema IAM ed esegue il webhook associato.
-   *
-   * <p>Interconnessioni logiche:
-   *
-   * <ul>
-   *   <li>Risolve l'utente target da {@link UserService#getUserByIdentifier(String)}.
-   *   <li>Impedisce tassativamente l'eliminazione dell'utenza tecnica di sistema ({@link
-   *       AdminUserService#isTechnicalUser(User)}), restituendo {@link ExceptionMap#ERR_TECH_403}.
-   *   <li>Se l'operatore e' tecnico, valida i ruoli con {@link
-   *       TechUserValidator#validateTechRoles}.
-   * </ul>
    *
    * @param identifier UUID univoco dell'utente da cancellare.
    * @param bearer Token di autorizzazione del chiamante.

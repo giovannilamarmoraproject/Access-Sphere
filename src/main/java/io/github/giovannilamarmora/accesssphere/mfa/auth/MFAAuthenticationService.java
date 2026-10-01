@@ -225,7 +225,7 @@ public class MFAAuthenticationService {
               user.setMfaSettings(mfaSetting);
 
               return userService
-                  .updateUser(identifier, user, false)
+                  .updateUser(identifier, user)
                   .map(user1 -> ResponseEntity.ok(response));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA ENABLE] - Process ended for user '{}'", identifier));
@@ -255,7 +255,7 @@ public class MFAAuthenticationService {
               user.setMfaSettings(mfaSetting);
 
               return userService
-                  .updateUser(identifier, user, false)
+                  .updateUser(identifier, user)
                   .map(user1 -> ResponseEntity.ok(response));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA DISABLE] - Process ended for user '{}'", identifier));
