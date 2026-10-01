@@ -57,8 +57,6 @@ public class UserMapper {
     if (ObjectToolkit.isNullOrEmpty(userEntity)) return null;
     User user = new User();
     BeanUtils.copyProperties(userEntity, user);
-    user.setId(null);
-    user.setPassword(null);
 
     if (!ObjectToolkit.isNullOrEmpty(userEntity.getAttributes()))
       user.setAttributes(Mapper.readObject(userEntity.getAttributes(), new TypeReference<>() {}));
@@ -104,19 +102,33 @@ public class UserMapper {
   }
 
   /**
-   * Aggiorna lo stato di un'entità esistente {@link UserEntity} con i nuovi valori presenti nel DTO
-   * {@link User}. Mantiene invariati i dati strutturali o di audit e serializza opportunamente
-   * attributi e impostazioni MFA.
+   * Aggiorna il modello {@link User} da persistere preservando i campi critici, di sicurezza e di
+   * audit dell'utente esistente (username, password, credenziali, ruoli, stato account, token reset
+   * e MFA).
    *
-   * @param existingUser Entità persistita esistente da aggiornare.
-   * @param userToUpdate DTO contenente i valori aggiornati forniti dall'utente o dal sistema.
+   * @param existingUser Utente persistito esistente recuperato dal database.
+   * @param userToUpdate Modello contenente i valori anagrafici aggiornati.
+   * @return Il modello {@link User} con i dati anagrafici aggiornati e i campi di sicurezza
+   *     preservati.
    */
   public static User updateUser(User existingUser, User userToUpdate) {
+    userToUpdate.setId(existingUser.getId());
+    userToUpdate.setIdentifier(existingUser.getIdentifier());
     userToUpdate.setUsername(existingUser.getUsername());
     userToUpdate.setPassword(existingUser.getPassword());
     userToUpdate.setConfirmed(existingUser.getConfirmed());
     userToUpdate.setBlocked(existingUser.getBlocked());
     userToUpdate.setRoles(existingUser.getRoles());
+    userToUpdate.setTokenReset(existingUser.getTokenReset());
+
+    if (ObjectToolkit.isNullOrEmpty(userToUpdate.getAttributes())) {
+      userToUpdate.setAttributes(existingUser.getAttributes());
+    }
+
+    if (ObjectToolkit.isNullOrEmpty(userToUpdate.getMfaSettings())) {
+      userToUpdate.setMfaSettings(existingUser.getMfaSettings());
+    }
+
     return userToUpdate;
   }
 }

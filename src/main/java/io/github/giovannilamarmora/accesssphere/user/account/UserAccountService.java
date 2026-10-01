@@ -138,13 +138,7 @@ public class UserAccountService {
               boolean isAdmin =
                   permissionRoleManager.hasAdminPermission(SystemPermission.USERS_WRITE);
 
-              if (isAdmin) {
-                // Utente Admin: puo aggiornare qualsiasi utente senza vincoli di perimetro client.
-                // Se non ha specificato ruoli, preserva quelli esistenti dell'utente target.
-                if (ObjectToolkit.isNullOrEmpty(userToUpdate.getRoles())) {
-                  userToUpdate.setRoles(targetUser.getRoles());
-                }
-              } else {
+              if (!isAdmin) {
                 // Utente Non-Admin: non puo mai modificare l'utenza Admin di sistema
                 if (permissionRoleManager.isAdminUser(targetUser.getUsername())) {
                   LOG.error(
@@ -157,11 +151,7 @@ public class UserAccountService {
 
                 boolean isSelf = permissionRoleManager.isCurrentUser(targetUser.getIdentifier());
 
-                if (isSelf) {
-                  // Utente che modifica il proprio profilo (self-service):
-                  // puo modificare i propri dati anagrafici, ma non puo alterare i propri ruoli.
-                  userToUpdate.setRoles(targetUser.getRoles());
-                } else {
+                if (!isSelf) {
                   // Utente 1 che vuole modificare Utente 2:
                   // puo farlo se e solo se ha il permesso USERS_WRITE e se entrambi appartengono
                   // allo stesso client.
@@ -181,15 +171,13 @@ public class UserAccountService {
                             ExceptionMap.ERR_OAUTH_403,
                             "Forbidden: Client mismatch between operator and target user"));
                   }
-
-                  // Preserva i ruoli dell'utente target (modificabili solo tramite RolesController)
-                  userToUpdate.setRoles(targetUser.getRoles());
                 }
               }
 
-              userToUpdate = UserMapper.updateUser(targetUser, userToUpdate);
+              // Preserva credenziali, ruoli e configurazioni sensibili tramite il mapper
+              User finalUserToUpdate = UserMapper.updateUser(targetUser, userToUpdate);
 
-              return userService.updateUser(identifier, userToUpdate);
+              return userService.updateUser(identifier, finalUserToUpdate);
             })
         .map(UserMapper::toResponse)
         .doOnSuccess(

@@ -78,8 +78,8 @@ public class UserAccountControllerImpl implements UserAccountController {
   public Mono<ResponseEntity<UserResponse>> updateUser(
       String identifier, UserUpdateRequest user, String bearer, ServerHttpRequest request) {
     LOG.info(
-        "🌐 [ACCOUNT CONTROLLER] Invoking UpdateUser endpoint for username: {} and identifier: {}",
-        user.getUsername(),
+        "🌐 [ACCOUNT CONTROLLER] Invoking UpdateUser endpoint for email: {} and identifier: {}",
+        user.getEmail(),
         identifier);
     return userAccountService
         .updateUser(identifier, user, bearer, request)
