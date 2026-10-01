@@ -25,11 +25,14 @@ import org.springframework.transaction.annotation.Transactional;
  * utente contestualizzati per Client OAuth2 ({@link UserClientRole}).
  *
  * <p>Interconnessioni logiche:
+ *
  * <ul>
- *   <li>Incapsula l'accesso a {@link UserClientRoleRepository} (tabella {@code USER_CLIENT_ROLE}).</li>
- *   <li>Collabora con {@link ClientRoleDomainService} per verificare la presenza dei ruoli a catalogo ed arricchirli.</li>
- *   <li>Utilizza {@link RoleUtils} per il mapping, l'indicizzazione e la validazione DRY.</li>
- *   <li>Consumato da {@code UserService}, {@code UserAccountService} e {@code RolesService} per la gestione dei ruoli degli utenti.</li>
+ *   <li>Incapsula l'accesso a {@link UserClientRoleRepository} (tabella {@code USER_CLIENT_ROLE}).
+ *   <li>Collabora con {@link ClientRoleDomainService} per verificare la presenza dei ruoli a
+ *       catalogo ed arricchirli.
+ *   <li>Utilizza {@link RoleUtils} per il mapping, l'indicizzazione e la validazione DRY.
+ *   <li>Consumato da {@code UserService}, {@code UserAccountService} e {@code RolesService} per la
+ *       gestione dei ruoli degli utenti.
  * </ul>
  */
 @Service
@@ -44,11 +47,13 @@ public class UserRoleDomainService {
   @Autowired private ClientRoleDomainService clientRoleDomainService;
 
   /**
-   * LETTURA: Recupera ed arricchisce tutti i ruoli assegnati all'utente specificato,
-   * unendo le associazioni di {@code USER_CLIENT_ROLE} con tipo, descrizione e permessi da {@code ROLE_DEFINITIONS}.
+   * LETTURA: Recupera ed arricchisce tutti i ruoli assegnati all'utente specificato, unendo le
+   * associazioni di {@code USER_CLIENT_ROLE} con tipo, descrizione e permessi da {@code
+   * ROLE_DEFINITIONS}.
    *
    * <p>Ottimizzazione: Esegue 1 sola query per le associazioni e, se presenti, 1 query per
-   * indicizzare le definizioni in memoria con lookup O(1) via {@link RoleUtils}, azzerando le query N+1.
+   * indicizzare le definizioni in memoria con lookup O(1) via {@link RoleUtils}, azzerando le query
+   * N+1.
    *
    * @param userIdentifier Identificatore univoco UUID dell'utente.
    * @return Lista di {@link UserClientRole} arricchita, o lista vuota se nessun ruolo è presente.
@@ -70,29 +75,35 @@ public class UserRoleDomainService {
     Map<String, RoleDefinition> roleDefMap =
         RoleUtils.buildRoleDefinitionMap(clientRoleDomainService.getAllRoleDefinitions());
 
-    return userRoles.stream()
-        .map(
-            ucr -> {
-              String key = RoleUtils.buildRoleKey(ucr.getClientId(), ucr.getRole());
-              RoleDefinition roleDef = roleDefMap.get(key);
+    List<UserClientRole> enrichedRoles =
+        userRoles.stream()
+            .map(
+                userClientRole -> {
+                  String key =
+                      RoleUtils.buildRoleKey(
+                          userClientRole.getClientId(), userClientRole.getRole());
+                  RoleDefinition roleDef = roleDefMap.get(key);
 
-              if (roleDef != null) {
-                UserClientRole dto = UserClientRoleMapper.toUserClientModel(roleDef, userIdentifier);
-                dto.setId(ucr.getId());
-                return dto;
-              } else {
-                LOG.warn(
-                    "⚠️ {} RoleDefinition not found for key: [{}], preserving fallback role",
-                    USER_ROLE_DOMAIN,
-                    key);
-                return ucr;
-              }
-            })
-        .toList();
+                  if (roleDef != null) {
+                    UserClientRole dto =
+                        UserClientRoleMapper.toUserClientModel(roleDef, userIdentifier);
+                    dto.setId(userClientRole.getId());
+                    return dto;
+                  } else {
+                    LOG.warn(
+                        "⚠️ {} RoleDefinition not found for key: [{}], preserving fallback role",
+                        USER_ROLE_DOMAIN,
+                        key);
+                    return userClientRole;
+                  }
+                })
+            .toList();
+    return UserClientRoleMapper.mergeUserClientRoles(userRoles, enrichedRoles);
   }
 
   /**
-   * LETTURA PER CLIENT: Recupera ed arricchisce i ruoli associati all'utente limitatamente a uno specifico Client OAuth2.
+   * LETTURA PER CLIENT: Recupera ed arricchisce i ruoli associati all'utente limitatamente a uno
+   * specifico Client OAuth2.
    *
    * @param userIdentifier UUID univoco dell'utente.
    * @param clientId Identificatore univoco del Client OAuth2.
@@ -109,7 +120,8 @@ public class UserRoleDomainService {
   }
 
   /**
-   * SALVATAGGIO INIZIALE: Valida puntualmente e salva i ruoli per un nuovo utente (ad esempio durante {@code UserService.saveUser}).
+   * SALVATAGGIO INIZIALE: Valida puntualmente e salva i ruoli per un nuovo utente (ad esempio
+   * durante {@code UserService.saveUser}).
    *
    * @param userIdentifier UUID dell'utente creato.
    * @param roles Lista di ruoli da associare.
@@ -137,9 +149,10 @@ public class UserRoleDomainService {
   }
 
   /**
-   * AGGIORNAMENTO COMPLETO (REPLACE ATOMICO): Sostituisce atomicamente tutti i ruoli associati a un utente esistente.
-   * Valida i nuovi ruoli, pulisce le associazioni precedenti per prevenire violazioni di {@code UK_USER_CLIENT_ROLE},
-   * salva le nuove entità e restituisce i ruoli arricchiti.
+   * AGGIORNAMENTO COMPLETO (REPLACE ATOMICO): Sostituisce atomicamente tutti i ruoli associati a un
+   * utente esistente. Valida i nuovi ruoli, pulisce le associazioni precedenti per prevenire
+   * violazioni di {@code UK_USER_CLIENT_ROLE}, salva le nuove entità e restituisce i ruoli
+   * arricchiti.
    *
    * @param userIdentifier UUID univoco dell'utente da aggiornare.
    * @param newRoles Nuova lista di ruoli da assegnare all'utente.
@@ -147,7 +160,8 @@ public class UserRoleDomainService {
    */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public List<UserClientRole> updateUserRoles(String userIdentifier, List<UserClientRole> newRoles) {
+  public List<UserClientRole> updateUserRoles(
+      String userIdentifier, List<UserClientRole> newRoles) {
     if (ObjectToolkit.isNullOrEmpty(userIdentifier)) {
       LOG.error("❌ {} Cannot update roles: userIdentifier is missing", USER_ROLE_DOMAIN);
       throw new OAuthException(ExceptionMap.ERR_USER_400, "User identifier is required!");
@@ -181,7 +195,8 @@ public class UserRoleDomainService {
   }
 
   /**
-   * AGGIORNAMENTO GRANULARE PER CLIENT: Aggiorna o sostituisce il ruolo dell'utente limitatamente a uno specifico Client OAuth2.
+   * AGGIORNAMENTO GRANULARE PER CLIENT: Aggiorna o sostituisce il ruolo dell'utente limitatamente a
+   * uno specifico Client OAuth2.
    *
    * @param userIdentifier UUID univoco dell'utente.
    * @param clientId Identificatore del Client OAuth2 target.
@@ -202,7 +217,8 @@ public class UserRoleDomainService {
     String normClientId = clientId.trim().toUpperCase();
     String normRole = newRole.trim().toUpperCase();
 
-    // 1. Verifica che il ruolo sia censito nel catalogo per quel client delegando a ClientRoleDomainService
+    // 1. Verifica che il ruolo sia censito nel catalogo per quel client delegando a
+    // ClientRoleDomainService
     RoleDefinition roleDef =
         clientRoleDomainService
             .getRoleDefinition(normClientId, normRole)
@@ -233,7 +249,8 @@ public class UserRoleDomainService {
   }
 
   /**
-   * CANCELLAZIONE TOTALE: Rimuove fisicamente tutte le associazioni di ruoli dell'utente (usato durante {@code deleteUser}).
+   * CANCELLAZIONE TOTALE: Rimuove fisicamente tutte le associazioni di ruoli dell'utente (usato
+   * durante {@code deleteUser}).
    *
    * @param userIdentifier UUID dell'utente.
    */
@@ -254,7 +271,8 @@ public class UserRoleDomainService {
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteUserRoleForClient(String userIdentifier, String clientId) {
-    if (ObjectToolkit.isNullOrEmpty(userIdentifier) || ObjectToolkit.isNullOrEmpty(clientId)) return;
+    if (ObjectToolkit.isNullOrEmpty(userIdentifier) || ObjectToolkit.isNullOrEmpty(clientId))
+      return;
     LOG.info(
         "🗑️ {} Deleting role for user identifier: {} and client: {}",
         USER_ROLE_DOMAIN,

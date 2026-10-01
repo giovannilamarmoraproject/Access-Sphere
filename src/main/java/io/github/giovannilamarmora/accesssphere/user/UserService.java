@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.user;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
+import io.github.giovannilamarmora.accesssphere.roles.UserRoleDomainService;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.RoleDefinitionRepository;
@@ -64,6 +65,7 @@ public class UserService {
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private UserRepository userRepository;
+  @Autowired private UserRoleDomainService userRoleDomainService;
   @Autowired private UserClientRoleRepository userClientRoleRepository;
   @Autowired private RoleDefinitionRepository roleDefinitionRepository;
   @Autowired private WebhookService webhookService;
