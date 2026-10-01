@@ -1,17 +1,12 @@
 package io.github.giovannilamarmora.accesssphere.user;
 
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.UserRoleDomainService;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.database.RoleDefinitionRepository;
-import io.github.giovannilamarmora.accesssphere.roles.database.UserClientRoleRepository;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
-import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
-import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.user.database.UserRepository;
@@ -27,7 +22,6 @@ import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import io.github.giovannilamarmora.utils.utilities.Utilities;
 import java.util.*;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +60,6 @@ public class UserService {
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private UserRepository userRepository;
   @Autowired private UserRoleDomainService userRoleDomainService;
-  @Autowired private UserClientRoleRepository userClientRoleRepository;
-  @Autowired private RoleDefinitionRepository roleDefinitionRepository;
   @Autowired private WebhookService webhookService;
 
   /**
@@ -93,11 +85,8 @@ public class UserService {
   }
 
   /**
-   * Recupera la lista completa di tutti gli utenti registrati nel database locale. Converte
-   * l'elenco delle entita' persistite nel corrispondente elenco di DTO {@link User} e ne
-   * arricchisce massivamente i ruoli associati interrogando {@link UserClientRoleRepository} e
-   * {@link RoleDefinitionRepository} in batch, raggruppando per {@code userIdentifier} per
-   * eliminare le query N+1.
+   * Recupera la lista completa di tutti gli utenti registrati nel database locale, delegando
+   * l'arricchimento batch dei ruoli a {@link UserRoleDomainService}.
    *
    * @return Mono contenente la lista di {@link User} arricchita con i ruoli client-scoped.
    */
@@ -111,46 +100,8 @@ public class UserService {
       LOG.error("❌ Users not found into database");
       throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
     }
-    List<User> users = optionalUsers.get();
 
-    // Recupero massivo di tutti i ruoli client-scoped associati agli utenti
-    Optional<List<UserClientRole>> optionalUserClientRoles = userClientRoleRepository.findAll();
-
-    if (optionalUserClientRoles.isEmpty()) {
-      LOG.warn("🔐 No Role found");
-      return Mono.just(users);
-    }
-
-    List<UserClientRole> userClientRoles = optionalUserClientRoles.get();
-
-    // Recupero catalogo globale delle definizioni di ruolo (tipi, descrizioni, permessi)
-    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
-
-    if (optionalRoleDefinitions.isEmpty()) {
-      LOG.warn("🔐 No Role Definition found");
-    }
-
-    // Arricchimento preliminare massivo in memoria (la mappa viene creata 1 sola volta)
-    List<UserClientRole> enrichedRoles =
-        enrichRoles(userClientRoles, optionalRoleDefinitions.orElse(List.of()));
-
-    List<UserClientRole> mergedRoles =
-        UserClientRoleMapper.mergeUserClientRoles(userClientRoles, enrichedRoles);
-
-    // Raggruppamento per userIdentifier dei ruoli già arricchiti per evitare lookup iterativi
-    Map<String, List<UserClientRole>> rolesByUser =
-        mergedRoles.stream()
-            .filter(ucr -> !ObjectToolkit.isNullOrEmpty(ucr.getUserIdentifier()))
-            .collect(Collectors.groupingBy(UserClientRole::getUserIdentifier));
-
-    // Assegnazione dei rispettivi ruoli arricchiti a ciascun utente
-    users.forEach(
-        user -> {
-          if (user == null || user.getIdentifier() == null) return;
-          user.setRoles(rolesByUser.getOrDefault(user.getIdentifier(), List.of()));
-        });
-
-    return Mono.just(users);
+    return Mono.just(userRoleDomainService.enrichUserRoles(optionalUsers.get()));
   }
 
   /**
@@ -284,99 +235,6 @@ public class UserService {
 
     // TODO: Da sistemare il Webhook
     webhookService.checkAndExecuteWebhook(WebhookAction.DELETE_USER, bearer, identifier, exchange);
-  }
-
-  /**
-   * Arricchisce una lista di {@link UserClientRole} associando tipo, descrizione e permessi
-   * granulari a partire dalle definizioni di ruolo recuperate da database. Indicizza le definizioni
-   * in una mappa con chiave composita "CLIENT_ID:ROLE" in tempo costante O(1) e preserva
-   * l'identificatore utente associato al ruolo.
-   *
-   * @param userClientRoles Lista di ruoli assegnati da arricchire.
-   * @param roleDefinitions Lista di definizioni globali dei ruoli da associare.
-   * @return Lista di ruoli arricchiti con tipologia, descrizione e permessi granulari.
-   */
-  private List<UserClientRole> enrichRoles(
-      List<UserClientRole> userClientRoles, List<RoleDefinition> roleDefinitions) {
-    if (ObjectToolkit.isNullOrEmpty(userClientRoles)) return List.of();
-    if (ObjectToolkit.isNullOrEmpty(roleDefinitions)) {
-      LOG.error("❌ No role definitions provided for validation and enrichment");
-      throw new OAuthException(
-          ExceptionMap.ERR_USER_400,
-          ExceptionType.INVALID_ROLES,
-          "Role definitions are required to validate and enrich roles!");
-    }
-
-    Set<String> validClientIds = new HashSet<>(roleDefinitions.size());
-    Map<String, RoleDefinition> roleDefMap = new HashMap<>(roleDefinitions.size());
-
-    for (RoleDefinition rd : roleDefinitions) {
-      if (!ObjectToolkit.isNullOrEmpty(rd.getClientId())) {
-        validClientIds.add(rd.getClientId().trim().toUpperCase());
-      }
-      if (!ObjectToolkit.isNullOrEmpty(rd.getClientId())
-          && !ObjectToolkit.isNullOrEmpty(rd.getRole())) {
-        String key =
-            rd.getClientId().trim().toUpperCase() + ":" + rd.getRole().trim().toUpperCase();
-        roleDefMap.putIfAbsent(key, rd);
-      }
-    }
-
-    // Validazione puntuale con errori specifici
-    for (UserClientRole ucr : userClientRoles) {
-      String clientId =
-          !ObjectToolkit.isNullOrEmpty(ucr.getClientId())
-              ? ucr.getClientId().trim().toUpperCase()
-              : "";
-      String role =
-          !ObjectToolkit.isNullOrEmpty(ucr.getRole()) ? ucr.getRole().trim().toUpperCase() : "";
-
-      // 1. Verifica se il clientId esiste
-      if (!validClientIds.contains(clientId)) {
-        LOG.error(
-            "❌ Validation failed: Client ID [{}] does not exist in RoleDefinitions",
-            ucr.getClientId());
-        throw new OAuthException(
-            ExceptionMap.ERR_USER_400,
-            ExceptionType.INVALID_ROLES,
-            "Invalid Client ID: " + ucr.getClientId() + " does not exist in role definitions!");
-      }
-
-      // 2. Verifica se il ruolo esiste per quello specifico Client ID
-      String key = clientId + ":" + role;
-      if (!roleDefMap.containsKey(key)) {
-        LOG.error(
-            "❌ Validation failed: Role [{}] does not exist for Client ID [{}]",
-            ucr.getRole(),
-            ucr.getClientId());
-        throw new OAuthException(
-            ExceptionMap.ERR_USER_400,
-            ExceptionType.INVALID_ROLES,
-            "Invalid Role: "
-                + ucr.getRole()
-                + " is not configured for client "
-                + ucr.getClientId()
-                + "!");
-      }
-    }
-
-    // Mappatura ed arricchimento garantiti
-    return userClientRoles.stream()
-        .map(
-            userClientRole -> {
-              String key =
-                  userClientRole.getClientId().trim().toUpperCase()
-                      + ":"
-                      + userClientRole.getRole().trim().toUpperCase();
-              RoleDefinition roleDef = roleDefMap.get(key);
-
-              LOG.debug(
-                  "🔍 Enriched role {} for client {}", roleDef.getRole(), roleDef.getClientId());
-              if (ObjectToolkit.isNullOrEmpty(roleDef)) return userClientRole;
-              return UserClientRoleMapper.toUserClientModel(
-                  roleDef, userClientRole.getUserIdentifier());
-            })
-        .toList();
   }
 
   /**

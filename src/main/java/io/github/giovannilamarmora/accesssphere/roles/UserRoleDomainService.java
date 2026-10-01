@@ -7,6 +7,7 @@ import io.github.giovannilamarmora.accesssphere.roles.database.UserClientRoleRep
 import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -14,6 +15,7 @@ import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +101,54 @@ public class UserRoleDomainService {
                 })
             .toList();
     return UserClientRoleMapper.mergeUserClientRoles(userRoles, enrichedRoles);
+  }
+
+  /**
+   * Arricchisce massivamente una lista di utenti con i rispettivi ruoli configurati, riutilizzando
+   * i mapper esistenti per unire i metadati e raggruppando per utente.
+   *
+   * @param users Lista di utenti da arricchire.
+   * @return La stessa lista di utenti con i ruoli valorizzati.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<User> enrichUserRoles(List<User> users) {
+    if (ObjectToolkit.isNullOrEmpty(users)) {
+      return users != null ? users : List.of();
+    }
+    LOG.debug("🔍 {} Batch enriching roles for {} users", USER_ROLE_DOMAIN, users.size());
+
+    List<UserClientRole> allRoles = userClientRoleRepository.findAll().orElse(List.of());
+    if (ObjectToolkit.isNullOrEmpty(allRoles)) {
+      LOG.debug("ℹ️ {} No roles found in database for users", USER_ROLE_DOMAIN);
+      return users;
+    }
+
+    // 1. Recupera le definizioni di catalogo
+    List<RoleDefinition> definitions = clientRoleDomainService.getAllRoleDefinitions();
+
+    // 2. Converte le definizioni con il mapper
+    List<UserClientRole> enrichedDefinitions =
+        UserClientRoleMapper.toUserClientModels(definitions, null);
+
+    // 3. Fonde i dati tramite il mapper esistente (nessun setter manuale!)
+    List<UserClientRole> mergedRoles =
+        UserClientRoleMapper.mergeUserClientRoles(allRoles, enrichedDefinitions);
+
+    // 4. Raggruppa per userIdentifier
+    Map<String, List<UserClientRole>> rolesByUser =
+        mergedRoles.stream()
+            .filter(ucr -> !ObjectToolkit.isNullOrEmpty(ucr.getUserIdentifier()))
+            .collect(Collectors.groupingBy(UserClientRole::getUserIdentifier));
+
+    // 5. Assegna a ciascun utente
+    users.forEach(
+        u -> {
+          if (u != null && u.getIdentifier() != null) {
+            u.setRoles(rolesByUser.getOrDefault(u.getIdentifier(), List.of()));
+          }
+        });
+
+    return users;
   }
 
   /**
