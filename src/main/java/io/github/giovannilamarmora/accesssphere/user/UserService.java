@@ -293,6 +293,7 @@ public class UserService {
    * @param userToUpdate DTO contenente i nuovi valori dei campi.
    * @return Mono contenente il DTO {@link User} aggiornato e persistito.
    */
+  @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<User> updateUser(String identifier, User userToUpdate) {
     LOG.info("👤 Updating user in database, identifier: {}", identifier);
@@ -306,7 +307,9 @@ public class UserService {
 
     userToUpdate.setId(existingUser.get().getId());
 
-    boolean isUpdatePassword = !ObjectToolkit.isNullOrEmpty(userToUpdate.getPassword());
+    boolean isUpdatePassword =
+        !ObjectToolkit.isNullOrEmpty(userToUpdate.getPassword())
+            && !userToUpdate.getPassword().equals(existingUser.get().getPassword());
 
     if (isUpdatePassword) {
       if (!Utilities.isCharacterAndRegexValid(
@@ -320,21 +323,11 @@ public class UserService {
     }
 
     User userUpdated = userRepository.saveAndFlush(userToUpdate);
-
-    List<UserClientRole> userRoles = userToUpdate.getRoles();
-    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
-
-    List<UserClientRole> userClientRoles =
-        enrichRoles(userRoles, optionalRoleDefinitions.orElse(List.of()));
-
-    List<UserClientRole> savedRoles = userClientRoleRepository.saveAll(userClientRoles, identifier);
-
-    // Unione di tutti i campi presenti tra userClientRoles (arricchiti con tipologia, descrizione e
-    // permessi)
-    // e savedRoles (persistiti con id relazionale, date di audit e identificatore utente)
-    List<UserClientRole> mergedRoles =
-        UserClientRoleMapper.mergeUserClientRoles(savedRoles, userClientRoles);
-    userUpdated.setRoles(mergedRoles);
+    if (!ObjectToolkit.isNullOrEmpty(userToUpdate.getRoles())) {
+      userUpdated.setRoles(userToUpdate.getRoles());
+    } else {
+      enrichUser(userUpdated);
+    }
     return Mono.justOrEmpty(userUpdated);
   }
 
