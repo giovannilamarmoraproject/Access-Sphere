@@ -84,7 +84,7 @@ public class UserRoleDomainService {
                           userClientRole.getClientId(), userClientRole.getRole());
                   RoleDefinition roleDef = roleDefMap.get(key);
 
-                  if (ObjectToolkit.isNullOrEmpty(roleDef)) {
+                  if (!ObjectToolkit.isNullOrEmpty(roleDef)) {
                     UserClientRole dto =
                         UserClientRoleMapper.toUserClientModel(roleDef, userIdentifier);
                     dto.setId(userClientRole.getId());

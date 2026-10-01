@@ -88,29 +88,7 @@ public class UserService {
     }
     User user = optionalUser.get();
 
-    Optional<List<UserClientRole>> optionalUserClientRoles =
-        userClientRoleRepository.findByUserIdentifier(user.getIdentifier());
-
-    if (optionalUserClientRoles.isEmpty()) {
-      LOG.warn("🔐 No Role found for user: {}", user.getIdentifier());
-      return Mono.just(user);
-    }
-
-    List<UserClientRole> userClientRoles = optionalUserClientRoles.get();
-    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
-
-    if (optionalRoleDefinitions.isEmpty()) {
-      LOG.warn("🔐 No Role Definition found for user: {}", user.getIdentifier());
-    }
-
-    // Arricchimento dei ruoli associati all'utente con tipologia e permessi da ROLE_DEFINITIONS
-    List<UserClientRole> enrichedRoles =
-        enrichRoles(userClientRoles, optionalRoleDefinitions.orElse(List.of()));
-
-    List<UserClientRole> mergedRoles =
-        UserClientRoleMapper.mergeUserClientRoles(userClientRoles, enrichedRoles);
-    user.setRoles(mergedRoles);
-    // user.setRoles(enrichRoles(userClientRoles, optionalRoleDefinitions.orElse(List.of())));
+    user.setRoles(userRoleDomainService.getUserRoles(user.getIdentifier()));
     return Mono.just(user);
   }
 
@@ -213,20 +191,9 @@ public class UserService {
 
     User userSaved = userRepository.saveAndFlush(user);
 
-    List<UserClientRole> userRoles = user.getRoles();
-    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
-
-    List<UserClientRole> userClientRoles =
-        enrichRoles(userRoles, optionalRoleDefinitions.orElse(List.of()));
-
-    List<UserClientRole> savedRoles = userClientRoleRepository.saveAll(userClientRoles, identifier);
-
-    // Unione di tutti i campi presenti tra userClientRoles (arricchiti con tipologia, descrizione e
-    // permessi)
-    // e savedRoles (persistiti con id relazionale, date di audit e identificatore utente)
-    List<UserClientRole> mergedRoles =
-        UserClientRoleMapper.mergeUserClientRoles(savedRoles, userClientRoles);
-    userSaved.setRoles(mergedRoles);
+    List<UserClientRole> savedRoles =
+        userRoleDomainService.saveUserRoles(identifier, user.getRoles());
+    userSaved.setRoles(savedRoles);
     // TODO: Da sviluppare il Webhook per il Salvataggio
     return Mono.justOrEmpty(userSaved);
   }
@@ -251,40 +218,7 @@ public class UserService {
 
     User user = optionalUser.get();
 
-    // Recupero massivo di tutti i ruoli client-scoped associati agli utenti
-    Optional<List<UserClientRole>> optionalUserClientRoles = userClientRoleRepository.findAll();
-
-    if (optionalUserClientRoles.isEmpty()) {
-      LOG.warn("🔐 No Role found for user with identifier: {}", identifier);
-      return Mono.just(user);
-    }
-
-    List<UserClientRole> userClientRoles = optionalUserClientRoles.get();
-
-    // Recupero catalogo globale delle definizioni di ruolo (tipi, descrizioni, permessi)
-    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
-
-    if (optionalRoleDefinitions.isEmpty()) {
-      LOG.warn("🔐 No Roles Definition found");
-    }
-
-    // Arricchimento preliminare massivo in memoria (la mappa viene creata 1 sola volta)
-    List<UserClientRole> enrichedRoles =
-        enrichRoles(userClientRoles, optionalRoleDefinitions.orElse(List.of()));
-
-    List<UserClientRole> mergedRoles =
-        UserClientRoleMapper.mergeUserClientRoles(userClientRoles, enrichedRoles);
-
-    // Raggruppamento per userIdentifier dei ruoli già arricchiti per evitare lookup iterativi
-    Map<String, List<UserClientRole>> rolesByUser =
-        mergedRoles.stream()
-            .filter(
-                userClientRole -> !ObjectToolkit.isNullOrEmpty(userClientRole.getUserIdentifier()))
-            .collect(Collectors.groupingBy(UserClientRole::getUserIdentifier));
-
-    // Assegnazione dei rispettivi ruoli arricchiti a ciascun utente
-    user.setRoles(rolesByUser.getOrDefault(user.getIdentifier(), List.of()));
-
+    user.setRoles(userRoleDomainService.getUserRoles(user.getIdentifier()));
     return Mono.just(user);
   }
 
@@ -328,7 +262,7 @@ public class UserService {
     if (!ObjectToolkit.isNullOrEmpty(userToUpdate.getRoles())) {
       userUpdated.setRoles(userToUpdate.getRoles());
     } else {
-      enrichUser(userUpdated);
+      userUpdated.setRoles(userRoleDomainService.getUserRoles(userUpdated.getIdentifier()));
     }
     return Mono.justOrEmpty(userUpdated);
   }
@@ -343,8 +277,7 @@ public class UserService {
   public void deleteUserByIdentifier(String identifier, String bearer, ServerWebExchange exchange) {
     LOG.info("🗑️ Deleting user and client roles from database, identifier: {}", identifier);
 
-    userClientRoleRepository.deleteByIdentifier(identifier);
-
+    userRoleDomainService.deleteUserRoles(identifier);
     userRepository.deleteByIdentifier(identifier);
 
     LOG.info("🗑️ Deleted user and client roles from database, identifier: {}", identifier);
