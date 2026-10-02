@@ -1,13 +1,14 @@
-package io.github.giovannilamarmora.accesssphere.email;
+package io.github.giovannilamarmora.accesssphere.email.template;
 
-import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderClient;
-import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
-import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
-import io.github.giovannilamarmora.accesssphere.email.dto.EmailSendTestRequest;
-import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
-import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
-import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory;
+import io.github.giovannilamarmora.accesssphere.email.sender.EmailSender;
+import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
+import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
+import io.github.giovannilamarmora.accesssphere.email.template.database.IEmailTemplateDAO;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailSendTestRequest;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDTO;
+import io.github.giovannilamarmora.accesssphere.email.template.entity.EmailTemplateEntity;
+import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -27,7 +28,7 @@ import reactor.core.publisher.Mono;
  * Service per la gestione dei Template Email salvati a Database. Permette operazioni CRUD sui
  * template, risoluzione multilingua flessibile (supporta sia template localizzati che template
  * unici validi per tutte le lingue), rendering dinamico con sostituzione dei segnaposto e invio
- * diretto di email di test tramite EmailSenderClient.
+ * diretto di email di test tramite {@link EmailSender}.
  */
 @Service
 @Logged
@@ -37,7 +38,7 @@ public class EmailTemplateService {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
   @Autowired private IEmailTemplateDAO emailTemplateDAO;
-  @Autowired private EmailSenderClient emailSenderClient;
+  @Autowired private EmailSender emailSender;
   @Autowired private AdminUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -452,18 +453,6 @@ public class EmailTemplateService {
                   .sentDate(new Date())
                   .build();
             })
-        .flatMap(
-            emailContent ->
-                emailSenderClient
-                    .sendEmail(emailContent)
-                    .flatMap(
-                        res -> {
-                          if (res.getBody() == null) {
-                            throw new ResponseStatusException(
-                                HttpStatus.INTERNAL_SERVER_ERROR,
-                                "The emailSender microservice did not return a valid response");
-                          }
-                          return Mono.just(res.getBody());
-                        }));
+        .flatMap(emailContent -> emailSender.sendEmail(emailContent));
   }
 }

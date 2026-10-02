@@ -1,10 +1,14 @@
-package io.github.giovannilamarmora.accesssphere.api.emailSender.dto;
+package io.github.giovannilamarmora.accesssphere.email.sender.dto;
 
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 
+/**
+ * Utility per l'estrazione e associazione standard dei parametri di contesto utente
+ * ai segnaposto {{KEY}} dei template email.
+ */
 @Getter
 public enum TemplateParam {
   USER_RESET_TOKEN("USER.RESET_TOKEN");

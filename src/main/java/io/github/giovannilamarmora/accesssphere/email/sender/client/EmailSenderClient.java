@@ -1,7 +1,7 @@
-package io.github.giovannilamarmora.accesssphere.api.emailSender;
+package io.github.giovannilamarmora.accesssphere.email.sender.client;
 
-import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
-import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
+import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
+import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -12,11 +12,18 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+/**
+ * Client HTTP reattivo per l'integrazione remota con il microservizio esterno email-sender.
+ * Incapsulato all'interno del sottosistema di invio email.
+ */
 @Component
 @Logged
 public class EmailSenderClient {

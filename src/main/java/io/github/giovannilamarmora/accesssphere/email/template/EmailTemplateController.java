@@ -1,8 +1,8 @@
-package io.github.giovannilamarmora.accesssphere.email;
+package io.github.giovannilamarmora.accesssphere.email.template;
 
-import io.github.giovannilamarmora.accesssphere.email.dto.EmailSendTestRequest;
-import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
-import io.github.giovannilamarmora.accesssphere.email.model.EmailTemplateCategory;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailSendTestRequest;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDTO;
+import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -182,7 +182,7 @@ public class EmailTemplateController {
   @Operation(
       summary = "Send test email",
       description =
-          "Compiles the template with the specified parameters and sends it via EmailSenderClient")
+          "Compiles the template with the specified parameters and sends it via EmailSender")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> sendTestEmail(
       @Valid @RequestBody EmailSendTestRequest testRequest, ServerHttpRequest request) {

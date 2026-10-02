@@ -1,13 +1,11 @@
 package io.github.giovannilamarmora.accesssphere.user.account;
 
-import io.github.giovannilamarmora.accesssphere.api.emailSender.EmailSenderService;
-import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailContent;
-import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.api.emailSender.dto.TemplateParam;
-import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
-import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
-import io.github.giovannilamarmora.accesssphere.email.EmailTemplateService;
-import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
+import io.github.giovannilamarmora.accesssphere.email.sender.EmailSender;
+import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
+import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
+import io.github.giovannilamarmora.accesssphere.email.sender.dto.TemplateParam;
+import io.github.giovannilamarmora.accesssphere.email.template.EmailTemplateService;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDTO;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -70,7 +68,7 @@ public class UserAccountService {
   private static final String USER_ACCOUNT_LOG = "User Account";
 
   @Autowired private EmailTemplateService emailTemplateService;
-  @Autowired private EmailSenderService emailSenderService;
+  @Autowired private EmailSender emailSender;
   @Autowired private UserService userService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private PermissionRoleManager permissionRoleManager;
@@ -238,7 +236,7 @@ public class UserAccountService {
                 emailParams.putAll(changePassword.getParams());
 
               if (sendEmail) {
-                return emailSenderService
+                return emailSender
                     .sendEmail(objects.getT2(), emailParams, emailContent)
                     .flatMap(updatedUserMono::thenReturn);
               } else {

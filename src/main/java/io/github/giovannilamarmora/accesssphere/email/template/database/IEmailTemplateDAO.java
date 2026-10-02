@@ -1,6 +1,6 @@
-package io.github.giovannilamarmora.accesssphere.email;
+package io.github.giovannilamarmora.accesssphere.email.template.database;
 
-import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
+import io.github.giovannilamarmora.accesssphere.email.template.entity.EmailTemplateEntity;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -46,4 +46,3 @@ public interface IEmailTemplateDAO extends JpaRepository<EmailTemplateEntity, Lo
       @Param("locale") String locale,
       @Param("excludeId") Long excludeId);
 }
-

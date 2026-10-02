@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.email.dto;
+package io.github.giovannilamarmora.accesssphere.email.template.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;

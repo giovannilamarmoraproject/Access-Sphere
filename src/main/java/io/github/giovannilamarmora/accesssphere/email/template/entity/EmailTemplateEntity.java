@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.email.entity;
+package io.github.giovannilamarmora.accesssphere.email.template.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.settings.entity.JsonMapConverter;
@@ -60,16 +60,15 @@ public class EmailTemplateEntity extends GenericEntity {
   @Column(name = "TEMPLATE", columnDefinition = "LONGTEXT", nullable = false)
   private String template;
 
-  /**
-   * Mappa dei parametri predefiniti associati al template (es. NAME, RESET_CODE, SITE_URL). Salvata
-   * come JSON nel database tramite JsonMapConverter.
-   */
   @Convert(converter = JsonMapConverter.class)
   @Lob
   @Column(name = "PARAMS", columnDefinition = "TEXT")
   private Map<String, String> params = new LinkedHashMap<>();
 
-  /** Lingua/Locale del template (es. "en-GB", "it", "default" o null per tutte le lingue). */
-  @Column(name = "LOCALE")
+  /**
+   * Codice lingua/locale (es. 'it', 'en', 'es', 'fr', 'de'). Se nullo o vuoto (''), il template e
+   * considerato universale/fallback globale valido per qualsiasi lingua.
+   */
+  @Column(name = "LOCALE", length = 10)
   private String locale;
 }

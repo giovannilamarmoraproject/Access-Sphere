@@ -1,7 +1,7 @@
-package io.github.giovannilamarmora.accesssphere.email;
+package io.github.giovannilamarmora.accesssphere.email.template;
 
-import io.github.giovannilamarmora.accesssphere.email.dto.EmailTemplateDTO;
-import io.github.giovannilamarmora.accesssphere.email.entity.EmailTemplateEntity;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDTO;
+import io.github.giovannilamarmora.accesssphere.email.template.entity.EmailTemplateEntity;
 import java.util.HashMap;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;

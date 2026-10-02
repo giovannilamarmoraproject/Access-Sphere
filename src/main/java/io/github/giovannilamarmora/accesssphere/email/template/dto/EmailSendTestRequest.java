@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.email.dto;
+package io.github.giovannilamarmora.accesssphere.email.template.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
@@ -22,7 +22,7 @@ public class EmailSendTestRequest {
   private String identifier;
   private String locale;
 
-  @NotBlank(message = "Il destinatario (to) non puo essere vuoto")
+  @NotBlank(message = "The field 'to' is required and it cannot be null or blank")
   private String to;
 
   private String subject;

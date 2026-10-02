@@ -23,11 +23,6 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserRequest {
 
-  @Schema(
-      description = "Unique UUID identifier of the IAM user",
-      example = "d18124b1-ba15-4b51-a344-78e5a6c0a205")
-  private String identifier;
-
   @UpperCamelCase
   @Schema(description = "First name of the user", example = "John")
   private String name;

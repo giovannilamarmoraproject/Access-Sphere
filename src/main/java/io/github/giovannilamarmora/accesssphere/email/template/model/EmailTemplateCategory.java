@@ -1,4 +1,4 @@
-package io.github.giovannilamarmora.accesssphere.email.model;
+package io.github.giovannilamarmora.accesssphere.email.template.model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
