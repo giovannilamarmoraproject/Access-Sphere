@@ -5,21 +5,15 @@ import io.github.giovannilamarmora.accesssphere.client.database.OAuth2ClientRepo
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
-import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
-import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
-import io.github.giovannilamarmora.accesssphere.roles.database.RoleDefinitionRepository;
-import io.github.giovannilamarmora.accesssphere.roles.database.UserClientRoleRepository;
-import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.ClientRoleDomainService;
+import io.github.giovannilamarmora.accesssphere.roles.UserRoleDomainService;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +31,9 @@ import reactor.core.publisher.Mono;
  *       utente; puo essere invocato direttamente dagli engine interni di sistema (es. {@code
  *       OAuthService}, {@code MFAAuthenticationService}, task di init) senza alcun rischio di
  *       blocco o alterazione dei dati.
- *   <li>Incapsula l'accesso a {@link IOAuth2ClientDAO}, {@link IRoleDefinitionDAO} e {@link
- *       IUserClientRoleDAO}.
+ *   <li>Incapsula l'accesso a {@link IOAuth2ClientDAO} e delega la gestione del catalogo ruoli e
+ *       delle associazioni utente a {@link ClientRoleDomainService} e {@link
+ *       UserRoleDomainService}.
  * </ul>
  */
 @Service
@@ -48,8 +43,8 @@ public class OAuth2ClientDomainService {
   private static final String OAUTH2_DOMAIN_LOG = "Client Domain";
 
   @Autowired private OAuth2ClientRepository oAuth2ClientRepository;
-  @Autowired private RoleDefinitionRepository roleDefinitionRepository;
-  @Autowired private UserClientRoleRepository userClientRoleRepository;
+  @Autowired private ClientRoleDomainService clientRoleDomainService;
+  @Autowired private UserRoleDomainService userRoleDomainService;
 
   /**
    * Recupera la lista completa di tutti i Client registrati a database con i rispettivi ruoli
@@ -66,36 +61,10 @@ public class OAuth2ClientDomainService {
           new OAuthException(ExceptionMap.ERR_OAUTH_404, "OAuth2 Clients not found!"));
     }
 
-    Optional<List<RoleDefinition>> optionalRoleDefinitions = roleDefinitionRepository.findAll();
-
-    Map<String, List<RoleDefinition>> rolesByClient =
-        optionalRoleDefinitions.isPresent() && !optionalRoleDefinitions.get().isEmpty()
-            ? optionalRoleDefinitions.get().stream()
-                .filter(
-                    roleDefinition -> !ObjectToolkit.isNullOrEmpty(roleDefinition.getClientId()))
-                .collect(
-                    Collectors.groupingBy(
-                        roleDefinition -> roleDefinition.getClientId().toUpperCase(),
-                        Collectors.mapping(
-                            roleDefinition -> {
-                              RoleDefinition role = new RoleDefinition();
-                              BeanUtils.copyProperties(roleDefinition, role);
-                              return role;
-                            },
-                            Collectors.toList())))
-            : Map.of();
-
     List<OAuth2Client> oAuth2Clients = optionalOAuth2Clients.get();
 
-    oAuth2Clients.forEach(
-        client ->
-            client.setAppRoles(
-                !ObjectToolkit.isNullOrEmpty(client.getClientId())
-                    ? rolesByClient.getOrDefault(client.getClientId().toUpperCase(), List.of())
-                    : List.of()));
-
     LOG.info("📋 {} Found {} clients into the Database", OAUTH2_DOMAIN_LOG, oAuth2Clients.size());
-    return Mono.just(oAuth2Clients);
+    return Mono.just(clientRoleDomainService.enrichClientsWithRoles(oAuth2Clients));
   }
 
   /**
@@ -113,23 +82,12 @@ public class OAuth2ClientDomainService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
 
-    Optional<List<RoleDefinition>> optionalRoleDefinitions =
-        roleDefinitionRepository.findByClientId(clientID);
-
     OAuth2Client oAuth2Client = optionalOAuth2Client.get();
-    if (optionalRoleDefinitions.isPresent() && !optionalRoleDefinitions.get().isEmpty()) {
-      List<RoleDefinition> roleDefinitions = optionalRoleDefinitions.get();
-      oAuth2Client.setAppRoles(
-          roleDefinitions.stream()
-              .map(
-                  roleDefinition -> {
-                    RoleDefinition role = new RoleDefinition();
-                    BeanUtils.copyProperties(roleDefinition, role);
-                    return role;
-                  })
-              .toList());
-    }
+
+    clientRoleDomainService.getRoleByClientId(clientID).ifPresent(oAuth2Client::setAppRoles);
+
     LOG.info("📋 {} Return client {} into the Database", OAUTH2_DOMAIN_LOG, clientID);
+
     return Mono.just(oAuth2Client);
   }
 
@@ -212,8 +170,9 @@ public class OAuth2ClientDomainService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
 
-    roleDefinitionRepository.deleteByClientId(clientId);
-    userClientRoleRepository.deleteByClientId(clientId);
+    // Cascade deletion su catalogo ruoli (ROLE_DEFINITIONS) e associazioni utente (USER_CLIENT_ROLE)
+    clientRoleDomainService.deleteRoleByClientId(clientId);
+    userRoleDomainService.deleteUserRolesByClientId(clientId);
     oAuth2ClientRepository.deleteByClientId(clientId);
 
     LOG.debug("✅ {} Client {} successfully removed", OAUTH2_DOMAIN_LOG, clientId);
@@ -222,25 +181,14 @@ public class OAuth2ClientDomainService {
   private OAuth2Client saveOrUpdateOAuth2Client(OAuth2Client oAuth2Client) {
     OAuth2Client clientSaved = oAuth2ClientRepository.save(oAuth2Client);
 
-    // Persiste le definizioni ruoli su ROLE_DEFINITIONS
-    clientSaved.setAppRoles(
-        oAuth2Client.getAppRoles().stream()
-            .map(
-                roleDefinition -> {
-                  String roleName = roleDefinition.getRole().trim().toUpperCase();
-                  Boolean roleExists =
-                      roleDefinitionRepository.existsByClientIdAndRole(
-                          oAuth2Client.getClientId(), roleName);
-                  if (roleExists) {
-                    LOG.warn(
-                        "❌ The role {} for client ID: {} already exists",
-                        roleName,
-                        oAuth2Client.getClientId());
-                    return roleDefinition;
-                  }
-                  return roleDefinitionRepository.save(roleDefinition);
-                })
-            .toList());
+    // Persiste le definizioni ruoli su ROLE_DEFINITIONS tramite ClientRoleDomainService
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getAppRoles())) {
+      clientSaved.setAppRoles(
+          clientRoleDomainService.saveClientRoles(
+              clientSaved.getClientId(), oAuth2Client.getAppRoles()));
+    } else {
+      clientSaved.setAppRoles(List.of());
+    }
     return clientSaved;
   }
 }

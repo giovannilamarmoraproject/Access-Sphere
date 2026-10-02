@@ -114,10 +114,7 @@ public class UserAccountService {
       UserUpdateRequest userUpdateRequest,
       String bearer,
       ServerHttpRequest request) {
-    if (ObjectToolkit.isNullOrEmpty(identifier)) {
-      LOG.error("❌ {} Target user identifier is missing", USER_ACCOUNT_LOG);
-      throw new UserException(ExceptionMap.ERR_USER_400, "Identifier is required!");
-    }
+    UserValidator.validateIdentifier(identifier);
 
     User userToUpdate = UserMapper.toModel(userUpdateRequest);
     userToUpdate.setIdentifier(identifier);

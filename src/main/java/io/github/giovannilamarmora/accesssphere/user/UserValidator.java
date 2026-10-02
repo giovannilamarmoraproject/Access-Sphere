@@ -53,6 +53,13 @@ public class UserValidator {
     validateRoles(user.getRoles());
   }
 
+  public static void validateIdentifier(String identifier) {
+    if (ObjectToolkit.isNullOrEmpty(identifier)) {
+      LOG.error("❌ Target user identifier is missing");
+      throw new UserException(ExceptionMap.ERR_USER_400, "Identifier is required!");
+    }
+  }
+
   private static void validateUsername(String username) {
     if (ObjectToolkit.isNullOrEmpty(username)) {
       LOG.error("Username is empty");

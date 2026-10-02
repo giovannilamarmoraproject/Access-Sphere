@@ -332,4 +332,21 @@ public class UserRoleDomainService {
     userClientRoleRepository.deleteByUserIdentifierAndClientId(
         userIdentifier, clientId.trim().toUpperCase());
   }
+
+  /**
+   * CANCELLAZIONE PER CLIENT ID: Rimuove a cascata tutte le associazioni di ruoli utente collegate
+   * a uno specifico Client OAuth2 (utilizzato durante la cancellazione del client in {@code
+   * OAuth2ClientDomainService}).
+   *
+   * @param clientId Identificatore univoco del Client OAuth2.
+   */
+  @Transactional
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public void deleteUserRolesByClientId(String clientId) {
+    if (ObjectToolkit.isNullOrEmpty(clientId)) return;
+    String normClientId = clientId.trim().toUpperCase();
+    LOG.info(
+        "🗑️ {} Deleting all user role assignments for client: {}", USER_ROLE_DOMAIN, normClientId);
+    userClientRoleRepository.deleteByClientId(normClientId);
+  }
 }
