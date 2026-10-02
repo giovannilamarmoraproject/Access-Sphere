@@ -7,8 +7,9 @@ import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -35,18 +36,17 @@ public class UserRequest {
   @Schema(description = "Last name / family name of the user", example = "Doe")
   private String surname;
 
-  @NotNull(message = "Email is required")
-  @NotBlank(message = "Email is required")
+  @NotBlank(message = "The field 'email' is required and it cannot be null or blank")
   @LowerCase
   @Schema(description = "Primary email address of the user", example = "john.doe@example.com")
   private String email;
 
-  @NotNull(message = "Username is required")
-  @NotBlank(message = "Username is required")
+  @NotBlank(message = "The field 'username' is required and it cannot be null or blank")
   @LowerCase
   @Schema(description = "Unique username used for login and identification", example = "johndoe")
   private String username;
 
+  @NotBlank(message = "The field 'password' is required and it cannot be null or blank")
   @Schema(
       description =
           "Hashed user credentials (always stripped to null in responses for security reasons)",
@@ -54,10 +54,11 @@ public class UserRequest {
       accessMode = Schema.AccessMode.READ_ONLY)
   private String password;
 
+  @NotEmpty(message = "The field 'roles' is required and it cannot be null or blank")
   @Schema(
       description =
           "List of contextualized application roles assigned to the user across OAuth2 clients")
-  private List<UserClientRoleRequest> roles;
+  private List<@Valid UserClientRoleRequest> roles;
 
   @Schema(
       description = "Profile avatar URL or Base64 data URI",

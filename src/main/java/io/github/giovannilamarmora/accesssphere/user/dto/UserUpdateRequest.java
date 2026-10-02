@@ -7,7 +7,6 @@ import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -28,8 +27,7 @@ public class UserUpdateRequest {
   @Schema(description = "Last name / family name of the user", example = "Doe")
   private String surname;
 
-  @NotNull(message = "Email is required")
-  @NotBlank(message = "Email is required")
+  @NotBlank(message = "The field 'email' is required and it cannot be null or blank")
   @LowerCase
   @Schema(description = "Primary email address of the user", example = "john.doe@example.com")
   private String email;
