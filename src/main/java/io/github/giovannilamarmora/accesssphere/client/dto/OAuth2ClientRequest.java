@@ -11,6 +11,7 @@ import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +35,7 @@ import org.springframework.http.HttpStatus;
 @Schema(description = "Complete configuration and credentials model for an OAuth 2.0 Client")
 public class OAuth2ClientRequest {
 
-  @NotNull(message = "Client ID is required")
-  @NotBlank(message = "Client ID is required")
+  @NotBlank(message = "The field 'clientId' is required and it cannot be null or blank")
   @UpperCase
   @Schema(
       description =
@@ -53,6 +53,7 @@ public class OAuth2ClientRequest {
       example = "sec_abc123xyz789demo")
   private String clientSecret;
 
+  @NotEmpty(message = "The field 'scopes' is required and it cannot be null or blank")
   @Schema(
       description = "List of authorized OAuth 2.0 scopes for the client",
       example = "[\"openid\", \"profile\", \"email\"]")
@@ -64,16 +65,19 @@ public class OAuth2ClientRequest {
           "{\"redirect_uri\":\"https://my-app.example.com/callback\",\"fallback_uri\":\"https://my-app.example.com/login\"}")
   private Map<String, String> redirect_uri;
 
+  @NotNull(message = "The field 'accessType' is required and it cannot be null")
   @Schema(
       description = "OAuth access type (ONLINE or OFFLINE to request a refresh token)",
       example = "OFFLINE")
   private AccessType accessType;
 
+  @NotNull(message = "The field 'authType' is required and it cannot be null")
   @Schema(
       description = "Supported OAuth 2.0 grant type (e.g. AUTHORIZATION_CODE, CLIENT_CREDENTIALS)",
       example = "AUTHORIZATION_CODE")
   private OAuthType authType;
 
+  @NotNull(message = "The field 'tokenType' is required and it cannot be null")
   @Schema(description = "Format of the issued token (JWT or OPAQUE)", example = "JWT")
   private TokenType tokenType;
 
@@ -99,6 +103,7 @@ public class OAuth2ClientRequest {
       example = "86400000")
   private Long jweExpiration;
 
+  @NotEmpty(message = "The field 'appRoles' is required and it cannot be null or blank")
   @Schema(
       description = "Catalog of application roles and permissions defined for this specific client")
   private List<RoleDefinitionRequest> appRoles;
@@ -113,6 +118,7 @@ public class OAuth2ClientRequest {
       example = "true")
   private Boolean accessToken;
 
+  @NotNull(message = "The field 'authorize_redirect_status' is required and it cannot be null")
   @Schema(
       description = "HTTP status code used to perform the redirection to the redirect_uri",
       example = "FOUND")

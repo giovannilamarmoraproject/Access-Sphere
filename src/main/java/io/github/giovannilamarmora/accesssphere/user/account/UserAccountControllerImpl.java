@@ -77,10 +77,6 @@ public class UserAccountControllerImpl implements UserAccountController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<UserResponse>> updateUser(
       String identifier, UserUpdateRequest user, String bearer, ServerHttpRequest request) {
-    LOG.info(
-        "🌐 [ACCOUNT CONTROLLER] Invoking UpdateUser endpoint for email: {} and identifier: {}",
-        user.getEmail(),
-        identifier);
     return userAccountService
         .updateUser(identifier, user, bearer, request)
         .map(
