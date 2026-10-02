@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.roles.dto;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
@@ -30,12 +31,27 @@ import lombok.*;
 @Schema(description = "Complete definition of an application role for an OAuth2 Client")
 public class RoleDefinitionRequest {
 
-  @NotBlank(message = "Role name is required")
+  @NotBlank(message = "The field 'role' is required and it cannot be null or blank")
+  @UpperCase
   @JsonAlias({"name", "roleName", "value"})
   @Schema(description = "Unique identifier name of the role for the client", example = "ROLE_USER")
   private String role;
 
-  @Schema(description = "Role type (USER, ADMIN, TECHNICAL, MANAGER, etc.)", example = "USER")
+  @NotBlank(message = "The field 'type' is required and it cannot be null or blank")
+  @UpperCase
+  @Schema(
+      description = "Role type (USER, ADMIN, TECHNICAL, MANAGER, etc.)",
+      example = "USER",
+      allowableValues = {
+        "USER",
+        "ADMIN",
+        "MANAGER",
+        "OPERATOR",
+        "TECHNICAL",
+        "AUDITOR",
+        "GUEST",
+        "SUPER_ADMIN"
+      })
   private String type;
 
   @Schema(

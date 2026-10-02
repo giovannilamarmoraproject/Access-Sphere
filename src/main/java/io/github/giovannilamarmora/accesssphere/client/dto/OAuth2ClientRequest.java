@@ -10,6 +10,7 @@ import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -106,7 +107,7 @@ public class OAuth2ClientRequest {
   @NotEmpty(message = "The field 'appRoles' is required and it cannot be null or blank")
   @Schema(
       description = "Catalog of application roles and permissions defined for this specific client")
-  private List<RoleDefinitionRequest> appRoles;
+  private List<@Valid RoleDefinitionRequest> appRoles;
 
   @Schema(
       description = "Indicates whether to issue the OIDC ID Token during the authorization grant",
