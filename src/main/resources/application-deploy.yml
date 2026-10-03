@@ -23,16 +23,23 @@ spring:
       mode: always
   codec:
     max-in-memory-size: ${CODEC_MAX_IN_MEMORY_SIZE:20MB}
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SERVER_EMAIL}
+    password: ${SERVER_TOKEN}
+    sender-emails: ${SENDER_EMAILS:${SERVER_EMAIL:admin@access-sphere.com}}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 # Level of LOG
 logging:
   level:
     io.github.giovannilamarmora: ${LOGGING_LEVEL}
-
-rest:
-  client:
-    email-sender:
-      baseUrl: http://email.sender:8080
 
 app:
   version: @project.version@

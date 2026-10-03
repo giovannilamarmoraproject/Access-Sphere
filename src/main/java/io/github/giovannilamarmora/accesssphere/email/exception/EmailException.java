@@ -18,4 +18,8 @@ public class EmailException extends UtilsException {
   public EmailException(ExceptionCode exceptionCode, String message) {
     super(exceptionCode, message);
   }
+
+  public EmailException(ExceptionCode exceptionCode, String message, String exceptionMessage) {
+    super(exceptionCode, message, exceptionMessage);
+  }
 }

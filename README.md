@@ -459,6 +459,11 @@ AccessSphere supporta l'inizializzazione automatica delle credenziali di accesso
 | `APP_INIT_TECH_USER_EMAIL`    | `application.init.admin-user.email`          | Email associata all'utenza tecnica               | `admin@access-sphere.com` |
 | `APP_INIT_TECH_CLIENT_ID`     | `application.init.tech-client.client-id`     | Client ID OAuth2 tecnico dell'applicazione       | `ACCESS-SPHERE-AUTH`      |
 | `APP_INIT_TECH_CLIENT_SECRET` | `application.init.tech-client.client-secret` | Client Secret dell'applicazione                  | `SphereSecretKey2026!`    |
+| `SMTP_HOST`                   | `spring.mail.host`                           | Host del server SMTP                             | `smtp.gmail.com`          |
+| `SMTP_PORT`                   | `spring.mail.port`                           | Porta del server SMTP (TLS/STARTTLS)             | `587`                     |
+| `SERVER_EMAIL`                | `spring.mail.username`                       | Username/account email per l'autenticazione SMTP | `admin@access-sphere.com` |
+| `SERVER_TOKEN`                | `spring.mail.password`                       | Password/token app per il server SMTP            | -                         |
+| `SENDER_EMAILS`               | `spring.mail.sender-emails`                  | Lista bianca dei mittenti autorizzati            | `admin@access-sphere.com` |
 
 ---
 

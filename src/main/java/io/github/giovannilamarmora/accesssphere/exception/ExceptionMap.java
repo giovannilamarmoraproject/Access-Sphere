@@ -40,6 +40,17 @@ public enum ExceptionMap implements ExceptionCode {
   ERR_USER_429("TOO_MANY_REQUEST", HttpStatus.TOO_MANY_REQUESTS, "Too many requests"),
   ERR_EMAIL_SEND_001("CLIENT_EXCEPTION", HttpStatus.BAD_REQUEST, "Error on client: "),
   /**
+   * @Email ExceptionMap for Mail Sending and Dispatching
+   */
+  ERR_MAIL_SEND_001(
+      "ERROR-DESERIALIZE-EXCEPTION", HttpStatus.BAD_REQUEST, "Error on deserializing object"),
+  ERR_MAIL_SEND_002(
+      "ERROR-SMTP-SERVER",
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      "An error occurred during sending process"),
+  ERR_VALID_MAIL_001(
+      "VALIDATION_ERROR", HttpStatus.BAD_REQUEST, "Email sender does not match allowed configuration"),
+  /**
    * @TechnicalUser ExceptionMap for TechUser
    */
   ERR_TECH_403(

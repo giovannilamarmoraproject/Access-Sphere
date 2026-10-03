@@ -16,6 +16,10 @@ spring:
   sql:
     init:
       mode: never
+  mail:
+    host: localhost
+    port: 1025
+    sender-emails: test@test.com
 
 filter:
   requestResponse:
@@ -50,10 +54,6 @@ rest:
         getTemplate: /api/email-templates
         locales: /api/i18n/locales
         deleteUser: /api/users/:userId
-    email-sender:
-      baseUrl: https://email-sender.mock
-      path:
-        sendEmailUrl: /v1/send-email
 
 app:
   version: 1.0.0
