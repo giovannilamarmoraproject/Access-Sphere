@@ -21,6 +21,24 @@ let currentDetailDevice = "desktop";
 let editorDebounceTimer = null;
 let duplicateCheckTimer = null;
 
+const DYNAMIC_PREVIEW_VALUES = {
+    "USER.NAME": "Mario Rossi",
+    "USER.SURNAME": "Rossi",
+    "USER.FULL_NAME": "Mario Rossi",
+    "USER.USERNAME": "mario.rossi",
+    "USER.EMAIL": "mario.rossi@example.com",
+    "USER.RESET_TOKEN": "123456",
+    "AUTH.RESET_CODE": "123456",
+    "AUTH.VERIFY_URL": "https://accesssphere.io/verify?token=123456789abcdef",
+    "AUTH.OTP_CODE": "890123",
+    "AUTH.EXPIRE_MINUTES": "10",
+    "AUTH.LOCK_REASON": "Troppi tentativi di accesso falliti",
+    "APP.NAME": "Access Sphere",
+    "APP.URL": "https://accesssphere.io",
+    "APP.SUPPORT_URL": "https://accesssphere.io/support",
+    "CLIENT.ID": "ACCESS-SPHERE-AUTH"
+};
+
 /**
  * Mappatura semantica e metadati per le categorie di template censite nel sistema.
  * Definisce icone, badge di stile, identificatori tecnici consigliati e parametri standard.
@@ -36,10 +54,10 @@ const EMAIL_CATEGORIES = {
         defaultName: "Reimpostazione Password",
         defaultSubject: "Reimposta la tua password",
         defaultParams: {
-            SITE_URL: "https://accesssphere.io",
-            NAME: "Mario Rossi",
-            RESET_CODE: "123456",
-            SITE_SHORT: "AS"
+            SITE_URL: "APP.URL",
+            NAME: "USER.NAME",
+            RESET_CODE: "AUTH.RESET_CODE",
+            SITE_SHORT: "APP.NAME"
         }
     },
     WELCOME_USER: {
@@ -52,9 +70,10 @@ const EMAIL_CATEGORIES = {
         defaultName: "Benvenuto Utente",
         defaultSubject: "Benvenuto in Access Sphere",
         defaultParams: {
-            SITE_URL: "https://accesssphere.io",
-            NAME: "Mario Rossi",
-            USERNAME: "mario.rossi"
+            SITE_URL: "APP.URL",
+            NAME: "USER.NAME",
+            USERNAME: "USER.USERNAME",
+            SITE_SHORT: "APP.NAME"
         }
     },
     EMAIL_VERIFICATION: {
@@ -67,10 +86,10 @@ const EMAIL_CATEGORIES = {
         defaultName: "Verifica Indirizzo Email",
         defaultSubject: "Verifica il tuo indirizzo email",
         defaultParams: {
-            SITE_URL: "https://accesssphere.io",
-            NAME: "Mario Rossi",
-            VERIFY_URL: "https://accesssphere.io/verify?token=123456789abcdef",
-            SITE_SHORT: "Access Sphere"
+            SITE_URL: "APP.URL",
+            NAME: "USER.NAME",
+            VERIFY_URL: "AUTH.VERIFY_URL",
+            SITE_SHORT: "APP.NAME"
         }
     },
     MFA_OTP: {
@@ -83,9 +102,11 @@ const EMAIL_CATEGORIES = {
         defaultName: "Codice OTP MFA",
         defaultSubject: "Il tuo codice di sicurezza MFA",
         defaultParams: {
-            NAME: "Mario Rossi",
-            OTP_CODE: "890123",
-            EXPIRE_MINUTES: "10"
+            SITE_URL: "APP.URL",
+            NAME: "USER.NAME",
+            OTP_CODE: "AUTH.OTP_CODE",
+            EXPIRATION_MINUTES: "AUTH.EXPIRE_MINUTES",
+            SITE_SHORT: "APP.NAME"
         }
     },
     ACCOUNT_LOCKED: {
@@ -98,9 +119,11 @@ const EMAIL_CATEGORIES = {
         defaultName: "Avviso Account Bloccato",
         defaultSubject: "Avviso di sicurezza: Account temporaneamente bloccato",
         defaultParams: {
-            NAME: "Mario Rossi",
-            LOCK_REASON: "Troppi tentativi di accesso falliti",
-            SUPPORT_URL: "https://accesssphere.io/support"
+            SITE_URL: "APP.URL",
+            NAME: "USER.NAME",
+            LOCK_REASON: "AUTH.LOCK_REASON",
+            SUPPORT_URL: "APP.SUPPORT_URL",
+            SITE_SHORT: "APP.NAME"
         }
     }
 };
@@ -642,7 +665,7 @@ function handleParamChange() {
  */
 function autoExtractParamsFromHtml() {
     const html = document.getElementById("editor-template-html").value || "";
-    const regex = /\{\{([A-Za-z0-9_-]+)\}\}/g;
+    const regex = /\{\{([A-Za-z0-9_.-]+)\}\}/g;
     const foundKeys = new Set();
     let match;
 
@@ -664,13 +687,28 @@ function autoExtractParamsFromHtml() {
     let addedCount = 0;
     foundKeys.forEach((k) => {
         if (!currentKeys.has(k)) {
-            // Valore di default intelligente basato sul nome chiave
-            let defaultVal = "Esempio " + k;
-            if (k.includes("URL")) defaultVal = "https://accesssphere.io";
-            if (k.includes("CODE")) defaultVal = "123456";
-            if (k.includes("NAME")) defaultVal = "Mario Rossi";
-            if (k.includes("EMAIL")) defaultVal = "mario.rossi@example.com";
-            if (k.includes("SITE")) defaultVal = "Access Sphere";
+            // Mappatura predefinita intelligente verso espressioni dinamiche di sistema
+            let defaultVal = "USER.NAME";
+            if (k === "NAME") defaultVal = "USER.NAME";
+            else if (k === "SURNAME") defaultVal = "USER.SURNAME";
+            else if (k === "USERNAME") defaultVal = "USER.USERNAME";
+            else if (k === "EMAIL") defaultVal = "USER.EMAIL";
+            else if (k === "RESET_CODE") defaultVal = "AUTH.RESET_CODE";
+            else if (k === "RESET_TOKEN") defaultVal = "USER.RESET_TOKEN";
+            else if (k === "OTP_CODE" || k === "OTP") defaultVal = "AUTH.OTP_CODE";
+            else if (k === "VERIFY_URL") defaultVal = "AUTH.VERIFY_URL";
+            else if (k === "EXPIRATION_MINUTES" || k === "EXPIRE_MINUTES") defaultVal = "AUTH.EXPIRE_MINUTES";
+            else if (k === "LOCK_REASON") defaultVal = "AUTH.LOCK_REASON";
+            else if (k === "SUPPORT_URL") defaultVal = "APP.SUPPORT_URL";
+            else if (k === "SITE_URL" || k === "APP_URL") defaultVal = "APP.URL";
+            else if (k === "SITE_SHORT" || k === "APP_NAME" || k === "SITE_NAME") defaultVal = "APP.NAME";
+            else if (k === "CLIENT_ID") defaultVal = "CLIENT.ID";
+            else if (k.includes("URL")) defaultVal = "APP.URL";
+            else if (k.includes("CODE") || k.includes("TOKEN") || k.includes("OTP")) defaultVal = "AUTH.RESET_CODE";
+            else if (k.includes("NAME")) defaultVal = "USER.NAME";
+            else if (k.includes("EMAIL")) defaultVal = "USER.EMAIL";
+            else if (k.includes("SITE") || k.includes("APP")) defaultVal = "APP.NAME";
+            else defaultVal = "USER." + k;
 
             addParamRow(k, defaultVal);
             addedCount++;
@@ -770,10 +808,25 @@ function updateLivePreview() {
 
     if (injectParams) {
         const params = collectEditorParams();
+        // 1. Sostituzione dei parametri definiti nell'editor (risolvendo percorsi dinamici USER.NAME, AUTH.RESET_CODE, ecc.)
         Object.keys(params).forEach((key) => {
-            const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "g");
-            rawHtml = rawHtml.replace(regex, params[key]);
+            const rawVal = params[key];
+            const resolvedVal = (typeof DYNAMIC_PREVIEW_VALUES !== "undefined" && DYNAMIC_PREVIEW_VALUES[rawVal] !== undefined)
+                ? DYNAMIC_PREVIEW_VALUES[rawVal]
+                : rawVal;
+            const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, "g");
+            rawHtml = rawHtml.replace(regex, resolvedVal);
         });
+
+        // 2. Risoluzione diretta di eventuali segnaposto gerarchici presenti nativamente nel template
+        if (typeof DYNAMIC_PREVIEW_VALUES !== "undefined") {
+            Object.keys(DYNAMIC_PREVIEW_VALUES).forEach((dKey) => {
+                const escapedKey = dKey.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, "g");
+                rawHtml = rawHtml.replace(regex, DYNAMIC_PREVIEW_VALUES[dKey]);
+            });
+        }
     }
 
     // Se l'HTML è vuoto, mostra un placeholder grafico di attesa
@@ -1298,19 +1351,23 @@ function openTestEmailModal(id) {
     } else {
         const valPlaceholderPrefix = typeof t === "function" ? t("email_param_default_val", "Valore di default:") : "Valore per";
         keys.forEach((k) => {
-            const val = paramsMap[k] || "";
+            const rawVal = paramsMap[k] || "";
+            const initialVal = (typeof DYNAMIC_PREVIEW_VALUES !== "undefined" && DYNAMIC_PREVIEW_VALUES[rawVal] !== undefined)
+                ? DYNAMIC_PREVIEW_VALUES[rawVal]
+                : rawVal;
             const fieldId = "test-param-" + k;
             const html = `
         <div class="space-y-1">
-          <label class="block text-xs font-mono theme-text-accent font-semibold mb-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-code text-[10px] opacity-70"></i> {{${escapeHtml(k)}}}
+          <label class="block text-xs font-mono theme-text-accent font-semibold mb-1 flex items-center justify-between gap-1.5">
+            <span><i class="fa-solid fa-code text-[10px] opacity-70 mr-1"></i>{{${escapeHtml(k)}}}</span>
+            ${rawVal && rawVal !== initialVal ? `<span class="text-[10px] text-gray-400 font-normal">→ ${escapeHtml(rawVal)}</span>` : ''}
           </label>
           <input
             type="text"
             id="${fieldId}"
             data-param-key="${escapeHtml(k)}"
             class="form-control m3-form-input test-param-input rounded-xl w-full text-xs py-2 px-3"
-            value="${escapeHtml(String(val))}"
+            value="${escapeHtml(String(initialVal))}"
             placeholder="${escapeHtml(valPlaceholderPrefix)} ${escapeHtml(k)}"
             required
           />
@@ -1596,10 +1653,25 @@ function updateDetailPreview() {
 
     if (injectParams) {
         const params = currentDetailTemplate.params || {};
+        // 1. Sostituzione dei parametri definiti nel template (risolvendo percorsi dinamici USER.NAME, AUTH.RESET_CODE, ecc.)
         Object.keys(params).forEach((key) => {
-            const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "g");
-            renderedHtml = renderedHtml.replace(regex, params[key]);
+            const rawVal = params[key];
+            const resolvedVal = (typeof DYNAMIC_PREVIEW_VALUES !== "undefined" && DYNAMIC_PREVIEW_VALUES[rawVal] !== undefined)
+                ? DYNAMIC_PREVIEW_VALUES[rawVal]
+                : rawVal;
+            const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, "g");
+            renderedHtml = renderedHtml.replace(regex, resolvedVal);
         });
+
+        // 2. Risoluzione diretta di eventuali segnaposto gerarchici presenti nativamente nel template
+        if (typeof DYNAMIC_PREVIEW_VALUES !== "undefined") {
+            Object.keys(DYNAMIC_PREVIEW_VALUES).forEach((dKey) => {
+                const escapedKey = dKey.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, "g");
+                renderedHtml = renderedHtml.replace(regex, DYNAMIC_PREVIEW_VALUES[dKey]);
+            });
+        }
     }
 
     // Inietta lo stile della scrollbar del tema attivo all'interno del documento renderizzato

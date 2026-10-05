@@ -43,26 +43,54 @@ public class Utils {
   @LogInterceptor(type = LogTimeTracker.ActionType.UTILS_LOGGER)
   public static Map<String, String> getFinalMapFromValue(
       Map<String, String> source, Map<String, String> target) {
-    // Creazione della mappa finalParam
     Map<String, String> finalParam = new HashMap<>();
+    if (target == null || target.isEmpty()) {
+      return finalParam;
+    }
     Pattern pattern = Pattern.compile("\\{\\{(.+?)\\}\\}");
 
     for (Map.Entry<String, String> entry : target.entrySet()) {
       String key = entry.getKey();
       String value = entry.getValue();
+      if (value == null) {
+        continue;
+      }
       Matcher matcher = pattern.matcher(value);
 
       StringBuffer result = new StringBuffer();
+      boolean foundPlaceholder = false;
       while (matcher.find()) {
+        foundPlaceholder = true;
         String placeholder = matcher.group(1);
-        String replacement = source.getOrDefault(placeholder, matcher.group(0));
+        String replacement = source != null ? source.getOrDefault(placeholder, matcher.group(0)) : matcher.group(0);
         if (!ObjectUtils.isEmpty(replacement)) matcher.appendReplacement(result, replacement);
       }
       matcher.appendTail(result);
 
-      finalParam.put(key, result.toString());
+      if (foundPlaceholder) {
+        finalParam.put(key, result.toString());
+      } else if (source != null && source.containsKey(value)) {
+        // Risoluzione diretta del percorso dinamico (es. key="NAME", value="USER.NAME")
+        finalParam.put(key, source.get(value));
+      } else if (source != null && source.containsKey(key)) {
+        // Valore fornito direttamente nella mappa sorgente con la stessa chiave
+        finalParam.put(key, source.get(key));
+      } else if (isDynamicExpression(value)) {
+        // Se e un'espressione dinamica non risolta dalla sorgente, preserva il segnaposto
+        finalParam.put(key, "{{" + key + "}}");
+      } else {
+        finalParam.put(key, value);
+      }
     }
     return finalParam;
+  }
+
+  private static boolean isDynamicExpression(String val) {
+    if (val == null) return false;
+    return val.startsWith("USER.")
+        || val.startsWith("AUTH.")
+        || val.startsWith("APP.")
+        || val.startsWith("CLIENT.");
   }
 
   public static <E extends Enum<E>> boolean isEnumValue(String value, Class<E> enumClass) {

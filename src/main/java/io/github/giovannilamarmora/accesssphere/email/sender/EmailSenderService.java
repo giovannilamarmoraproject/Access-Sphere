@@ -10,6 +10,7 @@ import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import jakarta.mail.internet.MimeMessage;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,18 +97,31 @@ public class EmailSenderService implements EmailSender {
 
     LOG.info("📧 Starting email template compilation for recipient: {}", emailContent.getTo());
     String template = emailTemplateResponse.getTemplate();
-    Map<String, String> finalParam =
-        Utils.getFinalMapFromValue(params, emailTemplateResponse.getParams());
 
-    LOG.debug("Replacing placeholders in the template with provided parameters");
-    for (String key : finalParam.keySet()) {
-      template = template.replace("{{" + key + "}}", finalParam.get(key));
-    }
-    if (params != null) {
-      for (String key : params.keySet()) {
-        if (params.get(key) != null) {
-          template = template.replace("{{" + key + "}}", params.get(key));
+    // 1. Risoluzione dei parametri dinamici in ingresso (USER, APP, AUTH, CLIENT)
+    Map<String, String> resolvedInputParams = EmailParameterResolver.resolve(params);
+
+    // 2. Integrazione con i parametri definiti a livello di template
+    Map<String, String> mergedParams = new LinkedHashMap<>(resolvedInputParams);
+    if (emailTemplateResponse.getParams() != null && !emailTemplateResponse.getParams().isEmpty()) {
+      Map<String, String> templateParams =
+          Utils.getFinalMapFromValue(resolvedInputParams, emailTemplateResponse.getParams());
+      for (Map.Entry<String, String> entry : templateParams.entrySet()) {
+        if (entry.getValue() != null
+            && (!entry.getValue().startsWith("{{") || !entry.getValue().endsWith("}}"))) {
+          mergedParams.put(entry.getKey(), entry.getValue());
         }
+      }
+    }
+
+    // 3. Normalizzazione ed espansione finale
+    Map<String, String> finalParam = EmailParameterResolver.resolve(mergedParams);
+
+    LOG.debug("Replacing placeholders in the template with resolved namespaced parameters");
+    for (Map.Entry<String, String> entry : finalParam.entrySet()) {
+      if (entry.getValue() != null
+          && (!entry.getValue().startsWith("{{") || !entry.getValue().endsWith("}}"))) {
+        template = template.replace("{{" + entry.getKey() + "}}", entry.getValue());
       }
     }
 

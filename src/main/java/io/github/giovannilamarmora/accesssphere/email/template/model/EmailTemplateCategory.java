@@ -146,46 +146,48 @@ public enum EmailTemplateCategory {
 
   private static Map<String, Object> createResetPasswordParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("SITE_URL", "https://accesssphere.io");
-    params.put("NAME", "Mario Rossi");
-    params.put("RESET_CODE", "123456");
-    params.put("SITE_SHORT", "Access Sphere");
+    params.put("SITE_URL", "APP.URL");
+    params.put("NAME", "USER.NAME");
+    params.put("RESET_CODE", "AUTH.RESET_CODE");
+    params.put("SITE_SHORT", "APP.NAME");
     return params;
   }
 
   private static Map<String, Object> createWelcomeParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("SITE_URL", "https://accesssphere.io");
-    params.put("NAME", "Mario Rossi");
-    params.put("USERNAME", "mario.rossi");
-    params.put("SITE_SHORT", "Access Sphere");
+    params.put("SITE_URL", "APP.URL");
+    params.put("NAME", "USER.NAME");
+    params.put("USERNAME", "USER.USERNAME");
+    params.put("SITE_SHORT", "APP.NAME");
     return params;
   }
 
   private static Map<String, Object> createVerificationParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("SITE_URL", "https://accesssphere.io");
-    params.put("NAME", "Mario Rossi");
-    params.put("VERIFY_URL", "https://accesssphere.io/verify?token=123456789abcdef");
-    params.put("SITE_SHORT", "Access Sphere");
+    params.put("SITE_URL", "APP.URL");
+    params.put("NAME", "USER.NAME");
+    params.put("VERIFY_URL", "AUTH.VERIFY_URL");
+    params.put("SITE_SHORT", "APP.NAME");
     return params;
   }
 
   private static Map<String, Object> createMfaOtpParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("NAME", "Mario Rossi");
-    params.put("OTP_CODE", "654321");
-    params.put("EXPIRATION_MINUTES", "10");
-    params.put("SITE_SHORT", "Access Sphere");
+    params.put("SITE_URL", "APP.URL");
+    params.put("NAME", "USER.NAME");
+    params.put("OTP_CODE", "AUTH.OTP_CODE");
+    params.put("EXPIRATION_MINUTES", "AUTH.EXPIRE_MINUTES");
+    params.put("SITE_SHORT", "APP.NAME");
     return params;
   }
 
   private static Map<String, Object> createAccountLockedParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("NAME", "Mario Rossi");
-    params.put("SUPPORT_URL", "https://accesssphere.io/support");
-    params.put("LOCK_REASON", "Troppi tentativi errati");
-    params.put("SITE_SHORT", "Access Sphere");
+    params.put("SITE_URL", "APP.URL");
+    params.put("NAME", "USER.NAME");
+    params.put("LOCK_REASON", "AUTH.LOCK_REASON");
+    params.put("SUPPORT_URL", "APP.SUPPORT_URL");
+    params.put("SITE_SHORT", "APP.NAME");
     return params;
   }
 }

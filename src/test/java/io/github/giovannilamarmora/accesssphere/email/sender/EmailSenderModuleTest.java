@@ -13,6 +13,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
+import io.github.giovannilamarmora.accesssphere.user.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -119,6 +121,112 @@ class EmailSenderModuleTest {
               assertNotNull(res);
               assertTrue(res.getMessage().contains("user@example.com"));
               assertEquals("<h1>Ciao Mario</h1><p>Codice: 123456</p>", emailContent.getText());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  void testEmailParameterResolverWithUserAndClient() {
+    User user = new User();
+    user.setName("Mario");
+    user.setSurname("Rossi");
+    user.setUsername("mario.rossi");
+    user.setEmail("mario.rossi@example.com");
+    user.setTokenReset("TOKEN-1234");
+
+    OAuth2Client client = new OAuth2Client();
+    client.setClientId("portal-client");
+
+    Map<String, String> resolved = EmailParameterResolver.resolve(user, client, null);
+
+    assertNotNull(resolved);
+    assertEquals("Mario", resolved.get("USER.NAME"));
+    assertEquals("Rossi", resolved.get("USER.SURNAME"));
+    assertEquals("Mario Rossi", resolved.get("USER.FULL_NAME"));
+    assertEquals("mario.rossi", resolved.get("USER.USERNAME"));
+    assertEquals("mario.rossi@example.com", resolved.get("USER.EMAIL"));
+    assertEquals("TOKEN-1234", resolved.get("USER.RESET_TOKEN"));
+    assertEquals("TOKEN-1234", resolved.get("AUTH.RESET_CODE"));
+    assertEquals("portal-client", resolved.get("CLIENT.ID"));
+    assertEquals("Access Sphere", resolved.get("APP.NAME"));
+    assertEquals("https://accesssphere.io", resolved.get("APP.URL"));
+
+    // Verifica retrocompatibilità bidirezionale con chiavi legacy flat
+    assertEquals("Mario", resolved.get("NAME"));
+    assertEquals("Rossi", resolved.get("SURNAME"));
+    assertEquals("mario.rossi", resolved.get("USERNAME"));
+    assertEquals("mario.rossi@example.com", resolved.get("EMAIL"));
+    assertEquals("TOKEN-1234", resolved.get("RESET_CODE"));
+    assertEquals("Access Sphere", resolved.get("SITE_SHORT"));
+    assertEquals("https://accesssphere.io", resolved.get("SITE_URL"));
+  }
+
+  @Test
+  void testEmailSenderServiceWithDynamicMappedTemplate() {
+    EmailTemplateResponse templateDTO =
+        EmailTemplateResponse.builder()
+            .template(
+                "<p>Hi {{NAME}}! Code: {{RESET_CODE}} on {{SITE_SHORT}} ({{SITE_URL}})</p>")
+            .params(
+                Map.of(
+                    "NAME", "USER.NAME",
+                    "RESET_CODE", "AUTH.RESET_CODE",
+                    "SITE_SHORT", "APP.NAME",
+                    "SITE_URL", "APP.URL"))
+            .build();
+
+    EmailContent emailContent =
+        EmailContent.builder().to("mario@example.com").subject("Reset").build();
+
+    Session session = Session.getInstance(new Properties());
+    when(javaMailSender.createMimeMessage()).thenReturn(new MimeMessage(session));
+
+    Map<String, String> rawParams =
+        Map.of("USER.NAME", "Luigi", "AUTH.RESET_CODE", "999888");
+
+    StepVerifier.create(emailSenderService.sendEmail(templateDTO, rawParams, emailContent))
+        .assertNext(
+            (EmailResponse res) -> {
+              assertNotNull(res);
+              assertTrue(res.getMessage().contains("mario@example.com"));
+              assertEquals(
+                  "<p>Hi Luigi! Code: 999888 on Access Sphere (https://accesssphere.io)</p>",
+                  emailContent.getText());
+            })
+        .verifyComplete();
+  }
+
+  @Test
+  void testEmailSenderServiceWithNamespacedTemplate() {
+    EmailTemplateResponse templateDTO =
+        EmailTemplateResponse.builder()
+            .template(
+                "<p>Hi {{USER.NAME}}! Code: {{AUTH.RESET_CODE}} on {{APP.NAME}} ({{APP.URL}})</p>")
+            .params(
+                Map.of(
+                    "USER.NAME", "USER.NAME",
+                    "AUTH.RESET_CODE", "AUTH.RESET_CODE",
+                    "APP.NAME", "APP.NAME",
+                    "APP.URL", "APP.URL"))
+            .build();
+
+    EmailContent emailContent =
+        EmailContent.builder().to("mario@example.com").subject("Reset").build();
+
+    Session session = Session.getInstance(new Properties());
+    when(javaMailSender.createMimeMessage()).thenReturn(new MimeMessage(session));
+
+    Map<String, String> rawParams =
+        Map.of("USER.NAME", "Luigi", "AUTH.RESET_CODE", "999888");
+
+    StepVerifier.create(emailSenderService.sendEmail(templateDTO, rawParams, emailContent))
+        .assertNext(
+            (EmailResponse res) -> {
+              assertNotNull(res);
+              assertTrue(res.getMessage().contains("mario@example.com"));
+              assertEquals(
+                  "<p>Hi Luigi! Code: 999888 on Access Sphere (https://accesssphere.io)</p>",
+                  emailContent.getText());
             })
         .verifyComplete();
   }

@@ -107,7 +107,7 @@ OAuth 2.0 / OIDC** ad altissime prestazioni. Progettata per proteggere ecosistem
       configurazioni custom per singolo Client OAuth2 e fallback trasparente sui template globali di Access Sphere.
     - **Validazione di Unicità**: Prevenzione automatica e validazione server-side/client-side di duplicati su tripla
       `(Categoria, Client, Lingua)`.
-    - Parametri segnaposto dinamici personalizzati (`{{KEY}}`) con rilevamento ed estrazione automatica dal markup HTML.
+    - **Parametri Dinamici a Namespace Gerarchici**: Tassonomia strutturata (`USER.*`, `APP.*`, `CLIENT.*`, `AUTH.*`) con resolver centralizzato (`EmailParameterResolver`), normalizzazione bidirezionale trasparente per retrocompatibilità al 100% con segnaposto flat (`{{NAME}}`, `{{SITE_URL}}`, `{{RESET_CODE}}`, ecc.) e rilevamento automatico dal markup HTML.
     - Editor interattivo split-screen con anteprima live isolata (iframe) in tempo reale su viewport Desktop e Mobile.
     - Sostituzione autonoma del servizio Strapi legacy per il flusso di reset password con smart fallback multilingua e
       per-client override.

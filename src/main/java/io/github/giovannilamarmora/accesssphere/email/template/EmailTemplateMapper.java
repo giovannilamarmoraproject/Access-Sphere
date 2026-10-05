@@ -41,10 +41,9 @@ public class EmailTemplateMapper {
    * @return Modello di dominio popolato, oppure null se l'input e null
    */
   public static EmailTemplate toModel(EmailTemplateEntity entity) {
-    if (entity == null) return null;
     EmailTemplate model = new EmailTemplate();
     BeanUtils.copyProperties(entity, model);
-    if (entity.getParams() != null) {
+    if (!ObjectToolkit.isNullOrEmpty(entity.getParams())) {
       model.setParams(new HashMap<>(entity.getParams()));
     }
     return model;
