@@ -1,58 +1,130 @@
 name: access-sphere
 
-version: '3.9'
 services:
   access-sphere:
+    # Nome univoco assegnato al container in esecuzione
     container_name: access-sphere
+    # Immagine Docker con fallback: usa la variabile DOCKER_REPOSITORY (default 'giovannilamarmora/access-sphere') e APP_VERSION (default 'latest')
     image: ${DOCKER_REPOSITORY:-giovannilamarmora/access-sphere}:${APP_VERSION:-latest}
+    # Hostname interno visibile dal container stesso
     hostname: access.sphere.service
+    # Mappatura porte (Host:Container): espone la porta dell'applicazione (default 8008 sull'host -> 8080 nel container)
     ports:
       - ${PORT:-8008:8080}
     environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-deploy}
-      - DATABASE_JDBC_URL=${DATABASE_JDBC_URL}
-      - DATABASE_NAME=${DATABASE_NAME}
-      - DATABASE_USERNAME=${DATABASE_USERNAME}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - APP_ENV=${APP_ENV:-Production}
-      - LOGGING_LEVEL=${LOGGING_LEVEL:-INFO}
-      - LOGBACK_FILE=${LOGBACK_FILE:-classpath:logback-spring.xml}
-      - GCLOUD_PROJECT=${GCLOUD_PROJECT}
-      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
-      - COOKIE_DOMAIN=${COOKIE_DOMAIN}
-      - STRAPI_ACTIVE=${STRAPI_ACTIVE}
-      - STRAPI_BASE_URL=${STRAPI_BASE_URL:-http://app.strapi.cms:1337}
-      - STRAPI_AUTH_TOKEN=${STRAPI_AUTH_TOKEN}
-      - ADMIN_USERNAME=${ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - CORS_ENABLED=${CORS_ENABLED}
-      - CORS_NOT_FILTER=${CORS_NOT_FILTER}
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
-      - CORS_ALLOWED_HEADERS=${CORS_ALLOWED_HEADERS}
-      - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS}
-      - AES_KEY=${AES_KEY}
+      # -----------------------------
+      # Spring Profile
+      # -----------------------------
+      # Profilo Spring attivo (default: 'deploy')
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-deploy}
+      APPLICATION_ENVIRONMENT: ${APPLICATION_ENVIRONMENT:-Production}
+
+      # -----------------------------
+      # Database Configuration
+      # -----------------------------
+      DATABASE_JDBC_URL: ${DATABASE_JDBC_URL}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+
+      # -----------------------------
+      # LOGS Settings
+      # -----------------------------
+      # Livello di log applicativo (es. INFO, DEBUG, WARN, ERROR)
+      LOGGING_LEVEL: ${LOGGING_LEVEL:-INFO}
+      # File di configurazione Logback (default 'logback-spring.xml'; per Google Cloud usare 'logback-google.xml')
+      LOGBACK_FILE: ${LOGBACK_FILE:-classpath:logback-spring.xml}
+      # Mostra lo stacktrace in caso di eccezione
+      SHOW_EXCEPTION_STACKTRACE: ${SHOW_EXCEPTION_STACKTRACE:-false}
+
+      # -----------------------------
+      # Google Cloud Settings
+      # -----------------------------
+      # ID del progetto Google Cloud di riferimento
+      GCLOUD_PROJECT: ${GCLOUD_PROJECT}
+      # Percorso del file JSON con le credenziali del Service Account GCP
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
+
+      # ---------------------------------
+      # Server Email
+      # ---------------------------------
+      SERVER_SMTP_HOST: ${SERVER_SMTP_HOST}
+      SERVER_SMTP_PORT: ${SERVER_SMTP_PORT}
+      SERVER_USERNAME: ${SERVER_USERNAME}
+      SERVER_PASSWORD_TOKEN: ${SERVER_PASSWORD_TOKEN}
+      SERVER_EMAIL_FROM: ${SERVER_EMAIL_FROM}
+      SERVER_EMAIL_REPLY_TO: ${SERVER_EMAIL_REPLY_TO}
+
+      # ---------------------------------
+      # Admin Configuration
+      # ---------------------------------
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+      # ---------------------------------
+      # App Configuration
+      # ---------------------------------
+      USER_ENCRYPTION_KEY: ${USER_ENCRYPTION_KEY}
+
+      # ---------------------------------
+      # App Configuration
+      # ---------------------------------
+      CORS_ENABLED: ${CORS_ENABLED:-true}
+      CORS_NOT_FILTER: ${CORS_NOT_FILTER:-*swagger*,*api-docs*,*webjars*}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+      CORS_ALLOWED_HEADERS: ${CORS_ALLOWED_HEADERS:-Origin, Content-Type, Accept, Authorization, Location, Trace-ID, Span-ID, Parent-ID, Session-ID, Redirect-Uri}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
+
+
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN}
+      APP_DOMAIN: ${APP_DOMAIN}
+      CODEC_MAX_IN_MEMORY_SIZE: ${CODEC_MAX_IN_MEMORY_SIZE:-20MB}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
+      SENDER_EMAILS: ${SENDER_EMAILS}
+
     volumes:
       # Monta il volume "microservice" nella cartella /secrets (in sola lettura)
       - microservice:/secrets:ro
+
+    labels:
+      # -----------------------------
+      # Configurazione WUD (What's Up Docker?)
+      # -----------------------------
+      # 1. Attiva il monitoraggio degli aggiornamenti immagine per questo container
+      - "wud.watch=true"
+      # 2. Filtro regex: monitora esclusivamente il tag 'latest'
+      - "wud.tag.include=^latest$"
+      # 3. Controlla le variazioni di hash digest SHA-256 (rileva push su 'latest' senza cambio tag)
+      - "wud.watch.digest=true"
+      # 4. Attiva il trigger di aggiornamento/deploy locale di Docker
+      - "wud.trigger.docker.local.enabled=true"
+      # 5. Forza l'aggiornamento e riavvio automatico immediato al rilevamento di una nuova versione
+      - "wud.trigger.docker.local.auto=true"
+      # Soglia di aggiornamento: esegue il trigger per qualsiasi tipo di update rilevato
+      - "wud.trigger.docker.local.threshold=all"
+
     deploy:
-      replicas: 1  # Cambia il numero di repliche a seconda delle tue esigenze
-      #update_config:
-      #  parallelism: 1
-      #  delay: 10s
-      #restart_policy:
-      #  condition: on-failure
-      #placement:
-      #  constraints:
-      #    - node.role == manager
+      replicas: 1
+
     networks:
       docker-network:
+        # Alias di rete per la risoluzione DNS interna (raggiungibile dagli altri container come http://access.sphere.service)
         aliases:
           - access.sphere.service
 
+# -----------------------------
+# Definizione Reti
+# -----------------------------
 networks:
   docker-network:
+    # Rete Docker preesistente e condivisa, creata esternamente
     external: true
 
+# -----------------------------
+# Definizione Volumi
+# -----------------------------
 volumes:
   microservice:
+    # Volume Docker preesistente e condiviso, creato esternamente (es. per certificati/segreti)
     external: true

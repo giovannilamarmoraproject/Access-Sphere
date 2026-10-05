@@ -1,4 +1,4 @@
-env: ${APP_ENV} # Used for Google Cloud LOG
+env: ${APPLICATION_ENVIRONMENT:Deploy} # Used for Google Cloud LOG
 server:
   port: 8080
 cookie-domain: ${COOKIE_DOMAIN:} # Used for Cookie
@@ -24,10 +24,10 @@ spring:
   codec:
     max-in-memory-size: ${CODEC_MAX_IN_MEMORY_SIZE:20MB}
   mail:
-    host: ${SMTP_HOST:smtp.gmail.com}
-    port: ${SMTP_PORT:587}
-    username: ${SERVER_EMAIL}
-    password: ${SERVER_TOKEN}
+    host: ${SERVER_SMTP_HOST:smtp.gmail.com}
+    port: ${SERVER_SMTP_PORT:587}
+    username: ${SERVER_USERNAME}
+    password: ${SERVER_PASSWORD_TOKEN}
     sender-emails: ${SENDER_EMAILS:${SERVER_EMAIL:admin@access-sphere.com}}
     properties:
       mail:
@@ -44,6 +44,8 @@ logging:
 app:
   version: @project.version@
   domain: ${APP_DOMAIN:access-sphere.giovannilamarmora.com}
+  exception:
+    stacktrace: ${SHOW_EXCEPTION_STACKTRACE:false} # Active StackTrace in Response
   cors:
     enabled: ${CORS_ENABLED}
     shouldNotFilter: ${CORS_NOT_FILTER:*swagger*,*api-docs*,*webjars*}

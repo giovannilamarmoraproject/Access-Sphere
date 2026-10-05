@@ -36,10 +36,10 @@ spring:
   codec:
     max-in-memory-size: 20MB # Upload of images
   mail:
-    host: ${SMTP_HOST:smtp.gmail.com}
-    port: ${SMTP_PORT:587}
-    username: ${SERVER_EMAIL:admin@access-sphere.com}
-    password: ${SERVER_TOKEN:}
+    host: ${SERVER_SMTP_HOST:smtp.gmail.com}
+    port: ${SERVER_SMTP_PORT:587}
+    username: ${SERVER_USERNAME:admin@access-sphere.com}
+    password: ${SERVER_PASSWORD_TOKEN:}
     sender-emails: ${SENDER_EMAILS:${SERVER_EMAIL:admin@access-sphere.com}}
     properties:
       mail:
@@ -50,7 +50,7 @@ spring:
 
 # Level of LOG
 logging:
-  config: ${LOGBACK_FILE:}
+  config: ${LOGBACK_FILE:classpath:logback-spring.xml}
   level:
     io.github.giovannilamarmora: DEBUG
     web: INFO
@@ -86,7 +86,7 @@ filter:
 app:
   version: @project.version@
   domain: ${APP_DOMAIN:localhost:8081}
-  aes-key: ${AES_KEY:}
+  aes-key: ${USER_ENCRYPTION_KEY:7bYj9sW2k+uKq5tLz9rV6fNxXp0oTm1y3hCg8aD4vEw=}
   admin-user:
     username: ${ADMIN_USERNAME:tech_admin}
     password: ${ADMIN_PASSWORD:tech_password}
