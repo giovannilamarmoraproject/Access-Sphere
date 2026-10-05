@@ -361,15 +361,13 @@ La documentazione OpenAPI 3.0 interattiva è accessibile a runtime all'indirizzo
 
 ### 6. ✉️ **Email Template Controller** (`/v1/email-templates`)
 
-| Metodo   | Endpoint                         | Descrizione                                                                      | Autenticazione |
-|----------|----------------------------------|----------------------------------------------------------------------------------|----------------|
-| `GET`    | `/v1/email-templates`            | Elenco di tutti i template email censiti                                         | Bearer (Admin) |
-| `GET`    | `/v1/email-templates/{id}`       | Recupera un template email per ID                                                | Bearer (Admin) |
-| `GET`    | `/v1/email-templates/categories` | Elenco delle categorie supportate e relativi metadati                            | Bearer (Admin) |
-| `POST`   | `/v1/email-templates`            | Crea un nuovo template email con vincolo di unicità `(Category, Client, Locale)` | Bearer (Admin) |
-| `PUT`    | `/v1/email-templates`            | Aggiorna un template email esistente                                             | Bearer (Admin) |
-| `DELETE` | `/v1/email-templates/{id}`       | Elimina un template email                                                        | Bearer (Admin) |
-| `POST`   | `/v1/email-templates/send-test`  | Invia un'email di collaudo con parametri compilati                               | Bearer (Admin) |
+| Metodo   | Endpoint                        | Descrizione                                                                      | Autenticazione |
+|----------|---------------------------------|----------------------------------------------------------------------------------|----------------|
+| `GET`    | `/v1/email-templates`           | Elenco di tutti i template email censiti                                         | Bearer (Admin) |
+| `POST`   | `/v1/email-templates`           | Crea un nuovo template email con vincolo di unicità `(Category, Client, Locale)` | Bearer (Admin) |
+| `PUT`    | `/v1/email-templates/{id}`      | Aggiorna un template email esistente (supporta anche `/v1/email-templates`)       | Bearer (Admin) |
+| `DELETE` | `/v1/email-templates/{id}`      | Elimina un template email                                                        | Bearer (Admin) |
+| `POST`   | `/v1/email-templates/send-test` | Invia un'email di collaudo con parametri compilati                               | Bearer (Admin) |
 
 ---
 

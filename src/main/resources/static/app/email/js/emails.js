@@ -1271,7 +1271,8 @@ function saveTemplateForm() {
     const cfg = typeof getConfig === "function" ? getConfig() : null;
     const tokenKey = cfg ? cfg.access_token : "access-token";
     const token = typeof getCookieOrStorage === "function" ? getCookieOrStorage(tokenKey) : localStorage.getItem(tokenKey);
-    const url = cfg && cfg.email_templates_url ? cfg.email_templates_url : (window.location.origin + "/v1/email-templates");
+    const baseUrl = cfg && cfg.email_templates_url ? cfg.email_templates_url : (window.location.origin + "/v1/email-templates");
+    const url = baseUrl + (isEdit && idVal ? "/" + idVal : "");
 
     const methodFn = isEdit ? PUT : POST;
 
