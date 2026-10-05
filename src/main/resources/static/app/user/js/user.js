@@ -278,7 +278,8 @@ function displayUserData(user) {
 
   const canManageUsers = typeof AccessControl === "undefined" || AccessControl.canManageUsers();
   const canViewRoles = typeof AccessControl === "undefined" || AccessControl.canViewRoles();
-  const canManageRoles = typeof AccessControl === "undefined" || AccessControl.canManageRoles();
+  const canAssignUserRoles = typeof AccessControl === "undefined" || (typeof AccessControl.canAssignUserRoles === "function" ? AccessControl.canAssignUserRoles() : AccessControl.canManageRoles());
+  const canLockUsers = typeof AccessControl === "undefined" || (typeof AccessControl.canLockUsers === "function" ? AccessControl.canLockUsers() : AccessControl.canManageUsers());
   const canDeleteUsers = typeof AccessControl === "undefined" || AccessControl.canDeleteUsers();
 
   const photo = getOrDefault(user.profilePhoto, "https://bootdey.com/img/Content/avatar/avatar7.png");
@@ -304,6 +305,7 @@ function displayUserData(user) {
           : (cr.permissions && cr.permissions.length > 0)
             ? cr.permissions.map(p => `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono" style="background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.1); color: var(--theme-accent, #D0BCFF); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);">${p}</span>`).join("")
             : "";
+        const badgeClass = typeof getRoleTypeBadgeClass === "function" ? getRoleTypeBadgeClass(cr.type) : "role-badge-user";
         return `
           <div class="inline-flex flex-col gap-1 p-2.5 rounded-xl mr-2 mb-2 shadow-sm transition-all" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.14); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);">
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -313,7 +315,7 @@ function displayUserData(user) {
               <span class="text-xs font-mono font-bold text-white flex items-center gap-1">
                 <i class="fa-solid fa-shield-halved text-[10px]" style="color: var(--theme-accent, #A855F7);"></i> ${cr.role}
               </span>
-              ${cr.type ? `<span class="px-1.5 py-0.5 rounded-full text-[9px] font-mono" style="background: rgba(255, 255, 255, 0.08); color: #D1D5DB; border: 1px solid rgba(255, 255, 255, 0.12);">${cr.type}</span>` : ''}
+              ${cr.type ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold ${badgeClass}">${cr.type}</span>` : ''}
             </div>
             ${permsHtml ? `<div class="flex flex-wrap gap-1 mt-0.5">${permsHtml}</div>` : ''}
           </div>
@@ -431,7 +433,7 @@ function displayUserData(user) {
         </div>
 
         <!-- Bottoni Azione M3: Tutti Arrotondati (Pill), Testo Bianco, Stesso Font Size e Spessore identici -->
-        ${(canManageUsers || (canManageRoles && canViewRoles) || canDeleteUsers) ? `
+        ${(canManageUsers || (canAssignUserRoles && canViewRoles) || canLockUsers || canDeleteUsers) ? `
         <div class="space-y-2.5 w-full">
           ${canManageUsers ? `
           <a id="user-detail-edit-profile-btn" href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-primary m3-action-pill w-full justify-center py-2.5 px-4 text-decoration-none shadow-lg hover:brightness-110 transition-all" style="border-radius: 9999px !important; color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">
@@ -440,16 +442,16 @@ function displayUserData(user) {
           </a>
           ` : ''}
           
-          ${((canManageRoles && canViewRoles) || canManageUsers) ? `
-          <div class="grid ${((canManageRoles && canViewRoles) && canManageUsers) ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 w-full">
-            ${(canManageRoles && canViewRoles) ? `
+          ${((canAssignUserRoles && canViewRoles) || canLockUsers) ? `
+          <div class="grid ${((canAssignUserRoles && canViewRoles) && canLockUsers) ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 w-full">
+            ${(canAssignUserRoles && canViewRoles) ? `
             <a href="/app/users/roles/${encodeURIComponent(user.identifier)}" class="m3-action-pill py-2.5 px-3 text-center text-decoration-none shadow-sm hover:brightness-110 transition-all" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18); color: #FFFFFF !important; border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;">
               <i class="fa-solid fa-shield-halved text-sm" style="color: var(--theme-accent, #D0BCFF);"></i>
               <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_roles_btn", "Ruoli") : "Ruoli"}</span>
             </a>
             ` : ''}
             
-            ${canManageUsers ? (isBlocked ? `
+            ${canLockUsers ? (isBlocked ? `
               <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', false)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(16, 185, 129, 0.18); color: #FFFFFF !important; border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_unlock_btn", "Sblocca") : "Sblocca"}">
                 <i class="fa-solid fa-lock-open text-sm" style="color: #6EE7B7;"></i>
                 <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_unlock_btn", "Sblocca") : "Sblocca"}</span>
@@ -541,7 +543,7 @@ function displayUserData(user) {
             <h4 class="text-xl font-bold text-white flex items-center gap-2.5 m-0">
               <i class="fa-solid fa-user-shield" style="color: var(--theme-accent, #A855F7);"></i> ${typeof t === 'function' ? t("user_detail_rbac_title", "Ruoli Applicativi (RBAC)") : "Ruoli Applicativi (RBAC)"}
             </h4>
-            ${canManageRoles ? `
+            ${canAssignUserRoles ? `
             <a href="/app/users/roles/${user.identifier}" class="m3-btn-primary text-xs py-2 px-5 text-decoration-none shadow-md w-full sm:w-auto justify-center" style="border-radius: 9999px !important; color: #FFFFFF !important;">
               <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_manage_roles", "Gestisci Ruoli") : "Gestisci Ruoli"}</span>
             </a>

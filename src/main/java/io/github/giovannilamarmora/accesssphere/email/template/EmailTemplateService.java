@@ -9,12 +9,16 @@ import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailSendTest
 import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateResponse;
 import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplate;
 import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplateCategory;
+import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
+import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.*;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,14 +53,39 @@ public class EmailTemplateService {
   @Autowired private EmailRepository emailRepository;
   @Autowired private EmailSender emailSender;
   @Autowired private AdminUserService techUserService;
+  @Autowired private PermissionRoleManager permissionRoleManager;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<List<EmailTemplateResponse>> getAllTemplates() {
+    SystemPermission emailPermission = SystemPermission.EMAILS_MANAGE;
+    List<RoleDefinition> hasCorrectRoles =
+        permissionRoleManager.checkPermissionAndReturnUserRoles(emailPermission);
+
     return Mono.fromCallable(
-        () -> {
-          List<EmailTemplate> models = emailRepository.findAll().orElse(List.of());
-          return EmailTemplateMapper.toDTOList(models);
-        });
+            () -> {
+              List<EmailTemplate> models = emailRepository.findAll().orElse(List.of());
+              if (permissionRoleManager.hasAdminPermission(emailPermission)) {
+                return models;
+              }
+
+              // Estrae i clientId per i quali l'utente possiede almeno un ruolo abilitato
+              Set<String> authorizedClientIds =
+                  hasCorrectRoles.stream()
+                      .map(RoleDefinition::getClientId)
+                      .filter(clientId -> !ObjectToolkit.isNullOrEmpty(clientId))
+                      .map(String::toUpperCase)
+                      .collect(Collectors.toSet());
+
+              // Filtra la lista restituendo esclusivamente i client autorizzati
+              return models.stream()
+                  .filter(
+                      emailTemplate ->
+                          emailTemplate.getClientId() != null
+                              && authorizedClientIds.contains(
+                                  emailTemplate.getClientId().toUpperCase()))
+                  .toList();
+            })
+        .map(EmailTemplateMapper::toResponseList);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -70,7 +99,7 @@ public class EmailTemplateService {
                       () ->
                           new ResponseStatusException(
                               HttpStatus.NOT_FOUND, "Email template with ID " + id + " not found"));
-          return EmailTemplateMapper.toDTO(model);
+          return EmailTemplateMapper.toResponse(model);
         });
   }
 
@@ -104,7 +133,7 @@ public class EmailTemplateService {
             Optional<EmailTemplate> exact =
                 templates.stream().filter(t -> locale.equalsIgnoreCase(t.getLocale())).findFirst();
             if (exact.isPresent()) {
-              return EmailTemplateMapper.toDTO(exact.get());
+              return EmailTemplateMapper.toResponse(exact.get());
             }
 
             // 2. Corrispondenza per prefisso lingua (es. "it" per "it-IT")
@@ -120,7 +149,7 @@ public class EmailTemplateService {
                                         .startsWith(langPrefix.toLowerCase() + "-")))
                     .findFirst();
             if (prefixMatch.isPresent()) {
-              return EmailTemplateMapper.toDTO(prefixMatch.get());
+              return EmailTemplateMapper.toResponse(prefixMatch.get());
             }
           }
 
@@ -133,7 +162,7 @@ public class EmailTemplateService {
                               || "default".equalsIgnoreCase(t.getLocale()))
                   .findFirst();
           if (defaultMatch.isPresent()) {
-            return EmailTemplateMapper.toDTO(defaultMatch.get());
+            return EmailTemplateMapper.toResponse(defaultMatch.get());
           }
 
           // 4. Fallback sul primo template disponibile per quell'identificatore
@@ -142,7 +171,7 @@ public class EmailTemplateService {
               identifier,
               locale,
               templates.getFirst().getLocale());
-          return EmailTemplateMapper.toDTO(templates.getFirst());
+          return EmailTemplateMapper.toResponse(templates.getFirst());
         });
   }
 
@@ -181,7 +210,7 @@ public class EmailTemplateService {
                   "Template found for dedicated Client=[{}], ID=[{}]",
                   clientId,
                   clientMatch.get().getId());
-              return EmailTemplateMapper.toDTO(clientMatch.get());
+              return EmailTemplateMapper.toResponse(clientMatch.get());
             }
             LOG.warn(
                 "No specific template found for clientId=[{}] and category=[{}]. Falling back to Global Access Sphere template",
@@ -204,7 +233,7 @@ public class EmailTemplateService {
                   techClientId,
                   effectiveCategory,
                   techMatch.get().getId());
-              return EmailTemplateMapper.toDTO(techMatch.get());
+              return EmailTemplateMapper.toResponse(techMatch.get());
             }
           }
 
@@ -217,7 +246,7 @@ public class EmailTemplateService {
                 "Global Access Sphere Template found for category=[{}], ID=[{}]",
                 effectiveCategory,
                 globalMatch.get().getId());
-            return EmailTemplateMapper.toDTO(globalMatch.get());
+            return EmailTemplateMapper.toResponse(globalMatch.get());
           }
 
           // 3. Fallback per retrocompatibilita: ricerca per identifier globale esatto
@@ -226,7 +255,7 @@ public class EmailTemplateService {
           if (!legacyTemplates.isEmpty()) {
             Optional<EmailTemplate> legacyMatch = resolveTemplateFromList(legacyTemplates, locale);
             if (legacyMatch.isPresent()) {
-              return EmailTemplateMapper.toDTO(legacyMatch.get());
+              return EmailTemplateMapper.toResponse(legacyMatch.get());
             }
           }
 
@@ -237,7 +266,7 @@ public class EmailTemplateService {
           if (!defaultIdTemplates.isEmpty()) {
             Optional<EmailTemplate> defMatch = resolveTemplateFromList(defaultIdTemplates, locale);
             if (defMatch.isPresent()) {
-              return EmailTemplateMapper.toDTO(defMatch.get());
+              return EmailTemplateMapper.toResponse(defMatch.get());
             }
           }
 
@@ -252,7 +281,7 @@ public class EmailTemplateService {
               Optional<EmailTemplate> oldMatch =
                   resolveTemplateFromList(legacyOldTemplates, locale);
               if (oldMatch.isPresent()) {
-                return EmailTemplateMapper.toDTO(oldMatch.get());
+                return EmailTemplateMapper.toResponse(oldMatch.get());
               }
             }
           }
@@ -387,7 +416,7 @@ public class EmailTemplateService {
               saved.getCategory(),
               saved.getClientId(),
               saved.getLocale());
-          return EmailTemplateMapper.toDTO(saved);
+          return EmailTemplateMapper.toResponse(saved);
         });
   }
 

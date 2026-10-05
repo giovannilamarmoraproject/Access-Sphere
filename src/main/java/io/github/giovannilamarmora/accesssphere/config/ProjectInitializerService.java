@@ -231,6 +231,7 @@ public class ProjectInitializerService implements ApplicationRunner {
             SystemPermission.USERS_DELETE.getValue(),
             SystemPermission.USERS_LOCK.getValue(),
             SystemPermission.USERS_ROLES.getValue(),
+            SystemPermission.ROLES_MANAGE.getValue(),
             SystemPermission.CLIENTS_READ.getValue(),
             SystemPermission.CLIENTS_WRITE.getValue(),
             SystemPermission.CLIENTS_DELETE.getValue(),

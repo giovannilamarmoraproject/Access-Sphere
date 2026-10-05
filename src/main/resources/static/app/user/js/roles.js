@@ -34,7 +34,7 @@ let currentTargetIdentifier = null;
 
 $(document).ready(function () {
   // Verifica autorizzazioni per la gestione dei ruoli utente
-  if (typeof AccessControl !== "undefined" && !AccessControl.canManageRoles()) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canAssignUserRoles()) {
     console.warn("AccessControl: Permesso insufficiente per gestire i ruoli utente.");
     if (typeof AccessControl.showDeniedAlert === "function") {
       AccessControl.showDeniedAlert(
@@ -197,7 +197,8 @@ function handleRoleSelectionChange() {
 
   // Iniezione dati nell'anteprima
   $("#preview_client_badge").html(`<i class="fa-solid fa-cube text-[9px] mr-1"></i>${selectedClientId}`);
-  $("#preview_type_badge").text(roleType);
+  const badgeCls = typeof getRoleTypeBadgeClass === "function" ? getRoleTypeBadgeClass(roleType) : "role-badge-user";
+  $("#preview_type_badge").text(roleType).attr("class", `px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold ${badgeCls}`);
   $("#preview_role_name").text(selectedRoleName);
 
   if (roleDesc && roleDesc.trim().length > 0) {
@@ -408,8 +409,7 @@ function renderAssignedRoles() {
                     style="background: rgba(var(--theme-accent-rgb), 0.18); color: var(--theme-accent); border: 1px solid rgba(var(--theme-accent-rgb), 0.32);">
                 <i class="fa-solid fa-cube text-[9px] mr-1"></i>${cr.clientId}
               </span>
-              <span class="px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold"
-                    style="background: rgba(255, 255, 255, 0.08); color: #E5E7EB; border: 1px solid rgba(255, 255, 255, 0.15);">
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold ${typeof getRoleTypeBadgeClass === 'function' ? getRoleTypeBadgeClass(cr.type) : 'role-badge-user'}">
                 ${cr.type || "DEFAULT"}
               </span>
             </div>
@@ -566,7 +566,7 @@ function displayUserData(user) {
  * la lista `roles` per garantire la piena retrocompatibilità con i servizi legacy.
  */
 function changeRoles() {
-  if (typeof AccessControl !== "undefined" && !AccessControl.canManageRoles()) {
+  if (typeof AccessControl !== "undefined" && !AccessControl.canAssignUserRoles()) {
     if (typeof AccessControl.showDeniedAlert === "function") {
       AccessControl.showDeniedAlert(
         typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato",

@@ -1055,7 +1055,13 @@
             } else {
                 if (wildCheck) wildCheck.checked = false;
                 handleClientRoleWildcard(false);
-                const standardKeys = ["users:read", "users:write", "users:delete", "clients:read", "clients:write", "roles:manage", "settings:read", "settings:write"];
+                const standardKeys = [
+                    "users:read", "users:write", "users:delete", "users:lock", "users:roles",
+                    "roles:manage",
+                    "clients:read", "clients:write", "clients:delete",
+                    "settings:read", "settings:write",
+                    "backup:manage", "emails:manage"
+                ];
                 perms.forEach(p => {
                     if (!p) return;
                     const key = String(p).trim().toLowerCase();
@@ -1981,7 +1987,7 @@
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
                                             <span class="font-mono text-xs font-bold text-purple-300 block truncate">users:read</span>
-                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Lettura profili utenti</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_users_read_desc">Lettura profili utenti</span>
                                         </div>
                                         <div class="m3-radio-indicator">
                                             <div class="m3-radio-dot"></div>
@@ -1998,7 +2004,7 @@
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
                                             <span class="font-mono text-xs font-bold text-purple-300 block truncate">users:write</span>
-                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Creazione e modifica utenti</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_users_write_desc">Creazione e modifica utenti</span>
                                         </div>
                                         <div class="m3-radio-indicator">
                                             <div class="m3-radio-dot"></div>
@@ -2015,7 +2021,7 @@
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
                                             <span class="font-mono text-xs font-bold text-purple-300 block truncate">users:delete</span>
-                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Eliminazione e blocco utenti</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_users_delete_desc">Eliminazione definitiva utenti</span>
                                         </div>
                                         <div class="m3-radio-indicator">
                                             <div class="m3-radio-dot"></div>
@@ -2023,16 +2029,16 @@
                                     </label>
                                 </div>
 
-                                <!-- clients:read -->
+                                <!-- users:lock -->
                                 <div class="w-full min-w-0 flex flex-col">
-                                    <input type="checkbox" id="client-perm-clients-read" value="clients:read"
+                                    <input type="checkbox" id="client-perm-users-lock" value="users:lock"
                                            onchange="updateClientRoleLivePreview()"
                                            class="sr-only client-role-perm-checkbox m3-perm-input"/>
-                                    <label for="client-perm-clients-read"
+                                    <label for="client-perm-users-lock"
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
-                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">clients:read</span>
-                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Consultazione parametri client</span>
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">users:lock</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_users_lock_desc">Blocco e sblocco accesso utenti</span>
                                         </div>
                                         <div class="m3-radio-indicator">
                                             <div class="m3-radio-dot"></div>
@@ -2040,16 +2046,16 @@
                                     </label>
                                 </div>
 
-                                <!-- clients:write -->
+                                <!-- users:roles -->
                                 <div class="w-full min-w-0 flex flex-col">
-                                    <input type="checkbox" id="client-perm-clients-write" value="clients:write"
+                                    <input type="checkbox" id="client-perm-users-roles" value="users:roles"
                                            onchange="updateClientRoleLivePreview()"
                                            class="sr-only client-role-perm-checkbox m3-perm-input"/>
-                                    <label for="client-perm-clients-write"
+                                    <label for="client-perm-users-roles"
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
-                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">clients:write</span>
-                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Modifica credenziali e redirect</span>
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">users:roles</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_users_roles_desc">Assegnazione e revoca ruoli utente</span>
                                         </div>
                                         <div class="m3-radio-indicator">
                                             <div class="m3-radio-dot"></div>
@@ -2066,7 +2072,58 @@
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
                                             <span class="font-mono text-xs font-bold text-purple-300 block truncate">roles:manage</span>
-                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Gestione ruoli e permessi</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_roles_manage_desc">Gestione ruoli e permessi client</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- clients:read -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="client-perm-clients-read" value="clients:read"
+                                           onchange="updateClientRoleLivePreview()"
+                                           class="sr-only client-role-perm-checkbox m3-perm-input"/>
+                                    <label for="client-perm-clients-read"
+                                           class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">clients:read</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_clients_read_desc">Consultazione parametri client</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- clients:write -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="client-perm-clients-write" value="clients:write"
+                                           onchange="updateClientRoleLivePreview()"
+                                           class="sr-only client-role-perm-checkbox m3-perm-input"/>
+                                    <label for="client-perm-clients-write"
+                                           class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">clients:write</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_clients_write_desc">Modifica credenziali e configurazioni</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- clients:delete -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="client-perm-clients-delete" value="clients:delete"
+                                           onchange="updateClientRoleLivePreview()"
+                                           class="sr-only client-role-perm-checkbox m3-perm-input"/>
+                                    <label for="client-perm-clients-delete"
+                                           class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">clients:delete</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_clients_delete_desc">Eliminazione client OAuth2</span>
                                         </div>
                                         <div class="m3-radio-indicator">
                                             <div class="m3-radio-dot"></div>
@@ -2083,7 +2140,7 @@
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
                                             <span class="font-mono text-xs font-bold text-purple-300 block truncate">settings:read</span>
-                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Visualizzazione impostazioni</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_settings_read_desc">Visualizzazione impostazioni</span>
                                         </div>
                                         <div class="m3-radio-indicator">
                                             <div class="m3-radio-dot"></div>
@@ -2100,7 +2157,41 @@
                                            class="m3-perm-card flex items-center justify-between w-full h-full">
                                         <div class="min-w-0 flex-1 pr-2">
                                             <span class="font-mono text-xs font-bold text-purple-300 block truncate">settings:write</span>
-                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug">Salvataggio configurazioni</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_settings_write_desc">Modifica branding e sistema</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- backup:manage -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="client-perm-backup-manage" value="backup:manage"
+                                           onchange="updateClientRoleLivePreview()"
+                                           class="sr-only client-role-perm-checkbox m3-perm-input"/>
+                                    <label for="client-perm-backup-manage"
+                                           class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">backup:manage</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_backup_manage_desc">Snapshot, export e ripristino dati</span>
+                                        </div>
+                                        <div class="m3-radio-indicator">
+                                            <div class="m3-radio-dot"></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- emails:manage -->
+                                <div class="w-full min-w-0 flex flex-col">
+                                    <input type="checkbox" id="client-perm-emails-manage" value="emails:manage"
+                                           onchange="updateClientRoleLivePreview()"
+                                           class="sr-only client-role-perm-checkbox m3-perm-input"/>
+                                    <label for="client-perm-emails-manage"
+                                           class="m3-perm-card flex items-center justify-between w-full h-full">
+                                        <div class="min-w-0 flex-1 pr-2">
+                                            <span class="font-mono text-xs font-bold text-purple-300 block truncate">emails:manage</span>
+                                            <span class="text-[11px] text-gray-400 block mt-0.5 leading-snug" data-i18n="roles_perm_emails_manage_desc">Gestione template email di sistema</span>
                                         </div>
                                         <div class="m3-radio-indicator">
                                             <div class="m3-radio-dot"></div>

@@ -3,7 +3,6 @@ package io.github.giovannilamarmora.accesssphere.client;
 import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientDataResponse;
 import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientRequest;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
@@ -47,7 +46,6 @@ public class OAuth2ClientService {
 
   @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private PermissionRoleManager permissionRoleManager;
-  @Autowired private AdminUserService techUserService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
 
   /**

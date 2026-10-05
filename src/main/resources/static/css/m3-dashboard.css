@@ -2199,3 +2199,85 @@ body.swal2-shown .m3-mobile-bottom-nav,
         padding-bottom: 90px !important;
     }
 }
+
+/* =======================================================
+   CANONICAL ROLE TYPE BADGES & PERMISSION CHIPS (M3 RBAC)
+   Uniforma i badge e chip di tutti gli 8 tipi di ruolo e dei
+   permessi granulari in tutte le schermate dell'applicazione.
+   ======================================================= */
+.role-badge-user {
+    background: rgba(16, 185, 129, 0.16) !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+    color: #6ee7b7 !important;
+}
+
+.role-badge-admin {
+    background: rgba(239, 68, 68, 0.16) !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    color: #fca5a5 !important;
+}
+
+.role-badge-manager {
+    background: rgba(99, 102, 241, 0.16) !important;
+    border: 1px solid rgba(99, 102, 241, 0.35) !important;
+    color: #a5b4fc !important;
+}
+
+.role-badge-operator {
+    background: rgba(20, 184, 166, 0.16) !important;
+    border: 1px solid rgba(20, 184, 166, 0.35) !important;
+    color: #5eead4 !important;
+}
+
+.role-badge-technical {
+    background: rgba(245, 158, 11, 0.16) !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    color: #fcd34d !important;
+}
+
+.role-badge-auditor {
+    background: rgba(168, 85, 247, 0.16) !important;
+    border: 1px solid rgba(168, 85, 247, 0.35) !important;
+    color: #d8b4fe !important;
+}
+
+.role-badge-guest {
+    background: rgba(156, 163, 175, 0.16) !important;
+    border: 1px solid rgba(156, 163, 175, 0.35) !important;
+    color: #d1d5db !important;
+}
+
+.role-badge-superadmin {
+    background: rgba(234, 179, 8, 0.2) !important;
+    border: 1px solid rgba(234, 179, 8, 0.45) !important;
+    color: #fde047 !important;
+}
+
+.permission-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08);
+    border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2);
+    color: var(--theme-accent, #D0BCFF);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.permission-chip:hover {
+    background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
+    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45);
+    color: #FFFFFF;
+}
+
+.permission-chip-wildcard {
+    background: rgba(16, 185, 129, 0.15) !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    color: #34D399 !important;
+    font-weight: 700;
+}
+

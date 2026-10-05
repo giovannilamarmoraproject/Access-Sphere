@@ -141,7 +141,7 @@ function displayUsersTable(users) {
     table.innerHTML = "";
 
     const canManage = typeof AccessControl === "undefined" || AccessControl.canManageUsers();
-    const canManageRoles = typeof AccessControl === "undefined" || AccessControl.canManageRoles();
+    const canManageRoles = typeof AccessControl === "undefined" || ((typeof AccessControl.canAssignUserRoles === "function" ? AccessControl.canAssignUserRoles() : AccessControl.canManageRoles()) && AccessControl.canViewRoles());
     const canDelete = typeof AccessControl === "undefined" || AccessControl.canDeleteUsers();
 
     users.forEach((user) => {

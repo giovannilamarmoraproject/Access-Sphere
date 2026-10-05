@@ -758,10 +758,11 @@
             } else {
                 permsBadge = '<span class="text-[11px] text-gray-500 italic">-</span>';
             }
+            const roleBadgeClass = typeof getRoleTypeBadgeClass === 'function' ? getRoleTypeBadgeClass(roleObj.type) : 'role-badge-user';
             return `
                       <tr>
                         <td class="font-mono font-bold text-white">${roleObj.role || ''}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">${roleObj.type || 'DEFAULT'}</span></td>
+                        <td><span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold ${roleBadgeClass}">${roleObj.type || 'DEFAULT'}</span></td>
                         <td class="role-desc-text">${roleObj.description || 'Nessuna descrizione fornita'}</td>
                         <td><div class="flex flex-wrap gap-1">${permsBadge}</div></td>
                       </tr>`;

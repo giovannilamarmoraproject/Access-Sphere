@@ -467,8 +467,13 @@ function openRoleModal(mode, roleData) {
                     wildCheck.checked = true;
                     handleWildcardToggle(true);
                 }
-            } else {
-                const standardKeys = ["users:read", "users:write", "users:delete", "clients:read", "clients:write", "roles:manage", "settings:read", "settings:write"];
+                const standardKeys = [
+                    "users:read", "users:write", "users:delete", "users:lock", "users:roles",
+                    "roles:manage",
+                    "clients:read", "clients:write", "clients:delete",
+                    "settings:read", "settings:write",
+                    "backup:manage", "emails:manage"
+                ];
                 roleData.permissions.forEach((p) => {
                     if (!p) return;
                     const key = String(p).trim().toLowerCase();

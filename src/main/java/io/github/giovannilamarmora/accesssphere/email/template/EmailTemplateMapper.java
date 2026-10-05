@@ -85,9 +85,9 @@ public class EmailTemplateMapper {
    * @param models Lista di modelli di dominio
    * @return Lista di DTO per la risposta API REST
    */
-  public static List<EmailTemplateResponse> toDTOList(List<EmailTemplate> models) {
+  public static List<EmailTemplateResponse> toResponseList(List<EmailTemplate> models) {
     if (ObjectToolkit.isNullOrEmpty(models)) return List.of();
-    return models.stream().map(EmailTemplateMapper::toDTO).toList();
+    return models.stream().map(EmailTemplateMapper::toResponse).toList();
   }
 
   /**
@@ -97,33 +97,13 @@ public class EmailTemplateMapper {
    * @param model Modello di dominio
    * @return DTO popolato per l'interfaccia utente o API
    */
-  public static EmailTemplateResponse toDTO(EmailTemplate model) {
-    if (model == null) return null;
+  public static EmailTemplateResponse toResponse(EmailTemplate model) {
     EmailTemplateResponse dto = new EmailTemplateResponse();
     BeanUtils.copyProperties(model, dto);
     if (model.getParams() != null) {
       dto.setParams(new HashMap<>(model.getParams()));
     }
     return dto;
-  }
-
-  public static EmailTemplateResponse toResponse(EmailTemplate model) {
-    return toDTO(model);
-  }
-
-  public static List<EmailTemplateResponse> toResponseList(List<EmailTemplate> models) {
-    return toDTOList(models);
-  }
-
-  /**
-   * Converte un'entita JPA direttamente in DTO (overload di retrocompatibilita).
-   *
-   * @param entity Entita di persistenza
-   * @return DTO popolato
-   */
-  public static EmailTemplateResponse toDTO(EmailTemplateEntity entity) {
-    if (entity == null) return null;
-    return toDTO(toModel(entity));
   }
 
   /**

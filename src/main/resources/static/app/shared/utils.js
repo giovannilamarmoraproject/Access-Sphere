@@ -78,6 +78,41 @@ function escapeHtmlAttr(str) {
 
 window.escapeHtmlAttr = escapeHtmlAttr;
 
+/**
+ * Restituisce la classe CSS corretta per il badge del tipo ruolo Material Design 3.
+ * Supporta resilientemente tutti gli 8 tipi canonici definiti in AppRoleType:
+ * USER, ADMIN, MANAGER, OPERATOR, TECHNICAL, AUDITOR, GUEST, SUPER_ADMIN.
+ *
+ * @param {string} type - Tipo ruolo (stringa, case-insensitive, supporta prefissi ROLE_ e ACCESS-SPHERE_)
+ * @returns {string} Nome della classe CSS associata
+ */
+function getRoleTypeBadgeClass(type) {
+    if (!type) return "role-badge-user";
+    const t = String(type).toUpperCase().replace(/^(ROLE_|ACCESS-SPHERE_)/, "");
+    switch (t) {
+        case "ADMIN":
+            return "role-badge-admin";
+        case "SUPER_ADMIN":
+        case "SUPERADMIN":
+            return "role-badge-superadmin";
+        case "MANAGER":
+            return "role-badge-manager";
+        case "OPERATOR":
+            return "role-badge-operator";
+        case "TECHNICAL":
+        case "TECH":
+            return "role-badge-technical";
+        case "AUDITOR":
+            return "role-badge-auditor";
+        case "GUEST":
+            return "role-badge-guest";
+        case "USER":
+        default:
+            return "role-badge-user";
+    }
+}
+window.getRoleTypeBadgeClass = getRoleTypeBadgeClass;
+
 function isMobile() {
     return window.matchMedia("(max-width: 768px)").matches;
     //|| /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent)
@@ -1294,7 +1329,12 @@ const AccessControl = {
         if (this.isSuperAdmin()) return true;
         return (
             this.hasPermission("clients:read", "clients:write", "clients:manage") ||
-            this.hasRole("ADMIN", "ROLE_ADMIN")
+            this.hasRole(
+                "ADMIN", "ROLE_ADMIN",
+                "MANAGER", "ROLE_MANAGER",
+                "OPERATOR", "ROLE_OPERATOR",
+                "AUDITOR", "ROLE_AUDITOR"
+            )
         );
     },
 
@@ -1419,6 +1459,19 @@ const AccessControl = {
         );
     },
 
+    /**
+     * Verifica se l'operatore può bloccare o sbloccare l'accesso di un utente.
+     * Privilegio concesso a Super Admin, Admin, Manager e Operator (users:lock).
+     * @returns {boolean}
+     */
+    canLockUsers() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("users:lock", "users:write", "users:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER", "OPERATOR", "ROLE_OPERATOR")
+        );
+    },
+
     canViewRoles() {
         if (this.isSuperAdmin()) return true;
         return (
@@ -1427,11 +1480,29 @@ const AccessControl = {
         );
     },
 
+    /**
+     * Verifica se l'operatore può definire, creare e modificare le definizioni dei ruoli applicativi
+     * per i client (roles:manage). Riservato ad Admin e Super Admin.
+     * @returns {boolean}
+     */
     canManageRoles() {
         if (this.isSuperAdmin()) return true;
         return (
             this.hasPermission("roles:write", "roles:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
+        );
+    },
+
+    /**
+     * Verifica se l'operatore può assegnare o revocare ruoli associati a uno specifico utente (users:roles).
+     * Privilegio concesso ad Admin, Super Admin e Manager con delega IAM.
+     * @returns {boolean}
+     */
+    canAssignUserRoles() {
+        if (this.isSuperAdmin()) return true;
+        return (
+            this.hasPermission("users:roles", "roles:manage", "users:manage") ||
+            this.hasRole("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
         );
     },
 
@@ -1446,7 +1517,7 @@ const AccessControl = {
     canManageEmails() {
         if (this.isSuperAdmin()) return true;
         return (
-            this.hasPermission("emails:write", "emails:manage") ||
+            this.hasPermission("emails:manage", "emails:write", "emails:manage") ||
             this.hasRole("ADMIN", "ROLE_ADMIN")
         );
     },
@@ -1455,7 +1526,12 @@ const AccessControl = {
         if (this.isSuperAdmin()) return true;
         return (
             this.hasPermission("settings:read", "settings:write", "settings:manage") ||
-            this.hasRole("ADMIN", "ROLE_ADMIN")
+            this.hasRole(
+                "ADMIN", "ROLE_ADMIN",
+                "MANAGER", "ROLE_MANAGER",
+                "OPERATOR", "ROLE_OPERATOR",
+                "AUDITOR", "ROLE_AUDITOR"
+            )
         );
     },
 
@@ -1468,7 +1544,8 @@ const AccessControl = {
     },
 
     canManageBackup() {
-        return this.isSuperAdmin();
+        if (this.isSuperAdmin()) return true;
+        return this.hasPermission("backup:manage");
     },
 
     applyUIPermissions(root = document) {
@@ -1482,6 +1559,8 @@ const AccessControl = {
         const canDUsers = this.canDeleteUsers();
         const canVRoles = this.canViewRoles();
         const canMRoles = this.canManageRoles();
+        const canAssignURoles = this.canAssignUserRoles();
+        const canLUsers = this.canLockUsers();
         const canVEmails = this.canViewEmails();
         const canMEmails = this.canManageEmails();
         const canVSettings = this.canViewSettings();
@@ -1584,7 +1663,7 @@ const AccessControl = {
         toggleVisibility(root.querySelector("#sec-client-roles"), canVRoles);
 
         root.querySelectorAll(".m3-action-role, a[href*='/users/roles']").forEach((el) => {
-            toggleVisibility(el, canVRoles && canMRoles);
+            toggleVisibility(el, canVRoles && canAssignURoles);
         });
         root.querySelectorAll("[onclick*='openRoleModal(\\'edit\\']").forEach((el) => {
             toggleVisibility(el, canMRoles);
@@ -1593,15 +1672,24 @@ const AccessControl = {
             toggleVisibility(el, canMRoles);
         });
 
-        // 8. User Modification & Deletion Actions
+        // 8. User Modification, Lock/Unlock & Deletion Actions
         root.querySelectorAll("#users-table .m3-action-edit, a[href*='/users/edit'], a[href*='/app/users/edit'], #user-detail-edit-profile-btn, #user-detail-edit-attrs-btn").forEach((el) => {
             toggleVisibility(el, canMUsers);
         });
         root.querySelectorAll("#users-table .m3-action-delete, button[onclick*='deleteUser'], #user-detail-delete-btn").forEach((el) => {
             toggleVisibility(el, canDUsers);
         });
-        root.querySelectorAll("[onclick*='toggleBlockUser'], [onclick*='toggleMfaStatus'], [onclick*='finishMfaVerification'], [onclick*='deleteMfaMethod'], a[href*='/app/mfa/']").forEach((el) => {
+        root.querySelectorAll("[onclick*='toggleBlockUser']").forEach((el) => {
+            toggleVisibility(el, canLUsers);
+        });
+        root.querySelectorAll("[onclick*='toggleMfaStatus'], [onclick*='finishMfaVerification'], [onclick*='deleteMfaMethod'], a[href*='/app/mfa/']").forEach((el) => {
             toggleVisibility(el, canMUsers);
+        });
+        root.querySelectorAll("[data-require-action='assign-roles']").forEach((el) => {
+            toggleVisibility(el, canAssignURoles);
+        });
+        root.querySelectorAll("[data-require-action='lock-users']").forEach((el) => {
+            toggleVisibility(el, canLUsers);
         });
 
         // 9. Client Modification & Deletion Actions
