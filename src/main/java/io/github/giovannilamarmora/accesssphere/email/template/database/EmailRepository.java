@@ -238,6 +238,52 @@ public class EmailRepository {
   }
 
   /**
+   * Recupera il primo template email associato a uno specifico identificatore UUID o codice applicativo.
+   *
+   * @param identifier Identificatore o UUID del template (es. reset password UUID)
+   * @return Optional con il modello {@link EmailTemplate}, oppure Optional.empty() se non presente.
+   */
+  public Optional<EmailTemplate> findFirstByIdentifier(String identifier) {
+    LOG.debug("📧 Getting first Email Template for identifier: {}", identifier);
+    Optional<EmailTemplateEntity> entityOpt = emailTemplateDAO.findFirstByIdentifier(identifier);
+
+    if (entityOpt.isEmpty()) {
+      LOG.warn("❌ Email Template for identifier: {} not found in Database", identifier);
+      return Optional.empty();
+    }
+
+    LOG.debug("⚖️ Found Email Template for identifier: {} in Database", identifier);
+    return Optional.ofNullable(EmailTemplateMapper.toModel(entityOpt.get()));
+  }
+
+  /**
+   * Verifica l'esistenza di un template email dato il suo identificatore applicativo.
+   *
+   * @param identifier Identificatore del template
+   * @return true se presente, false altrimenti
+   */
+  public Boolean existsByIdentifier(String identifier) {
+    LOG.debug("📧 Checking if Email Template with identifier {} exists", identifier);
+    return emailTemplateDAO.findFirstByIdentifier(identifier).isPresent();
+  }
+
+  /**
+   * Elimina un template email dal database per identificatore applicativo.
+   *
+   * @param identifier Identificatore del template da eliminare
+   */
+  public void deleteByIdentifier(String identifier) {
+    LOG.debug("📧 Deleting Email Template with identifier: {}", identifier);
+    Optional<EmailTemplateEntity> entityOpt = emailTemplateDAO.findFirstByIdentifier(identifier);
+    if (entityOpt.isPresent()) {
+      emailTemplateDAO.delete(entityOpt.get());
+      LOG.debug("⚖️ Deleted Email Template with identifier: {} (ID: {}) in Database", identifier, entityOpt.get().getId());
+    } else {
+      LOG.warn("❌ Email Template with identifier: {} not found for deletion", identifier);
+    }
+  }
+
+  /**
    * Elimina un template email dal database per ID.
    *
    * @param id ID del template da eliminare

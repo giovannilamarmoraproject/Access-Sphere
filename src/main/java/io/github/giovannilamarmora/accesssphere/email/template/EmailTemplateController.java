@@ -65,20 +65,18 @@ public class EmailTemplateController {
                             saved)));
   }
 
-  @PutMapping(value = {"", "/{id}"})
+  @PutMapping(value = {"", "/{identifier}"})
   @Operation(
       summary = "Update existing email template",
-      description = "Modifies the email template with the specified ID or from payload ID")
+      description =
+          "Modifies the email template matching the specified identifier or from payload identifier")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> updateTemplate(
-      @PathVariable(value = "id", required = false) Long id,
+      @PathVariable(value = "identifier", required = false) String identifier,
       @Valid @RequestBody EmailTemplateResponse dto,
       ServerHttpRequest request) {
-    if (id != null) {
-      dto.setId(id);
-    }
     return emailTemplateService
-        .saveTemplate(dto)
+        .saveTemplate(identifier, dto)
         .map(
             updated ->
                 ResponseEntity.ok(
@@ -89,15 +87,15 @@ public class EmailTemplateController {
                         updated)));
   }
 
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/{identifier}")
   @Operation(
       summary = "Delete email template",
-      description = "Permanently deletes the email template from the database")
+      description = "Permanently deletes the email template from the database by identifier")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> deleteTemplate(
-      @PathVariable("id") Long id, ServerHttpRequest request) {
+      @PathVariable("identifier") String identifier, ServerHttpRequest request) {
     return emailTemplateService
-        .deleteTemplate(id)
+        .deleteTemplate(identifier)
         .thenReturn(
             ResponseEntity.ok(
                 new Response(

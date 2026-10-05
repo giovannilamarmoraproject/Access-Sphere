@@ -470,7 +470,7 @@ function renderTemplatesList(templates) {
         const lastUpdated = item.updateDate ? new Date(item.updateDate).toLocaleString() : (item.creationDate ? new Date(item.creationDate).toLocaleString() : "N/D");
 
         html += `
-      <div class="p-4 sm:p-5 rounded-2xl theme-surface-box hover:brightness-125 transition-all cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-4 group overflow-hidden" onclick="openEmailDetailModal(${item.id})">
+      <div class="p-4 sm:p-5 rounded-2xl theme-surface-box hover:brightness-125 transition-all cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-4 group overflow-hidden" onclick="openEmailDetailModal('${escapeHtml(item.identifier)}')">
         
         <!-- Info Principali Template con Truncate Responsive -->
         <div class="space-y-2 flex-1 min-w-0">
@@ -505,17 +505,17 @@ function renderTemplatesList(templates) {
 
         <!-- Pulsanti Azione Rapida -->
         <div class="flex flex-wrap items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-white/5" onclick="event.stopPropagation()">
-          <button type="button" onclick="event.stopPropagation(); openEmailDetailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="${lblDetail}">
+          <button type="button" onclick="event.stopPropagation(); openEmailDetailModal('${escapeHtml(item.identifier)}')" class="m3-btn-secondary text-xs py-2 px-3" title="${lblDetail}">
             <i class="fa-solid fa-eye text-emerald-400 mr-1.5"></i> ${lblDetail}
           </button>
           ${(typeof AccessControl === "undefined" || AccessControl.canManageEmails()) ? `
-          <button type="button" onclick="event.stopPropagation(); openTestEmailModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="${lblTestSend}">
+          <button type="button" onclick="event.stopPropagation(); openTestEmailModal('${escapeHtml(item.identifier)}')" class="m3-btn-secondary text-xs py-2 px-3" title="${lblTestSend}">
             <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> ${lblTestSend}
           </button>
-          <button type="button" onclick="event.stopPropagation(); openEditTemplateModal(${item.id})" class="m3-btn-secondary text-xs py-2 px-3" title="${lblEdit}">
+          <button type="button" onclick="event.stopPropagation(); openEditTemplateModal('${escapeHtml(item.identifier)}')" class="m3-btn-secondary text-xs py-2 px-3" title="${lblEdit}">
             <i class="fa-solid fa-pen-to-square text-amber-400 mr-1.5"></i> ${lblEdit}
           </button>
-          <button type="button" onclick="event.stopPropagation(); confirmDeleteTemplate(${item.id}, '${escapeHtml(item.identifier)}')" class="m3-icon-btn m3-icon-btn-danger text-xs" title="${lblDeleteTitle}">
+          <button type="button" onclick="event.stopPropagation(); deleteTemplateConfirm('${escapeHtml(item.identifier)}')" class="m3-icon-btn m3-icon-btn-danger text-xs" title="${lblDeleteTitle}">
             <i class="fa-solid fa-trash-can"></i>
           </button>
           ` : ""}
@@ -947,7 +947,9 @@ function generateRandomTemplateUuid() {
  * @returns {boolean} true se è presente una collisione duplicata, false altrimenti
  */
 function checkDuplicateConflict() {
+    const isEdit = (document.getElementById("editor-is-edit") && document.getElementById("editor-is-edit").value === "true");
     const currentId = document.getElementById("editor-template-id") ? document.getElementById("editor-template-id").value : "";
+    const currentIdentifier = document.getElementById("editor-identifier") ? document.getElementById("editor-identifier").value.trim() : "";
     const categoryEl = document.getElementById("editor-category");
     const clientEl = document.getElementById("editor-client");
     const localeEl = document.getElementById("editor-locale");
@@ -962,6 +964,9 @@ function checkDuplicateConflict() {
     const warningBanner = document.getElementById("editor-duplicate-warning");
 
     const isDuplicate = cachedTemplates.some((t) => {
+        if (isEdit && currentIdentifier && t.identifier === currentIdentifier) {
+            return false;
+        }
         if (currentId && String(t.id) === String(currentId)) {
             return false;
         }
@@ -996,6 +1001,8 @@ function openCreateTemplateModal() {
     const cfg = typeof getConfig === "function" ? getConfig() : null;
     const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
 
+    const isEditInput = document.getElementById("editor-is-edit");
+    if (isEditInput) isEditInput.value = "false";
     document.getElementById("editor-template-id").value = "";
     document.getElementById("editor-identifier").value = "";
     document.getElementById("editor-identifier").readOnly = false;
@@ -1144,17 +1151,19 @@ function openCreateTemplateModal() {
     }, 300);
 }
 
-function openEditTemplateModal(id) {
+function openEditTemplateModal(identifier) {
     if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
         sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
         return;
     }
-    const template = cachedTemplates.find((t) => t.id === id);
+    const template = cachedTemplates.find((t) => t.identifier === identifier || (t.id && String(t.id) === String(identifier)));
     if (!template) {
         sweetalert("error", typeof t === "function" ? t("error", "Errore") : "Errore", typeof t === "function" ? t("email_swal_load_error_desc", "Template non trovato in memoria locale.") : "Template non trovato in memoria locale.");
         return;
     }
 
+    const isEditInput = document.getElementById("editor-is-edit");
+    if (isEditInput) isEditInput.value = "true";
     document.getElementById("editor-template-id").value = template.id || "";
     document.getElementById("editor-identifier").value = template.identifier || "";
     document.getElementById("editor-identifier").readOnly = false;
@@ -1217,11 +1226,12 @@ function openEditTemplateModal(id) {
 /**
  * Salva il template tramite POST o PUT a /v1/email-templates.
  * Valida i campi obbligatori, esegue il controllo preventivo dei duplicati (Category, Client, Locale)
- * e inoltra la richiesta al backend.
+ * e inoltra la richiesta al backend identificando la risorsa tramite identifier.
  */
 function saveTemplateForm() {
-    const idVal = document.getElementById("editor-template-id").value;
-    const isEdit = Boolean(idVal);
+    const isEditInput = document.getElementById("editor-is-edit");
+    const idVal = document.getElementById("editor-template-id") ? document.getElementById("editor-template-id").value : "";
+    const isEdit = (isEditInput && isEditInput.value === "true") || Boolean(idVal);
 
     const category = (document.getElementById("editor-category").value || "RESET_PASSWORD").trim().toUpperCase();
     const clientId = (document.getElementById("editor-client").value || "").trim().toUpperCase();
@@ -1264,15 +1274,11 @@ function saveTemplateForm() {
         params: params
     };
 
-    if (isEdit) {
-        payload.id = parseInt(idVal, 10);
-    }
-
     const cfg = typeof getConfig === "function" ? getConfig() : null;
     const tokenKey = cfg ? cfg.access_token : "access-token";
     const token = typeof getCookieOrStorage === "function" ? getCookieOrStorage(tokenKey) : localStorage.getItem(tokenKey);
     const baseUrl = cfg && cfg.email_templates_url ? cfg.email_templates_url : (window.location.origin + "/v1/email-templates");
-    const url = baseUrl + (isEdit && idVal ? "/" + idVal : "");
+    const url = baseUrl + (isEdit && identifier ? "/" + encodeURIComponent(identifier) : "");
 
     const methodFn = isEdit ? PUT : POST;
 
@@ -1311,12 +1317,12 @@ function saveTemplateForm() {
 // 6. Collaudo e Invio Email di Test
 // =========================================================================
 
-function openTestEmailModal(id) {
+function openTestEmailModal(identifier) {
     if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
         sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
         return;
     }
-    const template = cachedTemplates.find((t) => t.id === id);
+    const template = cachedTemplates.find((t) => t.identifier === identifier || (t.id && String(t.id) === String(identifier)));
     if (!template) {
         sweetalert("error", typeof t === "function" ? t("error", "Errore") : "Errore", typeof t === "function" ? t("email_swal_load_error_desc", "Template non trovato per il test.") : "Template non trovato per il test.");
         return;
@@ -1390,7 +1396,6 @@ function executeSendTestEmail(e) {
 
     const to = document.getElementById("test-email-to").value.trim();
     const subject = document.getElementById("test-email-subject").value.trim();
-    const templateId = document.getElementById("test-template-id").value;
     const identifier = document.getElementById("test-template-identifier").value;
     const locale = document.getElementById("test-template-locale").value;
 
@@ -1413,7 +1418,6 @@ function executeSendTestEmail(e) {
     const payload = {
         to: to,
         subject: subject,
-        templateId: templateId ? parseInt(templateId, 10) : null,
         identifier: identifier,
         locale: locale || null,
         params: params
@@ -1475,13 +1479,13 @@ function executeSendTestEmail(e) {
  * e il rendering live interattivo (Desktop/Mobile).
  *
  * Interconnessioni:
- * - Riceve l'id del template selezionato da renderTemplatesList()
+ * - Riceve l'identifier del template selezionato da renderTemplatesList()
  * - Permette di scatenare direttamente openTestEmailModal() o openEditTemplateModal()
  *
- * @param {number} id - Identificativo primario del template nel database
+ * @param {string} identifier - Identificativo univoco del template nel database
  */
-function openEmailDetailModal(id) {
-    const template = cachedTemplates.find((t) => t.id === id);
+function openEmailDetailModal(identifier) {
+    const template = cachedTemplates.find((t) => t.identifier === identifier || (t.id && String(t.id) === String(identifier)));
     if (!template) {
         sweetalert(
             "warning",
@@ -1609,7 +1613,7 @@ function openEmailDetailModal(id) {
                 const modalEl = document.getElementById("emailDetailModal");
                 const modalInst = bootstrap.Modal.getInstance(modalEl);
                 if (modalInst) modalInst.hide();
-                openTestEmailModal(template.id);
+                openTestEmailModal(template.identifier);
             };
         }
     }
@@ -1624,7 +1628,7 @@ function openEmailDetailModal(id) {
                 const modalEl = document.getElementById("emailDetailModal");
                 const modalInst = bootstrap.Modal.getInstance(modalEl);
                 if (modalInst) modalInst.hide();
-                openEditTemplateModal(template.id);
+                openEditTemplateModal(template.identifier);
             };
         }
     }
@@ -1720,13 +1724,13 @@ function setDetailDevice(device) {
 
 /**
  * Wrapper di retrocompatibilità: apre la visualizzazione dettagliata del template
- * @param {number} id
+ * @param {string} identifier
  */
-function openQuickPreview(id) {
-    openEmailDetailModal(id);
+function openQuickPreview(identifier) {
+    openEmailDetailModal(identifier);
 }
 
-function confirmDeleteTemplate(id, identifier) {
+function deleteTemplateConfirm(identifier) {
     if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
         sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
         return;
@@ -1750,16 +1754,21 @@ function confirmDeleteTemplate(id, identifier) {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            deleteTemplateRequest(id, identifier);
+            deleteTemplateRequest(identifier);
         }
     });
 }
 
-function deleteTemplateRequest(id, identifier) {
+function confirmDeleteTemplate(identifier, legacyParam) {
+    const targetIdentifier = legacyParam ? legacyParam : identifier;
+    deleteTemplateConfirm(targetIdentifier);
+}
+
+function deleteTemplateRequest(identifier) {
     const cfg = typeof getConfig === "function" ? getConfig() : null;
     const tokenKey = cfg ? cfg.access_token : "access-token";
     const token = typeof getCookieOrStorage === "function" ? getCookieOrStorage(tokenKey) : localStorage.getItem(tokenKey);
-    const url = (cfg && cfg.email_templates_url ? cfg.email_templates_url : (window.location.origin + "/v1/email-templates")) + "/" + id;
+    const url = (cfg && cfg.email_templates_url ? cfg.email_templates_url : (window.location.origin + "/v1/email-templates")) + "/" + encodeURIComponent(identifier);
 
     DELETE(url, token)
         .then(async (res) => {
