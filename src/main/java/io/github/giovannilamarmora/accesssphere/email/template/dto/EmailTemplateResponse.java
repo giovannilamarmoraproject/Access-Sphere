@@ -12,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EmailTemplateDTO extends GenericDTO {
+public class EmailTemplateResponse extends GenericDTO {
 
   private String identifier;
   private String category;

@@ -6,8 +6,8 @@ import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
-import io.github.giovannilamarmora.accesssphere.email.template.database.IEmailTemplateDAO;
-import io.github.giovannilamarmora.accesssphere.email.template.entity.EmailTemplateEntity;
+import io.github.giovannilamarmora.accesssphere.email.template.database.EmailRepository;
+import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplate;
 import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
@@ -68,7 +68,7 @@ public class ProjectInitializerService implements ApplicationRunner {
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private IAppSettingsDAO appSettingsDAO;
-  @Autowired private IEmailTemplateDAO emailTemplateDAO;
+  @Autowired private EmailRepository emailRepository;
 
   @Override
   @Transactional
@@ -464,7 +464,7 @@ public class ProjectInitializerService implements ApplicationRunner {
    * <p>
    * Si interconnette con {@link #seedEmailTemplateCategory(EmailTemplateCategory, String)} per ciascuna
    * categoria, caricando l'HTML associato dalle risorse di sistema ed eseguendo il seeding o aggiornamento
-   * nella tabella 'EMAIL_TEMPLATES' tramite {@link IEmailTemplateDAO}.
+   * nella tabella 'EMAIL_TEMPLATES' tramite {@link EmailRepository}.
    */
   private void initEmailTemplates() {
     // Risoluzione del Client ID tecnico associato alle risorse di sistema
@@ -485,10 +485,10 @@ public class ProjectInitializerService implements ApplicationRunner {
    * <p>
    * Flusso logico ed interconnessioni:
    * 1. Richiama {@link #loadTemplateFromResource(String)} per prelevare il file HTML responsive da classpath.
-   * 2. Interroga {@link IEmailTemplateDAO#findByIdentifier(String)} con l'identificatore UUID della categoria.
+   * 2. Interroga {@link EmailRepository#findByIdentifier(String)} con l'identificatore UUID della categoria.
    * 3. Se assente, verifica se esiste un record con l'identificatore legacy ed esegue la migrazione a UUID.
-   * 4. Se assente del tutto, crea una nuova entità {@link EmailTemplateEntity} collegata a {@code techClientId}
-   *    con parametri predefiniti e la persiste su DB.
+   * 4. Se assente del tutto, crea un nuovo modello {@link EmailTemplate} collegato a {@code techClientId}
+   *    con parametri predefiniti e lo persiste su DB tramite {@link EmailRepository#save(EmailTemplate)}.
    * 5. Se già presente, aggiorna client ID o corpo HTML qualora obsoleti.
    *
    * @param cat Categoria applicativa del template da verificare e persistere
@@ -501,16 +501,16 @@ public class ProjectInitializerService implements ApplicationRunner {
     String htmlTemplate = loadTemplateFromResource(cat.getTemplateFileName());
 
     // Ricerca template esistente per UUID o per identificatore legacy
-    List<EmailTemplateEntity> existing = emailTemplateDAO.findByIdentifier(identifier);
-    List<EmailTemplateEntity> legacyExisting =
+    List<EmailTemplate> existing = emailRepository.findByIdentifier(identifier).orElse(List.of());
+    List<EmailTemplate> legacyExisting =
         StringUtils.hasText(legacyIdentifier)
-            ? emailTemplateDAO.findByIdentifier(legacyIdentifier)
+            ? emailRepository.findByIdentifier(legacyIdentifier).orElse(List.of())
             : List.of();
 
     if (existing.isEmpty() && legacyExisting.isEmpty()) {
       // 1. Caso nuovo template: seeding iniziale a database
       LOG.info("📧 Seeding Default Email Template [{}] for category [{}]", identifier, cat.getCode());
-      EmailTemplateEntity template = new EmailTemplateEntity();
+      EmailTemplate template = new EmailTemplate();
       template.setIdentifier(identifier);
       template.setCategory(cat.getCode());
       template.setClientId(techClientId);
@@ -521,7 +521,7 @@ public class ProjectInitializerService implements ApplicationRunner {
       template.setParams(cat.getDefaultParamsAsStringMap());
       template.setTemplate(htmlTemplate);
 
-      emailTemplateDAO.save(template);
+      emailRepository.save(template);
       LOG.info(
           "✅ Email Template [{}] for category [{}] successfully seeded in DB with clientId [{}]",
           identifier,
@@ -529,7 +529,7 @@ public class ProjectInitializerService implements ApplicationRunner {
           techClientId);
     } else if (existing.isEmpty() && !legacyExisting.isEmpty()) {
       // 2. Caso migrazione automatica da identificatore legacy ad identificatore UUID
-      EmailTemplateEntity legacyTpl = legacyExisting.get(0);
+      EmailTemplate legacyTpl = legacyExisting.get(0);
       legacyTpl.setIdentifier(identifier);
       legacyTpl.setCategory(cat.getCode());
       legacyTpl.setLocale("en");
@@ -540,7 +540,7 @@ public class ProjectInitializerService implements ApplicationRunner {
         legacyTpl.setClientId(techClientId);
       }
       legacyTpl.setTemplate(htmlTemplate);
-      emailTemplateDAO.save(legacyTpl);
+      emailRepository.save(legacyTpl);
       LOG.info(
           "🔄 Migrated Legacy Email Template [{}] to UUID [{}] and refreshed template with clientId [{}]",
           legacyIdentifier,
@@ -548,7 +548,7 @@ public class ProjectInitializerService implements ApplicationRunner {
           legacyTpl.getClientId());
     } else {
       // 3. Caso template già presente: verifica aggiornamento client ID e corpo HTML
-      EmailTemplateEntity defaultTpl = existing.get(0);
+      EmailTemplate defaultTpl = existing.get(0);
       boolean updated = false;
       if (defaultTpl.getClientId() == null) {
         defaultTpl.setClientId(techClientId);
@@ -569,7 +569,7 @@ public class ProjectInitializerService implements ApplicationRunner {
         updated = true;
       }
       if (updated) {
-        emailTemplateDAO.save(defaultTpl);
+        emailRepository.save(defaultTpl);
         LOG.info(
             "🔄 Updated Email Template [{}] ({}) with technical client [{}] and modern template",
             defaultTpl.getIdentifier(),

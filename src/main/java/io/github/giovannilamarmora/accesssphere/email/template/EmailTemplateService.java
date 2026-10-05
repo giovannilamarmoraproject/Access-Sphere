@@ -4,10 +4,10 @@ import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.email.sender.EmailSender;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.email.template.database.IEmailTemplateDAO;
+import io.github.giovannilamarmora.accesssphere.email.template.database.EmailRepository;
 import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailSendTestRequest;
-import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDTO;
-import io.github.giovannilamarmora.accesssphere.email.template.entity.EmailTemplateEntity;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateResponse;
+import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplate;
 import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -25,10 +25,19 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 /**
- * Service per la gestione dei Template Email salvati a Database. Permette operazioni CRUD sui
- * template, risoluzione multilingua flessibile (supporta sia template localizzati che template
- * unici validi per tutte le lingue), rendering dinamico con sostituzione dei segnaposto e invio
- * diretto di email di test tramite {@link EmailSender}.
+ * Service per la gestione dei Template Email di Access Sphere.
+ *
+ * <p>Responsabilita architetturali e interconnessioni:
+ *
+ * <ul>
+ *   <li>Comunica esclusivamente con {@link EmailRepository} per tutte le operazioni di persistenza,
+ *       rimanendo disaccoppiato dall'entita JPA tramite il modello di dominio {@link
+ *       EmailTemplate}.
+ *   <li>Fornisce risoluzione flessibile del template con fallback multilingua e scoping
+ *       multi-tenant.
+ *   <li>Effettua rendering dinamico con sostituzione dei segnaposto ed invio di email di test
+ *       tramite {@link EmailSender}.
+ * </ul>
  */
 @Service
 @Logged
@@ -37,31 +46,31 @@ public class EmailTemplateService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
-  @Autowired private IEmailTemplateDAO emailTemplateDAO;
+  @Autowired private EmailRepository emailRepository;
   @Autowired private EmailSender emailSender;
   @Autowired private AdminUserService techUserService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<List<EmailTemplateDTO>> getAllTemplates() {
+  public Mono<List<EmailTemplateResponse>> getAllTemplates() {
     return Mono.fromCallable(
         () -> {
-          List<EmailTemplateEntity> entities = emailTemplateDAO.findAllByOrderByCreationDateDesc();
-          return entities.stream().map(EmailTemplateMapper::toDTO).toList();
+          List<EmailTemplate> models = emailRepository.findAll().orElse(List.of());
+          return EmailTemplateMapper.toDTOList(models);
         });
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<EmailTemplateDTO> getTemplateById(Long id) {
+  public Mono<EmailTemplateResponse> getTemplateById(Long id) {
     return Mono.fromCallable(
         () -> {
-          EmailTemplateEntity entity =
-              emailTemplateDAO
+          EmailTemplate model =
+              emailRepository
                   .findById(id)
                   .orElseThrow(
                       () ->
                           new ResponseStatusException(
                               HttpStatus.NOT_FOUND, "Email template with ID " + id + " not found"));
-          return EmailTemplateMapper.toDTO(entity);
+          return EmailTemplateMapper.toDTO(model);
         });
   }
 
@@ -70,19 +79,19 @@ public class EmailTemplateService {
    * fallback intelligente: 1. Cerca per identificatore e locale esatto (es. "it-IT" o "en-GB"). 2.
    * Se non trovato, cerca per prefisso lingua (es. "it" o "en"). 3. Se non trovato, cerca per
    * template con locale nullo, "default" o generico. 4. Se ancora non trovato, restituisce il primo
-   * template disponibile per quell'identificatore. Questo garantisce che se l'amministratore
-   * configura il template in una sola lingua, tale template viene comunque utilizzato senza
-   * generare errori.
+   * template disponibile per quell'identificatore.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<EmailTemplateDTO> getTemplateByIdentifierAndLocale(String identifier, String locale) {
+  public Mono<EmailTemplateResponse> getTemplateByIdentifierAndLocale(
+      String identifier, String locale) {
     return Mono.fromCallable(
         () -> {
           LOG.info(
               "Searching for email template for identifier=[{}] and locale=[{}]",
               identifier,
               locale);
-          List<EmailTemplateEntity> templates = emailTemplateDAO.findByIdentifier(identifier);
+          List<EmailTemplate> templates =
+              emailRepository.findByIdentifier(identifier).orElse(List.of());
 
           if (templates.isEmpty()) {
             LOG.error("No email template found for identifier=[{}]", identifier);
@@ -92,7 +101,7 @@ public class EmailTemplateService {
 
           // 1. Corrispondenza esatta di locale
           if (!ObjectToolkit.isNullOrEmpty(locale)) {
-            Optional<EmailTemplateEntity> exact =
+            Optional<EmailTemplate> exact =
                 templates.stream().filter(t -> locale.equalsIgnoreCase(t.getLocale())).findFirst();
             if (exact.isPresent()) {
               return EmailTemplateMapper.toDTO(exact.get());
@@ -100,7 +109,7 @@ public class EmailTemplateService {
 
             // 2. Corrispondenza per prefisso lingua (es. "it" per "it-IT")
             String langPrefix = locale.contains("-") ? locale.split("-")[0] : locale;
-            Optional<EmailTemplateEntity> prefixMatch =
+            Optional<EmailTemplate> prefixMatch =
                 templates.stream()
                     .filter(
                         t ->
@@ -116,7 +125,7 @@ public class EmailTemplateService {
           }
 
           // 3. Fallback su locale 'default' o nullo/vuoto
-          Optional<EmailTemplateEntity> defaultMatch =
+          Optional<EmailTemplate> defaultMatch =
               templates.stream()
                   .filter(
                       t ->
@@ -147,7 +156,7 @@ public class EmailTemplateService {
    * retrocompatibilita su identifier diretto.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<EmailTemplateDTO> getTemplateByCategoryLocaleAndClient(
+  public Mono<EmailTemplateResponse> getTemplateByCategoryLocaleAndClient(
       String category, String locale, String clientId) {
     return Mono.fromCallable(
         () -> {
@@ -162,10 +171,11 @@ public class EmailTemplateService {
 
           // 1. Se e specificato un clientId, cerca tra i template dedicati a quel client
           if (!ObjectToolkit.isNullOrEmpty(clientId)) {
-            List<EmailTemplateEntity> clientTemplates =
-                emailTemplateDAO.findByClientIdAndCategory(clientId.trim(), effectiveCategory);
-            Optional<EmailTemplateEntity> clientMatch =
-                resolveTemplateFromList(clientTemplates, locale);
+            List<EmailTemplate> clientTemplates =
+                emailRepository
+                    .findByClientIdAndCategory(clientId.trim(), effectiveCategory)
+                    .orElse(List.of());
+            Optional<EmailTemplate> clientMatch = resolveTemplateFromList(clientTemplates, locale);
             if (clientMatch.isPresent()) {
               LOG.info(
                   "Template found for dedicated Client=[{}], ID=[{}]",
@@ -182,9 +192,11 @@ public class EmailTemplateService {
           // 2. Ricerca tra i template del Client Tecnico predefinito
           String techClientId = techUserService.getAdminClientId();
           if (!techClientId.equalsIgnoreCase(clientId)) {
-            List<EmailTemplateEntity> techClientTemplates =
-                emailTemplateDAO.findByClientIdAndCategory(techClientId, effectiveCategory);
-            Optional<EmailTemplateEntity> techMatch =
+            List<EmailTemplate> techClientTemplates =
+                emailRepository
+                    .findByClientIdAndCategory(techClientId, effectiveCategory)
+                    .orElse(List.of());
+            Optional<EmailTemplate> techMatch =
                 resolveTemplateFromList(techClientTemplates, locale);
             if (techMatch.isPresent()) {
               LOG.info(
@@ -197,10 +209,9 @@ public class EmailTemplateService {
           }
 
           // 3. Ricerca tra i template Globali di Access Sphere (clientId IS NULL)
-          List<EmailTemplateEntity> globalTemplates =
-              emailTemplateDAO.findByClientIdIsNullAndCategory(effectiveCategory);
-          Optional<EmailTemplateEntity> globalMatch =
-              resolveTemplateFromList(globalTemplates, locale);
+          List<EmailTemplate> globalTemplates =
+              emailRepository.findByClientIdIsNullAndCategory(effectiveCategory).orElse(List.of());
+          Optional<EmailTemplate> globalMatch = resolveTemplateFromList(globalTemplates, locale);
           if (globalMatch.isPresent()) {
             LOG.info(
                 "Global Access Sphere Template found for category=[{}], ID=[{}]",
@@ -210,11 +221,10 @@ public class EmailTemplateService {
           }
 
           // 3. Fallback per retrocompatibilita: ricerca per identifier globale esatto
-          List<EmailTemplateEntity> legacyTemplates =
-              emailTemplateDAO.findByIdentifier(effectiveCategory);
+          List<EmailTemplate> legacyTemplates =
+              emailRepository.findByIdentifier(effectiveCategory).orElse(List.of());
           if (!legacyTemplates.isEmpty()) {
-            Optional<EmailTemplateEntity> legacyMatch =
-                resolveTemplateFromList(legacyTemplates, locale);
+            Optional<EmailTemplate> legacyMatch = resolveTemplateFromList(legacyTemplates, locale);
             if (legacyMatch.isPresent()) {
               return EmailTemplateMapper.toDTO(legacyMatch.get());
             }
@@ -222,11 +232,10 @@ public class EmailTemplateService {
 
           // 4. Default identifier della categoria
           EmailTemplateCategory catEnum = EmailTemplateCategory.fromCode(effectiveCategory);
-          List<EmailTemplateEntity> defaultIdTemplates =
-              emailTemplateDAO.findByIdentifier(catEnum.getDefaultIdentifier());
+          List<EmailTemplate> defaultIdTemplates =
+              emailRepository.findByIdentifier(catEnum.getDefaultIdentifier()).orElse(List.of());
           if (!defaultIdTemplates.isEmpty()) {
-            Optional<EmailTemplateEntity> defMatch =
-                resolveTemplateFromList(defaultIdTemplates, locale);
+            Optional<EmailTemplate> defMatch = resolveTemplateFromList(defaultIdTemplates, locale);
             if (defMatch.isPresent()) {
               return EmailTemplateMapper.toDTO(defMatch.get());
             }
@@ -235,10 +244,12 @@ public class EmailTemplateService {
           // 5. Fallback retrocompatibilita: se RESET_PASSWORD verifica anche legacy
           // ACCESS_SPHERE_CODE_RESET_PASSWORD
           if (catEnum == EmailTemplateCategory.RESET_PASSWORD) {
-            List<EmailTemplateEntity> legacyOldTemplates =
-                emailTemplateDAO.findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD");
+            List<EmailTemplate> legacyOldTemplates =
+                emailRepository
+                    .findByIdentifier("ACCESS_SPHERE_CODE_RESET_PASSWORD")
+                    .orElse(List.of());
             if (!legacyOldTemplates.isEmpty()) {
-              Optional<EmailTemplateEntity> oldMatch =
+              Optional<EmailTemplate> oldMatch =
                   resolveTemplateFromList(legacyOldTemplates, locale);
               if (oldMatch.isPresent()) {
                 return EmailTemplateMapper.toDTO(oldMatch.get());
@@ -257,19 +268,19 @@ public class EmailTemplateService {
         });
   }
 
-  private Optional<EmailTemplateEntity> resolveTemplateFromList(
-      List<EmailTemplateEntity> templates, String locale) {
+  private Optional<EmailTemplate> resolveTemplateFromList(
+      List<EmailTemplate> templates, String locale) {
     if (templates == null || templates.isEmpty()) return Optional.empty();
 
     // 1. Corrispondenza esatta di locale
     if (!ObjectToolkit.isNullOrEmpty(locale)) {
-      Optional<EmailTemplateEntity> exact =
+      Optional<EmailTemplate> exact =
           templates.stream().filter(t -> locale.equalsIgnoreCase(t.getLocale())).findFirst();
       if (exact.isPresent()) return exact;
 
       // 2. Corrispondenza per prefisso lingua (es. "it" per "it-IT")
       String langPrefix = locale.contains("-") ? locale.split("-")[0] : locale;
-      Optional<EmailTemplateEntity> prefixMatch =
+      Optional<EmailTemplate> prefixMatch =
           templates.stream()
               .filter(
                   t ->
@@ -283,7 +294,7 @@ public class EmailTemplateService {
     }
 
     // 3. Fallback su locale 'default' o nullo/vuoto
-    Optional<EmailTemplateEntity> defaultMatch =
+    Optional<EmailTemplate> defaultMatch =
         templates.stream()
             .filter(
                 t ->
@@ -298,7 +309,7 @@ public class EmailTemplateService {
 
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<EmailTemplateDTO> saveTemplate(EmailTemplateDTO dto) {
+  public Mono<EmailTemplateResponse> saveTemplate(EmailTemplateResponse dto) {
     return Mono.fromCallable(
         () -> {
           // Normalizzazione Categoria
@@ -339,8 +350,10 @@ public class EmailTemplateService {
 
           // Controllo rigoroso di unicita:
           // Non possono esistere due template con stessa Categoria, stesso ClientId e stessa Lingua
-          List<EmailTemplateEntity> conflicts =
-              emailTemplateDAO.findConflictingTemplates(clientId, category, locale, dto.getId());
+          List<EmailTemplate> conflicts =
+              emailRepository
+                  .findConflictingTemplates(clientId, category, locale, dto.getId())
+                  .orElse(List.of());
           if (!conflicts.isEmpty()) {
             String clientDesc =
                 clientId != null ? ("Client [" + clientId + "]") : "Global (Access Sphere Default)";
@@ -353,21 +366,21 @@ public class EmailTemplateService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMsg);
           }
 
-          EmailTemplateEntity entity;
+          EmailTemplate model;
           if (dto.getId() != null) {
-            entity =
-                emailTemplateDAO
+            model =
+                emailRepository
                     .findById(dto.getId())
                     .orElseThrow(
                         () ->
                             new ResponseStatusException(
                                 HttpStatus.NOT_FOUND,
                                 "Email template with ID " + dto.getId() + " not found"));
-            EmailTemplateMapper.updateEntity(entity, dto);
+            EmailTemplateMapper.updateModel(model, dto);
           } else {
-            entity = EmailTemplateMapper.toEntity(dto);
+            model = EmailTemplateMapper.toModel(dto);
           }
-          EmailTemplateEntity saved = emailTemplateDAO.save(entity);
+          EmailTemplate saved = emailRepository.save(model);
           LOG.info(
               "Email template successfully saved: ID=[{}], category=[{}], clientId=[{}], locale=[{}]",
               saved.getId(),
@@ -383,11 +396,11 @@ public class EmailTemplateService {
   public Mono<Void> deleteTemplate(Long id) {
     return Mono.fromCallable(
             () -> {
-              if (!emailTemplateDAO.existsById(id)) {
+              if (!emailRepository.existsById(id)) {
                 throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Email template with ID " + id + " not found");
               }
-              emailTemplateDAO.deleteById(id);
+              emailRepository.deleteById(id);
               LOG.info("Email template successfully deleted: ID=[{}]", id);
               return true;
             })
@@ -409,27 +422,27 @@ public class EmailTemplateService {
                 rawHtml = request.getCustomHtml();
                 if (ObjectToolkit.isNullOrEmpty(subject)) subject = "Test Email - Access Sphere";
               } else if (request.getTemplateId() != null) {
-                EmailTemplateEntity entity =
-                    emailTemplateDAO
+                EmailTemplate model =
+                    emailRepository
                         .findById(request.getTemplateId())
                         .orElseThrow(
                             () ->
                                 new ResponseStatusException(
                                     HttpStatus.NOT_FOUND,
                                     "Template ID " + request.getTemplateId() + " not found"));
-                rawHtml = entity.getTemplate();
-                if (ObjectToolkit.isNullOrEmpty(subject)) subject = entity.getSubject();
+                rawHtml = model.getTemplate();
+                if (ObjectToolkit.isNullOrEmpty(subject)) subject = model.getSubject();
               } else if (!ObjectToolkit.isNullOrEmpty(request.getIdentifier())) {
-                List<EmailTemplateEntity> list =
-                    emailTemplateDAO.findByIdentifier(request.getIdentifier());
+                List<EmailTemplate> list =
+                    emailRepository.findByIdentifier(request.getIdentifier()).orElse(List.of());
                 if (list.isEmpty()) {
                   throw new ResponseStatusException(
                       HttpStatus.NOT_FOUND,
                       "Template identifier " + request.getIdentifier() + " not found");
                 }
-                EmailTemplateEntity entity = list.get(0);
-                rawHtml = entity.getTemplate();
-                if (ObjectToolkit.isNullOrEmpty(subject)) subject = entity.getSubject();
+                EmailTemplate model = list.get(0);
+                rawHtml = model.getTemplate();
+                if (ObjectToolkit.isNullOrEmpty(subject)) subject = model.getSubject();
               } else {
                 throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "A templateId, identifier or customHtml is required");

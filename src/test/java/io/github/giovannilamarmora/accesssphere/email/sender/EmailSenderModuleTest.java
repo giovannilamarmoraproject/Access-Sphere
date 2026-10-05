@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDTO;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateResponse;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Date;
@@ -39,7 +39,9 @@ class EmailSenderModuleTest {
     realDispatcher = new EmailDispatcher();
     ReflectionTestUtils.setField(realDispatcher, "emailSender", javaMailSender);
     ReflectionTestUtils.setField(
-        realDispatcher, "senderEmails", List.of("noreply@access-sphere.com", "admin@access-sphere.com"));
+        realDispatcher,
+        "senderEmails",
+        List.of("noreply@access-sphere.com", "admin@access-sphere.com"));
   }
 
   @Test
@@ -75,8 +77,7 @@ class EmailSenderModuleTest {
             .text("<h1>Titolo HTML</h1>")
             .build();
 
-    MimeMessage result =
-        EmailMapper.getMimeMessageHelper(content, true, javaMailSender);
+    MimeMessage result = EmailMapper.getMimeMessageHelper(content, true, javaMailSender);
 
     assertNotNull(result);
     verify(javaMailSender, times(1)).createMimeMessage();
@@ -98,8 +99,8 @@ class EmailSenderModuleTest {
 
   @Test
   void testEmailSenderServiceSendWithTemplate() {
-    EmailTemplateDTO templateDTO =
-        EmailTemplateDTO.builder()
+    EmailTemplateResponse templateDTO =
+        EmailTemplateResponse.builder()
             .template("<h1>Ciao {{username}}</h1><p>Codice: {{code}}</p>")
             .params(Map.of("username", "{{username}}", "code", "{{code}}"))
             .build();
@@ -112,9 +113,7 @@ class EmailSenderModuleTest {
 
     StepVerifier.create(
             emailSenderService.sendEmail(
-                templateDTO,
-                Map.of("username", "Mario", "code", "123456"),
-                emailContent))
+                templateDTO, Map.of("username", "Mario", "code", "123456"), emailContent))
         .assertNext(
             (EmailResponse res) -> {
               assertNotNull(res);

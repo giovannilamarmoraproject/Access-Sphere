@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.email.template;
 
 import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailSendTestRequest;
-import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDTO;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateResponse;
 import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -25,9 +25,7 @@ import reactor.core.publisher.Mono;
 @Logged
 @RestController
 @RequestMapping("/v1/email-templates")
-@Tag(
-    name = OpenAPI.Tag.EMAIL_TEMPLATE,
-    description = OpenAPI.Description.EMAIL_TEMPLATE)
+@Tag(name = OpenAPI.Tag.EMAIL_TEMPLATE, description = OpenAPI.Description.EMAIL_TEMPLATE)
 public class EmailTemplateController {
 
   @Autowired private EmailTemplateService emailTemplateService;
@@ -124,7 +122,7 @@ public class EmailTemplateController {
       description = "Saves a new email template with dynamic parameters to the database")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> createTemplate(
-      @Valid @RequestBody EmailTemplateDTO dto, ServerHttpRequest request) {
+      @Valid @RequestBody EmailTemplateResponse dto, ServerHttpRequest request) {
     return emailTemplateService
         .saveTemplate(dto)
         .map(
@@ -145,7 +143,7 @@ public class EmailTemplateController {
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> updateTemplate(
       @PathVariable("id") Long id,
-      @Valid @RequestBody EmailTemplateDTO dto,
+      @Valid @RequestBody EmailTemplateResponse dto,
       ServerHttpRequest request) {
     dto.setId(id);
     return emailTemplateService

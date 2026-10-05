@@ -5,7 +5,7 @@ import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.TemplateParam;
 import io.github.giovannilamarmora.accesssphere.email.template.EmailTemplateService;
-import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDTO;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateResponse;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -215,7 +215,7 @@ public class UserAccountService {
             : "RESET_PASSWORD";
     String requestedClientId = changePassword.getClientId();
 
-    Mono<EmailTemplateDTO> emailTemplateMono =
+    Mono<EmailTemplateResponse> emailTemplateMono =
         emailTemplateService.getTemplateByCategoryLocaleAndClient(
             categoryOrId, locale, requestedClientId);
 

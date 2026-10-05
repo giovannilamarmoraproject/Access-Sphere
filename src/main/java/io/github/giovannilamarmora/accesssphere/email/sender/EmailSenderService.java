@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.email.sender;
 
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDTO;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateResponse;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.exception.UtilsException;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -23,11 +23,15 @@ import reactor.core.scheduler.Schedulers;
  * Implementazione predefinita e nativa di {@link EmailSender} per Access-Sphere.
  *
  * <p>Caratteristiche architetturali:
+ *
  * <ul>
- *   <li>Gestisce la compilazione dinamica dei segnaposto {{KEY}} nei template e l'invio nativo SMTP.</li>
- *   <li>Esegue il dispatching I/O bloccante del server SMTP sul pool reattivo {@link Schedulers#boundedElastic()} per non intasare l'Event Loop Netty.</li>
- *   <li>Consuma {@link EmailDispatcher} per la validazione del mittente e l'invio fisico.</li>
- *   <li>Consuma {@link EmailMapper} per la costruzione di {@link SimpleMailMessage} o {@link MimeMessage} (UTF-8, HTML).</li>
+ *   <li>Gestisce la compilazione dinamica dei segnaposto {{KEY}} nei template e l'invio nativo
+ *       SMTP.
+ *   <li>Esegue il dispatching I/O bloccante del server SMTP sul pool reattivo {@link
+ *       Schedulers#boundedElastic()} per non intasare l'Event Loop Netty.
+ *   <li>Consuma {@link EmailDispatcher} per la validazione del mittente e l'invio fisico.
+ *   <li>Consuma {@link EmailMapper} per la costruzione di {@link SimpleMailMessage} o {@link
+ *       MimeMessage} (UTF-8, HTML).
  * </ul>
  */
 @Service
@@ -42,45 +46,58 @@ public class EmailSenderService implements EmailSender {
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<EmailResponse> sendEmail(EmailContent emailContent) {
-    LOG.info("🚀 Starting native SMTP sendEmail to recipient: {}, from: {}", emailContent.getTo(), emailContent.getFrom());
+    LOG.info(
+        "🚀 Starting native SMTP sendEmail to recipient: {}, from: {}",
+        emailContent.getTo(),
+        emailContent.getFrom());
 
-    return Mono.fromCallable(() -> {
-      // Se il testo dell'email contiene marcatori HTML oppure se è formattato, utilizziamo MimeMessageHelper con UTF-8
-      boolean isHtml = emailContent.getText() != null
-          && (emailContent.getText().contains("<html")
-              || emailContent.getText().contains("<div")
-              || emailContent.getText().contains("<p>")
-              || emailContent.getText().contains("<br")
-              || emailContent.getText().contains("<!DOCTYPE"));
+    return Mono.fromCallable(
+            () -> {
+              // Se il testo dell'email contiene marcatori HTML oppure se è formattato, utilizziamo
+              // MimeMessageHelper con UTF-8
+              boolean isHtml =
+                  emailContent.getText() != null
+                      && (emailContent.getText().contains("<html")
+                          || emailContent.getText().contains("<div")
+                          || emailContent.getText().contains("<p>")
+                          || emailContent.getText().contains("<br")
+                          || emailContent.getText().contains("<!DOCTYPE"));
 
-      if (isHtml) {
-        MimeMessage mimeMessage = EmailMapper.getMimeMessageHelper(emailContent, true, javaMailSender);
-        dispatcher.sendMessage(null, mimeMessage);
-      } else {
-        SimpleMailMessage simpleMailMessage = EmailMapper.getSimpleMailMessage(emailContent);
-        dispatcher.sendMessage(simpleMailMessage, null);
-      }
+              if (isHtml) {
+                MimeMessage mimeMessage =
+                    EmailMapper.getMimeMessageHelper(emailContent, true, javaMailSender);
+                dispatcher.sendMessage(null, mimeMessage);
+              } else {
+                SimpleMailMessage simpleMailMessage =
+                    EmailMapper.getSimpleMailMessage(emailContent);
+                dispatcher.sendMessage(simpleMailMessage, null);
+              }
 
-      EmailResponse response = new EmailResponse();
-      response.setMessage(
-          String.format("Email to %s was successfully sent!", emailContent.getTo()));
-      return response;
-    })
-    .subscribeOn(Schedulers.boundedElastic())
-    .doOnSuccess(res -> LOG.info("🚀 Successfully sent email to: {}", emailContent.getTo()))
-    .doOnError(err -> LOG.error("❌ Failed to send email to {}: {}", emailContent.getTo(), err.getMessage()));
+              EmailResponse response = new EmailResponse();
+              response.setMessage(
+                  String.format("Email to %s was successfully sent!", emailContent.getTo()));
+              return response;
+            })
+        .subscribeOn(Schedulers.boundedElastic())
+        .doOnSuccess(res -> LOG.info("🚀 Successfully sent email to: {}", emailContent.getTo()))
+        .doOnError(
+            err ->
+                LOG.error(
+                    "❌ Failed to send email to {}: {}", emailContent.getTo(), err.getMessage()));
   }
 
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<EmailResponse> sendEmail(
-      EmailTemplateDTO emailTemplateDTO, Map<String, String> params, EmailContent emailContent)
+      EmailTemplateResponse emailTemplateResponse,
+      Map<String, String> params,
+      EmailContent emailContent)
       throws UtilsException {
 
     LOG.info("📧 Starting email template compilation for recipient: {}", emailContent.getTo());
-    String template = emailTemplateDTO.getTemplate();
+    String template = emailTemplateResponse.getTemplate();
     Map<String, String> finalParam =
-        Utils.getFinalMapFromValue(params, emailTemplateDTO.getParams());
+        Utils.getFinalMapFromValue(params, emailTemplateResponse.getParams());
 
     LOG.debug("Replacing placeholders in the template with provided parameters");
     for (String key : finalParam.keySet()) {
