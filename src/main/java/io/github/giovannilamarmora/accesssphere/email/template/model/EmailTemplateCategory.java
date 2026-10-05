@@ -44,8 +44,8 @@ public enum EmailTemplateCategory {
       "Verifica Indirizzo Email",
       "Email Verification",
       "Verify your email address",
-      "Invio del codice di verifica per confermare l'indirizzo email",
-      "Template for sending email verification code",
+      "Invio del link di conferma per verificare l'indirizzo email e attivare l'account",
+      "Template for sending email verification link to confirm user account",
       "email-verification.html",
       false,
       createVerificationParams()),
@@ -166,7 +166,7 @@ public enum EmailTemplateCategory {
     Map<String, Object> params = new LinkedHashMap<>();
     params.put("SITE_URL", "https://accesssphere.io");
     params.put("NAME", "Mario Rossi");
-    params.put("VERIFICATION_CODE", "987654");
+    params.put("VERIFY_URL", "https://accesssphere.io/verify?token=123456789abcdef");
     params.put("SITE_SHORT", "Access Sphere");
     return params;
   }

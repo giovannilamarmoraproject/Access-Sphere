@@ -554,15 +554,18 @@ public class ProjectInitializerService implements ApplicationRunner {
         defaultTpl.setClientId(techClientId);
         updated = true;
       }
-      // Rinfresca il template se privo di contenuto o appartenente a versioni legacy non aggiornate
+      // Rinfresca il template se privo di contenuto, appartenente a versioni legacy non aggiornate o con segnaposto obsoleti
       if (defaultTpl.getTemplate() == null
           || defaultTpl.getTemplate().contains("Ciao")
-          || !defaultTpl.getTemplate().contains("Poppins")) {
+          || !defaultTpl.getTemplate().contains("Poppins")
+          || (cat == EmailTemplateCategory.EMAIL_VERIFICATION
+              && defaultTpl.getTemplate().contains("VERIFICATION_CODE"))) {
         defaultTpl.setTemplate(htmlTemplate);
         defaultTpl.setLocale("en");
         defaultTpl.setName(cat.getEnglishName());
         defaultTpl.setSubject(cat.getDefaultSubject());
         defaultTpl.setDescription(cat.getEnglishDescription());
+        defaultTpl.setParams(cat.getDefaultParamsAsStringMap());
         updated = true;
       }
       if (updated) {

@@ -69,8 +69,8 @@ const EMAIL_CATEGORIES = {
         defaultParams: {
             SITE_URL: "https://accesssphere.io",
             NAME: "Mario Rossi",
-            VERIFY_URL: "https://accesssphere.io/verify?token=xyz",
-            VERIFY_CODE: "654321"
+            VERIFY_URL: "https://accesssphere.io/verify?token=123456789abcdef",
+            SITE_SHORT: "Access Sphere"
         }
     },
     MFA_OTP: {
