@@ -23,6 +23,9 @@ import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.accesssphere.utilities.URLUtils;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,10 +39,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
 @Component
@@ -452,215 +457,151 @@ public class ProjectInitializerService implements ApplicationRunner {
 
   /**
    * Inizializzazione del template email predefinito per il reset della password con identificatore
-   * UUID. Si interconnette con {@link IEmailTemplateDAO} per verificare se il template con UUID
-   * {DEFAULT_RESET_PASSWORD_TEMPLATE_UUID} è già censito nella tabella 'EMAIL_TEMPLATES'. Se
-   * assente, verifica la presenza del template con identificatore legacy
-   * {LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER} ed esegue la migrazione automatica
-   * all'identificatore UUID e al layout email responsive/bulletproof, collegandolo al client
-   * tecnico {@code techClientId} e impostando i parametri segnaposto standard (SITE_URL, NAME,
-   * RESET_CODE, SITE_SHORT).
+  /**
+   * Inizializzazione di tutti i template email predefiniti a sistema per ciascuna categoria applicativa
+   * definita in {@link EmailTemplateCategory} (Reset Password, Welcome User, Email Verification,
+   * MFA OTP, Account Locked).
+   * <p>
+   * Si interconnette con {@link #seedEmailTemplateCategory(EmailTemplateCategory, String)} per ciascuna
+   * categoria, caricando l'HTML associato dalle risorse di sistema ed eseguendo il seeding o aggiornamento
+   * nella tabella 'EMAIL_TEMPLATES' tramite {@link IEmailTemplateDAO}.
    */
   private void initEmailTemplates() {
+    // Risoluzione del Client ID tecnico associato alle risorse di sistema
     String techClientId =
         StringUtils.hasText(adminUserConfig.getAdminClientId())
             ? adminUserConfig.getAdminClientId()
             : "ACCESS-SPHERE-AUTH";
 
-    List<EmailTemplateEntity> existing =
-        emailTemplateDAO.findByIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
-    List<EmailTemplateEntity> legacyExisting =
-        emailTemplateDAO.findByIdentifier(LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER);
+    // Ciclo di scansione e seeding su tutte le categorie di template censite
+    for (EmailTemplateCategory cat : EmailTemplateCategory.values()) {
+      seedEmailTemplateCategory(cat, techClientId);
+    }
+  }
 
-    String htmlTemplate =
-        """
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-          <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>Reset Password</title>
-            <!--[if mso]>
-            <noscript>
-              <xml>
-                <o:OfficeDocumentSettings>
-                  <o:PixelsPerInch>96</o:PixelsPerInch>
-                </o:OfficeDocumentSettings>
-              </xml>
-            </noscript>
-            <![endif]-->
-            <style type="text/css">
-              @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
-              body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-              table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-              img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
-              body { margin: 0; padding: 0; width: 100% !important; background-color: #0c0d1e; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-              a:hover { opacity: 0.9 !important; text-decoration: none !important; }
-            </style>
-          </head>
-          <body style="margin: 0; padding: 0; background-color: #0c0d1e; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-            <!-- 100% background wrapper table -->
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0c0d1e; min-width: 100%;">
-              <tr>
-                <td align="center" style="padding: 40px 16px;">
-                  <!--[if (gte mso 9)|(IE)]>
-                  <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
-                  <tr>
-                  <td>
-                  <![endif]-->
-                  <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
-                    <!-- Brand Logo Header -->
-                    <tr>
-                      <td align="center" style="padding-bottom: 24px;">
-                        <a href="{{SITE_URL}}" target="_blank" title="Access Sphere" style="text-decoration: none; display: inline-block;">
-                          <img src="https://access-sphere.giovannilamarmora.com/img/Access%20Sphere%20Transparent%20512x512.png" alt="Access Sphere Logo" width="72" height="72" style="display: block; width: 72px; height: 72px; border-radius: 50%; border: 1px solid rgba(168, 85, 247, 0.35); background-color: #16172e;" />
-                        </a>
-                      </td>
-                    </tr>
-                    <!-- Card Container -->
-                    <tr>
-                      <td align="center">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #16172e; border-radius: 20px; border: 1px solid #292a4d; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); overflow: hidden;">
-                          <tr>
-                            <td align="center" style="padding: 40px 32px;">
-                              <!-- Salutation -->
-                              <h2 style="color: #a78bfa; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                Hello {{NAME}},
-                              </h2>
-                              <!-- Main Title -->
-                              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; line-height: 1.35; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                You have requested to reset your password
-                              </h1>
-                              <!-- Gradient Line Separator -->
-                              <div style="display: inline-block; vertical-align: middle; margin: 24px auto; border-bottom: 2px solid #7c3aed; width: 60px;"></div>
-                              <!-- Instructional Text -->
-                              <p style="color: #cbd5e1; font-size: 15px; line-height: 24px; margin: 0 0 24px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                Use the following security code to complete your password reset. If you did not request a reset, please ignore this email.
-                              </p>
-                              <!-- Verification Code Highlight Block -->
-                              <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 20px auto;">
-                                <tr>
-                                  <td align="center" style="background-color: #201f3d; border: 1px dashed #a855f7; border-radius: 14px; padding: 16px 32px;">
-                                    <span style="font-family: 'Courier New', Courier, monospace, 'Poppins', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #f5f3ff; display: inline-block;">
-                                      {{RESET_CODE}}
-                                    </span>
-                                  </td>
-                                </tr>
-                              </table>
-                              <!-- Expiration Warning -->
-                              <p style="color: #94a3b8; font-size: 13px; line-height: 20px; margin: 16px 0 0 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                <i style="display: inline-block;">&#9201;</i> The code is valid for <strong>15 minutes</strong>.
-                              </p>
-                              <!-- CTA Button to Platform -->
-                              <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-top: 32px;">
-                                <tr>
-                                  <td align="center" style="border-radius: 50px; background-color: #7c3aed;">
-                                    <a href="{{SITE_URL}}" target="_blank" style="font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 50px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;">
-                                      Reset Password
-                                    </a>
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                    <!-- Email Footer -->
-                    <tr>
-                      <td align="center" style="padding-top: 24px;">
-                        <p style="font-size: 13px; color: #64748b; line-height: 18px; margin: 0 0 6px 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                          &copy; <strong>{{SITE_SHORT}}</strong> &bull; Identity &amp; Access Management
-                        </p>
-                        <p style="font-size: 12px; color: #475569; margin: 0; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                          Automated security notification generated by <a href="{{SITE_URL}}" target="_blank" style="color: #a78bfa; text-decoration: none;">Access Sphere</a>.
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
-                  <!--[if (gte mso 9)|(IE)]>
-                  </td>
-                  </tr>
-                  </table>
-                  <![endif]-->
-                </td>
-              </tr>
-            </table>
-          </body>
-        </html>
-        """;
+  /**
+   * Effettua la verifica di persistenza, la migrazione legacy o il seeding a database di una specifica
+   * categoria di template email.
+   * <p>
+   * Flusso logico ed interconnessioni:
+   * 1. Richiama {@link #loadTemplateFromResource(String)} per prelevare il file HTML responsive da classpath.
+   * 2. Interroga {@link IEmailTemplateDAO#findByIdentifier(String)} con l'identificatore UUID della categoria.
+   * 3. Se assente, verifica se esiste un record con l'identificatore legacy ed esegue la migrazione a UUID.
+   * 4. Se assente del tutto, crea una nuova entità {@link EmailTemplateEntity} collegata a {@code techClientId}
+   *    con parametri predefiniti e la persiste su DB.
+   * 5. Se già presente, aggiorna client ID o corpo HTML qualora obsoleti.
+   *
+   * @param cat Categoria applicativa del template da verificare e persistere
+   * @param techClientId Identificativo del client tecnico di sistema
+   */
+  private void seedEmailTemplateCategory(EmailTemplateCategory cat, String techClientId) {
+    String identifier = cat.getDefaultIdentifier();
+    String legacyIdentifier = cat.getLegacyIdentifier();
+    // Caricamento del template HTML dalla cartella risorse
+    String htmlTemplate = loadTemplateFromResource(cat.getTemplateFileName());
+
+    // Ricerca template esistente per UUID o per identificatore legacy
+    List<EmailTemplateEntity> existing = emailTemplateDAO.findByIdentifier(identifier);
+    List<EmailTemplateEntity> legacyExisting =
+        StringUtils.hasText(legacyIdentifier)
+            ? emailTemplateDAO.findByIdentifier(legacyIdentifier)
+            : List.of();
 
     if (existing.isEmpty() && legacyExisting.isEmpty()) {
-      LOG.info(
-          "📧 Seeding Default Email Template with UUID: {}", DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
+      // 1. Caso nuovo template: seeding iniziale a database
+      LOG.info("📧 Seeding Default Email Template [{}] for category [{}]", identifier, cat.getCode());
       EmailTemplateEntity template = new EmailTemplateEntity();
-      template.setIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
-      template.setCategory(EmailTemplateCategory.RESET_PASSWORD.getCode());
-      template.setClientId(
-          techClientId); // Collegato al client applicativo predefinito configurato all'avvio
-      template.setName("Reset Password");
-      template.setSubject("Reset Password");
-      template.setDescription("Template for sending password reset code");
+      template.setIdentifier(identifier);
+      template.setCategory(cat.getCode());
+      template.setClientId(techClientId);
+      template.setName(cat.getEnglishName());
+      template.setSubject(cat.getDefaultSubject());
+      template.setDescription(cat.getEnglishDescription());
       template.setLocale("en");
-
-      // Mappa parametri predefiniti associati al template
-      Map<String, String> params = new LinkedHashMap<>();
-      params.put("SITE_URL", "https://accesssphere.io");
-      params.put("NAME", "John Doe");
-      params.put("RESET_CODE", "123456");
-      params.put("SITE_SHORT", "Access Sphere");
-      template.setParams(params);
+      template.setParams(cat.getDefaultParamsAsStringMap());
       template.setTemplate(htmlTemplate);
 
-      // Persistenza template a database
       emailTemplateDAO.save(template);
       LOG.info(
-          "✅ Default Email Template [{}] successfully seeded in DB with clientId [{}]",
-          DEFAULT_RESET_PASSWORD_TEMPLATE_UUID,
+          "✅ Email Template [{}] for category [{}] successfully seeded in DB with clientId [{}]",
+          identifier,
+          cat.getCode(),
           techClientId);
     } else if (existing.isEmpty() && !legacyExisting.isEmpty()) {
-      // Migrazione automatica da identificatore legacy ad identificatore UUID
+      // 2. Caso migrazione automatica da identificatore legacy ad identificatore UUID
       EmailTemplateEntity legacyTpl = legacyExisting.get(0);
-      legacyTpl.setIdentifier(DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
-      legacyTpl.setCategory(EmailTemplateCategory.RESET_PASSWORD.getCode());
+      legacyTpl.setIdentifier(identifier);
+      legacyTpl.setCategory(cat.getCode());
       legacyTpl.setLocale("en");
-      legacyTpl.setSubject("Reset Password");
-      legacyTpl.setDescription("Template for sending password reset code");
+      legacyTpl.setName(cat.getEnglishName());
+      legacyTpl.setSubject(cat.getDefaultSubject());
+      legacyTpl.setDescription(cat.getEnglishDescription());
       if (legacyTpl.getClientId() == null) {
         legacyTpl.setClientId(techClientId);
       }
       legacyTpl.setTemplate(htmlTemplate);
       emailTemplateDAO.save(legacyTpl);
       LOG.info(
-          "🔄 Migrated Legacy Email Template [{}] to UUID [{}] and refreshed English email-safe template with clientId [{}]",
-          LEGACY_RESET_PASSWORD_TEMPLATE_IDENTIFIER,
-          DEFAULT_RESET_PASSWORD_TEMPLATE_UUID,
+          "🔄 Migrated Legacy Email Template [{}] to UUID [{}] and refreshed template with clientId [{}]",
+          legacyIdentifier,
+          identifier,
           legacyTpl.getClientId());
     } else {
+      // 3. Caso template già presente: verifica aggiornamento client ID e corpo HTML
       EmailTemplateEntity defaultTpl = existing.get(0);
       boolean updated = false;
       if (defaultTpl.getClientId() == null) {
         defaultTpl.setClientId(techClientId);
         updated = true;
       }
+      // Rinfresca il template se privo di contenuto o appartenente a versioni legacy non aggiornate
       if (defaultTpl.getTemplate() == null
           || defaultTpl.getTemplate().contains("Ciao")
           || !defaultTpl.getTemplate().contains("Poppins")) {
         defaultTpl.setTemplate(htmlTemplate);
         defaultTpl.setLocale("en");
-        defaultTpl.setSubject("Reset Password");
-        defaultTpl.setDescription("Template for sending password reset code");
+        defaultTpl.setName(cat.getEnglishName());
+        defaultTpl.setSubject(cat.getDefaultSubject());
+        defaultTpl.setDescription(cat.getEnglishDescription());
         updated = true;
       }
       if (updated) {
         emailTemplateDAO.save(defaultTpl);
         LOG.info(
-            "🔄 Updated Default Email Template [{}] with technical client [{}] and modern English email-safe template",
+            "🔄 Updated Email Template [{}] ({}) with technical client [{}] and modern template",
             defaultTpl.getIdentifier(),
+            cat.getCode(),
             techClientId);
       } else {
-        LOG.debug(
-            "Email Template [{}] already present in DB", DEFAULT_RESET_PASSWORD_TEMPLATE_UUID);
+        LOG.debug("Email Template [{}] ({}) already present and up to date in DB", identifier, cat.getCode());
       }
+    }
+  }
+
+  /**
+   * Carica il contenuto HTML di un file template da classpath.
+   * Verifica sequenzialmente i percorsi 'template/<templateFileName>' (standard applicativo)
+   * e 'templates/<templateFileName>' (fallback per convenzione Spring Boot).
+   *
+   * @param templateFileName Nome del file template HTML presente nella cartella risorse (es. 'reset-password.html')
+   * @return Stringa contenente il markup HTML letto con codifica UTF-8
+   */
+  private String loadTemplateFromResource(String templateFileName) {
+    try {
+      ClassPathResource resource = new ClassPathResource("template/" + templateFileName);
+      if (!resource.exists()) {
+        resource = new ClassPathResource("templates/" + templateFileName);
+      }
+      if (!resource.exists()) {
+        LOG.error("❌ Email template resource file not found on classpath: template/{}", templateFileName);
+        throw new IllegalStateException("Email template resource not found: " + templateFileName);
+      }
+      try (InputStream is = resource.getInputStream()) {
+        return StreamUtils.copyToString(is, StandardCharsets.UTF_8);
+      }
+    } catch (IOException e) {
+      LOG.error("❌ Failed to read email template resource: {}", templateFileName, e);
+      throw new IllegalStateException("Failed to read email template resource: " + templateFileName, e);
     }
   }
 }
