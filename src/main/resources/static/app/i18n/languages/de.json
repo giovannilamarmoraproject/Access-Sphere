@@ -920,6 +920,7 @@
   "modal_email_editor_new_title": "Neue E-Mail-Vorlage",
   "email_editor_subtitle": "Metadaten und Parameter konfigurieren und das gerenderte Markup in Echtzeit anzeigen",
   "email_btn_save_template": "Vorlage speichern",
+  "email_saving": "Speichern...",
   "email_editor_ident_hint": "Vom Backend/Microservice aufgerufener Bezeichner",
   "email_placeholder_identifier": "z.B. c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95",
   "email_placeholder_name": "z.B. Benutzer-Passwort zurücksetzen",

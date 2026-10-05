@@ -50,6 +50,7 @@ public class EmailTemplateService {
 
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
 
+  @Autowired private EmailTemplateDomainService emailTemplateDomainService;
   @Autowired private EmailRepository emailRepository;
   @Autowired private EmailSender emailSender;
   @Autowired private AdminUserService techUserService;
@@ -61,11 +62,12 @@ public class EmailTemplateService {
     List<RoleDefinition> hasCorrectRoles =
         permissionRoleManager.checkPermissionAndReturnUserRoles(emailPermission);
 
-    return Mono.fromCallable(
-            () -> {
-              List<EmailTemplate> models = emailRepository.findAll().orElse(List.of());
+    return emailTemplateDomainService
+        .getAllTemplates()
+        .map(
+            allTemplates -> {
               if (permissionRoleManager.hasAdminPermission(emailPermission)) {
-                return models;
+                return allTemplates;
               }
 
               // Estrae i clientId per i quali l'utente possiede almeno un ruolo abilitato
@@ -77,7 +79,7 @@ public class EmailTemplateService {
                       .collect(Collectors.toSet());
 
               // Filtra la lista restituendo esclusivamente i client autorizzati
-              return models.stream()
+              return allTemplates.stream()
                   .filter(
                       emailTemplate ->
                           emailTemplate.getClientId() != null
@@ -87,8 +89,6 @@ public class EmailTemplateService {
             })
         .map(EmailTemplateMapper::toResponseList);
   }
-
-
 
   /**
    * Risoluzione avanzata del template email basata su Categoria, Locale e Client (Multi-Tenant).
@@ -252,8 +252,8 @@ public class EmailTemplateService {
   }
 
   /**
-   * Salva o aggiorna un template email a database.
-   * Delega all'overload con identificatore nullo per le creazioni dirette.
+   * Salva o aggiorna un template email a database. Delega all'overload con identificatore nullo per
+   * le creazioni dirette.
    *
    * @param dto DTO del template inviato dal client
    * @return Mono con il DTO del template salvato
@@ -265,21 +265,26 @@ public class EmailTemplateService {
   }
 
   /**
-   * Salva o aggiorna un template email a database, supportando l'identificatore univoco da path variable.
-   * <p>
-   * Flusso logico ed interconnessioni:
+   * Salva o aggiorna un template email a database, supportando l'identificatore univoco da path
+   * variable.
+   *
+   * <p>Flusso logico ed interconnessioni:
+   *
    * <ul>
-   *   <li>Risolve l'identificatore prioritario da path variable o dal payload DTO.</li>
-   *   <li>Normalizza la categoria, il client ID e il locale multilingua.</li>
-   *   <li>Cerca un template preesistente tramite {@link EmailRepository#findFirstByIdentifier(String)}
-   *       (o fallback su ID numerico se fornito da client legacy).</li>
+   *   <li>Risolve l'identificatore prioritario da path variable o dal payload DTO.
+   *   <li>Normalizza la categoria, il client ID e il locale multilingua.
+   *   <li>Cerca un template preesistente tramite {@link
+   *       EmailRepository#findFirstByIdentifier(String)} (o fallback su ID numerico se fornito da
+   *       client legacy).
    *   <li>Verifica l'assenza di conflitti di unicita sulla tripla (Categoria, ClientId, Lingua)
-   *       escludendo l'ID del template in fase di aggiornamento.</li>
-   *   <li>Aggiorna il modello di dominio esistente o ne istanzia uno nuovo tramite {@link EmailTemplateMapper}.</li>
-   *   <li>Persiste a database tramite {@link EmailRepository#save(EmailTemplate)}.</li>
+   *       escludendo l'ID del template in fase di aggiornamento.
+   *   <li>Aggiorna il modello di dominio esistente o ne istanzia uno nuovo tramite {@link
+   *       EmailTemplateMapper}.
+   *   <li>Persiste a database tramite {@link EmailRepository#save(EmailTemplate)}.
    * </ul>
    *
-   * @param pathIdentifier Identificatore univoco specificato come variabile di percorso REST (opzionale)
+   * @param pathIdentifier Identificatore univoco specificato come variabile di percorso REST
+   *     (opzionale)
    * @param dto DTO contenente i dati del template da salvare o aggiornare
    * @return Mono contenente il DTO del template salvato con metadati aggiornati
    */
@@ -302,7 +307,8 @@ public class EmailTemplateService {
                   : "RESET_PASSWORD";
           dto.setCategory(category);
 
-          // Normalizzazione Identifier (se non specificato, assegna identificatore predefinito della categoria)
+          // Normalizzazione Identifier (se non specificato, assegna identificatore predefinito
+          // della categoria)
           EmailTemplateCategory catEnum = EmailTemplateCategory.fromCode(category);
           if (dto.getIdentifier() == null || dto.getIdentifier().trim().isEmpty()) {
             dto.setIdentifier(
@@ -313,7 +319,8 @@ public class EmailTemplateService {
             dto.setIdentifier(dto.getIdentifier().trim());
           }
 
-          // Normalizzazione Client ID (se vuoto o "GLOBAL", diventa null per indicare template Globale)
+          // Normalizzazione Client ID (se vuoto o "GLOBAL", diventa null per indicare template
+          // Globale)
           String clientId =
               (dto.getClientId() != null
                       && !dto.getClientId().trim().isEmpty()
@@ -322,7 +329,8 @@ public class EmailTemplateService {
                   : null;
           dto.setClientId(clientId);
 
-          // Normalizzazione Locale (se vuoto o "ALL"/"GENERIC", diventa null per indicare lingua Globale)
+          // Normalizzazione Locale (se vuoto o "ALL"/"GENERIC", diventa null per indicare lingua
+          // Globale)
           String locale =
               (dto.getLocale() != null
                       && !dto.getLocale().trim().isEmpty()
@@ -332,7 +340,8 @@ public class EmailTemplateService {
                   : null;
           dto.setLocale(locale);
 
-          // Ricerca di un template preesistente tramite identifier (oppure fallback su ID per retrocompatibilita)
+          // Ricerca di un template preesistente tramite identifier (oppure fallback su ID per
+          // retrocompatibilita)
           Optional<EmailTemplate> existingOpt = Optional.empty();
           if (!ObjectToolkit.isNullOrEmpty(lookupIdentifier)) {
             existingOpt = emailRepository.findFirstByIdentifier(lookupIdentifier);
@@ -417,31 +426,9 @@ public class EmailTemplateService {
   }
 
   /**
-   * Elimina un template email dal database dato il suo ID numerico (overload per retrocompatibilita).
-   *
-   * @param id ID del template da eliminare
-   * @return Mono vuoto al completamento
-   */
-  @Transactional
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<Void> deleteTemplate(Long id) {
-    return Mono.fromCallable(
-            () -> {
-              if (!emailRepository.existsById(id)) {
-                throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Email template with ID " + id + " not found");
-              }
-              emailRepository.deleteById(id);
-              LOG.info("Email template successfully deleted: ID=[{}]", id);
-              return true;
-            })
-        .then();
-  }
-
-  /**
-   * Invia un'email di prova compilata direttamente dall'interfaccia di amministrazione.
-   * Risolve il template via identificatore univoco (o via ID legacy) e sostituisce
-   * i segnaposto {{KEY}} con i parametri specificati.
+   * Invia un'email di prova compilata direttamente dall'interfaccia di amministrazione. Risolve il
+   * template via identificatore univoco (o via ID legacy) e sostituisce i segnaposto {{KEY}} con i
+   * parametri specificati.
    *
    * @param request DTO contenente destinatario, identificatore template e mappa parametri
    * @return Mono contenente l'esito della spedizione tramite {@link EmailSender}
@@ -464,7 +451,9 @@ public class EmailTemplateService {
                             () ->
                                 new ResponseStatusException(
                                     HttpStatus.NOT_FOUND,
-                                    "Template identifier " + request.getIdentifier() + " not found"));
+                                    "Template identifier "
+                                        + request.getIdentifier()
+                                        + " not found"));
                 rawHtml = model.getTemplate();
                 if (ObjectToolkit.isNullOrEmpty(subject)) subject = model.getSubject();
               } else if (request.getTemplateId() != null) {

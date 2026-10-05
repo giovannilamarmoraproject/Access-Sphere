@@ -65,14 +65,14 @@ public class EmailTemplateController {
                             saved)));
   }
 
-  @PutMapping(value = {"", "/{identifier}"})
+  @PutMapping("/{identifier}")
   @Operation(
       summary = "Update existing email template",
       description =
-          "Modifies the email template matching the specified identifier or from payload identifier")
+          "Modifies the email template matching the specified identifier from path variable")
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   public Mono<ResponseEntity<Response>> updateTemplate(
-      @PathVariable(value = "identifier", required = false) String identifier,
+      @PathVariable("identifier") String identifier,
       @Valid @RequestBody EmailTemplateResponse dto,
       ServerHttpRequest request) {
     return emailTemplateService

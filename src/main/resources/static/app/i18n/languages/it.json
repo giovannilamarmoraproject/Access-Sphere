@@ -920,6 +920,7 @@
   "modal_email_editor_new_title": "Nuovo Template Email",
   "email_editor_subtitle": "Configura metadati, parametri e visualizza il markup renderizzato in tempo reale",
   "email_btn_save_template": "Salva Template",
+  "email_saving": "Salvataggio...",
   "email_editor_ident_hint": "Identificatore chiamato dal backend/microservizio",
   "email_placeholder_identifier": "es. c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95",
   "email_placeholder_name": "es. Reset Password Utente",

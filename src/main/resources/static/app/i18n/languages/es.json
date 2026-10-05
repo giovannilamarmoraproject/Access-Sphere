@@ -920,6 +920,7 @@
   "modal_email_editor_new_title": "Nueva Plantilla de Correo",
   "email_editor_subtitle": "Configura metadatos, parámetros y visualiza el marcado en tiempo real",
   "email_btn_save_template": "Guardar plantilla",
+  "email_saving": "Guardando...",
   "email_editor_ident_hint": "Identificador invocado por el backend/microservicio",
   "email_placeholder_identifier": "ej. c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95",
   "email_placeholder_name": "ej. Restablecimiento de contraseña",

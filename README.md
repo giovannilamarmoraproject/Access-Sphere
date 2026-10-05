@@ -365,7 +365,7 @@ La documentazione OpenAPI 3.0 interattiva è accessibile a runtime all'indirizzo
 |----------|---------------------------------|----------------------------------------------------------------------------------|----------------|
 | `GET`    | `/v1/email-templates`           | Elenco di tutti i template email censiti                                         | Bearer (Admin) |
 | `POST`   | `/v1/email-templates`           | Crea un nuovo template email con vincolo di unicità `(Category, Client, Locale)` | Bearer (Admin) |
-| `PUT`    | `/v1/email-templates/{identifier}` | Aggiorna un template email esistente (supporta anche `/v1/email-templates`)       | Bearer (Admin) |
+| `PUT`    | `/v1/email-templates/{identifier}` | Aggiorna un template email esistente                                             | Bearer (Admin) |
 | `DELETE` | `/v1/email-templates/{identifier}` | Elimina un template email tramite identificatore applicativo                      | Bearer (Admin) |
 | `POST`   | `/v1/email-templates/send-test`    | Invia un'email di collaudo con parametri compilati                                | Bearer (Admin) |
 

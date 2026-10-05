@@ -20,6 +20,7 @@ let currentDetailTemplate = null;
 let currentDetailDevice = "desktop";
 let editorDebounceTimer = null;
 let duplicateCheckTimer = null;
+let isSavingTemplate = false;
 
 const DYNAMIC_PREVIEW_VALUES = {
     "USER.NAME": "Mario Rossi",
@@ -1225,10 +1226,12 @@ function openEditTemplateModal(identifier) {
 
 /**
  * Salva il template tramite POST o PUT a /v1/email-templates.
- * Valida i campi obbligatori, esegue il controllo preventivo dei duplicati (Category, Client, Locale)
- * e inoltra la richiesta al backend identificando la risorsa tramite identifier.
+ * Valida i campi obbligatori, esegue il controllo preventivo dei duplicati (Category, Client, Locale),
+ * blocca il form per evitare click multipli concorrenti e inoltra la richiesta al backend.
  */
 function saveTemplateForm() {
+    if (isSavingTemplate) return;
+
     const isEditInput = document.getElementById("editor-is-edit");
     const idVal = document.getElementById("editor-template-id") ? document.getElementById("editor-template-id").value : "";
     const isEdit = (isEditInput && isEditInput.value === "true") || Boolean(idVal);
@@ -1282,6 +1285,24 @@ function saveTemplateForm() {
 
     const methodFn = isEdit ? PUT : POST;
 
+    // Disabilita pulsante e attiva spinner per evitare doppi invii accidentali
+    isSavingTemplate = true;
+    const saveBtn = document.getElementById("btn-save-template");
+    const originalSaveHtml = saveBtn ? saveBtn.innerHTML : null;
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        const savingText = typeof t === "function" ? t("email_saving", "Salvataggio...") : "Salvataggio...";
+        saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> <span>${escapeHtml(savingText)}</span>`;
+    }
+
+    const restoreSaveBtn = () => {
+        isSavingTemplate = false;
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            if (originalSaveHtml) saveBtn.innerHTML = originalSaveHtml;
+        }
+    };
+
     methodFn(url, token, payload)
         .then(async (res) => {
             const data = await res.json();
@@ -1310,6 +1331,9 @@ function saveTemplateForm() {
                 typeof t === "function" ? t("error", "Errore") : "Errore",
                 typeof t === "function" ? t("email_swal_save_error_title", "Si è verificato un errore durante la chiamata di salvataggio.") : "Si è verificato un errore durante la chiamata di salvataggio."
             );
+        })
+        .finally(() => {
+            restoreSaveBtn();
         });
 }
 
