@@ -222,12 +222,10 @@ function populateClientSelects() {
         const currentVal = filterSelect.value || "ALL";
         const lblAll = typeof t === "function" ? t("email_filter_client_all", "Tutte le applicazioni") : "Tutte le applicazioni";
         const lblDefault = typeof t === "function" ? t("email_client_default", `${defaultClientId} (Predefinito)`) : `${defaultClientId} (Predefinito)`;
-        const lblGlobal = typeof t === "function" ? t("email_client_global", "Globale (Senza Client)") : "Globale (Senza Client)";
 
         let filterHtml = `
             <option value="ALL" data-i18n="email_filter_client_all">${escapeHtml(lblAll)}</option>
             <option value="${escapeHtml(defaultClientId)}" data-i18n="email_client_default">${escapeHtml(lblDefault)}</option>
-            <option value="GLOBAL" data-i18n="email_client_global">${escapeHtml(lblGlobal)}</option>
         `;
         cachedClients.forEach((c) => {
             const cid = c.clientId || c.id;
@@ -240,13 +238,11 @@ function populateClientSelects() {
     }
 
     if (editorSelect) {
-        const currentVal = editorSelect.value !== undefined && editorSelect.value !== "" ? editorSelect.value : defaultClientId;
+        const currentVal = (editorSelect.value !== undefined && editorSelect.value !== "") ? editorSelect.value : defaultClientId;
         const lblDefaultOption = typeof t === "function" ? t("email_client_default", `${defaultClientId} (Predefinito)`) : `${defaultClientId} (Predefinito)`;
-        const lblNoneGlobal = typeof t === "function" ? t("email_client_none_global", "Nessun Client (Globale per tutti i client)") : "Nessun Client (Globale per tutti i client)";
 
         let editorHtml = `
             <option value="${escapeHtml(defaultClientId)}" data-i18n="email_client_default">${escapeHtml(lblDefaultOption)}</option>
-            <option value="" data-i18n="email_client_none_global">${escapeHtml(lblNoneGlobal)}</option>
         `;
         cachedClients.forEach((c) => {
             const cid = c.clientId || c.id;
@@ -373,12 +369,11 @@ function getFilteredTemplates(templates) {
 
         // 2. Filtro per Applicazione / Client Scoping
         if (currentFilterClient !== "ALL") {
-            if (currentFilterClient === "GLOBAL") {
-                if (t.clientId && t.clientId.trim() !== "") return false;
-            } else {
-                if (!t.clientId || t.clientId.toUpperCase() !== currentFilterClient.toUpperCase()) {
-                    return false;
-                }
+            const cfg = typeof getConfig === "function" ? getConfig() : null;
+            const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+            const templateClient = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim() : defaultClientId;
+            if (templateClient.toUpperCase() !== currentFilterClient.toUpperCase()) {
+                return false;
             }
         }
 
@@ -552,17 +547,13 @@ function getCategoryBadgeHtml(catKey) {
 function getClientBadgeHtml(clientId) {
     const cfg = typeof getConfig === "function" ? getConfig() : null;
     const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+    const effectiveClientId = (clientId && clientId.trim() !== "") ? clientId.trim() : defaultClientId;
 
-    if (!clientId || clientId.trim() === "") {
-        const lblGlobal = typeof t === "function" ? t("email_client_badge_global", "Globale") : "Globale";
-        return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-white/5 border border-white/10 text-gray-300 flex items-center gap-1" title="${typeof t === "function" ? t("email_client_global", "Globale (Senza Client)") : "Globale (Senza Client)"}"><i class="fa-solid fa-earth-americas text-[10px] opacity-70"></i> ${lblGlobal}</span>`;
+    if (effectiveClientId.toUpperCase() === defaultClientId.toUpperCase()) {
+        return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-blue-500/10 border border-blue-500/30 text-blue-300 flex items-center gap-1" title="Client Applicativo Predefinito"><i class="fa-solid fa-cube text-[10px]"></i> ${escapeHtml(defaultClientId)}</span>`;
     }
 
-    if (clientId.toUpperCase() === defaultClientId.toUpperCase()) {
-        return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-blue-500/10 border border-blue-500/30 text-blue-300 flex items-center gap-1" title="Client Applicativo Predefinito"><i class="fa-solid fa-cube text-[10px]"></i> ${escapeHtml(clientId)}</span>`;
-    }
-
-    return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-purple-500/10 border border-purple-500/30 text-purple-300 flex items-center gap-1"><i class="fa-solid fa-cubes text-[10px]"></i> ${escapeHtml(clientId)}</span>`;
+    return `<span class="px-2 py-0.5 rounded-lg text-[11px] font-medium bg-purple-500/10 border border-purple-500/30 text-purple-300 flex items-center gap-1"><i class="fa-solid fa-cubes text-[10px]"></i> ${escapeHtml(effectiveClientId)}</span>`;
 }
 
 function getCategoryStatusBadgeHtml(catKey) {
@@ -957,8 +948,10 @@ function checkDuplicateConflict() {
 
     if (!categoryEl || !clientEl || !localeEl) return false;
 
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
     const category = (categoryEl.value || "RESET_PASSWORD").trim().toUpperCase();
-    const clientId = (clientEl.value || "").trim().toUpperCase();
+    const clientId = (clientEl.value && clientEl.value.trim() !== "") ? clientEl.value.trim().toUpperCase() : defaultClientId.toUpperCase();
     const rawLocale = (localeEl.value || "").trim().toLowerCase();
     const locale = rawLocale === "" ? null : rawLocale;
 
@@ -972,7 +965,7 @@ function checkDuplicateConflict() {
             return false;
         }
         const tCat = (t.category || "RESET_PASSWORD").trim().toUpperCase();
-        const tClient = (t.clientId || "").trim().toUpperCase();
+        const tClient = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
         const tLocale = (t.locale || "").trim().toLowerCase() || null;
 
         return tCat === category && tClient === clientId && tLocale === locale;
@@ -1181,7 +1174,9 @@ function openEditTemplateModal(identifier) {
 
     const clientSelect = document.getElementById("editor-client");
     if (clientSelect) {
-        clientSelect.value = template.clientId || "";
+        const cfg = typeof getConfig === "function" ? getConfig() : null;
+        const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+        clientSelect.value = (template.clientId && template.clientId.trim() !== "") ? template.clientId : defaultClientId;
     }
 
     handleCategoryChange(template.category || "RESET_PASSWORD");
@@ -1576,16 +1571,12 @@ function openEmailDetailModal(identifier) {
         const cfg = typeof getConfig === "function" ? getConfig() : null;
         const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
 
-        if (template.clientId) {
-            const isDefault = template.clientId.toUpperCase() === defaultClientId.toUpperCase();
-            const colorClass = isDefault ? "text-blue-400" : "text-purple-400";
-            const textClass = isDefault ? "text-blue-300" : "text-purple-300";
-            const labelSuffix = isDefault ? ` (${typeof t === "function" ? t("email_client_default_short", "Predefinito") : "Predefinito"})` : "";
-            clientSubEl.innerHTML = `<i class="fa-solid ${isDefault ? 'fa-cube' : 'fa-cubes'} ${colorClass} mr-1.5"></i> <span class="${textClass}">${escapeHtml(template.clientId)}${escapeHtml(labelSuffix)}</span>`;
-        } else {
-            const lblGlobal = typeof t === "function" ? t("email_client_none_global", "Nessun Client (Globale)") : "Nessun Client (Globale)";
-            clientSubEl.innerHTML = `<i class="fa-solid fa-earth-americas text-gray-400 mr-1.5"></i> <span class="text-gray-300">${escapeHtml(lblGlobal)}</span>`;
-        }
+        const cid = (template.clientId && template.clientId.trim() !== "") ? template.clientId.trim() : defaultClientId;
+        const isDefault = cid.toUpperCase() === defaultClientId.toUpperCase();
+        const colorClass = isDefault ? "text-blue-400" : "text-purple-400";
+        const textClass = isDefault ? "text-blue-300" : "text-purple-300";
+        const labelSuffix = isDefault ? ` (${typeof t === "function" ? t("email_client_default_short", "Predefinito") : "Predefinito"})` : "";
+        clientSubEl.innerHTML = `<i class="fa-solid ${isDefault ? 'fa-cube' : 'fa-cubes'} ${colorClass} mr-1.5"></i> <span class="${textClass}">${escapeHtml(cid)}${escapeHtml(labelSuffix)}</span>`;
     }
 
     if (identSubEl) {
