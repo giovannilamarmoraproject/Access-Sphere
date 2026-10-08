@@ -133,6 +133,132 @@ body {
     border-color: transparent !important;
 }
 
+/* =======================================================
+   HEADER NAVIGATION DROPDOWNS (M3 Unified Navbar)
+   =======================================================
+   Fornisce supporto per i menu a discesa contestuali nell'header unificato:
+   - .nav-dropdown: contenitore relativo per agganciare il popup
+   - .nav-dropdown-trigger: pulsante trigger nello stile pillola M3
+   - .nav-dropdown-menu: pannello floating glassmorphism con blur M3
+   - .nav-dropdown-item: singola voce di sottomenu con icona e hover
+   ======================================================= */
+.nav-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.nav-dropdown-trigger {
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid transparent;
+    outline: none;
+}
+
+.nav-dropdown-chevron {
+    font-size: 0.65rem;
+    margin-left: 3px;
+    opacity: 0.8;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-dropdown.is-open .nav-dropdown-chevron,
+.nav-dropdown:hover .nav-dropdown-chevron {
+    transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 210px;
+    background: var(--md-surface-card, rgba(24, 19, 38, 0.94)) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid var(--md-surface-border, rgba(208, 188, 255, 0.16)) !important;
+    border-radius: 18px !important;
+    padding: 6px !important;
+    box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.97);
+    transition: opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0.18s;
+    pointer-events: none;
+}
+
+/* Allineamento a destra per dropdown posizionati all'estremità della navbar */
+.nav-dropdown-menu.nav-dropdown-menu-right {
+    left: auto;
+    right: 0;
+}
+
+/* Ponte trasparente per impedire la perdita di hover tra bottone e menu */
+.nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
+}
+
+.nav-dropdown.is-open .nav-dropdown-menu,
+.nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.nav-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #CAC4D0 !important;
+    text-decoration: none !important;
+    transition: all 0.15s ease-in-out;
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: transparent;
+    white-space: nowrap;
+}
+
+.nav-dropdown-item:hover {
+    color: #FFFFFF !important;
+    background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12) !important;
+    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.2) !important;
+}
+
+.nav-dropdown-item.active {
+    background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18) !important;
+    color: var(--md-primary, #D0BCFF) !important;
+    font-weight: 600;
+    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3) !important;
+}
+
+.nav-dropdown-item i {
+    font-size: 0.9rem;
+    width: 18px;
+    text-align: center;
+    color: var(--md-primary, #D0BCFF);
+    transition: transform 0.15s ease;
+}
+
+.nav-dropdown-item:hover i {
+    transform: scale(1.12);
+}
+
+
 /* Header Action Buttons (Fix for square borders) */
 .m3-icon-btn {
     width: 44px !important;

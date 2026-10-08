@@ -345,6 +345,33 @@ body {
     box-shadow: none !important;
 }
 
+/* Nav Dropdown Dynamic Theme Integration */
+.nav-dropdown-trigger.active {
+    background: var(--md-primary) !important;
+    color: var(--md-on-primary) !important;
+}
+
+.nav-dropdown-trigger.active i {
+    color: var(--md-on-primary) !important;
+}
+
+.nav-dropdown-item:hover {
+    background: rgba(var(--theme-accent-rgb), 0.12) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.25) !important;
+    color: #FFFFFF !important;
+}
+
+.nav-dropdown-item.active {
+    background: rgba(var(--theme-accent-rgb), 0.22) !important;
+    color: var(--md-primary) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.35) !important;
+}
+
+.nav-dropdown-item i {
+    color: var(--md-primary) !important;
+}
+
+
 /* Circular Icon Buttons */
 .m3-icon-btn:not(.m3-icon-btn-danger) {
     background: rgba(var(--theme-accent-rgb), 0.08) !important;

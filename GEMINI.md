@@ -59,12 +59,11 @@ basata su **HTML5 / Tailwind CSS / Vanilla JS** con design system Google Materia
     - Il pulsante di Logout DEVE usare `.m3-icon-btn.m3-icon-btn-danger` con l'accento rosso/salmone corallo
       (`color: #FFB4AB`, `background: rgba(255, 180, 171, 0.08)`, `border: 1px solid rgba(255, 180, 171, 0.22)`).
     - L'header di TUTTE le pagine (`dashboard.html`, `users.html`, `clients.html`, `user.html`, `register.html`,
-      `edit.html`, `roles.html`, `mfa.html`, `client.html`) deve contenere i tab standard di navigazione:
+      `edit.html`, `roles.html`, `mfa.html`, `client.html`, `emails.html`, `role.html`) deve contenere la barra di navigazione unificata a macro-aree con dropdown M3:
         - **Panoramica** (`/app`)
-        - **Utenti** (`/app/users`)
-        - **Client OAuth2** (`/app/clients`)
-        - **Impostazioni** (`/app/settings`)
-        - **API Docs** (link esterno a GitHub)
+        - **Identità & Accessi** (dropdown): Utenti (`/app/users`), Nuovo Utente (`/app/users/register`), Ruoli (`/app/role`)
+        - **Applicazioni** (dropdown): Client OAuth2 (`/app/clients`), Nuovo Client (`/app/clients/register`)
+        - **Sistema** (dropdown): Template Email (`/app/emails`), Impostazioni (`/app/settings`), API Docs (`/webjars/swagger-ui/index.html`)
 4. **Gestione Storage & Sessione**:
     - La funzione `cleanStorageAndCookies()` non deve MAI cancellare le preferenze utente e il branding
       dell'applicazione.

@@ -1567,7 +1567,21 @@ const AccessControl = {
         const canESettings = this.canEditSettings();
         const canMBackup = this.canManageBackup();
 
-        // 1. Navigation Header Tabs & Links
+        // 1. Navigation Header Tabs, Dropdowns & Links (M3 Unified Navbar)
+        toggleVisibility(root.querySelector("#nav-group-identity"), canVUsers || canVRoles || canMUsers);
+        toggleVisibility(root.querySelector("#nav-sub-users"), canVUsers);
+        toggleVisibility(root.querySelector("#nav-sub-new-user"), canMUsers);
+        toggleVisibility(root.querySelector("#nav-sub-roles"), canVRoles);
+
+        toggleVisibility(root.querySelector("#nav-group-apps"), canVClients || canCClients);
+        toggleVisibility(root.querySelector("#nav-sub-clients"), canVClients);
+        toggleVisibility(root.querySelector("#nav-sub-new-client"), canCClients);
+
+        toggleVisibility(root.querySelector("#nav-group-system"), canVEmails || canVSettings);
+        toggleVisibility(root.querySelector("#nav-sub-emails"), canVEmails);
+        toggleVisibility(root.querySelector("#nav-sub-settings"), canVSettings);
+
+        // Retrocompatibilità selettori storici
         toggleVisibility(root.querySelector("#nav-btn-clients"), canVClients);
         toggleVisibility(root.querySelector("#nav-btn-users"), canVUsers);
         toggleVisibility(root.querySelector("#nav-btn-roles"), canVRoles);
@@ -1727,16 +1741,135 @@ const AccessControl = {
     }
 };
 
+/**
+ * Inizializza i menu a discesa della navbar superiore (M3 Unified Navbar).
+ * Supporta toggle al click, chiusura con click esterno, tasto ESC e auto-evidenziazione attiva.
+ */
+function initHeaderDropdowns() {
+    window.closeAllNavDropdowns = function() {
+        document.querySelectorAll(".nav-dropdown.is-open").forEach((dropdown) => {
+            dropdown.classList.remove("is-open");
+            const btn = dropdown.querySelector(".nav-dropdown-trigger");
+            if (btn) btn.setAttribute("aria-expanded", "false");
+        });
+    };
+
+    document.querySelectorAll(".nav-dropdown-trigger").forEach((trigger) => {
+        trigger.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const parent = this.closest(".nav-dropdown");
+            if (!parent) return;
+            const isOpen = parent.classList.contains("is-open");
+            window.closeAllNavDropdowns();
+            if (!isOpen) {
+                parent.classList.add("is-open");
+                this.setAttribute("aria-expanded", "true");
+            }
+        });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!e.target.closest(".nav-dropdown")) {
+            window.closeAllNavDropdowns();
+        }
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            window.closeAllNavDropdowns();
+        }
+    });
+
+    syncActiveNavState();
+}
+
+/**
+ * Sincronizza lo stato attivo delle pillole e dei sottomenu in base alla pagina o vista corrente.
+ * @param {string} [currentViewOverride] - Nome opzionale della vista SPA attiva (es. 'dashboard', 'users', 'clients', 'settings')
+ */
+function syncActiveNavState(currentViewOverride) {
+    const path = window.location.pathname;
+
+    document.querySelectorAll(".nav-tab-m3, .nav-dropdown-trigger, .nav-dropdown-item").forEach((el) => {
+        el.classList.remove("active");
+    });
+
+    if (currentViewOverride) {
+        if (currentViewOverride === "dashboard") {
+            const el = document.getElementById("nav-btn-dashboard");
+            if (el) el.classList.add("active");
+        } else if (currentViewOverride === "users") {
+            const trigger = document.querySelector("#nav-group-identity .nav-dropdown-trigger");
+            if (trigger) trigger.classList.add("active");
+            const item = document.getElementById("nav-sub-users");
+            if (item) item.classList.add("active");
+        } else if (currentViewOverride === "clients") {
+            const trigger = document.querySelector("#nav-group-apps .nav-dropdown-trigger");
+            if (trigger) trigger.classList.add("active");
+            const item = document.getElementById("nav-sub-clients");
+            if (item) item.classList.add("active");
+        } else if (currentViewOverride === "settings") {
+            const trigger = document.querySelector("#nav-group-system .nav-dropdown-trigger");
+            if (trigger) trigger.classList.add("active");
+            const item = document.getElementById("nav-sub-settings");
+            if (item) item.classList.add("active");
+        }
+        return;
+    }
+
+    if (path === "/app" || path === "/app/dashboard" || path === "/app/home") {
+        const el = document.getElementById("nav-btn-dashboard");
+        if (el) el.classList.add("active");
+    } else if (path.startsWith("/app/user") || path.startsWith("/app/role") || path.startsWith("/app/roles") || path.startsWith("/app/mfa")) {
+        const trigger = document.querySelector("#nav-group-identity .nav-dropdown-trigger");
+        if (trigger) trigger.classList.add("active");
+        if (path === "/app/users" || path.startsWith("/app/users/details") || path.startsWith("/app/users/edit")) {
+            const item = document.getElementById("nav-sub-users");
+            if (item) item.classList.add("active");
+        } else if (path === "/app/users/register") {
+            const item = document.getElementById("nav-sub-new-user");
+            if (item) item.classList.add("active");
+        } else if (path.startsWith("/app/role") || path.startsWith("/app/roles")) {
+            const item = document.getElementById("nav-sub-roles");
+            if (item) item.classList.add("active");
+        }
+    } else if (path.startsWith("/app/client")) {
+        const trigger = document.querySelector("#nav-group-apps .nav-dropdown-trigger");
+        if (trigger) trigger.classList.add("active");
+        if (path === "/app/clients" || path.startsWith("/app/clients/details") || path.startsWith("/app/clients/edit")) {
+            const item = document.getElementById("nav-sub-clients");
+            if (item) item.classList.add("active");
+        } else if (path === "/app/clients/register") {
+            const item = document.getElementById("nav-sub-new-client");
+            if (item) item.classList.add("active");
+        }
+    } else if (path.startsWith("/app/email") || path.startsWith("/app/emails") || path.startsWith("/app/settings")) {
+        const trigger = document.querySelector("#nav-group-system .nav-dropdown-trigger");
+        if (trigger) trigger.classList.add("active");
+        if (path.startsWith("/app/email") || path.startsWith("/app/emails")) {
+            const item = document.getElementById("nav-sub-emails");
+            if (item) item.classList.add("active");
+        } else if (path.startsWith("/app/settings")) {
+            const item = document.getElementById("nav-sub-settings");
+            if (item) item.classList.add("active");
+        }
+    }
+}
+
 // Global exports
 window.toggleVisibility = toggleVisibility;
 window.AccessControl = AccessControl;
+window.initHeaderDropdowns = initHeaderDropdowns;
+window.syncActiveNavState = syncActiveNavState;
 
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
+        initHeaderDropdowns();
         initMobileNavigation();
         AccessControl.applyUIPermissions();
     });
 } else {
+    initHeaderDropdowns();
     initMobileNavigation();
     AccessControl.applyUIPermissions();
 }

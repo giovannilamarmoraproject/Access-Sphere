@@ -397,29 +397,76 @@
                 </div>
             </a>
 
-            <!-- Fast Navigation Tabs -->
+            <!-- Fast Navigation Tabs & Dropdowns (Unified M3 Navbar) -->
             <nav class="hidden md:flex items-center gap-2 border-l border-purple-500/20 pl-6">
+                <!-- 1. Panoramica -->
                 <a href="/app" id="nav-btn-dashboard" class="nav-tab-m3 text-decoration-none">
                     <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_overview">Panoramica</span>
                 </a>
-                <a href="/app/users" id="nav-btn-users" class="nav-tab-m3 text-decoration-none">
-                    <i class="fa-solid fa-users"></i> <span data-i18n="nav_users">Utenti</span>
-                </a>
-                <a href="/app/clients" id="nav-btn-clients" class="nav-tab-m3 text-decoration-none">
-                    <i class="fa-solid fa-key"></i> <span data-i18n="nav_clients">Client OAuth2</span>
-                </a>
-                <a href="/app/role" id="nav-btn-roles" class="nav-tab-m3 active text-decoration-none">
-                    <i class="fa-solid fa-shield-halved"></i> <span data-i18n="nav_roles">Ruoli</span>
-                </a>
-                <a href="/app/emails" id="nav-btn-emails" class="nav-tab-m3 text-decoration-none">
-                    <i class="fa-solid fa-envelope"></i> <span data-i18n="nav_emails">Template Email</span>
-                </a>
-                <a href="/app/settings" id="nav-btn-settings" class="nav-tab-m3 text-decoration-none">
-                    <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Impostazioni</span>
-                </a>
-                <a href="/webjars/swagger-ui/index.html" target="_blank" class="nav-tab-m3 text-decoration-none">
-                    <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
-                </a>
+
+                <!-- 2. Identità & Accessi (Dropdown) -->
+                <div class="nav-dropdown" id="nav-group-identity">
+                    <button type="button" class="nav-tab-m3 nav-dropdown-trigger" aria-expanded="false">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span data-i18n="nav_identity">Identità & Accessi</span>
+                        <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/app/users" id="nav-sub-users" class="nav-dropdown-item text-decoration-none">
+                            <i class="fa-solid fa-users"></i>
+                            <span data-i18n="nav_users">Utenti</span>
+                        </a>
+                        <a href="/app/users/register" id="nav-sub-new-user" class="nav-dropdown-item text-decoration-none">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span data-i18n="btn_new_user">Nuovo Utente</span>
+                        </a>
+                        <a href="/app/role" id="nav-sub-roles" class="nav-dropdown-item text-decoration-none">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span data-i18n="nav_roles">Ruoli</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 3. Applicazioni (Dropdown) -->
+                <div class="nav-dropdown" id="nav-group-apps">
+                    <button type="button" class="nav-tab-m3 nav-dropdown-trigger" aria-expanded="false">
+                        <i class="fa-solid fa-cubes"></i>
+                        <span data-i18n="nav_applications">Applicazioni</span>
+                        <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/app/clients" id="nav-sub-clients" class="nav-dropdown-item text-decoration-none">
+                            <i class="fa-solid fa-key"></i>
+                            <span data-i18n="nav_clients">Client OAuth2</span>
+                        </a>
+                        <a href="/app/clients/register" id="nav-sub-new-client" class="nav-dropdown-item text-decoration-none">
+                            <i class="fa-solid fa-plus"></i>
+                            <span data-i18n="btn_new_client">Nuovo Client</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 4. Sistema (Dropdown) -->
+                <div class="nav-dropdown" id="nav-group-system">
+                    <button type="button" class="nav-tab-m3 nav-dropdown-trigger" aria-expanded="false">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span data-i18n="nav_system">Sistema</span>
+                        <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i>
+                    </button>
+                    <div class="nav-dropdown-menu nav-dropdown-menu-right">
+                        <a href="/app/emails" id="nav-sub-emails" class="nav-dropdown-item text-decoration-none">
+                            <i class="fa-solid fa-envelope"></i>
+                            <span data-i18n="nav_emails">Template Email</span>
+                        </a>
+                        <a href="/app/settings" id="nav-sub-settings" class="nav-dropdown-item text-decoration-none">
+                            <i class="fa-solid fa-gear"></i>
+                            <span data-i18n="nav_settings">Impostazioni</span>
+                        </a>
+                        <a href="/webjars/swagger-ui/index.html" target="_blank" id="nav-sub-docs" class="nav-dropdown-item text-decoration-none">
+                            <i class="fa-solid fa-book"></i> <span data-i18n="nav_api_docs">API Docs</span>
+                        </a>
+                    </div>
+                </div>
             </nav>
         </div>
 
