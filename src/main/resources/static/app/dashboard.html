@@ -174,17 +174,6 @@
                 <i class="fa-solid fa-circle-info text-sm"></i>
             </button>
 
-            <!-- Contextual Primary Action Button -->
-            <div id="users-primary-action">
-                <a href="/app/users/register" class="m3-btn-primary ml-2 text-decoration-none">
-                    <i class="fa-solid fa-user-plus"></i> <span data-i18n="btn_new_user">Nuovo Utente</span>
-                </a>
-            </div>
-            <div id="clients-primary-action" style="display: none;">
-                <a href="/app/clients/register" class="m3-btn-primary ml-2 text-decoration-none">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="btn_new_client">Nuovo Client</span>
-                </a>
-            </div>
 
             <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout"
                     data-i18n-title="btn_logout">
@@ -1686,8 +1675,6 @@
         const btnNavUsers = document.getElementById("nav-btn-users");
         const btnNavClients = document.getElementById("nav-btn-clients");
         const btnNavSettings = document.getElementById("nav-btn-settings");
-        const usersAction = document.getElementById("users-primary-action");
-        const clientsAction = document.getElementById("clients-primary-action");
         const subtitle = document.getElementById("header-subtitle");
 
         if (viewName === "dashboard") {
@@ -1699,8 +1686,6 @@
             if (btnNavUsers) btnNavUsers.classList.remove("active");
             if (btnNavClients) btnNavClients.classList.remove("active");
             if (btnNavSettings) btnNavSettings.classList.remove("active");
-            if (usersAction) usersAction.style.display = "none";
-            if (clientsAction) clientsAction.style.display = "none";
             if (subtitle) subtitle.innerText = "Centro di Controllo & Recap";
             document.title = "Access Sphere - Dashboard & Recap";
 
@@ -1717,8 +1702,6 @@
             if (btnNavUsers) btnNavUsers.classList.remove("active");
             if (btnNavClients) btnNavClients.classList.add("active");
             if (btnNavSettings) btnNavSettings.classList.remove("active");
-            if (usersAction) usersAction.style.display = "none";
-            if (clientsAction) clientsAction.style.display = "block";
             if (subtitle) subtitle.innerText = "OAuth 2.0 Client Registry";
             document.title = "Access Sphere - Gestione Client OAuth2";
 
@@ -1743,8 +1726,6 @@
             if (btnNavUsers) btnNavUsers.classList.remove("active");
             if (btnNavClients) btnNavClients.classList.remove("active");
             if (btnNavSettings) btnNavSettings.classList.add("active");
-            if (usersAction) usersAction.style.display = "none";
-            if (clientsAction) clientsAction.style.display = "none";
             if (subtitle) subtitle.innerText = "Impostazioni Applicazione & Personalizzazione";
             document.title = "Access Sphere - Impostazioni";
 
@@ -1762,8 +1743,6 @@
             if (btnNavUsers) btnNavUsers.classList.add("active");
             if (btnNavClients) btnNavClients.classList.remove("active");
             if (btnNavSettings) btnNavSettings.classList.remove("active");
-            if (clientsAction) clientsAction.style.display = "none";
-            if (usersAction) usersAction.style.display = "block";
             if (subtitle) subtitle.innerText = "Gestione Identità & Accessi";
             document.title = "Access Sphere - Gestione Utenti";
 

@@ -171,17 +171,6 @@
                 <i class="fa-solid fa-circle-info text-sm"></i>
             </button>
 
-            <!-- Contextual Primary Action Button -->
-            <div id="users-primary-action">
-                <a href="/app/users/register" class="m3-btn-primary ml-2 text-decoration-none">
-                    <i class="fa-solid fa-user-plus"></i> <span data-i18n="btn_new_user">Nuovo Utente</span>
-                </a>
-            </div>
-            <div id="clients-primary-action" style="display: none;">
-                <a href="/app/clients/register" class="m3-btn-primary ml-2 text-decoration-none">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="btn_new_client">Nuovo Client</span>
-                </a>
-            </div>
 
             <button onclick="logout()" class="m3-icon-btn m3-icon-btn-danger ml-2" title="Logout"
                     data-i18n-title="btn_logout">
@@ -1070,8 +1059,6 @@
         const btnNavDashboard = document.getElementById("nav-btn-dashboard");
         const btnNavUsers = document.getElementById("nav-btn-users");
         const btnNavClients = document.getElementById("nav-btn-clients");
-        const usersAction = document.getElementById("users-primary-action");
-        const clientsAction = document.getElementById("clients-primary-action");
         const subtitle = document.getElementById("header-subtitle");
 
         if (viewName === "dashboard") {
@@ -1081,8 +1068,6 @@
             if (btnNavDashboard) btnNavDashboard.classList.add("active");
             if (btnNavUsers) btnNavUsers.classList.remove("active");
             if (btnNavClients) btnNavClients.classList.remove("active");
-            if (usersAction) usersAction.style.display = "none";
-            if (clientsAction) clientsAction.style.display = "none";
             if (subtitle) subtitle.innerText = (typeof t === "function" ? t("nav_sub_dashboard", "Centro di Controllo & Recap") : "Centro di Controllo & Recap");
             document.title = (typeof t === "function" ? t("doc_title_dashboard", "Access Sphere - Dashboard & Recap") : "Access Sphere - Dashboard & Recap");
 
@@ -1097,8 +1082,6 @@
             if (btnNavDashboard) btnNavDashboard.classList.remove("active");
             if (btnNavUsers) btnNavUsers.classList.remove("active");
             if (btnNavClients) btnNavClients.classList.add("active");
-            if (usersAction) usersAction.style.display = "none";
-            if (clientsAction) clientsAction.style.display = "block";
             if (subtitle) subtitle.innerText = (typeof t === "function" ? t("nav_sub_clients", "OAuth 2.0 Client Registry") : "OAuth 2.0 Client Registry");
             document.title = (typeof t === "function" ? t("doc_title_clients", "Access Sphere - Gestione Client OAuth2") : "Access Sphere - Gestione Client OAuth2");
 
@@ -1122,8 +1105,6 @@
             if (btnNavDashboard) btnNavDashboard.classList.remove("active");
             if (btnNavUsers) btnNavUsers.classList.add("active");
             if (btnNavClients) btnNavClients.classList.remove("active");
-            if (clientsAction) clientsAction.style.display = "none";
-            if (usersAction) usersAction.style.display = "block";
             if (subtitle) subtitle.innerText = (typeof t === "function" ? t("nav_sub_users", "Gestione Identità & Accessi") : "Gestione Identità & Accessi");
             document.title = (typeof t === "function" ? t("doc_title_users", "Access Sphere - Gestione Utenti") : "Access Sphere - Gestione Utenti");
 

@@ -1590,18 +1590,14 @@ const AccessControl = {
             toggleVisibility(el, canVSettings);
         });
 
-        // 2. Contextual Primary Actions (Header)
-        toggleVisibility(root.querySelector("#users-primary-action"), canMUsers);
-        toggleVisibility(root.querySelector("#clients-primary-action"), canCClients);
-
-        // 3. Desktop Sidebar M3 Categories & Items
+        // 2. Desktop Sidebar M3 Categories & Items
         toggleVisibility(root.querySelector("#sidebar-cat-clients"), canVClients);
         toggleVisibility(root.querySelector("#sidebar-cat-users"), canVUsers);
         toggleVisibility(root.querySelector("#sidebar-cat-roles"), canVRoles);
         toggleVisibility(root.querySelector("#sidebar-cat-emails"), canVEmails);
         toggleVisibility(root.querySelector("#sidebar-btn-settings"), canVSettings);
 
-        // 4. Mobile Drawer Navigation & Bottom Navigation
+        // 3. Mobile Drawer Navigation & Bottom Navigation
         toggleVisibility(root.querySelector("#bottom-nav-clients"), canVClients);
         toggleVisibility(root.querySelector("#bottom-nav-users"), canVUsers);
         toggleVisibility(root.querySelector("#bottom-nav-roles"), canVRoles);
@@ -1623,7 +1619,7 @@ const AccessControl = {
         toggleVisibility(root.querySelector("#mobile-tool-new-client"), canCClients);
         toggleVisibility(root.querySelector("#mobile-tool-new-role"), canMRoles);
 
-        // 5. Dashboard Bento KPI & Hub Cards
+        // 4. Dashboard Bento KPI & Hub Cards
         toggleVisibility(root.querySelector("#stat-recap-users-card, #kpi-card-users"), canVUsers);
         toggleVisibility(root.querySelector("#stat-recap-clients-card, #kpi-card-clients"), canVClients);
         toggleVisibility(root.querySelector("#hub-card-users"), canVUsers);
@@ -1639,16 +1635,12 @@ const AccessControl = {
             toggleVisibility(el, canCClients);
         });
 
-        // 6. In-View Create Action Buttons
+        // 5. In-View Create Action Buttons (pulsanti di creazione nelle sezioni e tabelle interne)
         root.querySelectorAll("a[href='/app/users/register'], a[href*='/users/register'], #btn-new-user").forEach((el) => {
-            if (!el.closest("#users-primary-action")) {
-                toggleVisibility(el, canMUsers);
-            }
+            toggleVisibility(el, canMUsers);
         });
         root.querySelectorAll("a[href='/app/clients/register'], a[href*='/clients/register'], #btn-new-client, #btn-register-new-client").forEach((el) => {
-            if (!el.closest("#clients-primary-action")) {
-                toggleVisibility(el, canCClients);
-            }
+            toggleVisibility(el, canCClients);
         });
         root.querySelectorAll("[onclick*='openRoleModal(\\'create\\')'], #btn-create-role, #btn-new-role, #btn-create-role-header, #btn-create-role-empty").forEach((el) => {
             toggleVisibility(el, canMRoles);
