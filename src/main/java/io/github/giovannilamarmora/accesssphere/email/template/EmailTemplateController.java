@@ -173,7 +173,7 @@ public interface EmailTemplateController {
           @RequestBody
           @Parameter(
               description =
-                  "DTO contenente le informazioni, parametri e markup del template da registrare",
+                  "DTO containing information, parameters and HTML markup of the template to register",
               required = true)
           EmailTemplateResponse dto,
       ServerHttpRequest request);
@@ -253,14 +253,14 @@ public interface EmailTemplateController {
       @PathVariable("identifier")
           @Schema(
               description =
-                  "Identificatore univoco applicativo o UUID del template email da modificare",
+                  "Unique application identifier or UUID of the email template to update",
               example = "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95")
           String identifier,
       @Valid
           @RequestBody
           @Parameter(
               description =
-                  "DTO contenente le modifiche al template, parametri e codice HTML aggiornato",
+                  "DTO containing updated template properties, parameters and HTML markup",
               required = true)
           EmailTemplateResponse dto,
       ServerHttpRequest request);
@@ -329,7 +329,7 @@ public interface EmailTemplateController {
       @PathVariable("identifier")
           @Schema(
               description =
-                  "Identificatore univoco applicativo o UUID del template email da eliminare",
+                  "Unique application identifier or UUID of the email template to delete",
               example = "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95")
           String identifier,
       ServerHttpRequest request);
@@ -407,7 +407,7 @@ public interface EmailTemplateController {
           @RequestBody
           @Parameter(
               description =
-                  "DTO contenente le impostazioni per l'invio del test (destinatario, identificatore e parametri)",
+                  "DTO containing test email dispatch parameters (recipient, template identifier and dynamic key-value replacements)",
               required = true)
           EmailSendTestRequest testRequest,
       ServerHttpRequest request);
