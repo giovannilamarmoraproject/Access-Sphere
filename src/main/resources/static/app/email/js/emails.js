@@ -293,12 +293,69 @@ function loadEmailTemplates() {
 }
 
 /**
- * Aggiorna i contatori KPI della Bento Grid
+ * Raggruppa i template per coppia univoca (Categoria + Applicazione/Client).
+ * Ciascun gruppo contiene l'elenco delle varianti linguistiche registrate.
+ */
+function groupTemplates(templates) {
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+    const groupsMap = new Map();
+
+    (templates || []).forEach((t) => {
+        const cat = (t.category || "RESET_PASSWORD").toUpperCase();
+        const client = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim() : defaultClientId;
+        const key = `${cat}__${client.toUpperCase()}`;
+
+        if (!groupsMap.has(key)) {
+            groupsMap.set(key, {
+                groupKey: key,
+                category: cat,
+                clientId: client,
+                variants: [],
+                primaryVariant: null
+            });
+        }
+        groupsMap.get(key).variants.push(t);
+    });
+
+    groupsMap.forEach((group) => {
+        // Ordina le varianti: Default/senza locale per primo, poi it, en, fr, es, de, ecc.
+        group.variants.sort((a, b) => {
+            if (!a.locale) return -1;
+            if (!b.locale) return 1;
+            return a.locale.localeCompare(b.locale);
+        });
+
+        // La variante primaria è quella senza locale (default), oppure it, oppure la prima disponibile
+        group.primaryVariant = group.variants.find(v => !v.locale || v.locale.trim() === "")
+            || group.variants.find(v => v.locale && v.locale.toLowerCase().startsWith("it"))
+            || group.variants.find(v => v.locale && v.locale.toLowerCase().startsWith("en"))
+            || group.variants[0];
+
+        group.name = group.primaryVariant.name || "";
+        group.subject = group.primaryVariant.subject || "";
+        group.description = group.primaryVariant.description || "";
+        group.params = group.primaryVariant.params || {};
+
+        // Data più recente tra le varianti registrate
+        const dates = group.variants
+            .map(v => v.updateDate || v.creationDate)
+            .filter(Boolean)
+            .map(d => new Date(d).getTime());
+        group.latestTimestamp = dates.length > 0 ? Math.max(...dates) : 0;
+    });
+
+    return Array.from(groupsMap.values());
+}
+
+/**
+ * Aggiorna i contatori KPI della Bento Grid raggruppando per Categoria/Client
  */
 function updateKpiMetrics(templates) {
-    // 1. Template Totali
+    // 1. Template Totali Unici (gruppi logici di template)
+    const groups = groupTemplates(templates);
     const totalEl = document.getElementById("stat-total-templates");
-    if (totalEl) totalEl.textContent = templates.length;
+    if (totalEl) totalEl.textContent = groups.length;
 
     // 2. Lingue distinte attive
     const locales = new Set();
@@ -357,46 +414,47 @@ function handleClientFilter(client) {
     renderTemplatesList(cachedTemplates);
 }
 
-function getFilteredTemplates(templates) {
-    return templates.filter((t) => {
+/**
+ * Filtra i gruppi di template applicando filtri per Categoria, Client, Lingua e testo di ricerca
+ */
+function getFilteredTemplateGroups(allTemplates) {
+    const groups = groupTemplates(allTemplates);
+
+    return groups.filter((g) => {
         // 1. Filtro per Categoria
-        if (currentFilterCategory !== "ALL") {
-            const cat = (t.category || "RESET_PASSWORD").toUpperCase();
-            if (cat !== currentFilterCategory) {
-                return false;
-            }
+        if (currentFilterCategory !== "ALL" && g.category !== currentFilterCategory) {
+            return false;
         }
 
         // 2. Filtro per Applicazione / Client Scoping
-        if (currentFilterClient !== "ALL") {
-            const cfg = typeof getConfig === "function" ? getConfig() : null;
-            const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
-            const templateClient = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim() : defaultClientId;
-            if (templateClient.toUpperCase() !== currentFilterClient.toUpperCase()) {
-                return false;
-            }
+        if (currentFilterClient !== "ALL" && g.clientId.toUpperCase() !== currentFilterClient.toUpperCase()) {
+            return false;
         }
 
-        // 3. Filtro per Lingua / Locale
+        // 3. Filtro per Lingua / Locale (verifica se il gruppo include una variante con la lingua richiesta)
         if (currentFilterLocale !== "ALL") {
-            if (currentFilterLocale === "GENERIC") {
-                if (t.locale && t.locale.trim() !== "") return false;
-            } else {
-                if (!t.locale || !t.locale.toLowerCase().startsWith(currentFilterLocale.toLowerCase())) {
-                    return false;
+            const hasLocale = g.variants.some((v) => {
+                if (currentFilterLocale === "GENERIC") {
+                    return !v.locale || v.locale.trim() === "";
                 }
-            }
+                return v.locale && v.locale.toLowerCase().startsWith(currentFilterLocale.toLowerCase());
+            });
+            if (!hasLocale) return false;
         }
 
-        // 4. Filtro per testo di ricerca
+        // 4. Filtro per testo di ricerca (ricerca su tutte le varianti linguistiche del gruppo)
         if (currentSearchQuery) {
-            const idMatch = (t.identifier || "").toLowerCase().includes(currentSearchQuery);
-            const nameMatch = (t.name || "").toLowerCase().includes(currentSearchQuery);
-            const subjMatch = (t.subject || "").toLowerCase().includes(currentSearchQuery);
-            const descMatch = (t.description || "").toLowerCase().includes(currentSearchQuery);
-            const catMatch = (t.category || "").toLowerCase().includes(currentSearchQuery);
-            const clientMatch = (t.clientId || "").toLowerCase().includes(currentSearchQuery);
-            return idMatch || nameMatch || subjMatch || descMatch || catMatch || clientMatch;
+            const q = currentSearchQuery.toLowerCase();
+            const matches = g.variants.some((v) => {
+                const idMatch = (v.identifier || "").toLowerCase().includes(q);
+                const nameMatch = (v.name || "").toLowerCase().includes(q);
+                const subjMatch = (v.subject || "").toLowerCase().includes(q);
+                const descMatch = (v.description || "").toLowerCase().includes(q);
+                const catMatch = (v.category || "").toLowerCase().includes(q);
+                const clientMatch = (v.clientId || "").toLowerCase().includes(q);
+                return idMatch || nameMatch || subjMatch || descMatch || catMatch || clientMatch;
+            });
+            if (!matches) return false;
         }
 
         return true;
@@ -404,15 +462,15 @@ function getFilteredTemplates(templates) {
 }
 
 /**
- * Renderizza l'elenco dei template sotto forma di schede M3 bento-styled interattive
+ * Renderizza l'elenco dei template raggruppati per Categoria + Client sotto forma di schede M3 bento-styled interattive
  */
 function renderTemplatesList(templates) {
     const container = document.getElementById("email-templates-container");
     if (!container) return;
 
-    const filtered = getFilteredTemplates(templates);
+    const filteredGroups = getFilteredTemplateGroups(templates);
 
-    if (filtered.length === 0) {
+    if (filteredGroups.length === 0) {
         const emptyTitle = typeof t === "function" ? t("email_empty_title", "Nessun Template Email Trovato") : "Nessun Template Email Trovato";
         const emptyDesc = templates.length === 0
             ? (typeof t === "function" ? t("email_empty_desc_db", "Non è ancora presente alcun template registrato nel database. Creane uno nuovo per iniziare.") : "Non è ancora presente alcun template registrato nel database. Creane uno nuovo per iniziare.")
@@ -450,33 +508,52 @@ function renderTemplatesList(templates) {
     const lblTestSend = typeof t === "function" ? t("btn_test_send", "Invia Test") : "Invia Test";
     const lblEdit = typeof t === "function" ? t("email_action_edit", t("btn_edit", "Modifica")) : "Modifica";
     const lblDeleteTitle = typeof t === "function" ? t("email_action_delete_title", "Elimina Template") : "Elimina Template";
+    const lblAddLang = typeof t === "function" ? t("email_btn_add_locale", "Lingua") : "Lingua";
 
-    filtered.forEach((item) => {
-        const categoryBadge = getCategoryBadgeHtml(item.category);
-        const clientBadge = getClientBadgeHtml(item.clientId);
-        const localeBadge = getLocaleBadgeHtml(item.locale);
-        const statusBadge = getCategoryStatusBadgeHtml(item.category);
-        const paramsMap = item.params || {};
+    filteredGroups.forEach((group) => {
+        const primary = group.primaryVariant;
+        const categoryBadge = getCategoryBadgeHtml(group.category);
+        const clientBadge = getClientBadgeHtml(group.clientId);
+        const statusBadge = getCategoryStatusBadgeHtml(group.category);
+        const paramsMap = primary.params || {};
         const paramKeys = Object.keys(paramsMap);
+
+        // Genera i badge per tutte le lingue disponibili nel gruppo
+        let localesBadgesHtml = group.variants.map((v) => {
+            return getLocaleBadgeHtml(v.locale, true, v.identifier);
+        }).join(" ");
+
+        if (typeof AccessControl === "undefined" || AccessControl.canManageEmails()) {
+            localesBadgesHtml += `
+                <button type="button" 
+                        onclick="event.stopPropagation(); openAddLanguageVariantModal('${escapeHtml(group.category)}', '${escapeHtml(group.clientId)}')" 
+                        class="locale-badge-add" 
+                        title="${typeof t === "function" ? t("email_btn_add_language", "Aggiungi lingua") : "Aggiungi lingua"}">
+                    <i class="fa-solid fa-plus text-[9px]"></i> <span data-i18n="email_btn_add_locale">${escapeHtml(lblAddLang)}</span>
+                </button>
+            `;
+        }
 
         const paramsPillsHtml = paramKeys.length > 0
             ? paramKeys.slice(0, 6).map(k => `<span class="param-pill truncate max-w-[160px]" title="${lblDefaultVal} ${escapeHtml(String(paramsMap[k]))}">{{${escapeHtml(k)}}}</span>`).join(" ") + (paramKeys.length > 6 ? ` <span class="text-xs text-gray-400 shrink-0">+${paramKeys.length - 6} ${lblMore}</span>` : "")
             : `<span class="text-gray-500 text-xs italic">${lblNoParams}</span>`;
 
-        const lastUpdated = item.updateDate ? new Date(item.updateDate).toLocaleString() : (item.creationDate ? new Date(item.creationDate).toLocaleString() : "N/D");
+        const lastUpdated = group.latestTimestamp > 0 ? new Date(group.latestTimestamp).toLocaleString() : "N/D";
 
         html += `
-      <div class="p-4 sm:p-5 rounded-2xl theme-surface-box hover:brightness-125 transition-all cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-4 group overflow-hidden" onclick="openEmailDetailModal('${escapeHtml(item.identifier)}')">
+      <div class="p-4 sm:p-5 rounded-2xl theme-surface-box hover:brightness-125 transition-all cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-4 group overflow-hidden" onclick="openEmailDetailModal('${escapeHtml(primary.identifier)}')">
         
         <!-- Info Principali Template con Truncate Responsive -->
         <div class="space-y-2 flex-1 min-w-0">
           <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
             ${categoryBadge}
             ${clientBadge}
-            <span class="font-mono text-xs font-bold theme-badge px-2.5 py-1 rounded-lg truncate max-w-[200px] sm:max-w-xs" title="${escapeHtml(item.identifier || "SENZA_ID")}">
-              ${escapeHtml(item.identifier || "SENZA_ID")}
+            <span class="font-mono text-xs font-bold theme-badge px-2.5 py-1 rounded-lg truncate max-w-[200px] sm:max-w-xs" title="${escapeHtml(primary.identifier || "SENZA_ID")}">
+              ${escapeHtml(primary.identifier || "SENZA_ID")}
             </span>
-            ${localeBadge}
+            <div class="flex flex-wrap items-center gap-1.5">
+              ${localesBadgesHtml}
+            </div>
             ${statusBadge}
             <span class="text-xs text-gray-400 flex items-center gap-1 ml-auto lg:ml-2 shrink-0">
               <i class="fa-solid fa-clock-rotate-left text-[11px]"></i> ${lastUpdated}
@@ -484,13 +561,13 @@ function renderTemplatesList(templates) {
           </div>
 
           <div class="min-w-0">
-            <h4 class="text-base font-bold text-white mb-1 group-hover:opacity-90 transition-colors truncate" title="${escapeHtml(item.name || lblUntitled)}">${escapeHtml(item.name || lblUntitled)}</h4>
+            <h4 class="text-base font-bold text-white mb-1 group-hover:opacity-90 transition-colors truncate" title="${escapeHtml(group.name || lblUntitled)}">${escapeHtml(group.name || lblUntitled)}</h4>
             <div class="text-xs text-gray-300 flex items-center gap-1.5 min-w-0">
               <i class="fa-solid fa-heading theme-text-accent text-[10px] shrink-0"></i>
               <strong class="shrink-0">${lblSubject}</strong> 
-              <span class="truncate" title="${escapeHtml(item.subject || "--")}">${escapeHtml(item.subject || "--")}</span>
+              <span class="truncate" title="${escapeHtml(primary.subject || "--")}">${escapeHtml(primary.subject || "--")}</span>
             </div>
-            ${item.description ? `<p class="text-xs text-gray-400 mt-1 mb-0 line-clamp-2 break-words" title="${escapeHtml(item.description)}">${escapeHtml(item.description)}</p>` : ""}
+            ${group.description ? `<p class="text-xs text-gray-400 mt-1 mb-0 line-clamp-2 break-words" title="${escapeHtml(group.description)}">${escapeHtml(group.description)}</p>` : ""}
           </div>
 
           <div class="pt-1 flex flex-wrap items-center gap-1.5 min-w-0">
@@ -501,17 +578,17 @@ function renderTemplatesList(templates) {
 
         <!-- Pulsanti Azione Rapida -->
         <div class="flex flex-wrap items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-white/5" onclick="event.stopPropagation()">
-          <button type="button" onclick="event.stopPropagation(); openEmailDetailModal('${escapeHtml(item.identifier)}')" class="m3-btn-secondary text-xs py-2 px-3" title="${lblDetail}">
+          <button type="button" onclick="event.stopPropagation(); openEmailDetailModal('${escapeHtml(primary.identifier)}')" class="m3-btn-secondary text-xs py-2 px-3" title="${lblDetail}">
             <i class="fa-solid fa-eye text-emerald-400 mr-1.5"></i> ${lblDetail}
           </button>
           ${(typeof AccessControl === "undefined" || AccessControl.canManageEmails()) ? `
-          <button type="button" onclick="event.stopPropagation(); openTestEmailModal('${escapeHtml(item.identifier)}')" class="m3-btn-secondary text-xs py-2 px-3" title="${lblTestSend}">
+          <button type="button" onclick="event.stopPropagation(); openTestEmailModal('${escapeHtml(primary.identifier)}')" class="m3-btn-secondary text-xs py-2 px-3" title="${lblTestSend}">
             <i class="fa-solid fa-paper-plane text-blue-400 mr-1.5"></i> ${lblTestSend}
           </button>
-          <button type="button" onclick="event.stopPropagation(); openEditTemplateModal('${escapeHtml(item.identifier)}')" class="m3-btn-secondary text-xs py-2 px-3" title="${lblEdit}">
+          <button type="button" onclick="event.stopPropagation(); openEditTemplateModal('${escapeHtml(primary.identifier)}')" class="m3-btn-secondary text-xs py-2 px-3" title="${lblEdit}">
             <i class="fa-solid fa-pen-to-square text-amber-400 mr-1.5"></i> ${lblEdit}
           </button>
-          <button type="button" onclick="event.stopPropagation(); deleteTemplateConfirm('${escapeHtml(item.identifier)}')" class="m3-icon-btn m3-icon-btn-danger text-xs" title="${lblDeleteTitle}">
+          <button type="button" onclick="event.stopPropagation(); deleteTemplateConfirm('${escapeHtml(primary.identifier)}')" class="m3-icon-btn m3-icon-btn-danger text-xs" title="${lblDeleteTitle}">
             <i class="fa-solid fa-trash-can"></i>
           </button>
           ` : ""}
@@ -568,28 +645,39 @@ function getCategoryStatusBadgeHtml(catKey) {
     }
 }
 
-function getLocaleBadgeHtml(locale) {
+function getLocaleFlagOrIcon(locale) {
     if (!locale || locale.trim() === "") {
-        const lblGeneric = typeof t === "function" ? t("email_locale_generic", "Globale / Default") : "Globale / Default";
-        return `<span class="locale-badge locale-badge-generic"><i class="fa-solid fa-globe text-[10px]"></i> ${lblGeneric}</span>`;
+        return `<i class="fa-solid fa-globe text-[10px]"></i>`;
     }
-    const l = locale.toLowerCase();
-    if (l.startsWith("it")) {
-        return `<span class="locale-badge locale-badge-it">🇮🇹 ${escapeHtml(locale)}</span>`;
+    const l = locale.toLowerCase().trim();
+    if (l.startsWith("it")) return `🇮🇹`;
+    if (l.startsWith("en")) return `🇬🇧`;
+    if (l.startsWith("fr")) return `🇫🇷`;
+    if (l.startsWith("es")) return `🇪🇸`;
+    if (l.startsWith("de")) return `🇩🇪`;
+    return `<i class="fa-solid fa-language text-[10px]"></i>`;
+}
+
+function getLocaleBadgeHtml(locale, interactive = false, identifier = null) {
+    const flag = getLocaleFlagOrIcon(locale);
+    let badgeClass = "locale-badge-generic";
+    let label = locale ? locale.toUpperCase() : (typeof t === "function" ? t("email_locale_generic_short", "DEF") : "DEF");
+
+    if (locale && locale.trim() !== "") {
+        const l = locale.toLowerCase();
+        if (l.startsWith("it")) badgeClass = "locale-badge-it";
+        else if (l.startsWith("en")) badgeClass = "locale-badge-en";
+        else if (l.startsWith("fr")) badgeClass = "locale-badge-fr";
+        else if (l.startsWith("es")) badgeClass = "locale-badge-es";
+        else if (l.startsWith("de")) badgeClass = "locale-badge-de";
     }
-    if (l.startsWith("en")) {
-        return `<span class="locale-badge locale-badge-en">🇬🇧 ${escapeHtml(locale)}</span>`;
+
+    if (interactive && identifier) {
+        const title = locale ? `Modifica lingua [${locale.toUpperCase()}]` : "Modifica lingua predefinita";
+        return `<button type="button" onclick="event.stopPropagation(); openEditTemplateModal('${escapeHtml(identifier)}')" class="locale-badge ${badgeClass} locale-badge-interactive" title="${escapeHtml(title)}">${flag} <span>${escapeHtml(label)}</span></button>`;
     }
-    if (l.startsWith("fr")) {
-        return `<span class="locale-badge locale-badge-en">🇫🇷 ${escapeHtml(locale)}</span>`;
-    }
-    if (l.startsWith("es")) {
-        return `<span class="locale-badge locale-badge-generic">🇪🇸 ${escapeHtml(locale)}</span>`;
-    }
-    if (l.startsWith("de")) {
-        return `<span class="locale-badge locale-badge-generic">🇩🇪 ${escapeHtml(locale)}</span>`;
-    }
-    return `<span class="locale-badge locale-badge-generic"><i class="fa-solid fa-language text-[10px]"></i> ${escapeHtml(locale)}</span>`;
+
+    return `<span class="locale-badge ${badgeClass}">${flag} <span>${escapeHtml(label)}</span></span>`;
 }
 
 // =========================================================================
@@ -995,6 +1083,10 @@ function openCreateTemplateModal() {
     const cfg = typeof getConfig === "function" ? getConfig() : null;
     const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
 
+    // Nascondi il selettore tab lingue per la creazione da zero
+    const langTabsContainer = document.getElementById("editor-language-tabs-container");
+    if (langTabsContainer) langTabsContainer.classList.add("hidden");
+
     const isEditInput = document.getElementById("editor-is-edit");
     if (isEditInput) isEditInput.value = "false";
     document.getElementById("editor-template-id").value = "";
@@ -1006,10 +1098,16 @@ function openCreateTemplateModal() {
     document.getElementById("editor-description").value = "";
 
     const catSelect = document.getElementById("editor-category");
-    if (catSelect) catSelect.value = "RESET_PASSWORD";
+    if (catSelect) {
+        catSelect.value = "RESET_PASSWORD";
+        catSelect.disabled = false;
+    }
 
     const clientSelect = document.getElementById("editor-client");
-    if (clientSelect) clientSelect.value = defaultClientId;
+    if (clientSelect) {
+        clientSelect.value = defaultClientId;
+        clientSelect.disabled = false;
+    }
 
     const warningBanner = document.getElementById("editor-duplicate-warning");
     if (warningBanner) warningBanner.classList.add("hidden");
@@ -1145,16 +1243,59 @@ function openCreateTemplateModal() {
     }, 300);
 }
 
-function openEditTemplateModal(identifier) {
-    if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
-        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
-        return;
+/**
+ * Renderizza i tab delle lingue disponibili nell'editor del template.
+ * Permette di passare da una variante linguistica all'altra al volo.
+ */
+function renderEditorLanguageTabs(groupVariants, currentIdentifier, category, clientId, isNewVariant = false, newLocale = "") {
+    const container = document.getElementById("editor-language-tabs-container");
+    const list = document.getElementById("editor-language-tabs-list");
+    if (!container || !list) return;
+
+    container.classList.remove("hidden");
+    list.innerHTML = "";
+
+    const defLabel = typeof t === "function" ? t("email_locale_generic_short", "DEF") : "DEF";
+
+    (groupVariants || []).forEach((v) => {
+        const isActive = !isNewVariant && v.identifier === currentIdentifier;
+        const flag = getLocaleFlagOrIcon(v.locale);
+        const label = v.locale ? v.locale.toUpperCase() : defLabel;
+        const title = v.locale ? `Lingua: ${v.locale.toUpperCase()}` : "Lingua Predefinita / Globale";
+
+        const pill = document.createElement("button");
+        pill.type = "button";
+        pill.className = `lang-tab-pill ${isActive ? "active" : ""}`;
+        pill.title = title;
+        pill.innerHTML = `${flag} <span>${escapeHtml(label)}</span>`;
+        pill.onclick = () => switchEditorLanguage(v.identifier);
+        list.appendChild(pill);
+    });
+
+    if (isNewVariant) {
+        const pillNew = document.createElement("button");
+        pillNew.type = "button";
+        pillNew.className = "lang-tab-pill active";
+        const newFlag = getLocaleFlagOrIcon(newLocale);
+        const newLbl = newLocale ? newLocale.toUpperCase() : (typeof t === "function" ? t("email_btn_add_locale", "Lingua") : "Lingua");
+        pillNew.innerHTML = `<i class="fa-solid fa-plus text-[10px]"></i> ${newFlag} <span>${escapeHtml(newLbl)}</span>`;
+        list.appendChild(pillNew);
     }
-    const template = cachedTemplates.find((t) => t.identifier === identifier || (t.id && String(t.id) === String(identifier)));
-    if (!template) {
-        sweetalert("error", typeof t === "function" ? t("error", "Errore") : "Errore", typeof t === "function" ? t("email_swal_load_error_desc", "Template non trovato in memoria locale.") : "Template non trovato in memoria locale.");
-        return;
-    }
+}
+
+/**
+ * Commuta la lingua attiva nell'editor del template senza dover chiudere e riaprire il modale.
+ *
+ * @param {string} targetIdentifier - Identifier della variante linguistica da caricare
+ */
+function switchEditorLanguage(targetIdentifier) {
+    const template = cachedTemplates.find((t) => t.identifier === targetIdentifier || (t.id && String(t.id) === String(targetIdentifier)));
+    if (!template) return;
+
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+    const catKey = (template.category || "RESET_PASSWORD").toUpperCase();
+    const clientKey = (template.clientId && template.clientId.trim() !== "") ? template.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
 
     const isEditInput = document.getElementById("editor-is-edit");
     if (isEditInput) isEditInput.value = "true";
@@ -1169,17 +1310,203 @@ function openEditTemplateModal(identifier) {
 
     const catSelect = document.getElementById("editor-category");
     if (catSelect) {
-        catSelect.value = (template.category || "RESET_PASSWORD").toUpperCase();
+        catSelect.value = catKey;
+        catSelect.disabled = false;
     }
 
     const clientSelect = document.getElementById("editor-client");
     if (clientSelect) {
-        const cfg = typeof getConfig === "function" ? getConfig() : null;
-        const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
         clientSelect.value = (template.clientId && template.clientId.trim() !== "") ? template.clientId : defaultClientId;
+        clientSelect.disabled = false;
     }
 
-    handleCategoryChange(template.category || "RESET_PASSWORD");
+    handleCategoryChange(catKey);
+
+    // Popola parametri
+    const paramsContainer = document.getElementById("editor-params-list");
+    paramsContainer.innerHTML = "";
+    const paramsMap = template.params || {};
+    const keys = Object.keys(paramsMap);
+
+    if (keys.length > 0) {
+        keys.forEach((k) => {
+            addParamRow(k, paramsMap[k]);
+        });
+    } else {
+        const regex = /\{\{([A-Za-z0-9_-]+)\}\}/g;
+        let match;
+        const detected = new Set();
+        while ((match = regex.exec(template.template || "")) !== null) {
+            if (match[1]) detected.add(match[1].trim());
+        }
+        detected.forEach(k => addParamRow(k, ""));
+    }
+
+    const editPrefix = typeof t === "function" ? t("email_action_edit", "Modifica") : "Modifica";
+    const modalLabelEl = document.getElementById("emailEditorModalLabel");
+    if (modalLabelEl) {
+        const fullTitle = `${editPrefix}: ${template.name || template.identifier}`;
+        modalLabelEl.textContent = fullTitle;
+        modalLabelEl.title = fullTitle;
+    }
+
+    const groupVariants = cachedTemplates.filter(t => {
+        const tCat = (t.category || "RESET_PASSWORD").toUpperCase();
+        const tClient = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+        return tCat === catKey && tClient === clientKey;
+    });
+
+    renderEditorLanguageTabs(groupVariants, template.identifier, catKey, clientKey);
+    updateLivePreview();
+    checkDuplicateConflict();
+}
+
+/**
+ * Apre la modale per aggiungere una nuova traduzione/variante linguistica a un template esistente.
+ * Pre-popola categoria, client e markup HTML dal template primario per velocizzare la traduzione.
+ *
+ * @param {string} category Categoria del template
+ * @param {string} clientId Client associato
+ */
+function openAddLanguageVariantModal(category, clientId) {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+        return;
+    }
+
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+    const catKey = (category || "RESET_PASSWORD").toUpperCase();
+    const clientKey = (clientId && clientId.trim() !== "") ? clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+
+    // Recupera le varianti esistenti di questo gruppo
+    const groupVariants = cachedTemplates.filter(t => {
+        const tCat = (t.category || "RESET_PASSWORD").toUpperCase();
+        const tClient = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+        return tCat === catKey && tClient === clientKey;
+    });
+
+    const usedLocales = new Set(groupVariants.map(v => (v.locale || "").toLowerCase().trim()));
+    const candidateLocales = ["en", "it", "es", "fr", "de"];
+    const nextLocale = candidateLocales.find(l => !usedLocales.has(l)) || "";
+
+    // Usa come base di clonazione la variante primaria o la prima disponibile
+    const baseTemplate = groupVariants.find(v => (v.locale || "").toLowerCase() === "it") || groupVariants[0] || null;
+
+    const isEditInput = document.getElementById("editor-is-edit");
+    if (isEditInput) isEditInput.value = "false";
+    document.getElementById("editor-template-id").value = "";
+    document.getElementById("editor-identifier").readOnly = false;
+    generateRandomTemplateUuid();
+
+    const catSelect = document.getElementById("editor-category");
+    if (catSelect) {
+        catSelect.value = catKey;
+        catSelect.disabled = false;
+    }
+
+    const clientSelect = document.getElementById("editor-client");
+    if (clientSelect) {
+        clientSelect.value = (clientKey !== defaultClientId.toUpperCase()) ? clientKey : defaultClientId;
+        clientSelect.disabled = false;
+    }
+
+    document.getElementById("editor-locale").value = nextLocale;
+    document.getElementById("editor-name").value = baseTemplate ? baseTemplate.name : "";
+    document.getElementById("editor-subject").value = baseTemplate ? baseTemplate.subject : "";
+    document.getElementById("editor-description").value = baseTemplate ? baseTemplate.description : "";
+    document.getElementById("editor-template-html").value = baseTemplate ? baseTemplate.template : "";
+
+    handleCategoryChange(catKey);
+
+    // Clona i parametri dalla variante base
+    const paramsContainer = document.getElementById("editor-params-list");
+    paramsContainer.innerHTML = "";
+    if (baseTemplate && baseTemplate.params) {
+        Object.keys(baseTemplate.params).forEach((k) => {
+            addParamRow(k, baseTemplate.params[k]);
+        });
+    }
+
+    const addLangTitle = typeof t === "function" ? t("email_modal_add_language_title", "Nuova Variante Lingua") : "Nuova Variante Lingua";
+    const modalLabelEl = document.getElementById("emailEditorModalLabel");
+    if (modalLabelEl) {
+        const fullTitle = `${addLangTitle}: ${catKey} [${nextLocale ? nextLocale.toUpperCase() : 'DEF'}]`;
+        modalLabelEl.textContent = fullTitle;
+        modalLabelEl.title = fullTitle;
+    }
+
+    renderEditorLanguageTabs(groupVariants, null, catKey, clientKey, true, nextLocale);
+
+    const modal = new bootstrap.Modal(document.getElementById("emailEditorModal"));
+    modal.show();
+
+    setTimeout(() => {
+        updateLivePreview();
+        checkDuplicateConflict();
+    }, 300);
+}
+
+/**
+ * Trigger per aggiungere una nuova lingua a partire dall'editor aperto
+ */
+function openAddLanguageVariantModalFromEditor() {
+    const cat = document.getElementById("editor-category") ? document.getElementById("editor-category").value : "RESET_PASSWORD";
+    const client = document.getElementById("editor-client") ? document.getElementById("editor-client").value : "";
+    openAddLanguageVariantModal(cat, client);
+}
+
+/**
+ * Trigger per aggiungere una nuova lingua a partire dal modale di dettaglio
+ */
+function openAddLanguageVariantFromDetail() {
+    if (!currentDetailTemplate) return;
+    const modalEl = document.getElementById("emailDetailModal");
+    const modalInst = bootstrap.Modal.getInstance(modalEl);
+    if (modalInst) modalInst.hide();
+    openAddLanguageVariantModal(currentDetailTemplate.category, currentDetailTemplate.clientId);
+}
+
+function openEditTemplateModal(identifier) {
+    if (typeof AccessControl !== "undefined" && !AccessControl.canManageEmails()) {
+        sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
+        return;
+    }
+    const template = cachedTemplates.find((t) => t.identifier === identifier || (t.id && String(t.id) === String(identifier)));
+    if (!template) {
+        sweetalert("error", typeof t === "function" ? t("error", "Errore") : "Errore", typeof t === "function" ? t("email_swal_load_error_desc", "Template non trovato in memoria locale.") : "Template non trovato in memoria locale.");
+        return;
+    }
+
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+    const catKey = (template.category || "RESET_PASSWORD").toUpperCase();
+    const clientKey = (template.clientId && template.clientId.trim() !== "") ? template.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+
+    const isEditInput = document.getElementById("editor-is-edit");
+    if (isEditInput) isEditInput.value = "true";
+    document.getElementById("editor-template-id").value = template.id || "";
+    document.getElementById("editor-identifier").value = template.identifier || "";
+    document.getElementById("editor-identifier").readOnly = false;
+    document.getElementById("editor-name").value = template.name || "";
+    document.getElementById("editor-subject").value = template.subject || "";
+    document.getElementById("editor-locale").value = template.locale || "";
+    document.getElementById("editor-description").value = template.description || "";
+    document.getElementById("editor-template-html").value = template.template || "";
+
+    const catSelect = document.getElementById("editor-category");
+    if (catSelect) {
+        catSelect.value = catKey;
+        catSelect.disabled = false;
+    }
+
+    const clientSelect = document.getElementById("editor-client");
+    if (clientSelect) {
+        clientSelect.value = (template.clientId && template.clientId.trim() !== "") ? template.clientId : defaultClientId;
+        clientSelect.disabled = false;
+    }
+
+    handleCategoryChange(catKey);
 
     // Popola parametri
     const paramsContainer = document.getElementById("editor-params-list");
@@ -1209,6 +1536,14 @@ function openEditTemplateModal(identifier) {
         modalLabelEl.textContent = fullTitle;
         modalLabelEl.title = fullTitle;
     }
+
+    const groupVariants = cachedTemplates.filter(t => {
+        const tCat = (t.category || "RESET_PASSWORD").toUpperCase();
+        const tClient = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+        return tCat === catKey && tClient === clientKey;
+    });
+
+    renderEditorLanguageTabs(groupVariants, template.identifier, catKey, clientKey);
 
     const modal = new bootstrap.Modal(document.getElementById("emailEditorModal"));
     modal.show();
@@ -1503,19 +1838,41 @@ function executeSendTestEmail(e) {
  *
  * @param {string} identifier - Identificativo univoco del template nel database
  */
-function openEmailDetailModal(identifier) {
-    const template = cachedTemplates.find((t) => t.identifier === identifier || (t.id && String(t.id) === String(identifier)));
-    if (!template) {
-        sweetalert(
-            "warning",
-            typeof t === "function" ? t("warning", "Attenzione") : "Attenzione",
-            typeof t === "function" ? t("email_empty_desc_filter", "Impossibile reperire i dettagli del template richiesto.") : "Impossibile reperire i dettagli del template richiesto."
-        );
-        return;
-    }
+/**
+ * Renderizza i tab di cambio lingua all'interno del modale di dettaglio
+ */
+function renderDetailLanguageTabs(groupVariants, activeIdentifier) {
+    const container = document.getElementById("detail-modal-language-tabs-container");
+    const list = document.getElementById("detail-modal-language-tabs-list");
+    if (!container || !list) return;
 
+    container.classList.remove("hidden");
+    list.innerHTML = "";
+
+    const defLabel = typeof t === "function" ? t("email_locale_generic_short", "DEF") : "DEF";
+
+    (groupVariants || []).forEach((v) => {
+        const isActive = v.identifier === activeIdentifier;
+        const flag = getLocaleFlagOrIcon(v.locale);
+        const label = v.locale ? v.locale.toUpperCase() : defLabel;
+        const title = v.locale ? `Visualizza lingua: ${v.locale.toUpperCase()}` : "Visualizza lingua predefinita";
+
+        const pill = document.createElement("button");
+        pill.type = "button";
+        pill.className = `lang-tab-pill ${isActive ? "active" : ""}`;
+        pill.title = title;
+        pill.innerHTML = `${flag} <span>${escapeHtml(label)}</span>`;
+        pill.onclick = () => switchDetailLanguage(v.identifier);
+        list.appendChild(pill);
+    });
+}
+
+/**
+ * Popola tutti i metadati e i campi informativi nel modale di dettaglio
+ */
+function populateDetailModalData(template) {
+    if (!template) return;
     currentDetailTemplate = template;
-    currentDetailDevice = "desktop";
 
     // 1. Titolo, Identificatore e Locale Badge
     const nameEl = document.getElementById("detail-modal-name");
@@ -1648,11 +2005,62 @@ function openEmailDetailModal(identifier) {
         }
     }
 
-    // 6. Reset viewport e rendering dell'anteprima
-    setDetailDevice("desktop");
     updateDetailPreview();
+}
 
-    // 7. Visualizzazione Modale Bootstrap a tutto schermo
+/**
+ * Commuta la variante linguistica visualizzata nel modale di dettaglio senza chiudere il modale.
+ *
+ * @param {string} identifier Identificatore del template della lingua scelta
+ */
+function switchDetailLanguage(identifier) {
+    const template = cachedTemplates.find((t) => t.identifier === identifier || (t.id && String(t.id) === String(identifier)));
+    if (!template) return;
+
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+    const catKey = (template.category || "RESET_PASSWORD").toUpperCase();
+    const clientKey = (template.clientId && template.clientId.trim() !== "") ? template.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+
+    const groupVariants = cachedTemplates.filter(t => {
+        const tCat = (t.category || "RESET_PASSWORD").toUpperCase();
+        const tClient = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+        return tCat === catKey && tClient === clientKey;
+    });
+
+    populateDetailModalData(template);
+    renderDetailLanguageTabs(groupVariants, template.identifier);
+}
+
+function openEmailDetailModal(identifier) {
+    const template = cachedTemplates.find((t) => t.identifier === identifier || (t.id && String(t.id) === String(identifier)));
+    if (!template) {
+        sweetalert(
+            "warning",
+            typeof t === "function" ? t("warning", "Attenzione") : "Attenzione",
+            typeof t === "function" ? t("email_empty_desc_filter", "Impossibile reperire i dettagli del template richiesto.") : "Impossibile reperire i dettagli del template richiesto."
+        );
+        return;
+    }
+
+    currentDetailDevice = "desktop";
+    setDetailDevice("desktop");
+
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+    const catKey = (template.category || "RESET_PASSWORD").toUpperCase();
+    const clientKey = (template.clientId && template.clientId.trim() !== "") ? template.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+
+    const groupVariants = cachedTemplates.filter(t => {
+        const tCat = (t.category || "RESET_PASSWORD").toUpperCase();
+        const tClient = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+        return tCat === catKey && tClient === clientKey;
+    });
+
+    populateDetailModalData(template);
+    renderDetailLanguageTabs(groupVariants, template.identifier);
+
+    // Visualizzazione Modale Bootstrap a tutto schermo
     const modalEl = document.getElementById("emailDetailModal");
     if (modalEl) {
         const modal = new bootstrap.Modal(modalEl);
@@ -1750,8 +2158,40 @@ function deleteTemplateConfirm(identifier) {
         sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per questa operazione.") : "Non disponi dei permessi necessari per questa operazione.");
         return;
     }
-    const titleText = typeof t === "function" ? t("email_swal_delete_confirm_title", "Eliminare il Template?") : "Eliminare il Template?";
-    const descText = typeof t === "function" ? t("email_swal_delete_confirm_desc", `L'eliminazione del template [${identifier}] è irreversibile. Procedere?`) : `L'eliminazione del template [${identifier}] è irreversibile. Procedere?`;
+
+    const template = cachedTemplates.find((t) => t.identifier === identifier || (t.id && String(t.id) === String(identifier)));
+    const cfg = typeof getConfig === "function" ? getConfig() : null;
+    const defaultClientId = (cfg && cfg.client_id) ? cfg.client_id : "ACCESS-SPHERE-AUTH";
+
+    let titleText = typeof t === "function" ? t("email_swal_delete_confirm_title", "Eliminare il Template?") : "Eliminare il Template?";
+    let descText = typeof t === "function" ? t("email_swal_delete_confirm_desc", `L'eliminazione del template [${identifier}] è irreversibile. Procedere?`) : `L'eliminazione del template [${identifier}] è irreversibile. Procedere?`;
+
+    if (template) {
+        const catKey = (template.category || "RESET_PASSWORD").toUpperCase();
+        const clientKey = (template.clientId && template.clientId.trim() !== "") ? template.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+        const groupVariants = cachedTemplates.filter(t => {
+            const tCat = (t.category || "RESET_PASSWORD").toUpperCase();
+            const tClient = (t.clientId && t.clientId.trim() !== "") ? t.clientId.trim().toUpperCase() : defaultClientId.toUpperCase();
+            return tCat === catKey && tClient === clientKey;
+        });
+
+        const localeStr = template.locale ? template.locale.toUpperCase() : (typeof t === "function" ? t("email_locale_generic_short", "DEF") : "DEF");
+        const templateName = template.name || template.identifier;
+
+        if (groupVariants.length > 1) {
+            titleText = typeof t === "function" ? t("email_swal_delete_variant_title", "Eliminare la Variante Lingua?") : "Eliminare la Variante Lingua?";
+            const rawDesc = typeof t === "function"
+                ? t("email_swal_delete_variant_desc", "Stai per eliminare la variante in lingua [{locale}] del template [{name}]. Le altre lingue rimarranno invariate. Procedere?")
+                : "Stai per eliminare la variante in lingua [{locale}] del template [{name}]. Le altre lingue rimarranno invariate. Procedere?";
+            descText = rawDesc.replace("{locale}", localeStr).replace("{name}", templateName);
+        } else {
+            const rawDesc = typeof t === "function"
+                ? t("email_swal_delete_last_variant_desc", "Stai per eliminare l'unica variante rimasta del template [{name}]. Il template verrà completamente rimosso. Procedere?")
+                : "Stai per eliminare l'unica variante rimasta del template [{name}]. Il template verrà completamente rimosso. Procedere?";
+            descText = rawDesc.replace("{name}", templateName);
+        }
+    }
+
     const confirmBtn = typeof t === "function" ? t("delete", "Sì, elimina") : "Sì, elimina";
     const cancelBtn = typeof t === "function" ? t("cancel", "Annulla") : "Annulla";
 
