@@ -21,6 +21,7 @@ let currentDetailDevice = "desktop";
 let editorDebounceTimer = null;
 let duplicateCheckTimer = null;
 let isSavingTemplate = false;
+let isEditorNewVariant = false;
 
 const DYNAMIC_PREVIEW_VALUES = {
     "USER.NAME": "Mario Rossi",
@@ -1086,6 +1087,7 @@ function openCreateTemplateModal() {
     // Nascondi il selettore tab lingue per la creazione da zero
     const langTabsContainer = document.getElementById("editor-language-tabs-container");
     if (langTabsContainer) langTabsContainer.classList.add("hidden");
+    isEditorNewVariant = false;
 
     const isEditInput = document.getElementById("editor-is-edit");
     if (isEditInput) isEditInput.value = "false";
@@ -1275,12 +1277,53 @@ function renderEditorLanguageTabs(groupVariants, currentIdentifier, category, cl
     if (isNewVariant) {
         const pillNew = document.createElement("button");
         pillNew.type = "button";
+        pillNew.id = "editor-new-lang-tab-pill";
         pillNew.className = "lang-tab-pill active";
         const newFlag = getLocaleFlagOrIcon(newLocale);
-        const newLbl = newLocale ? newLocale.toUpperCase() : (typeof t === "function" ? t("email_btn_add_locale", "Lingua") : "Lingua");
+        const newLbl = newLocale ? newLocale.toUpperCase() : defLabel;
         pillNew.innerHTML = `<i class="fa-solid fa-plus text-[10px]"></i> ${newFlag} <span>${escapeHtml(newLbl)}</span>`;
+        pillNew.title = newLocale ? `Nuova lingua: ${newLocale.toUpperCase()}` : "Nuova lingua: Predefinita / Globale";
         list.appendChild(pillNew);
     }
+}
+
+/**
+ * Gestisce la modifica dinamica del campo Lingua/Locale nell'editor.
+ * Sincronizza istantaneamente il badge/tab della lingua in cima all'editor,
+ * aggiorna il titolo del modale e ricalcola il controllo duplicati.
+ */
+function handleEditorLocaleChange() {
+    const localeInput = document.getElementById("editor-locale");
+    if (!localeInput) return;
+    const selectedLocale = (localeInput.value || "").trim().toLowerCase();
+    const defLabel = typeof t === "function" ? t("email_locale_generic_short", "DEF") : "DEF";
+    const flag = getLocaleFlagOrIcon(selectedLocale);
+    const label = selectedLocale ? selectedLocale.toUpperCase() : defLabel;
+
+    if (isEditorNewVariant) {
+        const pillNew = document.getElementById("editor-new-lang-tab-pill");
+        if (pillNew) {
+            pillNew.innerHTML = `<i class="fa-solid fa-plus text-[10px]"></i> ${flag} <span>${escapeHtml(label)}</span>`;
+            pillNew.title = selectedLocale ? `Nuova lingua: ${label}` : "Nuova lingua: Predefinita / Globale";
+        }
+
+        const addLangTitle = typeof t === "function" ? t("email_modal_add_language_title", "Nuova Variante Lingua") : "Nuova Variante Lingua";
+        const catKey = (document.getElementById("editor-category") ? document.getElementById("editor-category").value : "RESET_PASSWORD").toUpperCase();
+        const modalLabelEl = document.getElementById("emailEditorModalLabel");
+        if (modalLabelEl) {
+            const fullTitle = `${addLangTitle}: ${catKey} [${label}]`;
+            modalLabelEl.textContent = fullTitle;
+            modalLabelEl.title = fullTitle;
+        }
+    } else {
+        const activePill = document.querySelector("#editor-language-tabs-list .lang-tab-pill.active");
+        if (activePill) {
+            activePill.innerHTML = `${flag} <span>${escapeHtml(label)}</span>`;
+            activePill.title = selectedLocale ? `Lingua: ${label}` : "Lingua Predefinita / Globale";
+        }
+    }
+
+    checkDuplicateConflictDebounced();
 }
 
 /**
@@ -1289,6 +1332,7 @@ function renderEditorLanguageTabs(groupVariants, currentIdentifier, category, cl
  * @param {string} targetIdentifier - Identifier della variante linguistica da caricare
  */
 function switchEditorLanguage(targetIdentifier) {
+    isEditorNewVariant = false;
     const template = cachedTemplates.find((t) => t.identifier === targetIdentifier || (t.id && String(t.id) === String(targetIdentifier)));
     if (!template) return;
 
@@ -1395,6 +1439,7 @@ function openAddLanguageVariantModal(category, clientId) {
 
     const isEditInput = document.getElementById("editor-is-edit");
     if (isEditInput) isEditInput.value = "false";
+    isEditorNewVariant = true;
     document.getElementById("editor-template-id").value = "";
     document.getElementById("editor-identifier").readOnly = false;
     generateRandomTemplateUuid();
@@ -1485,6 +1530,7 @@ function openEditTemplateModal(identifier) {
 
     const isEditInput = document.getElementById("editor-is-edit");
     if (isEditInput) isEditInput.value = "true";
+    isEditorNewVariant = false;
     document.getElementById("editor-template-id").value = template.id || "";
     document.getElementById("editor-identifier").value = template.identifier || "";
     document.getElementById("editor-identifier").readOnly = false;
