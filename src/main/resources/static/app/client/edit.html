@@ -54,7 +54,7 @@
     <script src="/app/i18n/translations.js"></script>
     <script src="/app/shared/api/rest.js"></script>
 
-    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.4"/>
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.5"/>
     <link rel="stylesheet" href="/css/m3-themes.css"/>
     <script src="/app/shared/settings.js"></script>
 
@@ -659,19 +659,49 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label text-xs font-semibold text-gray-300"
-                               data-i18n="client_field_redirect_uris">Redirect URIs Autorizzate (redirect_uri)</label>
-                        <textarea id="redirect_uri" rows="2" class="form-control font-mono text-xs"
-                                  placeholder="https://linkatutto.giovannilamarmora.com http://127.0.0.1:5501/index.html"></textarea>
-                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_redirect_uris_desc">URI consentite per la risposta di authorization code e token (separate da spazio).</span>
+                        <div class="flex items-center justify-between mb-1.5 gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <label class="form-label text-xs font-semibold text-gray-300 m-0 truncate"
+                                       data-i18n="client_field_redirect_uris">Redirect URIs Autorizzate (redirect_uri)</label>
+                                <span id="redirect-uri-count-badge" class="m3-uri-count-pill">0</span>
+                            </div>
+                            <button type="button" class="m3-uri-add-btn-sm shrink-0" onclick="addUriInputRow('redirect')">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_btn_add_uri">Aggiungi URI</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="redirect_uri" value=""/>
+                        <div class="m3-uri-list-box" id="redirect-uri-box" onclick="handleUriBoxClick(event, 'redirect')">
+                            <div id="redirect-uri-rows" class="flex flex-col gap-2"></div>
+                            <button type="button" class="m3-uri-add-row-trigger" onclick="event.stopPropagation(); addUriInputRow('redirect')">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_uri_add_input_hint">Clicca per aggiungere un nuovo input URI (oppure premi Invio)</span>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1.5 block" data-i18n="client_field_redirect_uris_desc">URI consentite per la risposta di authorization code e token. Clicca su "+ Aggiungi URI" per inserire più endpoint.</span>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label text-xs font-semibold text-gray-300"
-                               data-i18n="client_field_fallback_uri">Fallback URI (fallback_uri)</label>
-                        <textarea id="fallback_uri" rows="2" class="form-control font-mono text-xs"
-                                  placeholder="https://access-sphere.giovannilamarmora.com/app/login?client_id=MY-CLIENT"></textarea>
-                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_fallback_uri_desc">URI di fallback utilizzata in caso di fallimento o annullamento del redirect primario.</span>
+                        <div class="flex items-center justify-between mb-1.5 gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <label class="form-label text-xs font-semibold text-gray-300 m-0 truncate"
+                                       data-i18n="client_field_fallback_uri">Fallback URI (fallback_uri)</label>
+                                <span id="fallback-uri-count-badge" class="m3-uri-count-pill">0</span>
+                            </div>
+                            <button type="button" class="m3-uri-add-btn-sm shrink-0" onclick="addUriInputRow('fallback')">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_btn_add_uri">Aggiungi URI</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="fallback_uri" value=""/>
+                        <div class="m3-uri-list-box" id="fallback-uri-box" onclick="handleUriBoxClick(event, 'fallback')">
+                            <div id="fallback-uri-rows" class="flex flex-col gap-2"></div>
+                            <button type="button" class="m3-uri-add-row-trigger" onclick="event.stopPropagation(); addUriInputRow('fallback')">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_uri_add_input_hint">Clicca per aggiungere un nuovo input URI (oppure premi Invio)</span>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1.5 block" data-i18n="client_field_fallback_uri_desc">URI di fallback utilizzate in caso di fallimento o annullamento del redirect primario. Clicca su "+ Aggiungi URI" per aggiungere più input.</span>
                     </div>
                 </div>
             </div>
@@ -924,13 +954,193 @@
             }
             AccessControl.applyUIPermissions();
         }
+        renderUriInputs("redirect");
+        renderUriInputs("fallback");
         loadClientForEdit();
     });
 
     window.addEventListener("languageChanged", () => {
+        renderUriInputs("redirect");
+        renderUriInputs("fallback");
         renderAppRolesGrid();
         renderWebhooksTable();
     });
+
+    let redirectUrisList = [""];
+    let fallbackUrisList = [""];
+
+    function getUriListByType(fieldType) {
+        return fieldType === "fallback" ? fallbackUrisList : redirectUrisList;
+    }
+
+    function setUriListByType(fieldType, list) {
+        if (fieldType === "fallback") {
+            fallbackUrisList = list;
+        } else {
+            redirectUrisList = list;
+        }
+    }
+
+    function setUriFieldFromRaw(fieldType, rawValue) {
+        let parsed = [];
+        if (Array.isArray(rawValue)) {
+            parsed = rawValue.flatMap(v => String(v || "").split(/[\s,\n\r]+/)).map(s => s.trim()).filter(Boolean);
+        } else if (typeof rawValue === "string" && rawValue.trim()) {
+            parsed = rawValue.trim().split(/[\s,\n\r]+/).map(s => s.trim()).filter(Boolean);
+        }
+        setUriListByType(fieldType, parsed.length > 0 ? parsed : [""]);
+        renderUriInputs(fieldType);
+    }
+
+    function syncUriField(fieldType) {
+        const list = getUriListByType(fieldType);
+        const validUris = list.map(u => (u || "").trim()).filter(Boolean);
+        const hiddenId = fieldType === "fallback" ? "fallback_uri" : "redirect_uri";
+        const badgeId = fieldType === "fallback" ? "fallback-uri-count-badge" : "redirect-uri-count-badge";
+
+        const hiddenEl = document.getElementById(hiddenId);
+        if (hiddenEl) {
+            hiddenEl.value = validUris.join(" ");
+        }
+        const badgeEl = document.getElementById(badgeId);
+        if (badgeEl) {
+            badgeEl.textContent = String(validUris.length);
+        }
+    }
+
+    function renderUriInputs(fieldType, focusIndex = -1) {
+        let list = getUriListByType(fieldType);
+        if (!Array.isArray(list) || list.length === 0) {
+            list = [""];
+            setUriListByType(fieldType, list);
+        }
+
+        const containerId = fieldType === "fallback" ? "fallback-uri-rows" : "redirect-uri-rows";
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const placeholderKey = fieldType === "fallback" ? "client_fallback_uri_placeholder" : "client_redirect_uri_placeholder";
+        const defaultPlaceholder = fieldType === "fallback"
+            ? "es. https://app.example.com/login?client_id=MY-CLIENT"
+            : "es. https://app.example.com/callback o http://localhost:8081";
+        const placeholderText = typeof t === "function" ? t(placeholderKey, defaultPlaceholder) : defaultPlaceholder;
+        const removeTitle = typeof t === "function" ? t("client_uri_remove_tooltip", "Rimuovi URI") : "Rimuovi URI";
+        const iconClass = fieldType === "fallback" ? "fa-arrow-turn-down" : "fa-link";
+
+        container.innerHTML = list.map((uriVal, idx) => `
+            <div class="m3-uri-input-row" onclick="event.stopPropagation()">
+                <span class="m3-uri-row-icon" title="#${idx + 1}">
+                    <i class="fa-solid ${iconClass}"></i>
+                </span>
+                <input type="url"
+                       id="${fieldType}-uri-input-${idx}"
+                       class="m3-uri-item-input"
+                       value="${escapeHtml(uriVal || '')}"
+                       placeholder="${escapeHtml(placeholderText)}"
+                       autocomplete="off"
+                       spellcheck="false"
+                       oninput="handleUriInputChange('${fieldType}', ${idx}, this.value)"
+                       onkeydown="handleUriInputKeydown(event, '${fieldType}', ${idx})"
+                       onpaste="handleUriInputPaste(event, '${fieldType}', ${idx})" />
+                <button type="button"
+                        class="m3-uri-remove-btn"
+                        onclick="removeUriInputRow('${fieldType}', ${idx})"
+                        title="${escapeHtml(removeTitle)}">
+                    <i class="fa-solid ${list.length === 1 && !uriVal ? 'fa-eraser' : 'fa-xmark'} text-xs"></i>
+                </button>
+            </div>
+        `).join("");
+
+        syncUriField(fieldType);
+
+        if (focusIndex >= 0) {
+            const targetInput = document.getElementById(`${fieldType}-uri-input-${focusIndex}`);
+            if (targetInput) {
+                targetInput.focus();
+                const len = targetInput.value.length;
+                try {
+                    targetInput.setSelectionRange(len, len);
+                } catch (e) {}
+            }
+        }
+    }
+
+    function handleUriInputChange(fieldType, index, val) {
+        const list = getUriListByType(fieldType);
+        list[index] = val;
+        syncUriField(fieldType);
+    }
+
+    function addUriInputRow(fieldType, initialValue = "", insertAfterIndex = -1) {
+        const list = getUriListByType(fieldType);
+        let newIndex;
+        if (insertAfterIndex >= 0 && insertAfterIndex < list.length) {
+            list.splice(insertAfterIndex + 1, 0, initialValue);
+            newIndex = insertAfterIndex + 1;
+        } else {
+            list.push(initialValue);
+            newIndex = list.length - 1;
+        }
+        renderUriInputs(fieldType, newIndex);
+    }
+
+    function removeUriInputRow(fieldType, index) {
+        const list = getUriListByType(fieldType);
+        if (list.length <= 1) {
+            list[0] = "";
+            renderUriInputs(fieldType, 0);
+            return;
+        }
+        list.splice(index, 1);
+        const nextFocus = Math.max(0, Math.min(index, list.length - 1));
+        renderUriInputs(fieldType, nextFocus);
+    }
+
+    function handleUriInputKeydown(event, fieldType, index) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            addUriInputRow(fieldType, "", index);
+        } else if (event.key === "Backspace") {
+            const list = getUriListByType(fieldType);
+            if (!list[index] && list.length > 1) {
+                event.preventDefault();
+                removeUriInputRow(fieldType, index);
+            }
+        }
+    }
+
+    function handleUriInputPaste(event, fieldType, index) {
+        const clipboardData = event.clipboardData || window.clipboardData;
+        if (!clipboardData) return;
+        const pasted = clipboardData.getData("text");
+        if (!pasted) return;
+
+        const parts = pasted.split(/[\s,\n\r]+/).map(s => s.trim()).filter(Boolean);
+        if (parts.length > 1) {
+            event.preventDefault();
+            const list = getUriListByType(fieldType);
+            const currentVal = (list[index] || "").trim();
+            if (!currentVal) {
+                list.splice(index, 1, ...parts);
+                renderUriInputs(fieldType, index + parts.length - 1);
+            } else {
+                list.splice(index + 1, 0, ...parts);
+                renderUriInputs(fieldType, index + parts.length);
+            }
+        }
+    }
+
+    function handleUriBoxClick(event, fieldType) {
+        if (event.target.closest("input") || event.target.closest("button")) return;
+        const list = getUriListByType(fieldType);
+        const lastIdx = list.length - 1;
+        if (lastIdx >= 0 && (!list[lastIdx] || !list[lastIdx].trim())) {
+            const input = document.getElementById(`${fieldType}-uri-input-${lastIdx}`);
+            if (input) input.focus();
+        } else {
+            addUriInputRow(fieldType);
+        }
+    }
 
     // Utility escape HTML per prevenire XSS
     function escapeHtml(str) {
@@ -1512,22 +1722,26 @@
         }
 
         // Redirect URIs (redirect_uri e fallback_uri)
+        let rawRedirect = "";
+        let rawFallback = "";
         if (client.redirect_uri && typeof client.redirect_uri === "object" && !Array.isArray(client.redirect_uri)) {
-            document.getElementById("redirect_uri").value = client.redirect_uri.redirect_uri || "";
-            document.getElementById("fallback_uri").value = client.redirect_uri.fallback_uri || "";
+            rawRedirect = client.redirect_uri.redirect_uri || "";
+            rawFallback = client.redirect_uri.fallback_uri || "";
         } else if (typeof client.redirect_uri === "string") {
             try {
                 const parsed = JSON.parse(client.redirect_uri);
                 if (typeof parsed === "object" && !Array.isArray(parsed)) {
-                    document.getElementById("redirect_uri").value = parsed.redirect_uri || "";
-                    document.getElementById("fallback_uri").value = parsed.fallback_uri || "";
+                    rawRedirect = parsed.redirect_uri || "";
+                    rawFallback = parsed.fallback_uri || "";
                 } else {
-                    document.getElementById("redirect_uri").value = client.redirect_uri;
+                    rawRedirect = client.redirect_uri;
                 }
             } catch (e) {
-                document.getElementById("redirect_uri").value = client.redirect_uri;
+                rawRedirect = client.redirect_uri;
             }
         }
+        setUriFieldFromRaw("redirect", rawRedirect);
+        setUriFieldFromRaw("fallback", rawFallback);
 
         // Cryptography & Expirations
         document.getElementById("jwtSecret").value = client.jwtSecret || client.jwt_secret || "";
@@ -1700,6 +1914,8 @@
         const clientId = document.getElementById("clientId").value.trim();
         const secret = document.getElementById("clientSecret").value.trim();
 
+        syncUriField("redirect");
+        syncUriField("fallback");
         const redirectUrisInput = document.getElementById("redirect_uri").value.trim();
         const fallbackUriInput = document.getElementById("fallback_uri").value.trim();
         const scopesInput = document.getElementById("scopes").value.trim();

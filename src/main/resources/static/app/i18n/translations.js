@@ -19,7 +19,7 @@ function detectLanguage() {
 // 1. Synchronously populate from cache if present
 try {
   detectLanguage();
-  const cached = sessionStorage.getItem("i18n_cache_" + currentLanguage);
+  const cached = sessionStorage.getItem("i18n_cache_v2_" + currentLanguage);
   if (cached) {
     currentTranslations = JSON.parse(cached);
     translations[currentLanguage] = currentTranslations;
@@ -70,7 +70,7 @@ let _i18nFetchedLang = null;
 async function loadTranslations(forceRefresh = false) {
   detectLanguage();
   const targetLang = currentLanguage;
-  const cachedStr = sessionStorage.getItem("i18n_cache_" + targetLang);
+  const cachedStr = sessionStorage.getItem("i18n_cache_v2_" + targetLang);
 
   // If in-memory translations exist from cache, translate immediately before network
   if (cachedStr && (!currentTranslations || Object.keys(currentTranslations).length === 0 || _i18nFetchedLang !== targetLang)) {
@@ -107,7 +107,7 @@ async function loadTranslations(forceRefresh = false) {
         currentTranslations = freshData;
         translations[targetLang] = currentTranslations;
         try {
-          sessionStorage.setItem("i18n_cache_" + targetLang, freshStr);
+          sessionStorage.setItem("i18n_cache_v2_" + targetLang, freshStr);
         } catch (e) {}
       } else {
         const fallbackLang = (targetLang === "en") ? "it" : "en";

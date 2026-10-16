@@ -54,7 +54,7 @@
     <script src="/app/i18n/translations.js"></script>
     <script src="/app/shared/api/rest.js"></script>
 
-    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.4"/>
+    <link rel="stylesheet" href="/css/m3-dashboard.css?v=2.1.5"/>
     <link rel="stylesheet" href="/css/m3-themes.css"/>
     <script src="/app/shared/settings.js"></script>
 
@@ -932,6 +932,171 @@
         }
     }
 
+    let redirectUrisList = [""];
+    let fallbackUrisList = [""];
+
+    function getUriListByType(fieldType) {
+        return fieldType === "fallback" ? fallbackUrisList : redirectUrisList;
+    }
+
+    function setUriListByType(fieldType, list) {
+        if (fieldType === "fallback") {
+            fallbackUrisList = list;
+        } else {
+            redirectUrisList = list;
+        }
+    }
+
+    function syncUriField(fieldType) {
+        const list = getUriListByType(fieldType);
+        const validUris = list.map(u => (u || "").trim()).filter(Boolean);
+        const hiddenId = fieldType === "fallback" ? "fallback_uri" : "redirect_uri";
+        const badgeId = fieldType === "fallback" ? "fallback-uri-count-badge" : "redirect-uri-count-badge";
+
+        const hiddenEl = document.getElementById(hiddenId);
+        if (hiddenEl) {
+            hiddenEl.value = validUris.join(" ");
+        }
+        const badgeEl = document.getElementById(badgeId);
+        if (badgeEl) {
+            badgeEl.textContent = String(validUris.length);
+        }
+    }
+
+    function renderUriInputs(fieldType, focusIndex = -1) {
+        let list = getUriListByType(fieldType);
+        if (!Array.isArray(list) || list.length === 0) {
+            list = [""];
+            setUriListByType(fieldType, list);
+        }
+
+        const containerId = fieldType === "fallback" ? "fallback-uri-rows" : "redirect-uri-rows";
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const placeholderKey = fieldType === "fallback" ? "client_fallback_uri_placeholder" : "client_redirect_uri_placeholder";
+        const defaultPlaceholder = fieldType === "fallback"
+            ? "es. https://app.example.com/login?client_id=MY-CLIENT"
+            : "es. https://app.example.com/callback o http://localhost:8081";
+        const placeholderText = typeof t === "function" ? t(placeholderKey, defaultPlaceholder) : defaultPlaceholder;
+        const removeTitle = typeof t === "function" ? t("client_uri_remove_tooltip", "Rimuovi URI") : "Rimuovi URI";
+        const iconClass = fieldType === "fallback" ? "fa-arrow-turn-down" : "fa-link";
+
+        container.innerHTML = list.map((uriVal, idx) => `
+            <div class="m3-uri-input-row" onclick="event.stopPropagation()">
+                <span class="m3-uri-row-icon" title="#${idx + 1}">
+                    <i class="fa-solid ${iconClass}"></i>
+                </span>
+                <input type="url"
+                       id="${fieldType}-uri-input-${idx}"
+                       class="m3-uri-item-input"
+                       value="${escapeHtml(uriVal || '')}"
+                       placeholder="${escapeHtml(placeholderText)}"
+                       autocomplete="off"
+                       spellcheck="false"
+                       oninput="handleUriInputChange('${fieldType}', ${idx}, this.value)"
+                       onkeydown="handleUriInputKeydown(event, '${fieldType}', ${idx})"
+                       onpaste="handleUriInputPaste(event, '${fieldType}', ${idx})" />
+                <button type="button"
+                        class="m3-uri-remove-btn"
+                        onclick="removeUriInputRow('${fieldType}', ${idx})"
+                        title="${escapeHtml(removeTitle)}">
+                    <i class="fa-solid ${list.length === 1 && !uriVal ? 'fa-eraser' : 'fa-xmark'} text-xs"></i>
+                </button>
+            </div>
+        `).join("");
+
+        syncUriField(fieldType);
+
+        if (focusIndex >= 0) {
+            const targetInput = document.getElementById(`${fieldType}-uri-input-${focusIndex}`);
+            if (targetInput) {
+                targetInput.focus();
+                const len = targetInput.value.length;
+                try {
+                    targetInput.setSelectionRange(len, len);
+                } catch (e) {}
+            }
+        }
+    }
+
+    function handleUriInputChange(fieldType, index, val) {
+        const list = getUriListByType(fieldType);
+        list[index] = val;
+        syncUriField(fieldType);
+    }
+
+    function addUriInputRow(fieldType, initialValue = "", insertAfterIndex = -1) {
+        const list = getUriListByType(fieldType);
+        let newIndex;
+        if (insertAfterIndex >= 0 && insertAfterIndex < list.length) {
+            list.splice(insertAfterIndex + 1, 0, initialValue);
+            newIndex = insertAfterIndex + 1;
+        } else {
+            list.push(initialValue);
+            newIndex = list.length - 1;
+        }
+        renderUriInputs(fieldType, newIndex);
+    }
+
+    function removeUriInputRow(fieldType, index) {
+        const list = getUriListByType(fieldType);
+        if (list.length <= 1) {
+            list[0] = "";
+            renderUriInputs(fieldType, 0);
+            return;
+        }
+        list.splice(index, 1);
+        const nextFocus = Math.max(0, Math.min(index, list.length - 1));
+        renderUriInputs(fieldType, nextFocus);
+    }
+
+    function handleUriInputKeydown(event, fieldType, index) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            addUriInputRow(fieldType, "", index);
+        } else if (event.key === "Backspace") {
+            const list = getUriListByType(fieldType);
+            if (!list[index] && list.length > 1) {
+                event.preventDefault();
+                removeUriInputRow(fieldType, index);
+            }
+        }
+    }
+
+    function handleUriInputPaste(event, fieldType, index) {
+        const clipboardData = event.clipboardData || window.clipboardData;
+        if (!clipboardData) return;
+        const pasted = clipboardData.getData("text");
+        if (!pasted) return;
+
+        const parts = pasted.split(/[\s,\n\r]+/).map(s => s.trim()).filter(Boolean);
+        if (parts.length > 1) {
+            event.preventDefault();
+            const list = getUriListByType(fieldType);
+            const currentVal = (list[index] || "").trim();
+            if (!currentVal) {
+                list.splice(index, 1, ...parts);
+                renderUriInputs(fieldType, index + parts.length - 1);
+            } else {
+                list.splice(index + 1, 0, ...parts);
+                renderUriInputs(fieldType, index + parts.length);
+            }
+        }
+    }
+
+    function handleUriBoxClick(event, fieldType) {
+        if (event.target.closest("input") || event.target.closest("button")) return;
+        const list = getUriListByType(fieldType);
+        const lastIdx = list.length - 1;
+        if (lastIdx >= 0 && (!list[lastIdx] || !list[lastIdx].trim())) {
+            const input = document.getElementById(`${fieldType}-uri-input-${lastIdx}`);
+            if (input) input.focus();
+        } else {
+            addUriInputRow(fieldType);
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         if (typeof AccessControl !== "undefined" && !AccessControl.canCreateClient()) {
             console.warn("AccessControl: Permesso insufficiente per registrare client.");
@@ -949,11 +1114,15 @@
         if (typeof AccessControl !== "undefined") {
             AccessControl.applyUIPermissions();
         }
+        renderUriInputs("redirect");
+        renderUriInputs("fallback");
         renderAppRolesGrid();
         renderWebhooksTable();
     });
 
     window.addEventListener("languageChanged", () => {
+        renderUriInputs("redirect");
+        renderUriInputs("fallback");
         renderAppRolesGrid();
         renderWebhooksTable();
     });
@@ -1558,6 +1727,8 @@
             secret = document.getElementById("clientSecret").value.trim();
         }
 
+        syncUriField("redirect");
+        syncUriField("fallback");
         const redirectUrisInput = document.getElementById("redirect_uri").value.trim();
         const fallbackUriInput = document.getElementById("fallback_uri").value.trim();
         const scopesInput = document.getElementById("scopes").value.trim();

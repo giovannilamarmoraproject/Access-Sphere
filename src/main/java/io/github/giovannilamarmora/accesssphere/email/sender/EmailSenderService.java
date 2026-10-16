@@ -3,7 +3,6 @@ package io.github.giovannilamarmora.accesssphere.email.sender;
 import io.github.giovannilamarmora.accesssphere.email.EmailUtils;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDataResponse;
 import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplate;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -32,9 +31,7 @@ public class EmailSenderService {
   @Autowired private EmailDispatcher dispatcher;
   @Autowired private JavaMailSender javaMailSender;
 
-  /**
-   * Invia un'email a partire da un payload {@link EmailContent} gia compilato.
-   */
+  /** Invia un'email a partire da un payload {@link EmailContent} gia compilato. */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<EmailResponse> sendEmail(EmailContent emailContent) {
     LOG.info(
@@ -55,7 +52,8 @@ public class EmailSenderService {
               }
 
               EmailResponse response = new EmailResponse();
-              response.setMessage("Email to %s was successfully sent!".formatted(emailContent.getTo()));
+              response.setMessage(
+                  "Email to %s was successfully sent!".formatted(emailContent.getTo()));
               return response;
             })
         .subscribeOn(Schedulers.boundedElastic())
@@ -74,24 +72,7 @@ public class EmailSenderService {
       EmailTemplate emailTemplate, Map<String, String> params, EmailContent emailContent) {
     LOG.info("📧 Compiling email template for recipient: {}", emailContent.getTo());
     emailContent.setText(
-        EmailUtils.renderTemplate(
-            emailTemplate.getTemplate(), emailTemplate.getParams(), params));
-    return sendEmail(emailContent);
-  }
-
-  /**
-   * Compila un {@link EmailTemplateDataResponse} con i parametri forniti e invia l'email
-   * risultante.
-   */
-  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<EmailResponse> sendEmail(
-      EmailTemplateDataResponse emailTemplateResponse,
-      Map<String, String> params,
-      EmailContent emailContent) {
-    LOG.info("📧 Compiling email template DTO for recipient: {}", emailContent.getTo());
-    emailContent.setText(
-        EmailUtils.renderTemplate(
-            emailTemplateResponse.getTemplate(), emailTemplateResponse.getParams(), params));
+        EmailUtils.renderTemplate(emailTemplate.getTemplate(), emailTemplate.getParams(), params));
     return sendEmail(emailContent);
   }
 }
