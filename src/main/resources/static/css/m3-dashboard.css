@@ -259,13 +259,13 @@ body {
 }
 
 
-/* Header Action Buttons (Fix for square borders) */
+/* Header Action Buttons (Squircle: square with border radius) */
 .m3-icon-btn {
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
-    border-radius: 50% !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    border-radius: 12px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -305,7 +305,7 @@ body {
 .m3-btn-primary {
     background: linear-gradient(135deg, #A855F7 0%, #6750A4 100%) !important;
     color: white !important;
-    border-radius: 9999px !important;
+    border-radius: 12px !important;
     padding: 10px 24px !important;
     font-weight: 600 !important;
     font-size: 0.88rem !important;
@@ -337,7 +337,7 @@ button.m3-btn-outline,
 button.m3-btn-secondary {
     background: rgba(255, 255, 255, 0.05) !important;
     color: #E6E1E5 !important;
-    border-radius: 9999px !important;
+    border-radius: 12px !important;
     padding: 9px 20px !important;
     font-weight: 600 !important;
     font-size: 0.85rem !important;
@@ -399,7 +399,7 @@ a.m3-btn-danger,
 button.m3-btn-danger {
     background: rgba(244, 63, 94, 0.16) !important;
     color: #FFB4AB !important;
-    border-radius: 9999px !important;
+    border-radius: 12px !important;
     padding: 9px 20px !important;
     font-weight: 600 !important;
     font-size: 0.85rem !important;
@@ -458,7 +458,7 @@ button.m3-action-pill {
     justify-content: center !important;
     gap: 8px !important;
     text-decoration: none !important;
-    border-radius: 9999px !important;
+    border-radius: 12px !important;
     cursor: pointer !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     white-space: nowrap !important;
@@ -506,7 +506,7 @@ button.m3-action-pill i {
 .role-chip-icon {
     width: 28px !important;
     height: 28px !important;
-    border-radius: 50% !important;
+    border-radius: 8px !important;
     background: rgba(168, 85, 247, 0.3) !important;
     display: flex !important;
     align-items: center !important;
@@ -817,14 +817,14 @@ table, table *, .table, .table *, table.dataTable, table.dataTable * {
 }
 
 /* -------------------------------------------
-   TABLE ACTION BUTTONS (M3 CIRCLE ICONS)
+   TABLE ACTION BUTTONS (M3 SQUARE ICONS WITH BORDER RADIUS)
    ------------------------------------------- */
 .m3-action-btn {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    min-height: 38px !important;
-    border-radius: 50% !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    border-radius: 10px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1168,7 +1168,7 @@ div.dt-container .dt-paging button.current,
     -webkit-text-fill-color: #FFFFFF !important;
     font-weight: 700 !important;
     box-shadow: 0 0 14px var(--theme-glow, rgba(168, 85, 247, 0.75)) !important;
-    border-radius: 50% !important;
+    border-radius: 8px !important;
     width: 32px !important;
     height: 32px !important;
     padding: 0 !important;
@@ -1779,19 +1779,9 @@ body.swal2-shown .m3-mobile-bottom-nav,
         min-width: 0;
     }
 
-    /* Keep quick actions (Back, Refresh, Logout) accessible on the right */
+    /* Rimuovi i bottoni cerchiati dall'header mobile (Refresh, Logout) */
     .glass-header .header-container > div:last-child {
-        display: flex !important;
-        align-items: center !important;
-        gap: 0.35rem !important;
-        flex-shrink: 0 !important;
-    }
-
-    .glass-header .header-container > div:last-child .m3-icon-btn {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        margin-left: 0 !important;
+        display: none !important;
     }
 }
 
@@ -2584,7 +2574,7 @@ body.swal2-shown .m3-mobile-bottom-nav,
     align-items: center;
     gap: 5px;
     padding: 3px 10px;
-    border-radius: 9999px;
+    border-radius: 8px;
     font-size: 11px;
     font-weight: 600;
     background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12);
@@ -2608,7 +2598,7 @@ body.swal2-shown .m3-mobile-bottom-nav,
     min-width: 20px;
     height: 18px;
     padding: 0 6px;
-    border-radius: 9999px;
+    border-radius: 6px;
     font-size: 10px;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
@@ -2616,5 +2606,46 @@ body.swal2-shown .m3-mobile-bottom-nav,
     border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3);
     color: var(--theme-accent, #D0BCFF);
 }
+
+/* ==========================================================================
+   GLOBAL M3 BUTTON INVARIANT: ALL BUTTONS ARE SQUARES/RECTANGLES WITH BORDER-RADIUS
+   Zero circles (50%) and zero pills (9999px) on clickable buttons
+   ========================================================================== */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn,
+.m3-btn,
+.m3-icon-btn,
+.m3-action-btn,
+.m3-btn-primary,
+.m3-btn-secondary,
+.m3-btn-outline,
+.m3-btn-danger,
+.m3-action-pill,
+.m3-mobile-menu-btn,
+.m3-uri-remove-btn,
+.m3-uri-add-btn-sm,
+.m3-uri-add-row-trigger,
+.swal2-confirm,
+.swal2-cancel,
+.swal2-styled {
+    border-radius: 12px !important;
+}
+
+.m3-action-btn,
+.dt-paging-button,
+div.dt-container div.dt-paging button.dt-paging-button {
+    border-radius: 10px !important;
+}
+
+.m3-uri-remove-btn,
+.m3-uri-add-btn-sm,
+.role-chip-icon,
+div.dt-container div.dt-paging button.dt-paging-button.current {
+    border-radius: 8px !important;
+}
+
 
 

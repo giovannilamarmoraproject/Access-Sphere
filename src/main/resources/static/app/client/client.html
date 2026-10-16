@@ -612,7 +612,7 @@
                 </button>
 
                 ${(typeof AccessControl === "undefined" || AccessControl.canDeleteClient(c.clientId)) ? `
-                <button id="client-detail-delete-btn" onclick="deleteClientAction('${c.clientId}')" class="w-full text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all mt-2" style="border-radius: 9999px !important; color: #FFFFFF !important; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); padding: 10px 18px;">
+                <button id="client-detail-delete-btn" onclick="deleteClientAction('${c.clientId}')" class="w-full text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all mt-2" style="border-radius: 12px !important; color: #FFFFFF !important; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); padding: 10px 18px;">
                   <i class="fa-solid fa-trash text-xs" style="color: #F87171;"></i>
                   <span>${typeof t === 'function' ? t('client_detail_delete_btn', 'Elimina Client OAuth2') : 'Elimina Client OAuth2'}</span>
                 </button>

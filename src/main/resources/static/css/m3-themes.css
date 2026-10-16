@@ -1582,7 +1582,7 @@ textarea {
     background: rgba(244, 63, 94, 0.16) !important;
     color: #FFB4AB !important;
     border: 1.5px solid rgba(244, 63, 94, 0.42) !important;
-    border-radius: 9999px !important;
+    border-radius: 12px !important;
 }
 
 [data-theme] .m3-btn-danger:hover,

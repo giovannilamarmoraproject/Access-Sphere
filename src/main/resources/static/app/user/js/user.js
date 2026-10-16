@@ -153,11 +153,11 @@ function renderCustomAttributesData(attributes) {
               </span>
             </div>
             <div class="flex items-center gap-2 pt-1">
-              <input type="password" id="${inputId}" readonly value="${safeVal}" class="form-control font-mono text-xs flex-1 min-w-0" style="background: var(--theme-input-bg, #231B34); border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28); color: #fff; border-radius: 9999px; padding: 9px 16px;" />
-              <button type="button" class="flex-shrink-0" onclick="togglePasswordVisibility('${inputId}', this)" title="Mostra / Nascondi" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); color: var(--theme-accent, #FFFFFF); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+              <input type="password" id="${inputId}" readonly value="${safeVal}" class="form-control font-mono text-xs flex-1 min-w-0" style="background: var(--theme-input-bg, #231B34); border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.28); color: #fff; border-radius: 12px; padding: 9px 16px;" />
+              <button type="button" class="flex-shrink-0" onclick="togglePasswordVisibility('${inputId}', this)" title="Mostra / Nascondi" style="width: 36px; height: 36px; border-radius: 10px; background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); color: var(--theme-accent, #FFFFFF); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i class="fa-solid fa-eye text-xs"></i>
               </button>
-              <button type="button" class="flex-shrink-0" onclick="copyTokenValue('${inputId}')" title="${typeof t === 'function' ? t("user_detail_copy_btn", "Copia") : "Copia"}" style="width: 36px; height: 36px; border-radius: 9999px; background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); color: var(--theme-accent, #FFFFFF); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+              <button type="button" class="flex-shrink-0" onclick="copyTokenValue('${inputId}')" title="${typeof t === 'function' ? t("user_detail_copy_btn", "Copia") : "Copia"}" style="width: 36px; height: 36px; border-radius: 10px; background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12); border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25); color: var(--theme-accent, #FFFFFF); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i class="fa-solid fa-copy text-xs"></i>
               </button>
             </div>
@@ -197,7 +197,7 @@ function renderCustomAttributesData(attributes) {
           <i class="fa-solid fa-check-double text-emerald-400 flex-shrink-0"></i>
           <span>${Object.keys(attributes).length} ${typeof t === 'function' ? t("user_detail_properties_count", "Proprietà") : "Proprietà"}</span>
         </span>
-        <button type="button" onclick="toggleRawJsonView()" class="m3-btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 flex-shrink-0 cursor-pointer" style="border-radius: 9999px !important;">
+        <button type="button" onclick="toggleRawJsonView()" class="m3-btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 flex-shrink-0 cursor-pointer" style="border-radius: 12px !important;">
           <i class="fa-solid fa-code text-xs"></i>
           <span id="toggle-json-label">${typeof t === 'function' ? t("user_detail_show_raw_json", "Mostra JSON Grezzo") : "Mostra JSON Grezzo"}</span>
         </button>
@@ -368,7 +368,7 @@ function displayUserData(user) {
 
             <div class="flex items-center justify-end gap-2.5">
               ${(canManageUsers && m.confirmed === false) ? `
-                <button type="button" onclick="finishMfaVerification('${user.identifier}', '${(m.label || '').replace(/'/g, "\\'")}', '${m.type || 'totp'}')" class="m3-btn-primary text-xs py-1.5 px-3.5 flex items-center gap-1.5 shadow-md cursor-pointer" style="border-radius: 9999px !important; color: #FFFFFF !important;" title="Inserisci il codice OTP per completare la verifica">
+                <button type="button" onclick="finishMfaVerification('${user.identifier}', '${(m.label || '').replace(/'/g, "\\'")}', '${m.type || 'totp'}')" class="m3-btn-primary text-xs py-1.5 px-3.5 flex items-center gap-1.5 shadow-md cursor-pointer" style="border-radius: 12px !important; color: #FFFFFF !important;" title="Inserisci il codice OTP per completare la verifica">
                   <i class="fa-solid fa-circle-check text-xs"></i> <span>${typeof t === 'function' ? t("user_detail_complete_verify", "Completa Verifica") : "Completa Verifica"}</span>
                 </button>
               ` : ''}
@@ -389,7 +389,7 @@ function displayUserData(user) {
         <p class="text-sm text-gray-300 font-medium m-0">${typeof t === 'function' ? t("user_detail_no_mfa", "Nessun metodo di autenticazione a due fattori configurato.") : "Nessun metodo di autenticazione a due fattori configurato."}</p>
         <p class="text-xs text-gray-400 mt-1 mb-4">${typeof t === 'function' ? t("user_detail_no_mfa_desc", "Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account.") : "Aggiungi un'app di autenticazione (es. Google o Microsoft Authenticator) per rafforzare la sicurezza dell'account."}</p>
         ${canManageUsers ? `
-        <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-5 inline-flex items-center gap-2 text-decoration-none shadow-md" style="border-radius: 9999px !important; color: #FFFFFF !important;">
+        <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-5 inline-flex items-center gap-2 text-decoration-none shadow-md" style="border-radius: 12px !important; color: #FFFFFF !important;">
           <i class="fa-solid fa-qrcode"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_setup_mfa", "Configura MFA Ora") : "Configura MFA Ora"}</span>
         </a>
         ` : ''}
@@ -432,11 +432,11 @@ function displayUserData(user) {
           </div>
         </div>
 
-        <!-- Bottoni Azione M3: Tutti Arrotondati (Pill), Testo Bianco, Stesso Font Size e Spessore identici -->
+        <!-- Bottoni Azione M3: Tutti Squadrati con border-radius (Squircle), Testo Bianco -->
         ${(canManageUsers || (canAssignUserRoles && canViewRoles) || canLockUsers || canDeleteUsers) ? `
         <div class="space-y-2.5 w-full">
           ${canManageUsers ? `
-          <a id="user-detail-edit-profile-btn" href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-primary m3-action-pill w-full justify-center py-2.5 px-4 text-decoration-none shadow-lg hover:brightness-110 transition-all" style="border-radius: 9999px !important; color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">
+          <a id="user-detail-edit-profile-btn" href="/app/users/edit/${encodeURIComponent(user.identifier)}" class="m3-btn-primary m3-action-pill w-full justify-center py-2.5 px-4 text-decoration-none shadow-lg hover:brightness-110 transition-all" style="border-radius: 12px !important; color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">
             <i class="fa-solid fa-user-pen text-sm"></i>
             <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_edit_profile", "Modifica Profilo") : "Modifica Profilo"}</span>
           </a>
@@ -445,19 +445,19 @@ function displayUserData(user) {
           ${((canAssignUserRoles && canViewRoles) || canLockUsers) ? `
           <div class="grid ${((canAssignUserRoles && canViewRoles) && canLockUsers) ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 w-full">
             ${(canAssignUserRoles && canViewRoles) ? `
-            <a href="/app/users/roles/${encodeURIComponent(user.identifier)}" class="m3-action-pill py-2.5 px-3 text-center text-decoration-none shadow-sm hover:brightness-110 transition-all" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18); color: #FFFFFF !important; border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;">
+            <a href="/app/users/roles/${encodeURIComponent(user.identifier)}" class="m3-action-pill py-2.5 px-3 text-center text-decoration-none shadow-sm hover:brightness-110 transition-all" style="background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.18); color: #FFFFFF !important; border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.3); border-radius: 12px !important; font-size: 0.88rem !important; font-weight: 600 !important;">
               <i class="fa-solid fa-shield-halved text-sm" style="color: var(--theme-accent, #D0BCFF);"></i>
               <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_roles_btn", "Ruoli") : "Ruoli"}</span>
             </a>
             ` : ''}
             
             ${canLockUsers ? (isBlocked ? `
-              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', false)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(16, 185, 129, 0.18); color: #FFFFFF !important; border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_unlock_btn", "Sblocca") : "Sblocca"}">
+              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', false)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(16, 185, 129, 0.18); color: #FFFFFF !important; border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 12px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_unlock_btn", "Sblocca") : "Sblocca"}">
                 <i class="fa-solid fa-lock-open text-sm" style="color: #6EE7B7;"></i>
                 <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_unlock_btn", "Sblocca") : "Sblocca"}</span>
               </button>
             ` : `
-              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', true)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(245, 158, 11, 0.18); color: #FFFFFF !important; border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_lock_btn", "Blocca") : "Blocca"}">
+              <button onclick="toggleBlockUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}', true)" class="m3-action-pill py-2.5 px-3 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(245, 158, 11, 0.18); color: #FFFFFF !important; border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 12px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_lock_btn", "Blocca") : "Blocca"}">
                 <i class="fa-solid fa-lock text-sm" style="color: #FCD34D;"></i>
                 <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_lock_btn", "Blocca") : "Blocca"}</span>
               </button>
@@ -466,7 +466,7 @@ function displayUserData(user) {
           ` : ''}
 
           ${canDeleteUsers ? `
-          <button id="user-detail-delete-btn" onclick="deleteUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}')" class="m3-action-pill w-full py-2.5 px-4 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(239, 68, 68, 0.15); color: #FFFFFF !important; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 9999px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}">
+          <button id="user-detail-delete-btn" onclick="deleteUser('${user.identifier}','${(user.username || '').replace(/'/g, "\\'")}')" class="m3-action-pill w-full py-2.5 px-4 text-center cursor-pointer shadow-sm hover:brightness-110 transition-all" style="background: rgba(239, 68, 68, 0.15); color: #FFFFFF !important; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 12px !important; font-size: 0.88rem !important; font-weight: 600 !important;" title="${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}">
             <i class="fa-solid fa-trash text-sm" style="color: #F87171;"></i>
             <span style="color: #FFFFFF !important; font-size: 0.88rem !important; font-weight: 600 !important;">${typeof t === 'function' ? t("user_detail_delete_btn", "Elimina") : "Elimina"}</span>
           </button>
@@ -544,7 +544,7 @@ function displayUserData(user) {
               <i class="fa-solid fa-user-shield" style="color: var(--theme-accent, #A855F7);"></i> ${typeof t === 'function' ? t("user_detail_rbac_title", "Ruoli Applicativi (RBAC)") : "Ruoli Applicativi (RBAC)"}
             </h4>
             ${canAssignUserRoles ? `
-            <a href="/app/users/roles/${user.identifier}" class="m3-btn-primary text-xs py-2 px-5 text-decoration-none shadow-md w-full sm:w-auto justify-center" style="border-radius: 9999px !important; color: #FFFFFF !important;">
+            <a href="/app/users/roles/${user.identifier}" class="m3-btn-primary text-xs py-2 px-5 text-decoration-none shadow-md w-full sm:w-auto justify-center" style="border-radius: 12px !important; color: #FFFFFF !important;">
               <i class="fa-solid fa-pen-to-square mr-1"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_manage_roles", "Gestisci Ruoli") : "Gestisci Ruoli"}</span>
             </a>
             ` : ''}
@@ -577,7 +577,7 @@ function displayUserData(user) {
                   <i class="fa-solid fa-toggle-on text-xs" style="color: #6EE7B7 !important;"></i> ${typeof t === 'function' ? t("user_detail_enable_mfa", "Attiva MFA") : "Attiva MFA"}
                 </button>
               ` : '')}
-              <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-4 text-decoration-none shadow-md justify-center flex items-center gap-1.5" style="border-radius: 9999px !important; color: #FFFFFF !important;">
+              <a href="/app/mfa/${encodeURIComponent(user.identifier)}" class="m3-btn-primary text-xs py-2 px-4 text-decoration-none shadow-md justify-center flex items-center gap-1.5" style="border-radius: 12px !important; color: #FFFFFF !important;">
                 <i class="fa-solid fa-plus text-xs"></i> <span style="color: #FFFFFF !important;">${typeof t === 'function' ? t("user_detail_config_method", "Configura Metodo") : "Configura Metodo"}</span>
               </a>
             </div>
