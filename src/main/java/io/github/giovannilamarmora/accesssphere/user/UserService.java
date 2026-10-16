@@ -70,7 +70,8 @@ public class UserService {
 
     if (optionalUser.isEmpty()) {
       LOG.error("❌ User: {} not found into database", email);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
+      return Mono.error(
+          new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage()));
     }
     User user = optionalUser.get();
 
@@ -92,7 +93,8 @@ public class UserService {
 
     if (optionalUsers.isEmpty() || optionalUsers.get().isEmpty()) {
       LOG.error("❌ Users not found into database");
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
+      return Mono.error(
+          new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage()));
     }
 
     return Mono.just(userRoleDomainService.enrichUserRoles(optionalUsers.get()));
@@ -132,7 +134,9 @@ public class UserService {
     String identifier = UUID.randomUUID().toString();
     user.setIdentifier(identifier);
     user.setBlocked(false);
-    user.setConfirmed(false);
+    if (user.getConfirmed() == null) {
+      user.setConfirmed(false);
+    }
 
     User userSaved = userRepository.saveAndFlush(user);
 
@@ -159,7 +163,8 @@ public class UserService {
 
     if (optionalUser.isEmpty()) {
       LOG.error("❌ User {} not found into database", identifier);
-      throw new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage());
+      return Mono.error(
+          new OAuthException(ExceptionMap.ERR_OAUTH_404, ExceptionMap.ERR_OAUTH_404.getMessage()));
     }
 
     User user = optionalUser.get();

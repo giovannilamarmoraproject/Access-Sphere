@@ -13,8 +13,12 @@ import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
+import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
+import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
+import io.github.giovannilamarmora.accesssphere.token.model.JWTData;
+import io.github.giovannilamarmora.accesssphere.token.model.SubjectType;
 import io.github.giovannilamarmora.accesssphere.token.model.TokenExchange;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
@@ -62,6 +66,7 @@ public class OAuthService {
   @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private UserService userService;
+  @Autowired private TokenService tokenService;
 
   /**
    * Gestisce l'endpoint di autorizzazione OAuth 2.0 (/oauth2/authorize). Determina se la richiesta
@@ -178,6 +183,10 @@ public class OAuthService {
         LOG.debug("🔄 [OAUTH TOKEN] Delegating to refreshToken for clientId: {}", clientId);
         return refreshToken(clientId, refresh_token, grant_type, scope, request);
       }
+      case CLIENT_CREDENTIALS -> {
+        LOG.debug("🤖 [OAUTH TOKEN] Delegating to clientCredentials for clientId: {}", clientId);
+        return handleClientCredentials(clientId, scope, basic, request);
+      }
       default -> {
         LOG.error(
             "❌ [OAUTH TOKEN] Invalid or unsupported grant_type '{}' for clientId: {}",
@@ -186,6 +195,43 @@ public class OAuthService {
         throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid o not supported grant_type!");
       }
     }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  private Mono<ResponseEntity<?>> handleClientCredentials(
+      String clientId, String scope, String basic, ServerHttpRequest request) {
+    LOG.info("🤖 [OAUTH TOKEN] Processing client_credentials grant for clientId: {}", clientId);
+    Mono<OAuth2Client> clientCredentialMono =
+        oAuth2ClientDomainService.getOAuth2ClientByClientID(clientId);
+
+    return clientCredentialMono.map(
+        client -> {
+          OAuthValidator.validateClientCredentials(basic, clientId, client);
+          if (StringUtils.hasText(scope)) {
+            OAuthValidator.validateScopes(client.getScopes(), scope);
+          }
+          JWTData jwtData = new JWTData();
+          jwtData.setIdentifier(client.getClientId());
+          jwtData.setAud(client.getClientId());
+          jwtData.setAzp(client.getClientId());
+          jwtData.setIss("Access-Sphere");
+          jwtData.setSub(client.getClientId());
+          jwtData.setSubject_type(SubjectType.TECHNICAL);
+          jwtData.setRoles(
+              client.getAppRoles() != null
+                  ? client.getAppRoles().stream().map(RoleDefinition::getRole).toList()
+                  : null);
+          jwtData.setType(OAuthType.BEARER);
+          jwtData.setClient_id(client.getClientId());
+          AuthToken token = tokenService.generateToken(jwtData, client, null);
+          Response response =
+              new Response(
+                  HttpStatus.OK.value(),
+                  "Client credentials token issued successfully",
+                  TraceUtils.getSpanID(),
+                  new OAuthTokenResponse(token));
+          return ResponseEntity.ok(response);
+        });
   }
 
   /**

@@ -135,6 +135,30 @@ public class OAuthValidator {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validateClientCredentials(
+      String basic, String clientId, OAuth2Client oAuth2Client) {
+    if (ObjectUtils.isEmpty(basic) || !basic.contains("Basic")) {
+      LOG.error("No Basic Auth found for client_credentials");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_401,
+          ExceptionType.INVALID_AUTHORIZATION,
+          "Basic authentication is required for client_credentials!");
+    }
+    String[] decoded =
+        new String(java.util.Base64.getDecoder().decode(basic.split("Basic ")[1])).split(":");
+    if (decoded.length < 2) {
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, "Invalid client credentials provided!");
+    }
+    String id = decoded[0];
+    String secret = decoded[1];
+    if (!id.equalsIgnoreCase(oAuth2Client.getClientId())
+        || !secret.equals(oAuth2Client.getClientSecret())) {
+      LOG.error("Invalid client credentials for clientId: {}", clientId);
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_401, "Invalid client credentials!");
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateOAuthToken(String client_id, String grant_type) {
     if (ObjectUtils.isEmpty(client_id)) {
       LOG.error("No Client ID found");

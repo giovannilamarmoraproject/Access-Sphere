@@ -18,7 +18,6 @@ import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
-import io.github.giovannilamarmora.accesssphere.user.admin.UserAdminService;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.Cookie;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -53,7 +52,6 @@ public class GoogleAuthService {
 
   @Autowired private TokenService tokenService;
   @Autowired @Lazy private UserService userService;
-  @Autowired @Lazy private UserAdminService userAdminService;
   @Autowired private AuthService authService;
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -87,145 +85,130 @@ public class GoogleAuthService {
     return userService
         .getUserByEmail(googleModel.getJwtData().getEmail())
         .map(
-            user -> {
-              OAuthValidator.validateUserRoles(oAuth2Client, user.getRoles());
-              googleModel.setJwtData(
-                  GrpcMapper.setIdentifier(googleModel.getJwtData(), user.getIdentifier()));
-              googleModel
-                  .getJwtData()
-                  .setRoles(
-                      user.getRoles() != null
-                          ? user.getRoles().stream()
-                              .map(UserClientRole::getRole)
-                              .filter(java.util.Objects::nonNull)
-                              .toList()
-                          : null);
-              googleModel.getJwtData().setSub(user.getUsername());
-
-              AuthToken token =
-                  tokenService.generateToken(
-                      googleModel.getJwtData(), oAuth2Client, googleModel.getTokenResponse());
-
-              OAuthTokenResponse tokenData =
-                  new OAuthTokenResponse(
-                      token,
-                      includeUserInfo ? googleModel.getJwtData() : null,
-                      includeUserData ? user : null);
-              if (!ObjectUtils.isEmpty(finalState)) {
-                tokenData.setState(finalState);
-              }
-
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "Login successfully, welcome " + user.getUsername() + " !",
-                      TraceUtils.getSpanID(),
-                      tokenData);
-
-              CookieManager.setCookieInResponse(
-                  Cookie.COOKIE_ACCESS_TOKEN,
-                  token.getAccess_token(),
-                  cookieDomain,
-                  serverHttpResponse);
-
-              URI finalRedirectURI =
-                  OAuthMapper.getFinalRedirectURI(
-                      oAuth2Client, RedirectUris.POST_LOGIN_URL, redirect_uri);
-              if (!ObjectUtils.isEmpty(finalState)
-                  && !finalRedirectURI.toString().contains("state=")) {
-                String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";
-                finalRedirectURI =
-                    URI.create(
-                        finalRedirectURI.toString()
-                            + separator
-                            + "state="
-                            + java.net.URLEncoder.encode(
-                                finalState, java.nio.charset.StandardCharsets.UTF_8));
-              }
-              return ResponseEntity.ok().location(finalRedirectURI).body(response);
-            })
+            user ->
+                buildGoogleLoginResponse(
+                    user,
+                    googleModel,
+                    oAuth2Client,
+                    includeUserInfo,
+                    includeUserData,
+                    redirect_uri,
+                    finalState,
+                    serverHttpResponse))
         .onErrorResume(
             throwable -> {
-              if (throwable
-                  .getMessage()
-                  .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_404.getMessage())) {
+              boolean isUserNotFound =
+                  (throwable instanceof OAuthException oEx
+                          && ExceptionMap.ERR_OAUTH_404.equals(oEx.getExceptionCode()))
+                      || (throwable.getMessage() != null
+                          && throwable
+                              .getMessage()
+                              .equalsIgnoreCase(ExceptionMap.ERR_OAUTH_404.getMessage()));
+              if (isUserNotFound) {
                 if (Boolean.FALSE.equals(oAuth2Client.getEnableRegistration())) {
                   LOG.error(
                       "❌ Google registration rejected: registration is disabled for client {}",
                       oAuth2Client.getClientId());
-                  throw new OAuthException(
-                      ExceptionMap.ERR_OAUTH_403,
-                      "User registration is disabled for client " + oAuth2Client.getClientId());
+                  return Mono.error(
+                      new OAuthException(
+                          ExceptionMap.ERR_OAUTH_403,
+                          "User registration is disabled for client " + oAuth2Client.getClientId()));
                 }
+                LOG.info(
+                    "👤 [GOOGLE REGISTRATION] User not found for email {}. Registering new user since registration is enabled.",
+                    googleModel.getJwtData().getEmail());
                 User userGoogle = GoogleGrpcMapper.generateGoogleUser(googleModel);
+                String userIdentifier = UUID.randomUUID().toString();
+                userGoogle.setIdentifier(userIdentifier);
                 List<UserClientRole> userClientRoles =
                     UserClientRoleMapper.toUserClientModels(
-                        oAuth2Client.getAppRoles(), userGoogle.getIdentifier());
+                        oAuth2Client.getAppRoles(), userIdentifier);
                 userGoogle.setRoles(userClientRoles);
                 userGoogle.setPassword(UUID.randomUUID().toString());
+                userGoogle.setConfirmed(true);
                 return userService
                     .saveUser(userGoogle)
                     .map(
-                        user1 -> {
-                          RoleDefinition defaultRole =
-                              (oAuth2Client.getAppRoles() == null)
-                                  ? null
-                                  : oAuth2Client.getAppRoles().stream()
-                                      .filter(appRole -> appRole != null && appRole.isUser())
-                                      .findFirst()
-                                      .orElseGet(
-                                          () ->
-                                              oAuth2Client.getAppRoles().isEmpty()
-                                                  ? null
-                                                  : oAuth2Client.getAppRoles().getFirst());
-                          googleModel.setJwtData(
-                              GrpcMapper.setIdentifier(
-                                  googleModel.getJwtData(), user1.getIdentifier()));
-                          googleModel
-                              .getJwtData()
-                              .setRoles(
-                                  ObjectUtils.isEmpty(defaultRole)
-                                      ? null
-                                      : List.of(defaultRole.getRole()));
-                          AuthToken token =
-                              tokenService.generateToken(
-                                  googleModel.getJwtData(),
-                                  oAuth2Client,
-                                  googleModel.getTokenResponse());
-                          OAuthTokenResponse tokenData =
-                              new OAuthTokenResponse(
-                                  token,
-                                  includeUserInfo ? googleModel.getJwtData() : null,
-                                  includeUserData ? user1 : null);
-                          if (!ObjectUtils.isEmpty(finalState)) {
-                            tokenData.setState(finalState);
-                          }
-                          Response response =
-                              new Response(
-                                  HttpStatus.OK.value(),
-                                  "Login successfully, welcome " + user1.getUsername() + "!",
-                                  TraceUtils.getSpanID(),
-                                  tokenData);
-                          URI finalRedirectURI =
-                              OAuthMapper.getFinalRedirectURI(
-                                  oAuth2Client, RedirectUris.POST_LOGIN_URL, redirect_uri);
-                          if (!ObjectUtils.isEmpty(finalState)
-                              && !finalRedirectURI.toString().contains("state=")) {
-                            String separator =
-                                finalRedirectURI.toString().contains("?") ? "&" : "?";
-                            finalRedirectURI =
-                                URI.create(
-                                    finalRedirectURI.toString()
-                                        + separator
-                                        + "state="
-                                        + java.net.URLEncoder.encode(
-                                            finalState, java.nio.charset.StandardCharsets.UTF_8));
-                          }
-                          return ResponseEntity.ok().location(finalRedirectURI).body(response);
-                        });
+                        savedUser ->
+                            buildGoogleLoginResponse(
+                                savedUser,
+                                googleModel,
+                                oAuth2Client,
+                                includeUserInfo,
+                                includeUserData,
+                                redirect_uri,
+                                finalState,
+                                serverHttpResponse));
               }
               return Mono.error(throwable);
             });
+  }
+
+  private ResponseEntity<Response> buildGoogleLoginResponse(
+      User user,
+      GoogleModel googleModel,
+      OAuth2Client oAuth2Client,
+      boolean includeUserInfo,
+      boolean includeUserData,
+      String redirect_uri,
+      String finalState,
+      ServerHttpResponse serverHttpResponse) {
+
+    OAuthValidator.validateUserRoles(oAuth2Client, user.getRoles());
+    googleModel.setJwtData(
+        GrpcMapper.setIdentifier(googleModel.getJwtData(), user.getIdentifier()));
+    googleModel
+        .getJwtData()
+        .setRoles(
+            user.getRoles() != null
+                ? user.getRoles().stream()
+                    .map(UserClientRole::getRole)
+                    .filter(java.util.Objects::nonNull)
+                    .toList()
+                : null);
+    googleModel.getJwtData().setSub(user.getUsername());
+
+    AuthToken token =
+        tokenService.generateToken(
+            googleModel.getJwtData(), oAuth2Client, googleModel.getTokenResponse());
+
+    OAuthTokenResponse tokenData =
+        new OAuthTokenResponse(
+            token,
+            includeUserInfo ? googleModel.getJwtData() : null,
+            includeUserData ? user : null);
+    if (!ObjectUtils.isEmpty(finalState)) {
+      tokenData.setState(finalState);
+    }
+
+    Response response =
+        new Response(
+            HttpStatus.OK.value(),
+            "Login successfully, welcome " + user.getUsername() + " !",
+            TraceUtils.getSpanID(),
+            tokenData);
+
+    CookieManager.setCookieInResponse(
+        Cookie.COOKIE_ACCESS_TOKEN,
+        token.getAccess_token(),
+        cookieDomain,
+        serverHttpResponse);
+
+    URI finalRedirectURI =
+        OAuthMapper.getFinalRedirectURI(
+            oAuth2Client, RedirectUris.POST_LOGIN_URL, redirect_uri);
+    if (!ObjectUtils.isEmpty(finalState)
+        && !finalRedirectURI.toString().contains("state=")) {
+      String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";
+      finalRedirectURI =
+          URI.create(
+              finalRedirectURI.toString()
+                  + separator
+                  + "state="
+                  + java.net.URLEncoder.encode(
+                      finalState, java.nio.charset.StandardCharsets.UTF_8));
+    }
+    return ResponseEntity.ok().location(finalRedirectURI).body(response);
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)

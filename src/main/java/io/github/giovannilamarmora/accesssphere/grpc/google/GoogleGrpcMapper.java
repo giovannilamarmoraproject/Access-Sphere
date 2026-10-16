@@ -16,12 +16,17 @@ public class GoogleGrpcMapper {
 
   public static User generateGoogleUser(GoogleModel googleModel) {
 
+    String username = googleModel.getJwtData().getSub();
+    if (ObjectUtils.isEmpty(username) && !ObjectUtils.isEmpty(googleModel.getJwtData().getEmail())) {
+      username = googleModel.getJwtData().getEmail().split("@")[0];
+    }
+
     return new User(
         googleModel.getJwtData().getIdentifier(),
         getUserInfoValue(googleModel.getUserInfo(), "given_name"),
         getUserInfoValue(googleModel.getUserInfo(), "family_name"),
         googleModel.getJwtData().getEmail(),
-        googleModel.getJwtData().getSub(),
+        username,
         null,
         googleModel.getJwtData().getRoles() != null
             ? googleModel.getJwtData().getRoles().stream()
