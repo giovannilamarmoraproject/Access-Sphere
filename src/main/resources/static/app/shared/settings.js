@@ -633,32 +633,58 @@ const AppSettings = (function () {
         );
     }
 
-    async function loadPublicSettings() {
-        try {
-            const res = await fetch("/v1/app/settings");
-            if (!res.ok) return null;
-            const data = await res.json().catch(() => ({}));
-            if (data && data.data) {
-                const s = normalizeSettings(data.data);
-                localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
-                const activeTheme = s.activeTheme || localStorage.getItem(THEME_KEY);
-                if (activeTheme) {
-                    applyTheme(activeTheme);
+    let _publicSettingsPromise = null;
+
+    async function loadPublicSettings(forceRefresh = false) {
+        if (!forceRefresh) {
+            try {
+                const lastSync = Number(sessionStorage.getItem("access_sphere_settings_synced_at") || 0);
+                const cachedRaw = localStorage.getItem(SETTINGS_KEY);
+                if (cachedRaw && Date.now() - lastSync < 60000) {
+                    const cachedSettings = normalizeSettings(JSON.parse(cachedRaw));
+                    const activeTheme = cachedSettings.activeTheme || localStorage.getItem(THEME_KEY);
+                    if (activeTheme) applyTheme(activeTheme);
+                    applyBrandingToDOM(cachedSettings);
+                    return cachedSettings;
                 }
-                const savedLang = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language");
-                if (s.defaultLanguage && s.defaultLanguage !== "auto" && !savedLang) {
-                    if (typeof switchLanguage === "function") {
-                        switchLanguage(s.defaultLanguage);
-                    }
-                }
-                applyBrandingToDOM(s);
-                return s;
-            }
-            return null;
-        } catch (e) {
-            console.warn("Could not load public settings:", e);
-            return null;
+            } catch (e) {}
+            if (_publicSettingsPromise) return _publicSettingsPromise;
         }
+
+        _publicSettingsPromise = (async () => {
+            try {
+                const res = await fetch("/v1/app/settings");
+                if (!res.ok) return null;
+                const data = await res.json().catch(() => ({}));
+                if (data && data.data) {
+                    const s = normalizeSettings(data.data);
+                    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+                    try {
+                        sessionStorage.setItem("access_sphere_settings_synced_at", String(Date.now()));
+                    } catch (e) {}
+                    const activeTheme = s.activeTheme || localStorage.getItem(THEME_KEY);
+                    if (activeTheme) {
+                        applyTheme(activeTheme);
+                    }
+                    const savedLang = localStorage.getItem("access_sphere_language") || localStorage.getItem("app_language");
+                    if (s.defaultLanguage && s.defaultLanguage !== "auto" && !savedLang) {
+                        if (typeof switchLanguage === "function") {
+                            switchLanguage(s.defaultLanguage);
+                        }
+                    }
+                    applyBrandingToDOM(s);
+                    return s;
+                }
+                return null;
+            } catch (e) {
+                console.warn("Could not load public settings:", e);
+                return null;
+            } finally {
+                _publicSettingsPromise = null;
+            }
+        })();
+
+        return _publicSettingsPromise;
     }
 
     async function loadAdminSettings(token) {
@@ -725,6 +751,9 @@ const AppSettings = (function () {
         if (json.data) {
             const s = normalizeSettings(json.data);
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+            try {
+                sessionStorage.setItem("access_sphere_settings_synced_at", String(Date.now()));
+            } catch (e) {}
             if (s.activeTheme) {
                 applyTheme(s.activeTheme);
             }
@@ -802,7 +831,7 @@ const AppSettings = (function () {
             throw new Error(json.message || "Restore error");
         }
         // Refresh public settings after restore
-        await loadPublicSettings();
+        await loadPublicSettings(true);
         return json;
     }
 

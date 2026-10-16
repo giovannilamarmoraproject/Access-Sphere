@@ -59,12 +59,14 @@ function formatWebhooks(webhooks) {
 }
 
 let cachedClients = [];
+let _lastRenderedClientsJson = null;
 let isEditMode = false;
 
 // getClients is now triggered conditionally by switchDashboardView("clients")
 
 function refreshClients() {
     console.log("Refreshing clients...");
+    _lastRenderedClientsJson = null;
     const icon = document.getElementById("refresh-icon");
     if (icon) icon.classList.add("fa-spin");
     getClients().finally(() => {
@@ -100,7 +102,11 @@ function getClients() {
                 const visibleClients = (typeof AccessControl !== "undefined")
                     ? cachedClients.filter(c => c && c.clientId && AccessControl.canViewClient(c.clientId))
                     : cachedClients;
-                displayClientsTable(visibleClients);
+                const freshJson = JSON.stringify(visibleClients);
+                if (_lastRenderedClientsJson !== freshJson || !$.fn.DataTable.isDataTable('#clients-table')) {
+                    _lastRenderedClientsJson = freshJson;
+                    displayClientsTable(visibleClients);
+                }
                 updateClientKpis(visibleClients);
             }
         })
@@ -127,7 +133,11 @@ function loadCachedClients() {
                 const visible = (typeof AccessControl !== "undefined")
                     ? cachedClients.filter(c => c && c.clientId && AccessControl.canViewClient(c.clientId))
                     : cachedClients;
-                displayClientsTable(visible);
+                const serialized = JSON.stringify(visible);
+                if (_lastRenderedClientsJson !== serialized || !$.fn.DataTable.isDataTable('#clients-table')) {
+                    _lastRenderedClientsJson = serialized;
+                    displayClientsTable(visible);
+                }
                 updateClientKpis(visible);
                 return true;
             }

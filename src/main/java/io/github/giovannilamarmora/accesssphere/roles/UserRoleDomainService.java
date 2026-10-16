@@ -4,9 +4,12 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.roles.database.UserClientRoleRepository;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
+import io.github.giovannilamarmora.accesssphere.roles.mapper.RoleDefinitionMapper;
 import io.github.giovannilamarmora.accesssphere.roles.mapper.UserClientRoleMapper;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
+import io.github.giovannilamarmora.accesssphere.user.database.UserRepository;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -32,9 +35,9 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>Incapsula l'accesso a {@link UserClientRoleRepository} (tabella {@code USER_CLIENT_ROLE}).
  *   <li>Collabora con {@link ClientRoleDomainService} per verificare la presenza dei ruoli a
  *       catalogo ed arricchirli.
- *   <li>Utilizza {@link RoleUtils} per il mapping, l'indicizzazione e la validazione DRY.
- *   <li>Consumato da {@code UserService}, {@code UserAccountService} e {@code RolesService} per la
- *       gestione dei ruoli degli utenti.
+ *   <li>Collabora con {@link UserRepository} per risolvere i riepiloghi anagrafici degli utenti
+ *       assegnati ai ruoli.
+ *   <li>Consumato da {@code UserService} e {@link RolesService}.
  * </ul>
  */
 @Service
@@ -47,18 +50,14 @@ public class UserRoleDomainService {
 
   @Autowired private UserClientRoleRepository userClientRoleRepository;
   @Autowired private ClientRoleDomainService clientRoleDomainService;
+  @Autowired private UserRepository userRepository;
 
   /**
-   * LETTURA: Recupera ed arricchisce tutti i ruoli assegnati all'utente specificato, unendo le
-   * associazioni di {@code USER_CLIENT_ROLE} con tipo, descrizione e permessi da {@code
-   * ROLE_DEFINITIONS}.
-   *
-   * <p>Ottimizzazione: Esegue 1 sola query per le associazioni e, se presenti, 1 query per
-   * indicizzare le definizioni in memoria con lookup O(1) via {@link RoleUtils}, azzerando le query
-   * N+1.
+   * Recupera ed arricchisce tutti i ruoli assegnati all'utente specificato, unendo le associazioni
+   * di {@code USER_CLIENT_ROLE} con tipo, descrizione e permessi da {@code ROLE_DEFINITIONS}.
    *
    * @param userIdentifier Identificatore univoco UUID dell'utente.
-   * @return Lista di {@link UserClientRole} arricchita, o lista vuota se nessun ruolo è presente.
+   * @return Lista di {@link UserClientRole} arricchita, o lista vuota se nessun ruolo e presente.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public List<UserClientRole> getUserRoles(String userIdentifier) {
@@ -104,8 +103,7 @@ public class UserRoleDomainService {
   }
 
   /**
-   * Arricchisce massivamente una lista di utenti con i rispettivi ruoli configurati, riutilizzando
-   * i mapper esistenti per unire i metadati e raggruppando per utente.
+   * Arricchisce massivamente una lista di utenti con i rispettivi ruoli configurati.
    *
    * @param users Lista di utenti da arricchire.
    * @return La stessa lista di utenti con i ruoli valorizzati.
@@ -123,24 +121,17 @@ public class UserRoleDomainService {
       return users;
     }
 
-    // 1. Recupera le definizioni di catalogo
     List<RoleDefinition> definitions = clientRoleDomainService.getAllRoleDefinitions();
-
-    // 2. Converte le definizioni con il mapper
     List<UserClientRole> enrichedDefinitions =
         UserClientRoleMapper.toUserClientModels(definitions, null);
-
-    // 3. Fonde i dati tramite il mapper esistente (nessun setter manuale!)
     List<UserClientRole> mergedRoles =
         UserClientRoleMapper.mergeUserClientRoles(allRoles, enrichedDefinitions);
 
-    // 4. Raggruppa per userIdentifier
     Map<String, List<UserClientRole>> rolesByUser =
         mergedRoles.stream()
             .filter(ucr -> !ObjectToolkit.isNullOrEmpty(ucr.getUserIdentifier()))
             .collect(Collectors.groupingBy(UserClientRole::getUserIdentifier));
 
-    // 5. Assegna a ciascun utente
     users.forEach(
         u -> {
           if (u != null && u.getIdentifier() != null) {
@@ -152,8 +143,8 @@ public class UserRoleDomainService {
   }
 
   /**
-   * LETTURA PER CLIENT: Recupera ed arricchisce i ruoli associati all'utente limitatamente a uno
-   * specifico Client OAuth2.
+   * Recupera ed arricchisce i ruoli associati all'utente limitatamente a uno specifico Client
+   * OAuth2.
    *
    * @param userIdentifier UUID univoco dell'utente.
    * @param clientId Identificatore univoco del Client OAuth2.
@@ -170,8 +161,8 @@ public class UserRoleDomainService {
   }
 
   /**
-   * SALVATAGGIO INIZIALE: Valida puntualmente e salva i ruoli per un nuovo utente (ad esempio
-   * durante {@code UserService.saveUser}).
+   * Valida puntualmente e salva i ruoli per un nuovo utente (es. durante {@code
+   * UserService.saveUser}).
    *
    * @param userIdentifier UUID dell'utente creato.
    * @param roles Lista di ruoli da associare.
@@ -199,10 +190,8 @@ public class UserRoleDomainService {
   }
 
   /**
-   * AGGIORNAMENTO COMPLETO (REPLACE ATOMICO): Sostituisce atomicamente tutti i ruoli associati a un
-   * utente esistente. Valida i nuovi ruoli, pulisce le associazioni precedenti per prevenire
-   * violazioni di {@code UK_USER_CLIENT_ROLE}, salva le nuove entità e restituisce i ruoli
-   * arricchiti.
+   * Sostituisce atomicamente tutti i ruoli associati a un utente esistente previa validazione
+   * contro il catalogo.
    *
    * @param userIdentifier UUID univoco dell'utente da aggiornare.
    * @param newRoles Nuova lista di ruoli da assegnare all'utente.
@@ -228,25 +217,20 @@ public class UserRoleDomainService {
 
     LOG.info("🔄 {} Updating roles atomically for user: {}", USER_ROLE_DOMAIN, userIdentifier);
 
-    // 1. Validazione puntuale dei ruoli ricevuti contro il catalogo definizioni
     List<RoleDefinition> definitions = clientRoleDomainService.getAllRoleDefinitions();
     List<UserClientRole> validatedRoles =
         RoleUtils.validateAndEnrichRoles(newRoles, userIdentifier, definitions);
 
-    // 2. Pulizia atomica delle associazioni precedenti per azzerare il rischio di duplicate key
     userClientRoleRepository.deleteByIdentifier(userIdentifier);
 
-    // 3. Persistenza della nuova lista di ruoli
     List<UserClientRole> savedRoles =
         userClientRoleRepository.saveAll(validatedRoles, userIdentifier);
 
-    // 4. Fusione dei metadati informativi (descrizioni, permessi)
     return UserClientRoleMapper.mergeUserClientRoles(savedRoles, validatedRoles);
   }
 
   /**
-   * AGGIORNAMENTO GRANULARE PER CLIENT: Aggiorna o sostituisce il ruolo dell'utente limitatamente a
-   * uno specifico Client OAuth2.
+   * Aggiorna o sostituisce il ruolo dell'utente limitatamente a uno specifico Client OAuth2.
    *
    * @param userIdentifier UUID univoco dell'utente.
    * @param clientId Identificatore del Client OAuth2 target.
@@ -257,51 +241,231 @@ public class UserRoleDomainService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public UserClientRole updateUserRoleForClient(
       String userIdentifier, String clientId, String newRole) {
-    if (ObjectToolkit.isNullOrEmpty(userIdentifier)
-        || ObjectToolkit.isNullOrEmpty(clientId)
-        || ObjectToolkit.isNullOrEmpty(newRole)) {
-      throw new OAuthException(
-          ExceptionMap.ERR_USER_400, "userIdentifier, clientId, and newRole are required!");
-    }
+    RoleValidator.validateUserRoleParams(userIdentifier, clientId, newRole);
 
-    String normClientId = clientId.trim().toUpperCase();
-    String normRole = newRole.trim().toUpperCase();
+    String normClientId = RoleUtils.normalizeUpperCase(clientId);
+    String normRole = RoleUtils.normalizeUpperCase(newRole);
 
-    // 1. Verifica che il ruolo sia censito nel catalogo per quel client delegando a
-    // ClientRoleDomainService
-    RoleDefinition roleDef =
-        clientRoleDomainService
-            .getRoleDefinition(normClientId, normRole)
-            .orElseThrow(
-                () -> {
-                  LOG.error(
-                      "❌ {} Role [{}] is not configured for client [{}]",
-                      USER_ROLE_DOMAIN,
-                      normRole,
-                      normClientId);
-                  return new OAuthException(
-                      ExceptionMap.ERR_USER_400,
-                      ExceptionType.INVALID_ROLES,
-                      "Role " + normRole + " is not configured for client " + normClientId);
-                });
+    RoleDefinition roleDef = verifyRoleConfiguredForClient(normClientId, normRole);
 
-    // 2. Rimuove il ruolo precedente dell'utente per questo client specifico
     userClientRoleRepository.deleteByUserIdentifierAndClientId(userIdentifier, normClientId);
 
-    // 3. Salva la nuova associazione
     UserClientRole toSave = new UserClientRole(userIdentifier, normClientId, normRole);
     UserClientRole saved = userClientRoleRepository.save(toSave, userIdentifier);
 
     if (ObjectToolkit.isNullOrEmpty(roleDef)) return saved;
-    // 4. Arricchisce il ruolo salvato con tipo e permessi
     UserClientRole enriched = UserClientRoleMapper.toUserClientModel(roleDef, userIdentifier);
     enriched.setId(saved.getId());
     return enriched;
   }
 
   /**
-   * CANCELLAZIONE TOTALE: Rimuove fisicamente tutte le associazioni di ruoli dell'utente (usato
-   * durante {@code deleteUser}).
+   * Assegna un singolo ruolo contestualizzato per uno specifico Client OAuth2 a un utente (senza
+   * rimuovere altri ruoli gia posseduti sullo stesso client) e restituisce la lista completa
+   * aggiornata dei ruoli utente.
+   *
+   * @param userIdentifier UUID dell'utente.
+   * @param clientId Identificativo del Client OAuth2.
+   * @param role Nome del ruolo da assegnare.
+   * @return Lista aggiornata ed arricchita dei ruoli dell'utente.
+   */
+  @Transactional
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<UserClientRole> assignUserRoleForClient(
+      String userIdentifier, String clientId, String role) {
+    RoleValidator.validateUserRoleParams(userIdentifier, clientId, role);
+
+    String normClientId = RoleUtils.normalizeUpperCase(clientId);
+    String normRole = RoleUtils.normalizeUpperCase(role);
+
+    verifyRoleConfiguredForClient(normClientId, normRole);
+
+    if (!userClientRoleRepository.existsByUserIdentifierAndClientIdAndRole(
+        userIdentifier, normClientId, normRole)) {
+      UserClientRole toSave = new UserClientRole(userIdentifier, normClientId, normRole);
+      userClientRoleRepository.save(toSave, userIdentifier);
+      LOG.info(
+          "💾 {} Assigned role [{}] on client [{}] to user [{}]",
+          USER_ROLE_DOMAIN,
+          normRole,
+          normClientId,
+          userIdentifier);
+    }
+
+    return getUserRoles(userIdentifier);
+  }
+
+  /**
+   * Revoca un singolo ruolo contestualizzato per uno specifico Client OAuth2 da un utente e
+   * restituisce la lista aggiornata dei ruoli rimanenti.
+   *
+   * @param userIdentifier UUID dell'utente.
+   * @param clientId Identificativo del Client OAuth2.
+   * @param role Nome del ruolo da revocare.
+   * @return Lista aggiornata ed arricchita dei ruoli dell'utente.
+   */
+  @Transactional
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<UserClientRole> revokeUserRoleForClient(
+      String userIdentifier, String clientId, String role) {
+    RoleValidator.validateUserRoleParams(userIdentifier, clientId, role);
+
+    String normClientId = RoleUtils.normalizeUpperCase(clientId);
+    String normRole = RoleUtils.normalizeUpperCase(role);
+
+    userClientRoleRepository.deleteByUserIdentifierAndClientIdAndRole(
+        userIdentifier, normClientId, normRole);
+    LOG.info(
+        "🗑️ {} Revoked role [{}] on client [{}] from user [{}]",
+        USER_ROLE_DOMAIN,
+        normRole,
+        normClientId,
+        userIdentifier);
+
+    return getUserRoles(userIdentifier);
+  }
+
+  /**
+   * Recupera la lista sintetizzata degli utenti a cui e attualmente assegnato uno specifico ruolo
+   * per un determinato Client OAuth2.
+   *
+   * @param clientId Identificativo del Client OAuth2.
+   * @param role Nome del ruolo.
+   * @return Lista di {@link UserSummaryDTO}.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<UserSummaryDTO> getUsersAssignedToRole(String clientId, String role) {
+    if (ObjectToolkit.isNullOrEmpty(clientId) || ObjectToolkit.isNullOrEmpty(role)) {
+      return List.of();
+    }
+    String normClientId = RoleUtils.normalizeUpperCase(clientId);
+    String normRole = RoleUtils.normalizeUpperCase(role);
+
+    List<UserClientRole> assignments =
+        userClientRoleRepository.findByClientIdAndRole(normClientId, normRole).orElse(List.of());
+    List<String> userIdentifiers =
+        assignments.stream()
+            .map(UserClientRole::getUserIdentifier)
+            .filter(id -> !ObjectToolkit.isNullOrEmpty(id))
+            .distinct()
+            .toList();
+
+    if (userIdentifiers.isEmpty()) {
+      return List.of();
+    }
+
+    List<User> users = userRepository.findAllByIdentifierIn(userIdentifiers).orElse(List.of());
+    return RoleDefinitionMapper.toUserSummaryList(users);
+  }
+
+  /**
+   * Arricchisce una lista di definizioni di ruolo con il conteggio e il riepilogo degli utenti
+   * assegnati.
+   *
+   * @param roleDefinitions Lista di {@link RoleDefinition} da arricchire.
+   * @return Lista di {@link RoleDefinition} arricchita.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public List<RoleDefinition> enrichRoleDefinitionsWithAssignedUsers(
+      List<RoleDefinition> roleDefinitions) {
+    if (ObjectToolkit.isNullOrEmpty(roleDefinitions)) return List.of();
+    roleDefinitions.forEach(this::enrichRoleDefinitionWithAssignedUsers);
+    return roleDefinitions;
+  }
+
+  /**
+   * Arricchisce una singola definizione di ruolo con il conteggio e il riepilogo degli utenti
+   * assegnati.
+   *
+   * @param roleDefinition Definizione di ruolo da arricchire.
+   * @return La stessa {@link RoleDefinition} arricchita.
+   */
+  public RoleDefinition enrichRoleDefinitionWithAssignedUsers(RoleDefinition roleDefinition) {
+    if (ObjectToolkit.isNullOrEmpty(roleDefinition)) return roleDefinition;
+    List<UserSummaryDTO> assignedUsers =
+        getUsersAssignedToRole(roleDefinition.getClientId(), roleDefinition.getRole());
+    roleDefinition.setAssignedUsers(assignedUsers);
+    roleDefinition.setAssignedUsersCount(assignedUsers.size());
+    return roleDefinition;
+  }
+
+  /**
+   * Aggiorna a cascata tutte le associazioni utente in {@code USER_CLIENT_ROLE} quando un ruolo
+   * viene rinominato a catalogo.
+   *
+   * @param clientId Identificativo del Client OAuth2.
+   * @param oldRoleName Nome precedente del ruolo.
+   * @param newRoleName Nuovo nome del ruolo.
+   */
+  @Transactional
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public void cascadeRenameRoleAssignments(
+      String clientId, String oldRoleName, String newRoleName) {
+    String normClientId = RoleUtils.normalizeUpperCase(clientId);
+    String normOldRole = RoleUtils.normalizeUpperCase(oldRoleName);
+    String normNewRole = RoleUtils.normalizeUpperCase(newRoleName);
+
+    if (ObjectToolkit.isNullOrEmpty(normClientId)
+        || ObjectToolkit.isNullOrEmpty(normOldRole)
+        || ObjectToolkit.isNullOrEmpty(normNewRole)
+        || normOldRole.equalsIgnoreCase(normNewRole)) {
+      return;
+    }
+
+    List<UserClientRole> existingMappings =
+        userClientRoleRepository.findByClientIdAndRole(normClientId, normOldRole).orElse(List.of());
+    existingMappings.forEach(
+        mapping -> {
+          mapping.setRole(normNewRole);
+          userClientRoleRepository.save(mapping, mapping.getUserIdentifier());
+        });
+    LOG.info(
+        "🔄 {} Cascade renamed {} assignments from [{}] to [{}] on client [{}]",
+        USER_ROLE_DOMAIN,
+        existingMappings.size(),
+        normOldRole,
+        normNewRole,
+        normClientId);
+  }
+
+  /**
+   * Rimuove a cascata tutte le assegnazioni utente per un ruolo eliminato dal catalogo e
+   * restituisce il numero di utenti distinti impattati.
+   *
+   * @param clientId Identificativo del Client OAuth2.
+   * @param role Nome del ruolo eliminato.
+   * @return Numero di utenti distinti da cui il ruolo e stato revocato.
+   */
+  @Transactional
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public int cascadeDeleteRoleAssignments(String clientId, String role) {
+    String normClientId = RoleUtils.normalizeUpperCase(clientId);
+    String normRole = RoleUtils.normalizeUpperCase(role);
+
+    List<UserClientRole> impactedAssignments =
+        userClientRoleRepository.findByClientIdAndRole(normClientId, normRole).orElse(List.of());
+    int impactedUsersCount =
+        (int)
+            impactedAssignments.stream()
+                .map(UserClientRole::getUserIdentifier)
+                .filter(id -> !ObjectToolkit.isNullOrEmpty(id))
+                .distinct()
+                .count();
+
+    userClientRoleRepository.deleteByClientIdAndRole(normClientId, normRole);
+    LOG.info(
+        "🗑️ {} Cascade deleted {} assignments ({} distinct users) for role [{}] on client [{}]",
+        USER_ROLE_DOMAIN,
+        impactedAssignments.size(),
+        impactedUsersCount,
+        normRole,
+        normClientId);
+    return impactedUsersCount;
+  }
+
+  /**
+   * Rimuove fisicamente tutte le associazioni di ruoli dell'utente (usato durante {@code
+   * deleteUser}).
    *
    * @param userIdentifier UUID dell'utente.
    */
@@ -314,7 +478,7 @@ public class UserRoleDomainService {
   }
 
   /**
-   * CANCELLAZIONE PER CLIENT: Rimuove i ruoli associati all'utente per uno specifico client.
+   * Rimuove i ruoli associati all'utente per uno specifico client.
    *
    * @param userIdentifier UUID dell'utente.
    * @param clientId Identificatore del Client OAuth2.
@@ -330,13 +494,12 @@ public class UserRoleDomainService {
         userIdentifier,
         clientId);
     userClientRoleRepository.deleteByUserIdentifierAndClientId(
-        userIdentifier, clientId.trim().toUpperCase());
+        userIdentifier, RoleUtils.normalizeUpperCase(clientId));
   }
 
   /**
-   * CANCELLAZIONE PER CLIENT ID: Rimuove a cascata tutte le associazioni di ruoli utente collegate
-   * a uno specifico Client OAuth2 (utilizzato durante la cancellazione del client in {@code
-   * OAuth2ClientDomainService}).
+   * Rimuove a cascata tutte le associazioni di ruoli utente collegate a uno specifico Client OAuth2
+   * (utilizzato durante la cancellazione del client in {@code OAuth2ClientDomainService}).
    *
    * @param clientId Identificatore univoco del Client OAuth2.
    */
@@ -344,9 +507,26 @@ public class UserRoleDomainService {
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public void deleteUserRolesByClientId(String clientId) {
     if (ObjectToolkit.isNullOrEmpty(clientId)) return;
-    String normClientId = clientId.trim().toUpperCase();
+    String normClientId = RoleUtils.normalizeUpperCase(clientId);
     LOG.info(
         "🗑️ {} Deleting all user role assignments for client: {}", USER_ROLE_DOMAIN, normClientId);
     userClientRoleRepository.deleteByClientId(normClientId);
+  }
+
+  private RoleDefinition verifyRoleConfiguredForClient(String normClientId, String normRole) {
+    return clientRoleDomainService
+        .getRoleDefinition(normClientId, normRole)
+        .orElseThrow(
+            () -> {
+              LOG.error(
+                  "❌ {} Role [{}] is not configured for client [{}]",
+                  USER_ROLE_DOMAIN,
+                  normRole,
+                  normClientId);
+              return new OAuthException(
+                  ExceptionMap.ERR_USER_400,
+                  ExceptionType.INVALID_ROLES,
+                  "Role " + normRole + " is not configured for client " + normClientId);
+            });
   }
 }

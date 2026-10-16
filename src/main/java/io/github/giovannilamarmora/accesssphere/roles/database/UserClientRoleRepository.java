@@ -69,6 +69,34 @@ public class UserClientRoleRepository {
     return Optional.of(UserClientRoleMapper.toModelList(getEntityList));
   }
 
+  public Optional<List<UserClientRole>> findByClientIdAndRole(String clientId, String role) {
+    LOG.debug("🔐 Getting all UserClient Role for clientId: {} and role: {}", clientId, role);
+    List<UserClientRoleEntity> getEntityList =
+        userClientRoleDAO.findByClientIdAndRole(clientId, role);
+
+    if (ObjectToolkit.isNullOrEmpty(getEntityList)) {
+      LOG.debug("⚖️ UserClient Role for clientId: {} and role: {} not found", clientId, role);
+      return Optional.empty();
+    }
+
+    LOG.debug(
+        "⚖️ Found {} UserClient Role for clientId: {} and role: {}",
+        getEntityList.size(),
+        clientId,
+        role);
+    return Optional.of(UserClientRoleMapper.toModelList(getEntityList));
+  }
+
+  public boolean existsByUserIdentifierAndClientIdAndRole(
+      String identifier, String clientId, String role) {
+    LOG.debug(
+        "🔐 Checking if UserClient Role exists for identifier: {}, clientId: {}, role: {}",
+        identifier,
+        clientId,
+        role);
+    return userClientRoleDAO.existsByUserIdentifierAndClientIdAndRole(identifier, clientId, role);
+  }
+
   public UserClientRole save(UserClientRole userClientRole, String identifier) {
     LOG.debug("🔐 Saving UserClient Role with name: {}", userClientRole.getRole());
     UserClientRoleEntity toEntity = UserClientRoleMapper.toEntity(userClientRole, identifier);
@@ -96,6 +124,13 @@ public class UserClientRoleRepository {
     LOG.debug("⚖️ Deleted UserClient Role with clientId: {} in Database", clientId);
   }
 
+  public void deleteByClientIdAndRole(String clientId, String role) {
+    LOG.debug("🔐 Deleting UserClient Role with clientId: {} and role: {}", clientId, role);
+    userClientRoleDAO.deleteByClientIdAndRole(clientId, role);
+    LOG.debug(
+        "⚖️ Deleted UserClient Role with clientId: {} and role: {} in Database", clientId, role);
+  }
+
   public void deleteByIdentifier(String identifier) {
     LOG.debug("🔐 Deleting UserClient Role with identifier: {}", identifier);
     userClientRoleDAO.deleteByUserIdentifier(identifier);
@@ -110,5 +145,20 @@ public class UserClientRoleRepository {
         "⚖️ Deleted UserClient Role with identifier: {} and clientId: {} in Database",
         identifier,
         clientId);
+  }
+
+  public void deleteByUserIdentifierAndClientIdAndRole(
+      String identifier, String clientId, String role) {
+    LOG.debug(
+        "🔐 Deleting UserClient Role with identifier: {}, clientId: {} and role: {}",
+        identifier,
+        clientId,
+        role);
+    userClientRoleDAO.deleteByUserIdentifierAndClientIdAndRole(identifier, clientId, role);
+    LOG.debug(
+        "⚖️ Deleted UserClient Role with identifier: {}, clientId: {} and role: {} in Database",
+        identifier,
+        clientId,
+        role);
   }
 }

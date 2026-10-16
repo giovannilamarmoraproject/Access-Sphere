@@ -6,6 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Access Sphere - Modifica Utente</title>
 
+    <!-- Immediate Zero-Flicker Theme & Layout Application -->
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem("access_sphere_theme");
+                var s = localStorage.getItem("access_sphere_settings");
+                var parsed = s ? JSON.parse(s) : null;
+                if (!theme && parsed) theme = parsed.activeTheme;
+                document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
+                if (parsed && parsed.navigationLayout === "SIDEBAR") {
+                    document.documentElement.classList.add("layout-sidebar");
+                    if (localStorage.getItem("access_sphere_sidebar_collapsed") === "true") {
+                        document.documentElement.classList.add("sidebar-is-collapsed");
+                    }
+                }
+            } catch (e) {
+            }
+        })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap"

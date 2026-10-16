@@ -220,8 +220,8 @@
                     Policy</a>
             </nav>
 
-            <div class="flex items-center gap-3 hidden-mobile">
-                <a href="/app/login" class="m3-pill-btn m3-pill-btn-primary text-xs px-6 py-2.5">
+            <div class="flex items-center gap-3">
+                <a href="/app/login" class="m3-pill-btn m3-pill-btn-primary text-xs px-4 sm:px-6 py-2 sm:py-2.5">
                     <i class="fa-solid fa-arrow-right-to-bracket text-sm"></i> <span data-i18n="landing_nav_login">Login Console</span>
                 </a>
             </div>
@@ -746,8 +746,8 @@
         ring2.rotation.y = Math.PI / 4;
         group.add(ring2);
 
-        // Ambient Particle field
-        const particleCount = 450;
+        // Ambient Particle field (adaptive for mobile GPUs)
+        const particleCount = window.innerWidth < 768 ? 180 : 380;
         const particleGeom = new THREE.BufferGeometry();
         const posArray = new Float32Array(particleCount * 3);
         for (let i = 0; i < particleCount * 3; i++) {
@@ -842,20 +842,21 @@
         window.addEventListener('mousemove', (e) => {
             mouseX = (e.clientX / window.innerWidth - 0.5) * 1.5;
             mouseY = (e.clientY / window.innerHeight - 0.5) * 1.5;
-        });
+        }, { passive: true });
 
         window.addEventListener('scroll', () => {
             targetScrollY = window.scrollY;
-        });
+        }, { passive: true });
 
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        }, { passive: true });
 
         function animate() {
             requestAnimationFrame(animate);
+            if (document.hidden) return;
 
             const totalScroll = document.body.scrollHeight - window.innerHeight || 1;
             const progress = Math.min(Math.max(targetScrollY / totalScroll, 0), 1);

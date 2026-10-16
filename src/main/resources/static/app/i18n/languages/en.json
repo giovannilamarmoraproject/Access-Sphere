@@ -483,9 +483,9 @@
   "client_field_scopes": "Authorized Scopes",
   "client_field_scopes_desc": "List of authorized scopes for the client (space or comma separated).",
   "client_field_redirect_uris": "Authorized Redirect URIs (redirect_uri)",
-  "client_field_redirect_uris_desc": "Allowed URIs for authorization code and token response (space separated).",
+  "client_field_redirect_uris_desc": "Allowed URIs for authorization code and token response. Click \"+ Add URI\" to add multiple endpoints.",
   "client_field_fallback_uri": "Fallback URI (fallback_uri)",
-  "client_field_fallback_uri_desc": "Fallback URI used in case of failure or cancellation of primary redirect.",
+  "client_field_fallback_uri_desc": "Fallback URIs used in case of failure or cancellation of primary redirect. Click \"+ Add URI\" to add multiple inputs.",
   "client_sec_crypto_title": "3. Keys & Token Expiration Parameters",
   "client_field_jwt_secret": "JWT Secret",
   "client_field_jwt_secret_desc": "Secret key used for cryptographic signing of JWT tokens.",
@@ -1091,5 +1091,10 @@
   "client_tech_cant_delete": "The system technical client ACCESS-SPHERE-AUTH cannot be deleted.",
   "client_create_denied": "You do not have the required permissions to create new clients.",
   "client_edit_denied": "You do not have the required permissions to edit this client.",
-  "client_delete_denied": "You do not have the required permissions to delete this client."
+  "client_delete_denied": "You do not have the required permissions to delete this client.",
+  "client_btn_add_uri": "Add URI",
+  "client_uri_add_input_hint": "Click to add a new URI input (or press Enter)",
+  "client_uri_remove_tooltip": "Remove URI",
+  "client_redirect_uri_placeholder": "e.g. https://app.example.com/callback or http://localhost:8081",
+  "client_fallback_uri_placeholder": "e.g. https://app.example.com/login?client_id=MY-CLIENT"
 }

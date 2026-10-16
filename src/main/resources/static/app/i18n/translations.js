@@ -24,93 +24,128 @@ try {
     currentTranslations = JSON.parse(cached);
     translations[currentLanguage] = currentTranslations;
   }
+  const cachedErr = sessionStorage.getItem("i18n_error_cache_all");
+  if (cachedErr) {
+    const parsedErr = JSON.parse(cachedErr);
+    errorCode = parsedErr[currentLanguage] || parsedErr["en"] || {};
+  }
 } catch (e) {}
 
-// 2. FOUC Guard: prevents flashing of Italian text when target language is not Italian
+// 2. FOUC Guard: prevents flashing of Italian text when target language is not Italian and not yet cached
 (function initFoucGuard() {
   if (typeof document === "undefined") return;
   detectLanguage();
+  const hasCache = currentTranslations && Object.keys(currentTranslations).length > 0;
+  if (hasCache) {
+    document.documentElement.classList.add("i18n-ready");
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        translateDOM();
+        try { applyTranslations(); } catch (e) {}
+        syncLanguageUI(currentLanguage);
+      }, { once: true });
+    }
+    return;
+  }
   if (currentLanguage !== "it") {
     if (!document.getElementById("i18n-fouc-guard")) {
       const style = document.createElement("style");
       style.id = "i18n-fouc-guard";
-      style.textContent = "html:not(.i18n-ready) body { opacity: 0 !important; } html.i18n-ready body { opacity: 1 !important; transition: opacity 0.12s ease-in; }";
+      style.textContent = "html:not(.i18n-ready) body { opacity: 0 !important; } html.i18n-ready body { opacity: 1 !important; transition: opacity 0.1s ease-in; }";
       if (document.head) {
         document.head.appendChild(style);
-      } else {
-        document.addEventListener("DOMContentLoaded", () => {
-          if (!document.documentElement.classList.contains("i18n-ready")) {
-            document.head.appendChild(style);
-          }
-        });
       }
       setTimeout(() => {
         document.documentElement.classList.add("i18n-ready");
-      }, 180);
+      }, 120);
     }
   } else {
     document.documentElement.classList.add("i18n-ready");
   }
 })();
 
-async function loadTranslations() {
+let _i18nFetchPromise = null;
+let _i18nFetchedLang = null;
+
+async function loadTranslations(forceRefresh = false) {
   detectLanguage();
+  const targetLang = currentLanguage;
+  const cachedStr = sessionStorage.getItem("i18n_cache_" + targetLang);
 
   // If in-memory translations exist from cache, translate immediately before network
+  if (cachedStr && (!currentTranslations || Object.keys(currentTranslations).length === 0 || _i18nFetchedLang !== targetLang)) {
+    try {
+      currentTranslations = JSON.parse(cachedStr);
+      translations[targetLang] = currentTranslations;
+    } catch (e) {}
+  }
+
   if (currentTranslations && Object.keys(currentTranslations).length > 0) {
     translateDOM();
     try {
       applyTranslations();
     } catch (e) {}
+    syncLanguageUI(targetLang);
     document.documentElement.classList.add("i18n-ready");
+    if (!forceRefresh && cachedStr) {
+      _i18nFetchedLang = targetLang;
+      return;
+    }
   }
 
-  try {
-    const response = await fetch(`/app/i18n/languages/${currentLanguage}.json`);
-    if (response.ok) {
-      currentTranslations = await response.json();
-      translations[currentLanguage] = currentTranslations;
-      try {
-        sessionStorage.setItem("i18n_cache_" + currentLanguage, JSON.stringify(currentTranslations));
-      } catch (e) {}
-    } else {
-      const fallbackLang = (currentLanguage === "en") ? "it" : "en";
-      const fallback = await fetch(`/app/i18n/languages/${fallbackLang}.json`);
-      currentTranslations = await fallback.json();
-      translations[currentLanguage] = currentTranslations;
-    }
-  } catch (error) {
-    console.warn("Error loading language file, falling back to modular language json:", error);
+  if (_i18nFetchPromise && _i18nFetchedLang === targetLang && !forceRefresh) {
+    return _i18nFetchPromise;
+  }
+
+  _i18nFetchedLang = targetLang;
+  _i18nFetchPromise = (async () => {
     try {
-      const fallbackLang = (currentLanguage === "en") ? "it" : "en";
-      const fallback = await fetch(`/app/i18n/languages/${fallbackLang}.json`);
-      currentTranslations = await fallback.json();
-      translations[currentLanguage] = currentTranslations;
-    } catch (e) {
-      console.error("Error loading translations:", e);
+      const response = await fetch(`/app/i18n/languages/${targetLang}.json`);
+      if (response.ok) {
+        const freshData = await response.json();
+        const freshStr = JSON.stringify(freshData);
+        currentTranslations = freshData;
+        translations[targetLang] = currentTranslations;
+        try {
+          sessionStorage.setItem("i18n_cache_" + targetLang, freshStr);
+        } catch (e) {}
+      } else {
+        const fallbackLang = (targetLang === "en") ? "it" : "en";
+        const fallback = await fetch(`/app/i18n/languages/${fallbackLang}.json`);
+        currentTranslations = await fallback.json();
+        translations[targetLang] = currentTranslations;
+      }
+    } catch (error) {
+      console.warn("Error loading language file, falling back to modular language json:", error);
+      try {
+        const fallbackLang = (targetLang === "en") ? "it" : "en";
+        const fallback = await fetch(`/app/i18n/languages/${fallbackLang}.json`);
+        currentTranslations = await fallback.json();
+        translations[targetLang] = currentTranslations;
+      } catch (e) {
+        console.error("Error loading translations:", e);
+      }
+    } finally {
+      _i18nFetchPromise = null;
     }
-  }
 
-  if (!translations[currentLanguage]) {
-    translations[currentLanguage] = currentTranslations || {};
-  }
+    if (!translations[targetLang]) {
+      translations[targetLang] = currentTranslations || {};
+    }
 
-  // 1. Translate elements with data-i18n
-  translateDOM();
+    translateDOM();
+    try {
+      applyTranslations();
+    } catch (e) {
+      console.warn("Legacy applyTranslations warning:", e);
+    }
+    syncLanguageUI(targetLang);
+    document.documentElement.classList.add("i18n-ready");
+  })();
 
-  // 2. Safely apply legacy ID-based translations
-  try {
-    applyTranslations();
-  } catch (e) {
-    console.warn("Legacy applyTranslations warning:", e);
-  }
-
-  // 3. Keep language radio selector in sync
-  syncLanguageUI(currentLanguage);
-
-  // 4. Reveal page smoothly with zero flicker
-  document.documentElement.classList.add("i18n-ready");
+  return _i18nFetchPromise;
 }
+
 
 function t(key, defaultText = "") {
   const dict = currentTranslations || (typeof translations !== "undefined" ? translations[currentLanguage] : null);
@@ -204,10 +239,21 @@ async function switchLanguage(lang) {
 
 async function loadErrorCode() {
   try {
-    const response = await fetch("/app/i18n/errorCode.json");
-    const error_translations = await response.json();
     detectLanguage();
-    errorCode = error_translations[currentLanguage] || error_translations["en"];
+    const cachedErr = sessionStorage.getItem("i18n_error_cache_all");
+    if (cachedErr) {
+      const parsed = JSON.parse(cachedErr);
+      errorCode = parsed[currentLanguage] || parsed["en"] || {};
+      return;
+    }
+    const response = await fetch("/app/i18n/errorCode.json");
+    if (response.ok) {
+      const error_translations = await response.json();
+      try {
+        sessionStorage.setItem("i18n_error_cache_all", JSON.stringify(error_translations));
+      } catch (e) {}
+      errorCode = error_translations[currentLanguage] || error_translations["en"] || {};
+    }
   } catch (error) {
     console.error("Error loading error code:", error);
   }

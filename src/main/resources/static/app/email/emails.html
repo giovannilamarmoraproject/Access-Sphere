@@ -6,19 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Access Sphere - Template Email</title>
 
-    <!-- Immediate Zero-Flicker Theme Application -->
+    <!-- Immediate Zero-Flicker Theme & Layout Application -->
     <script>
         (function () {
             try {
                 var theme = localStorage.getItem("access_sphere_theme");
-                if (!theme) {
-                    var s = localStorage.getItem("access_sphere_settings");
-                    if (s) {
-                        var parsed = JSON.parse(s);
-                        theme = parsed.activeTheme;
+                var s = localStorage.getItem("access_sphere_settings");
+                var parsed = s ? JSON.parse(s) : null;
+                if (!theme && parsed) theme = parsed.activeTheme;
+                document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
+                if (parsed && parsed.navigationLayout === "SIDEBAR") {
+                    document.documentElement.classList.add("layout-sidebar");
+                    if (localStorage.getItem("access_sphere_sidebar_collapsed") === "true") {
+                        document.documentElement.classList.add("sidebar-is-collapsed");
                     }
                 }
-                document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
             } catch (e) {
             }
         })();

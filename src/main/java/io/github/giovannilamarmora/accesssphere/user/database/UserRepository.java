@@ -63,6 +63,22 @@ public class UserRepository {
     return Optional.of(UserMapper.toModelList(getEntities));
   }
 
+  public Optional<List<User>> findAllByIdentifierIn(List<String> identifiers) {
+    if (ObjectToolkit.isNullOrEmpty(identifiers)) {
+      return Optional.empty();
+    }
+    LOG.debug("👤 Getting users by {} identifiers", identifiers.size());
+    List<UserEntity> getEntities = userDAO.findAllByIdentifierIn(identifiers);
+
+    if (ObjectToolkit.isNullOrEmpty(getEntities)) {
+      LOG.warn("❌ Users for provided identifiers not found in Database");
+      return Optional.empty();
+    }
+
+    LOG.debug("👤 Found {} Users by identifiers in Database", getEntities.size());
+    return Optional.of(UserMapper.toModelList(getEntities));
+  }
+
   public User saveAndFlush(User user) {
     LOG.debug("👤 Saving User with username: {}", user.getUsername());
     UserEntity mapEntity = UserMapper.toEntity(user);

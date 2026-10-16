@@ -6,6 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Access Sphere - Registra Nuovo Client OAuth2</title>
 
+    <!-- Immediate Zero-Flicker Theme & Layout Application -->
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem("access_sphere_theme");
+                var s = localStorage.getItem("access_sphere_settings");
+                var parsed = s ? JSON.parse(s) : null;
+                if (!theme && parsed) theme = parsed.activeTheme;
+                document.documentElement.setAttribute("data-theme", theme || "cosmic-purple");
+                if (parsed && parsed.navigationLayout === "SIDEBAR") {
+                    document.documentElement.classList.add("layout-sidebar");
+                    if (localStorage.getItem("access_sphere_sidebar_collapsed") === "true") {
+                        document.documentElement.classList.add("sidebar-is-collapsed");
+                    }
+                }
+            } catch (e) {
+            }
+        })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@6..144,-10..0,25..151,1..1000,100&display=swap"
@@ -628,19 +648,49 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label text-xs font-semibold text-gray-300"
-                               data-i18n="client_field_redirect_uris">Redirect URIs Autorizzate (redirect_uri)</label>
-                        <textarea id="redirect_uri" rows="2" class="form-control font-mono text-xs"
-                                  placeholder="https://linkatutto.giovannilamarmora.com http://127.0.0.1:5501/index.html"></textarea>
-                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_redirect_uris_desc">URI consentite per la risposta di authorization code e token (separate da spazio).</span>
+                        <div class="flex items-center justify-between mb-1.5 gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <label class="form-label text-xs font-semibold text-gray-300 m-0 truncate"
+                                       data-i18n="client_field_redirect_uris">Redirect URIs Autorizzate (redirect_uri)</label>
+                                <span id="redirect-uri-count-badge" class="m3-uri-count-pill">0</span>
+                            </div>
+                            <button type="button" class="m3-uri-add-btn-sm shrink-0" onclick="addUriInputRow('redirect')">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_btn_add_uri">Aggiungi URI</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="redirect_uri" value=""/>
+                        <div class="m3-uri-list-box" id="redirect-uri-box" onclick="handleUriBoxClick(event, 'redirect')">
+                            <div id="redirect-uri-rows" class="flex flex-col gap-2"></div>
+                            <button type="button" class="m3-uri-add-row-trigger" onclick="event.stopPropagation(); addUriInputRow('redirect')">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_uri_add_input_hint">Clicca per aggiungere un nuovo input URI (oppure premi Invio)</span>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1.5 block" data-i18n="client_field_redirect_uris_desc">URI consentite per la risposta di authorization code e token. Clicca su "+ Aggiungi URI" per inserire più endpoint.</span>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label text-xs font-semibold text-gray-300"
-                               data-i18n="client_field_fallback_uri">Fallback URI (fallback_uri)</label>
-                        <textarea id="fallback_uri" rows="2" class="form-control font-mono text-xs"
-                                  placeholder="https://access-sphere.giovannilamarmora.com/app/login?client_id=MY-CLIENT"></textarea>
-                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_fallback_uri_desc">URI di fallback utilizzata in caso di fallimento o annullamento del redirect primario.</span>
+                        <div class="flex items-center justify-between mb-1.5 gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <label class="form-label text-xs font-semibold text-gray-300 m-0 truncate"
+                                       data-i18n="client_field_fallback_uri">Fallback URI (fallback_uri)</label>
+                                <span id="fallback-uri-count-badge" class="m3-uri-count-pill">0</span>
+                            </div>
+                            <button type="button" class="m3-uri-add-btn-sm shrink-0" onclick="addUriInputRow('fallback')">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_btn_add_uri">Aggiungi URI</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="fallback_uri" value=""/>
+                        <div class="m3-uri-list-box" id="fallback-uri-box" onclick="handleUriBoxClick(event, 'fallback')">
+                            <div id="fallback-uri-rows" class="flex flex-col gap-2"></div>
+                            <button type="button" class="m3-uri-add-row-trigger" onclick="event.stopPropagation(); addUriInputRow('fallback')">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_uri_add_input_hint">Clicca per aggiungere un nuovo input URI (oppure premi Invio)</span>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1.5 block" data-i18n="client_field_fallback_uri_desc">URI di fallback utilizzate in caso di fallimento o annullamento del redirect primario. Clicca su "+ Aggiungi URI" per aggiungere più input.</span>
                     </div>
                 </div>
             </div>

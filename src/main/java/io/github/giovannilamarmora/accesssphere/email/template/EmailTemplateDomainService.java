@@ -1,12 +1,12 @@
 package io.github.giovannilamarmora.accesssphere.email.template;
 
-import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.email.EmailUtils;
 import io.github.giovannilamarmora.accesssphere.email.exception.EmailException;
 import io.github.giovannilamarmora.accesssphere.email.template.database.EmailRepository;
 import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplate;
 import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplateCategory;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
+import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
@@ -40,7 +40,7 @@ public class EmailTemplateDomainService {
   private static final String EMAIL_DOMAIN_LOG = "Email Domain";
 
   @Autowired private EmailRepository emailRepository;
-  @Autowired private AdminUserService techUserService;
+  @Autowired private PermissionRoleManager permissionRoleManager;
 
   /**
    * Recupera la lista completa di tutti i Template Email registrati a database.
@@ -141,7 +141,7 @@ public class EmailTemplateDomainService {
     }
 
     // 2. Ricerca per Client Tecnico predefinito
-    String techClientId = techUserService.getAdminClientId();
+    String techClientId = permissionRoleManager.getAdminClientId();
     if (!techClientId.equalsIgnoreCase(clientId)) {
       Optional<EmailTemplate> techMatch =
           findAndResolveByClient(techClientId, effectiveCategory, locale);

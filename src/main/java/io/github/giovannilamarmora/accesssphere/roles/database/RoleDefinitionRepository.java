@@ -78,4 +78,11 @@ public class RoleDefinitionRepository {
     roleDefinitionDAO.deleteByClientId(clientId);
     LOG.debug("⚖️ Deleted Role Definition with clientId: {} in Database", clientId);
   }
+
+  public void deleteByClientIdAndRole(String clientId, String role) {
+    LOG.debug("🔐 Deleting Role Definition with clientId: {} and role: {}", clientId, role);
+    roleDefinitionDAO.deleteByClientIdAndRole(clientId, role);
+    LOG.debug(
+        "⚖️ Deleted Role Definition with clientId: {} and role: {} in Database", clientId, role);
+  }
 }

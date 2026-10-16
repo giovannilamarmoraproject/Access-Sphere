@@ -1,65 +1,41 @@
-// loader.js - Access Sphere High Performance Ultra-Fast Loader
+// loader.js - Access Sphere High Performance Non-Blocking M3 Loader
 function initLoader() {
   const loader = document.getElementById("loader");
-  if (loader && !loader.innerHTML.trim()) {
-    loader.innerHTML = `
-      <div class="loader__inner">
-        ${'<div class="loader__column"></div>'.repeat(20)}
-      </div>
-      <div class="loader--spinner">
-        <img src="/app/shared/loader/oval.svg" alt="Caricamento..." />
-      </div>`;
+  if (loader) {
+    loader.classList.remove("is-active");
   }
-  // Rimuovi immediatamente il loader senza ritardi artificiali (instant reveal)
-  disableLoader();
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initLoader);
+  document.addEventListener("DOMContentLoaded", initLoader, { once: true });
 } else {
   initLoader();
 }
 
-window.addEventListener("load", function () {
-  disableLoader();
-});
-
 function enableLoader() {
   let loader = document.getElementById("loader");
-  if (loader) {
-    loader.style.display = "block";
-    loader.classList.remove("loader--finish");
-    const spinner = loader.querySelector(".loader--spinner");
-    if (spinner) spinner.style.display = "block";
-  } else {
+  if (!loader && document.body) {
     loader = document.createElement("div");
     loader.id = "loader";
     loader.className = "loader";
-    loader.innerHTML = `
-      <div class="loader__inner">
-        ${'<div class="loader__column"></div>'.repeat(20)}
-      </div>
-      <div class="loader--spinner">
-        <img src="/app/shared/loader/oval.svg" alt="Caricamento..." />
-      </div>`;
     document.body.appendChild(loader);
+  }
+  if (loader) {
+    loader.style.display = "flex";
+    requestAnimationFrame(() => {
+      loader.classList.add("is-active");
+    });
   }
 }
 
 function disableLoader() {
   return new Promise((resolve) => {
     const loader = document.getElementById("loader");
-    if (!loader) return resolve();
-
-    const spinner = loader.querySelector(".loader--spinner");
-    if (spinner) spinner.style.display = "none";
-    loader.classList.add("loader--finish");
-
-    setTimeout(() => {
-      if (loader && loader.parentNode) {
-        loader.style.display = "none";
-      }
-      resolve();
-    }, 60);
+    if (!loader || !loader.classList.contains("is-active")) {
+      if (loader) loader.classList.remove("is-active");
+      return resolve();
+    }
+    loader.classList.remove("is-active");
+    setTimeout(resolve, 40);
   });
 }

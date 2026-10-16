@@ -1,4 +1,5 @@
 let cachedUsers = [];
+let _lastRenderedUsersJson = null;
 
 function loadCachedUsers() {
     if (typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
@@ -37,7 +38,11 @@ function loadCachedUsers() {
                     );
                 }
                 cachedUsers = parsed;
-                displayUsersTable(parsed);
+                const serialized = JSON.stringify(parsed);
+                if (_lastRenderedUsersJson !== serialized || !$.fn.DataTable.isDataTable('#users-table')) {
+                    _lastRenderedUsersJson = serialized;
+                    displayUsersTable(parsed);
+                }
                 updateUserKpis(parsed);
                 return true;
             }
@@ -51,6 +56,7 @@ function loadCachedUsers() {
 function refreshUsers() {
     console.log("Refreshing Users...");
     cachedUsers = [];
+    _lastRenderedUsersJson = null;
     const cfg = typeof getConfig === "function" ? getConfig() : config;
     const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-AUTH_usersData";
     localStorage.removeItem(key);
@@ -99,11 +105,15 @@ function getUsers() {
             fetchHeader(data.headers);
             cachedUsers = responseData.data || [];
             const key = (cfg && cfg.client_id) ? cfg.client_id + "_usersData" : "ACCESS-SPHERE-AUTH_usersData";
+            const freshJson = JSON.stringify(cachedUsers);
             try {
-                localStorage.setItem(key, JSON.stringify(cachedUsers));
+                localStorage.setItem(key, freshJson);
             } catch (e) {
             }
-            displayUsersTable(cachedUsers);
+            if (_lastRenderedUsersJson !== freshJson || !$.fn.DataTable.isDataTable('#users-table')) {
+                _lastRenderedUsersJson = freshJson;
+                displayUsersTable(cachedUsers);
+            }
             updateUserKpis(cachedUsers);
         }
     }).catch((err) => {

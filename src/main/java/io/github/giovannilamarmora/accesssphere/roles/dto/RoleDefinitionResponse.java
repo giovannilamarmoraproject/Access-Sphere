@@ -56,4 +56,10 @@ public class RoleDefinitionResponse extends GenericDTO {
           "List of granular permissions associated with the role (e.g. [\"users:read\", \"users:write\"])",
       example = "[\"users:read\", \"users:write\"]")
   private List<String> permissions;
+
+  @Schema(description = "Count of users currently assigned to this role", example = "5")
+  private Integer assignedUsersCount;
+
+  @Schema(description = "Summary list of users currently assigned to this role")
+  private List<UserSummaryDTO> assignedUsers;
 }

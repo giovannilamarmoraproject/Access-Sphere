@@ -389,7 +389,9 @@ function getLoggedInUser() {
  * Esegue la sincronizzazione asincrona con l'endpoint del profilo (/v1/users/profile)
  * aggiornando la cache locale e riflettendo immediatamente le modifiche nel DOM.
  */
-function syncLoggedInUserProfile() {
+let _profileSyncPromise = null;
+
+function syncLoggedInUserProfile(forceRefresh = false) {
     const token =
         localStorage.getItem("access-token") ||
         localStorage.getItem("ACCESS-SPHERE-AUTH_access-token") ||
@@ -402,9 +404,27 @@ function syncLoggedInUserProfile() {
     if (current) {
         enrichUserFromCachedUsers(current);
         updateSidebarUserDOM(current);
+        if (typeof AccessControl !== "undefined" && typeof AccessControl.applyUIPermissions === "function") {
+            AccessControl.applyUIPermissions();
+        }
     }
 
-    // 2. Chiamata di sincronizzazione con tutti gli header di sessione
+    // 2. Evita chiamate duplicate ravvicinate durante la navigazione tra pagine (TTL 45s)
+    if (!forceRefresh && current && current.username) {
+        try {
+            const lastSynced = Number(sessionStorage.getItem("access_sphere_profile_synced_at") || 0);
+            const syncedToken = sessionStorage.getItem("access_sphere_profile_synced_token");
+            if (syncedToken === token && Date.now() - lastSynced < 45000) {
+                return Promise.resolve(current);
+            }
+        } catch (e) {}
+    }
+
+    if (_profileSyncPromise && !forceRefresh) {
+        return _profileSyncPromise;
+    }
+
+    // 3. Chiamata di sincronizzazione con tutti gli header di sessione
     const profileUrl = window.location.origin + "/v1/users/profile";
     const headers = {
         Authorization: `Bearer ${token}`,
@@ -415,7 +435,7 @@ function syncLoggedInUserProfile() {
         headers["Client-ID"] = clientId;
     }
 
-    return fetch(profileUrl, {
+    _profileSyncPromise = fetch(profileUrl, {
         method: "GET",
         headers: headers
     })
@@ -502,6 +522,8 @@ function syncLoggedInUserProfile() {
                 };
                 try {
                     localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
+                    sessionStorage.setItem("access_sphere_profile_synced_at", String(Date.now()));
+                    sessionStorage.setItem("access_sphere_profile_synced_token", token);
                 } catch (e) {
                 }
                 updateSidebarUserDOM(userObj);
@@ -512,7 +534,10 @@ function syncLoggedInUserProfile() {
             }
             return null;
         })
-        .catch(() => null);
+        .catch(() => null)
+        .finally(() => {
+            _profileSyncPromise = null;
+        });
 }
 
 /**

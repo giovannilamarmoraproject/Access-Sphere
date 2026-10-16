@@ -1,12 +1,14 @@
 package io.github.giovannilamarmora.accesssphere.roles;
 
-import io.github.giovannilamarmora.accesssphere.roles.dto.UserSummaryDTO;
-import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
-import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
-import io.github.giovannilamarmora.accesssphere.user.model.User;
+import io.github.giovannilamarmora.accesssphere.roles.dto.RoleCatalogListResponse;
+import io.github.giovannilamarmora.accesssphere.roles.dto.RoleCatalogResponse;
+import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionRequest;
+import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDeleteResponse;
+import io.github.giovannilamarmora.accesssphere.roles.dto.RoleUsersListResponse;
+import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleRequest;
+import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
-import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +17,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -23,13 +26,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+/**
+ * Contratto OpenAPI per la gestione amministrativa dei Ruoli applicativi e delle assegnazioni
+ * utente (RBAC Multi-Tenant).
+ *
+ * <p>Interconnessioni:
+ *
+ * <ul>
+ *   <li>Implementato da {@link RolesControllerImpl}.
+ *   <li>Delega la business logic e i controlli di sicurezza a {@link RolesService}.
+ *   <li>Utilizza i wrapper tipizzati {@link UserResponse}, {@link RoleCatalogResponse}, {@link
+ *       RoleCatalogListResponse}, {@link RoleUsersListResponse} e {@link RoleDeleteResponse}.
+ * </ul>
+ */
+@Tag(name = OpenAPI.Tag.ROLES, description = OpenAPI.Description.ROLES)
 public interface RolesController {
 
   @RequestMapping(
       value = "/users/{identifier}/roles",
       method = {RequestMethod.PUT, RequestMethod.PATCH})
   @Operation(
-      description = "Change user roles, only Tech User",
+      description =
+          "Replace user roles across authorized OAuth2 clients (Reserved for operators with users:roles permission)",
       summary = "Change user roles",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
@@ -41,10 +59,10 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = User.class))),
+                    schema = @Schema(implementation = UserResponse.class))),
         @ApiResponse(
             responseCode = "400",
-            description = "Bad Request",
+            description = "Bad Request - Invalid role or client configuration",
             content =
                 @Content(
                     mediaType = "application/json",
@@ -58,14 +76,14 @@ public interface RolesController {
                     schema = @Schema(implementation = ExceptionResponse.class))),
         @ApiResponse(
             responseCode = "403",
-            description = "Forbidden",
+            description = "Forbidden - Insufficient permissions or client out of scope",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> changeRoles(
+  Mono<ResponseEntity<UserResponse>> changeRoles(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -77,11 +95,13 @@ public interface RolesController {
               description = OpenAPI.Params.Description.IDENTIFIER,
               example = OpenAPI.Params.Example.IDENTIFIER)
           String identifier,
-      @RequestBody @Valid @NotNull(message = "Roles are required") List<UserClientRole> roles);
+      @RequestBody @Valid @NotNull(message = "Roles are required")
+          List<UserClientRoleRequest> roles);
 
   @PostMapping(value = "/users/{identifier}/clients/{clientId}/roles/{role}")
   @Operation(
-      description = "Assign a role for a specific client to a user, only Tech User",
+      description =
+          "Assign a role for a specific client to a user (Reserved for operators with users:roles permission)",
       summary = "Assign client-scoped role",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
@@ -93,7 +113,7 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = User.class))),
+                    schema = @Schema(implementation = UserResponse.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -103,14 +123,14 @@ public interface RolesController {
                     schema = @Schema(implementation = ExceptionResponse.class))),
         @ApiResponse(
             responseCode = "403",
-            description = "Forbidden",
+            description = "Forbidden - Insufficient permissions or client out of scope",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> assignClientRole(
+  Mono<ResponseEntity<UserResponse>> assignClientRole(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -127,7 +147,8 @@ public interface RolesController {
 
   @DeleteMapping(value = "/users/{identifier}/clients/{clientId}/roles/{role}")
   @Operation(
-      description = "Revoke a role for a specific client from a user, only Tech User",
+      description =
+          "Revoke a role for a specific client from a user (Reserved for operators with users:roles permission)",
       summary = "Revoke client-scoped role",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
@@ -139,7 +160,7 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = User.class))),
+                    schema = @Schema(implementation = UserResponse.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -149,14 +170,14 @@ public interface RolesController {
                     schema = @Schema(implementation = ExceptionResponse.class))),
         @ApiResponse(
             responseCode = "403",
-            description = "Forbidden",
+            description = "Forbidden - Insufficient permissions or client out of scope",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> revokeClientRole(
+  Mono<ResponseEntity<UserResponse>> revokeClientRole(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -174,7 +195,7 @@ public interface RolesController {
   @GetMapping(value = "/roles")
   @Operation(
       description =
-          "Get full catalog of defined roles across all OAuth2 clients or filtered by clientId, only Tech User",
+          "Get catalog of defined roles across authorized OAuth2 clients or filtered by clientId (Reserved for operators with roles:manage permission)",
       summary = "Get roles catalog",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
@@ -186,7 +207,7 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = RoleDefinition.class))),
+                    schema = @Schema(implementation = RoleCatalogListResponse.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -203,7 +224,7 @@ public interface RolesController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> getRolesCatalog(
+  Mono<ResponseEntity<RoleCatalogListResponse>> getRolesCatalog(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -216,7 +237,8 @@ public interface RolesController {
 
   @GetMapping(value = "/roles/{role}/users")
   @Operation(
-      description = "Get users assigned to a specific role for a client, only Tech User",
+      description =
+          "Get users assigned to a specific role for a client (Reserved for operators with roles:manage permission)",
       summary = "Get users assigned to a role",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
@@ -228,7 +250,7 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = UserSummaryDTO.class))),
+                    schema = @Schema(implementation = RoleUsersListResponse.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -245,7 +267,7 @@ public interface RolesController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> getUsersWithRole(
+  Mono<ResponseEntity<RoleUsersListResponse>> getUsersWithRole(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -257,7 +279,8 @@ public interface RolesController {
 
   @PostMapping(value = "/roles")
   @Operation(
-      description = "Create a new role definition for a specific OAuth2 client, only Tech User",
+      description =
+          "Create a new role definition for a specific OAuth2 client (Reserved for operators with roles:manage permission)",
       summary = "Create role definition",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
@@ -269,7 +292,7 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = RoleDefinition.class))),
+                    schema = @Schema(implementation = RoleCatalogResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request - duplicate role or missing required fields",
@@ -293,19 +316,20 @@ public interface RolesController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> createRole(
+  Mono<ResponseEntity<RoleCatalogResponse>> createRole(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
               description = OpenAPI.Params.Description.BEARER,
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
-      @RequestBody @Valid @NotNull(message = "Role definition is required") RoleDefinition dto);
+      @RequestBody @Valid @NotNull(message = "Role definition is required")
+          RoleDefinitionRequest dto);
 
   @PutMapping(value = "/roles/{role}")
   @Operation(
       description =
-          "Update an existing role definition for a specific OAuth2 client, only Tech User",
+          "Update an existing role definition for a specific OAuth2 client (Reserved for operators with roles:manage permission)",
       summary = "Update role definition",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
@@ -317,7 +341,7 @@ public interface RolesController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = RoleDefinition.class))),
+                    schema = @Schema(implementation = RoleCatalogResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -348,7 +372,7 @@ public interface RolesController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> updateRole(
+  Mono<ResponseEntity<RoleCatalogResponse>> updateRole(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -357,18 +381,25 @@ public interface RolesController {
           String bearer,
       @PathVariable(value = "role") @Schema(description = "Current role name") String role,
       @RequestParam(value = "clientId") @Schema(description = "OAuth2 Client ID") String clientId,
-      @RequestBody @Valid @NotNull(message = "Role definition is required") RoleDefinition dto);
+      @RequestBody @Valid @NotNull(message = "Role definition is required")
+          RoleDefinitionRequest dto);
 
   @DeleteMapping(value = "/roles/{role}")
   @Operation(
       description =
-          "Delete a role from a client and revoke it from all assigned users, only Tech User",
+          "Delete a role from a client and revoke it from all assigned users (Reserved for operators with roles:manage permission)",
       summary = "Delete role definition and cascade revoke",
       tags = OpenAPI.Tag.ROLES,
       security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "200", description = "Role deleted and revoked successfully"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "Role deleted and revoked successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = RoleDeleteResponse.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -392,7 +423,7 @@ public interface RolesController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> deleteRole(
+  Mono<ResponseEntity<RoleDeleteResponse>> deleteRole(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(

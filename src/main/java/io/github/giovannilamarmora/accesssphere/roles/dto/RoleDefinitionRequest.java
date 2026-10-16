@@ -31,6 +31,13 @@ import lombok.*;
 @Schema(description = "Complete definition of an application role for an OAuth2 Client")
 public class RoleDefinitionRequest {
 
+  @UpperCase
+  @JsonAlias({"client_id"})
+  @Schema(
+      description = "Identifier of the OAuth2 Client that owns the role",
+      example = "CLIENT-SAMPLE-001")
+  private String clientId;
+
   @NotBlank(message = "The field 'role' is required and it cannot be null or blank")
   @UpperCase
   @JsonAlias({"name", "roleName", "value"})

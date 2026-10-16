@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.roles.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleHolder;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
@@ -10,12 +11,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Modello DTO di richiesta per l'assegnazione di un ruolo applicativo contestualizzato a uno specifico Client OAuth2.
+ * Modello DTO di richiesta per l'assegnazione di un ruolo applicativo contestualizzato a uno
+ * specifico Client OAuth2.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "Assignment request of an application role for an OAuth2 Client")
 public class UserClientRoleRequest implements RoleHolder {
 
