@@ -1,6 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.mfa.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.giovannilamarmora.accesssphere.mfa.model.TOTPLabel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

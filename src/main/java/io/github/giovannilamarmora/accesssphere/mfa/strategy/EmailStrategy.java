@@ -11,11 +11,11 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAMapper;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAUtils;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupDataResponse;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupResponse;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAType;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
@@ -69,7 +69,7 @@ public class EmailStrategy implements MFAStrategy {
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest setupRequest) {
+  public Mono<MFASetupDataResponse> generateSecret(User user, MFASetupRequest setupRequest) {
     LOG.info("🔑 [EMAIL-MFA] Generate Email MFA for user: {} process started.", setupRequest.identifier());
 
     if (ObjectToolkit.isNullOrEmpty(user.getEmail())) {
@@ -88,17 +88,7 @@ public class EmailStrategy implements MFAStrategy {
     return userService
         .updateUser(setupRequest.identifier(), user)
         .flatMap(updatedUser -> sendOtpEmail(updatedUser, otpCode, DEFAULT_EXPIRY_MINUTES))
-        .map(
-            emailResponse -> {
-              MFASetupResponse mfaSetupResponse = new MFASetupResponse(null, null, null);
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "MFA Email OTP sent successfully to " + user.getEmail(),
-                      TraceUtils.getSpanID(),
-                      mfaSetupResponse);
-              return ResponseEntity.ok(response);
-            })
+        .map(emailResponse -> new MFASetupDataResponse(null, null, null))
         .doOnSuccess(
             res ->
                 LOG.info(

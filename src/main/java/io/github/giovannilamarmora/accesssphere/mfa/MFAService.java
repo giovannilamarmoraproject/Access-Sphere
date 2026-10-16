@@ -4,19 +4,20 @@ import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAConfirmationRequest;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFADataResponse;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAManageRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupDataResponse;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MfaVerificationRequest;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASession;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAType;
 import io.github.giovannilamarmora.accesssphere.mfa.session.MFASessionService;
-import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategy;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.UserValidator;
-import io.github.giovannilamarmora.accesssphere.user.model.User;
-import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -26,7 +27,6 @@ import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ServerWebExchange;
@@ -40,7 +40,7 @@ import reactor.core.publisher.Mono;
  *   <li>Validazione rigorosa dei parametri di richiesta tramite {@link MFAValidator}.</li>
  *   <li>Verifica di sicurezza sull'identità dell'utente operatore tramite {@link UserValidator} e {@link AdminUserService}.</li>
  *   <li>Delega la generazione e verifica delle credenziali alla strategia appropriata (TOTP o EMAIL) tramite {@link MFAStrategyFactory}.</li>
- *   <li>Supporta l'inizializzazione, conferma, verifica OTP durante il login OAuth 2.1, gestione dello stato e invio on-demand di codici via Email.</li>
+ *   <li>Restituisce DTO di risposta puri, delegando la creazione di {@link ResponseEntity} al Controller layer.</li>
  * </ul>
  */
 @Service
@@ -60,10 +60,10 @@ public class MFAService {
    * Inizializza il setup MFA per l'utente generando un secret TOTP (con QR code) o inviando un codice OTP via Email.
    *
    * @param setupRequest DTO con identificativo utente, tipo MFA ed opzioni.
-   * @return {@link Mono} con {@link ResponseEntity} contenente la configurazione generata.
+   * @return {@link Mono} contenente {@link MFASetupDataResponse}.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> generateSecretForUser(io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest setupRequest) {
+  public Mono<MFASetupDataResponse> generateSecretForUser(MFASetupRequest setupRequest) {
     LOG.info("🔐 [MFA SETUP] Process started for user: {}", setupRequest.identifier());
     MFAValidator.validateSetupRequest(setupRequest);
 
@@ -81,18 +81,22 @@ public class MFAService {
             })
         .doOnSuccess(
             response ->
-                LOG.info("✅ [MFA SETUP] Process ended successfully for user: {}", setupRequest.identifier()));
+                LOG.info(
+                    "✅ [MFA SETUP] Process ended successfully for user: {}",
+                    setupRequest.identifier()));
   }
 
   /**
    * Conferma il codice OTP immesso dall'utente attivando definitivamente il metodo configurato.
    *
    * @param confirmationRequest DTO con identificativo, tipo, label e codice OTP.
-   * @return {@link Mono} con risposta di avvenuta attivazione.
+   * @return {@link Mono} contenente {@link MFADataResponse}.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> confirmMFA(MFAConfirmationRequest confirmationRequest) {
-    LOG.info("🔑 [MFA CONFIRM] OTP confirmation process started for user: {}", confirmationRequest.identifier());
+  public Mono<MFADataResponse> confirmMFA(MFAConfirmationRequest confirmationRequest) {
+    LOG.info(
+        "🔑 [MFA CONFIRM] OTP confirmation process started for user: {}",
+        confirmationRequest.identifier());
     MFAValidator.validateConfirmationRequest(confirmationRequest);
 
     if (!techUserService.isTechUser()) {
@@ -116,15 +120,10 @@ public class MFAService {
               return userService
                   .updateUser(user.getIdentifier(), user)
                   .map(
-                      userUpdated -> {
-                        Response response =
-                            new Response(
-                                HttpStatus.OK.value(),
-                                "MFA Confirmed for user: " + userUpdated.getIdentifier(),
-                                TraceUtils.getSpanID(),
-                                null);
-                        return ResponseEntity.ok(response);
-                      });
+                      userUpdated ->
+                          MFAMapper.toDataResponse(
+                              userUpdated,
+                              "MFA Confirmed for user: " + userUpdated.getIdentifier()));
             })
         .doOnSuccess(
             response ->
@@ -175,10 +174,10 @@ public class MFAService {
    *
    * @param bearer Token di autenticazione (tempToken di login o Bearer token utente).
    * @param identifier Identificativo opzionale dell'utente.
-   * @return {@link Mono} con conferma dell'invio.
+   * @return {@link Mono} con {@link MFADataResponse}.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> sendOtp(String bearer, String identifier) {
+  public Mono<MFADataResponse> sendOtp(String bearer, String identifier) {
     LOG.info("📧 [MFA SEND-OTP] Request received to dispatch OTP code");
 
     String targetIdentifier = resolveUserIdentifier(bearer, identifier);
@@ -201,12 +200,12 @@ public class MFAService {
                             Boolean.TRUE.equals(sent)
                                 ? "MFA Email OTP sent successfully to " + user.getEmail()
                                 : "Unable to send OTP email. Please ensure Email MFA is configured.";
-                        Response response =
-                            new Response(HttpStatus.OK.value(), msg, TraceUtils.getSpanID(), null);
-                        return ResponseEntity.ok(response);
+                        return MFAMapper.toDataResponse(user, msg);
                       });
             })
-        .doOnSuccess(res -> LOG.info("✅ [MFA SEND-OTP] OTP code dispatched for user {}", targetIdentifier));
+        .doOnSuccess(
+            res ->
+                LOG.info("✅ [MFA SEND-OTP] OTP code dispatched for user {}", targetIdentifier));
   }
 
   /**
@@ -220,7 +219,9 @@ public class MFAService {
           return session.getIdentifier();
         }
       } catch (Exception e) {
-        LOG.debug("Bearer is not a valid temp token, checking authenticated context: {}", e.getMessage());
+        LOG.debug(
+            "Bearer is not a valid temp token, checking authenticated context: {}",
+            e.getMessage());
       }
       if (!ObjectToolkit.isNullOrEmpty(oAuth2Authorization.getIdentifier())) {
         return oAuth2Authorization.getIdentifier();
@@ -241,10 +242,10 @@ public class MFAService {
    * Esegue le azioni di abilitazione, disabilitazione o rimozione dei metodi MFA.
    *
    * @param request Payload contenente identificativo, azione ed eventuale label.
-   * @return {@link Mono} con esito dell'azione.
+   * @return {@link Mono} con {@link MFADataResponse}.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> manageMFA(MFAManageRequest request) {
+  public Mono<MFADataResponse> manageMFA(MFAManageRequest request) {
     MFAValidator.validateManageRequest(request);
 
     if (!techUserService.isTechUser()) {
@@ -252,20 +253,11 @@ public class MFAService {
           request.identifier(), oAuth2Authorization.getIdentifier());
     }
 
-    switch (request.action()) {
-      case ENABLE -> {
-        return mfaAuthenticationService.enableMethods(request.identifier(), userService);
-      }
-      case DISABLE -> {
-        return mfaAuthenticationService.disableMethods(request.identifier(), userService);
-      }
-      case DELETE -> {
-        return mfaAuthenticationService.deleteMethods(
-            request.identifier(), request.label(), userService);
-      }
-      default -> {
-        return Mono.empty();
-      }
-    }
+    return switch (request.action()) {
+      case ENABLE -> mfaAuthenticationService.enableMethods(request.identifier(), userService);
+      case DISABLE -> mfaAuthenticationService.disableMethods(request.identifier(), userService);
+      case DELETE -> mfaAuthenticationService.deleteMethods(
+          request.identifier(), request.label(), userService);
+    };
   }
 }

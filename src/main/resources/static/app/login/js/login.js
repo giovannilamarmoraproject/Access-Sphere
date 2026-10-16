@@ -188,37 +188,32 @@ async function verifyOTP() {
 }
 
 function doGoogleLogin() {
-    enableLoader();
     const currentUrl = new URL(window.location.href);
-    //const clientId =
-    //    currentUrl.searchParams.get("client_id") ||
-    //    (typeof config !== "undefined" ? config.client_id : null);
-    //const redirectUri =
-    //    currentUrl.searchParams.get("redirect_uri") ||
-    //    (typeof config !== "undefined" ? config.redirect_uri : null);
     const clientId =
-        currentUrl.searchParams.get("client_id");
+        currentUrl.searchParams.get("client_id") ||
+        (typeof config !== "undefined" && config.client_id ? config.client_id : "ACCESS-SPHERE-AUTH");
     const redirectUri =
-        currentUrl.searchParams.get("redirect_uri");
+        currentUrl.searchParams.get("redirect_uri") ||
+        (typeof config !== "undefined" && config.redirect_uri ? config.redirect_uri : (window.location.origin + "/app"));
     const state = currentUrl.searchParams.get("state");
     const prompt = currentUrl.searchParams.get("prompt");
 
     if (!clientId) {
-        disableLoader();
         return sweetalert(
             "error",
-            currentTranslations.googleLogin_error_title,
-            currentTranslations.googleLogin_error_text
+            typeof t === "function" ? t("googleLogin_error_title", "Non consentito") : (currentTranslations.googleLogin_error_title || "Non consentito"),
+            typeof t === "function" ? t("googleLogin_error_text", "Non puoi effettuare la login con Google per configurazioni mancanti.") : (currentTranslations.googleLogin_error_text || "Non puoi effettuare la login con Google per configurazioni mancanti.")
         );
     }
 
+    enableLoader();
     const url = new URL(window.location.origin + "/v1/oauth2/authorize");
     url.searchParams.set("access_type", "online");
     url.searchParams.set(
         "scope",
         "openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
     );
-    if (clientId) url.searchParams.set("client_id", clientId);
+    url.searchParams.set("client_id", clientId);
     if (redirectUri) url.searchParams.set("redirect_uri", redirectUri);
     if (state) url.searchParams.set("state", state);
     if (prompt) url.searchParams.set("prompt", prompt);
@@ -226,8 +221,8 @@ function doGoogleLogin() {
     url.searchParams.set("response_type", "code");
 
     window.location.href = url.toString();
-    disableLoader();
 }
+
 
 function checkMFAAndSetupOTP(response, client_id) {
     // Verifica che esista il token MFA

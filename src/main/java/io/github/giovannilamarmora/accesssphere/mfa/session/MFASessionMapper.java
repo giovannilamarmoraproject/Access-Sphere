@@ -3,9 +3,9 @@ package io.github.giovannilamarmora.accesssphere.mfa.session;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
-import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
-import io.github.giovannilamarmora.accesssphere.mfa.session.entity.MFASessionEntity;
+import io.github.giovannilamarmora.accesssphere.mfa.entity.MFASessionEntity;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASession;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAType;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.utilities.Utils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -47,8 +47,6 @@ public class MFASessionMapper {
   public static MFASessionEntity toEntity(MFASession mfaSession) {
     MFASessionEntity mfaSessionEntity = new MFASessionEntity();
     BeanUtils.copyProperties(mfaSession, mfaSessionEntity);
-    // List<MFAType> mfaMethods = mfaToken.getMfaMethods();
-    // mfaTokenEntity.setMfaMethods(mfaMethods);
     try {
       if (!ObjectUtils.isEmpty(mfaSession.getPayload()))
         mfaSessionEntity.setPayload(

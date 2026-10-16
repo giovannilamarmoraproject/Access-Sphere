@@ -5,7 +5,7 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAConfirmationRequest;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAManageRequest;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAType;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MfaVerificationRequest;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;

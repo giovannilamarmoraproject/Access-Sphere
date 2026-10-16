@@ -2,15 +2,19 @@ package io.github.giovannilamarmora.accesssphere.mfa;
 
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAConfirmationRequest;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAManageRequest;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAResponse;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupResponse;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MfaVerificationRequest;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
+import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +29,7 @@ import reactor.core.publisher.Mono;
  * <ul>
  *   <li>Implementa il contratto OpenAPI {@link MFAController}.</li>
  *   <li>Delega la validazione di sicurezza e la logica applicativa a {@link MFAService}.</li>
- *   <li>Espone gli endpoint reattivi WebFlux per setup, conferma, verifica OTP login, reinvio OTP e gestione metodi.</li>
+ *   <li>Incapsula i DTO restituiti dal service negli involucri tipizzati {@link MFASetupResponse} e {@link MFAResponse}.</li>
  * </ul>
  */
 @Logged
@@ -43,13 +47,24 @@ public class MFAControllerImpl implements MFAController {
    * @param bearer Token JWT Bearer dell'utente.
    * @param mfaSetupRequest DTO con identificativo, tipo ed eventuale richiesta QR code.
    * @param exchange Scambio HTTP server reattivo.
-   * @return {@link Mono} con {@link ResponseEntity} contenente i dati di configurazione.
+   * @return {@link Mono} con {@link ResponseEntity} contenente i dati di configurazione in {@link MFASetupResponse}.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> setupMfa(
+  public Mono<ResponseEntity<MFASetupResponse>> setupMfa(
       String bearer, MFASetupRequest mfaSetupRequest, ServerWebExchange exchange) {
-    return mfaService.generateSecretForUser(mfaSetupRequest);
+    return mfaService
+        .generateSecretForUser(mfaSetupRequest)
+        .map(
+            data -> {
+              MFASetupResponse response =
+                  new MFASetupResponse(
+                      HttpStatus.CREATED.value(),
+                      "MFA setup initialized successfully",
+                      TraceUtils.getSpanID(),
+                      data);
+              return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            });
   }
 
   /**
@@ -58,27 +73,38 @@ public class MFAControllerImpl implements MFAController {
    * @param bearer Token JWT Bearer dell'utente.
    * @param mfaConfirmationRequest DTO con identificativo, tipo e codice OTP.
    * @param exchange Scambio HTTP server reattivo.
-   * @return {@link Mono} con {@link ResponseEntity} di avvenuta attivazione.
+   * @return {@link Mono} con {@link ResponseEntity} di avvenuta attivazione in {@link MFAResponse}.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> confirmMfa(
+  public Mono<ResponseEntity<MFAResponse>> confirmMfa(
       String bearer, MFAConfirmationRequest mfaConfirmationRequest, ServerWebExchange exchange) {
-    return mfaService.confirmMFA(mfaConfirmationRequest);
+    return mfaService
+        .confirmMFA(mfaConfirmationRequest)
+        .map(
+            data -> {
+              MFAResponse response =
+                  new MFAResponse(
+                      HttpStatus.OK.value(),
+                      data.getStatus(),
+                      TraceUtils.getSpanID(),
+                      data);
+              return ResponseEntity.ok(response);
+            });
   }
 
   /**
    * Endpoint per verificare il codice OTP durante il flusso di login OAuth 2.1 con tempToken Bearer.
    *
-   * @param mfaVerifyRequest DTO con metodo MFA, codice OTP e opzione device fidato.
    * @param bearer Token temporaneo Bearer rilasciato nella prima fase di login.
+   * @param mfaVerifyRequest DTO con metodo MFA, codice OTP e opzione device fidato.
    * @param exchange Scambio HTTP server reattivo.
    * @return {@link Mono} con {@link ResponseEntity} contenente i token finali rilasciati.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> verifyMfaCode(
-      MfaVerificationRequest mfaVerifyRequest, String bearer, ServerWebExchange exchange) {
+  public Mono<ResponseEntity<Response>> verifyMfa(
+      String bearer, MfaVerificationRequest mfaVerifyRequest, ServerWebExchange exchange) {
     return mfaService.verifyMfa(mfaVerifyRequest, bearer, exchange);
   }
 
@@ -88,27 +114,49 @@ public class MFAControllerImpl implements MFAController {
    * @param bearer Token temporaneo Bearer di login oppure token di accesso utente autenticato.
    * @param identifier Identificativo opzionale dell'utente.
    * @param exchange Scambio HTTP server reattivo.
-   * @return {@link Mono} con conferma dell'invio.
+   * @return {@link Mono} con {@link ResponseEntity} contenente {@link MFAResponse}.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> sendOtp(
+  public Mono<ResponseEntity<MFAResponse>> sendOtp(
       String bearer, String identifier, ServerWebExchange exchange) {
-    return mfaService.sendOtp(bearer, identifier);
+    return mfaService
+        .sendOtp(bearer, identifier)
+        .map(
+            data -> {
+              MFAResponse response =
+                  new MFAResponse(
+                      HttpStatus.OK.value(),
+                      data.getStatus(),
+                      TraceUtils.getSpanID(),
+                      data);
+              return ResponseEntity.ok(response);
+            });
   }
 
   /**
-   * Endpoint per gestire lo stato dei metodi MFA (ENABLE, DISABLE o DELETE).
+   * Endpoint per abilitare, disabilitare o rimuovere metodi MFA per un account.
    *
-   * @param bearer Token JWT Bearer dell'utente o operatore autorizzato.
-   * @param mfaManageRequest DTO con identificativo, azione e label.
+   * @param bearer Token JWT Bearer dell'utente autenticato o dell'operatore autorizzato.
+   * @param manageRequest DTO con identificativo, azione ed eventuale label.
    * @param exchange Scambio HTTP server reattivo.
-   * @return {@link Mono} con esito dell'azione.
+   * @return {@link Mono} con {@link ResponseEntity} contenente {@link MFAResponse}.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  public Mono<ResponseEntity<Response>> manageMfa(
-      String bearer, MFAManageRequest mfaManageRequest, ServerWebExchange exchange) {
-    return mfaService.manageMFA(mfaManageRequest);
+  public Mono<ResponseEntity<MFAResponse>> manageMfa(
+      String bearer, MFAManageRequest manageRequest, ServerWebExchange exchange) {
+    return mfaService
+        .manageMFA(manageRequest)
+        .map(
+            data -> {
+              MFAResponse response =
+                  new MFAResponse(
+                      HttpStatus.OK.value(),
+                      data.getStatus(),
+                      TraceUtils.getSpanID(),
+                      data);
+              return ResponseEntity.ok(response);
+            });
   }
 }

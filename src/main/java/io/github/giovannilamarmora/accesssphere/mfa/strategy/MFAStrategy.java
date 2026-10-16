@@ -1,15 +1,14 @@
 package io.github.giovannilamarmora.accesssphere.mfa.strategy;
 
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupDataResponse;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAMethod;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
-import io.github.giovannilamarmora.utils.generic.Response;
 import java.util.List;
-import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
 /**
- * Contratto strategico per i diversi provider di autenticazione a due fattori (MFA).
+ * Contratto strategico per i provider di autenticazione a due fattori (MFA).
  *
  * <p>Implementato specificamente per {@code TOTP} (Time-Based One-Time Password RFC 6238) e {@code
  * EMAIL} (codice monouso a 6 cifre recapitato via posta elettronica).
@@ -21,9 +20,9 @@ public interface MFAStrategy {
    *
    * @param user Utente per il quale configurare l'MFA.
    * @param setupRequest Richiesta di setup con parametri specifici.
-   * @return {@link Mono} con {@link ResponseEntity} contenente il payload informativo.
+   * @return {@link Mono} con {@link MFASetupDataResponse} contenente il payload informativo.
    */
-  Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest setupRequest);
+  Mono<MFASetupDataResponse> generateSecret(User user, MFASetupRequest setupRequest);
 
   /**
    * Convalida il codice OTP fornito dall'utente a fronte dei metodi registrati.

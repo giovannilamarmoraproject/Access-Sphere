@@ -3,6 +3,7 @@ package io.github.giovannilamarmora.accesssphere.mfa;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
+import io.github.giovannilamarmora.accesssphere.mfa.model.*;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.EmailStrategy;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.TotpStrategy;
@@ -23,7 +24,7 @@ class MFATest {
     assertEquals(TOTPLabel.EMAIL, TOTPLabel.fromString("EMAIL"));
     assertNull(TOTPLabel.fromString(null));
     assertNull(TOTPLabel.fromString("   "));
-    assertThrows(MFAException.class, () -> TOTPLabel.fromString("unknown-label-xyz"));
+    assertNull(TOTPLabel.fromString("unknown-label-xyz"));
   }
 
   @Test

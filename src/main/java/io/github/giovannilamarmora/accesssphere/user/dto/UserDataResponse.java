@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASetting;
 import io.github.giovannilamarmora.accesssphere.roles.dto.UserClientRoleResponse;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.utils.generic.GenericDTO;

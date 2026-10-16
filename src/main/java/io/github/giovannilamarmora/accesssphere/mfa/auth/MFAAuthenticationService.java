@@ -5,15 +5,17 @@ import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
+import io.github.giovannilamarmora.accesssphere.mfa.MFAMapper;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFADataResponse;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAManageRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MfaVerificationRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.TOTPLabel;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASession;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAType;
+import io.github.giovannilamarmora.accesssphere.mfa.model.TOTPLabel;
 import io.github.giovannilamarmora.accesssphere.mfa.session.MFASessionService;
-import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.EmailStrategy;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
@@ -248,10 +250,10 @@ public class MFAAuthenticationService {
    *
    * @param identifier Identificativo dell'utente.
    * @param userService Servizio utente.
-   * @return {@link Mono} con esito operazione.
+   * @return {@link Mono} con {@link MFADataResponse}.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> enableMethods(String identifier, UserService userService) {
+  public Mono<MFADataResponse> enableMethods(String identifier, UserService userService) {
     LOG.info("🔐 [MFA ENABLE] - Process started for user '{}'", identifier);
     Mono<User> userMono = userService.getUserByIdentifier(identifier);
 
@@ -267,19 +269,17 @@ public class MFAAuthenticationService {
                     ExceptionType.OTP_NOT_CONFIGURED,
                     "MFA methods are not defined or confirmed to enable");
               }
-              Response response =
-                  new Response(HttpStatus.OK.value(), "MFA Enabled", TraceUtils.getSpanID(), null);
 
               if (Boolean.TRUE.equals(mfaSetting.getEnabled())) {
                 LOG.info("ℹ️ MFA already enabled for user {}, no update needed", identifier);
-                return Mono.just(ResponseEntity.ok(response));
+                return Mono.just(MFAMapper.toDataResponse(user, "MFA Enabled"));
               }
               mfaSetting.setEnabled(true);
               user.setMfaSettings(mfaSetting);
 
               return userService
                   .updateUser(identifier, user)
-                  .map(user1 -> ResponseEntity.ok(response));
+                  .map(updated -> MFAMapper.toDataResponse(updated, "MFA Enabled"));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA ENABLE] - Process ended for user '{}'", identifier));
   }
@@ -289,10 +289,10 @@ public class MFAAuthenticationService {
    *
    * @param identifier Identificativo dell'utente.
    * @param userService Servizio utente.
-   * @return {@link Mono} con esito operazione.
+   * @return {@link Mono} con {@link MFADataResponse}.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> disableMethods(String identifier, UserService userService) {
+  public Mono<MFADataResponse> disableMethods(String identifier, UserService userService) {
     LOG.info("🔐 [MFA DISABLE] - Process started for user '{}'", identifier);
     Mono<User> userMono = userService.getUserByIdentifier(identifier);
 
@@ -304,19 +304,17 @@ public class MFAAuthenticationService {
                 LOG.error("❌ MFA settings are not defined for user {}", identifier);
                 throw new MFAException(ExceptionMap.ERR_MFA_400, "MFA methods are not defined");
               }
-              Response response =
-                  new Response(HttpStatus.OK.value(), "MFA Disabled", TraceUtils.getSpanID(), null);
 
               if (!Boolean.TRUE.equals(mfaSetting.getEnabled())) {
                 LOG.info("ℹ️ MFA already disabled for user {}, no update needed", identifier);
-                return Mono.just(ResponseEntity.ok(response));
+                return Mono.just(MFAMapper.toDataResponse(user, "MFA Disabled"));
               }
               mfaSetting.setEnabled(false);
               user.setMfaSettings(mfaSetting);
 
               return userService
                   .updateUser(identifier, user)
-                  .map(user1 -> ResponseEntity.ok(response));
+                  .map(updated -> MFAMapper.toDataResponse(updated, "MFA Disabled"));
             })
         .doOnSuccess(re -> LOG.info("✅ [MFA DISABLE] - Process ended for user '{}'", identifier));
   }
@@ -327,10 +325,10 @@ public class MFAAuthenticationService {
    * @param identifier Identificativo dell'utente.
    * @param label Label del metodo da eliminare.
    * @param userService Servizio utente.
-   * @return {@link Mono} con esito operazione.
+   * @return {@link Mono} con {@link MFADataResponse}.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> deleteMethods(
+  public Mono<MFADataResponse> deleteMethods(
       String identifier, TOTPLabel label, UserService userService) {
     LOG.info("🔐 [MFA DELETE] - Process started for user '{}', label '{}'", identifier, label);
 
@@ -371,9 +369,7 @@ public class MFAAuthenticationService {
                                 ? "All MFA methods removed. MFA disabled."
                                 : "MFA method removed.";
                         LOG.info("✅ {}", msg);
-                        Response response =
-                            new Response(HttpStatus.OK.value(), msg, TraceUtils.getSpanID(), null);
-                        return ResponseEntity.ok(response);
+                        return MFAMapper.toDataResponse(updatedUser, msg);
                       });
             })
         .doOnSuccess(

@@ -2,7 +2,7 @@ package io.github.giovannilamarmora.accesssphere.mfa.strategy;
 
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAType;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

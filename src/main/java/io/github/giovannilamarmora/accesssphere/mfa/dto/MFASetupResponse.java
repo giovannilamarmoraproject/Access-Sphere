@@ -1,34 +1,37 @@
 package io.github.giovannilamarmora.accesssphere.mfa.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
- * DTO contenente i dettagli di inizializzazione MFA per l'utente (secret TOTP, URI otpauth o QR code).
+ * Involucro di risposta standard OpenAPI per l'inizializzazione del setup MFA.
+ *
+ * <p>Estende {@link Response} tipizzando esplicitamente il campo {@code data} con {@link MFASetupDataResponse}.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Details generated during MFA initialization")
-public record MFASetupResponse(
-    @Schema(
-        description = "Plaintext base32 secret key for manual TOTP configuration (null for EMAIL)",
-        example = "JBSWY3DPEHPK3PXP")
-        String secret,
-    @Schema(
-        description = "Standard RFC 6238 otpauth URI (null for EMAIL)",
-        example = "otpauth://totp/Access-Sphere:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Access-Sphere")
-        String otpAuth,
-    @Schema(
-        description = "Base64 data URL encoded PNG QR code image for authenticator apps",
-        example = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...")
-        String base64QrCodeImage) {
+@EqualsAndHashCode(callSuper = true)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "Standard response wrapper containing MFA setup details")
+public class MFASetupResponse extends Response {
 
-  /**
-   * Crea una nuova istanza di {@link MFASetupResponse} aggiungendo l'immagine QR code generata.
-   *
-   * @param qrCode Stringa Base64 del QR code.
-   * @return Nuova istanza arricchita.
-   */
-  public MFASetupResponse addQRCode(String qrCode) {
-    return new MFASetupResponse(secret, otpAuth, qrCode);
-  }
+  @Schema(description = "HTTP status code of the operation", example = "200")
+  private Integer status;
+
+  @Schema(
+      description = "Brief descriptive message of the operation outcome",
+      example = "MFA secret generated successfully")
+  private String message;
+
+  @Schema(
+      description = "Unique trace identifier for the distributed request (Span ID)",
+      example = "d18124b1-ba15-4b51-a344-78e5a6c0a205")
+  private String spanId;
+
+  @Schema(description = "Details generated during MFA initialization")
+  private MFASetupDataResponse data;
 }

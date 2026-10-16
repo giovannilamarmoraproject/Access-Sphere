@@ -1,9 +1,10 @@
 package io.github.giovannilamarmora.accesssphere.mfa.session;
 
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.mfa.session.dto.LoginStatus;
-import io.github.giovannilamarmora.accesssphere.mfa.session.dto.MFASession;
-import io.github.giovannilamarmora.accesssphere.mfa.session.entity.MFASessionEntity;
+import io.github.giovannilamarmora.accesssphere.mfa.database.MFASessionRepository;
+import io.github.giovannilamarmora.accesssphere.mfa.entity.MFASessionEntity;
+import io.github.giovannilamarmora.accesssphere.mfa.model.LoginStatus;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASession;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.token.TokenException;
 import io.github.giovannilamarmora.accesssphere.user.model.User;

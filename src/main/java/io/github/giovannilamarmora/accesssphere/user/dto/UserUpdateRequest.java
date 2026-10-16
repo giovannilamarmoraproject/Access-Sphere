@@ -1,7 +1,7 @@
 package io.github.giovannilamarmora.accesssphere.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASetting;
 import io.github.giovannilamarmora.utils.jsonSerialize.LowerCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCamelCase;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;

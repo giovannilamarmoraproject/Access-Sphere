@@ -3,10 +3,11 @@ package io.github.giovannilamarmora.accesssphere.mfa;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAConfirmationRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFADataResponse;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.TOTPLabel;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.model.TOTPLabel;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
@@ -145,5 +146,31 @@ public class MFAMapper {
     }
 
     return current;
+  }
+
+  /**
+   * Converte le impostazioni dell'utente in un DTO standard di risposta {@link MFADataResponse}.
+   *
+   * @param user Utente target.
+   * @param status Messaggio di stato dell'operazione.
+   * @return {@link MFADataResponse} popolato.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
+  public static MFADataResponse toDataResponse(User user, String status) {
+    if (user == null) {
+      return MFADataResponse.builder().status(status).build();
+    }
+    Boolean enabled = user.getMfaSettings() != null ? user.getMfaSettings().getEnabled() : false;
+    List<MFAMethod> activeMethods =
+        user.getMfaSettings() != null && user.getMfaSettings().getMfaMethods() != null
+            ? user.getMfaSettings().getMfaMethods().stream().filter(MFAMethod::isConfirmed).toList()
+            : List.of();
+
+    return MFADataResponse.builder()
+        .identifier(user.getIdentifier())
+        .mfaEnabled(enabled)
+        .status(status)
+        .activeMethods(activeMethods)
+        .build();
   }
 }

@@ -6,16 +6,14 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAMapper;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAUtils;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupDataResponse;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupResponse;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.model.MFAType;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.QRCodeUtils;
-import io.github.giovannilamarmora.utils.context.TraceUtils;
-import io.github.giovannilamarmora.utils.generic.Response;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -24,8 +22,6 @@ import java.util.Base64;
 import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -47,11 +43,11 @@ public class TotpStrategy implements MFAStrategy {
    *
    * @param user Utente per il quale inizializzare l'MFA TOTP.
    * @param setupRequest Richiesta di setup con flag di generazione immagine QR code.
-   * @return {@link Mono} con {@link ResponseEntity} contenente {@link MFASetupResponse}.
+   * @return {@link Mono} contenente {@link MFASetupDataResponse}.
    */
   @Override
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
-  public Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest setupRequest) {
+  public Mono<MFASetupDataResponse> generateSecret(User user, MFASetupRequest setupRequest) {
     LOG.info(
         "🔑 [TOTP] Generate TOTP MFA for user: {} process started.", setupRequest.identifier());
     String secret = MFAUtils.generateSecret();
@@ -64,7 +60,7 @@ public class TotpStrategy implements MFAStrategy {
         .updateUser(setupRequest.identifier(), user)
         .map(
             userUpdated -> {
-              MFASetupResponse mfaSetupResponse = new MFASetupResponse(secret, otpAuth, null);
+              MFASetupDataResponse mfaSetupResponse = new MFASetupDataResponse(secret, otpAuth, null);
               if (setupRequest.generateImage()) {
                 String base64 =
                     "data:image/png;base64,"
@@ -73,13 +69,7 @@ public class TotpStrategy implements MFAStrategy {
                                 QRCodeUtils.generateQRCodeWithDefaultLogo(otpAuth, 300, 300));
                 mfaSetupResponse = mfaSetupResponse.addQRCode(base64);
               }
-              Response response =
-                  new Response(
-                      HttpStatus.OK.value(),
-                      "MFA Generated",
-                      TraceUtils.getSpanID(),
-                      mfaSetupResponse);
-              return ResponseEntity.ok(response);
+              return mfaSetupResponse;
             })
         .doOnSuccess(
             response ->
