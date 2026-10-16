@@ -29,9 +29,9 @@ import reactor.core.publisher.Mono;
 /**
  * Servizio di orchestrazione per la gestione e l'invio asincrono dei Webhook di sistema.
  *
- * <p>Identifica i client OAuth2 con webhook associati all'azione, scambia il token Bearer tramite
- * Token Exchange per autenticare la chiamata esterna e notifica gli endpoint remoti in modo
- * resiliente.
+ * <p>Identifica i client OAuth2 con webhook associati all'azione, scambia opzionalmente il token
+ * Bearer tramite Token Exchange per autenticare la chiamata esterna e notifica gli endpoint remoti
+ * in modo resiliente e non bloccante.
  */
 @Service
 @Logged
@@ -44,12 +44,24 @@ public class WebhookService {
   @Autowired @Lazy private OAuthService oAuthService;
 
   /**
+   * Verifica ed esegue tutti i webhook per l'azione specificata, senza richiedere contesto HTTP o
+   * token Bearer del chiamante.
+   *
+   * @param action Azione/evento che innesca la notifica.
+   * @param identifier Identificatore univoco dell'entita' oggetto dell'evento (es. UUID utente).
+   * @return Mono vuoto al completamento non bloccante delle notifiche.
+   */
+  public Mono<Void> checkAndExecuteWebhook(WebhookAction action, String identifier) {
+    return checkAndExecuteWebhook(action, null, identifier, null);
+  }
+
+  /**
    * Verifica ed esegue tutti i webhook configurati per l'azione specificata sui client OAuth2 censiti.
    *
-   * @param action Azione/evento che innesca la notifica (es. {@link WebhookAction#DELETE_USER}).
-   * @param bearer Token Bearer originale utilizzato per effettuare il Token Exchange.
+   * @param action Azione/evento che innesca la notifica.
+   * @param bearer Token Bearer originale opzionale per effettuare il Token Exchange.
    * @param identifier Identificatore univoco dell'entita' oggetto dell'evento (es. UUID utente).
-   * @param exchange Scambio HTTP corrente per il contesto di autorizzazione.
+   * @param exchange Scambio HTTP corrente opzionale per il contesto di autorizzazione.
    * @return Mono vuoto al completamento non bloccante di tutte le notifiche.
    */
   public Mono<Void> checkAndExecuteWebhook(
@@ -57,10 +69,8 @@ public class WebhookService {
 
     LOG.info("🚀 Webhook process initiated for action: {}, identifier: {}", action, identifier);
 
-    if (ObjectToolkit.isNullOrEmpty(bearer) || exchange == null) {
-      LOG.warn(
-          "⚠️ Webhook execution skipped: bearer token or ServerWebExchange is null for action {}",
-          action);
+    if (ObjectToolkit.isNullOrEmpty(identifier) || action == null) {
+      LOG.warn("⚠️ Webhook execution skipped: identifier or action is null");
       return Mono.empty();
     }
 
@@ -70,7 +80,12 @@ public class WebhookService {
         .filter(client -> !ObjectToolkit.isNullOrEmpty(client.getWebhooks()))
         .flatMap(client -> processClientWebhooks(client, action, bearer, identifier, exchange))
         .then()
-        .doOnSuccess(v -> LOG.info("🏁 Webhook processing completed for action: {}", action));
+        .doOnSuccess(
+            v ->
+                LOG.info(
+                    "🏁 Webhook processing completed for action: {}, identifier: {}",
+                    action,
+                    identifier));
   }
 
   /**
@@ -97,7 +112,12 @@ public class WebhookService {
         client.getClientId(),
         action);
 
-    return exchangeTokenForClient(client.getClientId(), bearer, exchange)
+    Mono<String> tokenMono =
+        (!ObjectToolkit.isNullOrEmpty(bearer) && exchange != null)
+            ? exchangeTokenForClient(client.getClientId(), bearer, exchange).defaultIfEmpty("")
+            : Mono.just("");
+
+    return tokenMono
         .flatMapMany(
             exchangedToken ->
                 dispatchWebhooks(

@@ -20,6 +20,8 @@ import io.github.giovannilamarmora.accesssphere.user.dto.UserUpdateRequest;
 import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.RegEx;
+import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
+import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
@@ -72,6 +74,7 @@ public class UserAccountService {
   @Autowired private UserService userService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private PermissionRoleManager permissionRoleManager;
+  @Autowired private WebhookService webhookService;
 
   /**
    * Recupera il profilo dell'utente attualmente autenticato nella sessione corrente.
@@ -168,6 +171,11 @@ public class UserAccountService {
               return userService.updateUser(targetUser, finalUserToUpdate);
             })
         .map(UserMapper::toResponse)
+        .flatMap(
+            resp ->
+                webhookService
+                    .checkAndExecuteWebhook(WebhookAction.UPDATE_USER, identifier)
+                    .thenReturn(resp))
         .doOnSuccess(
             updatedUser ->
                 LOG.info(
@@ -286,6 +294,12 @@ public class UserAccountService {
               user.setTokenReset(null);
               return userService.updateUser(user.getIdentifier(), user);
             })
+        .flatMap(
+            updatedUser ->
+                webhookService
+                    .checkAndExecuteWebhook(
+                        WebhookAction.RESET_PASSWORD, updatedUser.getIdentifier())
+                    .thenReturn(updatedUser))
         .doOnSuccess(
             user ->
                 LOG.info(

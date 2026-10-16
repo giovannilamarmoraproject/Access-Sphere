@@ -26,16 +26,26 @@ class WebhookUtilsTest {
   void testFilterMatchingWebhooks() {
     Webhook w1 = new Webhook("DeleteHook", "https://api.example.com/delete", WebhookAction.DELETE_USER);
     Webhook w2 = new Webhook("RegisterHook", "https://api.example.com/register", WebhookAction.REGISTER_USER);
+    Webhook w3 = new Webhook("LockHook", "https://api.example.com/lock", WebhookAction.LOCK_USER);
 
-    List<Webhook> webhooks = List.of(w1, w2);
+    List<Webhook> webhooks = List.of(w1, w2, w3);
 
     List<Webhook> deleteHooks = WebhookUtils.filterMatchingWebhooks(webhooks, WebhookAction.DELETE_USER);
     assertEquals(1, deleteHooks.size());
     assertEquals("DeleteHook", deleteHooks.getFirst().getName());
 
+    // Verifica interoperabilità CREATE_USER <-> REGISTER_USER
     List<Webhook> regHooks = WebhookUtils.filterMatchingWebhooks(webhooks, WebhookAction.REGISTER_USER);
     assertEquals(1, regHooks.size());
     assertEquals("RegisterHook", regHooks.getFirst().getName());
+
+    List<Webhook> createHooks = WebhookUtils.filterMatchingWebhooks(webhooks, WebhookAction.CREATE_USER);
+    assertEquals(1, createHooks.size());
+    assertEquals("RegisterHook", createHooks.getFirst().getName());
+
+    List<Webhook> lockHooks = WebhookUtils.filterMatchingWebhooks(webhooks, WebhookAction.LOCK_USER);
+    assertEquals(1, lockHooks.size());
+    assertEquals("LockHook", lockHooks.getFirst().getName());
 
     assertTrue(WebhookUtils.filterMatchingWebhooks(null, WebhookAction.DELETE_USER).isEmpty());
     assertTrue(WebhookUtils.filterMatchingWebhooks(List.of(), WebhookAction.DELETE_USER).isEmpty());

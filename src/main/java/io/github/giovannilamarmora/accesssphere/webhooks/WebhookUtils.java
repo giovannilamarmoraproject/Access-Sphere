@@ -29,6 +29,7 @@ public final class WebhookUtils {
 
   /**
    * Filtra la lista dei webhook configurati restituendo solo quelli abilitati per l'azione richiesta.
+   * Supporta l'interoperabilita' trasparente tra CREATE_USER e REGISTER_USER.
    *
    * @param webhooks Lista di webhook configurati per il client.
    * @param action Azione/evento target da filtrare.
@@ -40,8 +41,27 @@ public final class WebhookUtils {
       return List.of();
     }
     return webhooks.stream()
-        .filter(w -> !ObjectToolkit.isNullOrEmpty(w) && action.equals(w.getAction()))
+        .filter(w -> !ObjectToolkit.isNullOrEmpty(w) && isMatchingAction(w.getAction(), action))
         .toList();
+  }
+
+  /**
+   * Verifica se l'azione configurata sul webhook corrisponde all'evento scatenato,
+   * garantendo l'interoperabilita' bidirezionale tra CREATE_USER e REGISTER_USER.
+   *
+   * @param configuredAction Azione censita nel webhook del client.
+   * @param eventAction Azione/evento scatenato a runtime dal sistema.
+   * @return true se le azioni coincidono o sono sinonimi compatibili.
+   */
+  public static boolean isMatchingAction(WebhookAction configuredAction, WebhookAction eventAction) {
+    if (configuredAction == null || eventAction == null) {
+      return false;
+    }
+    if (configuredAction.equals(eventAction)) {
+      return true;
+    }
+    return (configuredAction == WebhookAction.CREATE_USER && eventAction == WebhookAction.REGISTER_USER)
+        || (configuredAction == WebhookAction.REGISTER_USER && eventAction == WebhookAction.CREATE_USER);
   }
 
   /**

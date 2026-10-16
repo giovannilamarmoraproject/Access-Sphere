@@ -38,21 +38,41 @@ class WebhookServiceTest {
   @InjectMocks private WebhookService webhookService;
 
   @Test
-  @DisplayName("checkAndExecuteWebhook should complete immediately if bearer or exchange is null")
-  void testNullBearerOrExchange() {
+  @DisplayName("checkAndExecuteWebhook should complete immediately if identifier or action is null")
+  void testNullIdentifierOrAction() {
     ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/").build());
 
     StepVerifier.create(
             webhookService.checkAndExecuteWebhook(
-                WebhookAction.DELETE_USER, null, "user-1", exchange))
+                null, "Bearer token", "user-1", exchange))
         .verifyComplete();
 
     StepVerifier.create(
             webhookService.checkAndExecuteWebhook(
-                WebhookAction.DELETE_USER, "Bearer token", "user-1", null))
+                WebhookAction.DELETE_USER, "Bearer token", null, exchange))
         .verifyComplete();
 
     verifyNoInteractions(oAuth2ClientDomainService);
+  }
+
+  @Test
+  @DisplayName("checkAndExecuteWebhook should execute webhook without token if bearer or exchange is omitted")
+  void testExecutionWithoutBearer() {
+    OAuth2Client client = new OAuth2Client();
+    client.setClientId("CLIENT_A");
+    client.setWebhooks(
+        List.of(new Webhook("LockHook", "https://example.com/lock", WebhookAction.LOCK_USER)));
+
+    when(oAuth2ClientDomainService.getOAuth2Clients()).thenReturn(Mono.just(List.of(client)));
+    when(webhookClient.execute(eq("https://example.com/lock"), eq(""), any(WebhookBody.class)))
+        .thenReturn(Mono.just(ResponseEntity.ok().build()));
+
+    StepVerifier.create(webhookService.checkAndExecuteWebhook(WebhookAction.LOCK_USER, "user-1"))
+        .verifyComplete();
+
+    verify(webhookClient, times(1))
+        .execute(eq("https://example.com/lock"), eq(""), any(WebhookBody.class));
+    verifyNoInteractions(oAuthService);
   }
 
   @Test
@@ -112,7 +132,7 @@ class WebhookServiceTest {
   }
 
   @Test
-  @DisplayName("checkAndExecuteWebhook should handle token exchange error gracefully without terminating stream")
+  @DisplayName("checkAndExecuteWebhook should handle token exchange error gracefully and still execute with empty token")
   void testTokenExchangeErrorResilience() {
     ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/").build());
 
@@ -124,12 +144,15 @@ class WebhookServiceTest {
     when(oAuth2ClientDomainService.getOAuth2Clients()).thenReturn(Mono.just(List.of(client)));
     when(oAuthService.tokenExchange(anyString(), any(), any()))
         .thenReturn(Mono.error(new RuntimeException("OAuth Error")));
+    when(webhookClient.execute(eq("https://example.com/del"), eq(""), any(WebhookBody.class)))
+        .thenReturn(Mono.just(ResponseEntity.ok().build()));
 
     StepVerifier.create(
             webhookService.checkAndExecuteWebhook(
                 WebhookAction.DELETE_USER, "Bearer token", "user-1", exchange))
         .verifyComplete();
 
-    verifyNoInteractions(webhookClient);
+    verify(webhookClient, times(1))
+        .execute(eq("https://example.com/del"), eq(""), any(WebhookBody.class));
   }
 }

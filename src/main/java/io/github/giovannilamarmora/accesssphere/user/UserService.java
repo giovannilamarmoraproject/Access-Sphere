@@ -139,8 +139,9 @@ public class UserService {
     List<UserClientRole> savedRoles =
         userRoleDomainService.saveUserRoles(identifier, user.getRoles());
     userSaved.setRoles(savedRoles);
-    // TODO: Da sviluppare il Webhook per il Salvataggio
-    return Mono.justOrEmpty(userSaved);
+    return webhookService
+        .checkAndExecuteWebhook(WebhookAction.CREATE_USER, identifier)
+        .thenReturn(userSaved);
   }
 
   /**

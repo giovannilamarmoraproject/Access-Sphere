@@ -21,6 +21,7 @@ import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.webhooks.WebhookService;
+import io.github.giovannilamarmora.accesssphere.webhooks.dto.WebhookAction;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class UserAdminService {
   @Autowired private UserService userService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private PermissionRoleManager permissionRoleManager;
+  @Autowired private WebhookService webhookService;
 
   /**
    * Recupera la lista degli utenti registrati nel sistema IAM.
@@ -272,7 +274,16 @@ public class UserAdminService {
 
               targetUser.setPassword(null);
               targetUser.setBlocked(block);
-              return userService.updateUser(identifier, targetUser).map(UserMapper::toResponse);
+              WebhookAction action =
+                  Boolean.TRUE.equals(block) ? WebhookAction.LOCK_USER : WebhookAction.UNLOCK_USER;
+              return userService
+                  .updateUser(identifier, targetUser)
+                  .map(UserMapper::toResponse)
+                  .flatMap(
+                      resp ->
+                          webhookService
+                              .checkAndExecuteWebhook(action, identifier)
+                              .thenReturn(resp));
             })
         .doOnSuccess(
             updatedUser ->
