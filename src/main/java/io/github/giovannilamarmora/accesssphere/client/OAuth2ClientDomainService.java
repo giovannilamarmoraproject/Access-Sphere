@@ -104,6 +104,7 @@ public class OAuth2ClientDomainService {
         OAUTH2_DOMAIN_LOG,
         oAuth2Client.getClientId());
     OAuth2ClientValidator.validateClientRoles(oAuth2Client);
+    OAuth2ClientValidator.validateClientWebhooks(oAuth2Client);
 
     boolean alreadyExist = oAuth2ClientRepository.existsByClientId(oAuth2Client.getClientId());
     if (alreadyExist) {
@@ -130,6 +131,7 @@ public class OAuth2ClientDomainService {
       OAuth2Client oAuth2Client, String clientId) {
     LOG.info("🔄 {} Updating client in Database: {}", OAUTH2_DOMAIN_LOG, clientId);
     OAuth2ClientValidator.validateClientRoles(oAuth2Client);
+    OAuth2ClientValidator.validateClientWebhooks(oAuth2Client);
 
     Optional<OAuth2Client> existingClient = oAuth2ClientRepository.findByClientId(clientId);
     if (existingClient.isEmpty()) {

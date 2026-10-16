@@ -301,26 +301,24 @@ public class UserAdminService {
     return userService
         .getUserByIdentifier(identifier)
         .flatMap(
-            targetUser ->
-                Mono.<Void>fromRunnable(
-                        () -> {
-                          if (permissionRoleManager.isAdminUser(targetUser.getUsername())) {
-                            LOG.error(
-                                "❌ Forbidden: User cannot delete the admin user {}", identifier);
-                            throw new OAuthException(
-                                ExceptionMap.ERR_OAUTH_403, "Cannot alter admin user");
-                          }
-                          if (permissionRoleManager.isCurrentUser(targetUser.getIdentifier())) {
-                            LOG.error(
-                                "❌ Forbidden: User cannot delete the current user {}", identifier);
-                            throw new OAuthException(
-                                ExceptionMap.ERR_OAUTH_403, "Cannot alter current user status");
-                          }
+            targetUser -> {
+              if (permissionRoleManager.isAdminUser(targetUser.getUsername())) {
+                LOG.error(
+                    "❌ Forbidden: User cannot delete the admin user {}", identifier);
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_403, "Cannot alter admin user");
+              }
+              if (permissionRoleManager.isCurrentUser(targetUser.getIdentifier())) {
+                LOG.error(
+                    "❌ Forbidden: User cannot delete the current user {}", identifier);
+                throw new OAuthException(
+                    ExceptionMap.ERR_OAUTH_403, "Cannot alter current user status");
+              }
 
-                          userService.deleteUserByIdentifier(
-                              targetUser.getIdentifier(), bearer, exchange);
-                        })
-                    .subscribeOn(Schedulers.boundedElastic()))
+              return userService
+                  .deleteUserByIdentifier(targetUser.getIdentifier(), bearer, exchange)
+                  .subscribeOn(Schedulers.boundedElastic());
+            })
         .doOnSuccess(
             unused ->
                 LOG.info(

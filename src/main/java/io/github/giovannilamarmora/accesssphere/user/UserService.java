@@ -227,12 +227,16 @@ public class UserService {
 
   /**
    * Cancella fisicamente un utente dal database locale tramite il suo identificatore univoco,
-   * rimuovendo a cascata anche le associazioni relazionali di ruoli in USER_CLIENT_ROLE.
+   * rimuovendo a cascata anche le associazioni relazionali di ruoli in USER_CLIENT_ROLE ed
+   * eseguendo i webhook configurati.
    *
    * @param identifier Identificatore univoco UUID dell'utente.
+   * @param bearer Token di autorizzazione del chiamante.
+   * @param exchange Scambio HTTP reattivo corrente.
+   * @return Mono vuoto indicante il completamento della cancellazione e dei webhook.
    */
   @Transactional
-  public void deleteUserByIdentifier(String identifier, String bearer, ServerWebExchange exchange) {
+  public Mono<Void> deleteUserByIdentifier(String identifier, String bearer, ServerWebExchange exchange) {
     LOG.info("🗑️ Deleting user and client roles from database, identifier: {}", identifier);
 
     userRoleDomainService.deleteUserRoles(identifier);
@@ -240,8 +244,7 @@ public class UserService {
 
     LOG.info("🗑️ Deleted user and client roles from database, identifier: {}", identifier);
 
-    // TODO: Da sistemare il Webhook
-    webhookService.checkAndExecuteWebhook(WebhookAction.DELETE_USER, bearer, identifier, exchange);
+    return webhookService.checkAndExecuteWebhook(WebhookAction.DELETE_USER, bearer, identifier, exchange);
   }
 
   /**

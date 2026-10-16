@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Modello di configurazione per un Webhook registrato su un Client OAuth2.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,9 +19,13 @@ public class Webhook {
   @Schema(description = "Nome identificativo del Webhook", example = "User Registration Webhook")
   private String name;
 
-  @Schema(description = "URL di destinazione per le notifiche HTTP POST del Webhook", example = "https://external-service.example.com/webhooks")
+  @Schema(
+      description = "URL di destinazione per le notifiche HTTP POST del Webhook",
+      example = "https://external-service.example.com/webhooks")
   private String url;
 
-  @Schema(description = "Azione/evento che innesca la chiamata del Webhook", example = "DELETE_USER")
+  @Schema(
+      description = "Azione/evento che innesca la chiamata del Webhook",
+      example = "DELETE_USER")
   private WebhookAction action;
 }
