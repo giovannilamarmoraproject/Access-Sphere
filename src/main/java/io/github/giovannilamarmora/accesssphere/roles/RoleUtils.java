@@ -44,6 +44,22 @@ public final class RoleUtils {
   }
 
   /**
+   * Estrae il set dei Client ID autorizzati (normalizzati in maiuscolo) dalla lista di definizioni
+   * di ruolo assegnate all'operatore.
+   *
+   * @param roles Lista di definizioni dei ruoli autorizzati per l'operatore.
+   * @return Set di Client ID in maiuscolo.
+   */
+  public static Set<String> extractAuthorizedClientIds(List<RoleDefinition> roles) {
+    if (ObjectToolkit.isNullOrEmpty(roles)) return Set.of();
+    return roles.stream()
+        .map(RoleDefinition::getClientId)
+        .filter(clientId -> !ObjectToolkit.isNullOrEmpty(clientId))
+        .map(clientId -> clientId.trim().toUpperCase())
+        .collect(Collectors.toSet());
+  }
+
+  /**
    * Costruisce una mappa di lookup in memoria O(1) indicizzata per la chiave composita
    * "CLIENT_ID:ROLE".
    *

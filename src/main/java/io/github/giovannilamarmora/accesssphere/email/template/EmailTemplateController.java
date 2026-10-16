@@ -1,6 +1,9 @@
 package io.github.giovannilamarmora.accesssphere.email.template;
 
 import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailSendTestRequest;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDeleteResponse;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateListResponse;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateRequest;
 import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateResponse;
 import io.github.giovannilamarmora.accesssphere.utilities.OpenAPI;
 import io.github.giovannilamarmora.utils.exception.dto.ExceptionResponse;
@@ -23,38 +26,12 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 /**
- * Contratto OpenAPI / Swagger per la gestione completa dei Template Email transazionali e di sistema.
- *
- * <p>Definisce le operazioni REST esposte da Access-Sphere per il ciclo di vita dei template email:
- * <ul>
- *   <li>Consultazione dei template registrati a catalogo (con supporto multi-tenant scoping).</li>
- *   <li>Creazione di nuovi template email con binding di categoria, client e lingua.</li>
- *   <li>Aggiornamento delle proprietà, del markup HTML e dei parametri dinamici {{KEY}} via identificatore univoco.</li>
- *   <li>Eliminazione permanente o rimozione mirata di varianti linguistiche.</li>
- *   <li>Collaudo e invio di email di test tramite integrazione SMTP reattiva.</li>
- * </ul>
- *
- * <p>Interconnessioni logiche:
- * <ul>
- *   <li>Implementato dalla classe controller {@link EmailTemplateControllerImpl}.</li>
- *   <li>Inoltra le richieste operative al service applicativo {@link EmailTemplateService}.</li>
- *   <li>I payload di richiesta e risposta utilizzano i DTO {@link EmailTemplateResponse} e {@link EmailSendTestRequest}.</li>
- *   <li>Tutte le risposte sono incapsulate nel wrapper standard di sistema {@link Response}.</li>
- * </ul>
+ * Contratto OpenAPI / Swagger per la gestione completa dei Template Email transazionali e di
+ * sistema.
  */
 @Tag(name = OpenAPI.Tag.EMAIL_TEMPLATE, description = OpenAPI.Description.EMAIL_TEMPLATE)
 public interface EmailTemplateController {
 
-  /**
-   * Recupera l'elenco completo di tutti i template email configurati nel sistema IAM.
-   *
-   * <p>Gli utenti con ruolo di amministratore globale (Super Admin) visualizzano tutti i template,
-   * mentre per i manager delegati l'elenco è limitato ai soli client di competenza autorizzati.
-   *
-   * @param bearer Token JWT Bearer dell'operatore autorizzato fornito nell'header di autorizzazione.
-   * @param request Richiesta HTTP server reattiva per il tracciamento del contesto.
-   * @return {@link Mono} contenente la {@link ResponseEntity} con il wrapper {@link Response} e la lista dei template.
-   */
   @GetMapping("/email-templates")
   @Operation(
       summary = "Get all email templates",
@@ -70,7 +47,7 @@ public interface EmailTemplateController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
+                    schema = @Schema(implementation = EmailTemplateListResponse.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized - Missing, expired or invalid Bearer token",
@@ -95,7 +72,7 @@ public interface EmailTemplateController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> getAllTemplates(
+  Mono<ResponseEntity<EmailTemplateListResponse>> getAllTemplates(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -104,16 +81,6 @@ public interface EmailTemplateController {
           String bearer,
       ServerHttpRequest request);
 
-  /**
-   * Registra un nuovo template email con metadati, markup HTML e parametri dinamici {{KEY}}.
-   *
-   * <p>Verifica rigorosamente l'assenza di collisioni di unicità sulla tripla (Categoria, ClientId, Lingua).
-   *
-   * @param bearer Token JWT Bearer dell'operatore autorizzato.
-   * @param dto DTO contenente identificatore, categoria, client target, locale, nome, oggetto e markup del template.
-   * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con stato HTTP 201 CREATED e il template memorizzato.
-   */
   @PostMapping("/email-templates")
   @Operation(
       summary = "Create new email template",
@@ -129,7 +96,7 @@ public interface EmailTemplateController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
+                    schema = @Schema(implementation = EmailTemplateResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description =
@@ -162,7 +129,7 @@ public interface EmailTemplateController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> createTemplate(
+  Mono<ResponseEntity<EmailTemplateResponse>> createTemplate(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -175,18 +142,9 @@ public interface EmailTemplateController {
               description =
                   "DTO containing information, parameters and HTML markup of the template to register",
               required = true)
-          EmailTemplateResponse dto,
+          EmailTemplateRequest dto,
       ServerHttpRequest request);
 
-  /**
-   * Aggiorna un template email esistente identificato dal suo UUID o codice univoco applicativo.
-   *
-   * @param bearer Token JWT Bearer dell'operatore autorizzato.
-   * @param identifier Identificatore univoco del template (da path variable REST).
-   * @param dto DTO con i campi aggiornati (oggetto, nome, lingua, descrizione, HTML, parametri).
-   * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con stato HTTP 200 OK e il template aggiornato.
-   */
   @PutMapping("/email-templates/{identifier}")
   @Operation(
       summary = "Update existing email template",
@@ -202,7 +160,7 @@ public interface EmailTemplateController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
+                    schema = @Schema(implementation = EmailTemplateResponse.class))),
         @ApiResponse(
             responseCode = "400",
             description =
@@ -243,7 +201,7 @@ public interface EmailTemplateController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> updateTemplate(
+  Mono<ResponseEntity<EmailTemplateResponse>> updateTemplate(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -262,17 +220,9 @@ public interface EmailTemplateController {
               description =
                   "DTO containing updated template properties, parameters and HTML markup",
               required = true)
-          EmailTemplateResponse dto,
+          EmailTemplateRequest dto,
       ServerHttpRequest request);
 
-  /**
-   * Elimina definitivamente un template email dal database tramite il suo identificatore univoco.
-   *
-   * @param bearer Token JWT Bearer dell'operatore autorizzato.
-   * @param identifier Identificatore univoco del template da eliminare.
-   * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con conferma di avvenuta rimozione.
-   */
   @DeleteMapping("/email-templates/{identifier}")
   @Operation(
       summary = "Delete email template",
@@ -288,7 +238,7 @@ public interface EmailTemplateController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
+                    schema = @Schema(implementation = EmailTemplateDeleteResponse.class))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized - Missing or invalid Bearer token",
@@ -319,7 +269,7 @@ public interface EmailTemplateController {
                     schema = @Schema(implementation = ExceptionResponse.class)))
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
-  Mono<ResponseEntity<Response>> deleteTemplate(
+  Mono<ResponseEntity<EmailTemplateDeleteResponse>> deleteTemplate(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           @Valid
           @Schema(
@@ -334,14 +284,6 @@ public interface EmailTemplateController {
           String identifier,
       ServerHttpRequest request);
 
-  /**
-   * Esegue l'invio di un'email di collaudo compilata con i parametri dinamici specificati.
-   *
-   * @param bearer Token JWT Bearer dell'operatore autorizzato.
-   * @param testRequest DTO contenente indirizzo destinatario, template ID / identifier, oggetto e mappa parametri.
-   * @param request Richiesta HTTP server reattiva.
-   * @return {@link Mono} contenente {@link ResponseEntity} con il resoconto dell'invio via {@link io.github.giovannilamarmora.accesssphere.email.sender.EmailSender}.
-   */
   @PostMapping("/email-templates/send-test")
   @Operation(
       summary = "Send test email",

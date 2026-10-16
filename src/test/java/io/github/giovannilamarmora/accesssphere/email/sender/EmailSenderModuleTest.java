@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateResponse;
+import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateDataResponse;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Date;
@@ -101,8 +101,8 @@ class EmailSenderModuleTest {
 
   @Test
   void testEmailSenderServiceSendWithTemplate() {
-    EmailTemplateResponse templateDTO =
-        EmailTemplateResponse.builder()
+    EmailTemplateDataResponse templateDTO =
+        EmailTemplateDataResponse.builder()
             .template("<h1>Ciao {{username}}</h1><p>Codice: {{code}}</p>")
             .params(Map.of("username", "{{username}}", "code", "{{code}}"))
             .build();
@@ -163,8 +163,8 @@ class EmailSenderModuleTest {
 
   @Test
   void testEmailSenderServiceWithDynamicMappedTemplate() {
-    EmailTemplateResponse templateDTO =
-        EmailTemplateResponse.builder()
+    EmailTemplateDataResponse templateDTO =
+        EmailTemplateDataResponse.builder()
             .template(
                 "<p>Hi {{NAME}}! Code: {{RESET_CODE}} on {{SITE_SHORT}} ({{SITE_URL}})</p>")
             .params(
@@ -198,8 +198,8 @@ class EmailSenderModuleTest {
 
   @Test
   void testEmailSenderServiceWithNamespacedTemplate() {
-    EmailTemplateResponse templateDTO =
-        EmailTemplateResponse.builder()
+    EmailTemplateDataResponse templateDTO =
+        EmailTemplateDataResponse.builder()
             .template(
                 "<p>Hi {{USER.NAME}}! Code: {{AUTH.RESET_CODE}} on {{APP.NAME}} ({{APP.URL}})</p>")
             .params(

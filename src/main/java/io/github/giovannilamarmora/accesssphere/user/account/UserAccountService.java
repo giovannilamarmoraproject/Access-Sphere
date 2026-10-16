@@ -1,11 +1,11 @@
 package io.github.giovannilamarmora.accesssphere.user.account;
 
-import io.github.giovannilamarmora.accesssphere.email.sender.EmailSender;
+import io.github.giovannilamarmora.accesssphere.email.sender.EmailParameterResolver;
+import io.github.giovannilamarmora.accesssphere.email.sender.EmailSenderService;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailContent;
 import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
-import io.github.giovannilamarmora.accesssphere.email.sender.dto.TemplateParam;
-import io.github.giovannilamarmora.accesssphere.email.template.EmailTemplateService;
-import io.github.giovannilamarmora.accesssphere.email.template.dto.EmailTemplateResponse;
+import io.github.giovannilamarmora.accesssphere.email.template.EmailTemplateDomainService;
+import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplate;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
@@ -55,8 +55,8 @@ import reactor.core.publisher.Mono;
  *   <li>Verifica i diritti di auto-modifica del profilo o la presenza di ruoli privilegiati tramite
  *       {@link AdminUserService} e {@link UserValidator#validateUpdate}.
  *   <li>Orchestra il flusso di reset password in due fasi, integrandosi con {@link
- *       EmailTemplateService} per il template localizzato e con {@link EmailSenderService} per la
- *       notifica.
+ *       EmailTemplateDomainService} per il template localizzato e con {@link EmailSenderService}
+ *       per la notifica.
  * </ul>
  */
 @Service
@@ -67,8 +67,8 @@ public class UserAccountService {
   private static final Logger LOG = LoggerFilter.getLogger(UserAccountService.class);
   private static final String USER_ACCOUNT_LOG = "User Account";
 
-  @Autowired private EmailTemplateService emailTemplateService;
-  @Autowired private EmailSender emailSender;
+  @Autowired private EmailTemplateDomainService emailTemplateDomainService;
+  @Autowired private EmailSenderService emailSenderService;
   @Autowired private UserService userService;
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private PermissionRoleManager permissionRoleManager;
@@ -215,8 +215,8 @@ public class UserAccountService {
             : "RESET_PASSWORD";
     String requestedClientId = changePassword.getClientId();
 
-    Mono<EmailTemplateResponse> emailTemplateMono =
-        emailTemplateService.getTemplateByCategoryLocaleAndClient(
+    Mono<EmailTemplate> emailTemplateMono =
+        emailTemplateDomainService.getTemplateByCategoryLocaleAndClient(
             categoryOrId, locale, requestedClientId);
 
     return Mono.zip(userMono, emailTemplateMono)
@@ -231,12 +231,11 @@ public class UserAccountService {
                       .sentDate(new Date())
                       .build();
 
-              Map<String, String> emailParams = TemplateParam.getTemplateParam(objects.getT1());
-              if (!ObjectToolkit.isNullOrEmpty(changePassword.getParams()))
-                emailParams.putAll(changePassword.getParams());
+              Map<String, String> emailParams =
+                  EmailParameterResolver.resolve(objects.getT1(), changePassword.getParams());
 
               if (sendEmail) {
-                return emailSender
+                return emailSenderService
                     .sendEmail(objects.getT2(), emailParams, emailContent)
                     .flatMap(updatedUserMono::thenReturn);
               } else {

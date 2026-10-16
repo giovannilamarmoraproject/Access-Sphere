@@ -1,64 +1,35 @@
 package io.github.giovannilamarmora.accesssphere.email.template.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.giovannilamarmora.utils.generic.GenericDTO;
+import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Map;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
- * Data Transfer Object per la consultazione, creazione e aggiornamento dei Template Email via API REST.
- *
- * <p>Mappato con annotazioni OpenAPI {@link Schema} per documentare esaustivamente le proprietà,
- * i vincoli di unicità e gli esempi realistici ad uso della documentazione Swagger UI.
+ * Standard OpenAPI response wrapper for a single Email Template.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Data Transfer Object for managing and retrieving email templates")
-public class EmailTemplateResponse extends GenericDTO {
+@Schema(description = "Standard response wrapper containing full details of an email template")
+public class EmailTemplateResponse extends Response {
+
+  @Schema(description = "HTTP status code of the operation", example = "200")
+  private Integer status;
 
   @Schema(
-      description = "Unique application identifier or UUID of the template",
-      example = "c7b2a5d1-9f3e-4b68-8a21-7e8c3f4a1d95")
-  private String identifier;
+      description = "Brief descriptive message of the operation outcome",
+      example = "Email Template successfully created")
+  private String message;
 
   @Schema(
-      description = "Application category of the template (e.g. RESET_PASSWORD, WELCOME_USER, MFA_OTP)",
-      example = "RESET_PASSWORD")
-  private String category;
+      description = "Unique trace identifier for the distributed request (Span ID)",
+      example = "d18124b1-ba15-4b51-a344-78e5a6c0a205")
+  private String spanId;
 
-  @Schema(
-      description = "OAuth 2.0 Client ID associated with the template. If null or empty, the template is global",
-      example = "ACCESS-SPHERE-AUTH")
-  private String clientId;
-
-  @Schema(description = "Descriptive display name of the template", example = "Reset Password")
-  private String name;
-
-  @Schema(description = "Subject line of the transactional email to be dispatched", example = "Reset Password")
-  private String subject;
-
-  @Schema(
-      description = "Textual summary describing the purpose and context of the template",
-      example = "Template for sending password reset security code")
-  private String description;
-
-  @Schema(
-      description = "Complete HTML markup for the email body, supporting dynamic placeholders in {{KEY}} format",
-      example = "<p>Dear {{NAME}}, click on the following link to reset your password: {{RESET_URL}}</p>")
-  private String template;
-
-  @Schema(
-      description = "Key-value map of standard placeholder parameters associated with the template",
-      example = "{\"SITE_URL\": \"https://accesssphere.io\", \"NAME\": \"Mario Rossi\", \"RESET_URL\": \"https://accesssphere.io/reset\"}")
-  private Map<String, String> params;
-
-  @Schema(
-      description = "ISO 639-1 language/locale code (e.g. 'en', 'it', 'es', 'fr', 'de'). If null or empty, the template is universal",
-      example = "en")
-  private String locale;
+  @Schema(description = "Details of the email template configured in the system")
+  private EmailTemplateDataResponse data;
 }
