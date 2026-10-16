@@ -1748,13 +1748,14 @@ body.swal2-shown .m3-mobile-bottom-nav,
         display: none !important;
     }
 
+    .glass-header .header-container,
     .header-container {
         height: 66px !important;
         padding: 0 1rem !important;
         display: flex !important;
         align-items: center !important;
-        justify-content: space-between !important;
-        gap: 10px !important;
+        justify-content: flex-start !important;
+        gap: 12px !important;
     }
 
     /* Hamburger button is positioned on the LEFT */
@@ -1771,12 +1772,14 @@ body.swal2-shown .m3-mobile-bottom-nav,
         flex-shrink: 0 !important;
     }
 
-    /* Compact brand elements on mobile/tablet */
+    /* Compact brand elements on mobile/tablet positioned immediately next to the hamburger button */
     .glass-header .header-container > div:first-of-type {
         display: flex !important;
         align-items: center !important;
         gap: 0.6rem !important;
         min-width: 0;
+        margin: 0 !important;
+        justify-content: flex-start !important;
     }
 
     /* Rimuovi i bottoni cerchiati dall'header mobile (Refresh, Logout) */

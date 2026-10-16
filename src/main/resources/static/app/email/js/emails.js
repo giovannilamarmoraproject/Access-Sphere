@@ -24,20 +24,35 @@ let isSavingTemplate = false;
 let isEditorNewVariant = false;
 
 const DYNAMIC_PREVIEW_VALUES = {
-    "USER.NAME": "Mario Rossi",
-    "USER.SURNAME": "Rossi",
-    "USER.FULL_NAME": "Mario Rossi",
-    "USER.USERNAME": "mario.rossi",
-    "USER.EMAIL": "mario.rossi@example.com",
-    "USER.RESET_TOKEN": "123456",
-    "AUTH.RESET_CODE": "123456",
-    "AUTH.VERIFY_URL": "https://accesssphere.io/verify?token=123456789abcdef",
-    "AUTH.OTP_CODE": "890123",
-    "AUTH.EXPIRE_MINUTES": "10",
-    "AUTH.LOCK_REASON": "Troppi tentativi di accesso falliti",
+    "{{USER.NAME}}": "{{USER.NAME}}",
+    "{{USER.SURNAME}}": "{{USER.SURNAME}}",
+    "{{USER.FULL_NAME}}": "{{USER.FULL_NAME}}",
+    "{{USER.USERNAME}}": "{{USER.USERNAME}}",
+    "{{USER.EMAIL}}": "{{USER.EMAIL}}",
+    "{{USER.RESET_TOKEN}}": "{{AUTH.RESET_CODE}}",
+    "{{AUTH.RESET_CODE}}": "{{AUTH.RESET_CODE}}",
+    "{{AUTH.VERIFY_URL}}": "{{AUTH.VERIFY_URL}}",
+    "{{AUTH.OTP_CODE}}": "{{AUTH.OTP_CODE}}",
+    "{{AUTH.EXPIRE_MINUTES}}": "15",
+    "{{AUTH.LOCK_REASON}}": "Please contact the administrator for more information",
+    "{{APP.NAME}}": "Access Sphere",
+    "{{APP.URL}}": (typeof window !== "undefined" && window.location) ? window.location.origin : "https://accesssphere.io",
+    "{{APP.SUPPORT_URL}}": (typeof window !== "undefined" && window.location) ? window.location.origin + "/support" : "https://accesssphere.io/support",
+    "{{CLIENT.ID}}": "ACCESS-SPHERE-AUTH",
+    "USER.NAME": "{{USER.NAME}}",
+    "USER.SURNAME": "{{USER.SURNAME}}",
+    "USER.FULL_NAME": "{{USER.FULL_NAME}}",
+    "USER.USERNAME": "{{USER.USERNAME}}",
+    "USER.EMAIL": "{{USER.EMAIL}}",
+    "USER.RESET_TOKEN": "{{AUTH.RESET_CODE}}",
+    "AUTH.RESET_CODE": "{{AUTH.RESET_CODE}}",
+    "AUTH.VERIFY_URL": "{{AUTH.VERIFY_URL}}",
+    "AUTH.OTP_CODE": "{{AUTH.OTP_CODE}}",
+    "AUTH.EXPIRE_MINUTES": "15",
+    "AUTH.LOCK_REASON": "Please contact the administrator for more information",
     "APP.NAME": "Access Sphere",
-    "APP.URL": "https://accesssphere.io",
-    "APP.SUPPORT_URL": "https://accesssphere.io/support",
+    "APP.URL": (typeof window !== "undefined" && window.location) ? window.location.origin : "https://accesssphere.io",
+    "APP.SUPPORT_URL": (typeof window !== "undefined" && window.location) ? window.location.origin + "/support" : "https://accesssphere.io/support",
     "CLIENT.ID": "ACCESS-SPHERE-AUTH"
 };
 
@@ -56,10 +71,10 @@ const EMAIL_CATEGORIES = {
         defaultName: "Reimpostazione Password",
         defaultSubject: "Reimposta la tua password",
         defaultParams: {
-            SITE_URL: "APP.URL",
-            NAME: "USER.NAME",
-            RESET_CODE: "AUTH.RESET_CODE",
-            SITE_SHORT: "APP.NAME"
+            SITE_URL: "{{APP.URL}}",
+            NAME: "{{USER.NAME}}",
+            RESET_CODE: "{{AUTH.RESET_CODE}}",
+            SITE_SHORT: "{{APP.NAME}}"
         }
     },
     WELCOME_USER: {
@@ -72,10 +87,10 @@ const EMAIL_CATEGORIES = {
         defaultName: "Benvenuto Utente",
         defaultSubject: "Benvenuto in Access Sphere",
         defaultParams: {
-            SITE_URL: "APP.URL",
-            NAME: "USER.NAME",
-            USERNAME: "USER.USERNAME",
-            SITE_SHORT: "APP.NAME"
+            SITE_URL: "{{APP.URL}}",
+            NAME: "{{USER.NAME}}",
+            USERNAME: "{{USER.USERNAME}}",
+            SITE_SHORT: "{{APP.NAME}}"
         }
     },
     EMAIL_VERIFICATION: {
@@ -88,10 +103,10 @@ const EMAIL_CATEGORIES = {
         defaultName: "Verifica Indirizzo Email",
         defaultSubject: "Verifica il tuo indirizzo email",
         defaultParams: {
-            SITE_URL: "APP.URL",
-            NAME: "USER.NAME",
-            VERIFY_URL: "AUTH.VERIFY_URL",
-            SITE_SHORT: "APP.NAME"
+            SITE_URL: "{{APP.URL}}",
+            NAME: "{{USER.NAME}}",
+            VERIFY_URL: "{{AUTH.VERIFY_URL}}",
+            SITE_SHORT: "{{APP.NAME}}"
         }
     },
     MFA_OTP: {
@@ -104,11 +119,11 @@ const EMAIL_CATEGORIES = {
         defaultName: "Codice OTP MFA",
         defaultSubject: "Il tuo codice di sicurezza MFA",
         defaultParams: {
-            SITE_URL: "APP.URL",
-            NAME: "USER.NAME",
-            OTP_CODE: "AUTH.OTP_CODE",
-            EXPIRATION_MINUTES: "AUTH.EXPIRE_MINUTES",
-            SITE_SHORT: "APP.NAME"
+            SITE_URL: "{{APP.URL}}",
+            NAME: "{{USER.NAME}}",
+            OTP_CODE: "{{AUTH.OTP_CODE}}",
+            EXPIRATION_MINUTES: "15",
+            SITE_SHORT: "{{APP.NAME}}"
         }
     },
     ACCOUNT_LOCKED: {
@@ -121,11 +136,11 @@ const EMAIL_CATEGORIES = {
         defaultName: "Avviso Account Bloccato",
         defaultSubject: "Avviso di sicurezza: Account temporaneamente bloccato",
         defaultParams: {
-            SITE_URL: "APP.URL",
-            NAME: "USER.NAME",
-            LOCK_REASON: "AUTH.LOCK_REASON",
-            SUPPORT_URL: "APP.SUPPORT_URL",
-            SITE_SHORT: "APP.NAME"
+            SITE_URL: "{{APP.URL}}",
+            NAME: "{{USER.NAME}}",
+            LOCK_REASON: "Please contact the administrator for more information",
+            SUPPORT_URL: "{{APP.SUPPORT_URL}}",
+            SITE_SHORT: "{{APP.NAME}}"
         }
     }
 };
@@ -769,27 +784,27 @@ function autoExtractParamsFromHtml() {
     foundKeys.forEach((k) => {
         if (!currentKeys.has(k)) {
             // Mappatura predefinita intelligente verso espressioni dinamiche di sistema
-            let defaultVal = "USER.NAME";
-            if (k === "NAME") defaultVal = "USER.NAME";
-            else if (k === "SURNAME") defaultVal = "USER.SURNAME";
-            else if (k === "USERNAME") defaultVal = "USER.USERNAME";
-            else if (k === "EMAIL") defaultVal = "USER.EMAIL";
-            else if (k === "RESET_CODE") defaultVal = "AUTH.RESET_CODE";
-            else if (k === "RESET_TOKEN") defaultVal = "USER.RESET_TOKEN";
-            else if (k === "OTP_CODE" || k === "OTP") defaultVal = "AUTH.OTP_CODE";
-            else if (k === "VERIFY_URL") defaultVal = "AUTH.VERIFY_URL";
-            else if (k === "EXPIRATION_MINUTES" || k === "EXPIRE_MINUTES") defaultVal = "AUTH.EXPIRE_MINUTES";
-            else if (k === "LOCK_REASON") defaultVal = "AUTH.LOCK_REASON";
-            else if (k === "SUPPORT_URL") defaultVal = "APP.SUPPORT_URL";
-            else if (k === "SITE_URL" || k === "APP_URL") defaultVal = "APP.URL";
-            else if (k === "SITE_SHORT" || k === "APP_NAME" || k === "SITE_NAME") defaultVal = "APP.NAME";
-            else if (k === "CLIENT_ID") defaultVal = "CLIENT.ID";
-            else if (k.includes("URL")) defaultVal = "APP.URL";
-            else if (k.includes("CODE") || k.includes("TOKEN") || k.includes("OTP")) defaultVal = "AUTH.RESET_CODE";
-            else if (k.includes("NAME")) defaultVal = "USER.NAME";
-            else if (k.includes("EMAIL")) defaultVal = "USER.EMAIL";
-            else if (k.includes("SITE") || k.includes("APP")) defaultVal = "APP.NAME";
-            else defaultVal = "USER." + k;
+            let defaultVal = "{{USER.NAME}}";
+            if (k === "NAME") defaultVal = "{{USER.NAME}}";
+            else if (k === "SURNAME") defaultVal = "{{USER.SURNAME}}";
+            else if (k === "USERNAME") defaultVal = "{{USER.USERNAME}}";
+            else if (k === "EMAIL") defaultVal = "{{USER.EMAIL}}";
+            else if (k === "RESET_CODE") defaultVal = "{{AUTH.RESET_CODE}}";
+            else if (k === "RESET_TOKEN") defaultVal = "{{AUTH.RESET_CODE}}";
+            else if (k === "OTP_CODE" || k === "OTP") defaultVal = "{{AUTH.OTP_CODE}}";
+            else if (k === "VERIFY_URL") defaultVal = "{{AUTH.VERIFY_URL}}";
+            else if (k === "EXPIRATION_MINUTES" || k === "EXPIRE_MINUTES") defaultVal = "15";
+            else if (k === "LOCK_REASON") defaultVal = "Please contact the administrator for more information";
+            else if (k === "SUPPORT_URL") defaultVal = "{{APP.SUPPORT_URL}}";
+            else if (k === "SITE_URL" || k === "APP_URL") defaultVal = "{{APP.URL}}";
+            else if (k === "SITE_SHORT" || k === "APP_NAME" || k === "SITE_NAME") defaultVal = "{{APP.NAME}}";
+            else if (k === "CLIENT_ID") defaultVal = "{{CLIENT.ID}}";
+            else if (k.includes("URL")) defaultVal = "{{APP.URL}}";
+            else if (k.includes("CODE") || k.includes("TOKEN") || k.includes("OTP")) defaultVal = "{{AUTH.RESET_CODE}}";
+            else if (k.includes("NAME")) defaultVal = "{{USER.NAME}}";
+            else if (k.includes("EMAIL")) defaultVal = "{{USER.EMAIL}}";
+            else if (k.includes("SITE") || k.includes("APP")) defaultVal = "{{APP.NAME}}";
+            else defaultVal = "{{USER." + k + "}}";
 
             addParamRow(k, defaultVal);
             addedCount++;
