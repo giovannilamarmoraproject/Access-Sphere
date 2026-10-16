@@ -2650,5 +2650,23 @@ div.dt-container div.dt-paging button.dt-paging-button.current {
     border-radius: 8px !important;
 }
 
-
-
+/* ==========================================================================
+   SETTINGS & BENTO CARD ICONS: STRICTLY SQUARE (SQUIRCLE)
+   Prevents flex-shrink horizontal compression into oval/pill shapes on mobile
+   ========================================================================== */
+.settings-card-icon,
+.m3-bento-card-icon {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    max-width: 40px !important;
+    max-height: 40px !important;
+    aspect-ratio: 1 / 1 !important;
+    flex-shrink: 0 !important;
+    border-radius: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}

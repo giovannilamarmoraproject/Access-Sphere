@@ -209,12 +209,14 @@ function getUser() {
   // Fallback via API reattiva invece di reindirizzare immediatamente
   console.log("Recupero dati utente da API per identificativo:", identifier);
   const token = getCookieOrStorage(config.access_token);
-  GET(config.users_url, token).then(async (res) => {
+  const targetUrl = (config.users_url || (config.baseUrl + "/v1/users")) + "/" + encodeURIComponent(identifier);
+  GET(targetUrl, token).then(async (res) => {
     try {
       const data = await res.json();
-      if (data && data.data && Array.isArray(data.data)) {
-        localStorage.setItem(config.client_id + "_usersData", JSON.stringify(data.data));
-        const user = data.data.find((u) => u.identifier == identifier || u.username == identifier);
+      if (data && data.data) {
+        const user = Array.isArray(data.data)
+            ? data.data.find((u) => u.identifier == identifier || u.username == identifier)
+            : data.data;
         if (user) {
           populateUserData(user);
         } else {

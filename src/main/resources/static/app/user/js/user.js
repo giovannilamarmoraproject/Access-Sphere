@@ -35,16 +35,18 @@ function getUser() {
 
   console.log("Recupero dati utente da API...");
   const token = getCookieOrStorage(config.access_token);
-  GET(config.users_url, token).then(async (res) => {
+  const targetUrl = (config.users_url || (config.baseUrl + "/v1/users")) + "/" + encodeURIComponent(identifier);
+  GET(targetUrl, token).then(async (res) => {
     try {
       const data = await res.json();
       if (data && data.error && typeof isUnauthorizedError === "function" && isUnauthorizedError(data.error)) {
         if (typeof logout === "function") logout();
         return;
       }
-      if (data && data.data && Array.isArray(data.data)) {
-        localStorage.setItem(config.client_id + "_usersData", JSON.stringify(data.data));
-        const user = data.data.find((u) => u.identifier == identifier || u.username == identifier);
+      if (data && data.data) {
+        const user = Array.isArray(data.data)
+            ? data.data.find((u) => u.identifier == identifier || u.username == identifier)
+            : data.data;
         if (user) {
           displayUserData(user);
         } else {
