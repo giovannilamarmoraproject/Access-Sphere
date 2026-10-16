@@ -1,6 +1,5 @@
 package io.github.giovannilamarmora.accesssphere.mfa;
 
-import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService;
 import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAConfirmationRequest;
@@ -16,6 +15,8 @@ import io.github.giovannilamarmora.accesssphere.mfa.session.MFASessionService;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategy;
 import io.github.giovannilamarmora.accesssphere.mfa.strategy.MFAStrategyFactory;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
+import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
+import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.UserValidator;
 import io.github.giovannilamarmora.utils.generic.Response;
@@ -38,7 +39,7 @@ import reactor.core.publisher.Mono;
  * <p>Responsabilità:
  * <ul>
  *   <li>Validazione rigorosa dei parametri di richiesta tramite {@link MFAValidator}.</li>
- *   <li>Verifica di sicurezza sull'identità dell'utente operatore tramite {@link UserValidator} e {@link AdminUserService}.</li>
+ *   <li>Verifica di sicurezza sull'identità dell'utente operatore tramite {@link UserValidator} e {@link PermissionRoleManager}.</li>
  *   <li>Delega la generazione e verifica delle credenziali alla strategia appropriata (TOTP o EMAIL) tramite {@link MFAStrategyFactory}.</li>
  *   <li>Restituisce DTO di risposta puri, delegando la creazione di {@link ResponseEntity} al Controller layer.</li>
  * </ul>
@@ -54,7 +55,7 @@ public class MFAService {
   @Autowired private OAuth2Authorization oAuth2Authorization;
   @Autowired private MFASessionService mfaSessionService;
   @Autowired private MFAAuthenticationService mfaAuthenticationService;
-  @Autowired private AdminUserService techUserService;
+  @Autowired private PermissionRoleManager permissionRoleManager;
 
   /**
    * Inizializza il setup MFA per l'utente generando un secret TOTP (con QR code) o inviando un codice OTP via Email.
@@ -67,7 +68,7 @@ public class MFAService {
     LOG.info("🔐 [MFA SETUP] Process started for user: {}", setupRequest.identifier());
     MFAValidator.validateSetupRequest(setupRequest);
 
-    if (!techUserService.isTechUser()) {
+    if (!permissionRoleManager.hasAdminPermission(SystemPermission.USERS_WRITE)) {
       UserValidator.validateIdentifier(
           setupRequest.identifier(), oAuth2Authorization.getIdentifier());
     }
@@ -99,7 +100,7 @@ public class MFAService {
         confirmationRequest.identifier());
     MFAValidator.validateConfirmationRequest(confirmationRequest);
 
-    if (!techUserService.isTechUser()) {
+    if (!permissionRoleManager.hasAdminPermission(SystemPermission.USERS_WRITE)) {
       UserValidator.validateIdentifier(
           confirmationRequest.identifier(), oAuth2Authorization.getIdentifier());
     }
@@ -229,7 +230,7 @@ public class MFAService {
     }
 
     if (!ObjectToolkit.isNullOrEmpty(identifier)) {
-      if (!techUserService.isTechUser()) {
+      if (!permissionRoleManager.hasAdminPermission(SystemPermission.USERS_WRITE)) {
         UserValidator.validateIdentifier(identifier, oAuth2Authorization.getIdentifier());
       }
       return identifier;
@@ -248,7 +249,7 @@ public class MFAService {
   public Mono<MFADataResponse> manageMFA(MFAManageRequest request) {
     MFAValidator.validateManageRequest(request);
 
-    if (!techUserService.isTechUser()) {
+    if (!permissionRoleManager.hasAdminPermission(SystemPermission.USERS_WRITE)) {
       UserValidator.validateIdentifier(
           request.identifier(), oAuth2Authorization.getIdentifier());
     }

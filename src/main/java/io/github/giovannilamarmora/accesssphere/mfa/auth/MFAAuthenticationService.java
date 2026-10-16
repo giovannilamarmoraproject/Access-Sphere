@@ -2,7 +2,6 @@ package io.github.giovannilamarmora.accesssphere.mfa.auth;
 
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAMapper;
@@ -20,6 +19,7 @@ import io.github.giovannilamarmora.accesssphere.mfa.strategy.EmailStrategy;
 import io.github.giovannilamarmora.accesssphere.oAuth.auth.AuthService;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthTokenResponse;
+import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.token.model.AuthToken;
@@ -71,7 +71,7 @@ public class MFAAuthenticationService {
   @Autowired private OAuth2ClientDomainService oAuth2ClientDomainService;
   @Autowired private TokenService tokenService;
   @Autowired private MFASessionService mfaSessionService;
-  @Autowired private AdminUserService techUserService;
+  @Autowired private PermissionRoleManager permissionRoleManager;
   @Autowired @Lazy private EmailStrategy emailStrategy;
 
   /**
@@ -206,7 +206,9 @@ public class MFAAuthenticationService {
     return clientCredentialMono.flatMap(
         clientCredential -> {
           SubjectType subjectType =
-              techUserService.isTechnicalUser(user) ? SubjectType.TECHNICAL : SubjectType.CUSTOMER;
+              permissionRoleManager.isAdminUser(user.getUsername())
+                  ? SubjectType.TECHNICAL
+                  : SubjectType.CUSTOMER;
           JWTData jwtData = JWTData.generateJWTData(user, clientCredential, subjectType, request);
           return userService
               .getUserByEmail(jwtData.getEmail())
