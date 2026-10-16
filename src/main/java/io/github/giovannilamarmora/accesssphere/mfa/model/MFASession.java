@@ -1,0 +1,43 @@
+package io.github.giovannilamarmora.accesssphere.mfa.model;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.TokenStatus;
+import io.github.giovannilamarmora.utils.generic.GenericDTO;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+/**
+ * Modello di dominio rappresentante la sessione temporanea di autenticazione a due fattori.
+ */
+@EqualsAndHashCode(callSuper = true)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class MFASession extends GenericDTO {
+
+  private String tempToken;
+
+  private LoginStatus loginStatus;
+
+  private List<MFAType> mfaMethods;
+
+  private String subject;
+
+  private String clientId;
+
+  private String sessionId;
+
+  private String identifier;
+
+  private Long issueDate;
+
+  private Long expireDate;
+
+  private Object payload;
+
+  private TokenStatus status;
+}

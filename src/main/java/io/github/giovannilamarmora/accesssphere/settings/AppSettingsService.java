@@ -11,7 +11,7 @@ import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.settings.database.AppSettingsRepository;
 import io.github.giovannilamarmora.accesssphere.settings.dto.AppSettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.dto.BackupDataDTO;
-import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
+import io.github.giovannilamarmora.accesssphere.settings.model.AppSettings;
 import io.github.giovannilamarmora.accesssphere.user.database.IUserDAO;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
@@ -36,9 +36,9 @@ import reactor.core.publisher.Mono;
  * <p>
  * Responsabilità:
  * <ul>
- *   <li>Funge da Gatekeeper di sicurezza verificando i permessi RBAC (settings:read, settings:write, backup:manage) tramite {@link PermissionRoleManager}.</li>
+ *   <li>Funge da Gatekeeper di sicurezza verificando i permessi RBAC (settings:write, backup:manage) tramite {@link PermissionRoleManager}.</li>
  *   <li>Mantiene una cache atomica in memoria per le letture frequenti di branding e layout.</li>
- *   <li>Delega la persistenza e il tracciamento a {@link AppSettingsRepository}.</li>
+ *   <li>Delega la persistenza e il tracciamento a {@link AppSettingsRepository} lavorando con il modello di dominio {@link AppSettings}.</li>
  *   <li>Coordina la generazione e il ripristino atomico degli snapshot completi del sistema.</li>
  * </ul>
  */
@@ -62,7 +62,7 @@ public class AppSettingsService {
   private final AtomicReference<AppSettingsDTO> publicCache = new AtomicReference<>();
 
   /**
-   * Recupera le impostazioni applicative correnti dalla cache o da database.
+   * Recupera le impostazioni applicative correnti dalla cache o da repository di dominio.
    * Utilizzabile sia da contesti autenticati (backoffice) sia pubblici (login/branding).
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
@@ -74,16 +74,15 @@ public class AppSettingsService {
     return Mono.fromCallable(
         () -> {
           LOG.debug("⚙️ Loading application settings from repository");
-          List<AppSettingsEntity> list = appSettingsRepository.findAll();
-          AppSettingsEntity entity;
-          if (list.isEmpty()) {
-            AppSettingsEntity defaultEntity = new AppSettingsEntity();
-            entity = appSettingsRepository.save(defaultEntity);
-            appSettingsRepository.flush();
+          Optional<AppSettings> primaryOpt = appSettingsRepository.findPrimary();
+          AppSettings model;
+          if (primaryOpt.isEmpty()) {
+            AppSettings defaultModel = new AppSettings();
+            model = appSettingsRepository.save(defaultModel);
           } else {
-            entity = list.getFirst();
+            model = primaryOpt.get();
           }
-          AppSettingsDTO dto = AppSettingsMapper.toDTO(entity);
+          AppSettingsDTO dto = AppSettingsMapper.toDTO(model);
           publicCache.set(dto);
           return dto;
         });
@@ -101,21 +100,15 @@ public class AppSettingsService {
     return Mono.fromCallable(
         () -> {
           LOG.info("⚙️ Updating application settings");
-          List<AppSettingsEntity> list = appSettingsRepository.findAll();
-          AppSettingsEntity entity;
-          if (list.isEmpty()) {
-            entity = AppSettingsMapper.toEntity(dto);
-          } else {
-            entity = list.getFirst();
-            AppSettingsMapper.updateEntity(entity, dto);
-          }
-          AppSettingsEntity saved = appSettingsRepository.save(entity);
-          appSettingsRepository.flush();
+          Optional<AppSettings> primaryOpt = appSettingsRepository.findPrimary();
+          AppSettings model = AppSettingsMapper.toModel(dto);
+          primaryOpt.ifPresent(primary -> model.setId(primary.getId()));
+
+          AppSettings saved = appSettingsRepository.save(model);
           AppSettingsDTO savedDto = AppSettingsMapper.toDTO(saved);
           publicCache.set(savedDto);
           LOG.info(
-              "✅ Application settings updated successfully: appName='{}', theme='{}', lang='{}'",
-              saved.getAppName(),
+              "✅ Application settings updated successfully: theme='{}', lang='{}'",
               saved.getActiveTheme(),
               saved.getDefaultLanguage());
           return savedDto;
@@ -132,8 +125,7 @@ public class AppSettingsService {
     return Mono.fromCallable(
         () -> {
           LOG.info("📦 Creating complete application backup initiated by {}", exportedBy);
-          List<AppSettingsEntity> settingsList = appSettingsRepository.findAll();
-          AppSettingsEntity settings = settingsList.isEmpty() ? null : settingsList.getFirst();
+          AppSettings settings = appSettingsRepository.findPrimary().orElse(null);
           List<OAuth2ClientEntity> clients = clientDAO.findAll();
           List<UserEntity> users = userDAO.findAll();
           List<RoleDefinitionEntity> roles = roleDefinitionDAO.findAll();
@@ -172,16 +164,10 @@ public class AppSettingsService {
               backupData.getTimestamp());
 
           if (backupData.getSettings() != null) {
-            AppSettingsEntity importedSettings = backupData.getSettings();
-            List<AppSettingsEntity> current = appSettingsRepository.findAll();
-            if (!current.isEmpty()) {
-              importedSettings.setId(current.getFirst().getId());
-            } else {
-              importedSettings.setId(null);
-            }
-            importedSettings.syncCategoryMapsBeforeSave();
-            AppSettingsEntity saved = appSettingsRepository.save(importedSettings);
-            appSettingsRepository.flush();
+            AppSettings importedSettings = backupData.getSettings();
+            Optional<AppSettings> current = appSettingsRepository.findPrimary();
+            current.ifPresent(appSettings -> importedSettings.setId(appSettings.getId()));
+            AppSettings saved = appSettingsRepository.save(importedSettings);
             publicCache.set(AppSettingsMapper.toDTO(saved));
           }
 
@@ -223,24 +209,32 @@ public class AppSettingsService {
             }
           }
 
-          if (backupData.getUserClientRoles() != null
-              && !backupData.getUserClientRoles().isEmpty()) {
+          if (backupData.getUserClientRoles() != null && !backupData.getUserClientRoles().isEmpty()) {
             for (UserClientRoleEntity ucr : backupData.getUserClientRoles()) {
-              boolean exists =
-                  userClientRoleDAO.existsByUserIdentifierAndClientIdAndRole(
-                       ucr.getUserIdentifier(), ucr.getClientId(), ucr.getRole());
-              if (!exists) {
+              List<UserClientRoleEntity> existingList =
+                  userClientRoleDAO.findByUserIdentifierAndClientId(
+                      ucr.getUserIdentifier(), ucr.getClientId());
+              Optional<UserClientRoleEntity> existing =
+                  existingList.stream()
+                      .filter(e -> e.getRole() != null && e.getRole().equalsIgnoreCase(ucr.getRole()))
+                      .findFirst();
+              if (existing.isPresent()) {
+                ucr.setId(existing.get().getId());
+              } else {
                 ucr.setId(null);
-                userClientRoleDAO.save(ucr);
               }
+              userClientRoleDAO.save(ucr);
             }
           }
 
-          LOG.info("🎉 Application restore completed successfully!");
-          return "Ripristino completato con successo!";
+          LOG.info("✅ Application backup restored successfully");
+          return "Application backup restored successfully";
         });
   }
 
+  /**
+   * Invalida la cache in memoria forzando il ricaricamento al prossimo accesso.
+   */
   public void invalidateCache() {
     publicCache.set(null);
   }

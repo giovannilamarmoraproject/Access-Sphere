@@ -5,68 +5,63 @@ import io.github.giovannilamarmora.accesssphere.settings.dto.BrandingSettingsDTO
 import io.github.giovannilamarmora.accesssphere.settings.dto.LoginSettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.dto.PolicySettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
+import io.github.giovannilamarmora.accesssphere.settings.model.AppSettings;
+import io.github.giovannilamarmora.accesssphere.settings.model.BrandingSettings;
+import io.github.giovannilamarmora.accesssphere.settings.model.LoginSettings;
+import io.github.giovannilamarmora.accesssphere.settings.model.PolicySettings;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
- * Mapper bidirezionale tra AppSettingsEntity e AppSettingsDTO.
- * Gestisce la conversione tra le mappe serializzate JSON persistite a DB
- * e gli oggetti DTO tipizzati per categoria (Branding, Login, Policy).
+ * Mapper completo tra Entity relazionale (JPA), Model di dominio e DTO/Response di trasporto.
  */
 @Component
 public class AppSettingsMapper {
 
-  /**
-   * Converte un'entità AppSettingsEntity nel DTO tipizzato AppSettingsDTO.
-   *
-   * @param entity entità da convertire
-   * @return AppSettingsDTO popolato con categorie tipizzate
-   */
-  public static AppSettingsDTO toDTO(AppSettingsEntity entity) {
+  // =========================================================================
+  // Entity <-> Model (Utilizzati dal Repository)
+  // =========================================================================
+
+  public static List<AppSettings> toModelList(List<AppSettingsEntity> entities) {
+    if (entities == null) return List.of();
+    return entities.stream().map(AppSettingsMapper::toModel).toList();
+  }
+
+  public static AppSettings toModel(AppSettingsEntity entity) {
     if (entity == null) {
       entity = new AppSettingsEntity();
     }
     entity.syncCategoryMapsBeforeSave();
 
-    AppSettingsDTO dto = new AppSettingsDTO();
-    dto.setId(entity.getId());
-    dto.setActiveTheme(entity.getActiveTheme());
-    dto.setDefaultLanguage(entity.getDefaultLanguage());
-    dto.setNavigationLayout(
+    AppSettings model = new AppSettings();
+    model.setId(entity.getId());
+    model.setActiveTheme(entity.getActiveTheme());
+    model.setDefaultLanguage(entity.getDefaultLanguage());
+    model.setNavigationLayout(
         entity.getNavigationLayout() != null ? entity.getNavigationLayout() : "HEADER");
-    dto.setBrandingSettings(toBrandingDTO(entity.getBrandingSettings()));
-    dto.setLoginSettings(toLoginDTO(entity.getLoginSettings()));
-    dto.setPolicySettings(toPolicyDTO(entity.getPolicySettings()));
-    return dto;
+    model.setBrandingSettings(toBrandingModel(entity.getBrandingSettings()));
+    model.setLoginSettings(toLoginModel(entity.getLoginSettings()));
+    model.setPolicySettings(toPolicyModel(entity.getPolicySettings()));
+    return model;
   }
 
-  /**
-   * Crea una nuova AppSettingsEntity a partire da un AppSettingsDTO.
-   *
-   * @param dto DTO sorgente
-   * @return nuova istanza di AppSettingsEntity
-   */
-  public static AppSettingsEntity toEntity(AppSettingsDTO dto) {
-    if (dto == null) {
+  public static AppSettingsEntity toEntity(AppSettings model) {
+    if (model == null) {
       return new AppSettingsEntity();
     }
     AppSettingsEntity entity = new AppSettingsEntity();
-    updateEntity(entity, dto);
+    updateEntity(entity, model);
     return entity;
   }
 
-  /**
-   * Aggiorna i campi di un'entità target con i dati provenienti da AppSettingsDTO.
-   * Trasforma gli oggetti tipizzati (Branding, Login, Policy) nelle corrispondenti mappe
-   * serializzabili sul database.
-   *
-   * @param target entità da aggiornare
-   * @param source DTO con i nuovi valori
-   */
-  public static void updateEntity(AppSettingsEntity target, AppSettingsDTO source) {
+  public static void updateEntity(AppSettingsEntity target, AppSettings source) {
     if (source == null || target == null) return;
 
+    if (source.getId() != null) {
+      target.setId(source.getId());
+    }
     if (source.getActiveTheme() != null) {
       target.setActiveTheme(source.getActiveTheme());
     }
@@ -77,82 +72,59 @@ public class AppSettingsMapper {
       target.setNavigationLayout(source.getNavigationLayout());
     }
 
-    // 1. Aggiornamento Branding Settings
     if (source.getBrandingSettings() != null) {
-      BrandingSettingsDTO bDto = source.getBrandingSettings();
+      BrandingSettings bModel = source.getBrandingSettings();
       Map<String, Object> brandingMap =
           target.getBrandingSettings() != null
               ? new LinkedHashMap<>(target.getBrandingSettings())
               : AppSettingsEntity.defaultBrandingSettings();
 
-      if (bDto.getAppName() != null) {
-        brandingMap.put("appName", bDto.getAppName());
-      }
-      if (bDto.getAppTagline() != null) {
-        brandingMap.put("appTagline", bDto.getAppTagline());
-      }
-      if (bDto.getLogoUrl() != null) {
+      if (bModel.getAppName() != null) brandingMap.put("appName", bModel.getAppName());
+      if (bModel.getAppTagline() != null) brandingMap.put("appTagline", bModel.getAppTagline());
+      if (bModel.getLogoUrl() != null) {
         brandingMap.put(
             "logoUrl",
-            bDto.getLogoUrl().isBlank() ? "/img/logo-minimal.svg" : bDto.getLogoUrl());
+            bModel.getLogoUrl().isBlank() ? "/img/logo-minimal.svg" : bModel.getLogoUrl());
       }
-      if (bDto.getFaviconUrl() != null) {
+      if (bModel.getFaviconUrl() != null) {
         brandingMap.put(
             "faviconUrl",
-            bDto.getFaviconUrl().isBlank() ? "/img/logo-minimal.svg" : bDto.getFaviconUrl());
+            bModel.getFaviconUrl().isBlank() ? "/img/logo-minimal.svg" : bModel.getFaviconUrl());
       }
-      if (bDto.getFooterCopyright() != null) {
-        brandingMap.put("footerCopyright", bDto.getFooterCopyright());
+      if (bModel.getFooterCopyright() != null) {
+        brandingMap.put("footerCopyright", bModel.getFooterCopyright());
       }
-      if (bDto.getSupportEmail() != null) {
-        brandingMap.put("supportEmail", bDto.getSupportEmail());
+      if (bModel.getSupportEmail() != null) {
+        brandingMap.put("supportEmail", bModel.getSupportEmail());
       }
       target.setBrandingSettings(brandingMap);
     }
 
-    // 2. Aggiornamento Login Settings
     if (source.getLoginSettings() != null) {
-      LoginSettingsDTO lDto = source.getLoginSettings();
+      LoginSettings lModel = source.getLoginSettings();
       Map<String, Object> loginMap =
           target.getLoginSettings() != null
               ? new LinkedHashMap<>(target.getLoginSettings())
               : AppSettingsEntity.defaultLoginSettings();
 
-      if (lDto.getLoginMode() != null) {
-        loginMap.put("loginMode", lDto.getLoginMode());
-      }
-      if (lDto.getLoginBgUrl() != null) {
-        loginMap.put("loginBgUrl", lDto.getLoginBgUrl());
-      }
-      if (lDto.getLoginBgOpacity() != null) {
-        loginMap.put("loginBgOpacity", lDto.getLoginBgOpacity());
-      }
-      if (lDto.getLoginHeroTitle() != null) {
-        loginMap.put("loginHeroTitle", lDto.getLoginHeroTitle());
-      }
-      if (lDto.getLoginHeroSubtitle() != null) {
-        loginMap.put("loginHeroSubtitle", lDto.getLoginHeroSubtitle());
-      }
-      if (lDto.getHideHomeButton() != null) {
-        loginMap.put("hideHomeButton", lDto.getHideHomeButton());
-      }
+      if (lModel.getLoginMode() != null) loginMap.put("loginMode", lModel.getLoginMode());
+      if (lModel.getLoginBgUrl() != null) loginMap.put("loginBgUrl", lModel.getLoginBgUrl());
+      if (lModel.getLoginBgOpacity() != null) loginMap.put("loginBgOpacity", lModel.getLoginBgOpacity());
+      if (lModel.getLoginHeroTitle() != null) loginMap.put("loginHeroTitle", lModel.getLoginHeroTitle());
+      if (lModel.getLoginHeroSubtitle() != null) loginMap.put("loginHeroSubtitle", lModel.getLoginHeroSubtitle());
+      if (lModel.getHideHomeButton() != null) loginMap.put("hideHomeButton", lModel.getHideHomeButton());
       target.setLoginSettings(loginMap);
     }
 
-    // 3. Aggiornamento Policy Settings
     if (source.getPolicySettings() != null) {
-      PolicySettingsDTO pDto = source.getPolicySettings();
+      PolicySettings pModel = source.getPolicySettings();
       Map<String, Object> policyMap =
           target.getPolicySettings() != null
               ? new LinkedHashMap<>(target.getPolicySettings())
               : AppSettingsEntity.defaultPolicySettings();
 
-      if (pDto.getPrivacyPolicyUrl() != null) {
-        policyMap.put("privacyPolicyUrl", pDto.getPrivacyPolicyUrl());
-      }
-      if (pDto.getCookiePolicyUrl() != null) {
-        policyMap.put("cookiePolicyUrl", pDto.getCookiePolicyUrl());
-      }
+      if (pModel.getPrivacyPolicyUrl() != null) policyMap.put("privacyPolicyUrl", pModel.getPrivacyPolicyUrl());
+      if (pModel.getCookiePolicyUrl() != null) policyMap.put("cookiePolicyUrl", pModel.getCookiePolicyUrl());
       target.setPolicySettings(policyMap);
     }
 
@@ -160,111 +132,187 @@ public class AppSettingsMapper {
   }
 
   // =========================================================================
-  // Metodi helper per conversione Map <-> DTO
+  // Model <-> DTO (Utilizzati dal Service e Controller)
   // =========================================================================
 
-  public static BrandingSettingsDTO toBrandingDTO(Map<String, Object> map) {
-    if (map == null) return new BrandingSettingsDTO();
-    BrandingSettingsDTO dto = new BrandingSettingsDTO();
-    if (map.containsKey("appName") && map.get("appName") != null) {
-      dto.setAppName(map.get("appName").toString());
+  public static AppSettingsDTO toDTO(AppSettings model) {
+    if (model == null) return new AppSettingsDTO();
+    AppSettingsDTO dto = new AppSettingsDTO();
+    dto.setId(model.getId());
+    dto.setActiveTheme(model.getActiveTheme());
+    dto.setDefaultLanguage(model.getDefaultLanguage());
+    dto.setNavigationLayout(model.getNavigationLayout());
+    if (model.getBrandingSettings() != null) {
+      dto.setBrandingSettings(toBrandingDTO(model.getBrandingSettings()));
     }
-    if (map.containsKey("appTagline") && map.get("appTagline") != null) {
-      dto.setAppTagline(map.get("appTagline").toString());
+    if (model.getLoginSettings() != null) {
+      dto.setLoginSettings(toLoginDTO(model.getLoginSettings()));
     }
-    if (map.containsKey("logoUrl") && map.get("logoUrl") != null) {
-      dto.setLogoUrl(map.get("logoUrl").toString());
-    }
-    if (map.containsKey("faviconUrl") && map.get("faviconUrl") != null) {
-      dto.setFaviconUrl(map.get("faviconUrl").toString());
-    }
-    if (map.containsKey("footerCopyright") && map.get("footerCopyright") != null) {
-      dto.setFooterCopyright(map.get("footerCopyright").toString());
-    }
-    if (map.containsKey("supportEmail") && map.get("supportEmail") != null) {
-      dto.setSupportEmail(map.get("supportEmail").toString());
+    if (model.getPolicySettings() != null) {
+      dto.setPolicySettings(toPolicyDTO(model.getPolicySettings()));
     }
     return dto;
   }
 
-  public static LoginSettingsDTO toLoginDTO(Map<String, Object> map) {
-    if (map == null) return new LoginSettingsDTO();
-    LoginSettingsDTO dto = new LoginSettingsDTO();
-    if (map.containsKey("loginMode") && map.get("loginMode") != null) {
-      dto.setLoginMode(map.get("loginMode").toString());
+  public static AppSettings toModel(AppSettingsDTO dto) {
+    if (dto == null) return new AppSettings();
+    AppSettings model = new AppSettings();
+    model.setId(dto.getId());
+    model.setActiveTheme(dto.getActiveTheme());
+    model.setDefaultLanguage(dto.getDefaultLanguage());
+    model.setNavigationLayout(dto.getNavigationLayout());
+    if (dto.getBrandingSettings() != null) {
+      model.setBrandingSettings(toBrandingModel(dto.getBrandingSettings()));
     }
+    if (dto.getLoginSettings() != null) {
+      model.setLoginSettings(toLoginModel(dto.getLoginSettings()));
+    }
+    if (dto.getPolicySettings() != null) {
+      model.setPolicySettings(toPolicyModel(dto.getPolicySettings()));
+    }
+    return model;
+  }
+
+  public static AppSettingsDTO toDTO(AppSettingsEntity entity) {
+    return toDTO(toModel(entity));
+  }
+
+  public static AppSettingsEntity toEntity(AppSettingsDTO dto) {
+    return toEntity(toModel(dto));
+  }
+
+  public static void updateEntity(AppSettingsEntity target, AppSettingsDTO source) {
+    updateEntity(target, toModel(source));
+  }
+
+  // =========================================================================
+  // Helper di Categoria Model / DTO / Map
+  // =========================================================================
+
+  public static BrandingSettings toBrandingModel(Map<String, Object> map) {
+    if (map == null) return new BrandingSettings();
+    BrandingSettings model = new BrandingSettings();
+    if (map.containsKey("appName") && map.get("appName") != null) model.setAppName(map.get("appName").toString());
+    if (map.containsKey("appTagline") && map.get("appTagline") != null) model.setAppTagline(map.get("appTagline").toString());
+    if (map.containsKey("logoUrl") && map.get("logoUrl") != null) model.setLogoUrl(map.get("logoUrl").toString());
+    if (map.containsKey("faviconUrl") && map.get("faviconUrl") != null) model.setFaviconUrl(map.get("faviconUrl").toString());
+    if (map.containsKey("footerCopyright") && map.get("footerCopyright") != null) model.setFooterCopyright(map.get("footerCopyright").toString());
+    if (map.containsKey("supportEmail") && map.get("supportEmail") != null) model.setSupportEmail(map.get("supportEmail").toString());
+    return model;
+  }
+
+  public static LoginSettings toLoginModel(Map<String, Object> map) {
+    if (map == null) return new LoginSettings();
+    LoginSettings model = new LoginSettings();
+    if (map.containsKey("loginMode") && map.get("loginMode") != null) model.setLoginMode(map.get("loginMode").toString());
     if (map.containsKey("loginBgUrl")) {
       Object val = map.get("loginBgUrl");
-      dto.setLoginBgUrl(val != null ? val.toString() : null);
+      model.setLoginBgUrl(val != null ? val.toString() : null);
     }
     if (map.containsKey("loginBgOpacity")) {
       Object val = map.get("loginBgOpacity");
       if (val instanceof Number num) {
-        dto.setLoginBgOpacity(num.intValue());
+        model.setLoginBgOpacity(num.intValue());
       } else if (val != null) {
         try {
-          dto.setLoginBgOpacity(Integer.parseInt(val.toString()));
+          model.setLoginBgOpacity(Integer.parseInt(val.toString()));
         } catch (NumberFormatException ignored) {}
       }
     }
-    if (map.containsKey("loginHeroTitle") && map.get("loginHeroTitle") != null) {
-      dto.setLoginHeroTitle(map.get("loginHeroTitle").toString());
-    }
-    if (map.containsKey("loginHeroSubtitle") && map.get("loginHeroSubtitle") != null) {
-      dto.setLoginHeroSubtitle(map.get("loginHeroSubtitle").toString());
-    }
+    if (map.containsKey("loginHeroTitle") && map.get("loginHeroTitle") != null) model.setLoginHeroTitle(map.get("loginHeroTitle").toString());
+    if (map.containsKey("loginHeroSubtitle") && map.get("loginHeroSubtitle") != null) model.setLoginHeroSubtitle(map.get("loginHeroSubtitle").toString());
     if (map.containsKey("hideHomeButton")) {
       Object val = map.get("hideHomeButton");
       if (val instanceof Boolean b) {
-        dto.setHideHomeButton(b);
+        model.setHideHomeButton(b);
       } else if (val != null) {
-        dto.setHideHomeButton(Boolean.parseBoolean(val.toString()));
+        model.setHideHomeButton(Boolean.parseBoolean(val.toString()));
       }
     }
-    return dto;
+    return model;
+  }
+
+  public static PolicySettings toPolicyModel(Map<String, Object> map) {
+    if (map == null) return new PolicySettings();
+    PolicySettings model = new PolicySettings();
+    if (map.containsKey("privacyPolicyUrl") && map.get("privacyPolicyUrl") != null) model.setPrivacyPolicyUrl(map.get("privacyPolicyUrl").toString());
+    if (map.containsKey("cookiePolicyUrl") && map.get("cookiePolicyUrl") != null) model.setCookiePolicyUrl(map.get("cookiePolicyUrl").toString());
+    return model;
+  }
+
+  public static BrandingSettingsDTO toBrandingDTO(BrandingSettings model) {
+    if (model == null) return new BrandingSettingsDTO();
+    return BrandingSettingsDTO.builder()
+        .appName(model.getAppName())
+        .appTagline(model.getAppTagline())
+        .logoUrl(model.getLogoUrl())
+        .faviconUrl(model.getFaviconUrl())
+        .footerCopyright(model.getFooterCopyright())
+        .supportEmail(model.getSupportEmail())
+        .build();
+  }
+
+  public static BrandingSettings toBrandingModel(BrandingSettingsDTO dto) {
+    if (dto == null) return new BrandingSettings();
+    return BrandingSettings.builder()
+        .appName(dto.getAppName())
+        .appTagline(dto.getAppTagline())
+        .logoUrl(dto.getLogoUrl())
+        .faviconUrl(dto.getFaviconUrl())
+        .footerCopyright(dto.getFooterCopyright())
+        .supportEmail(dto.getSupportEmail())
+        .build();
+  }
+
+  public static LoginSettingsDTO toLoginDTO(LoginSettings model) {
+    if (model == null) return new LoginSettingsDTO();
+    return LoginSettingsDTO.builder()
+        .loginMode(model.getLoginMode())
+        .loginBgUrl(model.getLoginBgUrl())
+        .loginBgOpacity(model.getLoginBgOpacity())
+        .loginHeroTitle(model.getLoginHeroTitle())
+        .loginHeroSubtitle(model.getLoginHeroSubtitle())
+        .hideHomeButton(model.getHideHomeButton())
+        .build();
+  }
+
+  public static LoginSettings toLoginModel(LoginSettingsDTO dto) {
+    if (dto == null) return new LoginSettings();
+    return LoginSettings.builder()
+        .loginMode(dto.getLoginMode())
+        .loginBgUrl(dto.getLoginBgUrl())
+        .loginBgOpacity(dto.getLoginBgOpacity())
+        .loginHeroTitle(dto.getLoginHeroTitle())
+        .loginHeroSubtitle(dto.getLoginHeroSubtitle())
+        .hideHomeButton(dto.getHideHomeButton())
+        .build();
+  }
+
+  public static PolicySettingsDTO toPolicyDTO(PolicySettings model) {
+    if (model == null) return new PolicySettingsDTO();
+    return PolicySettingsDTO.builder()
+        .privacyPolicyUrl(model.getPrivacyPolicyUrl())
+        .cookiePolicyUrl(model.getCookiePolicyUrl())
+        .build();
+  }
+
+  public static PolicySettings toPolicyModel(PolicySettingsDTO dto) {
+    if (dto == null) return new PolicySettings();
+    return PolicySettings.builder()
+        .privacyPolicyUrl(dto.getPrivacyPolicyUrl())
+        .cookiePolicyUrl(dto.getCookiePolicyUrl())
+        .build();
+  }
+
+  public static BrandingSettingsDTO toBrandingDTO(Map<String, Object> map) {
+    return toBrandingDTO(toBrandingModel(map));
+  }
+
+  public static LoginSettingsDTO toLoginDTO(Map<String, Object> map) {
+    return toLoginDTO(toLoginModel(map));
   }
 
   public static PolicySettingsDTO toPolicyDTO(Map<String, Object> map) {
-    if (map == null) return new PolicySettingsDTO();
-    PolicySettingsDTO dto = new PolicySettingsDTO();
-    if (map.containsKey("privacyPolicyUrl") && map.get("privacyPolicyUrl") != null) {
-      dto.setPrivacyPolicyUrl(map.get("privacyPolicyUrl").toString());
-    }
-    if (map.containsKey("cookiePolicyUrl") && map.get("cookiePolicyUrl") != null) {
-      dto.setCookiePolicyUrl(map.get("cookiePolicyUrl").toString());
-    }
-    return dto;
-  }
-
-  public static Map<String, Object> toBrandingMap(BrandingSettingsDTO dto) {
-    Map<String, Object> map = new LinkedHashMap<>();
-    if (dto == null) return map;
-    if (dto.getAppName() != null) map.put("appName", dto.getAppName());
-    if (dto.getAppTagline() != null) map.put("appTagline", dto.getAppTagline());
-    if (dto.getLogoUrl() != null) map.put("logoUrl", dto.getLogoUrl());
-    if (dto.getFaviconUrl() != null) map.put("faviconUrl", dto.getFaviconUrl());
-    if (dto.getFooterCopyright() != null) map.put("footerCopyright", dto.getFooterCopyright());
-    if (dto.getSupportEmail() != null) map.put("supportEmail", dto.getSupportEmail());
-    return map;
-  }
-
-  public static Map<String, Object> toLoginMap(LoginSettingsDTO dto) {
-    Map<String, Object> map = new LinkedHashMap<>();
-    if (dto == null) return map;
-    if (dto.getLoginMode() != null) map.put("loginMode", dto.getLoginMode());
-    if (dto.getLoginBgUrl() != null) map.put("loginBgUrl", dto.getLoginBgUrl());
-    if (dto.getLoginBgOpacity() != null) map.put("loginBgOpacity", dto.getLoginBgOpacity());
-    if (dto.getLoginHeroTitle() != null) map.put("loginHeroTitle", dto.getLoginHeroTitle());
-    if (dto.getLoginHeroSubtitle() != null) map.put("loginHeroSubtitle", dto.getLoginHeroSubtitle());
-    if (dto.getHideHomeButton() != null) map.put("hideHomeButton", dto.getHideHomeButton());
-    return map;
-  }
-
-  public static Map<String, Object> toPolicyMap(PolicySettingsDTO dto) {
-    Map<String, Object> map = new LinkedHashMap<>();
-    if (dto == null) return map;
-    if (dto.getPrivacyPolicyUrl() != null) map.put("privacyPolicyUrl", dto.getPrivacyPolicyUrl());
-    if (dto.getCookiePolicyUrl() != null) map.put("cookiePolicyUrl", dto.getCookiePolicyUrl());
-    return map;
+    return toPolicyDTO(toPolicyModel(map));
   }
 }

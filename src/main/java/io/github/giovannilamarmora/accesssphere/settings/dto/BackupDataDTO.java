@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
-import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
+import io.github.giovannilamarmora.accesssphere.settings.model.AppSettings;
 import io.github.giovannilamarmora.accesssphere.user.entity.UserEntity;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,7 @@ public class BackupDataDTO {
   private String version;
   private String timestamp;
   private String exportedBy;
-  private AppSettingsEntity settings;
+  private AppSettings settings;
   private List<OAuth2ClientEntity> clients;
   private List<UserEntity> users;
   private List<RoleDefinitionEntity> roles;
