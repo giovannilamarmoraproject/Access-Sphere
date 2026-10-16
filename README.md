@@ -355,9 +355,11 @@ La documentazione OpenAPI 3.0 interattiva è accessibile a runtime all'indirizzo
 
 | Metodo | Endpoint          | Descrizione                                                                   | Autenticazione   |
 |--------|-------------------|-------------------------------------------------------------------------------|------------------|
-| `POST` | `/v1/mfa/setup`   | Genera secret TOTP, URL `otpauth://` e QR code con brand logo                 | Bearer Token     |
-| `POST` | `/v1/mfa/confirm` | Verifica il primo codice OTP a 6 cifre e attiva definitivamente il metodo MFA | Bearer Token     |
-| `POST` | `/v1/mfa/verify`  | Valida il codice OTP durante il login multi-fattore                           | Session / Bearer |
+| `POST` | `/v1/mfa/setup`    | Inizializza setup MFA (secret TOTP con QR code o codice OTP Email)             | Bearer Token     |
+| `POST` | `/v1/mfa/confirm`  | Verifica il codice OTP a 6 cifre e attiva definitivamente il metodo MFA        | Bearer Token     |
+| `POST` | `/v1/mfa/verify`   | Valida il codice OTP (TOTP o Email) durante il login OAuth 2.1                 | Session / Bearer |
+| `POST` | `/v1/mfa/send-otp` | Invia o reinvia il codice OTP monouso via Email                                | Session / Bearer |
+| `POST` | `/v1/mfa/manage`   | Gestisce lo stato dei metodi MFA (ENABLE, DISABLE o DELETE)                    | Bearer Token     |
 
 ### 6. ✉️ **Email Template Controller** (`/v1/email-templates`)
 
