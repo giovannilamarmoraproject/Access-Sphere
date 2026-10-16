@@ -529,7 +529,7 @@ public class ProjectInitializerService implements ApplicationRunner {
           cat.getCode(),
           techClientId);
     } else if (existing.isEmpty() && !legacyExisting.isEmpty()) {
-      // 2. Caso migrazione automatica da identificatore legacy ad identificatore UUID
+      // 2. Migrazione da identificatore legacy ad identificatore UUID
       EmailTemplate legacyTpl = legacyExisting.get(0);
       legacyTpl.setIdentifier(identifier);
       legacyTpl.setCategory(cat.getCode());
@@ -537,48 +537,31 @@ public class ProjectInitializerService implements ApplicationRunner {
       legacyTpl.setName(cat.getEnglishName());
       legacyTpl.setSubject(cat.getDefaultSubject());
       legacyTpl.setDescription(cat.getEnglishDescription());
-      if (legacyTpl.getClientId() == null) {
-        legacyTpl.setClientId(techClientId);
-      }
+      legacyTpl.setClientId(techClientId);
+      legacyTpl.setParams(cat.getDefaultParamsAsStringMap());
       legacyTpl.setTemplate(htmlTemplate);
       emailRepository.save(legacyTpl);
       LOG.info(
-          "🔄 Migrated Legacy Email Template [{}] to UUID [{}] and refreshed template with clientId [{}]",
+          "🔄 Migrated Legacy Email Template [{}] to UUID [{}] with clean parameters and clientId [{}]",
           legacyIdentifier,
           identifier,
-          legacyTpl.getClientId());
+          techClientId);
     } else {
-      // 3. Caso template già presente: verifica aggiornamento client ID e corpo HTML
+      // 3. Caso template già presente: sincronizza sempre parametri e corpo HTML
       EmailTemplate defaultTpl = existing.get(0);
-      boolean updated = false;
-      if (defaultTpl.getClientId() == null) {
-        defaultTpl.setClientId(techClientId);
-        updated = true;
-      }
-      // Rinfresca il template se privo di contenuto, appartenente a versioni legacy non aggiornate o con segnaposto obsoleti
-      if (defaultTpl.getTemplate() == null
-          || defaultTpl.getTemplate().contains("Ciao")
-          || !defaultTpl.getTemplate().contains("Poppins")
-          || (cat == EmailTemplateCategory.EMAIL_VERIFICATION
-              && defaultTpl.getTemplate().contains("VERIFICATION_CODE"))) {
-        defaultTpl.setTemplate(htmlTemplate);
-        defaultTpl.setLocale("en");
-        defaultTpl.setName(cat.getEnglishName());
-        defaultTpl.setSubject(cat.getDefaultSubject());
-        defaultTpl.setDescription(cat.getEnglishDescription());
-        defaultTpl.setParams(cat.getDefaultParamsAsStringMap());
-        updated = true;
-      }
-      if (updated) {
-        emailRepository.save(defaultTpl);
-        LOG.info(
-            "🔄 Updated Email Template [{}] ({}) with technical client [{}] and modern template",
-            defaultTpl.getIdentifier(),
-            cat.getCode(),
-            techClientId);
-      } else {
-        LOG.debug("Email Template [{}] ({}) already present and up to date in DB", identifier, cat.getCode());
-      }
+      defaultTpl.setCategory(cat.getCode());
+      defaultTpl.setClientId(techClientId);
+      defaultTpl.setName(cat.getEnglishName());
+      defaultTpl.setSubject(cat.getDefaultSubject());
+      defaultTpl.setDescription(cat.getEnglishDescription());
+      defaultTpl.setLocale("en");
+      defaultTpl.setParams(cat.getDefaultParamsAsStringMap());
+      defaultTpl.setTemplate(htmlTemplate);
+      emailRepository.save(defaultTpl);
+      LOG.info(
+          "🔄 Refreshed Email Template [{}] ({}) in DB with clean default parameters and template",
+          identifier,
+          cat.getCode());
     }
   }
 
