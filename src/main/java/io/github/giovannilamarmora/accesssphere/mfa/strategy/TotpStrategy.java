@@ -6,12 +6,18 @@ import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAException;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAMapper;
 import io.github.giovannilamarmora.accesssphere.mfa.MFAUtils;
-import io.github.giovannilamarmora.accesssphere.mfa.dto.*;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAMethod;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetting;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupRequest;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFASetupResponse;
+import io.github.giovannilamarmora.accesssphere.mfa.dto.MFAType;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
 import io.github.giovannilamarmora.accesssphere.user.model.User;
 import io.github.giovannilamarmora.accesssphere.utilities.QRCodeUtils;
 import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.generic.Response;
+import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
+import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
 import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import java.util.Base64;
@@ -23,6 +29,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+/**
+ * Strategia di autenticazione a due fattori basata su Time-Based One-Time Password (TOTP) RFC 6238.
+ *
+ * <p>Genera una chiave crittografica Base32 e l'URI compatibile con Google Authenticator,
+ * Microsoft Authenticator e altri client conformi, con supporto opzionale alla generazione di QR Code in Base64.
+ */
 @Service
 @Logged
 public class TotpStrategy implements MFAStrategy {
@@ -30,6 +42,15 @@ public class TotpStrategy implements MFAStrategy {
   private final Logger LOG = LoggerFilter.getLogger(this.getClass());
   @Autowired private UserService userService;
 
+  /**
+   * Genera una chiave segreta TOTP per l'utente, predispone l'URI per il QR Code e aggiorna l'anagrafica utente con il metodo pendente.
+   *
+   * @param user Utente per il quale inizializzare l'MFA TOTP.
+   * @param setupRequest Richiesta di setup con flag di generazione immagine QR code.
+   * @return {@link Mono} con {@link ResponseEntity} contenente {@link MFASetupResponse}.
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<ResponseEntity<Response>> generateSecret(User user, MFASetupRequest setupRequest) {
     LOG.info(
         "🔑 [TOTP] Generate TOTP MFA for user: {} process started.", setupRequest.identifier());
@@ -63,10 +84,17 @@ public class TotpStrategy implements MFAStrategy {
         .doOnSuccess(
             response ->
                 LOG.info(
-                    "\uD83E\uDD37\u200D♂\uFE0F Generate TOTP MFA for user: {} process ended.",
+                    "✅ [TOTP] Generate TOTP MFA for user: {} process ended.",
                     setupRequest.identifier()));
   }
 
+  /**
+   * Verifica la correttezza del codice numerico a 6 cifre rispetto alla chiave segreta TOTP attiva.
+   *
+   * @param mfaMethods Metodi registrati per l'utente.
+   * @param otp Codice a 6 cifre fornito dall'applicazione.
+   * @param identifier Identificativo dell'utente per logging ed eccezioni.
+   */
   @Override
   public void verifyCode(List<MFAMethod> mfaMethods, String otp, String identifier) {
     GoogleAuthenticator gAuth = new GoogleAuthenticator();
@@ -77,7 +105,7 @@ public class TotpStrategy implements MFAStrategy {
             .anyMatch(
                 method -> {
                   try {
-                    return gAuth.authorize(method.getSecretKey(), Integer.parseInt(otp));
+                    return gAuth.authorize(method.getSecretKey(), Integer.parseInt(otp.trim()));
                   } catch (Exception e) {
                     LOG.warn(
                         "⚠️ OTP verification failed for method {} - {}",
@@ -88,11 +116,11 @@ public class TotpStrategy implements MFAStrategy {
                 });
 
     if (!atLeastOneValid) {
-      LOG.error("❌ Invalid OTP code for all MFA methods for user: {}", identifier);
+      LOG.error("❌ Invalid TOTP OTP code for all MFA methods for user: {}", identifier);
       throw new MFAException(
           ExceptionMap.ERR_MFA_400, ExceptionType.INVALID_OTP_CODE, "Invalid OTP code");
     }
 
-    LOG.info("✅ OTP code verified successfully for user: {}", identifier);
+    LOG.info("✅ TOTP OTP code verified successfully for user: {}", identifier);
   }
 }

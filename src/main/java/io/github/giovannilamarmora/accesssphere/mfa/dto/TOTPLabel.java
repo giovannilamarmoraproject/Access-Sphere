@@ -20,7 +20,8 @@ public enum TOTPLabel {
   BIT_WARDEN("bitwarden"),
   KEEPASS("keepass"),
   EN_PASS("enpass"),
-  DASH_LANE("dashlane");
+  DASH_LANE("dashlane"),
+  EMAIL("email");
 
   private final String label;
 
@@ -30,8 +31,12 @@ public enum TOTPLabel {
 
   @JsonCreator
   public static TOTPLabel fromString(String label) {
+    if (label == null || label.trim().isEmpty()) {
+      return null;
+    }
+    String trimmed = label.trim();
     for (TOTPLabel totpLabel : TOTPLabel.values()) {
-      if (totpLabel.label.equalsIgnoreCase(label)) {
+      if (totpLabel.label.equalsIgnoreCase(trimmed) || totpLabel.name().equalsIgnoreCase(trimmed)) {
         return totpLabel;
       }
     }
