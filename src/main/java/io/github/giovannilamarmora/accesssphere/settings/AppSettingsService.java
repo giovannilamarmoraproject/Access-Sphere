@@ -2,10 +2,13 @@ package io.github.giovannilamarmora.accesssphere.settings;
 
 import io.github.giovannilamarmora.accesssphere.client.database.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
+import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.database.IRoleDefinitionDAO;
 import io.github.giovannilamarmora.accesssphere.roles.database.IUserClientRoleDAO;
 import io.github.giovannilamarmora.accesssphere.roles.entity.RoleDefinitionEntity;
 import io.github.giovannilamarmora.accesssphere.roles.entity.UserClientRoleEntity;
+import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
+import io.github.giovannilamarmora.accesssphere.settings.database.AppSettingsRepository;
 import io.github.giovannilamarmora.accesssphere.settings.dto.AppSettingsDTO;
 import io.github.giovannilamarmora.accesssphere.settings.dto.BackupDataDTO;
 import io.github.giovannilamarmora.accesssphere.settings.entity.AppSettingsEntity;
@@ -28,6 +31,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
+/**
+ * Application Service per la gestione centralizzata delle impostazioni applicative e delle operazioni di backup/restore.
+ * <p>
+ * Responsabilità:
+ * <ul>
+ *   <li>Funge da Gatekeeper di sicurezza verificando i permessi RBAC (settings:read, settings:write, backup:manage) tramite {@link PermissionRoleManager}.</li>
+ *   <li>Mantiene una cache atomica in memoria per le letture frequenti di branding e layout.</li>
+ *   <li>Delega la persistenza e il tracciamento a {@link AppSettingsRepository}.</li>
+ *   <li>Coordina la generazione e il ripristino atomico degli snapshot completi del sistema.</li>
+ * </ul>
+ */
 @Service
 @Logged
 @RequiredArgsConstructor
@@ -38,14 +52,19 @@ public class AppSettingsService {
   @Value("${app.version:2.0.0}")
   private String appVersion;
 
-  @Autowired private IAppSettingsDAO appSettingsDAO;
+  @Autowired private AppSettingsRepository appSettingsRepository;
   @Autowired private IOAuth2ClientDAO clientDAO;
   @Autowired private IUserDAO userDAO;
   @Autowired private IRoleDefinitionDAO roleDefinitionDAO;
   @Autowired private IUserClientRoleDAO userClientRoleDAO;
+  @Autowired private PermissionRoleManager permissionRoleManager;
 
   private final AtomicReference<AppSettingsDTO> publicCache = new AtomicReference<>();
 
+  /**
+   * Recupera le impostazioni applicative correnti dalla cache o da database.
+   * Utilizzabile sia da contesti autenticati (backoffice) sia pubblici (login/branding).
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<AppSettingsDTO> getSettings() {
     AppSettingsDTO cached = publicCache.get();
@@ -54,12 +73,13 @@ public class AppSettingsService {
     }
     return Mono.fromCallable(
         () -> {
-          List<AppSettingsEntity> list = appSettingsDAO.findAll();
+          LOG.debug("⚙️ Loading application settings from repository");
+          List<AppSettingsEntity> list = appSettingsRepository.findAll();
           AppSettingsEntity entity;
           if (list.isEmpty()) {
             AppSettingsEntity defaultEntity = new AppSettingsEntity();
-            entity = appSettingsDAO.save(defaultEntity);
-            appSettingsDAO.flush();
+            entity = appSettingsRepository.save(defaultEntity);
+            appSettingsRepository.flush();
           } else {
             entity = list.getFirst();
           }
@@ -69,12 +89,19 @@ public class AppSettingsService {
         });
   }
 
+  /**
+   * Aggiorna le impostazioni applicative verificando il permesso 'settings:write'.
+   */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<AppSettingsDTO> updateSettings(AppSettingsDTO dto) {
+    permissionRoleManager.checkPermissionAndReturnUserRoles(SystemPermission.SETTINGS_WRITE);
+    AppSettingsValidator.validateSettings(dto);
+
     return Mono.fromCallable(
         () -> {
-          List<AppSettingsEntity> list = appSettingsDAO.findAll();
+          LOG.info("⚙️ Updating application settings");
+          List<AppSettingsEntity> list = appSettingsRepository.findAll();
           AppSettingsEntity entity;
           if (list.isEmpty()) {
             entity = AppSettingsMapper.toEntity(dto);
@@ -82,12 +109,12 @@ public class AppSettingsService {
             entity = list.getFirst();
             AppSettingsMapper.updateEntity(entity, dto);
           }
-          AppSettingsEntity saved = appSettingsDAO.save(entity);
-          appSettingsDAO.flush();
+          AppSettingsEntity saved = appSettingsRepository.save(entity);
+          appSettingsRepository.flush();
           AppSettingsDTO savedDto = AppSettingsMapper.toDTO(saved);
           publicCache.set(savedDto);
           LOG.info(
-              "Application settings updated successfully: appName='{}', theme='{}', lang='{}'",
+              "✅ Application settings updated successfully: appName='{}', theme='{}', lang='{}'",
               saved.getAppName(),
               saved.getActiveTheme(),
               saved.getDefaultLanguage());
@@ -95,12 +122,17 @@ public class AppSettingsService {
         });
   }
 
+  /**
+   * Genera uno snapshot di backup completo verificando il permesso 'backup:manage'.
+   */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<BackupDataDTO> createBackup(String exportedBy) {
+    permissionRoleManager.checkPermissionAndReturnUserRoles(SystemPermission.BACKUP_MANAGE);
+
     return Mono.fromCallable(
         () -> {
-          LOG.info("Creating complete application backup initiated by {}", exportedBy);
-          List<AppSettingsEntity> settingsList = appSettingsDAO.findAll();
+          LOG.info("📦 Creating complete application backup initiated by {}", exportedBy);
+          List<AppSettingsEntity> settingsList = appSettingsRepository.findAll();
           AppSettingsEntity settings = settingsList.isEmpty() ? null : settingsList.getFirst();
           List<OAuth2ClientEntity> clients = clientDAO.findAll();
           List<UserEntity> users = userDAO.findAll();
@@ -123,27 +155,33 @@ public class AppSettingsService {
         });
   }
 
+  /**
+   * Esegue il ripristino di uno snapshot di backup verificando il permesso 'backup:manage'.
+   */
   @Transactional
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<String> restoreBackup(BackupDataDTO backupData) {
+    permissionRoleManager.checkPermissionAndReturnUserRoles(SystemPermission.BACKUP_MANAGE);
+    AppSettingsValidator.validateBackupData(backupData);
+
     return Mono.fromCallable(
         () -> {
           LOG.info(
-              "Restoring application backup from version {} timestamp {}",
+              "🔄 Restoring application backup from version {} timestamp {}",
               backupData.getVersion(),
               backupData.getTimestamp());
 
           if (backupData.getSettings() != null) {
             AppSettingsEntity importedSettings = backupData.getSettings();
-            List<AppSettingsEntity> current = appSettingsDAO.findAll();
+            List<AppSettingsEntity> current = appSettingsRepository.findAll();
             if (!current.isEmpty()) {
               importedSettings.setId(current.getFirst().getId());
             } else {
               importedSettings.setId(null);
             }
             importedSettings.syncCategoryMapsBeforeSave();
-            AppSettingsEntity saved = appSettingsDAO.save(importedSettings);
-            appSettingsDAO.flush();
+            AppSettingsEntity saved = appSettingsRepository.save(importedSettings);
+            appSettingsRepository.flush();
             publicCache.set(AppSettingsMapper.toDTO(saved));
           }
 
@@ -190,7 +228,7 @@ public class AppSettingsService {
             for (UserClientRoleEntity ucr : backupData.getUserClientRoles()) {
               boolean exists =
                   userClientRoleDAO.existsByUserIdentifierAndClientIdAndRole(
-                      ucr.getUserIdentifier(), ucr.getClientId(), ucr.getRole());
+                       ucr.getUserIdentifier(), ucr.getClientId(), ucr.getRole());
               if (!exists) {
                 ucr.setId(null);
                 userClientRoleDAO.save(ucr);
@@ -198,7 +236,7 @@ public class AppSettingsService {
             }
           }
 
-          LOG.info("Application restore completed successfully!");
+          LOG.info("🎉 Application restore completed successfully!");
           return "Ripristino completato con successo!";
         });
   }
