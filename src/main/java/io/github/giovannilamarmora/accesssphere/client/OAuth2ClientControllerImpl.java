@@ -166,8 +166,7 @@ public class OAuth2ClientControllerImpl implements OAuth2ClientController {
         new OAuth2ClientDeleteResponse(
             HttpStatus.ACCEPTED.value(),
             "Successfully deleted Client %s".formatted(clientId),
-            TraceUtils.getSpanID(),
-            null);
+            TraceUtils.getSpanID());
     return Mono.just(ResponseEntity.accepted().body(response));
   }
 }

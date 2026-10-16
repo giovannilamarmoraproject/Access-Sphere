@@ -5,7 +5,6 @@ import io.github.giovannilamarmora.utils.generic.Response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -16,12 +15,11 @@ import lombok.NoArgsConstructor;
  * generare un contratto JSON completo di schema e valori di esempio concreti, superando il limite
  * della definizione generica con Object vuoto.
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Standard response wrapper containing full details of an OAuth 2.0 client")
-public class OAuth2ClientResponse extends Response {
+public class OAuth2ClientResponse {
 
   @Schema(description = "HTTP status code of the operation", example = "200")
   private Integer status;

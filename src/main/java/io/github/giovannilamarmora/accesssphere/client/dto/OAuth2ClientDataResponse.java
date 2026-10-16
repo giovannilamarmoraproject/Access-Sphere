@@ -3,10 +3,10 @@ package io.github.giovannilamarmora.accesssphere.client.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
+import io.github.giovannilamarmora.accesssphere.config.GenericResponse;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.dto.RoleDefinitionResponse;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
-import io.github.giovannilamarmora.utils.generic.GenericDTO;
 import io.github.giovannilamarmora.utils.jsonSerialize.UpperCase;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -30,7 +30,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Complete configuration and credentials model for an OAuth 2.0 Client")
-public class OAuth2ClientDataResponse extends GenericDTO {
+public class OAuth2ClientDataResponse extends GenericResponse {
 
   @UpperCase
   @Schema(

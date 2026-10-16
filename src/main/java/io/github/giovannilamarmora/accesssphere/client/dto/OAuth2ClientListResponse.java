@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -17,13 +16,12 @@ import lombok.NoArgsConstructor;
  * tipizzata {@link List} di {@link OAuth2Client}. Questo permette alla documentazione Swagger UI di
  * mostrare un array strutturato di client con attributi e valori di esempio accurati.
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(
     description = "Standard response wrapper containing the list of registered OAuth 2.0 clients")
-public class OAuth2ClientListResponse extends Response {
+public class OAuth2ClientListResponse {
 
   @Schema(description = "HTTP status code of the operation", example = "200")
   private Integer status;

@@ -27,7 +27,6 @@ public class OAuth2ClientMapper {
   public static OAuth2ClientDataResponse toResponse(OAuth2Client oAuth2Client) {
     OAuth2ClientDataResponse oAuth2ClientResponse = new OAuth2ClientDataResponse();
     BeanUtils.copyProperties(oAuth2Client, oAuth2ClientResponse);
-    oAuth2ClientResponse.setId(null);
     oAuth2ClientResponse.setAppRoles(
         RoleDefinitionMapper.toResponseList(oAuth2Client.getAppRoles()));
     return oAuth2ClientResponse;
