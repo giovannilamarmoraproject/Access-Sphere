@@ -78,7 +78,7 @@ filter:
     shouldNotFilter: "*swagger*,*api-docs*,*webjars*,**/actuator,**/actuator/**,*/,/cookie-policy,/privacy-policy,*/favicon.ico,/app,*/app,*/app/*,*/app/**,*/img/*,*/js/*,*/css/*,/manifest.json,/service-worker.js,/robots.txt,/sitemap.xml,*/v1/app/settings"
     #shouldNotFilter: "**/swagger-ui/**,/api-docs,**/api-docs/**,*/,*.css,*.js,*/img/*,*/favicon.ico,/login,*/login/*,/cookie-policy,/privacy-policy"
     generateSessionURI: "*/v1/oAuth/2.0/authorize,*/v1/oauth2/authorize,*/users/register,*/v1/users,**/v1/users/change/**,**/v1/users/password/**"
-    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/v1/oauth2/login/*,*/users/register,*/v1/users,*/v1/users/change/password/*,*/v1/users/change/password,*/v1/users/password/*,*/v1/mfa/verify,*/favicon.ico,*/v1/app/settings"
+    bearerNotFilter: "*/v1/oAuth/2.0/login/*,*/v1/oauth2/login/*,*/users/register,*/v1/users,*/v1/users/change/password/*,*/v1/users/change/password,*/v1/users/password/*,*/v1/mfa/verify,*/v1/mfa/send-otp,*/favicon.ico,*/v1/app/settings"
     logoutURI: "*/v1/oAuth/2.0/logout"
   authorization:
     shouldFilter: "*/v1/oAuth/2.0/token/exchange,*/v1/oauth2/token/exchange,**/v1/users/profile"
