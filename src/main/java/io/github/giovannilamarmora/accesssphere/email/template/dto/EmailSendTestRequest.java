@@ -41,7 +41,7 @@ public class EmailSendTestRequest {
   @NotBlank(message = "The field 'to' is required and it cannot be null or blank")
   @Schema(
       description = "Recipient email address to receive the test message",
-      example = "mario.rossi@example.com",
+      example = "user@example.com",
       requiredMode = Schema.RequiredMode.REQUIRED)
   private String to;
 
@@ -57,6 +57,6 @@ public class EmailSendTestRequest {
 
   @Schema(
       description = "Key-value map of dynamic placeholder parameters to replace {{KEY}} tags in the template",
-      example = "{\"NAME\": \"Mario Rossi\", \"RESET_URL\": \"https://accesssphere.io/reset\"}")
+      example = "{\"NAME\": \"{{USER.NAME}}\", \"RESET_CODE\": \"{{AUTH.RESET_CODE}}\"}")
   private Map<String, String> params;
 }

@@ -59,7 +59,33 @@ public class UserAdminControllerImpl implements UserAdminController {
             users -> {
               UserListResponse response =
                   new UserListResponse(
-                      HttpStatus.OK.value(), "Users list", TraceUtils.getSpanID(), users);
+                       HttpStatus.OK.value(), "Users list", TraceUtils.getSpanID(), users);
+              return ResponseEntity.ok(response);
+            });
+  }
+
+  /**
+   * Endpoint per ottenere i dettagli di un singolo utente registrato nel sistema IAM.
+   *
+   * @param identifier Identificatore univoco UUID dell'utente.
+   * @param bearer Token di autorizzazione opzionale dell'operatore.
+   * @param request Richiesta HTTP server reattiva.
+   * @return Mono contenente ResponseEntity con stato 200 OK e l'involucro UserResponse con l'utente.
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<UserResponse>> getUser(
+      String identifier, String bearer, ServerHttpRequest request) {
+    return userAdminService
+        .getUser(identifier, bearer)
+        .map(
+            user -> {
+              UserResponse response =
+                  new UserResponse(
+                      HttpStatus.OK.value(),
+                      "User " + user.getUsername() + " details",
+                      TraceUtils.getSpanID(),
+                      user);
               return ResponseEntity.ok(response);
             });
   }

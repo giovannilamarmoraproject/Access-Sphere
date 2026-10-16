@@ -10,17 +10,15 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * Wrapper standard di risposta OpenAPI per la lista degli Utenti IAM.
+ * Wrapper standard di risposta OpenAPI per la cancellazione di un Utente IAM.
  *
- * <p>Estende {@link Response} tipizzando esplicitamente il campo {@code data} come collezione
- * tipizzata {@link List} di {@link User}. Questo consente a Swagger UI di documentare accuratamente
- * la struttura dell'elenco utenti.
+ * <p>Estende {@link Response} documentando l'esito della cancellazione permanente dell'account.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Standard response wrapper containing the list of registered IAM users")
+@Schema(description = "Standard response wrapper confirming the deletion of an IAM user")
 public class UserDeleteResponse extends Response {
 
   @Schema(description = "HTTP status code of the operation", example = "200")
@@ -28,7 +26,7 @@ public class UserDeleteResponse extends Response {
 
   @Schema(
       description = "Brief descriptive message of the operation outcome",
-      example = "Users list")
+      example = "User successfully deleted")
   private String message;
 
   @Schema(

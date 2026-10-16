@@ -3,8 +3,6 @@ package io.github.giovannilamarmora.accesssphere.user.admin;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserService;
-import io.github.giovannilamarmora.accesssphere.data.tech.TechUserValidator;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.OAuth2AuthorizationService;
@@ -16,6 +14,7 @@ import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
 import io.github.giovannilamarmora.accesssphere.roles.model.UserClientRole;
 import io.github.giovannilamarmora.accesssphere.user.UserMapper;
 import io.github.giovannilamarmora.accesssphere.user.UserService;
+import io.github.giovannilamarmora.accesssphere.user.UserUtils;
 import io.github.giovannilamarmora.accesssphere.user.UserValidator;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserRequest;
@@ -43,8 +42,7 @@ import reactor.core.scheduler.Schedulers;
  * <p>Interconnessioni logiche:
  *
  * <ul>
- *   <li>Verifica l'autorizzazione tecnica degli operatori tramite {@link AdminUserService} e {@link
- *       TechUserValidator}.
+ *   <li>Verifica l'autorizzazione degli operatori tramite {@link PermissionRoleManager}.
  *   <li>Risolve la configurazione dei client OAuth tramite {@link OAuth2ClientService}.
  *   <li>Esegue le operazioni di lettura, creazione e cancellazione delegando al layer di
  *       persistenza puro {@link UserService}.
@@ -89,13 +87,69 @@ public class UserAdminService {
               if (permissionRoleManager.hasAdminPermission(readUserPermission)) {
                 return users;
               }
-              return users.stream().filter(user -> hasMatchingRole(user, hasCorrectRoles)).toList();
+              return users.stream()
+                  .filter(user -> UserUtils.hasMatchingClient(user, hasCorrectRoles))
+                  .toList();
             })
         .map(UserMapper::toResponseList)
         .doOnSuccess(
             filteredUsers ->
                 LOG.info(
                     "✅ {} Successfully retrieved {} users", USER_ADMIN_LOG, filteredUsers.size()));
+  }
+
+  /**
+   * Recupera i dettagli di un singolo utente specificato dal suo identificatore univoco UUID,
+   * verificando i permessi di lettura USERS_READ e lo scoping multi-tenant per client.
+   *
+   * @param identifier Identificatore univoco UUID dell'utente target.
+   * @param bearer Token di autorizzazione opzionale dell'operatore.
+   * @return Mono contenente il DTO {@link UserDataResponse} dell'utente.
+   */
+  public Mono<UserDataResponse> getUser(String identifier, String bearer) {
+    UserValidator.validateIdentifier(identifier);
+    LOG.info("👤 {} Starting retrieval of user for identifier: {}", USER_ADMIN_LOG, identifier);
+
+    return userService
+        .getUserByIdentifier(identifier)
+        .flatMap(
+            targetUser -> {
+              boolean isAdmin =
+                  permissionRoleManager.hasAdminPermission(SystemPermission.USERS_READ);
+              if (isAdmin) {
+                return Mono.just(targetUser);
+              }
+
+              boolean isSelf = permissionRoleManager.isCurrentUser(targetUser.getIdentifier());
+              if (isSelf) {
+                return Mono.just(targetUser);
+              }
+
+              List<RoleDefinition> authorizedRoles =
+                  permissionRoleManager.checkPermissionAndReturnUserRoles(
+                      SystemPermission.USERS_READ);
+
+              boolean sameClient = UserUtils.hasMatchingClient(targetUser, authorizedRoles);
+              if (!sameClient) {
+                LOG.error(
+                    "⛔ {} Access denied: User {} does not belong to operator's authorized clients",
+                    USER_ADMIN_LOG,
+                    identifier);
+                return Mono.error(
+                    new OAuthException(
+                        ExceptionMap.ERR_OAUTH_403,
+                        "Forbidden: User does not belong to authorized clients"));
+              }
+              return Mono.just(targetUser);
+            })
+        .map(UserMapper::toResponse)
+        .doOnSuccess(
+            user ->
+                LOG.info(
+                    "✅ {} Successfully retrieved user: {}, identifier: {}",
+                    USER_ADMIN_LOG,
+                    user.getUsername(),
+                    identifier));
   }
 
   /**
@@ -337,42 +391,5 @@ public class UserAdminService {
                     USER_ADMIN_LOG,
                     identifier))
         .then();
-  }
-
-  /**
-   * Verifica se l'utente specificato appartiene ad almeno uno dei Client OAuth2 autorizzati per
-   * l'operatore. Il filtraggio agisce a livello di perimetro del client (clientId), includendo
-   * tutti gli utenti registrati sul client a prescindere dallo specifico ruolo assegnato.
-   *
-   * @param user Utente da verificare con i rispettivi ruoli assegnati.
-   * @param authorizedRoles Lista dei ruoli ammessi da cui estrarre i Client autorizzati per
-   *     l'operatore.
-   * @return true se l'utente possiede almeno un ruolo associato a uno dei client autorizzati, false
-   *     altrimenti.
-   */
-  private boolean hasMatchingRole(User user, List<RoleDefinition> authorizedRoles) {
-    if (ObjectToolkit.isNullOrEmpty(user) || ObjectToolkit.isNullOrEmpty(user.getRoles())) {
-      return false;
-    }
-    if (ObjectToolkit.isNullOrEmpty(authorizedRoles)) {
-      return false;
-    }
-    return user.getRoles().stream()
-        .anyMatch(
-            userRole ->
-                authorizedRoles.stream()
-                    .anyMatch(
-                        correctRole -> {
-                          if (ObjectToolkit.isNullOrEmpty(userRole)
-                              || ObjectToolkit.isNullOrEmpty(correctRole)) {
-                            return false;
-                          }
-                          return !ObjectToolkit.isNullOrEmpty(userRole.getClientId())
-                              && !ObjectToolkit.isNullOrEmpty(correctRole.getClientId())
-                              && correctRole
-                                  .getClientId()
-                                  .trim()
-                                  .equalsIgnoreCase(userRole.getClientId().trim());
-                        }));
   }
 }

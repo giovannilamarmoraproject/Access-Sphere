@@ -7,13 +7,11 @@ import io.github.giovannilamarmora.accesssphere.email.sender.dto.EmailResponse;
 import io.github.giovannilamarmora.accesssphere.email.template.EmailTemplateDomainService;
 import io.github.giovannilamarmora.accesssphere.email.template.model.EmailTemplate;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
-import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.oAuth.OAuthException;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.roles.PermissionRoleManager;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.roles.model.SystemPermission;
-import io.github.giovannilamarmora.accesssphere.token.TokenService;
 import io.github.giovannilamarmora.accesssphere.user.*;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserDataResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserUpdateRequest;
@@ -39,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
@@ -48,14 +47,10 @@ import reactor.core.publisher.Mono;
  * <p>Interconnessioni logiche:
  *
  * <ul>
- *   <li>Risolve la configurazione del client e le tipologie di autenticazione tramite {@link
- *       OAuth2ClientService}.
- *   <li>Decodifica i token Bearer con {@link TokenService#parseToken} e valida le identita' Google
- *       federate tramite {@link GrpcService#userInfo}.
  *   <li>Interroga e aggiorna l'anagrafica utente delegando al layer di persistenza {@link
  *       UserService}.
  *   <li>Verifica i diritti di auto-modifica del profilo o la presenza di ruoli privilegiati tramite
- *       {@link AdminUserService} e {@link UserValidator#validateUpdate}.
+ *       {@link PermissionRoleManager}.
  *   <li>Orchestra il flusso di reset password in due fasi, integrandosi con {@link
  *       EmailTemplateDomainService} per il template localizzato e con {@link EmailSenderService}
  *       per la notifica.
@@ -81,7 +76,7 @@ public class UserAccountService {
    *
    * @param bearer Token di accesso Bearer inviato dal client.
    * @param request Richiesta HTTP server.
-   * @return Mono contenente il DTO {@link User} del profilo.
+   * @return Mono contenente il DTO {@link UserDataResponse} del profilo.
    */
   @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
   public Mono<UserDataResponse> profile(String bearer, ServerHttpRequest request) {
@@ -98,6 +93,55 @@ public class UserAccountService {
                     "✅ {} Profile retrieval completed successfully for user: {}",
                     USER_ACCOUNT_LOG,
                     userDataResponse.getUsername()));
+  }
+
+  /**
+   * Aggiorna i dati di profilo dell'utente attualmente autenticato nella sessione corrente.
+   *
+   * @param userUpdateRequest DTO contenente i dati anagrafici da aggiornare.
+   * @param bearer Token Bearer della sessione.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente il DTO {@link UserDataResponse} aggiornato.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<UserDataResponse> updateProfile(
+      UserUpdateRequest userUpdateRequest, String bearer, ServerHttpRequest request) {
+    LOG.info("👤 {} Starting self-service profile update", USER_ACCOUNT_LOG);
+    String email = oAuth2Authorization.getEmail();
+
+    return userService
+        .getUserByEmail(email)
+        .flatMap(
+            currentUser ->
+                updateUser(currentUser.getIdentifier(), userUpdateRequest, bearer, request));
+  }
+
+  /**
+   * Elimina definitivamente l'account dell'utente attualmente autenticato nella sessione corrente.
+   *
+   * @param bearer Token Bearer della sessione.
+   * @param exchange Scambio HTTP server reattivo.
+   * @return Mono vuoto indicante il completamento della cancellazione.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<Void> deleteProfile(String bearer, ServerWebExchange exchange) {
+    LOG.info("🗑️ {} Starting self-service profile deletion", USER_ACCOUNT_LOG);
+    String email = oAuth2Authorization.getEmail();
+
+    return userService
+        .getUserByEmail(email)
+        .flatMap(
+            currentUser -> {
+              if (permissionRoleManager.isAdminUser(currentUser.getUsername())) {
+                LOG.error(
+                    "❌ {} Forbidden: Admin user cannot delete own account via self-service",
+                    USER_ACCOUNT_LOG);
+                return Mono.error(
+                    new OAuthException(ExceptionMap.ERR_OAUTH_403, "Cannot alter admin user"));
+              }
+              return userService.deleteUserByIdentifier(
+                  currentUser.getIdentifier(), bearer, exchange);
+            });
   }
 
   /**
@@ -304,6 +348,68 @@ public class UserAccountService {
             user ->
                 LOG.info(
                     "✅ [PASSWORD UPDATE] Password successfully changed for user: {}",
+                    user.getUsername()))
+        .then();
+  }
+
+  /**
+   * Aggiorna la password dell'utente autenticato previa verifica della vecchia password corrente.
+   *
+   * @param changePassword DTO contenente vecchia e nuova password codificate in Base64.
+   * @param bearer Token Bearer della sessione.
+   * @return Mono vuoto indicante il completamento dell'aggiornamento password.
+   */
+  @LogInterceptor(type = LogTimeTracker.ActionType.SERVICE)
+  public Mono<Void> changeAuthenticatedPassword(ChangePassword changePassword, String bearer) {
+    LOG.info("🔑 [PASSWORD UPDATE] Starting authenticated password change");
+    if (ObjectToolkit.isNullOrEmpty(changePassword.getOldPassword())
+        || ObjectToolkit.isNullOrEmpty(changePassword.getPassword())) {
+      LOG.error("❌ Both old password and new password are required");
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400, "Old password and new password must be provided!");
+    }
+
+    String decodedOldPassword;
+    String decodedNewPassword;
+    try {
+      decodedOldPassword = new String(Base64.getDecoder().decode(changePassword.getOldPassword()));
+      decodedNewPassword = new String(Base64.getDecoder().decode(changePassword.getPassword()));
+    } catch (IllegalArgumentException e) {
+      LOG.error("❌ Failed to decode Base64 password: {}", e.getMessage());
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid Base64 password encoding");
+    }
+
+    if (!Utilities.isCharacterAndRegexValid(
+        decodedNewPassword, RegEx.PASSWORD_FULL.getValue())) {
+      LOG.error("❌ Invalid password complexity regex check failed");
+      throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid regex for field password");
+    }
+
+    String email = oAuth2Authorization.getEmail();
+    return userService
+        .getUserByEmail(email)
+        .flatMap(
+            user -> {
+              if (!userService.matchesPassword(decodedOldPassword, user.getPassword())) {
+                LOG.error("❌ Current password mismatch for user: {}", user.getUsername());
+                return Mono.error(
+                    new OAuthException(ExceptionMap.ERR_OAUTH_401, "Invalid current password"));
+              }
+
+              user.setPassword(decodedNewPassword);
+              user.setTokenReset(null);
+              return userService.updateUser(user.getIdentifier(), user);
+            })
+        .flatMap(
+            updatedUser ->
+                webhookService
+                    .checkAndExecuteWebhook(
+                        WebhookAction.RESET_PASSWORD, updatedUser.getIdentifier())
+                    .thenReturn(updatedUser))
+        .doOnSuccess(
+            user ->
+                LOG.info(
+                    "✅ [PASSWORD UPDATE] Authenticated password successfully changed for user: {}",
                     user.getUsername()))
         .then();
   }

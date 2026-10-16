@@ -60,7 +60,7 @@ public enum EmailTemplateCategory {
       "Invio del codice monouso per l'autenticazione a due fattori via email",
       "Template for sending one-time MFA authentication code",
       "mfa-otp.html",
-      false,
+      true,
       createMfaOtpParams()),
 
   ACCOUNT_LOCKED(
@@ -146,48 +146,48 @@ public enum EmailTemplateCategory {
 
   private static Map<String, Object> createResetPasswordParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("SITE_URL", "APP.URL");
-    params.put("NAME", "USER.NAME");
-    params.put("RESET_CODE", "AUTH.RESET_CODE");
-    params.put("SITE_SHORT", "APP.NAME");
+    params.put("SITE_URL", "{{APP.URL}}");
+    params.put("NAME", "{{USER.NAME}}");
+    params.put("RESET_CODE", "{{AUTH.RESET_CODE}}");
+    params.put("SITE_SHORT", "{{APP.NAME}}");
     return params;
   }
 
   private static Map<String, Object> createWelcomeParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("SITE_URL", "APP.URL");
-    params.put("NAME", "USER.NAME");
-    params.put("USERNAME", "USER.USERNAME");
-    params.put("SITE_SHORT", "APP.NAME");
+    params.put("SITE_URL", "{{APP.URL}}");
+    params.put("NAME", "{{USER.NAME}}");
+    params.put("USERNAME", "{{USER.USERNAME}}");
+    params.put("SITE_SHORT", "{{APP.NAME}}");
     return params;
   }
 
   private static Map<String, Object> createVerificationParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("SITE_URL", "APP.URL");
-    params.put("NAME", "USER.NAME");
-    params.put("VERIFY_URL", "AUTH.VERIFY_URL");
-    params.put("SITE_SHORT", "APP.NAME");
+    params.put("SITE_URL", "{{APP.URL}}");
+    params.put("NAME", "{{USER.NAME}}");
+    params.put("VERIFY_URL", "{{AUTH.VERIFY_URL}}");
+    params.put("SITE_SHORT", "{{APP.NAME}}");
     return params;
   }
 
   private static Map<String, Object> createMfaOtpParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("SITE_URL", "APP.URL");
-    params.put("NAME", "USER.NAME");
-    params.put("OTP_CODE", "AUTH.OTP_CODE");
-    params.put("EXPIRATION_MINUTES", "AUTH.EXPIRE_MINUTES");
-    params.put("SITE_SHORT", "APP.NAME");
+    params.put("SITE_URL", "{{APP.URL}}");
+    params.put("NAME", "{{USER.NAME}}");
+    params.put("OTP_CODE", "{{AUTH.OTP_CODE}}");
+    params.put("EXPIRATION_MINUTES", "15");
+    params.put("SITE_SHORT", "{{APP.NAME}}");
     return params;
   }
 
   private static Map<String, Object> createAccountLockedParams() {
     Map<String, Object> params = new LinkedHashMap<>();
-    params.put("SITE_URL", "APP.URL");
-    params.put("NAME", "USER.NAME");
-    params.put("LOCK_REASON", "AUTH.LOCK_REASON");
-    params.put("SUPPORT_URL", "APP.SUPPORT_URL");
-    params.put("SITE_SHORT", "APP.NAME");
+    params.put("SITE_URL", "{{APP.URL}}");
+    params.put("NAME", "{{USER.NAME}}");
+    params.put("LOCK_REASON", "Please contact the administrator for more information");
+    params.put("SUPPORT_URL", "{{APP.SUPPORT_URL}}");
+    params.put("SITE_SHORT", "{{APP.NAME}}");
     return params;
   }
 }

@@ -65,7 +65,7 @@ public class EmailTemplateRequest {
   @Schema(
       description = "Key-value map of standard placeholder parameters associated with the template",
       example =
-          "{\"SITE_URL\": \"https://accesssphere.io\", \"NAME\": \"Mario Rossi\", \"RESET_URL\": \"https://accesssphere.io/reset\"}")
+          "{\"SITE_URL\": \"{{APP.URL}}\", \"NAME\": \"{{USER.NAME}}\", \"RESET_CODE\": \"{{AUTH.RESET_CODE}}\"}")
   private Map<String, String> params;
 
   @Schema(

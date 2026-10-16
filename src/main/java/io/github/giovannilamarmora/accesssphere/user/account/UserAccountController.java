@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.user.account;
 
+import io.github.giovannilamarmora.accesssphere.user.dto.UserDeleteResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserUpdateRequest;
 import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
@@ -104,6 +106,118 @@ public interface UserAccountController {
               example = OpenAPI.Params.Example.BEARER)
           String bearer,
       ServerHttpRequest request);
+
+  /**
+   * Aggiorna i dati anagrafici e personali del profilo dell'utente autenticato nella sessione corrente.
+   *
+   * @param user DTO contenente i dati anagrafici aggiornati.
+   * @param bearer Token di accesso Bearer inviato nell'header Authorization.
+   * @param request Richiesta HTTP server reattiva.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link UserResponse}.
+   */
+  @PutMapping("/users/profile")
+  @Operation(
+      summary = "Update Own Profile",
+      description =
+          "Update the profile details and configurations of the currently authenticated user based on session token",
+      tags = OpenAPI.Tag.ACCOUNT,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Profile updated successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = UserResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request - Invalid user data or validation constraints violated",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Missing or invalid Bearer token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Not Found - User profile not found in database",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<UserResponse>> updateProfile(
+      @RequestBody @Valid @NotNull(message = "User cannot be null") UserUpdateRequest user,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      ServerHttpRequest request);
+
+  /**
+   * Elimina definitivamente l'account dell'utente attualmente autenticato (Self-Service Deletion).
+   *
+   * @param bearer Token di accesso Bearer inviato nell'header Authorization.
+   * @param exchange Scambio HTTP server reattivo.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link UserDeleteResponse}.
+   */
+  @DeleteMapping("/users/profile")
+  @Operation(
+      summary = "Delete Own Account",
+      description =
+          "Permanently delete the currently authenticated user account, credentials and client roles",
+      tags = OpenAPI.Tag.ACCOUNT,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Account deleted successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = UserDeleteResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Missing or invalid Bearer token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Cannot delete admin user",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Not Found - User not found",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<UserDeleteResponse>> deleteProfile(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      ServerWebExchange exchange);
 
   /**
    * Aggiorna i dati anagrafici e personali del profilo utente specificato.
@@ -288,4 +402,67 @@ public interface UserAccountController {
       })
   @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
   Mono<ResponseEntity<Response>> changePassword(@RequestBody @Valid ChangePassword changePassword);
+
+  /**
+   * Modifica la password per l'utente attualmente autenticato previa verifica della password corrente.
+   *
+   * @param changePassword DTO contenente vecchia password e nuova password codificate in Base64.
+   * @param bearer Token di accesso Bearer inviato nell'header Authorization.
+   * @return {@link Mono} contenente {@link ResponseEntity} con {@link Response}.
+   */
+  @PutMapping(value = {"/users/profile/password", "/users/password/change"})
+  @Operation(
+      summary = "Change Password (Authenticated)",
+      description =
+          "Change the password of the currently authenticated user by validating their current (old) password",
+      tags = OpenAPI.Tag.ACCOUNT,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Password updated successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description =
+                "Bad Request - Missing passwords, invalid Base64 encoding or regex complexity failure",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Incorrect current password or invalid Bearer token",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Not Found - User not found",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class)))
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<Response>> changeAuthenticatedPassword(
+      @RequestBody @Valid ChangePassword changePassword,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer);
 }

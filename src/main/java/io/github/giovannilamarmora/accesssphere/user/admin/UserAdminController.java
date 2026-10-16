@@ -65,6 +65,58 @@ public interface UserAdminController {
           String bearer,
       ServerHttpRequest request);
 
+  @GetMapping("/users/{identifier}")
+  @Operation(
+      description = "Get details of a specific user by identifier",
+      summary = "User Details",
+      tags = OpenAPI.Tag.USERS,
+      security = @SecurityRequirement(name = HttpHeaders.AUTHORIZATION))
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "User details retrieved successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = UserResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Not Found",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExceptionResponse.class))),
+      })
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  Mono<ResponseEntity<UserResponse>> getUser(
+      @PathVariable(value = "identifier")
+          @Schema(
+              description = OpenAPI.Params.Description.IDENTIFIER,
+              example = OpenAPI.Params.Example.IDENTIFIER)
+          String identifier,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
+          @Valid
+          @Schema(
+              description = OpenAPI.Params.Description.BEARER,
+              example = OpenAPI.Params.Example.BEARER)
+          String bearer,
+      ServerHttpRequest request);
+
   @PostMapping("/users")
   @Operation(
       description = "Register a new user into IAM system with structured client roles",

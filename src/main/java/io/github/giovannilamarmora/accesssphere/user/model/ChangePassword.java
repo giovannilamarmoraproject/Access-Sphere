@@ -36,7 +36,13 @@ public class ChangePassword extends GenericDTO {
 
   @Schema(
       description =
-          "New user password encoded in Base64 according to security guidelines (used in Step 2)",
+          "Current / old user password encoded in Base64 (used for authenticated password change)",
+      example = "T2xkUGFzc3dvcmQxMjMh")
+  private String oldPassword;
+
+  @Schema(
+      description =
+          "New user password encoded in Base64 according to security guidelines (used in Step 2 and authenticated change)",
       example = "UGFzc3dvcmQxMjMh")
   private String password;
 

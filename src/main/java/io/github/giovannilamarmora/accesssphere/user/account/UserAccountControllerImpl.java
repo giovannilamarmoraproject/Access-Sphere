@@ -1,5 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.user.account;
 
+import io.github.giovannilamarmora.accesssphere.user.dto.UserDeleteResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserResponse;
 import io.github.giovannilamarmora.accesssphere.user.dto.UserUpdateRequest;
 import io.github.giovannilamarmora.accesssphere.user.model.ChangePassword;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
@@ -63,6 +65,54 @@ public class UserAccountControllerImpl implements UserAccountController {
                       user);
               return ResponseEntity.ok(response);
             });
+  }
+
+  /**
+   * Endpoint per l'aggiornamento dei dati anagrafici del profilo utente connesso.
+   *
+   * @param user DTO contenente i dati anagrafici aggiornati.
+   * @param bearer Token Bearer della sessione.
+   * @param request Richiesta HTTP server.
+   * @return Mono contenente ResponseEntity con stato 200 OK e i dati aggiornati.
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<UserResponse>> updateProfile(
+      UserUpdateRequest user, String bearer, ServerHttpRequest request) {
+    return userAccountService
+        .updateProfile(user, bearer, request)
+        .map(
+            updatedUser -> {
+              UserResponse response =
+                  new UserResponse(
+                      HttpStatus.OK.value(),
+                      "User " + updatedUser.getUsername() + " successfully updated!",
+                      TraceUtils.getSpanID(),
+                      updatedUser);
+              return ResponseEntity.ok(response);
+            });
+  }
+
+  /**
+   * Endpoint per la cancellazione definitiva del profilo dell'utente autenticato (Self-Service).
+   *
+   * @param bearer Token Bearer della sessione.
+   * @param exchange Scambio HTTP server reattivo.
+   * @return Mono contenente ResponseEntity con stato 200 OK di avvenuta eliminazione.
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<UserDeleteResponse>> deleteProfile(
+      String bearer, ServerWebExchange exchange) {
+    return userAccountService
+        .deleteProfile(bearer, exchange)
+        .thenReturn(
+            ResponseEntity.ok(
+                new UserDeleteResponse(
+                    HttpStatus.OK.value(),
+                    "Your account has been successfully deleted",
+                    TraceUtils.getSpanID(),
+                    null)));
   }
 
   /**
@@ -132,6 +182,26 @@ public class UserAccountControllerImpl implements UserAccountController {
     LOG.info("🌐 [ACCOUNT CONTROLLER] Invoking ChangePassword endpoint");
     return userAccountService
         .changePassword(changePassword)
+        .thenReturn(
+            ResponseEntity.ok(
+                new Response(
+                    HttpStatus.OK.value(), "Password Updated!", TraceUtils.getSpanID(), null)));
+  }
+
+  /**
+   * Endpoint per la modifica della password dell'utente autenticato previa validazione della vecchia password.
+   *
+   * @param changePassword DTO contenente vecchia e nuova password in Base64.
+   * @param bearer Token di accesso Bearer inviato nell'header Authorization.
+   * @return Mono contenente ResponseEntity con stato 200 OK di avvenuto aggiornamento.
+   */
+  @Override
+  @LogInterceptor(type = LogTimeTracker.ActionType.CONTROLLER)
+  public Mono<ResponseEntity<Response>> changeAuthenticatedPassword(
+      ChangePassword changePassword, String bearer) {
+    LOG.info("🌐 [ACCOUNT CONTROLLER] Invoking authenticated ChangePassword endpoint");
+    return userAccountService
+        .changeAuthenticatedPassword(changePassword, bearer)
         .thenReturn(
             ResponseEntity.ok(
                 new Response(

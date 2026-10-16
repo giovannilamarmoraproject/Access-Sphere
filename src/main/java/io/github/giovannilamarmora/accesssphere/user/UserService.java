@@ -298,4 +298,15 @@ public class UserService {
     LOG.debug("✅ Credentials successfully validated for user: {}", userDTO.getUsername());
     return Mono.just(userDTO);
   }
+
+  /**
+   * Verifica se la password in chiaro corrisponde all'hash BCrypt archiviato a database.
+   *
+   * @param rawPassword Password in chiaro fornita dal client.
+   * @param encodedPassword Hash BCrypt archiviato nel database.
+   * @return true se le credenziali corrispondono, false altrimenti.
+   */
+  public boolean matchesPassword(String rawPassword, String encodedPassword) {
+    return bCryptPasswordEncoder.matches(rawPassword, encodedPassword);
+  }
 }

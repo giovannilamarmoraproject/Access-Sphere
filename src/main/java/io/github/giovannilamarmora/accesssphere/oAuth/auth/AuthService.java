@@ -71,6 +71,7 @@ public class AuthService {
   @Autowired private OAuth2AuthorizationService oAuth2AuthorizationService;
   @Autowired @Lazy private UserService userService;
   @Autowired private AdminUserService techUserService;
+  @Autowired @Lazy private io.github.giovannilamarmora.accesssphere.mfa.auth.MFAAuthenticationService mfaAuthenticationService;
 
   /**
    * Esegue l'autenticazione tramite credenziali classiche (username o email e password).
@@ -175,7 +176,7 @@ public class AuthService {
     LOG.debug("🔑 Validating user credentials for username={} and email={}", username, email);
     return userService
         .authenticateUser(username, email, password)
-        .map(
+        .flatMap(
             authenticatedUser -> {
               SubjectType subjectType =
                   techUserService.isTechnicalUser(authenticatedUser)
@@ -183,11 +184,20 @@ public class AuthService {
                       : SubjectType.CUSTOMER;
               JWTData jwtData =
                   JWTData.generateJWTData(authenticatedUser, oAuth2Client, subjectType, request);
-              AuthToken token = tokenService.generateToken(jwtData, oAuth2Client, null);
-              LOG.debug(
-                  "✅ Login process ended successfully for user {}",
-                  authenticatedUser.getUsername());
-              return new OAuthTokenResponse(authenticatedUser, jwtData, token);
+
+              return mfaAuthenticationService
+                  .checkMFAAndMakeLogin(null, jwtData, authenticatedUser, oAuth2Client, request)
+                  .switchIfEmpty(
+                      Mono.defer(
+                          () -> {
+                            AuthToken token =
+                                tokenService.generateToken(jwtData, oAuth2Client, null);
+                            LOG.debug(
+                                "✅ Login process ended successfully for user {}",
+                                authenticatedUser.getUsername());
+                            return Mono.just(
+                                new OAuthTokenResponse(authenticatedUser, jwtData, token));
+                          }));
             });
   }
 
