@@ -714,7 +714,7 @@
               <!-- REDIRECT URIS -->
               <div class="param-box mb-4">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_redirect_uris', 'Redirect URIs Autorizzate (redirect_uris)') : 'Redirect URIs Autorizzate (redirect_uris)'}</span>
+                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_redirect_uris', 'Redirect URIs Autorizzate') : 'Redirect URIs Autorizzate'}</span>
                   ${redirectInfo.redirect_uris.length > 0 ? `<span class="text-[11px] font-mono text-purple-300 font-semibold">${redirectInfo.redirect_uris.length} ${typeof t === 'function' ? t('client_detail_configured_uris', 'URI configurate') : 'URI configurate'}</span>` : ''}
                 </div>
                 ${redirectInfo.redirect_uris.length > 0 ? `
@@ -737,7 +737,7 @@
               <!-- POST-LOGOUT REDIRECT URIS -->
               <div class="param-box">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_post_logout_redirect_uris', 'Post-Logout Redirect URIs (post_logout_redirect_uris)') : 'Post-Logout Redirect URIs (post_logout_redirect_uris)'}</span>
+                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_post_logout_redirect_uris', 'Post-Logout Redirect URIs') : 'Post-Logout Redirect URIs'}</span>
                   ${redirectInfo.post_logout_redirect_uris.length > 0 ? `<span class="text-[11px] font-mono text-purple-300 font-semibold">${redirectInfo.post_logout_redirect_uris.length} ${typeof t === 'function' ? t('client_detail_configured_uris', 'URI configurate') : 'URI configurate'}</span>` : ''}
                 </div>
                 ${redirectInfo.post_logout_redirect_uris.length > 0 ? `
