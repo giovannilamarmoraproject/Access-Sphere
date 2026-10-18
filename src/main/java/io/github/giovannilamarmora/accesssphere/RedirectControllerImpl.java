@@ -39,7 +39,7 @@ public class RedirectControllerImpl {
     return "app/user/users";
   }
 
-  @GetMapping("/app/users/details/{identifier}")
+  @GetMapping({"/app/users/details", "/app/users/details/{identifier}"})
   public String usersDetails(Model model) {
     return "app/user/user";
   }

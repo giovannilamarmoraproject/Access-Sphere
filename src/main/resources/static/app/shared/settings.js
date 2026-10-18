@@ -327,13 +327,15 @@ const AppSettings = (function () {
             const isSettings = currentPath.includes("/settings");
             const currentUser = typeof getLoggedInUser === "function" ? getLoggedInUser() : null;
             const esc = typeof escapeHtmlAttr === "function" ? escapeHtmlAttr : (s => s ? String(s).replace(/"/g, '&quot;') : '');
+            const isUserDetail = currentPath.includes("/users/details") || currentPath.includes("/user/details");
+            const isOwnProfile = isUserDetail && currentUser && currentUser.identifier && currentPath.includes(currentUser.identifier);
             const userFullName = currentUser && currentUser.fullName ? currentUser.fullName : "Utente";
             const userHandle = currentUser && currentUser.username ? `@${currentUser.username}` : (currentUser && currentUser.email ? currentUser.email : "");
             const userPhoto = currentUser && currentUser.profilePhoto ? currentUser.profilePhoto : 'https://bootdey.com/img/Content/avatar/avatar7.png';
 
             sidebar.innerHTML = `
         <!-- Scheda Profilo Utente Desktop (Icona, Nome e Cognome) -->
-        <div class="sidebar-user-card" id="sidebar-user-card" title="${esc(userFullName)}${userHandle ? ` (${esc(userHandle)})` : ''}">
+        <div class="sidebar-user-card ${isOwnProfile ? 'active' : ''}" id="sidebar-user-card" role="button" tabindex="0" onclick="if(typeof openCurrentUserDetails === 'function') openCurrentUserDetails(event);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); if(typeof openCurrentUserDetails === 'function') openCurrentUserDetails(event);}" title="${esc(userFullName)}${userHandle ? ` (${esc(userHandle)})` : ''}" style="cursor: pointer;">
           <div class="sidebar-user-avatar" id="sidebar-user-avatar">
             <img src="${esc(userPhoto)}" alt="${esc(userFullName)}" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.src='https://bootdey.com/img/Content/avatar/avatar7.png';" />
           </div>

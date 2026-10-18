@@ -1,10 +1,4 @@
 function getUser() {
-  if (typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
-    console.warn("AccessControl: Permission denied for viewing user details.");
-    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.");
-    setTimeout(() => { window.location.href = "/app"; }, 1500);
-    return;
-  }
   const urlParams = window.location.href;
   let identifier = null;
   if (urlParams.includes("details/")) {
@@ -14,16 +8,34 @@ function getUser() {
     identifier = params.get("id") || params.get("identifier");
   }
 
+  const current = typeof getLoggedInUser === "function" ? getLoggedInUser() : null;
+  if (!identifier) {
+    identifier = current ? (current.identifier || current.username) : null;
+  }
+
+  const isSelf = !!(current && (
+    (current.identifier && identifier && String(current.identifier).toLowerCase() === String(identifier).toLowerCase()) ||
+    (current.username && identifier && String(current.username).toLowerCase() === String(identifier).toLowerCase())
+  ));
+
+  if (!isSelf && typeof AccessControl !== "undefined" && !AccessControl.canViewUsers()) {
+    console.warn("AccessControl: Permission denied for viewing user details.");
+    sweetalert("warning", typeof t === "function" ? t("swal_permission_denied_title", "Accesso Negato") : "Accesso Negato", typeof t === "function" ? t("swal_permission_denied_desc", "Non disponi dei permessi necessari per accedere a questa sezione.") : "Non disponi dei permessi necessari per accedere a questa sezione.");
+    setTimeout(() => { window.location.href = "/app"; }, 1500);
+    return;
+  }
+
   if (!identifier) {
     console.error("Identificativo utente non specificato nella URL");
     return sweetalert("error", "Errore", "Identificativo utente mancante.");
   }
 
-  const usersJSON = localStorage.getItem(config.client_id + "_usersData");
+  const cfgKey = (typeof config !== "undefined" && config && config.client_id) ? config.client_id + "_usersData" : "ACCESS-SPHERE-AUTH_usersData";
+  const usersJSON = localStorage.getItem(cfgKey) || localStorage.getItem("ACCESS-SPHERE-AUTH_usersData");
   if (usersJSON) {
     try {
       const users = JSON.parse(usersJSON);
-      const user = users.find((u) => u.identifier == identifier || u.username == identifier);
+      const user = users.find((u) => (u.identifier && u.identifier == identifier) || (u.username && u.username == identifier));
       if (user) {
         displayUserData(user);
         return;
@@ -45,22 +57,54 @@ function getUser() {
       }
       if (data && data.data) {
         const user = Array.isArray(data.data)
-            ? data.data.find((u) => u.identifier == identifier || u.username == identifier)
+            ? data.data.find((u) => (u.identifier && u.identifier == identifier) || (u.username && u.username == identifier))
             : data.data;
         if (user) {
           displayUserData(user);
-        } else {
-          sweetalert("error", "Utente Non Trovato", `Nessun utente trovato con ID: ${identifier}`);
+          return;
         }
-      } else {
-        sweetalert("error", "Errore", "Impossibile recuperare i dati utente dal server.");
       }
+
+      // Fallback: se la chiamata /v1/users/{identifier} fallisce o non trova il dato ma l'utente target è l'utente corrente, invoca /v1/users/profile
+      if (isSelf) {
+        const profileUrl = (config.baseUrl || window.location.origin) + "/v1/users/profile";
+        const pRes = await GET(profileUrl, token);
+        const pData = await pRes.json();
+        if (pData && pData.data) {
+          displayUserData(pData.data);
+          return;
+        }
+      }
+
+      sweetalert("error", "Utente Non Trovato", `Nessun utente trovato con ID: ${identifier}`);
     } catch(err) {
       console.error(err);
+      if (isSelf) {
+        try {
+          const profileUrl = (config.baseUrl || window.location.origin) + "/v1/users/profile";
+          const pRes = await GET(profileUrl, token);
+          const pData = await pRes.json();
+          if (pData && pData.data) {
+            displayUserData(pData.data);
+            return;
+          }
+        } catch(pe) {}
+      }
       sweetalert("error", "Errore", "Errore durante il parsing dei dati utente.");
     }
-  }).catch(err => {
+  }).catch(async (err) => {
     console.error("Fetch users error:", err);
+    if (isSelf) {
+      try {
+        const profileUrl = (config.baseUrl || window.location.origin) + "/v1/users/profile";
+        const pRes = await GET(profileUrl, token);
+        const pData = await pRes.json();
+        if (pData && pData.data) {
+          displayUserData(pData.data);
+          return;
+        }
+      } catch(pe) {}
+    }
     sweetalert("error", "Errore di Connessione", "Impossibile contattare il server.");
   });
 }

@@ -87,6 +87,7 @@ async function doLogin(clientId, redirectUri) {
                         fullName: fullName,
                         username: u.username || "",
                         email: u.email || "",
+                        identifier: u.identifier || u.id || "",
                         roles: u.roles || [],
                         profilePhoto: photo
                     };
@@ -162,6 +163,7 @@ async function verifyOTP() {
                         fullName: fullName,
                         username: u.username || "",
                         email: u.email || "",
+                        identifier: u.identifier || u.id || "",
                         roles: u.roles || [],
                         profilePhoto: photo
                     };

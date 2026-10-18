@@ -285,6 +285,9 @@ function enrichUserFromCachedUsers(userObj) {
                     if (found.profilePhoto || found.profile) {
                         userObj.profilePhoto = found.profilePhoto || found.profile;
                     }
+                    if (found.identifier && !userObj.identifier) {
+                        userObj.identifier = found.identifier;
+                    }
                 }
             }
         }
@@ -365,6 +368,7 @@ function getLoggedInUser() {
                 fullName: fullName,
                 username: claims.sub || claims.username || "",
                 email: claims.email || "",
+                identifier: claims.identifier || claims.user_id || claims.sub || "",
                 roles: Array.isArray(claims.roles) ? claims.roles : (claims.roles ? [claims.roles] : []),
                 permissions: Array.isArray(claims.permissions) ? claims.permissions : (claims.permissions ? [claims.permissions] : []),
                 clientRoles: Array.isArray(claims.clientRoles) ? claims.clientRoles : [],
@@ -512,6 +516,7 @@ function syncLoggedInUserProfile(forceRefresh = false) {
                     fullName: fullName,
                     username: u.username || "",
                     email: u.email || "",
+                    identifier: u.identifier || (current && current.identifier) || u.id || u.username || "",
                     roles: roles,
                     permissions: permissions,
                     clientRoles: u.clientRoles || [],
@@ -582,10 +587,68 @@ function updateSidebarUserDOM(userObj) {
     }
 }
 
+/**
+ * Naviga direttamente alla pagina di dettaglio anagrafico dell'utente correntemente autenticato.
+ * Recupera l'identifier univoco con fallback a cascata (sessione -> cache locale -> usersData -> username).
+ * @param {Event} [e]
+ */
+function openCurrentUserDetails(e) {
+    if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
+    }
+    if (e && typeof e.stopPropagation === "function") {
+        e.stopPropagation();
+    }
+    const current = typeof getLoggedInUser === "function" ? getLoggedInUser() : null;
+    let identifier = current ? (current.identifier || "") : "";
+
+    // Fallback 1: da localStorage cached user
+    if (!identifier) {
+        try {
+            const cachedUser = JSON.parse(localStorage.getItem("access_sphere_user") || "{}");
+            if (cachedUser && cachedUser.identifier) {
+                identifier = cachedUser.identifier;
+            }
+        } catch(err) {}
+    }
+
+    // Fallback 2: da lista utenti in cache locale
+    if (!identifier && current) {
+        try {
+            const clientId = (typeof config !== "undefined" && config && config.client_id) ? config.client_id : (localStorage.getItem("Client-ID") || "ACCESS-SPHERE-AUTH");
+            const raw = localStorage.getItem(clientId + "_usersData") || localStorage.getItem("ACCESS-SPHERE-AUTH_usersData");
+            if (raw) {
+                const users = JSON.parse(raw);
+                if (Array.isArray(users)) {
+                    const found = users.find(u => 
+                        (current.username && u.username && u.username.toLowerCase() === current.username.toLowerCase()) ||
+                        (current.email && u.email && u.email.toLowerCase() === current.email.toLowerCase())
+                    );
+                    if (found && found.identifier) {
+                        identifier = found.identifier;
+                    }
+                }
+            }
+        } catch(err) {}
+    }
+
+    // Fallback 3: username se non abbiamo ancora un identifier UUID
+    if (!identifier && current && current.username) {
+        identifier = current.username;
+    }
+
+    if (identifier) {
+        window.location.href = `/app/users/details/${encodeURIComponent(identifier)}`;
+    } else {
+        window.location.href = "/app/users";
+    }
+}
+
 window.decodeJwtPayload = decodeJwtPayload;
 window.getLoggedInUser = getLoggedInUser;
 window.syncLoggedInUserProfile = syncLoggedInUserProfile;
 window.updateSidebarUserDOM = updateSidebarUserDOM;
+window.openCurrentUserDetails = openCurrentUserDetails;
 
 const formatDateIntl = (inputDate) => {
     const date = new Date(inputDate);
@@ -918,7 +981,7 @@ function initMobileNavigation() {
       </div>
 
       <!-- Scheda Profilo Utente Mobile (Icona, Nome e Cognome) -->
-      <div class="m3-mobile-user-card" id="mobile-drawer-user-card">
+      <div class="m3-mobile-user-card cursor-pointer" id="mobile-drawer-user-card" role="button" tabindex="0" onclick="closeMobileNavDrawer(); openCurrentUserDetails(event);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); closeMobileNavDrawer(); openCurrentUserDetails(event);}" title="${typeof t === 'function' ? t('nav_view_user_details', 'Visualizza Dettagli Utente') : 'Visualizza Dettagli Utente'}">
         <div class="sidebar-user-avatar" id="mobile-drawer-user-avatar">
           <img src="${escapeHtmlAttr(currentUser && currentUser.profilePhoto ? currentUser.profilePhoto : 'https://bootdey.com/img/Content/avatar/avatar7.png')}" alt="${escapeHtmlAttr(currentUser ? currentUser.fullName : 'Utente')}" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.src='https://bootdey.com/img/Content/avatar/avatar7.png';" />
         </div>

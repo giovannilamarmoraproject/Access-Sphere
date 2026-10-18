@@ -2117,11 +2117,24 @@ body.swal2-shown .m3-mobile-bottom-nav,
     text-decoration: none !important;
     user-select: none;
     flex-shrink: 0;
+    cursor: pointer;
 }
 
 .sidebar-user-card:hover {
-    background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.12);
-    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.38);
+    background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.14);
+    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45);
+    box-shadow: 0 4px 16px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15);
+}
+
+.sidebar-user-card:focus-visible {
+    outline: 2px solid var(--theme-accent, #D0BCFF);
+    outline-offset: 2px;
+}
+
+.sidebar-user-card.active {
+    background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.2);
+    border-color: var(--theme-accent, #D0BCFF);
+    box-shadow: 0 0 16px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.28);
 }
 
 .sidebar-user-avatar {
@@ -2197,11 +2210,18 @@ body.swal2-shown .m3-mobile-bottom-nav,
     background: transparent;
     border-color: transparent;
     margin-bottom: 0.5rem;
+    cursor: pointer;
 }
 
 .m3-app-sidebar.collapsed .sidebar-user-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.25);
+    background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15);
+    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
+    border-radius: 50%;
+}
+
+.m3-app-sidebar.collapsed .sidebar-user-card.active {
+    background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.25);
+    border-color: var(--theme-accent, #D0BCFF);
     border-radius: 50%;
 }
 
@@ -2220,6 +2240,19 @@ body.swal2-shown .m3-mobile-bottom-nav,
     border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
     border-radius: 18px;
     flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+.m3-mobile-user-card:hover {
+    background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.14);
+    border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45);
+}
+
+.m3-mobile-user-card:focus-visible {
+    outline: 2px solid var(--theme-accent, #D0BCFF);
+    outline-offset: 2px;
 }
 
 /* Contenitore delle Categorie di Navigazione */
