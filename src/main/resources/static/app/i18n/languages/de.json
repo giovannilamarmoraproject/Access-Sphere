@@ -481,7 +481,7 @@
   "client_field_token_type": "Token-Typ *",
   "client_field_token_type_desc": "Typ des für den Client ausgestellten Tokens.",
   "client_field_scopes": "Autorisierte Scopes",
-  "client_field_scopes_desc": "Liste autorisierter Scopes (getrennt durch Leerzeichen oder Komma).",
+  "client_field_scopes_desc": "Liste autorisierter Scopes für den Client. Klicken Sie auf \"+ Scope hinzufügen\", um mehrere Einträge hinzuzufügen.",
   "client_field_redirect_uris": "Autorisierte Redirect-URIs",
   "client_field_redirect_uris_desc": "Zulässige URIs für Authorization Code und Token. Klicken Sie auf \"+ URI hinzufügen\", um mehrere Endpunkte einzugeben.",
   "client_field_post_logout_redirect_uris": "Post-Logout Redirect-URIs",
@@ -1099,5 +1099,10 @@
   "client_uri_remove_tooltip": "URI entfernen",
   "client_redirect_uri_placeholder": "z.B. https://app.example.com/callback oder http://localhost:8081",
   "client_post_logout_uri_placeholder": "z.B. https://app.example.com/login oder https://app.example.com",
-  "client_fallback_uri_placeholder": "z.B. https://app.example.com/login?client_id=MY-CLIENT"
+  "client_fallback_uri_placeholder": "z.B. https://app.example.com/login?client_id=MY-CLIENT",
+  "client_btn_add_scope": "Scope hinzufügen",
+  "client_scope_add_input_hint": "Klicken Sie hier, um ein neues Scope-Eingabefeld hinzuzufügen (oder Enter drücken)",
+  "client_scope_remove_tooltip": "Scope entfernen",
+  "client_scope_placeholder": "z.B. openid, profile, email oder https://...",
+  "swal_scopes_at_least_one_required": "Mindestens ein autorisierter Scope ist für den Client erforderlich."
 }

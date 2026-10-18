@@ -481,7 +481,7 @@
   "client_field_token_type": "Type de jeton *",
   "client_field_token_type_desc": "Type de jeton émis pour le client.",
   "client_field_scopes": "Scopes autorisés",
-  "client_field_scopes_desc": "Liste des scopes autorisés pour le client (séparés par un espace ou une virgule).",
+  "client_field_scopes_desc": "Liste des scopes autorisés pour le client. Cliquez sur \"+ Ajouter un scope\" pour saisir plusieurs valeurs.",
   "client_field_redirect_uris": "URI de redirection autorisées",
   "client_field_redirect_uris_desc": "URI autorisées pour la réponse du code d'autorisation et du jeton. Cliquez sur \"+ Ajouter une URI\" pour saisir plusieurs points de terminaison.",
   "client_field_post_logout_redirect_uris": "URI de redirection post-déconnexion",
@@ -1099,5 +1099,10 @@
   "client_uri_remove_tooltip": "Supprimer l'URI",
   "client_redirect_uri_placeholder": "ex. https://app.example.com/callback ou http://localhost:8081",
   "client_post_logout_uri_placeholder": "ex. https://app.example.com/login ou https://app.example.com",
-  "client_fallback_uri_placeholder": "ex. https://app.example.com/login?client_id=MY-CLIENT"
+  "client_fallback_uri_placeholder": "ex. https://app.example.com/login?client_id=MY-CLIENT",
+  "client_btn_add_scope": "Ajouter un scope",
+  "client_scope_add_input_hint": "Cliquez pour ajouter un nouveau scope (ou appuyez sur Entrée)",
+  "client_scope_remove_tooltip": "Supprimer le scope",
+  "client_scope_placeholder": "ex. openid, profile, email ou https://...",
+  "swal_scopes_at_least_one_required": "Il est obligatoire de configurer au moins un scope autorisé pour le Client."
 }

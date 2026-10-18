@@ -578,7 +578,7 @@
                         <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_ext_id_desc">Identificativo per integrazioni esterne (Google, Okta, ecc.).</span>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-12">
                         <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_secret">Client
                             Secret</label>
                         <div class="flex gap-2">
@@ -590,21 +590,6 @@
                             </button>
                         </div>
                         <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_secret_desc">Chiave segreta usata per autenticazione client confidenziale.</span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label text-xs font-semibold text-gray-300"
-                               data-i18n="client_field_reg_token">Registration Token</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="registrationToken" class="form-control font-mono text-xs"
-                                   placeholder="es. ca466054-8575-4fbf-bb76-183f24bfbcde"/>
-                            <button type="button" class="m3-icon-btn flex-shrink-0"
-                                    onclick="generateRegistrationToken()" title="Genera Nuovo UUID"
-                                    data-i18n-title="client_btn_generate_reg_token">
-                                <i class="fa-solid fa-dice text-xs"></i>
-                            </button>
-                        </div>
-                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_reg_token_desc">Token univoco di registrazione assegnato al client.</span>
                     </div>
                 </div>
             </div>
@@ -651,11 +636,26 @@
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label text-xs font-semibold text-gray-300" data-i18n="client_field_scopes">Scopes
-                            Autorizzati</label>
-                        <input type="text" id="scopes" class="form-control font-mono text-xs"
-                               placeholder="openid email profile https://www.googleapis.com/auth/userinfo.profile"/>
-                        <span class="text-[11px] text-gray-400 mt-1 block" data-i18n="client_field_scopes_desc">Lista degli scope autorizzati per il client (separati da spazio o virgola).</span>
+                        <div class="flex items-center justify-between mb-1.5 gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <label class="form-label m3-uri-header-label text-xs font-semibold text-gray-300 m-0 truncate"
+                                       data-i18n="client_field_scopes">Scopes Autorizzati</label>
+                                <span id="scopes-count-badge" class="m3-uri-count-pill">0</span>
+                            </div>
+                            <button type="button" class="m3-uri-add-btn-sm shrink-0" onclick="addScopeInputRow()">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_btn_add_scope">Aggiungi Scope</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="scopes" value=""/>
+                        <div class="m3-uri-list-box" id="scopes-box" onclick="handleScopesBoxClick(event)">
+                            <div id="scopes-rows" class="flex flex-col gap-2"></div>
+                            <button type="button" class="m3-uri-add-row-trigger" onclick="event.stopPropagation(); addScopeInputRow()">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span data-i18n="client_scope_add_input_hint">Clicca per aggiungere un nuovo scope (oppure premi Invio)</span>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-400 mt-1.5 block" data-i18n="client_field_scopes_desc">Lista degli scope autorizzati per il client. Clicca su "+ Aggiungi Scope" per inserire più valori.</span>
                     </div>
 
                     <div class="col-md-6">
@@ -960,6 +960,7 @@
     });
 
     window.addEventListener("languageChanged", () => {
+        renderScopeInputs();
         renderUriInputs("redirect");
         renderUriInputs("postLogout");
         renderAppRolesGrid();
@@ -1147,6 +1148,152 @@
         }
     }
 
+    // --- GESTIONE INTERATTIVA MULTI-SCOPE ---
+    let scopesList = [""];
+
+    function syncScopesField() {
+        const validScopes = (scopesList || []).map(s => (s || "").trim()).filter(Boolean);
+        const hiddenEl = document.getElementById("scopes");
+        if (hiddenEl) {
+            hiddenEl.value = validScopes.join(" ");
+        }
+        const badgeEl = document.getElementById("scopes-count-badge");
+        if (badgeEl) {
+            badgeEl.textContent = String(validScopes.length);
+        }
+    }
+
+    function renderScopeInputs(focusIndex = -1) {
+        if (!Array.isArray(scopesList) || scopesList.length === 0) {
+            scopesList = [""];
+        }
+        const container = document.getElementById("scopes-rows");
+        if (!container) return;
+
+        const placeholderText = typeof t === "function"
+            ? t("client_scope_placeholder", "es. openid, profile, email o https://...")
+            : "es. openid, profile, email o https://...";
+        const removeTitle = typeof t === "function"
+            ? t("client_scope_remove_tooltip", "Rimuovi Scope")
+            : "Rimuovi Scope";
+
+        container.innerHTML = scopesList.map((scopeVal, idx) => `
+            <div class="m3-uri-input-row" onclick="event.stopPropagation()">
+                <span class="m3-uri-row-icon" title="#${idx + 1}">
+                    <i class="fa-solid fa-tag"></i>
+                </span>
+                <input type="text"
+                       id="scope-input-${idx}"
+                       class="m3-uri-item-input"
+                       value="${escapeHtml(scopeVal || '')}"
+                       placeholder="${escapeHtml(placeholderText)}"
+                       autocomplete="off"
+                       spellcheck="false"
+                       oninput="handleScopeInputChange(${idx}, this.value)"
+                       onkeydown="handleScopeInputKeydown(event, ${idx})"
+                       onpaste="handleScopeInputPaste(event, ${idx})" />
+                <button type="button"
+                        class="m3-uri-remove-btn"
+                        onclick="removeScopeInputRow(${idx})"
+                        title="${escapeHtml(removeTitle)}">
+                    <i class="fa-solid ${scopesList.length === 1 && !scopeVal ? 'fa-eraser' : 'fa-xmark'} text-xs"></i>
+                </button>
+            </div>
+        `).join("");
+
+        syncScopesField();
+
+        if (focusIndex >= 0) {
+            const targetInput = document.getElementById(`scope-input-${focusIndex}`);
+            if (targetInput) {
+                targetInput.focus();
+                const len = targetInput.value.length;
+                try {
+                    targetInput.setSelectionRange(len, len);
+                } catch (e) {}
+            }
+        }
+    }
+
+    function handleScopeInputChange(index, val) {
+        if (val.includes(" ")) {
+            const parts = val.split(/\s+/).map(s => s.trim()).filter(Boolean);
+            if (parts.length > 1) {
+                scopesList.splice(index, 1, ...parts);
+                renderScopeInputs(index + parts.length - 1);
+                return;
+            }
+        }
+        scopesList[index] = val;
+        syncScopesField();
+    }
+
+    function addScopeInputRow(initialValue = "", insertAfterIndex = -1) {
+        let newIndex;
+        if (insertAfterIndex >= 0 && insertAfterIndex < scopesList.length) {
+            scopesList.splice(insertAfterIndex + 1, 0, initialValue);
+            newIndex = insertAfterIndex + 1;
+        } else {
+            scopesList.push(initialValue);
+            newIndex = scopesList.length - 1;
+        }
+        renderScopeInputs(newIndex);
+    }
+
+    function removeScopeInputRow(index) {
+        if (scopesList.length <= 1) {
+            scopesList[0] = "";
+            renderScopeInputs(0);
+            return;
+        }
+        scopesList.splice(index, 1);
+        const nextFocus = Math.max(0, Math.min(index, scopesList.length - 1));
+        renderScopeInputs(nextFocus);
+    }
+
+    function handleScopeInputKeydown(event, index) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addScopeInputRow("", index);
+        } else if (event.key === "Backspace") {
+            if (!scopesList[index] && scopesList.length > 1) {
+                event.preventDefault();
+                removeScopeInputRow(index);
+            }
+        }
+    }
+
+    function handleScopeInputPaste(event, index) {
+        const clipboardData = event.clipboardData || window.clipboardData;
+        if (!clipboardData) return;
+        const pasted = clipboardData.getData("text");
+        if (!pasted) return;
+
+        const parts = pasted.split(/[\s,\n\r]+/).map(s => s.trim()).filter(Boolean);
+        if (parts.length > 1) {
+            event.preventDefault();
+            const currentVal = (scopesList[index] || "").trim();
+            if (!currentVal) {
+                scopesList.splice(index, 1, ...parts);
+                renderScopeInputs(index + parts.length - 1);
+            } else {
+                scopesList.splice(index + 1, 0, ...parts);
+                renderScopeInputs(index + parts.length);
+            }
+        }
+    }
+
+    function handleScopesBoxClick(event) {
+        if (event.target.closest("input") || event.target.closest("button")) return;
+        const lastIdx = scopesList.length - 1;
+        if (lastIdx >= 0 && (!scopesList[lastIdx] || !scopesList[lastIdx].trim())) {
+            const input = document.getElementById(`scope-input-${lastIdx}`);
+            if (input) input.focus();
+        } else {
+            addScopeInputRow();
+        }
+    }
+
     // Utility escape HTML per prevenire XSS
     function escapeHtml(str) {
         if (!str) return "";
@@ -1175,15 +1322,6 @@
             secret += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         document.getElementById("clientSecret").value = secret;
-    }
-
-    function generateRegistrationToken() {
-        const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-            const r = (Math.random() * 16) | 0,
-                v = c === "x" ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
-        document.getElementById("registrationToken").value = uuid;
     }
 
     function generateJwtSecret() {
@@ -1711,7 +1849,6 @@
         document.getElementById("authType").value = client.authType || client.type || "ALL_TYPE";
         document.getElementById("externalClientId").value = client.externalClientId || "";
         document.getElementById("clientSecret").value = client.clientSecret || "";
-        document.getElementById("registrationToken").value = client.registrationToken || client.registration_token || "";
 
         document.getElementById("accessType").value = client.accessType || "ONLINE";
         document.getElementById("authorize_redirect_status").value = client.authorize_redirect_status || "FOUND";
@@ -1719,12 +1856,16 @@
 
         // Scopes
         if (Array.isArray(client.scopes)) {
-            document.getElementById("scopes").value = client.scopes.join(" ");
-        } else if (typeof client.scopes === "string") {
-            document.getElementById("scopes").value = client.scopes;
+            scopesList = client.scopes.map(s => (s || "").trim()).filter(Boolean);
+        } else if (typeof client.scopes === "string" && client.scopes.trim()) {
+            scopesList = client.scopes.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
         } else if (client.scopes && typeof client.scopes === "object") {
-            document.getElementById("scopes").value = Object.values(client.scopes).join(" ");
+            scopesList = Object.values(client.scopes).map(s => String(s || "").trim()).filter(Boolean);
+        } else {
+            scopesList = [""];
         }
+        if (scopesList.length === 0) scopesList = [""];
+        renderScopeInputs();
 
         // Redirect URIs (redirect_uris e post_logout_redirect_uris)
         let rawRedirect = client.redirect_uris || client.redirectUris;
@@ -1868,6 +2009,12 @@
             errors.push("<b>Ruoli Applicativi</b>: " + (typeof t === 'function' ? t('swal_role_at_least_one_required', 'È obbligatorio configurare almeno un ruolo applicativo per il Client.') : 'È obbligatorio configurare almeno un ruolo applicativo per il Client.'));
         }
 
+        syncScopesField();
+        const validScopes = (scopesList || []).map(s => (s || "").trim()).filter(Boolean);
+        if (validScopes.length === 0) {
+            errors.push("<b>Scopes Autorizzati</b>: " + (typeof t === 'function' ? t('swal_scopes_at_least_one_required', 'È obbligatorio configurare almeno uno scope autorizzato per il Client.') : 'È obbligatorio configurare almeno uno scope autorizzato per il Client.'));
+        }
+
         // Controllo webhook incompleti
         const emptyWebhook = webhooksList.find(w => !w.name || !w.name.trim() || !w.url || !w.url.trim());
         if (emptyWebhook) {
@@ -1926,13 +2073,13 @@
         const clientId = document.getElementById("clientId").value.trim();
         const secret = document.getElementById("clientSecret").value.trim();
 
+        syncScopesField();
         syncUriField("redirect");
         syncUriField("postLogout");
+        const cleanScopes = (scopesList || []).map(s => (s || "").trim()).filter(Boolean);
         const redirectUris = redirectUrisList.map(u => (u || "").trim()).filter(Boolean);
         const postLogoutRedirectUris = postLogoutUrisList.map(u => (u || "").trim()).filter(Boolean);
-        const scopesInput = document.getElementById("scopes").value.trim();
 
-        const scopesList = scopesInput ? scopesInput.split(/[\s,]+/).map(s => s.trim()).filter(Boolean) : null;
         const cleanRoles = appRolesList.filter(r => r.role && r.role.trim() !== "");
         const cleanWebhooks = webhooksList.filter(w => w.name && w.url);
 
@@ -1942,7 +2089,7 @@
             externalClientId: document.getElementById("externalClientId").value.trim() || null,
             clientSecret: secret,
             accessType: document.getElementById("accessType").value,
-            scopes: scopesList,
+            scopes: cleanScopes.length > 0 ? cleanScopes : null,
             authorize_redirect_status: document.getElementById("authorize_redirect_status").value,
             redirect_uris: redirectUris.length > 0 ? redirectUris : null,
             post_logout_redirect_uris: postLogoutRedirectUris.length > 0 ? postLogoutRedirectUris : null,

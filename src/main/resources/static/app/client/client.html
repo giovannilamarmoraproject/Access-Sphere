@@ -599,19 +599,6 @@
                   </div>
                   ` : '<div class="param-value font-mono text-sm font-semibold mt-1">N/D</div>'}
                 </div>
-
-                <!-- Registration Token -->
-                <div class="param-box">
-                  <span class="param-label">${typeof t === 'function' ? t('client_field_reg_token', 'Registration Token') : 'Registration Token'}</span>
-                  ${(c.registrationToken || c.registration_token) ? `
-                  <div class="flex items-center gap-2">
-                    <span class="font-mono text-xs text-gray-200 truncate flex-1">${c.registrationToken || c.registration_token}</span>
-                    <button type="button" class="m3-icon-btn flex-shrink-0" onclick="copyValue('${c.registrationToken || c.registration_token}', 'Registration Token')" title="Copia Token">
-                      <i class="fa-solid fa-copy text-xs"></i>
-                    </button>
-                  </div>
-                  ` : '<div class="param-value font-mono text-sm font-semibold mt-1">N/D</div>'}
-                </div>
               </div>
 
               <!-- BOTTONI AZIONE -->
