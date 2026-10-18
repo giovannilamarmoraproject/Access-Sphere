@@ -3,7 +3,6 @@ package io.github.giovannilamarmora.accesssphere.config;
 import io.github.giovannilamarmora.accesssphere.client.database.IOAuth2ClientDAO;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
-import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.data.tech.AdminUserConfig;
 import io.github.giovannilamarmora.accesssphere.email.template.database.EmailRepository;
@@ -127,24 +126,23 @@ public class ProjectInitializerService implements ApplicationRunner {
     // Risoluzione del JWT Secret: da TechUserConfig o generazione a mano
     String jwtSecret = resolveOrGenerateJwtSecret(techClientId);
 
-    // Generazione automatica dei redirect URI di default basati sull'URL di dominio
+    // Generazione automatica dei redirect URI e post-logout URI di default basati sull'URL di dominio
     String baseUrl = resolveBaseUrl();
-    String fallbackUri = baseUrl + "/app/login";
-    String redirectUri = baseUrl + " " + baseUrl + "/app";
+    List<String> postLogoutUris = List.of(baseUrl + "/app/login");
+    List<String> redirectUris =
+        List.of(baseUrl, baseUrl + "/app", baseUrl + "/app/users", baseUrl + "/app/dashboard");
 
-    // Mappa salvata su DB in formato JSON: {"fallback_uri": "...", "redirect_uri": "..."}
-    Map<String, String> redirectMap = new LinkedHashMap<>();
-    redirectMap.put(RedirectUris.FALLBACK_URI.url(), fallbackUri);
-    redirectMap.put(RedirectUris.REDIRECT_URI.url(), redirectUri);
-    String redirectUriJson = Mapper.writeObjectToString(redirectMap);
+    String redirectUrisJson = Mapper.writeObjectToString(redirectUris);
+    String postLogoutUrisJson = Mapper.writeObjectToString(postLogoutUris);
 
     OAuth2ClientEntity existing = clientDAO.findByClientId(techClientId);
     if (existing == null) {
       LOG.info("🔧 Seeding Technical OAuth Client: {}", techClientId);
-      OAuth2ClientEntity client = createClient(techClientId, jwtSecret, redirectUriJson);
+      OAuth2ClientEntity client =
+          createClient(techClientId, jwtSecret, redirectUrisJson, postLogoutUrisJson);
       clientDAO.save(client);
       LOG.info(
-          "✅ Technical OAuth Client [{}] successfully seeded in DB with JWT Secret and redirect_uri JSON map",
+          "✅ Technical OAuth Client [{}] successfully seeded in DB with JWT Secret and standard redirect_uris / post_logout_redirect_uris",
           techClientId);
     } else {
       boolean needsUpdate = false;
@@ -155,11 +153,12 @@ public class ProjectInitializerService implements ApplicationRunner {
             techClientId);
         needsUpdate = true;
       }
-      if (!StringUtils.hasText(existing.getRedirect_uri())
-          || !existing.getRedirect_uri().trim().startsWith("{")) {
-        existing.setRedirect_uri(redirectUriJson);
+      if (!StringUtils.hasText(existing.getRedirectUris())) {
+        existing.setRedirectUris(redirectUrisJson);
+        existing.setPostLogoutRedirectUris(postLogoutUrisJson);
+        existing.setRedirect_uri(redirectUrisJson);
         LOG.info(
-            "🔄 Migrated redirect_uri to JSON map for existing Technical OAuth Client [{}]",
+            "🔄 Migrated redirect_uris and post_logout_redirect_uris for existing Technical OAuth Client [{}]",
             techClientId);
         needsUpdate = true;
       }
@@ -174,7 +173,10 @@ public class ProjectInitializerService implements ApplicationRunner {
   }
 
   private static @NonNull OAuth2ClientEntity createClient(
-      String techClientId, String jwtSecret, String redirectUriJson) {
+      String techClientId,
+      String jwtSecret,
+      String redirectUrisJson,
+      String postLogoutUrisJson) {
     OAuth2ClientEntity client = new OAuth2ClientEntity();
     client.setClientId(techClientId);
     client.setExternalClientId(techClientId);
@@ -183,7 +185,9 @@ public class ProjectInitializerService implements ApplicationRunner {
     client.setTokenType(TokenType.BEARER_JWT);
     client.setScopes("openid profile email read write admin");
     client.setJwtSecret(jwtSecret);
-    client.setRedirect_uri(redirectUriJson);
+    client.setRedirectUris(redirectUrisJson);
+    client.setPostLogoutRedirectUris(postLogoutUrisJson);
+    client.setRedirect_uri(redirectUrisJson);
     client.setMfaEnabled(false);
     client.setAuthorize_redirect_status(HttpStatus.FOUND);
     client.setJwtExpiration(3600000L);

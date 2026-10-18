@@ -40,6 +40,14 @@ public class OAuth2ClientEntity extends GenericEntity {
   private String scopes;
 
   @Lob
+  @Column(name = "REDIRECT_URIS", columnDefinition = "TEXT")
+  private String redirectUris;
+
+  @Lob
+  @Column(name = "POST_LOGOUT_REDIRECT_URIS", columnDefinition = "TEXT")
+  private String postLogoutRedirectUris;
+
+  @Lob
   @Column(name = "REDIRECT_URI", columnDefinition = "TEXT")
   private String redirect_uri;
 

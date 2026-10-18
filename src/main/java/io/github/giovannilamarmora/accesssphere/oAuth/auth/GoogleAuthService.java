@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth.auth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcMapper;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
@@ -194,9 +193,7 @@ public class GoogleAuthService {
         cookieDomain,
         serverHttpResponse);
 
-    URI finalRedirectURI =
-        OAuthMapper.getFinalRedirectURI(
-            oAuth2Client, RedirectUris.POST_LOGIN_URL, redirect_uri);
+    URI finalRedirectURI = OAuthMapper.getFinalRedirectURI(oAuth2Client, redirect_uri);
     if (!ObjectUtils.isEmpty(finalState)
         && !finalRedirectURI.toString().contains("state=")) {
       String separator = finalRedirectURI.toString().contains("?") ? "&" : "?";

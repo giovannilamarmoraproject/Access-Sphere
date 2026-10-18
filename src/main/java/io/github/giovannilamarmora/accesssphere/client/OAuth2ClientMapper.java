@@ -6,11 +6,9 @@ import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientDataRespo
 import io.github.giovannilamarmora.accesssphere.client.dto.OAuth2ClientRequest;
 import io.github.giovannilamarmora.accesssphere.client.entity.OAuth2ClientEntity;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.roles.mapper.RoleDefinitionMapper;
 import io.github.giovannilamarmora.utils.utilities.Mapper;
 import io.github.giovannilamarmora.utils.utilities.ObjectToolkit;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.BeanUtils;
@@ -51,8 +49,14 @@ public class OAuth2ClientMapper {
     if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getScopes())) {
       oAuth2Client.setScopes(List.of(oAuth2ClientEntity.getScopes().split(" ")));
     }
-    if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getRedirect_uri())) {
-      oAuth2Client.setRedirect_uri(parseRedirectUri(oAuth2ClientEntity.getRedirect_uri()));
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getRedirectUris())) {
+      oAuth2Client.setRedirectUris(parseUriList(oAuth2ClientEntity.getRedirectUris()));
+    } else if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getRedirect_uri())) {
+      parseLegacyRedirectUris(oAuth2ClientEntity.getRedirect_uri(), oAuth2Client);
+    }
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getPostLogoutRedirectUris())) {
+      oAuth2Client.setPostLogoutRedirectUris(
+          parseUriList(oAuth2ClientEntity.getPostLogoutRedirectUris()));
     }
     if (!ObjectToolkit.isNullOrEmpty(oAuth2ClientEntity.getWebhooks())) {
       oAuth2Client.setWebhooks(
@@ -67,9 +71,14 @@ public class OAuth2ClientMapper {
     if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getScopes())) {
       oAuth2ClientEntity.setScopes(Joiner.on(" ").join(oAuth2Client.getScopes()));
     }
-    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getRedirect_uri())) {
-      oAuth2ClientEntity.setRedirect_uri(
-          Mapper.writeObjectToString(oAuth2Client.getRedirect_uri()));
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getRedirectUris())) {
+      String json = Mapper.writeObjectToString(oAuth2Client.getRedirectUris());
+      oAuth2ClientEntity.setRedirectUris(json);
+      oAuth2ClientEntity.setRedirect_uri(json);
+    }
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getPostLogoutRedirectUris())) {
+      oAuth2ClientEntity.setPostLogoutRedirectUris(
+          Mapper.writeObjectToString(oAuth2Client.getPostLogoutRedirectUris()));
     }
     if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getWebhooks())) {
       oAuth2ClientEntity.setWebhooks(Mapper.writeObjectToString(oAuth2Client.getWebhooks()));
@@ -77,28 +86,46 @@ public class OAuth2ClientMapper {
     return oAuth2ClientEntity;
   }
 
-  /**
-   * Esegue il parsing resiliente del campo redirect_uri memorizzato a database. Supporta sia il
-   * formato JSON (mappa con fallback_uri e redirect_uri), sia eventuali stringhe legacy plain-text
-   * per garantire piena retro compatibilita.
-   *
-   * @param raw Stringa grezza proveniente dalla colonna REDIRECT_URI a DB
-   * @return Mappa contenente i redirect URI configurati, oppure null se la stringa e vuota.
-   */
-  private static Map<String, String> parseRedirectUri(String raw) {
+  private static List<String> parseUriList(String raw) {
     if (ObjectUtils.isEmpty(raw)) {
       return null;
     }
     String trimmed = raw.trim();
-    if (trimmed.startsWith("{")) {
+    if (trimmed.startsWith("[")) {
       try {
-        return Mapper.readObject(trimmed, new TypeReference<>() {});
+        return Mapper.readObject(trimmed, new TypeReference<List<String>>() {});
       } catch (Exception ignored) {
-        // Fallback di sicurezza in caso di JSON non conforme
       }
     }
-    Map<String, String> map = new LinkedHashMap<>();
-    map.put(RedirectUris.REDIRECT_URI.url(), trimmed.replace(",", " "));
-    return map;
+    return List.of(trimmed.split("[ ,]+"));
+  }
+
+  private static void parseLegacyRedirectUris(String raw, OAuth2Client client) {
+    if (ObjectUtils.isEmpty(raw)) {
+      return;
+    }
+    String trimmed = raw.trim();
+    if (trimmed.startsWith("{")) {
+      try {
+        Map<String, String> map =
+            Mapper.readObject(trimmed, new TypeReference<Map<String, String>>() {});
+        if (map != null) {
+          String red = map.get("redirect_uri");
+          if (!ObjectUtils.isEmpty(red)) {
+            client.setRedirectUris(List.of(red.trim().split("[ ,]+")));
+          }
+          String fallback = map.get("fallback_uri");
+          if (ObjectUtils.isEmpty(fallback)) {
+            fallback = map.get("post_logout_redirect_uri");
+          }
+          if (!ObjectUtils.isEmpty(fallback)) {
+            client.setPostLogoutRedirectUris(List.of(fallback.trim().split("[ ,]+")));
+          }
+          return;
+        }
+      } catch (Exception ignored) {
+      }
+    }
+    client.setRedirectUris(List.of(trimmed.split("[ ,]+")));
   }
 }

@@ -55,13 +55,13 @@ public class OAuth2ClientDomainService {
   public Mono<List<OAuth2Client>> getOAuth2Clients() {
     LOG.info("📋 {} Retrieving all registered clients from Database", OAUTH2_DOMAIN_LOG);
     Optional<List<OAuth2Client>> optionalOAuth2Clients = oAuth2ClientRepository.findAll();
-    if (optionalOAuth2Clients.isEmpty() || optionalOAuth2Clients.get().isEmpty()) {
-      LOG.error("❌ {} No clients found in Database", OAUTH2_DOMAIN_LOG);
-      return Mono.error(
-          new OAuthException(ExceptionMap.ERR_OAUTH_404, "OAuth2 Clients not found!"));
-    }
+    // if (optionalOAuth2Clients.isEmpty() || optionalOAuth2Clients.get().isEmpty()) {
+    //  LOG.error("❌ {} No clients found in Database", OAUTH2_DOMAIN_LOG);
+    //  return Mono.error(
+    //      new OAuthException(ExceptionMap.ERR_OAUTH_404, "OAuth2 Clients not found!"));
+    // }
 
-    List<OAuth2Client> oAuth2Clients = optionalOAuth2Clients.get();
+    List<OAuth2Client> oAuth2Clients = optionalOAuth2Clients.orElse(List.of());
 
     LOG.info("📋 {} Found {} clients into the Database", OAUTH2_DOMAIN_LOG, oAuth2Clients.size());
     return Mono.just(clientRoleDomainService.enrichClientsWithRoles(oAuth2Clients));
@@ -172,7 +172,8 @@ public class OAuth2ClientDomainService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "Invalid client_id provided!");
     }
 
-    // Cascade deletion su catalogo ruoli (ROLE_DEFINITIONS) e associazioni utente (USER_CLIENT_ROLE)
+    // Cascade deletion su catalogo ruoli (ROLE_DEFINITIONS) e associazioni utente
+    // (USER_CLIENT_ROLE)
     clientRoleDomainService.deleteRoleByClientId(clientId);
     userRoleDomainService.deleteUserRolesByClientId(clientId);
     oAuth2ClientRepository.deleteByClientId(clientId);

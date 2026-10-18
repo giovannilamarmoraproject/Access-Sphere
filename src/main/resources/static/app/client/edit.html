@@ -685,23 +685,23 @@
                         <div class="flex items-center justify-between mb-1.5 gap-2">
                             <div class="flex items-center gap-2 min-w-0">
                                 <label class="form-label text-xs font-semibold text-gray-300 m-0 truncate"
-                                       data-i18n="client_field_fallback_uri">Fallback URI (fallback_uri)</label>
-                                <span id="fallback-uri-count-badge" class="m3-uri-count-pill">0</span>
+                                       data-i18n="client_field_post_logout_redirect_uris">Post-Logout Redirect URIs (post_logout_redirect_uris)</label>
+                                <span id="post-logout-uri-count-badge" class="m3-uri-count-pill">0</span>
                             </div>
-                            <button type="button" class="m3-uri-add-btn-sm shrink-0" onclick="addUriInputRow('fallback')">
+                            <button type="button" class="m3-uri-add-btn-sm shrink-0" onclick="addUriInputRow('postLogout')">
                                 <i class="fa-solid fa-plus text-[10px]"></i>
                                 <span data-i18n="client_btn_add_uri">Aggiungi URI</span>
                             </button>
                         </div>
-                        <input type="hidden" id="fallback_uri" value=""/>
-                        <div class="m3-uri-list-box" id="fallback-uri-box" onclick="handleUriBoxClick(event, 'fallback')">
-                            <div id="fallback-uri-rows" class="flex flex-col gap-2"></div>
-                            <button type="button" class="m3-uri-add-row-trigger" onclick="event.stopPropagation(); addUriInputRow('fallback')">
+                        <input type="hidden" id="post_logout_redirect_uris" value=""/>
+                        <div class="m3-uri-list-box" id="post-logout-uri-box" onclick="handleUriBoxClick(event, 'postLogout')">
+                            <div id="post-logout-uri-rows" class="flex flex-col gap-2"></div>
+                            <button type="button" class="m3-uri-add-row-trigger" onclick="event.stopPropagation(); addUriInputRow('postLogout')">
                                 <i class="fa-solid fa-plus text-[10px]"></i>
                                 <span data-i18n="client_uri_add_input_hint">Clicca per aggiungere un nuovo input URI (oppure premi Invio)</span>
                             </button>
                         </div>
-                        <span class="text-[11px] text-gray-400 mt-1.5 block" data-i18n="client_field_fallback_uri_desc">URI di fallback utilizzate in caso di fallimento o annullamento del redirect primario. Clicca su "+ Aggiungi URI" per aggiungere più input.</span>
+                        <span class="text-[11px] text-gray-400 mt-1.5 block" data-i18n="client_field_post_logout_redirect_uris_desc">URI autorizzate a cui reindirizzare l'utente a seguito del logout. Clicca su "+ Aggiungi URI" per inserire più endpoint.</span>
                     </div>
                 </div>
             </div>
@@ -955,48 +955,51 @@
             AccessControl.applyUIPermissions();
         }
         renderUriInputs("redirect");
-        renderUriInputs("fallback");
+        renderUriInputs("postLogout");
         loadClientForEdit();
     });
 
     window.addEventListener("languageChanged", () => {
         renderUriInputs("redirect");
-        renderUriInputs("fallback");
+        renderUriInputs("postLogout");
         renderAppRolesGrid();
         renderWebhooksTable();
     });
 
     let redirectUrisList = [""];
-    let fallbackUrisList = [""];
+    let postLogoutUrisList = [""];
 
     function getUriListByType(fieldType) {
-        return fieldType === "fallback" ? fallbackUrisList : redirectUrisList;
+        return (fieldType === "postLogout" || fieldType === "fallback") ? postLogoutUrisList : redirectUrisList;
     }
 
     function setUriListByType(fieldType, list) {
-        if (fieldType === "fallback") {
-            fallbackUrisList = list;
+        if (fieldType === "postLogout" || fieldType === "fallback") {
+            postLogoutUrisList = list;
         } else {
             redirectUrisList = list;
         }
     }
 
     function setUriFieldFromRaw(fieldType, rawValue) {
+        const canonicalType = (fieldType === "postLogout" || fieldType === "fallback") ? "postLogout" : "redirect";
         let parsed = [];
         if (Array.isArray(rawValue)) {
             parsed = rawValue.flatMap(v => String(v || "").split(/[\s,\n\r]+/)).map(s => s.trim()).filter(Boolean);
         } else if (typeof rawValue === "string" && rawValue.trim()) {
             parsed = rawValue.trim().split(/[\s,\n\r]+/).map(s => s.trim()).filter(Boolean);
         }
-        setUriListByType(fieldType, parsed.length > 0 ? parsed : [""]);
-        renderUriInputs(fieldType);
+        setUriListByType(canonicalType, parsed.length > 0 ? parsed : [""]);
+        renderUriInputs(canonicalType);
     }
 
     function syncUriField(fieldType) {
-        const list = getUriListByType(fieldType);
+        const isLogout = fieldType === "postLogout" || fieldType === "fallback";
+        const canonicalType = isLogout ? "postLogout" : "redirect";
+        const list = getUriListByType(canonicalType);
         const validUris = list.map(u => (u || "").trim()).filter(Boolean);
-        const hiddenId = fieldType === "fallback" ? "fallback_uri" : "redirect_uri";
-        const badgeId = fieldType === "fallback" ? "fallback-uri-count-badge" : "redirect-uri-count-badge";
+        const hiddenId = isLogout ? "post_logout_redirect_uris" : "redirect_uri";
+        const badgeId = isLogout ? "post-logout-uri-count-badge" : "redirect-uri-count-badge";
 
         const hiddenEl = document.getElementById(hiddenId);
         if (hiddenEl) {
@@ -1009,23 +1012,25 @@
     }
 
     function renderUriInputs(fieldType, focusIndex = -1) {
-        let list = getUriListByType(fieldType);
+        const isLogout = fieldType === "postLogout" || fieldType === "fallback";
+        const canonicalType = isLogout ? "postLogout" : "redirect";
+        let list = getUriListByType(canonicalType);
         if (!Array.isArray(list) || list.length === 0) {
             list = [""];
-            setUriListByType(fieldType, list);
+            setUriListByType(canonicalType, list);
         }
 
-        const containerId = fieldType === "fallback" ? "fallback-uri-rows" : "redirect-uri-rows";
+        const containerId = isLogout ? "post-logout-uri-rows" : "redirect-uri-rows";
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        const placeholderKey = fieldType === "fallback" ? "client_fallback_uri_placeholder" : "client_redirect_uri_placeholder";
-        const defaultPlaceholder = fieldType === "fallback"
-            ? "es. https://app.example.com/login?client_id=MY-CLIENT"
+        const placeholderKey = isLogout ? "client_post_logout_uri_placeholder" : "client_redirect_uri_placeholder";
+        const defaultPlaceholder = isLogout
+            ? "es. https://app.example.com/login o https://app.example.com"
             : "es. https://app.example.com/callback o http://localhost:8081";
         const placeholderText = typeof t === "function" ? t(placeholderKey, defaultPlaceholder) : defaultPlaceholder;
         const removeTitle = typeof t === "function" ? t("client_uri_remove_tooltip", "Rimuovi URI") : "Rimuovi URI";
-        const iconClass = fieldType === "fallback" ? "fa-arrow-turn-down" : "fa-link";
+        const iconClass = isLogout ? "fa-arrow-right-from-bracket" : "fa-link";
 
         container.innerHTML = list.map((uriVal, idx) => `
             <div class="m3-uri-input-row" onclick="event.stopPropagation()">
@@ -1033,28 +1038,28 @@
                     <i class="fa-solid ${iconClass}"></i>
                 </span>
                 <input type="url"
-                       id="${fieldType}-uri-input-${idx}"
+                       id="${canonicalType}-uri-input-${idx}"
                        class="m3-uri-item-input"
                        value="${escapeHtml(uriVal || '')}"
                        placeholder="${escapeHtml(placeholderText)}"
                        autocomplete="off"
                        spellcheck="false"
-                       oninput="handleUriInputChange('${fieldType}', ${idx}, this.value)"
-                       onkeydown="handleUriInputKeydown(event, '${fieldType}', ${idx})"
-                       onpaste="handleUriInputPaste(event, '${fieldType}', ${idx})" />
+                       oninput="handleUriInputChange('${canonicalType}', ${idx}, this.value)"
+                       onkeydown="handleUriInputKeydown(event, '${canonicalType}', ${idx})"
+                       onpaste="handleUriInputPaste(event, '${canonicalType}', ${idx})" />
                 <button type="button"
                         class="m3-uri-remove-btn"
-                        onclick="removeUriInputRow('${fieldType}', ${idx})"
+                        onclick="removeUriInputRow('${canonicalType}', ${idx})"
                         title="${escapeHtml(removeTitle)}">
                     <i class="fa-solid ${list.length === 1 && !uriVal ? 'fa-eraser' : 'fa-xmark'} text-xs"></i>
                 </button>
             </div>
         `).join("");
 
-        syncUriField(fieldType);
+        syncUriField(canonicalType);
 
         if (focusIndex >= 0) {
-            const targetInput = document.getElementById(`${fieldType}-uri-input-${focusIndex}`);
+            const targetInput = document.getElementById(`${canonicalType}-uri-input-${focusIndex}`);
             if (targetInput) {
                 targetInput.focus();
                 const len = targetInput.value.length;
@@ -1721,27 +1726,34 @@
             document.getElementById("scopes").value = Object.values(client.scopes).join(" ");
         }
 
-        // Redirect URIs (redirect_uri e fallback_uri)
-        let rawRedirect = "";
-        let rawFallback = "";
-        if (client.redirect_uri && typeof client.redirect_uri === "object" && !Array.isArray(client.redirect_uri)) {
-            rawRedirect = client.redirect_uri.redirect_uri || "";
-            rawFallback = client.redirect_uri.fallback_uri || "";
-        } else if (typeof client.redirect_uri === "string") {
-            try {
-                const parsed = JSON.parse(client.redirect_uri);
-                if (typeof parsed === "object" && !Array.isArray(parsed)) {
-                    rawRedirect = parsed.redirect_uri || "";
-                    rawFallback = parsed.fallback_uri || "";
-                } else {
+        // Redirect URIs (redirect_uris e post_logout_redirect_uris)
+        let rawRedirect = client.redirect_uris || client.redirectUris;
+        let rawPostLogout = client.post_logout_redirect_uris || client.postLogoutRedirectUris;
+
+        if (!rawRedirect && client.redirect_uri) {
+            if (typeof client.redirect_uri === "object" && !Array.isArray(client.redirect_uri)) {
+                rawRedirect = client.redirect_uri.redirect_uri || "";
+                if (!rawPostLogout) {
+                    rawPostLogout = client.redirect_uri.post_logout_redirect_uri || client.redirect_uri.fallback_uri || "";
+                }
+            } else if (typeof client.redirect_uri === "string") {
+                try {
+                    const parsed = JSON.parse(client.redirect_uri);
+                    if (typeof parsed === "object" && !Array.isArray(parsed)) {
+                        rawRedirect = parsed.redirect_uri || "";
+                        if (!rawPostLogout) {
+                            rawPostLogout = parsed.post_logout_redirect_uri || parsed.fallback_uri || "";
+                        }
+                    } else {
+                        rawRedirect = client.redirect_uri;
+                    }
+                } catch (e) {
                     rawRedirect = client.redirect_uri;
                 }
-            } catch (e) {
-                rawRedirect = client.redirect_uri;
             }
         }
         setUriFieldFromRaw("redirect", rawRedirect);
-        setUriFieldFromRaw("fallback", rawFallback);
+        setUriFieldFromRaw("postLogout", rawPostLogout);
 
         // Cryptography & Expirations
         document.getElementById("jwtSecret").value = client.jwtSecret || client.jwt_secret || "";
@@ -1915,14 +1927,10 @@
         const secret = document.getElementById("clientSecret").value.trim();
 
         syncUriField("redirect");
-        syncUriField("fallback");
-        const redirectUrisInput = document.getElementById("redirect_uri").value.trim();
-        const fallbackUriInput = document.getElementById("fallback_uri").value.trim();
+        syncUriField("postLogout");
+        const redirectUris = redirectUrisList.map(u => (u || "").trim()).filter(Boolean);
+        const postLogoutRedirectUris = postLogoutUrisList.map(u => (u || "").trim()).filter(Boolean);
         const scopesInput = document.getElementById("scopes").value.trim();
-
-        const redirectMap = {};
-        if (redirectUrisInput) redirectMap["redirect_uri"] = redirectUrisInput;
-        if (fallbackUriInput) redirectMap["fallback_uri"] = fallbackUriInput;
 
         const scopesList = scopesInput ? scopesInput.split(/[\s,]+/).map(s => s.trim()).filter(Boolean) : null;
         const cleanRoles = appRolesList.filter(r => r.role && r.role.trim() !== "");
@@ -1936,7 +1944,8 @@
             accessType: document.getElementById("accessType").value,
             scopes: scopesList,
             authorize_redirect_status: document.getElementById("authorize_redirect_status").value,
-            redirect_uri: Object.keys(redirectMap).length > 0 ? redirectMap : null,
+            redirect_uris: redirectUris.length > 0 ? redirectUris : null,
+            post_logout_redirect_uris: postLogoutRedirectUris.length > 0 ? postLogoutRedirectUris : null,
             tokenType: document.getElementById("tokenType").value,
             jwtSecret: document.getElementById("jwtSecret").value.trim() || null,
             jwtExpiration: parseInt(document.getElementById("jwtExpiration").value) || 3600000,

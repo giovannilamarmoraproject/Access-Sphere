@@ -1,6 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.client.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
 import io.github.giovannilamarmora.accesssphere.roles.model.RoleDefinition;
 import io.github.giovannilamarmora.accesssphere.webhooks.dto.Webhook;
@@ -34,7 +36,13 @@ public class OAuth2Client extends GenericDTO {
   private String externalClientId;
   private String clientSecret;
   private List<String> scopes;
-  private Map<String, String> redirect_uri;
+  @JsonProperty("redirect_uris")
+  @JsonAlias({"redirectUris", "redirect_uri", "redirectUri"})
+  private List<String> redirectUris;
+
+  @JsonProperty("post_logout_redirect_uris")
+  @JsonAlias({"postLogoutRedirectUris", "post_logout_redirect_uri", "fallback_uri", "fallbackUri"})
+  private List<String> postLogoutRedirectUris;
   private AccessType accessType;
   private OAuthType authType;
   private TokenType tokenType;

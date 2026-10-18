@@ -2,7 +2,6 @@ package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.OAuth2ClientDomainService;
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.grpc.GrpcService;
 import io.github.giovannilamarmora.accesssphere.grpc.google.model.GoogleModel;
@@ -388,12 +387,9 @@ public class OAuthService {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_401, ExceptionMap.ERR_OAUTH_401.getMessage());
     }
 
-    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getRedirect_uri())
-        && !ObjectToolkit.isNullOrEmpty(
-            oAuth2Client.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()))) {
-
+    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getPostLogoutRedirectUris())) {
       URI fallbackLocation =
-          URI.create(oAuth2Client.getRedirect_uri().get(RedirectUris.FALLBACK_URI.url()));
+          URI.create(oAuth2Client.getPostLogoutRedirectUris().getFirst());
 
       Response response =
           new Response(
@@ -402,7 +398,7 @@ public class OAuthService {
               TraceUtils.getSpanID(),
               fallbackLocation);
 
-      LOG.info("↪️ [OAUTH FALLBACK] Redirecting to fallback URI: {}", fallbackLocation);
+      LOG.info("↪️ [OAUTH LOGOUT/FALLBACK] Redirecting to post-logout URI: {}", fallbackLocation);
       return ResponseEntity.status(HttpStatus.FOUND).location(fallbackLocation).body(response);
     }
 
@@ -632,8 +628,17 @@ public class OAuthService {
 
     return clientCredentialMono
         .flatMap(
-            clientCredential ->
-                processLogoutByAuthType(tokenData, clientCredential, redirect_uri, response))
+            clientCredential -> {
+              String targetUri = redirect_uri;
+              if (ObjectUtils.isEmpty(targetUri)
+                  && !ObjectToolkit.isNullOrEmpty(clientCredential.getPostLogoutRedirectUris())) {
+                targetUri = clientCredential.getPostLogoutRedirectUris().getFirst();
+              } else if (!ObjectUtils.isEmpty(targetUri)) {
+                OAuthValidator.validatePostLogoutRedirectUri(
+                    clientCredential.getPostLogoutRedirectUris(), targetUri, clientId);
+              }
+              return processLogoutByAuthType(tokenData, clientCredential, targetUri, response);
+            })
         .doOnSuccess(
             responseEntity -> {
               Utils.deleteAllCookie(response);

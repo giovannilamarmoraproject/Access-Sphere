@@ -482,8 +482,10 @@
   "client_field_token_type_desc": "Type de jeton émis pour le client.",
   "client_field_scopes": "Scopes autorisés",
   "client_field_scopes_desc": "Liste des scopes autorisés pour le client (séparés par un espace ou une virgule).",
-  "client_field_redirect_uris": "URI de redirection autorisées (redirect_uri)",
-  "client_field_redirect_uris_desc": "URI autorisées pour la réponse du code d'autorisation et du jeton (séparées par un espace).",
+  "client_field_redirect_uris": "URI de redirection autorisées (redirect_uris)",
+  "client_field_redirect_uris_desc": "URI autorisées pour la réponse du code d'autorisation et du jeton. Cliquez sur \"+ Ajouter une URI\" pour saisir plusieurs points de terminaison.",
+  "client_field_post_logout_redirect_uris": "URI de redirection post-déconnexion (post_logout_redirect_uris)",
+  "client_field_post_logout_redirect_uris_desc": "URI autorisées vers lesquelles rediriger l'utilisateur après sa déconnexion. Cliquez sur \"+ Ajouter une URI\" pour saisir plusieurs points de terminaison.",
   "client_field_fallback_uri": "URI de secours (fallback_uri)",
   "client_field_fallback_uri_desc": "URI de repli utilisée en cas d'échec ou d'annulation de la redirection principale.",
   "client_sec_crypto_title": "3. Paramètres des clés & Expirations des jetons",
@@ -701,6 +703,7 @@
   "client_field_jwt_expiration": "Expiration du jeton (secondes)",
   "client_detail_no_scopes": "Aucun scope spécifié",
   "client_detail_no_redirect_uris": "Aucune URI de redirection configurée",
+  "client_detail_no_post_logout_redirect_uris": "Aucune URI de redirection post-déconnexion configurée",
   "client_detail_no_fallback_uri": "Aucune URI de secours configurée",
   "swal_client_registered_title": "Client enregistré !",
   "swal_client_registered_desc": "Le client #CLIENT_ID# a été créé avec succès avec tous ses paramètres.",
@@ -1091,5 +1094,10 @@
   "client_tech_cant_delete": "Le client technique système ACCESS-SPHERE-AUTH ne peut pas être supprimé.",
   "client_create_denied": "Vous ne disposez pas des autorisations nécessaires pour créer de nouveaux clients.",
   "client_edit_denied": "Vous ne disposez pas des autorisations nécessaires pour modifier ce client.",
-  "client_delete_denied": "Vous ne disposez pas des autorisations nécessaires pour supprimer ce client."
+  "client_delete_denied": "Vous ne disposez pas des autorisations nécessaires pour supprimer ce client.",
+  "client_uri_add_input_hint": "Cliquez pour ajouter un nouveau champ URI (ou appuyez sur Entrée)",
+  "client_uri_remove_tooltip": "Supprimer l'URI",
+  "client_redirect_uri_placeholder": "ex. https://app.example.com/callback ou http://localhost:8081",
+  "client_post_logout_uri_placeholder": "ex. https://app.example.com/login ou https://app.example.com",
+  "client_fallback_uri_placeholder": "ex. https://app.example.com/login?client_id=MY-CLIENT"
 }

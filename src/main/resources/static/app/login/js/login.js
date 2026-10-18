@@ -91,7 +91,8 @@ async function doLogin(clientId, redirectUri) {
                         profilePhoto: photo
                     };
                     localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
-                } catch (e) {}
+                } catch (e) {
+                }
             }
             const redirect_uri = token.headers.get("location");
             if (redirect_uri) {
@@ -165,7 +166,8 @@ async function verifyOTP() {
                         profilePhoto: photo
                     };
                     localStorage.setItem("access_sphere_user", JSON.stringify(userObj));
-                } catch (e) {}
+                } catch (e) {
+                }
             }
             const redirect_uri = verifyOtp.headers.get("location");
             if (redirect_uri) {
@@ -190,21 +192,21 @@ async function verifyOTP() {
 function doGoogleLogin() {
     const currentUrl = new URL(window.location.href);
     const clientId =
-        currentUrl.searchParams.get("client_id") ||
-        (typeof config !== "undefined" && config.client_id ? config.client_id : "ACCESS-SPHERE-AUTH");
+        currentUrl.searchParams.get("client_id");
     const redirectUri =
-        currentUrl.searchParams.get("redirect_uri") ||
-        (typeof config !== "undefined" && config.redirect_uri ? config.redirect_uri : (window.location.origin + "/app"));
+        currentUrl.searchParams.get("redirect_uri");
     const state = currentUrl.searchParams.get("state");
     const prompt = currentUrl.searchParams.get("prompt");
 
     if (!clientId) {
+        disableLoader();
         return sweetalert(
             "error",
-            typeof t === "function" ? t("googleLogin_error_title", "Non consentito") : (currentTranslations.googleLogin_error_title || "Non consentito"),
-            typeof t === "function" ? t("googleLogin_error_text", "Non puoi effettuare la login con Google per configurazioni mancanti.") : (currentTranslations.googleLogin_error_text || "Non puoi effettuare la login con Google per configurazioni mancanti.")
+            currentTranslations.googleLogin_error_title,
+            currentTranslations.googleLogin_error_text
         );
     }
+
 
     enableLoader();
     const url = new URL(window.location.origin + "/v1/oauth2/authorize");
@@ -213,7 +215,7 @@ function doGoogleLogin() {
         "scope",
         "openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
     );
-    url.searchParams.set("client_id", clientId);
+    if (clientId) url.searchParams.set("client_id", clientId);
     if (redirectUri) url.searchParams.set("redirect_uri", redirectUri);
     if (state) url.searchParams.set("state", state);
     if (prompt) url.searchParams.set("prompt", prompt);

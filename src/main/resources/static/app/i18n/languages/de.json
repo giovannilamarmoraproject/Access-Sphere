@@ -482,8 +482,10 @@
   "client_field_token_type_desc": "Typ des für den Client ausgestellten Tokens.",
   "client_field_scopes": "Autorisierte Scopes",
   "client_field_scopes_desc": "Liste autorisierter Scopes (getrennt durch Leerzeichen oder Komma).",
-  "client_field_redirect_uris": "Autorisierte Redirect-URIs (redirect_uri)",
-  "client_field_redirect_uris_desc": "Zulässige URIs für Authorization Code und Token (durch Leerzeichen getrennt).",
+  "client_field_redirect_uris": "Autorisierte Redirect-URIs (redirect_uris)",
+  "client_field_redirect_uris_desc": "Zulässige URIs für Authorization Code und Token. Klicken Sie auf \"+ URI hinzufügen\", um mehrere Endpunkte einzugeben.",
+  "client_field_post_logout_redirect_uris": "Post-Logout Redirect-URIs (post_logout_redirect_uris)",
+  "client_field_post_logout_redirect_uris_desc": "Zulässige URIs, an die der Benutzer nach dem Logout weitergeleitet werden kann. Klicken Sie auf \"+ URI hinzufügen\", um mehrere Endpunkte einzugeben.",
   "client_field_fallback_uri": "Fallback-URI (fallback_uri)",
   "client_field_fallback_uri_desc": "Fallback-URI bei Fehlschlag oder Abbruch der primären Weiterleitung.",
   "client_sec_crypto_title": "3. Schlüsselparameter & Token-Ablaufzeiten",
@@ -701,6 +703,7 @@
   "client_field_jwt_expiration": "Token-Ablauf (Sekunden)",
   "client_detail_no_scopes": "Keine Scopes angegeben",
   "client_detail_no_redirect_uris": "Keine Redirect-URIs konfiguriert",
+  "client_detail_no_post_logout_redirect_uris": "Keine Post-Logout Redirect-URIs konfiguriert",
   "client_detail_no_fallback_uri": "Keine Fallback-URI konfiguriert",
   "swal_client_registered_title": "Client registriert!",
   "swal_client_registered_desc": "Der Client #CLIENT_ID# wurde erfolgreich mit allen Einstellungen erstellt.",
@@ -1091,5 +1094,10 @@
   "client_tech_cant_delete": "Der technische System-Client ACCESS-SPHERE-AUTH kann nicht gelöscht werden.",
   "client_create_denied": "Sie verfügen nicht über die erforderlichen Berechtigungen, um neue Clients zu erstellen.",
   "client_edit_denied": "Sie verfügen nicht über die erforderlichen Berechtigungen, um diesen Client zu bearbeiten.",
-  "client_delete_denied": "Sie verfügen nicht über die erforderlichen Berechtigungen, um diesen Client zu löschen."
+  "client_delete_denied": "Sie verfügen nicht über die erforderlichen Berechtigungen, um diesen Client zu löschen.",
+  "client_uri_add_input_hint": "Klicken Sie hier, um ein neues URI-Eingabefeld hinzuzufügen (oder Enter drücken)",
+  "client_uri_remove_tooltip": "URI entfernen",
+  "client_redirect_uri_placeholder": "z.B. https://app.example.com/callback oder http://localhost:8081",
+  "client_post_logout_uri_placeholder": "z.B. https://app.example.com/login oder https://app.example.com",
+  "client_fallback_uri_placeholder": "z.B. https://app.example.com/login?client_id=MY-CLIENT"
 }

@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.GrantType;
 import io.github.giovannilamarmora.accesssphere.oAuth.model.OAuthType;
@@ -36,11 +35,7 @@ public class OAuthMapper {
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.MAPPER)
-  public static URI getFinalRedirectURI(
-      OAuth2Client oAuth2Client, RedirectUris redirectUris, String defaultRedirectUri) {
-    if (!ObjectToolkit.isNullOrEmpty(oAuth2Client.getRedirect_uri())
-        && oAuth2Client.getRedirect_uri().containsKey(redirectUris.url()))
-      return URI.create(oAuth2Client.getRedirect_uri().get(redirectUris.url()));
-    else return URI.create(defaultRedirectUri);
+  public static URI getFinalRedirectURI(OAuth2Client oAuth2Client, String defaultRedirectUri) {
+    return URI.create(defaultRedirectUri);
   }
 }

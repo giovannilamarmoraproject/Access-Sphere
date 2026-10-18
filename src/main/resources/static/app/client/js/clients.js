@@ -1,7 +1,7 @@
 function extractRedirectUris(val) {
     if (!val) return [];
     if (Array.isArray(val)) {
-        return val.flatMap(item => extractRedirectUris(item)).filter(Boolean);
+        return val.flatMap(item => extractRedirectUris(item)).map(s => String(s || "").trim()).filter(Boolean);
     }
     if (typeof val === "object") {
         const entries = Object.values(val);
@@ -17,7 +17,7 @@ function extractRedirectUris(val) {
         }
         return trimmed.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
     }
-    return [String(val).trim()];
+    return [String(val).trim()].filter(Boolean);
 }
 
 function renderRedirectUrisBadges(val) {
@@ -183,7 +183,7 @@ function displayClientsTable(clients) {
     visibleClients.forEach((c) => {
         const scopesStr = formatScopes(c.scopes);
         const scopesBadge = scopesStr ? `<span class="badge text-bg-secondary text-[10px]">${scopesStr}</span>` : '<span class="text-gray-500 text-xs">Standard</span>';
-        const redirectPreview = renderRedirectUrisBadges(c.redirect_uri);
+        const redirectPreview = renderRedirectUrisBadges(c.redirect_uris || c.redirectUris || c.redirect_uri);
         const mfaBadge = c.mfaEnabled
             ? `<span class="badge text-bg-success text-[10px]"><i class="fa-solid fa-shield-check mr-1"></i>${typeof t === 'function' ? t('user_detail_active', 'ATTIVO') : 'ATTIVO'}</span>`
             : `<span class="badge text-bg-secondary text-[10px]">${typeof t === 'function' ? t('user_detail_disabled_f', 'DISATTIVATO') : 'DISATTIVATO'}</span>`;
@@ -293,7 +293,7 @@ function openClientModal(client = null) {
     document.getElementById("form-accessType").value = client && client.accessType ? client.accessType : "ONLINE";
     document.getElementById("form-tokenType").value = client && client.tokenType ? client.tokenType : "JWT";
     document.getElementById("form-authType").value = client && client.authType ? client.authType : "BEARER";
-    document.getElementById("form-redirectUri").value = client ? formatRedirectUris(client.redirect_uri) : "";
+    document.getElementById("form-redirectUri").value = client ? formatRedirectUris(client.redirect_uris || client.redirectUris || client.redirect_uri) : "";
     document.getElementById("form-scopes").value = client ? formatScopes(client.scopes) : "";
     document.getElementById("form-webhooks").value = client ? formatWebhooks(client.webhooks) : "";
     document.getElementById("form-jwtExpiration").value = client && client.jwtExpiration ? client.jwtExpiration : 3600;
@@ -336,7 +336,7 @@ function saveClient() {
         accessType: document.getElementById("form-accessType").value,
         tokenType: document.getElementById("form-tokenType").value,
         authType: document.getElementById("form-authType").value,
-        redirect_uri: redirectInput ? {"redirect_uri": redirectInput} : null,
+        redirect_uris: redirectInput ? redirectInput.split(/[\s,]+/).map(s => s.trim()).filter(Boolean) : null,
         scopes: scopesInput ? scopesInput.split(",").map(s => s.trim()).filter(Boolean) : null,
         webhooks: webhooksInput ? webhooksInput.split(",").map(w => ({url: w.trim()})) : null,
         jwtExpiration: parseInt(document.getElementById("form-jwtExpiration").value) || 3600,
@@ -443,8 +443,11 @@ function viewClientDetails(clientId) {
     document.getElementById("detail-tokenType").innerText = client.tokenType || "JWT";
     document.getElementById("detail-authType").innerText = client.authType || "BEARER";
     document.getElementById("detail-clientSecret").value = client.clientSecret || "";
-    document.getElementById("detail-scopes").innerText = formatScopes(client.scopes) || "openid, profile, email";
-    document.getElementById("detail-redirectUri").innerHTML = renderRedirectUrisBadges(client.redirect_uri);
+    document.getElementById("detail-redirectUri").innerHTML = renderRedirectUrisBadges(client.redirect_uris || client.redirectUris || client.redirect_uri);
+    const postLogoutEl = document.getElementById("detail-postLogoutRedirectUri");
+    if (postLogoutEl) {
+        postLogoutEl.innerHTML = renderRedirectUrisBadges(client.post_logout_redirect_uris || client.postLogoutRedirectUris);
+    }
     document.getElementById("detail-webhooks").innerText = formatWebhooks(client.webhooks) || "Nessun webhook";
     document.getElementById("detail-jwtExpiration").innerText = (client.jwtExpiration || 3600) + " secondi";
     document.getElementById("detail-mfaStatus").innerHTML = client.mfaEnabled

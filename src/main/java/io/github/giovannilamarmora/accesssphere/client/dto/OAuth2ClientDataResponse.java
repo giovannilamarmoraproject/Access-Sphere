@@ -1,6 +1,8 @@
 package io.github.giovannilamarmora.accesssphere.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.giovannilamarmora.accesssphere.client.model.AccessType;
 import io.github.giovannilamarmora.accesssphere.client.model.TokenType;
 import io.github.giovannilamarmora.accesssphere.config.GenericResponse;
@@ -55,10 +57,18 @@ public class OAuth2ClientDataResponse extends GenericResponse {
   private List<String> scopes;
 
   @Schema(
-      description = "Map of allowed redirect URIs and the fallback landing URI",
-      example =
-          "{\"redirect_uri\":\"https://my-app.example.com/callback\",\"fallback_uri\":\"https://my-app.example.com/login\"}")
-  private Map<String, String> redirect_uri;
+      description = "List of allowed OAuth 2.0 redirect URIs",
+      example = "[\"https://my-app.example.com/callback\"]")
+  @JsonProperty("redirect_uris")
+  @JsonAlias({"redirectUris", "redirect_uri", "redirectUri"})
+  private List<String> redirectUris;
+
+  @Schema(
+      description = "List of allowed post-logout redirect URIs",
+      example = "[\"https://my-app.example.com/login\"]")
+  @JsonProperty("post_logout_redirect_uris")
+  @JsonAlias({"postLogoutRedirectUris", "post_logout_redirect_uri", "fallback_uri", "fallbackUri"})
+  private List<String> postLogoutRedirectUris;
 
   @Schema(
       description = "OAuth access type (ONLINE or OFFLINE to request a refresh token)",

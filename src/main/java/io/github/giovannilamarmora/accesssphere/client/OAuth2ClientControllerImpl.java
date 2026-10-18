@@ -9,9 +9,7 @@ import io.github.giovannilamarmora.utils.context.TraceUtils;
 import io.github.giovannilamarmora.utils.interceptors.LogInterceptor;
 import io.github.giovannilamarmora.utils.interceptors.LogTimeTracker;
 import io.github.giovannilamarmora.utils.interceptors.Logged;
-import io.github.giovannilamarmora.utils.logger.LoggerFilter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +38,6 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1")
 @Tag(name = OpenAPI.Tag.CLIENTS, description = OpenAPI.Description.CLIENTS)
 public class OAuth2ClientControllerImpl implements OAuth2ClientController {
-
-  private static final Logger LOG = LoggerFilter.getLogger(OAuth2ClientControllerImpl.class);
 
   @Autowired private OAuth2ClientService oAuth2ClientService;
 

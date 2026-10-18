@@ -1,7 +1,6 @@
 package io.github.giovannilamarmora.accesssphere.oAuth;
 
 import io.github.giovannilamarmora.accesssphere.client.model.OAuth2Client;
-import io.github.giovannilamarmora.accesssphere.client.model.RedirectUris;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionMap;
 import io.github.giovannilamarmora.accesssphere.exception.ExceptionType;
 import io.github.giovannilamarmora.accesssphere.oAuth.authorization.model.OAuth2Authorization;
@@ -113,7 +112,7 @@ public class OAuthValidator {
 
     validateAccessType(oAuth2Client.getAccessType().value(), accessType);
 
-    validateRedirectUri(oAuth2Client.getRedirect_uri(), redirectUri, oAuth2Client.getClientId());
+    validateRedirectUri(oAuth2Client.getRedirectUris(), redirectUri, oAuth2Client.getClientId());
 
     validateScopes(oAuth2Client.getScopes(), scope);
   }
@@ -131,7 +130,7 @@ public class OAuthValidator {
 
     validateGrantType(GrantType.PASSWORD.type(), grantType);
 
-    validateRedirectUri(oAuth2Client.getRedirect_uri(), redirect_uri, oAuth2Client.getClientId());
+    validateRedirectUri(oAuth2Client.getRedirectUris(), redirect_uri, oAuth2Client.getClientId());
   }
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
@@ -186,7 +185,7 @@ public class OAuthValidator {
       throw new OAuthException(ExceptionMap.ERR_OAUTH_400, "The param code is a required field!");
     }
 
-    validateRedirectUri(oAuth2Client.getRedirect_uri(), redirect_uri, oAuth2Client.getClientId());
+    validateRedirectUri(oAuth2Client.getRedirectUris(), redirect_uri, oAuth2Client.getClientId());
 
     validateScopes(oAuth2Client.getScopes(), scope);
   }
@@ -327,46 +326,30 @@ public class OAuthValidator {
 
   @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
   public static void validateRedirectUri(
-      Map<String, String> expected_redirectUri, String actual_redirectUri, String client_id) {
-    if (ObjectToolkit.isNullOrEmpty(expected_redirectUri)
+      List<String> expectedRedirectUris, String actual_redirectUri, String client_id) {
+    if (ObjectToolkit.isNullOrEmpty(expectedRedirectUris)
         || ObjectToolkit.isNullOrEmpty(actual_redirectUri)) {
-      if (ObjectToolkit.isNullOrEmpty(expected_redirectUri)) {
+      if (ObjectToolkit.isNullOrEmpty(expectedRedirectUris)) {
         LOG.error(
-            "Missing configuration for the client {} on the redirect uri, miss match expected {} found {}",
+            "Missing configuration for the client {} on the redirect uri, mismatch expected {} found {}",
             client_id,
             actual_redirectUri,
-            expected_redirectUri);
+            expectedRedirectUris);
         throw new OAuthException(
             ExceptionMap.ERR_OAUTH_400,
             ExceptionType.INVALID_REDIRECT_URI,
             "Invalid redirect_uri provided!");
       }
-      LOG.error("You must have a valid redirect_uri {} to proceed", expected_redirectUri);
+      LOG.error("You must have a valid redirect_uri {} to proceed", expectedRedirectUris);
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_400,
           ExceptionType.INVALID_REDIRECT_URI,
           "No redirect_uri provided!");
     }
 
-    String configuredUris = expected_redirectUri.get(RedirectUris.REDIRECT_URI.url());
-    if (ObjectToolkit.isNullOrEmpty(configuredUris)) {
-      configuredUris = expected_redirectUri.get("redirectUri");
-    }
-    if (ObjectToolkit.isNullOrEmpty(configuredUris)) {
-      LOG.error(
-          "No redirect_uri key found in client configuration map for client {}: {}",
-          client_id,
-          expected_redirectUri);
-      throw new OAuthException(
-          ExceptionMap.ERR_OAUTH_400,
-          ExceptionType.INVALID_REDIRECT_URI,
-          "No redirect_uri configured on client!");
-    }
-
-    List<String> redirect_uris = List.of(configuredUris.trim().split("[ ,]+"));
-    boolean isValid = redirect_uris.contains(actual_redirectUri);
+    boolean isValid = expectedRedirectUris.contains(actual_redirectUri);
     if (!isValid) {
-      for (String u : redirect_uris) {
+      for (String u : expectedRedirectUris) {
         if (actual_redirectUri.equals(u)
             || actual_redirectUri.equals(u.replace("/app/users", "/app"))
             || actual_redirectUri.equals(u.replace("/app/users", "/app/dashboard"))
@@ -380,13 +363,36 @@ public class OAuthValidator {
     }
     if (!isValid) {
       LOG.error(
-          "The redirect_uri provided should be {} instead of {}",
-          expected_redirectUri,
+          "The redirect_uri provided should be in {} instead of {}",
+          expectedRedirectUris,
           actual_redirectUri);
       throw new OAuthException(
           ExceptionMap.ERR_OAUTH_400,
           ExceptionType.INVALID_REDIRECT_URI,
           "Invalid redirect_uri provided!");
+    }
+  }
+
+  @LogInterceptor(type = LogTimeTracker.ActionType.VALIDATOR)
+  public static void validatePostLogoutRedirectUri(
+      List<String> postLogoutRedirectUris, String actual_redirectUri, String client_id) {
+    if (ObjectUtils.isEmpty(actual_redirectUri)) {
+      return;
+    }
+    if (ObjectToolkit.isNullOrEmpty(postLogoutRedirectUris)) {
+      LOG.warn("No post_logout_redirect_uris configured for client {}", client_id);
+      return;
+    }
+    if (!postLogoutRedirectUris.contains(actual_redirectUri)) {
+      LOG.error(
+          "Post-logout redirect_uri {} not authorized for client {}. Allowed: {}",
+          actual_redirectUri,
+          client_id,
+          postLogoutRedirectUris);
+      throw new OAuthException(
+          ExceptionMap.ERR_OAUTH_400,
+          ExceptionType.INVALID_REDIRECT_URI,
+          "Invalid post_logout_redirect_uri provided!");
     }
   }
 

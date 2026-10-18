@@ -385,25 +385,42 @@
         return [String(val).trim()].filter(Boolean);
     }
 
-    function parseRedirectMap(raw) {
-        let res = {redirect_uris: [], fallback_uris: []};
-        if (!raw) return res;
-        if (typeof raw === "object" && !Array.isArray(raw)) {
-            res.redirect_uris = extractUriList(raw.redirect_uri || raw.redirect_uris || raw.redirectUri);
-            res.fallback_uris = extractUriList(raw.fallback_uri || raw.fallback_uris || raw.fallbackUri);
-            return res;
+    function parseRedirectMap(client) {
+        let res = {redirect_uris: [], post_logout_redirect_uris: []};
+        if (!client) return res;
+
+        const directRedirect = client.redirect_uris || client.redirectUris;
+        const directLogout = client.post_logout_redirect_uris || client.postLogoutRedirectUris;
+
+        if (directRedirect) {
+            res.redirect_uris = extractUriList(directRedirect);
         }
-        if (typeof raw === "string") {
-            try {
-                const parsed = JSON.parse(raw);
-                if (typeof parsed === "object" && !Array.isArray(parsed)) {
-                    res.redirect_uris = extractUriList(parsed.redirect_uri || parsed.redirect_uris || parsed.redirectUri);
-                    res.fallback_uris = extractUriList(parsed.fallback_uri || parsed.fallback_uris || parsed.fallbackUri);
-                    return res;
+        if (directLogout) {
+            res.post_logout_redirect_uris = extractUriList(directLogout);
+        }
+
+        if (client.redirect_uri && res.redirect_uris.length === 0) {
+            const raw = client.redirect_uri;
+            if (typeof raw === "object" && !Array.isArray(raw)) {
+                res.redirect_uris = extractUriList(raw.redirect_uri || raw.redirect_uris || raw.redirectUri);
+                if (res.post_logout_redirect_uris.length === 0) {
+                    res.post_logout_redirect_uris = extractUriList(raw.post_logout_redirect_uri || raw.fallback_uri || raw.fallback_uris || raw.fallbackUri);
                 }
-            } catch (e) {
+            } else if (typeof raw === "string") {
+                try {
+                    const parsed = JSON.parse(raw);
+                    if (typeof parsed === "object" && !Array.isArray(parsed)) {
+                        res.redirect_uris = extractUriList(parsed.redirect_uri || parsed.redirect_uris || parsed.redirectUri);
+                        if (res.post_logout_redirect_uris.length === 0) {
+                            res.post_logout_redirect_uris = extractUriList(parsed.post_logout_redirect_uri || parsed.fallback_uri || parsed.fallback_uris || parsed.fallbackUri);
+                        }
+                    } else {
+                        res.redirect_uris = extractUriList(raw);
+                    }
+                } catch (e) {
+                    res.redirect_uris = extractUriList(raw);
+                }
             }
-            res.redirect_uris = extractUriList(raw);
         }
         return res;
     }
@@ -507,7 +524,7 @@
         const enableRegistration = (c.enableRegistration !== undefined) ? !!c.enableRegistration : (c.enable_registration !== undefined ? !!c.enable_registration : true);
 
         const scopesList = parseScopesArray(c.scopes);
-        const redirectInfo = parseRedirectMap(c.redirect_uri);
+        const redirectInfo = parseRedirectMap(c);
 
         // Parse App Roles
         let roles = [];
@@ -697,7 +714,7 @@
               <!-- REDIRECT URIS -->
               <div class="param-box mb-4">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_redirect_uris', 'Redirect URIs Autorizzate (redirect_uri)') : 'Redirect URIs Autorizzate (redirect_uri)'}</span>
+                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_redirect_uris', 'Redirect URIs Autorizzate (redirect_uris)') : 'Redirect URIs Autorizzate (redirect_uris)'}</span>
                   ${redirectInfo.redirect_uris.length > 0 ? `<span class="text-[11px] font-mono text-purple-300 font-semibold">${redirectInfo.redirect_uris.length} ${typeof t === 'function' ? t('client_detail_configured_uris', 'URI configurate') : 'URI configurate'}</span>` : ''}
                 </div>
                 ${redirectInfo.redirect_uris.length > 0 ? `
@@ -717,27 +734,27 @@
                 ` : `<div class="text-gray-400 text-xs italic py-1">${typeof t === 'function' ? t('client_detail_no_redirect_uris', 'Nessuna redirect URI configurata') : 'Nessuna redirect URI configurata'}</div>`}
               </div>
 
-              <!-- FALLBACK URI -->
+              <!-- POST-LOGOUT REDIRECT URIS -->
               <div class="param-box">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_fallback_uri', 'Fallback URI (fallback_uri)') : 'Fallback URI (fallback_uri)'}</span>
-                  ${redirectInfo.fallback_uris.length > 0 ? `<span class="text-[11px] font-mono text-purple-300 font-semibold">${redirectInfo.fallback_uris.length} ${typeof t === 'function' ? t('client_detail_configured_uris', 'URI configurate') : 'URI configurate'}</span>` : ''}
+                  <span class="param-label m-0">${typeof t === 'function' ? t('client_field_post_logout_redirect_uris', 'Post-Logout Redirect URIs (post_logout_redirect_uris)') : 'Post-Logout Redirect URIs (post_logout_redirect_uris)'}</span>
+                  ${redirectInfo.post_logout_redirect_uris.length > 0 ? `<span class="text-[11px] font-mono text-purple-300 font-semibold">${redirectInfo.post_logout_redirect_uris.length} ${typeof t === 'function' ? t('client_detail_configured_uris', 'URI configurate') : 'URI configurate'}</span>` : ''}
                 </div>
-                ${redirectInfo.fallback_uris.length > 0 ? `
+                ${redirectInfo.post_logout_redirect_uris.length > 0 ? `
                   <div class="flex flex-col gap-2 mt-2">
-                    ${redirectInfo.fallback_uris.map(u => `
+                    ${redirectInfo.post_logout_redirect_uris.map(u => `
                       <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/20 hover:border-purple-400/40 transition-all group">
                         <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                          <i class="fa-solid fa-arrow-turn-down text-purple-400 text-xs shrink-0"></i>
+                          <i class="fa-solid fa-arrow-right-from-bracket text-purple-400 text-xs shrink-0"></i>
                           <span class="font-mono text-xs text-purple-200 break-all select-all">${u}</span>
                         </div>
-                        <button type="button" class="m3-icon-btn flex-shrink-0 opacity-80 group-hover:opacity-100" onclick="copyValue('${u}', 'Fallback URI')" title="Copia URI">
+                        <button type="button" class="m3-icon-btn flex-shrink-0 opacity-80 group-hover:opacity-100" onclick="copyValue('${u}', 'Post-Logout URI')" title="Copia URI">
                           <i class="fa-solid fa-copy text-[11px]"></i>
                         </button>
                       </div>
                     `).join('')}
                   </div>
-                ` : `<div class="text-gray-400 text-xs italic py-1">${typeof t === 'function' ? t('client_detail_no_fallback_uri', 'Nessuna fallback URI configurata') : 'Nessuna fallback URI configurata'}</div>`}
+                ` : `<div class="text-gray-400 text-xs italic py-1">${typeof t === 'function' ? t('client_detail_no_post_logout_redirect_uris', 'Nessuna post-logout redirect URI configurata') : 'Nessuna post-logout redirect URI configurata'}</div>`}
               </div>
             </div>
 
