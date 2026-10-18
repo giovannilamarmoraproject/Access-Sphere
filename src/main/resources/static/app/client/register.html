@@ -85,13 +85,118 @@
 
         .m3-switch-card {
             background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.65);
-            border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
+            border: 1.5px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.16);
             border-radius: 16px;
             padding: 1rem 1.25rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .m3-switch-card:hover {
+            background: rgba(var(--theme-surface-rgb, 26, 20, 42), 0.9);
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.45);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .m3-switch-card:active {
+            transform: translateY(0);
+        }
+
+        .m3-switch-card:has(.m3-switch-input:checked) {
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08);
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.38);
+            box-shadow: 0 0 16px rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08);
+        }
+
+        .m3-switch-card:has(.m3-switch-input:checked):hover {
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12);
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.55);
+        }
+
+        .m3-switch {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .m3-switch-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+            pointer-events: none;
+        }
+
+        .m3-switch-track {
+            width: 52px;
+            height: 32px;
+            border-radius: 9999px;
+            background: rgba(var(--theme-surface-rgb, 20, 16, 32), 0.75);
+            border: 2px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
+            display: flex;
+            align-items: center;
+            position: relative;
+            box-sizing: border-box;
+            transition: background-color 0.25s cubic-bezier(0.2, 0, 0, 1),
+                        border-color 0.25s cubic-bezier(0.2, 0, 0, 1),
+                        box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .m3-switch-thumb {
+            position: absolute;
+            top: 50%;
+            left: 4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.75);
+            transform: translateY(-50%);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+            transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+                        width 0.25s cubic-bezier(0.2, 0, 0, 1),
+                        height 0.25s cubic-bezier(0.2, 0, 0, 1),
+                        background-color 0.25s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .m3-switch-card:hover .m3-switch-track {
+            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.65);
+        }
+
+        .m3-switch-card:hover .m3-switch-input:not(:checked) + .m3-switch-track .m3-switch-thumb {
+            background: #FFFFFF;
+        }
+
+        .m3-switch-input:focus-visible + .m3-switch-track {
+            outline: 2px solid var(--theme-accent, #D0BCFF);
+            outline-offset: 3px;
+            box-shadow: 0 0 0 4px var(--theme-glow, rgba(208, 188, 255, 0.25));
+        }
+
+        .m3-switch-input:checked + .m3-switch-track {
+            background: var(--theme-accent, #D0BCFF);
+            border-color: var(--theme-accent, #D0BCFF);
+            box-shadow: 0 0 12px var(--theme-glow, rgba(208, 188, 255, 0.35));
+        }
+
+        .m3-switch-input:checked + .m3-switch-track .m3-switch-thumb {
+            width: 24px;
+            height: 24px;
+            background: var(--theme-surface, #1C172E);
+            transform: translateY(-50%) translateX(20px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
         }
 
         .form-control, .form-select {
@@ -751,49 +856,57 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                    <div class="m3-switch-card">
+                    <label class="m3-switch-card" for="mfaEnabled">
                         <div>
                             <span class="text-xs font-bold text-white block" data-i18n="client_flag_mfa">MFA Obbligatoria</span>
                             <span class="text-[10px] text-gray-400 block mt-0.5">mfa_enabled</span>
                         </div>
-                        <div class="form-check form-switch m-0">
-                            <input class="form-check-input cursor-pointer" type="checkbox" id="mfaEnabled"
-                                   style="width: 2.8em; height: 1.4em;"/>
+                        <div class="m3-switch">
+                            <input class="m3-switch-input" type="checkbox" id="mfaEnabled"/>
+                            <span class="m3-switch-track">
+                                <span class="m3-switch-thumb"></span>
+                            </span>
                         </div>
-                    </div>
+                    </label>
 
-                    <div class="m3-switch-card">
+                    <label class="m3-switch-card" for="idToken">
                         <div>
                             <span class="text-xs font-bold text-white block" data-i18n="client_flag_id_token">Emetti ID Token</span>
                             <span class="text-[10px] text-gray-400 block mt-0.5">id_token (OpenID Connect)</span>
                         </div>
-                        <div class="form-check form-switch m-0">
-                            <input class="form-check-input cursor-pointer" type="checkbox" id="idToken"
-                                   style="width: 2.8em; height: 1.4em;"/>
+                        <div class="m3-switch">
+                            <input class="m3-switch-input" type="checkbox" id="idToken"/>
+                            <span class="m3-switch-track">
+                                <span class="m3-switch-thumb"></span>
+                            </span>
                         </div>
-                    </div>
+                    </label>
 
-                    <div class="m3-switch-card">
+                    <label class="m3-switch-card" for="accessToken">
                         <div>
                             <span class="text-xs font-bold text-white block" data-i18n="client_flag_access_token">Emetti Access Token</span>
                             <span class="text-[10px] text-gray-400 block mt-0.5">access_token (OAuth2)</span>
                         </div>
-                        <div class="form-check form-switch m-0">
-                            <input class="form-check-input cursor-pointer" type="checkbox" id="accessToken" checked
-                                   style="width: 2.8em; height: 1.4em;"/>
+                        <div class="m3-switch">
+                            <input class="m3-switch-input" type="checkbox" id="accessToken" checked/>
+                            <span class="m3-switch-track">
+                                <span class="m3-switch-thumb"></span>
+                            </span>
                         </div>
-                    </div>
+                    </label>
 
-                    <div class="m3-switch-card">
+                    <label class="m3-switch-card" for="enableRegistration">
                         <div>
                             <span class="text-xs font-bold text-white block" data-i18n="client_flag_enable_registration">Abilita Registrazione Utenti</span>
                             <span class="text-[10px] text-gray-400 block mt-0.5">enable_registration (IAM register)</span>
                         </div>
-                        <div class="form-check form-switch m-0">
-                            <input class="form-check-input cursor-pointer" type="checkbox" id="enableRegistration" checked
-                                   style="width: 2.8em; height: 1.4em;"/>
+                        <div class="m3-switch">
+                            <input class="m3-switch-input" type="checkbox" id="enableRegistration" checked/>
+                            <span class="m3-switch-track">
+                                <span class="m3-switch-thumb"></span>
+                            </span>
                         </div>
-                    </div>
+                    </label>
 
                 </div>
             </div>

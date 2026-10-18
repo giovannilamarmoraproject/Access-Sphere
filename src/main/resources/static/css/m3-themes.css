@@ -751,6 +751,40 @@ textarea {
     border-color: rgba(var(--theme-accent-rgb), 0.38) !important;
 }
 
+[data-theme] .m3-switch-card:hover {
+    background: rgba(var(--theme-surface-rgb), 0.9) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.45) !important;
+}
+
+[data-theme] .m3-switch-card:has(.m3-switch-input:checked) {
+    background: rgba(var(--theme-accent-rgb), 0.08) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.38) !important;
+}
+
+[data-theme] .m3-switch-card:has(.m3-switch-input:checked):hover {
+    background: rgba(var(--theme-accent-rgb), 0.12) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.55) !important;
+}
+
+[data-theme] .m3-switch-track {
+    background: rgba(var(--theme-surface-rgb), 0.75) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.35) !important;
+}
+
+[data-theme] .m3-switch-thumb {
+    background: rgba(var(--theme-accent-rgb), 0.75) !important;
+}
+
+[data-theme] .m3-switch-input:checked + .m3-switch-track {
+    background: var(--theme-accent) !important;
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 0 12px var(--theme-glow) !important;
+}
+
+[data-theme] .m3-switch-input:checked + .m3-switch-track .m3-switch-thumb {
+    background: var(--theme-surface-container, #1C172E) !important;
+}
+
 [data-theme] .form-section-title,
 [data-theme] .detail-card-title {
     color: #FFFFFF !important;
