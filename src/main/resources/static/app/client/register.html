@@ -109,94 +109,14 @@
         }
 
         .m3-switch-card:has(.m3-switch-input:checked) {
-            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08);
-            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.38);
-            box-shadow: 0 0 16px rgba(var(--theme-accent-rgb, 208, 188, 255), 0.08);
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.1);
+            border-color: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.4);
+            box-shadow: 0 0 16px rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15);
         }
 
         .m3-switch-card:has(.m3-switch-input:checked):hover {
-            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.12);
-            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.55);
-        }
-
-        .m3-switch {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            flex-shrink: 0;
-            cursor: pointer;
-        }
-
-        .m3-switch-input {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-            pointer-events: none;
-        }
-
-        .m3-switch-track {
-            width: 52px;
-            height: 32px;
-            border-radius: 9999px;
-            background: rgba(var(--theme-surface-rgb, 20, 16, 32), 0.75);
-            border: 2px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.35);
-            display: flex;
-            align-items: center;
-            position: relative;
-            box-sizing: border-box;
-            transition: background-color 0.25s cubic-bezier(0.2, 0, 0, 1),
-                        border-color 0.25s cubic-bezier(0.2, 0, 0, 1),
-                        box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1);
-        }
-
-        .m3-switch-thumb {
-            position: absolute;
-            top: 50%;
-            left: 4px;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.75);
-            transform: translateY(-50%);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-            transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
-                        width 0.25s cubic-bezier(0.2, 0, 0, 1),
-                        height 0.25s cubic-bezier(0.2, 0, 0, 1),
-                        background-color 0.25s cubic-bezier(0.2, 0, 0, 1);
-        }
-
-        .m3-switch-card:hover .m3-switch-track {
-            border-color: rgba(var(--theme-accent-rgb, 208, 188, 255), 0.65);
-        }
-
-        .m3-switch-card:hover .m3-switch-input:not(:checked) + .m3-switch-track .m3-switch-thumb {
-            background: #FFFFFF;
-        }
-
-        .m3-switch-input:focus-visible + .m3-switch-track {
-            outline: 2px solid var(--theme-accent, #D0BCFF);
-            outline-offset: 3px;
-            box-shadow: 0 0 0 4px var(--theme-glow, rgba(208, 188, 255, 0.25));
-        }
-
-        .m3-switch-input:checked + .m3-switch-track {
-            background: var(--theme-accent, #D0BCFF);
-            border-color: var(--theme-accent, #D0BCFF);
-            box-shadow: 0 0 12px var(--theme-glow, rgba(208, 188, 255, 0.35));
-        }
-
-        .m3-switch-input:checked + .m3-switch-track .m3-switch-thumb {
-            width: 24px;
-            height: 24px;
-            background: var(--theme-surface, #1C172E);
-            transform: translateY(-50%) translateX(20px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+            background: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.15);
+            border-color: rgba(var(--theme-primary-rgb, 168, 85, 247), 0.6);
         }
 
         .form-control, .form-select {
@@ -856,55 +776,63 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                    <label class="m3-switch-card" for="mfaEnabled">
+                    <label class="m3-switch-card cursor-pointer" for="mfaEnabled">
                         <div>
                             <span class="text-xs font-bold text-white block" data-i18n="client_flag_mfa">MFA Obbligatoria</span>
                             <span class="text-[10px] text-gray-400 block mt-0.5">mfa_enabled</span>
                         </div>
-                        <div class="m3-switch">
-                            <input class="m3-switch-input" type="checkbox" id="mfaEnabled"/>
-                            <span class="m3-switch-track">
-                                <span class="m3-switch-thumb"></span>
-                            </span>
+                        <div class="relative shrink-0 flex items-center">
+                            <input type="checkbox" id="mfaEnabled" class="sr-only m3-switch-input"/>
+                            <div class="m3-switch-track">
+                                <div class="m3-switch-thumb">
+                                    <i class="fa-solid fa-check text-[9px] opacity-0 transition-opacity"></i>
+                                </div>
+                            </div>
                         </div>
                     </label>
 
-                    <label class="m3-switch-card" for="idToken">
+                    <label class="m3-switch-card cursor-pointer" for="idToken">
                         <div>
                             <span class="text-xs font-bold text-white block" data-i18n="client_flag_id_token">Emetti ID Token</span>
                             <span class="text-[10px] text-gray-400 block mt-0.5">id_token (OpenID Connect)</span>
                         </div>
-                        <div class="m3-switch">
-                            <input class="m3-switch-input" type="checkbox" id="idToken"/>
-                            <span class="m3-switch-track">
-                                <span class="m3-switch-thumb"></span>
-                            </span>
+                        <div class="relative shrink-0 flex items-center">
+                            <input type="checkbox" id="idToken" class="sr-only m3-switch-input"/>
+                            <div class="m3-switch-track">
+                                <div class="m3-switch-thumb">
+                                    <i class="fa-solid fa-check text-[9px] opacity-0 transition-opacity"></i>
+                                </div>
+                            </div>
                         </div>
                     </label>
 
-                    <label class="m3-switch-card" for="accessToken">
+                    <label class="m3-switch-card cursor-pointer" for="accessToken">
                         <div>
                             <span class="text-xs font-bold text-white block" data-i18n="client_flag_access_token">Emetti Access Token</span>
                             <span class="text-[10px] text-gray-400 block mt-0.5">access_token (OAuth2)</span>
                         </div>
-                        <div class="m3-switch">
-                            <input class="m3-switch-input" type="checkbox" id="accessToken" checked/>
-                            <span class="m3-switch-track">
-                                <span class="m3-switch-thumb"></span>
-                            </span>
+                        <div class="relative shrink-0 flex items-center">
+                            <input type="checkbox" id="accessToken" checked class="sr-only m3-switch-input"/>
+                            <div class="m3-switch-track">
+                                <div class="m3-switch-thumb">
+                                    <i class="fa-solid fa-check text-[9px] opacity-0 transition-opacity"></i>
+                                </div>
+                            </div>
                         </div>
                     </label>
 
-                    <label class="m3-switch-card" for="enableRegistration">
+                    <label class="m3-switch-card cursor-pointer" for="enableRegistration">
                         <div>
                             <span class="text-xs font-bold text-white block" data-i18n="client_flag_enable_registration">Abilita Registrazione Utenti</span>
                             <span class="text-[10px] text-gray-400 block mt-0.5">enable_registration (IAM register)</span>
                         </div>
-                        <div class="m3-switch">
-                            <input class="m3-switch-input" type="checkbox" id="enableRegistration" checked/>
-                            <span class="m3-switch-track">
-                                <span class="m3-switch-thumb"></span>
-                            </span>
+                        <div class="relative shrink-0 flex items-center">
+                            <input type="checkbox" id="enableRegistration" checked class="sr-only m3-switch-input"/>
+                            <div class="m3-switch-track">
+                                <div class="m3-switch-thumb">
+                                    <i class="fa-solid fa-check text-[9px] opacity-0 transition-opacity"></i>
+                                </div>
+                            </div>
                         </div>
                     </label>
 
