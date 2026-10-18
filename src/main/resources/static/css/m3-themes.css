@@ -238,19 +238,22 @@ body {
 }
 
 /* Bento & Glass Cards */
-.m3-glass-card,
+.m3-glass-card {
+    background: var(--md-surface-card) !important;
+    border: 1px solid var(--md-surface-border) !important;
+    border-radius: 28px !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+}
+
 .m3-bento-card,
 .m3-card,
 .card {
     background: var(--md-surface-card) !important;
     border: 1px solid var(--md-surface-border) !important;
     border-radius: 26px !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-}
-
-.m3-glass-card {
-    border-radius: 28px !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Regola generale: NESSUNA traslazione né box-shadow su tabelle, dettagli o impostazioni */

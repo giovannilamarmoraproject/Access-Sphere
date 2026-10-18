@@ -80,6 +80,8 @@ body {
     top: 0;
     z-index: 100;
     width: 100%;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
 .header-container {
@@ -635,15 +637,15 @@ button.m3-action-pill i {
 
 .m3-card, .card, .m3-bento-card {
     background: var(--md-surface-card) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
     border: 1px solid var(--md-surface-border) !important;
     border-radius: 26px !important;
     color: #E6E1E5 !important;
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
     position: relative;
     overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Regola generale hover per tutte le card (tabelle, dettagli, impostazioni, ecc.):
@@ -1191,14 +1193,14 @@ div.dt-container .dt-paging button:disabled,
    HUB HERO & RECAP CARDS
    ------------------------------------------- */
 .hub-hero-card {
-    background: rgba(var(--theme-surface-rgb, 24, 19, 38), 0.8);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: rgba(var(--theme-surface-rgb, 24, 19, 38), 0.92);
     border: 1px solid rgba(var(--theme-accent-rgb, 208, 188, 255), 0.18);
     border-radius: 28px;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Card hover effects per le hero card della dashboard (IAM & Clients) */
